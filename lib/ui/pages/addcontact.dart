@@ -1,7 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-class AddContactPage extends StatelessWidget {
+class AddContactPage extends StatefulWidget {
+  const AddContactPage({ Key? key }) : super(key: key);
+
+  @override
+  _AddContactPageState createState() => _AddContactPageState();
+}
+
+class _AddContactPageState extends State<AddContactPage> {
+  bool _doingWork = false;
+
+  void _addToRoster(BuildContext context) {
+    setState(() {
+        this._doingWork = true;
+    });
+    Future.delayed(
+      Duration(seconds: 3),
+      () {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          "/conversation",
+          ModalRoute.withName("/conversations"));
+      }
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +48,10 @@ class AddContactPage extends StatelessWidget {
       // TODO: Disable the inputs and the BackButton if we're working on loggin in
       body: Column(
         children: [
-          LinearProgressIndicator(value: null),
+          Visibility(
+            visible: this._doingWork,
+            child: LinearProgressIndicator(value: null)
+          ),
 
           Padding(
             padding: EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
@@ -38,6 +65,7 @@ class AddContactPage extends StatelessWidget {
               ),
               child: TextField(
                 maxLines: 1,
+                enabled: !this._doingWork,
                 decoration: InputDecoration(
                   labelText: "XMPP-Address",
                   border: InputBorder.none,
@@ -63,7 +91,7 @@ class AddContactPage extends StatelessWidget {
                   child: ElevatedButton(
                     child: Text("Add to contacts"),
                     // TODO: Add to roster and open a chat
-                    onPressed: () {}
+                    onPressed: this._doingWork ? null : () => _addToRoster(context)
                   )
                 )
               )
