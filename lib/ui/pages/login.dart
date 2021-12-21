@@ -107,21 +107,23 @@ class _LoginPageState extends State<LoginPage> {
               )
             )
           ),
-
-          ExpansionTile(
-            title: Text("Advanced options"),
-            children: [
-              Column(
-                children: [
-                  SwitchListTile(
-                    title: Text("Create account on server"),
-                    value: false,
-                    // TODO
-                    onChanged: this._doingWork ? null : (value) {}
-                  )
-                ]
-              )
-            ]
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: ExpansionTile(
+              title: Text("Advanced options"),
+              children: [
+                Column(
+                  children: [
+                    SwitchListTile(
+                      title: Text("Create account on server"),
+                      value: false,
+                      // TODO
+                      onChanged: this._doingWork ? null : (value) {}
+                    )
+                  ]
+                )
+              ]
+            )
           ), 
           Row(
             children: [
