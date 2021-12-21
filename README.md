@@ -1,7 +1,7 @@
 # moxxy
 
 An experimental XMPP client that tries to be as easy, modern and beautiful as possible. This project
-is the successor of moxxyv1, which was writtin in *React Native* and abandoned due to various technical
+is the successor of moxxyv1, which was written in *React Native* and abandoned due to various technical
 issues.
 
 ## Screenshots
