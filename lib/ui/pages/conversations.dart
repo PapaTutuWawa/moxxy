@@ -11,7 +11,7 @@ class ConversationsPage extends StatelessWidget {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
         child: BorderlessTopbar(
-          children: <Widget>[
+          children: [
             Padding(
               padding: EdgeInsets.only(right: 3.0),
               child: CircleAvatar(
@@ -23,6 +23,15 @@ class ConversationsPage extends StatelessWidget {
               "Ojou",
               style: TextStyle(
                 fontSize: 18
+              )
+            ),
+            Spacer(),
+            Center(
+              child: InkWell(
+                // TODO: Implement
+                onTap: () {},
+                // TODO: Find a better icon
+                child: Icon(Icons.menu)
               )
             )
           ]
@@ -37,7 +46,7 @@ class ConversationsPage extends StatelessWidget {
       ),
       // TODO: Maybe don't use a SpeedDial
       floatingActionButton: SpeedDial(
-        icon: Icons.add,
+        icon: Icons.chat,
         visible: true,
         curve: Curves.bounceInOut,
         children: [

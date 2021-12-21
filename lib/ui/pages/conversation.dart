@@ -75,15 +75,6 @@ class _ConversationPageState extends State<ConversationPage> {
                   Navigator.pushNamed(context, "/conversation/profile");
                 }
               )
-            ),
-            Spacer(),
-            Center(
-              child: InkWell(
-                // TODO: Implement
-                onTap: () {},
-                // TODO: Find a better icon
-                child: Icon(Icons.menu)
-              )
             )
           ]
         )
