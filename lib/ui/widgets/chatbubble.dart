@@ -39,13 +39,16 @@ class ChatBubble extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           // TODO: Timestamp
-                          Text(
-                            "12:00",
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey
+                          Padding(
+                            padding: EdgeInsets.only(top: 3.0),
+                            child: Text(
+                              "12:00",
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey
+                              )
                             )
-                          )
+                          ) 
                         ]
                       )
                     ]
