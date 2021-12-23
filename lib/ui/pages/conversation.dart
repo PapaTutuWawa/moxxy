@@ -5,6 +5,7 @@ import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
@@ -22,6 +23,7 @@ class _MessageListViewModel {
 class _ConversationPageState extends State<ConversationPage> {
   bool _showSendButton = false;
   TextEditingController controller = TextEditingController();
+  ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
 
   _ConversationPageState();
   
@@ -171,11 +173,35 @@ class _ConversationPageState extends State<ConversationPage> {
                       height: 45.0,
                       width: 45.0,
                       child: FittedBox(
-                        child: FloatingActionButton(
-                          child: Icon(
-                            this._showSendButton ? Icons.send : Icons.add
-                          ),
-                          onPressed: () => this._onSendButtonPressed(viewModel)
+                        child: SpeedDial(
+                          icon: this._showSendButton ? Icons.send : Icons.add,
+                          visible: true,
+                          curve: Curves.bounceInOut,
+                          openCloseDial: this._isSpeedDialOpen,
+                          onPress: () {
+                            if (this._showSendButton) {
+                              this._onSendButtonPressed(viewModel);
+                            } else {
+                              this._isSpeedDialOpen.value = true;
+                            }
+                          },
+                          children: [
+                            SpeedDialChild(
+                              child: Icon(Icons.image),
+                              onTap: () {},
+                              label: "Add Image"
+                            ),
+                            SpeedDialChild(
+                              child: Icon(Icons.photo_camera),
+                              onTap: () {},
+                              label: "Take photo"
+                            ),
+                            SpeedDialChild(
+                              child: Icon(Icons.attach_file),
+                              onTap: () {},
+                              label: "Add file"
+                            ),
+                          ]
                         )
                       )
                     )
