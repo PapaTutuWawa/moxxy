@@ -6,6 +6,7 @@ issues.
 
 ## Screenshots
 
+![Intro](assets/repo/intro.png)
 ![Conversations](assets/repo/conversations.png)
 ![Conversation](assets/repo/conversation.png)
 ![Adding a contact](assets/repo/add_contact.png)

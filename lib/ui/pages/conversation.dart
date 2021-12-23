@@ -211,16 +211,25 @@ class _ConversationPageState extends State<ConversationPage> {
                             SpeedDialChild(
                               child: Icon(Icons.image),
                               onTap: () {},
+                              backgroundColor: BUBBLE_COLOR_SENT,
+                              // TODO: Theme dependent?
+                              foregroundColor: Colors.white,
                               label: "Add Image"
                             ),
                             SpeedDialChild(
                               child: Icon(Icons.photo_camera),
                               onTap: () {},
+                              backgroundColor: BUBBLE_COLOR_SENT,
+                              // TODO: Theme dependent?
+                              foregroundColor: Colors.white,
                               label: "Take photo"
                             ),
                             SpeedDialChild(
                               child: Icon(Icons.attach_file),
                               onTap: () {},
+                              backgroundColor: BUBBLE_COLOR_SENT,
+                              // TODO: Theme dependent?
+                              foregroundColor: Colors.white,
                               label: "Add file"
                             ),
                           ]
