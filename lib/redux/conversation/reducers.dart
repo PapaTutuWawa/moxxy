@@ -14,14 +14,13 @@ HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> sta
       sent: true
     );
     
-    // TODO
-    if (!map.containsKey("")) {
-      map[""] = [ msg ];
+    String jid = action.jid;
+    if (!map.containsKey(jid)) {
+      map[jid] = [ msg ];
       return map;
     }
 
-    // TODO
-    map[""]!.add(msg);
+    map[jid]!.add(msg);
     return map;
   }
 

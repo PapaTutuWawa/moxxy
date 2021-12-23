@@ -25,6 +25,8 @@ class NewConversationPage extends StatelessWidget {
 
     if (conversation == null) {
       // TODO
+      // TODO: Install a middleware to make sure that the conversation gets added to the
+      //       repository. Also handle updates
       conversation = Conversation(
         title: jid,
         jid: jid,

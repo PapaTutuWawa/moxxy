@@ -88,17 +88,19 @@ class _ConversationPageState extends State<ConversationPage> {
     var args = ModalRoute.of(context)!.settings.arguments as ConversationPageArguments;
 
     Conversation conversation = GetIt.I.get<ConversationRepository>().getConversation(args.jid)!;
+    String jid = conversation.jid;
     
     return StoreConnector<MoxxyState, _MessageListViewModel>(
       converter: (store) => _MessageListViewModel(
         // TODO
-        messages: store.state.messages.containsKey("") ? store.state.messages[""]! : [],
+        messages: store.state.messages.containsKey(jid) ? store.state.messages[jid]! : [],
         sendMessage: (body) => store.dispatch(
           // TODO
           AddMessageAction(
             from: "UwU",
             timestamp: "12:00",
             body: body,
+            jid: jid
           )
         )
       ),

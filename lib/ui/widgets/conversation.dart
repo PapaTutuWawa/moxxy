@@ -40,6 +40,7 @@ class ConversationsListRow extends StatelessWidget {
                 this.name,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
               ),
+              // TODO: Change color, font size and truncate the text when too long
               Text(this.lastMessageBody)
             ]
           )
