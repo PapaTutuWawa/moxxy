@@ -12,7 +12,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import "redux/conversation/reducers.dart";
 import "redux/conversation/actions.dart";
-import "models/message.dart";
+import "redux/state.dart";
 
 void main() => runApp(MyApp());
 

@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/models/conversation.dart';
+import 'package:moxxyv2/redux/state.dart';
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
+
+class _ConversationsListViewModel {
+  final List<Conversation> conversations;
+
+  _ConversationsListViewModel({ required this.conversations });
+}
 
 class ConversationsPage extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext buildContext) {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
@@ -37,12 +47,20 @@ class ConversationsPage extends StatelessWidget {
           ]
         )
       ),
-      body: ListView(
-        children: [
-          ConversationsListRow("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fyt3.ggpht.com%2Fa%2FAGF-l78YnmyE3snkHMp_18AZOP5QRH2WOYSBlnPKFA%3Ds900-c-k-c0xffffffff-no-rj-mo&f=1&nofb=1", "Ars Almal"),
-          ConversationsListRow("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.N1bqs6sYnkcHO9cp4VY56ACwCw%26pid%3DApi&f=1", "Millie Parfait"),
-          ConversationsListRow("", "Normal dude"),
-        ]
+      body: StoreConnector<MoxxyState, _ConversationsListViewModel>(
+        converter: (store) => _ConversationsListViewModel(
+          conversations: store.state.conversations
+        ),
+        builder: (context, viewModel) => ListView.builder(
+          itemCount: viewModel.conversations.length,
+          itemBuilder: (_context, index) {
+            Conversation item = viewModel.conversations[index];
+            return InkWell(
+              onTap: () => Navigator.pushNamed(buildContext, "/conversation"),
+              child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody)
+            );
+          }
+        )
       ),
       // TODO: Maybe don't use a SpeedDial
       floatingActionButton: SpeedDial(
@@ -52,7 +70,7 @@ class ConversationsPage extends StatelessWidget {
         children: [
           SpeedDialChild(
             child: Icon(Icons.person_add),
-            onTap: () => Navigator.pushNamed(context, "/new_conversation"),
+            onTap: () => Navigator.pushNamed(buildContext, "/new_conversation"),
             label: "Add contact"
           ),
           SpeedDialChild(

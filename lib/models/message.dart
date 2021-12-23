@@ -1,5 +1,3 @@
-import "dart:collection";
-
 class Message {
   final String body;
   final String timestamp;
@@ -16,11 +14,4 @@ class Message {
       sent: this.sent
     );
   }
-}
-  
-class MoxxyState {
-  final HashMap<String, List<Message>> messages;
-
-  const MoxxyState({ required this.messages });
-  MoxxyState.initialState() : messages = HashMap();
 }

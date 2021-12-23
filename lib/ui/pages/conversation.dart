@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chatbubble.dart';
 import "package:moxxyv2/models/message.dart";
+import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 
 import 'package:flutter_redux/flutter_redux.dart';
