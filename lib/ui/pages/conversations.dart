@@ -5,6 +5,7 @@ import 'package:moxxyv2/ui/pages/conversation.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import "package:moxxyv2/ui/helpers.dart";
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -75,7 +76,7 @@ class ConversationsPage extends StatelessWidget {
         children: [
           SpeedDialChild(
             child: Icon(Icons.group),
-            onTap: () => print("OK"),
+            onTap: () => showNotImplementedDialog("groupchat", buildContext),
             backgroundColor: BUBBLE_COLOR_SENT,
             // TODO: Theme dependent?
             foregroundColor: Colors.white,
