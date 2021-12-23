@@ -15,32 +15,41 @@ typedef AddConversationFunction = void Function(Conversation conversation);
 
 class _NewConversationViewModel {
   final AddConversationFunction addConversation;
+  final List<Conversation> conversations;
 
-  _NewConversationViewModel({ required this.addConversation });
+  _NewConversationViewModel({ required this.addConversation, required this.conversations });
 }
 
 class NewConversationPage extends StatelessWidget {
   void _addNewContact(_NewConversationViewModel viewModel, BuildContext context, String jid) {
-    Conversation? conversation = GetIt.I.get<ConversationRepository>().getConversation(jid);
+    bool hasConversation = viewModel.conversations.length > 0 && viewModel.conversations.firstWhere((item) => item.jid == jid, orElse: null) != null;
 
-    if (conversation == null) {
-      // TODO
-      // TODO: Install a middleware to make sure that the conversation gets added to the
-      //       repository. Also handle updates
-      conversation = Conversation(
-        title: jid,
-        jid: jid,
-        lastMessageBody: "",
-        avatarUrl: "",
-        unreadCounter: 0
-      );
-      GetIt.I.get<ConversationRepository>().setConversation(conversation);
+    // Prevent adding the same conversation twice to the list of open conversations
+    if (!hasConversation) {
+      Conversation? conversation = GetIt.I.get<ConversationRepository>().getConversation(jid);
+
+      if (conversation == null) {
+        // TODO
+        // TODO: Install a middleware to make sure that the conversation gets added to the
+        //       repository. Also handle updates
+        conversation = Conversation(
+          title: jid,
+          jid: jid,
+          lastMessageBody: "",
+          avatarUrl: "",
+          unreadCounter: 0
+        );
+        GetIt.I.get<ConversationRepository>().setConversation(conversation);
+      }
+      viewModel.addConversation(conversation);
     }
-    viewModel.addConversation(conversation);
-    
-    // TODO: Pass arguments
+        
     // TODO: Make sure that no conversation can be added twice
-    Navigator.pushNamedAndRemoveUntil(context, "/conversation", ModalRoute.withName("/conversations"), arguments: ConversationPageArguments(jid: jid));
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      "/conversation",
+      ModalRoute.withName("/conversations"),
+      arguments: ConversationPageArguments(jid: jid));
   }
   
   @override
@@ -70,7 +79,8 @@ class NewConversationPage extends StatelessWidget {
               lastMessageBody: c.lastMessageBody,
               jid: c.jid
             )
-          )
+          ),
+          conversations: store.state.conversations
         ),
         builder: (context, viewModel) => ListView.builder(
           itemCount: conversations.length + 2,
