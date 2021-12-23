@@ -6,6 +6,7 @@ import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/repositories/conversations.dart";
+import "package:moxxyv2/ui/pages/profile.dart";
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -138,7 +139,7 @@ class _ConversationPageState extends State<ConversationPage> {
                     ]
                   ),
                   onTap: () {
-                    Navigator.pushNamed(context, "/conversation/profile");
+                    Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: conversation));
                   }
                 )
               )

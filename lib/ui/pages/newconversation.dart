@@ -42,6 +42,7 @@ class NewConversationPage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    var conversations = GetIt.I.get<ConversationRepository>().getAllConversations();
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
@@ -68,59 +69,71 @@ class NewConversationPage extends StatelessWidget {
             )
           )
         ),
-        // TODO: Use ListView.builder
-        builder: (context, viewModel) => ListView(
-          children: [
-            InkWell(
-              onTap: () => Navigator.pushNamed(context, "/new_conversation/add_contact"),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircleAvatar(
-                      child: Icon(Icons.person_add),
-                      radius: 35.0
-                    )
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "Add contact",
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold
+        builder: (context, viewModel) => ListView.builder(
+          itemCount: conversations.length + 2,
+          itemBuilder: (context, index) {
+            switch(index) {
+              case 0: {
+                return InkWell(
+                  onTap: () => Navigator.pushNamed(context, "/new_conversation/add_contact"),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircleAvatar(
+                          child: Icon(Icons.person_add),
+                          radius: 35.0
+                        )
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Add contact",
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold
+                          )
+                        )
+                      )
+                    ]
+                  )
+                );
+              }
+              break;
+              case 1: {
+                return Row(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircleAvatar(
+                        child: Icon(Icons.group_add),
+                        radius: 35.0
+                      )
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "Create groupchat",
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold
+                        )
                       )
                     )
-                  )
-                ]
-              )
-            ),
-            Row(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircleAvatar(
-                    child: Icon(Icons.group_add),
-                    radius: 35.0
-                  )
-                ),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    "Create groupchat",
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold
-                    )
-                  )
-                )
-              ]
-            ),
-            InkWell(
-              onTap: () => this._addNewContact(viewModel, context, "houshou.marine@hololive.tv"),
-              child: ConversationsListRow("https://vignette.wikia.nocookie.net/virtualyoutuber/images/4/4e/Houshou_Marine_-_Portrait.png/revision/latest?cb=20190821035347", "Houshou Marine", "houshou.marine@hololive.tv")
-            ) 
-          ]
+                  ]
+                );
+              }
+              break;
+              default: {
+                Conversation item = conversations[index - 2];
+                return InkWell(
+                  onTap: () => this._addNewContact(viewModel, context, item.jid),
+                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid)
+                );
+              }
+              break;
+            }
+          }
         )
       )
     );

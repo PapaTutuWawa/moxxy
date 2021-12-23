@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/sharedimage.dart';
+import 'package:moxxyv2/models/conversation.dart';
+
+// TODO: Move to separate file
+class ProfilePageArguments {
+  final Conversation conversation;
+
+  ProfilePageArguments({ required this.conversation });
+}
 
 class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    var args = ModalRoute.of(context)!.settings.arguments as ProfilePageArguments;
+
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -14,13 +24,14 @@ class ProfilePage extends StatelessWidget {
               child: Column(
                 children: [
                   CircleAvatar(
-                    backgroundImage: NetworkImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1"),
+                    // TODO
+                    backgroundImage: NetworkImage(args.conversation.avatarUrl),
                     radius: 110.0
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 8.0),
                     child: Text(
-                      "Nakiri Ayame",
+                      args.conversation.title,
                       style: TextStyle(
                         fontSize: 30
                       )
@@ -29,7 +40,7 @@ class ProfilePage extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.only(top: 3.0),
                     child: Text(
-                      "nakiri.ayame@hololive.tv",
+                      args.conversation.jid,
                       style: TextStyle(
                         fontSize: 15)
                     )
