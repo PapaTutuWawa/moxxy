@@ -4,6 +4,7 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/pages/conversation.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -68,20 +69,32 @@ class ConversationsPage extends StatelessWidget {
         icon: Icons.chat,
         visible: true,
         curve: Curves.bounceInOut,
+        backgroundColor: BUBBLE_COLOR_SENT,
+        // TODO: Theme dependent?
+        foregroundColor: Colors.white,
         children: [
           SpeedDialChild(
             child: Icon(Icons.person_add),
             onTap: () => Navigator.pushNamed(buildContext, "/new_conversation"),
+            backgroundColor: BUBBLE_COLOR_SENT,
+            // TODO: Theme dependent?
+            foregroundColor: Colors.white,
             label: "Add contact"
           ),
           SpeedDialChild(
             child: Icon(Icons.group_add),
             onTap: () => print("OK"),
+            backgroundColor: BUBBLE_COLOR_SENT,
+            // TODO: Theme dependent?
+            foregroundColor: Colors.white,
             label: "Create groupchat"
           ),
           SpeedDialChild(
             child: Icon(Icons.group),
             onTap: () => print("OK"),
+            backgroundColor: BUBBLE_COLOR_SENT,
+            // TODO: Theme dependent?
+            foregroundColor: Colors.white,
             label: "Join groupchat"
           )
         ]

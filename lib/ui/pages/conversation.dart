@@ -7,6 +7,7 @@ import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/repositories/conversations.dart";
 import "package:moxxyv2/ui/pages/profile.dart";
+import "package:moxxyv2/ui/constants.dart";
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -164,7 +165,7 @@ class _ConversationPageState extends State<ConversationPage> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           width: 1,
-                          color: Colors.purple
+                          color: BUBBLE_COLOR_SENT
                         )
                       ),
                       // TODO: Fix the TextField being too tall
@@ -193,6 +194,9 @@ class _ConversationPageState extends State<ConversationPage> {
                           icon: this._showSendButton ? Icons.send : Icons.add,
                           visible: true,
                           curve: Curves.bounceInOut,
+                          backgroundColor: BUBBLE_COLOR_SENT,
+                          // TODO: Theme dependent?
+                          foregroundColor: Colors.white,
                           openCloseDial: this._isSpeedDialOpen,
                           onPress: () {
                             if (this._showSendButton) {

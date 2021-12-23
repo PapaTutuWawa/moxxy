@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "package:moxxyv2/ui/constants.dart";
 
 class ChatBubble extends StatelessWidget {
   String messageContent;
@@ -33,14 +34,12 @@ class ChatBubble extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: this.sentBySelf ? Color.fromRGBO(162, 68, 173, 1.0) : Color.fromRGBO(44, 62, 80, 1.0),
-              // TODO: Smaller radius if messages belong together
-              //borderRadius: BorderRadius.circular(10)
+              color: this.sentBySelf ? BUBBLE_COLOR_SENT : BUBBLE_COLOR_RECEIVED,
               borderRadius: BorderRadius.only(
-                topLeft: !this.sentBySelf && (this.between || this.end) && !(this.start && this.end) ? Radius.circular(4) : Radius.circular(10),
-                topRight: this.sentBySelf && (this.between || this.end) && !(this.start && this.end) ? Radius.circular(4) : Radius.circular(10),
-                bottomLeft: !this.sentBySelf && (this.between || this.start) && !(this.start && this.end) ? Radius.circular(4) : Radius.circular(10),
-                bottomRight: this.sentBySelf && (this.between || this.start) && !(this.start && this.end) ? Radius.circular(4) : Radius.circular(10)
+                topLeft: !this.sentBySelf && (this.between || this.end) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE,
+                topRight: this.sentBySelf && (this.between || this.end) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE,
+                bottomLeft: !this.sentBySelf && (this.between || this.start) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE,
+                bottomRight: this.sentBySelf && (this.between || this.start) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE
               )
             ),
             child: Padding(
