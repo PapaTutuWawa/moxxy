@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/pages/conversation.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 
@@ -56,7 +57,7 @@ class ConversationsPage extends StatelessWidget {
           itemBuilder: (_context, index) {
             Conversation item = viewModel.conversations[index];
             return InkWell(
-              onTap: () => Navigator.pushNamed(buildContext, "/conversation"),
+              onTap: () => Navigator.pushNamed(buildContext, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
               child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody)
             );
           }

@@ -6,7 +6,8 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
     state.add(Conversation(
         title: action.title,
         lastMessageBody: action.lastMessageBody,
-        avatarUrl: action.avatarUrl
+        avatarUrl: action.avatarUrl,
+        jid: action.jid
     ));
   }
 

@@ -7,14 +7,20 @@ import 'ui/pages/login.dart';
 import 'ui/pages/register.dart';
 import 'ui/pages/intro.dart';
 import 'ui/pages/addcontact.dart';
+import 'repositories/conversations.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 import "redux/conversation/reducers.dart";
 import "redux/conversation/actions.dart";
 import "redux/state.dart";
+import 'package:get_it/get_it.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  GetIt.I.registerSingleton<ConversationRepository>(ConversationRepository());
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   final Store<MoxxyState> store = Store(moxxyReducer,

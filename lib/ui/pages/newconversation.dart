@@ -4,11 +4,14 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/conversations/actions.dart';
+import 'package:moxxyv2/ui/pages/conversation.dart';
+import 'package:moxxyv2/repositories/conversations.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:get_it/get_it.dart';
 
-typedef AddConversationFunction = void Function(String title, String avatarUrl);
+typedef AddConversationFunction = void Function(Conversation conversation);
 
 class _NewConversationViewModel {
   final AddConversationFunction addConversation;
@@ -17,10 +20,24 @@ class _NewConversationViewModel {
 }
 
 class NewConversationPage extends StatelessWidget {
-  void _addNewContact(_NewConversationViewModel viewModel, BuildContext context, String name, String avatarUrl) {
-    viewModel.addConversation(name, avatarUrl);
-    // TODO
-    Navigator.pushNamedAndRemoveUntil(context, "/conversation", ModalRoute.withName("/conversations"));
+  void _addNewContact(_NewConversationViewModel viewModel, BuildContext context, String jid) {
+    Conversation? conversation = GetIt.I.get<ConversationRepository>().getConversation(jid);
+
+    if (conversation == null) {
+      // TODO
+      conversation = Conversation(
+        title: jid,
+        jid: jid,
+        lastMessageBody: "",
+        avatarUrl: ""
+      );
+      GetIt.I.get<ConversationRepository>().setConversation(conversation);
+    }
+    viewModel.addConversation(conversation);
+    
+    // TODO: Pass arguments
+    // TODO: Make sure that no conversation can be added twice
+    Navigator.pushNamedAndRemoveUntil(context, "/conversation", ModalRoute.withName("/conversations"), arguments: ConversationPageArguments(jid: jid));
   }
   
   @override
@@ -42,11 +59,12 @@ class NewConversationPage extends StatelessWidget {
       ),
       body: StoreConnector<MoxxyState, _NewConversationViewModel>(
         converter: (store) => _NewConversationViewModel(
-          addConversation: (title, avatarUrl) => store.dispatch(
+          addConversation: (c) => store.dispatch(
             AddConversationAction(
-              title: title,
-              avatarUrl: avatarUrl,
-              lastMessageBody: ""
+              title: c.title,
+              avatarUrl: c.avatarUrl,
+              lastMessageBody: c.lastMessageBody,
+              jid: c.jid
             )
           )
         ),
@@ -99,7 +117,7 @@ class NewConversationPage extends StatelessWidget {
               ]
             ),
             InkWell(
-              onTap: () => this._addNewContact(viewModel, context, "Houshou Marine", "https://vignette.wikia.nocookie.net/virtualyoutuber/images/4/4e/Houshou_Marine_-_Portrait.png/revision/latest?cb=20190821035347"),
+              onTap: () => this._addNewContact(viewModel, context, "houshou.marine@hololive.tv"),
               child: ConversationsListRow("https://vignette.wikia.nocookie.net/virtualyoutuber/images/4/4e/Houshou_Marine_-_Portrait.png/revision/latest?cb=20190821035347", "Houshou Marine", "houshou.marine@hololive.tv")
             ) 
           ]

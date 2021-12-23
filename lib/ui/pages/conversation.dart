@@ -2,16 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chatbubble.dart';
 import "package:moxxyv2/models/message.dart";
+import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
+import "package:moxxyv2/repositories/conversations.dart";
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:get_it/get_it.dart';
 
 typedef SendMessageFunction = void Function(String body);
 
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
+
+// TODO: Move to a separate file
+class ConversationPageArguments {
+  final String jid;
+
+  ConversationPageArguments({ required this.jid });
+}
 
 class _MessageListViewModel {
   final List<Message> messages;
@@ -73,6 +83,10 @@ class _ConversationPageState extends State<ConversationPage> {
   
   @override
   Widget build(BuildContext context) {
+    var args = ModalRoute.of(context)!.settings.arguments as ConversationPageArguments;
+
+    Conversation conversation = GetIt.I.get<ConversationRepository>().getConversation(args.jid)!;
+    
     return StoreConnector<MoxxyState, _MessageListViewModel>(
       converter: (store) => _MessageListViewModel(
         // TODO
@@ -107,14 +121,15 @@ class _ConversationPageState extends State<ConversationPage> {
                       Padding(
                         padding: EdgeInsets.only(left: 16.0),
                         child: CircleAvatar(
-                          backgroundImage: NetworkImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1"),
+                          // TODO
+                          backgroundImage: NetworkImage(conversation.avatarUrl),
                           radius: 25.0
                         )
                       ),
                       Padding(
                         padding: EdgeInsets.only(left: 2.0),
                         child: Text(
-                          "Ojou",
+                          conversation.title,
                           style: TextStyle(
                             fontSize: 20
                           )
