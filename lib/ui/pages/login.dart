@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 class _LoginPageState extends State<LoginPage> {
   bool _doingWork = false;
@@ -55,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
             child: LinearProgressIndicator(value: null)
           ),
           Padding(
-            padding: EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
@@ -76,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
             )
           ),
           Padding(
-            padding: EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
@@ -108,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
             )
           ),
           Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
             child: ExpansionTile(
               title: Text("Advanced options"),
               children: [
@@ -129,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
                   child: ElevatedButton(
                     child: Text("Login"),
                     onPressed: this._doingWork ? null : () => this._performLogin(context)

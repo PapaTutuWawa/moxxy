@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 class RegistrationPage extends StatelessWidget {
   @override
@@ -26,11 +27,11 @@ class RegistrationPage extends StatelessWidget {
         children: [
           LinearProgressIndicator(value: null),
           Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE, vertical: 16.0),
             child: Text("XMPP is a lot like e-mail: You can send e-mails to people who are not using your specific e-mail provider. As such, there are a lot of XMPP providers. To help you, we chose a random one from a curated list. You only have to pick a username.")
           ),
           Padding(
-            padding: EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: 8.0)),
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
@@ -58,7 +59,7 @@ class RegistrationPage extends StatelessWidget {
             children: [
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(16.0),
+                  padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
                   child: ElevatedButton(
                     child: Text("Register"),
                     onPressed: () {}

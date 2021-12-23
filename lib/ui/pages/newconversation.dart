@@ -6,6 +6,7 @@ import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/conversations/actions.dart';
 import 'package:moxxyv2/ui/pages/conversation.dart';
 import 'package:moxxyv2/repositories/conversations.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -114,26 +115,29 @@ class NewConversationPage extends StatelessWidget {
               }
               break;
               case 1: {
-                return Row(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: CircleAvatar(
-                        child: Icon(Icons.group_add),
-                        radius: 35.0
-                      )
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text(
-                        "Create groupchat",
-                        style: TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.bold
+                return InkWell(
+                  onTap: () => showNotImplementedDialog("groupchat", context),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircleAvatar(
+                          child: Icon(Icons.group_add),
+                          radius: 35.0
+                        )
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Create groupchat",
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.bold
+                          )
                         )
                       )
-                    )
-                  ]
+                    ]
+                  )
                 );
               }
               break;
