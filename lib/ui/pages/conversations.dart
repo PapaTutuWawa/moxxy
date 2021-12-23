@@ -74,28 +74,20 @@ class ConversationsPage extends StatelessWidget {
         foregroundColor: Colors.white,
         children: [
           SpeedDialChild(
-            child: Icon(Icons.person_add),
-            onTap: () => Navigator.pushNamed(buildContext, "/new_conversation"),
-            backgroundColor: BUBBLE_COLOR_SENT,
-            // TODO: Theme dependent?
-            foregroundColor: Colors.white,
-            label: "Add contact"
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.group_add),
-            onTap: () => print("OK"),
-            backgroundColor: BUBBLE_COLOR_SENT,
-            // TODO: Theme dependent?
-            foregroundColor: Colors.white,
-            label: "Create groupchat"
-          ),
-          SpeedDialChild(
             child: Icon(Icons.group),
             onTap: () => print("OK"),
             backgroundColor: BUBBLE_COLOR_SENT,
             // TODO: Theme dependent?
             foregroundColor: Colors.white,
             label: "Join groupchat"
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.person_add),
+            onTap: () => Navigator.pushNamed(buildContext, "/new_conversation"),
+            backgroundColor: BUBBLE_COLOR_SENT,
+            // TODO: Theme dependent?
+            foregroundColor: Colors.white,
+            label: "New chat"
           )
         ]
       ),
