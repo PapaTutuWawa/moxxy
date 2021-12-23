@@ -9,6 +9,8 @@ import 'package:redux/redux.dart';
 
 typedef SendMessageFunction = void Function(String body);
 
+// TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
+
 class _MessageListViewModel {
   final List<Message> messages;
   final SendMessageFunction sendMessage;
@@ -50,9 +52,20 @@ class _ConversationPageState extends State<ConversationPage> {
     }
   }
 
-  Widget _renderBubble(Message msg) {
+  Widget _renderBubble(List<Message> messages, int index) {
+    Message item = messages[index];
     // TODO
-    return ChatBubble(messageContent: msg.body, sentBySelf: true);
+    bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
+    bool end = index + 1 >= messages.length ? true : messages[index + 1].sent != item.sent;
+    bool between = !start && !end;
+    return ChatBubble(
+      messageContent: item.body,
+      sentBySelf: true,
+      start: start,
+      end: end,
+      between: between,
+      closerTogether: !end
+    );
   }
   
   @override
@@ -66,7 +79,7 @@ class _ConversationPageState extends State<ConversationPage> {
           AddMessageAction(
             from: "UwU",
             timestamp: "12:00",
-            body: body
+            body: body,
           )
         )
       ),
@@ -117,8 +130,9 @@ class _ConversationPageState extends State<ConversationPage> {
         body: Column(
           children: [
             Expanded(
-              child: ListView(
-                children: viewModel.messages.map(this._renderBubble).toList()
+              child: ListView.builder(
+                itemCount: viewModel.messages.length,
+                itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index)
               )
             ),
             Padding(

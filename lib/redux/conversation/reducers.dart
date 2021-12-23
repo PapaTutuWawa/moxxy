@@ -10,7 +10,8 @@ HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> sta
     Message msg = Message(
       from: action.from,
       body: action.body,
-      timestamp: action.timestamp
+      timestamp: action.timestamp,
+      sent: true
     );
     
     // TODO
