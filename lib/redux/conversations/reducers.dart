@@ -8,7 +8,9 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
         title: action.title,
         lastMessageBody: action.lastMessageBody,
         avatarUrl: action.avatarUrl,
-        jid: action.jid
+        jid: action.jid,
+        // TODO: Correct?
+        unreadCounter: 0
     ));
   } else if (action is AddMessageAction) {
     return state.map((element) {

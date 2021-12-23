@@ -9,13 +9,15 @@ class ConversationRepository {
         title: "Houshou Marine",
         lastMessageBody: "",
         avatarUrl: "https://vignette.wikia.nocookie.net/virtualyoutuber/images/4/4e/Houshou_Marine_-_Portrait.png/revision/latest?cb=20190821035347",
-        jid: "houshou.marine@hololive.tv"
+        jid: "houshou.marine@hololive.tv",
+        unreadCounter: 0
       ),
       "nakiri.ayame@hololive.tv": Conversation(
         title: "Nakiri Ayame",
         lastMessageBody: "",
         avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.pinimg.com%2Foriginals%2F2a%2F77%2F0a%2F2a770a77b0d873331583dfb88b05829f.jpg&f=1&nofb=1",
-        jid: "nakiri.ayame@hololive.tv"
+        jid: "nakiri.ayame@hololive.tv",
+        unreadCounter: 0
       )
   });
 

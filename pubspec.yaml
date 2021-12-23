@@ -27,6 +27,7 @@ dependencies:
   get_it: ^7.2.0
   redux: ^5.0.0
   flutter_redux: ^0.8.2
+  badges: ^2.0.2
 
 dev_dependencies:
   flutter_test:

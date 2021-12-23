@@ -31,7 +31,8 @@ class NewConversationPage extends StatelessWidget {
         title: jid,
         jid: jid,
         lastMessageBody: "",
-        avatarUrl: ""
+        avatarUrl: "",
+        unreadCounter: 0
       );
       GetIt.I.get<ConversationRepository>().setConversation(conversation);
     }
@@ -130,7 +131,7 @@ class NewConversationPage extends StatelessWidget {
                 Conversation item = conversations[index - 2];
                 return InkWell(
                   onTap: () => this._addNewContact(viewModel, context, item.jid),
-                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid)
+                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0)
                 );
               }
               break;

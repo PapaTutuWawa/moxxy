@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 
+import "package:moxxyv2/ui/constants.dart";
+
+import 'package:badges/badges.dart';
+
 class ConversationsListRow extends StatelessWidget {
   String avatarUrl;
   String name;
   String lastMessageBody;
+  int unreadCount;
 
-  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody);
+  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount);
 
   Widget _buildAvatar() {
     if (this.avatarUrl != "") {
@@ -25,6 +30,8 @@ class ConversationsListRow extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    String badgeText = this.unreadCount > 99 ? "99+" : this.unreadCount.toString();
+
     return Row(
       children: [
         Padding(
@@ -44,8 +51,17 @@ class ConversationsListRow extends StatelessWidget {
               Text(this.lastMessageBody)
             ]
           )
+        ),
+        Spacer()
+      ] + (this.unreadCount > 0 ? [
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Badge(
+            badgeContent: Text(badgeText),
+            badgeColor: BUBBLE_COLOR_SENT
+          )
         )
-      ]
+      ] : [])
     );
   }
 }
