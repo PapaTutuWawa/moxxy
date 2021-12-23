@@ -26,9 +26,9 @@ class IntroPage extends StatelessWidget {
               )
             ),
             Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.symmetric(horizontal: 64.0),
               child: Text(
-                "An experiment into building a modern easy-to-use XMPP client",
+                "An experiment into building a modern, easy and beautiful XMPP client.",
                 style: TextStyle(
                   fontSize: 15
                 )
@@ -38,7 +38,7 @@ class IntroPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(8.0),
+                    padding: EdgeInsets.symmetric(horizontal: 64.0),
                     child: ElevatedButton(
                       child: Text("Login"),
                       onPressed: () => Navigator.pushNamed(context, "/login")
@@ -49,7 +49,7 @@ class IntroPage extends StatelessWidget {
             ),
             Spacer(),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 64.0),
               child: Text(
                 "Have no XMPP account? No worries, creating one is really easy.",
                 style: TextStyle(
@@ -61,7 +61,7 @@ class IntroPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0, top: 2.0),
+                    padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(bottom: 64.0)),
                     child: ElevatedButton(
                       child: Text("Register"),
                       onPressed: () => Navigator.pushNamed(context, "/register")
