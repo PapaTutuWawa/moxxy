@@ -8,7 +8,7 @@ class SetShowSendButtonAction {
 
 class AddMessageAction extends MessageAction {
   final String body;
-  final String timestamp;
+  final int timestamp;
   final String from;
   final String jid;
 

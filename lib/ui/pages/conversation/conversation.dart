@@ -74,6 +74,7 @@ class ConversationPage extends StatelessWidget {
     bool between = !start && !end;
     return ChatBubble(
       messageContent: item.body,
+      timestamp: item.timestamp,
       sentBySelf: true,
       start: start,
       end: end,
@@ -97,7 +98,7 @@ class ConversationPage extends StatelessWidget {
           // TODO
           AddMessageAction(
             from: "UwU",
-            timestamp: "12:00",
+            timestamp: DateTime.now().millisecondsSinceEpoch,
             body: body,
             jid: jid
           )

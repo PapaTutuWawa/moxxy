@@ -1,26 +1,38 @@
 import 'package:flutter/material.dart';
 import "package:moxxyv2/ui/constants.dart";
 
+String padInt(int i) {
+  if (i < 9) {
+    return "0" + i.toString();
+  }
+
+  return i.toString();
+}
+
 class ChatBubble extends StatelessWidget {
-  String messageContent;
-  bool sentBySelf;
+  final String messageContent;
+  final int timestamp;
+  final bool sentBySelf;
   // 
-  bool closerTogether;
-  bool between;
-  bool start;
-  bool end;
+  final bool closerTogether;
+  final bool between;
+  final bool start;
+  final bool end;
 
   ChatBubble({
       required this.messageContent,
+      required this.timestamp,
       required this.sentBySelf,
       required this.closerTogether,
       required this.between,
       required this.start,
       required this.end
   });
-
+  
   @override
   Widget build(BuildContext context) {
+    DateTime parsedTimestamp = DateTime.fromMillisecondsSinceEpoch(this.timestamp);
+    String timestampString = padInt(parsedTimestamp.hour) + ":" + padInt(parsedTimestamp.minute);
     return Padding(
       padding: EdgeInsets.only(
         // TODO: Fix padding
@@ -57,11 +69,10 @@ class ChatBubble extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // TODO: Timestamp
                         Padding(
                           padding: EdgeInsets.only(top: 3.0),
                           child: Text(
-                            "12:00",
+                            timestampString,
                             style: TextStyle(
                               fontSize: 10,
                               color: Colors.grey
