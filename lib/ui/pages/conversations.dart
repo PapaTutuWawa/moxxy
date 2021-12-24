@@ -39,13 +39,20 @@ class ConversationsPage extends StatelessWidget {
               )
             ),
             Spacer(),
-            Center(
-              child: InkWell(
-                // TODO: Implement
-                onTap: () {},
-                // TODO: Find a better icon
-                child: Icon(Icons.menu)
-              )
+            PopupMenuButton(
+              onSelected: (result) {
+                if (result == "TODO1") {
+                  showNotImplementedDialog("settings", buildContext);
+                }
+              },
+              icon: Icon(Icons.more_vert),
+              itemBuilder: (BuildContext context) => [
+                // TODO: Use enum
+                PopupMenuItem(
+                  value: "TODO1",
+                  child: Text("Settings")
+                )
+              ]
             )
           ]
         )
