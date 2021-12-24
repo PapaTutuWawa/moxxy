@@ -260,7 +260,9 @@ class ConversationPage extends StatelessWidget {
                             children: [
                               SpeedDialChild(
                                 child: Icon(Icons.image),
-                                onTap: () {},
+                                onTap: () {
+                                  showNotImplementedDialog("sending files", context);
+                                },
                                 backgroundColor: BUBBLE_COLOR_SENT,
                                 // TODO: Theme dependent?
                                 foregroundColor: Colors.white,
@@ -268,7 +270,9 @@ class ConversationPage extends StatelessWidget {
                               ),
                               SpeedDialChild(
                                 child: Icon(Icons.photo_camera),
-                                onTap: () {},
+                                onTap: () {
+                                  showNotImplementedDialog("sending files", context);
+                                },
                                 backgroundColor: BUBBLE_COLOR_SENT,
                                 // TODO: Theme dependent?
                                 foregroundColor: Colors.white,
@@ -276,7 +280,9 @@ class ConversationPage extends StatelessWidget {
                               ),
                               SpeedDialChild(
                                 child: Icon(Icons.attach_file),
-                                onTap: () {},
+                                onTap: () {
+                                  showNotImplementedDialog("sending files", context);
+                                },
                                 backgroundColor: BUBBLE_COLOR_SENT,
                                 // TODO: Theme dependent?
                                 foregroundColor: Colors.white,
