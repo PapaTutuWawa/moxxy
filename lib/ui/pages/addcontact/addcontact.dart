@@ -3,6 +3,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/addcontact/actions.dart';
+import "package:moxxyv2/ui/helpers.dart";
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -84,7 +85,12 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
                     contentPadding: EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
                     suffixIcon: Padding(
                       padding: EdgeInsetsDirectional.only(end: 6.0),
-                      child: Icon(Icons.qr_code)
+                      child: IconButton(
+                        icon: Icon(Icons.qr_code),
+                        onPressed: () {
+                          showNotImplementedDialog("QR-code scanning", context);
+                        }
+                      )
                     )
                   )
                 )
