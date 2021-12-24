@@ -1,3 +1,4 @@
+import "dart:collection";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/conversations/actions.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
@@ -10,7 +11,8 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
         avatarUrl: action.avatarUrl,
         jid: action.jid,
         // TODO: Correct?
-        unreadCounter: 0
+        unreadCounter: 0,
+        sharedMediaPaths: action.sharedMediaPaths
     ));
   } else if (action is AddMessageAction) {
     return state.map((element) {

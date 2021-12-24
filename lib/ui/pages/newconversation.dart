@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "dart:collection";
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/models/roster.dart';
@@ -24,7 +25,7 @@ class _NewConversationViewModel {
 }
 
 class NewConversationPage extends StatelessWidget {
-  void _addNewContact(_NewConversationViewModel viewModel, BuildContext context, RosterItem rosterItem) {
+  void _addNewConversation(_NewConversationViewModel viewModel, BuildContext context, RosterItem rosterItem) {
     bool hasConversation = viewModel.conversations.length > 0 && viewModel.conversations.firstWhere((item) => item.jid == rosterItem.jid, orElse: null) != null;
 
     // Prevent adding the same conversation twice to the list of open conversations
@@ -37,7 +38,14 @@ class NewConversationPage extends StatelessWidget {
         jid: rosterItem.jid,
         lastMessageBody: "",
         avatarUrl: rosterItem.avatarUrl,
-        unreadCounter: 0
+        unreadCounter: 0,
+        // TODO: Make this List empty
+        sharedMediaPaths: [
+          "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.redd.it%2Fv2ybdgx5cow61.jpg&f=1&nofb=1",
+          "https://ih1.redbubble.net/image.1660387906.9194/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.jpg",
+          "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.donmai.us%2Fsample%2Fb6%2Fe6%2Fsample-b6e62e3edc1c6dfe6afdb54614b4a710.jpg&f=1&nofb=1",
+          "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2F64.media.tumblr.com%2Fec84dc5628ca3d8405374b85a51c7328%2Fbb0fc871a5029726-04%2Fs1280x1920%2Ffa6d89e8a2c2f3ce17465d328c2fe0ed6c951f01.jpg&f=1&nofb=1"
+        ]
       );
       viewModel.addConversation(conversation);
     }
@@ -75,7 +83,8 @@ class NewConversationPage extends StatelessWidget {
               title: c.title,
               avatarUrl: c.avatarUrl,
               lastMessageBody: c.lastMessageBody,
-              jid: c.jid
+              jid: c.jid,
+              sharedMediaPaths: c.sharedMediaPaths
             )
           ),
           conversations: store.state.conversations,
@@ -142,7 +151,7 @@ class NewConversationPage extends StatelessWidget {
               default: {
                 RosterItem item = viewModel.roster[index - 2];
                 return InkWell(
-                  onTap: () => this._addNewContact(viewModel, context, item),
+                  onTap: () => this._addNewConversation(viewModel, context, item),
                   child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0)
                 );
               }
