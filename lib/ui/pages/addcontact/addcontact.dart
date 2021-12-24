@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/addcontact/actions.dart';
 
@@ -64,7 +65,7 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
             ),
 
             Padding(
-              padding: EdgeInsets.only(top: 8.0, left: 16.0, right: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
@@ -89,16 +90,15 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
                 )
               )
             ),
-
             Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
               child: Text("You can add a contact either by typing in their XMPP address or by scanning their QR code")
             ),
             Row(
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.all(16.0),
+                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
                     child: ElevatedButton(
                       child: Text("Add to contacts"),
                       // TODO: Add to roster and open a chat
