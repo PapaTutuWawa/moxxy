@@ -6,6 +6,7 @@ import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/pages/profile.dart";
+import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -16,50 +17,49 @@ import 'package:get_it/get_it.dart';
 typedef SendMessageFunction = void Function(String body);
 
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
-// TODO: Move to a separate file
-class ConversationPageArguments {
-  final String jid;
-
-  ConversationPageArguments({ required this.jid });
-}
 
 class _MessageListViewModel {
+  final void Function(bool showSendButton) setShowSendButton;
   final List<Message> messages;
   final Conversation conversation;
   final SendMessageFunction sendMessage;
+  final bool showSendButton;
   
-  _MessageListViewModel({ required this.conversation, required this.messages, required this.sendMessage });
+  _MessageListViewModel({ required this.conversation, required this.messages, required this.showSendButton, required this.sendMessage, required this.setShowSendButton });
 }
 
-class _ConversationPageState extends State<ConversationPage> {
-  bool _showSendButton = false;
+class ConversationPage extends StatelessWidget {
   TextEditingController controller = TextEditingController();
   ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
 
-  _ConversationPageState();
-  
+  // TODO
+  /*
   @override
   void dispose() {
     this.controller.dispose();
     super.dispose();
   }
+  */
 
-
-  void _onMessageTextChanged(String value) {
-    setState(() {
-        this._showSendButton = value != "";
-    });
+  void _onMessageTextChanged(String value, _MessageListViewModel viewModel) {
+    // Only dispatch the action if we have to
+    bool empty = value == "";
+    if (viewModel.showSendButton && empty) {
+      viewModel.setShowSendButton(false);
+    } else if (!viewModel.showSendButton && !empty) {
+      viewModel.setShowSendButton(true);
+    }
   }
 
-  void _onSendButtonPressed(_MessageListViewModel model) {
-    if (this._showSendButton) {
-      model.sendMessage(this.controller.text);
+  void _onSendButtonPressed(_MessageListViewModel viewModel) {
+    if (viewModel.showSendButton) {
+      viewModel.sendMessage(this.controller.text);
 
       // TODO: Actual sending
       this.controller.clear();
       // NOTE: Calling clear on the controller does not trigger a onChanged on the
       //       TextField
-      this._onMessageTextChanged("");
+      this._onMessageTextChanged("", viewModel);
     } else {
       // TODO: This
       print("Adding file");
@@ -91,6 +91,8 @@ class _ConversationPageState extends State<ConversationPage> {
       converter: (store) => _MessageListViewModel(
         messages: store.state.messages.containsKey(jid) ? store.state.messages[jid]! : [],
         conversation: store.state.conversations.firstWhere((item) => item.jid == jid),
+        showSendButton: store.state.conversationPageState.showSendButton,
+        setShowSendButton: (show) => store.dispatch(SetShowSendButtonAction(show: show)),
         sendMessage: (body) => store.dispatch(
           // TODO
           AddMessageAction(
@@ -173,7 +175,7 @@ class _ConversationPageState extends State<ConversationPage> {
                           maxLines: 5,
                           minLines: 1,
                           controller: this.controller,
-                          onChanged: this._onMessageTextChanged,
+                          onChanged: (value) => this._onMessageTextChanged(value, viewModel),
                           decoration: InputDecoration(
                             hintText: "Send a message...",
                             border: InputBorder.none,
@@ -191,7 +193,7 @@ class _ConversationPageState extends State<ConversationPage> {
                         width: 45.0,
                         child: FittedBox(
                           child: SpeedDial(
-                            icon: this._showSendButton ? Icons.send : Icons.add,
+                            icon: viewModel.showSendButton ? Icons.send : Icons.add,
                             visible: true,
                             curve: Curves.bounceInOut,
                             backgroundColor: BUBBLE_COLOR_SENT,
@@ -199,7 +201,7 @@ class _ConversationPageState extends State<ConversationPage> {
                             foregroundColor: Colors.white,
                             openCloseDial: this._isSpeedDialOpen,
                             onPress: () {
-                              if (this._showSendButton) {
+                              if (viewModel.showSendButton) {
                                 this._onSendButtonPressed(viewModel);
                               } else {
                                 this._isSpeedDialOpen.value = true;
@@ -244,12 +246,4 @@ class _ConversationPageState extends State<ConversationPage> {
       }
     );
   }
-}
-
-class ConversationPage extends StatefulWidget {
-  const ConversationPage({ Key? key }) : super(key: key);
-
-  @override
-  _ConversationPageState createState() => _ConversationPageState();
-  
 }

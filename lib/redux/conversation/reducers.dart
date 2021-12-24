@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import "package:moxxyv2/models/message.dart";
+import "package:moxxyv2/ui/pages/conversation/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 
 HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> state, dynamic action) {
@@ -22,6 +23,14 @@ HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> sta
 
     map[jid]!.add(msg);
     return map;
+  }
+
+  return state;
+}
+
+ConversationPageState conversationPageReducer(ConversationPageState state, dynamic action) {
+  if (action is SetShowSendButtonAction) {
+    return state.copyWith(showSendButton: action.show);
   }
 
   return state;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'ui/pages/conversation.dart';
+import 'ui/pages/conversation/conversation.dart';
 import 'ui/pages/conversations.dart';
 import 'ui/pages/profile.dart';
 import 'ui/pages/newconversation.dart';

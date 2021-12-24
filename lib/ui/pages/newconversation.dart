@@ -5,7 +5,7 @@ import 'package:moxxyv2/models/roster.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/conversations/actions.dart';
-import 'package:moxxyv2/ui/pages/conversation.dart';
+import 'package:moxxyv2/ui/pages/conversation/arguments.dart';
 import 'package:moxxyv2/repositories/roster.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 

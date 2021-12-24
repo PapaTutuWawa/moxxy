@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
-import 'package:moxxyv2/ui/pages/conversation.dart';
+import 'package:moxxyv2/ui/pages/conversation/arguments.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/ui/constants.dart';

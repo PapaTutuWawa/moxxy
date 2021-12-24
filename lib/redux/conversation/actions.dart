@@ -1,5 +1,11 @@
 abstract class MessageAction {}
 
+class SetShowSendButtonAction {
+  final bool show;
+
+  SetShowSendButtonAction({ required this.show });
+}
+
 class AddMessageAction extends MessageAction {
   final String body;
   final String timestamp;
