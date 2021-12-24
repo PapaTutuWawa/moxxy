@@ -35,6 +35,7 @@ dev_dependencies:
   flutter_lints: ^1.0.0
   floor_generator: ^1.2.0
   build_runner: ^2.1.2
+  test:
 
 flutter:
   uses-material-design: true

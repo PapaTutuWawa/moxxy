@@ -1,13 +1,6 @@
 import 'package:flutter/material.dart';
 import "package:moxxyv2/ui/constants.dart";
-
-String padInt(int i) {
-  if (i < 9) {
-    return "0" + i.toString();
-  }
-
-  return i.toString();
-}
+import "package:moxxyv2/helpers.dart";
 
 class ChatBubble extends StatelessWidget {
   final String messageContent;
@@ -28,7 +21,7 @@ class ChatBubble extends StatelessWidget {
       required this.start,
       required this.end
   });
-  
+
   @override
   Widget build(BuildContext context) {
     DateTime parsedTimestamp = DateTime.fromMillisecondsSinceEpoch(this.timestamp);
