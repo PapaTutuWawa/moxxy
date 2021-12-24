@@ -46,9 +46,12 @@ class ProfilePage extends StatelessWidget {
                       )
                     )
                   ),
-                  SharedMediaDisplay(
-                    sharedMediaPaths: args.conversation.sharedMediaPaths
-                  )
+                  Visibility(
+                    visible: args.conversation.sharedMediaPaths.length > 0,
+                    child: SharedMediaDisplay(
+                      sharedMediaPaths: args.conversation.sharedMediaPaths
+                    )
+                  ) 
                 ]
               ),
               top: 8.0,
