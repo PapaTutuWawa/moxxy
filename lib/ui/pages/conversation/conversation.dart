@@ -8,6 +8,7 @@ import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/pages/profile.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -15,6 +16,21 @@ import 'package:redux/redux.dart';
 import 'package:get_it/get_it.dart';
 
 typedef SendMessageFunction = void Function(String body);
+
+PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
+  return PopupMenuItem(
+    value: value,
+    child: Row(
+      children: [
+        Padding(
+          padding: EdgeInsets.only(right: 8.0),
+          child: Icon(icon)
+        ),
+        Text(text)
+      ]
+    )
+  );
+}
 
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
 
@@ -146,6 +162,39 @@ class ConversationPage extends StatelessWidget {
                       Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation));
                     }
                   )
+                ),
+                Spacer(),
+                // TODO
+                // TODO: Make the icon depend on the current state
+                // TODO: Gray-out if the contact does not support anything but plaintext
+                // TODO: Use enum
+                PopupMenuButton(
+                  onSelected: (result) {
+                    if (result == "omemo") {
+                      showNotImplementedDialog("End-to-End encryption", context);
+                    }
+                  },
+                  icon: Icon(Icons.lock_open),
+                  itemBuilder: (BuildContext c) => [
+                    popupItemWithIcon("unencrypted", "Unencrypted", Icons.lock_open),
+                    popupItemWithIcon("omemo", "Encrypted", Icons.lock),
+                  ]
+                ),
+                // TODO: Ask for confirmation
+                PopupMenuButton(
+                  onSelected: (result) {
+                    if (result == "TODO1") {
+                      showNotImplementedDialog("blocking", context);
+                    } else if (result == "TODO2") {
+                      showNotImplementedDialog("chat-closing", context);
+                    }
+                  },
+                  icon: Icon(Icons.more_vert),
+                  itemBuilder: (BuildContext c) => [
+                    // TODO: Use enum
+                    popupItemWithIcon("TODO2", "Close chat", Icons.close),
+                    popupItemWithIcon("TODO1", "Block contact", Icons.block)
+                  ]
                 )
               ]
             )
