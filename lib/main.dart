@@ -6,7 +6,7 @@ import 'ui/pages/newconversation.dart';
 import 'ui/pages/login/login.dart';
 import 'ui/pages/register.dart';
 import 'ui/pages/intro.dart';
-import 'ui/pages/addcontact.dart';
+import 'ui/pages/addcontact/addcontact.dart';
 import 'repositories/roster.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
