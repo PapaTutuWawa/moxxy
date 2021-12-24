@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/models/roster.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/conversations/actions.dart';
 import 'package:moxxyv2/ui/pages/conversation.dart';
-import 'package:moxxyv2/repositories/conversations.dart';
+import 'package:moxxyv2/repositories/roster.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
@@ -17,31 +18,27 @@ typedef AddConversationFunction = void Function(Conversation conversation);
 class _NewConversationViewModel {
   final AddConversationFunction addConversation;
   final List<Conversation> conversations;
+  final List<RosterItem> roster;
 
-  _NewConversationViewModel({ required this.addConversation, required this.conversations });
+  _NewConversationViewModel({ required this.conversations, required this.roster, required this.addConversation });
 }
 
 class NewConversationPage extends StatelessWidget {
-  void _addNewContact(_NewConversationViewModel viewModel, BuildContext context, String jid) {
-    bool hasConversation = viewModel.conversations.length > 0 && viewModel.conversations.firstWhere((item) => item.jid == jid, orElse: null) != null;
+  void _addNewContact(_NewConversationViewModel viewModel, BuildContext context, RosterItem rosterItem) {
+    bool hasConversation = viewModel.conversations.length > 0 && viewModel.conversations.firstWhere((item) => item.jid == rosterItem.jid, orElse: null) != null;
 
     // Prevent adding the same conversation twice to the list of open conversations
     if (!hasConversation) {
-      Conversation? conversation = GetIt.I.get<ConversationRepository>().getConversation(jid);
-
-      if (conversation == null) {
-        // TODO
-        // TODO: Install a middleware to make sure that the conversation gets added to the
-        //       repository. Also handle updates
-        conversation = Conversation(
-          title: jid,
-          jid: jid,
-          lastMessageBody: "",
-          avatarUrl: "",
-          unreadCounter: 0
-        );
-        GetIt.I.get<ConversationRepository>().setConversation(conversation);
-      }
+      // TODO
+      // TODO: Install a middleware to make sure that the conversation gets added to the
+      //       repository. Also handle updates
+      Conversation conversation = Conversation(
+        title: rosterItem.title,
+        jid: rosterItem.jid,
+        lastMessageBody: "",
+        avatarUrl: rosterItem.avatarUrl,
+        unreadCounter: 0
+      );
       viewModel.addConversation(conversation);
     }
         
@@ -50,12 +47,12 @@ class NewConversationPage extends StatelessWidget {
       context,
       "/conversation",
       ModalRoute.withName("/conversations"),
-      arguments: ConversationPageArguments(jid: jid));
+      arguments: ConversationPageArguments(jid: rosterItem.jid));
   }
   
   @override
   Widget build(BuildContext context) {
-    var conversations = GetIt.I.get<ConversationRepository>().getAllConversations();
+    var roster = GetIt.I.get<RosterRepository>().getAllRosterItems();
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(60),
@@ -81,10 +78,11 @@ class NewConversationPage extends StatelessWidget {
               jid: c.jid
             )
           ),
-          conversations: store.state.conversations
+          conversations: store.state.conversations,
+          roster: GetIt.I.get<RosterRepository>().getAllRosterItems()
         ),
         builder: (context, viewModel) => ListView.builder(
-          itemCount: conversations.length + 2,
+          itemCount: viewModel.roster.length + 2,
           itemBuilder: (context, index) {
             switch(index) {
               case 0: {
@@ -142,9 +140,9 @@ class NewConversationPage extends StatelessWidget {
               }
               break;
               default: {
-                Conversation item = conversations[index - 2];
+                RosterItem item = viewModel.roster[index - 2];
                 return InkWell(
-                  onTap: () => this._addNewContact(viewModel, context, item.jid),
+                  onTap: () => this._addNewContact(viewModel, context, item),
                   child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0)
                 );
               }

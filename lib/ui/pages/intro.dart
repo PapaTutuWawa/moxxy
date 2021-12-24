@@ -62,7 +62,7 @@ class IntroPage extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(bottom: 64.0)),
-                    child: ElevatedButton(
+                    child: TextButton(
                       child: Text("Register"),
                       onPressed: () => Navigator.pushNamed(context, "/register")
                     )

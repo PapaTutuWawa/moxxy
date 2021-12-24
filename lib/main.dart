@@ -3,11 +3,11 @@ import 'ui/pages/conversation.dart';
 import 'ui/pages/conversations.dart';
 import 'ui/pages/profile.dart';
 import 'ui/pages/newconversation.dart';
-import 'ui/pages/login.dart';
+import 'ui/pages/login/login.dart';
 import 'ui/pages/register.dart';
 import 'ui/pages/intro.dart';
 import 'ui/pages/addcontact.dart';
-import 'repositories/conversations.dart';
+import 'repositories/roster.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -17,7 +17,7 @@ import "redux/state.dart";
 import 'package:get_it/get_it.dart';
 
 void main() {
-  GetIt.I.registerSingleton<ConversationRepository>(ConversationRepository());
+  GetIt.I.registerSingleton<RosterRepository>(RosterRepository());
 
   runApp(MyApp());
 }
