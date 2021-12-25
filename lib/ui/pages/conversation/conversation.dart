@@ -160,7 +160,7 @@ class ConversationPage extends StatelessWidget {
                       ]
                     ),
                     onTap: () {
-                      Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation));
+                      Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false));
                     }
                   )
                 ),

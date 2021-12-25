@@ -3,6 +3,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/pages/conversation/arguments.dart';
+import 'package:moxxyv2/ui/pages/profile.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -26,19 +27,26 @@ class ConversationsPage extends StatelessWidget {
         preferredSize: Size.fromHeight(60),
         child: BorderlessTopbar(
           children: [
-            Padding(
-              padding: EdgeInsets.only(right: 3.0),
-              child: AvatarWrapper(
-                radius: 20.0,
-                avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1",
-                // TODO
-                altText: "?"
-              )
-            ),
-            Text(
-              "Ojou",
-              style: TextStyle(
-                fontSize: 18
+            InkWell(
+              onTap: () => Navigator.pushNamed(buildContext, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(right: 3.0),
+                    child: AvatarWrapper(
+                      radius: 20.0,
+                      avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1",
+                      // TODO
+                      altText: "?"
+                    )
+                  ),
+                  Text(
+                    "Ojou",
+                    style: TextStyle(
+                      fontSize: 18
+                    )
+                  )
+                ]
               )
             ),
             Spacer(),
