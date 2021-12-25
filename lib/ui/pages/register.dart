@@ -39,6 +39,10 @@ class RegistrationPage extends StatelessWidget {
     viewModel.setProviderIndex(newIndex);
   }
 
+  void _performRegistration(BuildContext context) {
+    Future.delayed(Duration(seconds: 3), () => Navigator.pushNamedAndRemoveUntil(context, "/register/post", (route) => false));
+  }
+  
   @override
   Widget build(BuildContext context) {
     return StoreConnector<MoxxyState, _RegistrationPageViewModel>(
@@ -108,7 +112,7 @@ class RegistrationPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
                     child: ElevatedButton(
                       child: Text("Register"),
-                      onPressed: () {}
+                      onPressed: () => this._performRegistration(context)
                     )
                   )
                 )

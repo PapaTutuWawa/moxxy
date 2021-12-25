@@ -7,6 +7,7 @@ import 'ui/pages/login/login.dart';
 import 'ui/pages/register.dart';
 import 'ui/pages/intro.dart';
 import 'ui/pages/addcontact/addcontact.dart';
+import 'ui/pages/postregister.dart';
 import 'repositories/roster.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
           "/intro": (context) => IntroPage(),
           "/login": (context) => LoginPage(),
           "/register": (context) => RegistrationPage(),
+          "/register/post": (context) => PostRegistrationPage(),
           "/conversations": (context) => ConversationsPage(),
           "/conversation": (context) => ConversationPage(),
           "/conversation/profile": (context) => ProfilePage(),
