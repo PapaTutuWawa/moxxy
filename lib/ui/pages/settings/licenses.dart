@@ -52,6 +52,31 @@ const List<Library> _USED_LIBRARIES = [
     name: "url_launcher",
     license: "BSD-3-Clause",
     url: "https://github.com/flutter/plugins/tree/master/packages/url_launcher/url_launcher"
+  ),
+  Library(
+    name: "flutter_launcher_icons",
+    license: "MIT",
+    url: "https://github.com/fluttercommunity/flutter_launcher_icons"
+  ),
+  Library(
+    name: "flutter_lints",
+    license: "BSD-3-Clause",
+    url: "https://github.com/flutter/packages/tree/master/packages/flutter_lints"
+  ),
+  Library(
+    name: "floor",
+    license: "Apache-2.0",
+    url: "https://github.com/vitusortner/floor"
+  ),
+  Library(
+    name: "floor_generator",
+    license: "Apache-2.0",
+    url: "https://github.com/vitusortner/floor"
+  ),
+  Library(
+    name: "build_runner",
+    license: "BSD-3-Clause",
+    url: "https://github.com/dart-lang/build/tree/master/build_runner"
   )
 ];
 
