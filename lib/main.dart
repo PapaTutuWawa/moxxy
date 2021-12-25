@@ -11,6 +11,7 @@ import 'ui/pages/postregister.dart';
 import 'ui/pages/settings/settings.dart';
 import 'ui/pages/settings/licenses.dart';
 import 'ui/pages/settings/about.dart';
+import 'ui/constants.dart';
 import 'repositories/roster.dart';
 import 'repositories/roster.dart';
 
@@ -24,7 +25,8 @@ import 'package:get_it/get_it.dart';
 // TODO: Replace all single quotes with double quotes
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
 //       Padding(padding: ..., child: Column(children: [ ... ]))
-
+// TODO: Theme the switches
+// TODO: Find a better way to do this
 void main() {
   GetIt.I.registerSingleton<RosterRepository>(RosterRepository());
 
@@ -45,7 +47,22 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         darkTheme: ThemeData(
-          brightness: Brightness.dark
+          brightness: Brightness.dark,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              primary: PRIMARY_COLOR,
+              onPrimary: Colors.white
+            )
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              primary: PRIMARY_COLOR
+            )
+          ),
+          // NOTE: Mainly for the SettingsSection
+          colorScheme: ColorScheme.dark(
+            secondary: PRIMARY_COLOR
+          )
         ),
         //themeMode: ThemeMode.system,
         themeMode: ThemeMode.dark,

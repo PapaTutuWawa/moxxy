@@ -101,14 +101,14 @@ class ConversationsPage extends StatelessWidget {
         icon: Icons.chat,
         visible: true,
         curve: Curves.bounceInOut,
-        backgroundColor: BUBBLE_COLOR_SENT,
+        backgroundColor: PRIMARY_COLOR,
         // TODO: Theme dependent?
         foregroundColor: Colors.white,
         children: [
           SpeedDialChild(
             child: Icon(Icons.group),
             onTap: () => showNotImplementedDialog("groupchat", buildContext),
-            backgroundColor: BUBBLE_COLOR_SENT,
+            backgroundColor: PRIMARY_COLOR,
             // TODO: Theme dependent?
             foregroundColor: Colors.white,
             label: "Join groupchat"
@@ -116,7 +116,7 @@ class ConversationsPage extends StatelessWidget {
           SpeedDialChild(
             child: Icon(Icons.person_add),
             onTap: () => Navigator.pushNamed(buildContext, "/new_conversation"),
-            backgroundColor: BUBBLE_COLOR_SENT,
+            backgroundColor: PRIMARY_COLOR,
             // TODO: Theme dependent?
             foregroundColor: Colors.white,
             label: "New chat"

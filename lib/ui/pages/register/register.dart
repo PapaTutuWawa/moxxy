@@ -67,7 +67,10 @@ class RegistrationPage extends StatelessWidget {
           children: [
             Visibility(
               visible: viewModel.doingWork,
-              child: LinearProgressIndicator(value: null)
+              child: LinearProgressIndicator(
+                value: null,
+                valueColor: AlwaysStoppedAnimation<Color>(PRIMARY_COLOR)
+              )
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE, vertical: 16.0),

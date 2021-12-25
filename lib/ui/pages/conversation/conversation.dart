@@ -210,7 +210,7 @@ class ConversationPage extends StatelessWidget {
                             icon: viewModel.showSendButton ? Icons.send : Icons.add,
                             visible: true,
                             curve: Curves.bounceInOut,
-                            backgroundColor: BUBBLE_COLOR_SENT,
+                            backgroundColor: PRIMARY_COLOR,
                             // TODO: Theme dependent?
                             foregroundColor: Colors.white,
                             openCloseDial: this._isSpeedDialOpen,
@@ -227,7 +227,7 @@ class ConversationPage extends StatelessWidget {
                                 onTap: () {
                                   showNotImplementedDialog("sending files", context);
                                 },
-                                backgroundColor: BUBBLE_COLOR_SENT,
+                                backgroundColor: PRIMARY_COLOR,
                                 // TODO: Theme dependent?
                                 foregroundColor: Colors.white,
                                 label: "Add Image"
@@ -237,7 +237,7 @@ class ConversationPage extends StatelessWidget {
                                 onTap: () {
                                   showNotImplementedDialog("sending files", context);
                                 },
-                                backgroundColor: BUBBLE_COLOR_SENT,
+                                backgroundColor: PRIMARY_COLOR,
                                 // TODO: Theme dependent?
                                 foregroundColor: Colors.white,
                                 label: "Take photo"
@@ -247,7 +247,7 @@ class ConversationPage extends StatelessWidget {
                                 onTap: () {
                                   showNotImplementedDialog("sending files", context);
                                 },
-                                backgroundColor: BUBBLE_COLOR_SENT,
+                                backgroundColor: PRIMARY_COLOR,
                                 // TODO: Theme dependent?
                                 foregroundColor: Colors.white,
                                 label: "Add file"
