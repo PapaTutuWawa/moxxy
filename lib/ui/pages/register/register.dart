@@ -6,6 +6,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/register/state.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/registration/actions.dart';
+import "package:moxxyv2/data/generated/providers.dart";
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -19,23 +20,12 @@ class _RegistrationPageViewModel {
   _RegistrationPageViewModel({ required this.providerIndex, required this.setProviderIndex, required this.doingWork, required this.performRegistration });
 }
 
-// TODO: Maybe generate this at build time
-const List<String> _XMPP_PROVIDERS = [
-  "chapril.org",
-  "hookipa.net",
-  "jabbers.one",
-  "lightswitch.org",
-  "magicbroccoli.de",
-  "nixnet.services",
-  "sure.im"
-];
-
 class RegistrationPage extends StatelessWidget {
   void _generateNewProvider(_RegistrationPageViewModel viewModel) {
-    int newIndex = Random().nextInt(_XMPP_PROVIDERS.length);
+    int newIndex = Random().nextInt(xmppProviderList.length);
     // Prevent generating the same provider twice back-to-back
     if (newIndex == viewModel.providerIndex) {
-      newIndex = newIndex + 1 % _XMPP_PROVIDERS.length;
+      newIndex = newIndex + 1 % xmppProviderList.length;
     }
 
     viewModel.setProviderIndex(newIndex);
@@ -98,7 +88,7 @@ class RegistrationPage extends StatelessWidget {
                     labelText: "Username",
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
-                    suffixText: "@" + _XMPP_PROVIDERS[viewModel.providerIndex],
+                    suffixText: "@" + xmppProviderList[viewModel.providerIndex].jid,
                     suffixIcon: Padding(
                       padding: EdgeInsetsDirectional.only(end: 6.0),
                       child: IconButton(
