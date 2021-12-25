@@ -43,10 +43,10 @@ class AvatarWrapper extends StatelessWidget {
               shape: BoxShape.circle
             ),
             child: Padding(
-              padding: EdgeInsets.all(3.0),
+              padding: EdgeInsets.all((3/35) * this.radius),
               child: Icon(
                 Icons.edit,
-                size: 16.0
+                size: (2/4) * this.radius
               )
             )
           )
