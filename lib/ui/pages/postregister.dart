@@ -24,6 +24,7 @@ class PostRegistrationPage extends StatelessWidget {
                 child: Row(
                   children: [
                     // TODO
+                    // TODO: Add an icon
                     CircleAvatar(
                       backgroundColor: Colors.grey,
                       backgroundImage: NetworkImage("https://3.bp.blogspot.com/-tXOVVeovbNA/XI8EEkbKjgI/AAAAAAAAJrs/3lOV4RQx9kIp9jWBmZhSKyng9iNQrDivgCLcBGAs/s2560/hatsune-miku-4k-fx-2048x2048.jpg"),

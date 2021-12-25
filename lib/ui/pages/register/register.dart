@@ -12,9 +12,11 @@ import 'package:redux/redux.dart';
 
 class _RegistrationPageViewModel {
   final int providerIndex;
+  final bool doingWork;
   final void Function(int index) setProviderIndex;
+  final void Function() performRegistration;
 
-  _RegistrationPageViewModel({ required this.providerIndex, required this.setProviderIndex });
+  _RegistrationPageViewModel({ required this.providerIndex, required this.setProviderIndex, required this.doingWork, required this.performRegistration });
 }
 
 // TODO: Maybe generate this at build time
@@ -39,7 +41,9 @@ class RegistrationPage extends StatelessWidget {
     viewModel.setProviderIndex(newIndex);
   }
 
-  void _performRegistration(BuildContext context) {
+  void _performRegistration(BuildContext context, _RegistrationPageViewModel viewModel) {
+    viewModel.performRegistration();
+
     Future.delayed(Duration(seconds: 3), () => Navigator.pushNamedAndRemoveUntil(context, "/register/post", (route) => false));
   }
   
@@ -50,7 +54,9 @@ class RegistrationPage extends StatelessWidget {
         providerIndex: store.state.registerPageState.providerIndex,
         setProviderIndex: (index) => store.dispatch(NewProviderAction(
             index: index
-        ))
+        )),
+        doingWork: store.state.registerPageState.doingWork,
+        performRegistration: () => store.dispatch(PerformRegistrationAction())
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: PreferredSize(
@@ -72,7 +78,10 @@ class RegistrationPage extends StatelessWidget {
         // TODO: Disable the inputs and the BackButton if we're working on loggin in
         body: Column(
           children: [
-            LinearProgressIndicator(value: null),
+            Visibility(
+              visible: viewModel.doingWork,
+              child: LinearProgressIndicator(value: null)
+            ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE, vertical: 16.0),
               child: Text("XMPP is a lot like e-mail: You can send e-mails to people who are not using your specific e-mail provider. As such, there are a lot of XMPP providers. To help you, we chose a random one from a curated list. You only have to pick a username.")
@@ -89,6 +98,7 @@ class RegistrationPage extends StatelessWidget {
                 ),
                 child: TextField(
                   maxLines: 1,
+                  enabled: !viewModel.doingWork,
                   decoration: InputDecoration(
                     labelText: "Username",
                     border: InputBorder.none,
@@ -98,7 +108,7 @@ class RegistrationPage extends StatelessWidget {
                       padding: EdgeInsetsDirectional.only(end: 6.0),
                       child: IconButton(
                         icon: Icon(Icons.refresh),
-                        onPressed: () => this._generateNewProvider(viewModel)
+                        onPressed: viewModel.doingWork ? null : () => this._generateNewProvider(viewModel)
                       )
                     )
                   )
@@ -112,7 +122,7 @@ class RegistrationPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
                     child: ElevatedButton(
                       child: Text("Register"),
-                      onPressed: () => this._performRegistration(context)
+                      onPressed: viewModel.doingWork ? null : () => this._performRegistration(context, viewModel)
                     )
                   )
                 )

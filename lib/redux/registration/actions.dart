@@ -3,3 +3,6 @@ class NewProviderAction {
 
   NewProviderAction({ required this.index });
 }
+
+// TODO: Parameters missing
+class PerformRegistrationAction {}

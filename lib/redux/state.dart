@@ -32,5 +32,5 @@ class MoxxyState {
 
   const MoxxyState({ required this.messages, required this.conversations, required this.loginPageState, required this.conversationPageState, required this.addContactPageState, required this.registerPageState });
   // TODO: providerIndex should be random
-  MoxxyState.initialState() : messages = HashMap(), conversations = List.empty(growable: true), loginPageState = LoginPageState(doingWork: false, showPassword: false), conversationPageState = ConversationPageState(showSendButton: false), addContactPageState = AddContactPageState(doingWork: false), registerPageState = RegisterPageState(providerIndex: 0);
+  MoxxyState.initialState() : messages = HashMap(), conversations = List.empty(growable: true), loginPageState = LoginPageState(doingWork: false, showPassword: false), conversationPageState = ConversationPageState(showSendButton: false), addContactPageState = AddContactPageState(doingWork: false), registerPageState = RegisterPageState(providerIndex: 0, doingWork: false);
 }
