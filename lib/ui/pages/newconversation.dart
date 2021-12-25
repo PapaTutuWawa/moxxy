@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import "dart:collection";
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/models/roster.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
@@ -26,6 +27,7 @@ class _NewConversationViewModel {
 
 class NewConversationPage extends StatelessWidget {
   void _addNewConversation(_NewConversationViewModel viewModel, BuildContext context, RosterItem rosterItem) {
+    // TODO: firstWhere can throw
     bool hasConversation = viewModel.conversations.length > 0 && viewModel.conversations.firstWhere((item) => item.jid == rosterItem.jid, orElse: null) != null;
 
     // Prevent adding the same conversation twice to the list of open conversations
@@ -88,9 +90,9 @@ class NewConversationPage extends StatelessWidget {
                     children: [
                       Padding(
                         padding: EdgeInsets.all(8.0),
-                        child: CircleAvatar(
-                          child: Icon(Icons.person_add),
-                          radius: 35.0
+                        child: AvatarWrapper(
+                          radius: 35.0,
+                          alt: Icon(Icons.person_add)
                         )
                       ),
                       Padding(
@@ -115,9 +117,9 @@ class NewConversationPage extends StatelessWidget {
                     children: [
                       Padding(
                         padding: EdgeInsets.all(8.0),
-                        child: CircleAvatar(
-                          child: Icon(Icons.group_add),
-                          radius: 35.0
+                        child: AvatarWrapper(
+                          radius: 35.0,
+                          alt: Icon(Icons.group_add)
                         )
                       ),
                       Padding(

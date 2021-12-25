@@ -127,7 +127,7 @@ class ConversationPage extends StatelessWidget {
             avatar: AvatarWrapper(
               radius: 25.0,
               avatarUrl: viewModel.conversation.avatarUrl,
-              altText: viewModel.conversation.title[0]
+              alt: Text(viewModel.conversation.title[0])
             ),
             title: viewModel.conversation.title,
             onTapFunction: () => Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false)),

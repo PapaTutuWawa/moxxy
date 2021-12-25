@@ -28,7 +28,7 @@ class PostRegistrationPage extends StatelessWidget {
                   AvatarWrapper(
                     radius: 35.0,
                     avatarUrl: "https://3.bp.blogspot.com/-tXOVVeovbNA/XI8EEkbKjgI/AAAAAAAAJrs/3lOV4RQx9kIp9jWBmZhSKyng9iNQrDivgCLcBGAs/s2560/hatsune-miku-4k-fx-2048x2048.jpg",
-                    altText: "Tu",
+                    alt: Text("Tu"),
                     showEditButton: true,
                     onTapFunction: () {}
                   ),

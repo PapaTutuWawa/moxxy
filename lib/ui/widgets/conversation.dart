@@ -25,7 +25,7 @@ class ConversationsListRow extends StatelessWidget {
             radius: 35.0,
             avatarUrl: this.avatarUrl,
             // TODO: Clamp
-            altText: this.name[0] + this.name[1]
+            alt: Text(this.name[0] + this.name[1])
           )
         ),
         Padding(

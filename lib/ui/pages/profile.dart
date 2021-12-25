@@ -22,7 +22,7 @@ class SelfProfileHeader extends StatelessWidget {
         AvatarWrapper(
           radius: 110.0,
           avatarUrl: "https://3.bp.blogspot.com/-tXOVVeovbNA/XI8EEkbKjgI/AAAAAAAAJrs/3lOV4RQx9kIp9jWBmZhSKyng9iNQrDivgCLcBGAs/s2560/hatsune-miku-4k-fx-2048x2048.jpg",
-          altText: "?",
+          alt: Text("?"),
           showEditButton: true,
           onTapFunction: () {}
         ),
@@ -63,7 +63,7 @@ class ProfileHeader extends StatelessWidget {
         AvatarWrapper(
           radius: 110.0,
           avatarUrl: this.conversation.avatarUrl,
-          altText: this.conversation.title[0]
+          alt: Text(this.conversation.title[0])
         ),
         Padding(
           padding: EdgeInsets.only(top: 8.0),

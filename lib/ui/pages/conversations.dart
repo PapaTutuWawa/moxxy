@@ -31,8 +31,8 @@ class ConversationsPage extends StatelessWidget {
         avatar: AvatarWrapper(
           radius: 20.0,
           avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1",
-          // TODO
-          altText: "?"
+          // TODO: Move the StoreConnector up a bit
+          alt: Text("?")
         ),
         title: "Oujou",
         onTapFunction: () => Navigator.pushNamed(buildContext, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
