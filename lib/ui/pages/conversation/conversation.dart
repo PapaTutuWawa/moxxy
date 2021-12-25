@@ -130,7 +130,7 @@ class ConversationPage extends StatelessWidget {
               altText: viewModel.conversation.title[0]
             ),
             title: viewModel.conversation.title,
-            onTapFunction: () {},
+            onTapFunction: () => Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false)),
             showBackButton: true,
             extra: [
               PopupMenuButton(
