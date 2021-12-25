@@ -52,16 +52,15 @@ class ConversationsListRow extends StatelessWidget {
             ]
           )
         ),
-        Spacer()
-      ] + (this.unreadCount > 0 ? [
-        Padding(
-          padding: EdgeInsets.all(8.0),
+        Spacer(),
+        Visibility(
+          visible: this.unreadCount > 0,
           child: Badge(
             badgeContent: Text(badgeText),
             badgeColor: BUBBLE_COLOR_SENT
           )
         )
-      ] : [])
+      ]
     );
   }
 }
