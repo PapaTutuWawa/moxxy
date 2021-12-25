@@ -19,6 +19,10 @@ class _ConversationsListViewModel {
   _ConversationsListViewModel({ required this.conversations });
 }
 
+enum ConversationsOptions {
+  SETTINGS
+}
+
 class ConversationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext buildContext) {
@@ -51,16 +55,16 @@ class ConversationsPage extends StatelessWidget {
             ),
             Spacer(),
             PopupMenuButton(
-              onSelected: (result) {
-                if (result == "TODO1") {
-                  showNotImplementedDialog("settings", buildContext);
+              onSelected: (ConversationsOptions result) {
+                if (result == ConversationsOptions.SETTINGS) {
+                  Navigator.pushNamed(buildContext, "/settings");
                 }
               },
               icon: Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
                 // TODO: Use enum
                 PopupMenuItem(
-                  value: "TODO1",
+                  value: ConversationsOptions.SETTINGS,
                   child: Text("Settings")
                 )
               ]

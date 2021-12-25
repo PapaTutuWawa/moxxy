@@ -8,6 +8,10 @@ import 'ui/pages/register/register.dart';
 import 'ui/pages/intro.dart';
 import 'ui/pages/addcontact/addcontact.dart';
 import 'ui/pages/postregister.dart';
+import 'ui/pages/settings/settings.dart';
+import 'ui/pages/settings/licenses.dart';
+import 'ui/pages/settings/about.dart';
+import 'repositories/roster.dart';
 import 'repositories/roster.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
@@ -50,6 +54,9 @@ class MyApp extends StatelessWidget {
           "/conversation/profile": (context) => ProfilePage(),
           "/new_conversation": (context) => NewConversationPage(),
           "/new_conversation/add_contact": (context) => AddContactPage(),
+          "/settings": (context) => SettingsPage(),
+          "/settings/licenses": (context) => SettingsLicensesPage(),
+          "/settings/about": (context) => SettingsAboutPage(),
         },
         home: IntroPage(),
       )
