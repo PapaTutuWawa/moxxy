@@ -16,3 +16,6 @@ issues.
 
 See `./LICENSE`.
 
+## Special Thanks
+
+- New logo designed by [Synoh](https://twitter.com/synoh_manda)
