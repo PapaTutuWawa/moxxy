@@ -225,12 +225,13 @@ class ConversationPage extends StatelessWidget {
                               SpeedDialChild(
                                 child: Icon(Icons.image),
                                 onTap: () {
-                                  showNotImplementedDialog("sending files", context);
+                                  //showNotImplementedDialog("sending files", context);
+                                  Navigator.pushNamed(context, "/conversation/send_files");
                                 },
                                 backgroundColor: PRIMARY_COLOR,
                                 // TODO: Theme dependent?
                                 foregroundColor: Colors.white,
-                                label: "Add Image"
+                                label: "Send Image"
                               ),
                               SpeedDialChild(
                                 child: Icon(Icons.photo_camera),

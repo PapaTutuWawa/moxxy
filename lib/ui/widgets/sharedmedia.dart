@@ -7,7 +7,7 @@ class SharedMediaDisplay extends StatelessWidget {
   SharedMediaDisplay({ required this.sharedMediaPaths });
 
   Widget _renderSharedItem(String item) {
-    return SharedImage(
+    return SharedMediaContainer(
       // TODO
       image: NetworkImage(
         item

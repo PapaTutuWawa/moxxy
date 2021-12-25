@@ -8,6 +8,7 @@ import 'ui/pages/register/register.dart';
 import 'ui/pages/intro.dart';
 import 'ui/pages/addcontact/addcontact.dart';
 import 'ui/pages/postregister.dart';
+import 'ui/pages/sendfiles.dart';
 import 'ui/pages/settings/settings.dart';
 import 'ui/pages/settings/licenses.dart';
 import 'ui/pages/settings/about.dart';
@@ -74,6 +75,7 @@ class MyApp extends StatelessWidget {
           "/conversations": (context) => ConversationsPage(),
           "/conversation": (context) => ConversationPage(),
           "/conversation/profile": (context) => ProfilePage(),
+          "/conversation/send_files": (context) => SendFilesPage(),
           "/new_conversation": (context) => NewConversationPage(),
           "/new_conversation/add_contact": (context) => AddContactPage(),
           "/settings": (context) => SettingsPage(),

@@ -8,16 +8,18 @@ Provides a Signal-like topbar without borders or anything else
 */
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   List<Widget> children;
-  // TODO: Implement
-  bool boxShadow;
 
-  BorderlessTopbar({ required this.children, this.boxShadow = false });
+  BorderlessTopbar({ required this.children });
 
+  BorderlessTopbar.justBackButton() : children = [
+    BackButton()
+  ];
+  
   /*
    * A simple borderless topbar that displays just the back button (if wanted) and a
    * Text() title
    */
-  BorderlessTopbar.simple({ required String title , List<Widget>? extra, bool showBackButton = true }) : boxShadow = false, children = [
+  BorderlessTopbar.simple({ required String title , List<Widget>? extra, bool showBackButton = true }) : children = [
     Visibility(
       child: BackButton(),
       visible: showBackButton
@@ -35,7 +37,7 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
    * Displays a clickable avatar and title and a back button, if wanted
    */
   // TODO: Reuse BorderlessTopbar.simple
-  BorderlessTopbar.avatarAndName({ required AvatarWrapper avatar, required String title, void Function()? onTapFunction, List<Widget>? extra, bool showBackButton = true }) : boxShadow = false, children = [
+  BorderlessTopbar.avatarAndName({ required AvatarWrapper avatar, required String title, void Function()? onTapFunction, List<Widget>? extra, bool showBackButton = true }) : children = [
     Visibility(
       child: BackButton(),
       visible: showBackButton
@@ -74,22 +76,6 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
         child: Container(
           child: Row(
             children: this.children
-          ),
-          decoration: BoxDecoration(
-            boxShadow: this.boxShadow ? [
-              // TODO
-              /*
-              BoxShadow(
-                color: Colors.black,
-                offset: Offset(
-                  0.0,
-                  10.0
-                ),
-                blurRadius: 10.0,
-                spreadRadius: 10.0
-              )
-              */
-            ] : []
           )
         )
       )
