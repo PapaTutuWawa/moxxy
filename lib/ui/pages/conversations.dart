@@ -59,16 +59,42 @@ class ConversationsPage extends StatelessWidget {
         converter: (store) => _ConversationsListViewModel(
           conversations: store.state.conversations
         ),
-        builder: (context, viewModel) => ListView.builder(
-          itemCount: viewModel.conversations.length,
-          itemBuilder: (_context, index) {
-            Conversation item = viewModel.conversations[index];
-            return InkWell(
-              onTap: () => Navigator.pushNamed(buildContext, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
-              child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter)
+        builder: (context, viewModel) {
+          if (viewModel.conversations.length > 0) {
+            return ListView.builder(
+              itemCount: viewModel.conversations.length,
+              itemBuilder: (_context, index) {
+                Conversation item = viewModel.conversations[index];
+                return InkWell(
+                  onTap: () => Navigator.pushNamed(buildContext, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
+                  child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter)
+                );
+              }
             );
           }
-        )
+
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  // TODO: Maybe somehow render the svg
+                  child: Image.asset("assets/images/begin_chat.png")
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Text("You have no open chats")
+                ),
+                TextButton(
+                  child: Text("Start a chat"),
+                  onPressed: () => Navigator.pushNamed(context, "/new_conversation")
+                )
+              ]
+            )
+          );
+        }
       ),
       // TODO: Maybe don't use a SpeedDial
       floatingActionButton: SpeedDial(

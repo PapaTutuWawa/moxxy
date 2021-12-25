@@ -49,6 +49,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/logo.png
+    - assets/images/begin_chat.png
 
 flutter_icons:
   android: true

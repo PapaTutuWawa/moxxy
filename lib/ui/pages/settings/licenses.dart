@@ -77,6 +77,11 @@ const List<Library> _USED_LIBRARIES = [
     name: "build_runner",
     license: "BSD-3-Clause",
     url: "https://github.com/dart-lang/build/tree/master/build_runner"
+  ),
+  Library(
+    name: "undraw.co",
+    license: "custom license",
+    url: "https://undraw.co/"
   )
 ];
 
