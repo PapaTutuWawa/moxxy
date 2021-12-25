@@ -56,7 +56,7 @@ class ChatBubble extends StatelessWidget {
                       this.messageContent,
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 17
+                        fontSize: FONTSIZE_BODY
                       )
                     ),
                     Row(
@@ -67,7 +67,7 @@ class ChatBubble extends StatelessWidget {
                           child: Text(
                             timestampString,
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: FONTSIZE_SUBBODY,
                               color: Colors.grey
                             )
                           )

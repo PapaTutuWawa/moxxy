@@ -41,20 +41,7 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
         addContact: (jid) => store.dispatch(AddContactAction(jid: jid))
       ),
       builder: (context, viewModel) => Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(60),
-          child: BorderlessTopbar(
-            children: [
-              BackButton(),
-              Text(
-                "Add new contact",
-                style: TextStyle(
-                  fontSize: 19
-                )
-              )
-            ]
-          )
-        ),
+        appBar: BorderlessTopbar.simple(title: "Add new contact"),
         // TODO: The TextFields look a bit too smal
         // TODO: Hide the LinearProgressIndicator if we're not doing anything
         // TODO: Disable the inputs and the BackButton if we're working on loggin in

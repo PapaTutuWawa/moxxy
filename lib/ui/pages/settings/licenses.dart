@@ -81,14 +81,7 @@ class SettingsLicensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
-        child: BorderlessTopbar(
-          children: [
-            BackButton()
-          ]
-        )
-      ),
+      appBar: BorderlessTopbar.simple(title: "Licenses"),
       body: ListView.builder(
         itemCount: _USED_LIBRARIES.length,
         itemBuilder: (context, index) => LicenseRow(library: _USED_LIBRARIES[index])

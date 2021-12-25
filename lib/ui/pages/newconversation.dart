@@ -62,20 +62,7 @@ class NewConversationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var roster = GetIt.I.get<RosterRepository>().getAllRosterItems();
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
-        child: BorderlessTopbar(
-          children: [
-            BackButton(),
-            Text(
-              "Start new chat",
-              style: TextStyle(
-                fontSize: 17
-              )
-            )
-          ]
-        )
-      ),
+      appBar: BorderlessTopbar.simple(title: "Start new chat"),
       body: StoreConnector<MoxxyState, _NewConversationViewModel>(
         converter: (store) => _NewConversationViewModel(
           addConversation: (c) => store.dispatch(

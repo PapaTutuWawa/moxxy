@@ -21,6 +21,10 @@ import "redux/conversation/actions.dart";
 import "redux/state.dart";
 import 'package:get_it/get_it.dart';
 
+// TODO: Replace all single quotes with double quotes
+// TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
+//       Padding(padding: ..., child: Column(children: [ ... ]))
+
 void main() {
   GetIt.I.registerSingleton<RosterRepository>(RosterRepository());
 

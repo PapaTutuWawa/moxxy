@@ -27,50 +27,33 @@ class ConversationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext buildContext) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
-        child: BorderlessTopbar(
-          children: [
-            InkWell(
-              onTap: () => Navigator.pushNamed(buildContext, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(right: 3.0),
-                    child: AvatarWrapper(
-                      radius: 20.0,
-                      avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1",
-                      // TODO
-                      altText: "?"
-                    )
-                  ),
-                  Text(
-                    "Ojou",
-                    style: TextStyle(
-                      fontSize: 18
-                    )
-                  )
-                ]
+      appBar: BorderlessTopbar.avatarAndName(
+        avatar: AvatarWrapper(
+          radius: 20.0,
+          avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1",
+          // TODO
+          altText: "?"
+        ),
+        title: "Oujou",
+        onTapFunction: () => Navigator.pushNamed(buildContext, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
+        showBackButton: false,
+        extra: [
+          PopupMenuButton(
+            onSelected: (ConversationsOptions result) {
+              if (result == ConversationsOptions.SETTINGS) {
+                Navigator.pushNamed(buildContext, "/settings");
+              }
+            },
+            icon: Icon(Icons.more_vert),
+            itemBuilder: (BuildContext context) => [
+              // TODO: Use enum
+              PopupMenuItem(
+                value: ConversationsOptions.SETTINGS,
+                child: Text("Settings")
               )
-            ),
-            Spacer(),
-            PopupMenuButton(
-              onSelected: (ConversationsOptions result) {
-                if (result == ConversationsOptions.SETTINGS) {
-                  Navigator.pushNamed(buildContext, "/settings");
-                }
-              },
-              icon: Icon(Icons.more_vert),
-              itemBuilder: (BuildContext context) => [
-                // TODO: Use enum
-                PopupMenuItem(
-                  value: ConversationsOptions.SETTINGS,
-                  child: Text("Settings")
-                )
-              ]
-            )
-          ]
-        )
+            ]
+          )
+        ]
       ),
       body: StoreConnector<MoxxyState, _ConversationsListViewModel>(
         converter: (store) => _ConversationsListViewModel(

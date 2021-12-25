@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import "package:moxxyv2/ui/constants.dart";
 
 class IntroPage extends StatelessWidget {
   @override
@@ -14,7 +15,7 @@ class IntroPage extends StatelessWidget {
               child: Text(
                 "moxxy",
                 style: TextStyle(
-                  fontSize: 40
+                  fontSize: FONTSIZE_TITLE
                 )
               )
             ),
@@ -26,11 +27,11 @@ class IntroPage extends StatelessWidget {
               )
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 64.0),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
               child: Text(
                 "An experiment into building a modern, easy and beautiful XMPP client.",
                 style: TextStyle(
-                  fontSize: 15
+                  fontSize: FONTSIZE_BODY
                 )
               )
             ),
@@ -38,7 +39,7 @@ class IntroPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 64.0),
+                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
                     child: ElevatedButton(
                       child: Text("Login"),
                       onPressed: () => Navigator.pushNamed(context, "/login")
@@ -49,11 +50,11 @@ class IntroPage extends StatelessWidget {
             ),
             Spacer(),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 64.0),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
               child: Text(
                 "Have no XMPP account? No worries, creating one is really easy.",
                 style: TextStyle(
-                  fontSize: 15
+                  fontSize: FONTSIZE_BODY
                 )
               )
             ),
@@ -61,7 +62,7 @@ class IntroPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(bottom: 64.0)),
+                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: PADDING_VERY_LARGE)),
                     child: TextButton(
                       child: Text("Register"),
                       onPressed: () => Navigator.pushNamed(context, "/register")

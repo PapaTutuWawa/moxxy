@@ -15,7 +15,7 @@ class PostRegistrationPage extends StatelessWidget {
               child: Text(
                 "This is you!",
                 style: TextStyle(
-                  fontSize: 40
+                  fontSize: FONTSIZE_TITLE
                 )
               )
             ),
@@ -45,7 +45,7 @@ class PostRegistrationPage extends StatelessWidget {
                             "Testuser",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 25
+                              fontSize: FONTSIZE_SUBTITLE
                             )
                           ),
                           Text("testuser@someprovider.net")
@@ -57,16 +57,16 @@ class PostRegistrationPage extends StatelessWidget {
               )
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(top: 16.0)),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 16.0)),
               child: Text(
                 "We have auto-generated a password for you. You should write it down somewhere safe.",
                 style: TextStyle(
-                  fontSize: 15
+                  fontSize: FONTSIZE_BODY
                 )
               )
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(top: 16.0)),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 16.0)),
               child: ExpansionTile(
                 title: Text("Show password"),
                 children: [
@@ -75,7 +75,7 @@ class PostRegistrationPage extends StatelessWidget {
               )
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 64.0),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
               child: ExpansionTile(
                 title: Text("Advanced settings"),
                 children: [
@@ -95,11 +95,16 @@ class PostRegistrationPage extends StatelessWidget {
               )
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(top: 16.0)),
-              child: Text("You can now be contacted by your XMPP address. If you want to set a display name, just tap the text next to the profile picture.")
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 16.0)),
+              child: Text(
+                "You can now be contacted by your XMPP address. If you want to set a display name, just tap the text next to the profile picture.",
+                style: TextStyle(
+                  fontSize: FONTSIZE_BODY
+                )
+              )
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 64.0),
+              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
               child: Row(
                 children: [
                   Expanded(

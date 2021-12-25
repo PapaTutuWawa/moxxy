@@ -17,14 +17,7 @@ class SettingsAboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
-        child: BorderlessTopbar(
-          children: [
-            BackButton()
-          ]
-        )
-      ),
+      appBar: BorderlessTopbar.simple(title: "About"),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
         child: Column(

@@ -8,20 +8,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
-        child: BorderlessTopbar(
-          children: [
-            BackButton(),
-            Text(
-              "Settings",
-              style: TextStyle(
-                fontSize: 20
-              )
-            )
-          ]
-        )
-      ),
+      appBar: BorderlessTopbar.simple(title: "Settings"),
       body: SettingsList(
         // TODO: Seems hacky
         darkBackgroundColor: Color(0xff303030),

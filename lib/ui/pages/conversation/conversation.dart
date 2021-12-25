@@ -123,82 +123,45 @@ class ConversationPage extends StatelessWidget {
       ),
       builder: (context, viewModel) {
         return Scaffold(
-          appBar: PreferredSize(
-            preferredSize: Size.fromHeight(60),
-            child: BorderlessTopbar(
-              boxShadow: true,
-              children: [
-                Center(
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Icon(Icons.arrow_back)
-                  )
-                ),
-                Center(
-                  child: InkWell(
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(left: 16.0),
-                          child: AvatarWrapper(
-                            radius: 25.0,
-                            avatarUrl: viewModel.conversation.avatarUrl,
-                            altText: viewModel.conversation.title[0]
-                          )
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(left: 2.0),
-                          child: Text(
-                            viewModel.conversation.title,
-                            style: TextStyle(
-                              fontSize: 20
-                            )
-                          )
-                        )
-                      ]
-                    ),
-                    onTap: () {
-                      Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false));
-                    }
-                  )
-                ),
-                Spacer(),
-                // TODO
-                // TODO: Make the icon depend on the current state
-                // TODO: Gray-out if the contact does not support anything but plaintext
-                // TODO: Use enum
-                PopupMenuButton(
-                  onSelected: (result) {
-                    if (result == "omemo") {
-                      showNotImplementedDialog("End-to-End encryption", context);
-                    }
-                  },
-                  icon: Icon(Icons.lock_open),
-                  itemBuilder: (BuildContext c) => [
-                    popupItemWithIcon("unencrypted", "Unencrypted", Icons.lock_open),
-                    popupItemWithIcon("omemo", "Encrypted", Icons.lock),
-                  ]
-                ),
-                // TODO: Ask for confirmation
-                PopupMenuButton(
-                  onSelected: (result) {
-                    if (result == "TODO1") {
-                      showNotImplementedDialog("blocking", context);
-                    } else if (result == "TODO2") {
-                      showNotImplementedDialog("chat-closing", context);
-                    }
-                  },
-                  icon: Icon(Icons.more_vert),
-                  itemBuilder: (BuildContext c) => [
-                    // TODO: Use enum
-                    popupItemWithIcon("TODO2", "Close chat", Icons.close),
-                    popupItemWithIcon("TODO1", "Block contact", Icons.block)
-                  ]
-                )
-              ]
-            )
+          appBar: BorderlessTopbar.avatarAndName(
+            avatar: AvatarWrapper(
+              radius: 25.0,
+              avatarUrl: viewModel.conversation.avatarUrl,
+              altText: viewModel.conversation.title[0]
+            ),
+            title: viewModel.conversation.title,
+            onTapFunction: () {},
+            showBackButton: true,
+            extra: [
+              PopupMenuButton(
+                onSelected: (result) {
+                  if (result == "omemo") {
+                    showNotImplementedDialog("End-to-End encryption", context);
+                  }
+                },
+                icon: Icon(Icons.lock_open),
+                itemBuilder: (BuildContext c) => [
+                  popupItemWithIcon("unencrypted", "Unencrypted", Icons.lock_open),
+                  popupItemWithIcon("omemo", "Encrypted", Icons.lock),
+                ]
+              ),
+              // TODO: Ask for confirmation
+              PopupMenuButton(
+                onSelected: (result) {
+                  if (result == "TODO1") {
+                    showNotImplementedDialog("blocking", context);
+                  } else if (result == "TODO2") {
+                    showNotImplementedDialog("chat-closing", context);
+                  }
+                },
+                icon: Icon(Icons.more_vert),
+                itemBuilder: (BuildContext c) => [
+                  // TODO: Use enum
+                  popupItemWithIcon("TODO2", "Close chat", Icons.close),
+                  popupItemWithIcon("TODO1", "Block contact", Icons.block)
+                ]
+              )
+            ]
           ),
           body: Column(
             children: [

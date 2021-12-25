@@ -42,20 +42,7 @@ class LoginPage extends StatelessWidget {
         showPassword: store.state.loginPageState.showPassword
       ),
       builder: (context, viewModel) => Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(60),
-          child: BorderlessTopbar(
-            children: [
-              BackButton(),
-              Text(
-                "Login",
-                style: TextStyle(
-                  fontSize: 19
-                )
-              )
-            ]
-          )
-        ),
+        appBar: BorderlessTopbar.simple(title: "Login"),
         // TODO: The TextFields look a bit too smal
         // TODO: Hide the LinearProgressIndicator if we're not doing anything
         // TODO: Disable the inputs and the BackButton if we're working on loggin in

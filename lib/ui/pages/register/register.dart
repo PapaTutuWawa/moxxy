@@ -59,20 +59,7 @@ class RegistrationPage extends StatelessWidget {
         performRegistration: () => store.dispatch(PerformRegistrationAction())
       ),
       builder: (context, viewModel) => Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(60),
-          child: BorderlessTopbar(
-            children: [
-              BackButton(),
-              Text(
-                "Register",
-                style: TextStyle(
-                  fontSize: 19
-                )
-              )
-            ]
-          )
-        ),
+        appBar: BorderlessTopbar.simple(title: "Register"),
         // TODO: The TextFields look a bit too smal
         // TODO: Hide the LinearProgressIndicator if we're not doing anything
         // TODO: Disable the inputs and the BackButton if we're working on loggin in
@@ -84,7 +71,12 @@ class RegistrationPage extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE, vertical: 16.0),
-              child: Text("XMPP is a lot like e-mail: You can send e-mails to people who are not using your specific e-mail provider. As such, there are a lot of XMPP providers. To help you, we chose a random one from a curated list. You only have to pick a username.")
+              child: Text(
+                "XMPP is a lot like e-mail: You can send e-mails to people who are not using your specific e-mail provider. As such, there are a lot of XMPP providers. To help you, we chose a random one from a curated list. You only have to pick a username.",
+                style: TextStyle(
+                  fontSize: FONTSIZE_BODY
+                )
+              )
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: 8.0)),
