@@ -52,6 +52,9 @@ flutter:
 
 flutter_icons:
   android: true
-  # TODO: Fix the icon for iOS
-  ios: true
+  ios: "assets/images/icon_ios.png"
+  remove_alpha_ios: true
+  # TODO: This maybe not good
   image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#8315d2"
+  adaptive_icon_foreground: "assets/images/icon_android_adaptive.png"
