@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/pages/conversation/arguments.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
@@ -27,9 +28,11 @@ class ConversationsPage extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.only(right: 3.0),
-              child: CircleAvatar(
-                backgroundImage: NetworkImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1"),
-                radius: 20.0
+              child: AvatarWrapper(
+                radius: 20.0,
+                avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1",
+                // TODO
+                altText: "?"
               )
             ),
             Text(

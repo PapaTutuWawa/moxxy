@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/sharedmedia.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/models/conversation.dart';
 
 // TODO: Move to separate file
@@ -23,10 +24,10 @@ class ProfilePage extends StatelessWidget {
             Positioned(
               child: Column(
                 children: [
-                  CircleAvatar(
-                    // TODO
-                    backgroundImage: NetworkImage(args.conversation.avatarUrl),
-                    radius: 110.0
+                  AvatarWrapper(
+                    radius: 110.0,
+                    avatarUrl: args.conversation.avatarUrl,
+                    altText: args.conversation.title[0],
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 8.0),

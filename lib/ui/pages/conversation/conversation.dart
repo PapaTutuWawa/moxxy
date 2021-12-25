@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chatbubble.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
@@ -141,10 +142,10 @@ class ConversationPage extends StatelessWidget {
                       children: [
                         Padding(
                           padding: EdgeInsets.only(left: 16.0),
-                          child: CircleAvatar(
-                            // TODO
-                            backgroundImage: NetworkImage(viewModel.conversation.avatarUrl),
-                            radius: 25.0
+                          child: AvatarWrapper(
+                            radius: 25.0,
+                            avatarUrl: viewModel.conversation.avatarUrl,
+                            altText: viewModel.conversation.title[0]
                           )
                         ),
                         Padding(

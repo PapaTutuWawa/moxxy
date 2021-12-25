@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/widgets/avatar.dart";
 
 class PostRegistrationPage extends StatelessWidget {
   @override
@@ -20,19 +21,22 @@ class PostRegistrationPage extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
-              child: InkWell(
-                child: Row(
-                  children: [
-                    // TODO
-                    // TODO: Add an icon
-                    CircleAvatar(
-                      backgroundColor: Colors.grey,
-                      backgroundImage: NetworkImage("https://3.bp.blogspot.com/-tXOVVeovbNA/XI8EEkbKjgI/AAAAAAAAJrs/3lOV4RQx9kIp9jWBmZhSKyng9iNQrDivgCLcBGAs/s2560/hatsune-miku-4k-fx-2048x2048.jpg"),
-                      radius: 35.0
-                    ),
+              child: Row(
+                children: [
+                  // TODO
+                  // TODO: Add an icon
+                  AvatarWrapper(
+                    radius: 35.0,
+                    avatarUrl: "https://3.bp.blogspot.com/-tXOVVeovbNA/XI8EEkbKjgI/AAAAAAAAJrs/3lOV4RQx9kIp9jWBmZhSKyng9iNQrDivgCLcBGAs/s2560/hatsune-miku-4k-fx-2048x2048.jpg",
+                    altText: "Tu",
+                    showEditButton: true,
+                    onTapFunction: () {}
+                  ),
 
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: InkWell(
+                      onTap: () {},
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -48,16 +52,14 @@ class PostRegistrationPage extends StatelessWidget {
                         ]
                       )
                     )
-                  ]
-                ),
-                // TODO
-                onTap: () {}
+                  )
+                ]
               )
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(top: 16.0)),
               child: Text(
-                "We have auto-generated a password for you. You should write it down somewhere sage.",
+                "We have auto-generated a password for you. You should write it down somewhere safe.",
                 style: TextStyle(
                   fontSize: 15
                 )
@@ -94,7 +96,7 @@ class PostRegistrationPage extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 64.0).add(EdgeInsets.only(top: 16.0)),
-              child: Text("You can now be contacted by your XMPP address. If you want to set a profile picture, just tap your name.")
+              child: Text("You can now be contacted by your XMPP address. If you want to set a display name, just tap the text next to the profile picture.")
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 64.0),
