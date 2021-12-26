@@ -11,6 +11,7 @@ class ChatBubble extends StatelessWidget {
   final bool between;
   final bool start;
   final bool end;
+  final double maxWidth;
 
   ChatBubble({
       required this.messageContent,
@@ -19,7 +20,8 @@ class ChatBubble extends StatelessWidget {
       required this.closerTogether,
       required this.between,
       required this.start,
-      required this.end
+      required this.end,
+      required this.maxWidth
   });
 
   @override
@@ -38,6 +40,9 @@ class ChatBubble extends StatelessWidget {
         mainAxisAlignment: this.sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Container(
+            constraints: BoxConstraints(
+              maxWidth: this.maxWidth
+            ),
             decoration: BoxDecoration(
               color: this.sentBySelf ? BUBBLE_COLOR_SENT : BUBBLE_COLOR_RECEIVED,
               borderRadius: BorderRadius.only(
@@ -49,7 +54,6 @@ class ChatBubble extends StatelessWidget {
             ),
             child: Padding(
               padding: EdgeInsets.all(8.0),
-              // TODO: Fix overflow
               child: IntrinsicWidth(child: Column(
                   children: [
                     Text(

@@ -83,7 +83,7 @@ class ConversationPage extends StatelessWidget {
     }
   }
 
-  Widget _renderBubble(List<Message> messages, int index) {
+  Widget _renderBubble(List<Message> messages, int index, double maxWidth) {
     Message item = messages[index];
     // TODO
     bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
@@ -96,7 +96,8 @@ class ConversationPage extends StatelessWidget {
       start: start,
       end: end,
       between: between,
-      closerTogether: !end
+      closerTogether: !end,
+      maxWidth: maxWidth
     );
   }
   
@@ -104,6 +105,7 @@ class ConversationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var args = ModalRoute.of(context)!.settings.arguments as ConversationPageArguments;
     String jid = args.jid;
+    double maxWidth = MediaQuery.of(context).size.width * 0.6;
     
     return StoreConnector<MoxxyState, _MessageListViewModel>(
       converter: (store) => _MessageListViewModel(
@@ -168,7 +170,7 @@ class ConversationPage extends StatelessWidget {
               Expanded(
                 child: ListView.builder(
                   itemCount: viewModel.messages.length,
-                  itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index)
+                  itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
                 )
               ),
               Padding(
