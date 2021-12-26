@@ -26,8 +26,6 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime parsedTimestamp = DateTime.fromMillisecondsSinceEpoch(this.timestamp);
-    String timestampString = padInt(parsedTimestamp.hour) + ":" + padInt(parsedTimestamp.minute);
     return Padding(
       padding: EdgeInsets.only(
         // TODO: Fix padding
@@ -69,7 +67,10 @@ class ChatBubble extends StatelessWidget {
                         Padding(
                           padding: EdgeInsets.only(top: 3.0),
                           child: Text(
-                            timestampString,
+                            formatMessageTimestamp(
+                              this.timestamp,
+                              DateTime.now().millisecondsSinceEpoch
+                            ),
                             style: TextStyle(
                               fontSize: FONTSIZE_SUBBODY,
                               color: Colors.blueGrey[900]!

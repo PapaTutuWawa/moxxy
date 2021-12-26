@@ -85,4 +85,41 @@ void main() {
           ), "26.12.2021");
       });
   });
+
+  group("formatMessageTimestamp", () {
+      test("Just noww", () {
+          expect(formatMessageTimestamp(
+              DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch,
+              DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch
+          ), "Just now");
+          expect(formatMessageTimestamp(
+              DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch,
+              DateTime(2022, 12, 26, 12, 21, 0, 0, 0).millisecondsSinceEpoch
+            ), isNot("Just now"));
+      });
+      test("nmin ago", () {
+          expect(formatMessageTimestamp(
+              DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch,
+              DateTime(2021, 12, 26, 12, 21, 0, 0, 0).millisecondsSinceEpoch
+          ), "1min ago");
+          expect(formatMessageTimestamp(
+              DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch,
+              DateTime(2021, 12, 26, 12, 28, 0, 0, 0).millisecondsSinceEpoch
+          ), "8min ago");
+          expect(formatMessageTimestamp(
+              DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch,
+              DateTime(2021, 12, 26, 12, 35, 0, 0, 0).millisecondsSinceEpoch
+            ), isNot("15min ago"));
+      });
+      test("hh:mm", () {
+          expect(formatMessageTimestamp(
+              DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch,
+              DateTime(2021, 12, 26, 12, 35, 0, 0, 0).millisecondsSinceEpoch
+          ), "12:20");
+          expect(formatMessageTimestamp(
+              DateTime(2021, 12, 20, 15, 27, 0, 0, 0).millisecondsSinceEpoch,
+              DateTime(2021, 12, 26, 12, 35, 0, 0, 0).millisecondsSinceEpoch
+            ), "15:27");
+      });
+  });
 }

@@ -54,3 +54,24 @@ String formatConversationTimestamp(int timestamp, int now) {
 
   return (difference / Duration.millisecondsPerMinute).floor().toString() + "min";
 }
+
+/*
+ * Same as formatConversationTimestamp but for messages
+ */
+String formatMessageTimestamp(int timestamp, int now) {
+  int difference = now - timestamp;
+
+  // NOTE: Just to make sure
+  assert(difference >= 0);
+
+  if (difference >= 15 * Duration.millisecondsPerMinute) {
+    DateTime dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return dt.hour.toString() + ":" + padInt(dt.minute);
+  } else {
+    if (difference < Duration.millisecondsPerMinute) {
+      return "Just now";
+    } else {
+      return (difference / Duration.millisecondsPerMinute).floor().toString() + "min ago";
+    }
+  }
+}
