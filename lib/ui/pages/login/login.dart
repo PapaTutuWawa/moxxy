@@ -4,6 +4,7 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
+import "package:moxxyv2/helpers.dart";
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -23,6 +24,9 @@ class _LoginPageViewModel {
 }
 
 class LoginPage extends StatelessWidget {
+  final TextEditingController jidController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   void _navigateToConversations(BuildContext context) {
     Navigator.pushNamedAndRemoveUntil(
       context,
@@ -34,13 +38,32 @@ class LoginPage extends StatelessWidget {
   void _performLogin(BuildContext context, _LoginPageViewModel viewModel) {
     viewModel.resetErrors();
 
-    /*
-    if (!false) {
-      viewModel.setPasswordError("Fuck you");
+    // Validate first
+    switch (validateJid(this.jidController.text)) {
+      case JidFormatError.EMPTY: {
+        viewModel.setJidError("XMPP-Address cannot be empty");
+        return;
+      }
+      break;
+      case JidFormatError.NO_SEPARATOR:
+      case JidFormatError.TOO_MANY_SEPARATORS: {
+        viewModel.setJidError("XMPP-Address must contain exactly one @");
+        return;
+      }
+      break;
+      case JidFormatError.NO_DOMAIN: {
+        // TODO: Find a better text
+        viewModel.setJidError("A domain must follow the @");
+        return;
+      }
+      break;
+      case JidFormatError.NONE: break;
+    }
 
+    if (this.passwordController.text.isEmpty) {
+      viewModel.setPasswordError("Password cannot be empty");
       return;
     }
-    */
     
     // TODO: Remove
     Future.delayed(Duration(seconds: 3), () => this._navigateToConversations(context));
@@ -57,6 +80,7 @@ class LoginPage extends StatelessWidget {
         doingWork: store.state.loginPageState.doingWork,
         showPassword: store.state.loginPageState.showPassword,
         passwordError: store.state.loginPageState.passwordError,
+        jidError: store.state.loginPageState.jidError,
         setJidError: (text) => store.dispatch(LoginSetJidErrorAction(text: text)),
         setPasswordError: (text) => store.dispatch(LoginSetPasswordErrorAction(text: text)),
         resetErrors: () => store.dispatch(LoginResetErrorsAction())
@@ -64,9 +88,7 @@ class LoginPage extends StatelessWidget {
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.simple(title: "Login"),
-        // TODO: The TextFields look a bit too smal
-        // TODO: Hide the LinearProgressIndicator if we're not doing anything
-        // TODO: Disable the inputs and the BackButton if we're working on loggin in
+        // TODO: Disable the inputs and the BackButton if we're working on logging in
         body: Column(
           children: [
             Visibility(
@@ -82,6 +104,7 @@ class LoginPage extends StatelessWidget {
                 errorText: viewModel.jidError,
                 labelText: "XMPP-Address",
                 enabled: !viewModel.doingWork,
+                controller: this.jidController,
                 maxLines: 1,
                 cornerRadius: TEXTFIELD_RADIUS_REGULAR
               )
@@ -91,6 +114,7 @@ class LoginPage extends StatelessWidget {
               child: CustomTextField(
                 errorText: viewModel.passwordError,
                 labelText: "Password",
+                controller: this.passwordController,
                 suffixIcon: Padding(
                   padding: EdgeInsetsDirectional.only(end: 8.0),
                   child: InkWell(

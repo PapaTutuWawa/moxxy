@@ -75,3 +75,35 @@ String formatMessageTimestamp(int timestamp, int now) {
     }
   }
 }
+
+enum JidFormatError {
+  NONE,
+  EMPTY,
+  NO_SEPARATOR,
+  TOO_MANY_SEPARATORS,
+  NO_DOMAIN
+}
+
+/*
+ * Validate a JID and return why it is invalid
+ */
+JidFormatError validateJid(String jid) {
+  if (jid.isEmpty) {
+    return JidFormatError.EMPTY;
+  }
+
+  if (!jid.contains("@")) {
+    return JidFormatError.NO_SEPARATOR;
+  }
+
+  List<String> parts = jid.split("@");
+  if (parts.length != 2) {
+    return JidFormatError.TOO_MANY_SEPARATORS;
+  }
+
+  if (parts[1].length == 0) {
+    return JidFormatError.NO_DOMAIN;
+  }
+
+  return JidFormatError.NONE;
+}

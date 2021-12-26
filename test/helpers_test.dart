@@ -122,4 +122,19 @@ void main() {
             ), "15:27");
       });
   });
+
+  group("validateJid", () {
+      test("Valid JIDs", () {
+          expect(validateJid("polynomdivision@someserver.example"), JidFormatError.NONE);
+          expect(validateJid("a@b.c"), JidFormatError.NONE);
+          expect(validateJid("a@192.168.178.1"), JidFormatError.NONE);
+          expect(validateJid("a@local"), JidFormatError.NONE);
+      });
+      test("Invalid JIDs", () {
+          expect(validateJid("polynomdivision"), JidFormatError.NO_SEPARATOR);
+          expect(validateJid("a@"), JidFormatError.NO_DOMAIN);
+          expect(validateJid(""), JidFormatError.EMPTY);
+          expect(validateJid("a@local@host"), JidFormatError.TOO_MANY_SEPARATORS);
+      });
+  });
 }
