@@ -6,6 +6,10 @@ RegisterPageState registerReducer(RegisterPageState state, dynamic action) {
     return state.copyWith(providerIndex: action.index);
   } else if (action is PerformRegistrationAction) {
     return state.copyWith(doingWork: true);
+  } else if (action is RegistrationSetErrorTextAction) {
+    return state.copyWith(errorText: action.text);
+  } else if (action is RegistrationResetErrorsAction) {
+    return state.copyWith(errorText: null);
   }
 
   return state;

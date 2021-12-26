@@ -6,3 +6,10 @@ class NewProviderAction {
 
 // TODO: Parameters missing
 class PerformRegistrationAction {}
+
+class RegistrationSetErrorTextAction {
+  final String text;
+
+  RegistrationSetErrorTextAction({ required this.text });
+}
+class RegistrationResetErrorsAction {}

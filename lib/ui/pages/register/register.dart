@@ -15,13 +15,18 @@ import 'package:redux/redux.dart';
 class _RegistrationPageViewModel {
   final int providerIndex;
   final bool doingWork;
+  final String? errorText;
+  final void Function(String text) setErrorText;
+  final void Function() resetErrors;
   final void Function(int index) setProviderIndex;
   final void Function() performRegistration;
 
-  _RegistrationPageViewModel({ required this.providerIndex, required this.setProviderIndex, required this.doingWork, required this.performRegistration });
+  _RegistrationPageViewModel({ required this.providerIndex, required this.setProviderIndex, required this.doingWork, required this.performRegistration, this.errorText, required this.setErrorText, required this.resetErrors });
 }
 
 class RegistrationPage extends StatelessWidget {
+  final TextEditingController controller = TextEditingController();
+
   void _generateNewProvider(_RegistrationPageViewModel viewModel) {
     int newIndex = Random().nextInt(xmppProviderList.length);
     // Prevent generating the same provider twice back-to-back
@@ -33,6 +38,13 @@ class RegistrationPage extends StatelessWidget {
   }
 
   void _performRegistration(BuildContext context, _RegistrationPageViewModel viewModel) {
+    viewModel.resetErrors();
+
+    if (this.controller.text.isEmpty) {
+      viewModel.setErrorText("Username cannot be empty");
+      return;
+    }
+
     viewModel.performRegistration();
 
     Future.delayed(Duration(seconds: 3), () => Navigator.pushNamedAndRemoveUntil(context, "/register/post", (route) => false));
@@ -47,12 +59,13 @@ class RegistrationPage extends StatelessWidget {
             index: index
         )),
         doingWork: store.state.registerPageState.doingWork,
-        performRegistration: () => store.dispatch(PerformRegistrationAction())
+        performRegistration: () => store.dispatch(PerformRegistrationAction()),
+        errorText: store.state.registerPageState.errorText,
+        setErrorText: (text) => store.dispatch(RegistrationSetErrorTextAction(text: text)),
+        resetErrors: () => store.dispatch(RegistrationResetErrorsAction())
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.simple(title: "Register"),
-        // TODO: The TextFields look a bit too smal
-        // TODO: Hide the LinearProgressIndicator if we're not doing anything
         // TODO: Disable the inputs and the BackButton if we're working on loggin in
         body: Column(
           children: [
@@ -85,6 +98,8 @@ class RegistrationPage extends StatelessWidget {
                     onPressed: viewModel.doingWork ? null : () => this._generateNewProvider(viewModel)
                   )
                 ),
+                errorText: viewModel.errorText,
+                controller: this.controller,
                 cornerRadius: TEXTFIELD_RADIUS_REGULAR
               )
             ),
