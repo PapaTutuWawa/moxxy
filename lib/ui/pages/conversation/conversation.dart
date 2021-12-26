@@ -180,13 +180,12 @@ class ConversationPage extends StatelessWidget {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             width: 1,
                             color: BUBBLE_COLOR_SENT
                           )
                         ),
-                        // TODO: Fix the TextField being too tall
                         child: TextField(
                           maxLines: 5,
                           minLines: 1,
@@ -195,7 +194,8 @@ class ConversationPage extends StatelessWidget {
                           decoration: InputDecoration(
                             hintText: "Send a message...",
                             border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(5)
+                            contentPadding: EdgeInsets.all(10),
+                            isDense: true
                           )
                         )
                       )
