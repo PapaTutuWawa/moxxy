@@ -82,6 +82,12 @@ const List<Library> _USED_LIBRARIES = [
     name: "undraw.co",
     license: "custom license",
     url: "https://undraw.co/"
+  ),
+  Library(
+    // TODO: This is dangerous
+    name: "xmpp-providers",
+    license: "unknown license",
+    url: "https://invent.kde.org/melvo/xmpp-providers"
   )
 ];
 
