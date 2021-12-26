@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/ui/widgets/textfield.dart';
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
@@ -178,26 +179,15 @@ class ConversationPage extends StatelessWidget {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            width: 1,
-                            color: BUBBLE_COLOR_SENT
-                          )
-                        ),
-                        child: TextField(
-                          maxLines: 5,
-                          minLines: 1,
-                          controller: this.controller,
-                          onChanged: (value) => this._onMessageTextChanged(value, viewModel),
-                          decoration: InputDecoration(
-                            hintText: "Send a message...",
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(10),
-                            isDense: true
-                          )
-                        )
+                      child: CustomTextField(
+                        maxLines: 5,
+                        minLines: 1,
+                        hintText: "Send a message...",
+                        isDense: true,
+                        controller: this.controller,
+                        onChanged: (value) => this._onMessageTextChanged(value, viewModel),
+                        contentPadding: TEXTFIELD_PADDING_CONVERSATION,
+                        cornerRadius: TEXTFIELD_RADIUS_CONVERSATION,
                       )
                     ),
                     Padding(

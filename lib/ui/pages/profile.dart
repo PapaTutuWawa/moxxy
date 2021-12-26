@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/sharedmedia.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/models/conversation.dart';
 
@@ -73,14 +74,7 @@ class SelfProfileHeader extends StatelessWidget {
             constraints: BoxConstraints(
               maxWidth: 220
             ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                width: 1,
-                color: BUBBLE_COLOR_SENT
-              )
-            ),
-            child: TextField(
+            child: CustomTextField(
               maxLines: 1,
               controller: this.controller,
               onChanged: (value) {
@@ -106,12 +100,9 @@ class SelfProfileHeader extends StatelessWidget {
                   ));
                 }
               },
-              decoration: InputDecoration(
-                labelText: "Display name",
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.all(5.0),
-                isDense: true
-              )
+              labelText: "Display name",
+              isDense: true,
+              cornerRadius: TEXTFIELD_RADIUS_REGULAR
             )
           )
         ),

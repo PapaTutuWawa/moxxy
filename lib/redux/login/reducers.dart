@@ -6,6 +6,15 @@ LoginPageState loginReducer(LoginPageState state, dynamic action) {
     return state.copyWith(doingWork: true);
   } else if (action is TogglePasswordVisibilityAction) {
     return state.copyWith(showPassword: !state.showPassword);
+  } else if (action is LoginSetPasswordErrorAction) {
+    return state.copyWith(passwordError: action.text);
+  } else if (action is LoginSetJidErrorAction) {
+    return state.copyWith(jidError: action.text);
+  } else if (action is LoginResetErrorsAction) {
+    return state.copyWith(
+      passwordError: null,
+      jidError: null
+    );
   }
 
   return state;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
@@ -10,10 +11,15 @@ import 'package:redux/redux.dart';
 class _LoginPageViewModel {
   final void Function() togglePasswordVisibility;
   final void Function() performLogin;
+  final void Function(String text) setJidError;
+  final void Function(String text) setPasswordError;
+  final void Function() resetErrors;
   final bool doingWork;
   final bool showPassword;
+  final String? passwordError;
+  final String? jidError;
 
-  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword });
+  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors });
 }
 
 class LoginPage extends StatelessWidget {
@@ -26,6 +32,16 @@ class LoginPage extends StatelessWidget {
   }
 
   void _performLogin(BuildContext context, _LoginPageViewModel viewModel) {
+    viewModel.resetErrors();
+
+    /*
+    if (!false) {
+      viewModel.setPasswordError("Fuck you");
+
+      return;
+    }
+    */
+    
     // TODO: Remove
     Future.delayed(Duration(seconds: 3), () => this._navigateToConversations(context));
 
@@ -39,7 +55,12 @@ class LoginPage extends StatelessWidget {
         togglePasswordVisibility: () => store.dispatch(TogglePasswordVisibilityAction()),
         performLogin: () => store.dispatch(PerformLoginAction()),
         doingWork: store.state.loginPageState.doingWork,
-        showPassword: store.state.loginPageState.showPassword
+        showPassword: store.state.loginPageState.showPassword,
+        passwordError: store.state.loginPageState.passwordError,
+        setJidError: (text) => store.dispatch(LoginSetJidErrorAction(text: text)),
+        setPasswordError: (text) => store.dispatch(LoginSetPasswordErrorAction(text: text)),
+        resetErrors: () => store.dispatch(LoginResetErrorsAction())
+
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.simple(title: "Login"),
@@ -57,54 +78,32 @@ class LoginPage extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    width: 1,
-                    color: Colors.purple
-                  )
-                ),
-                child: TextField(
-                  maxLines: 1,
-                  enabled: !viewModel.doingWork,
-                  decoration: InputDecoration(
-                    labelText: "XMPP-Address",
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0)
-                  )
-                )
+              child: CustomTextField(
+                errorText: viewModel.jidError,
+                labelText: "XMPP-Address",
+                enabled: !viewModel.doingWork,
+                maxLines: 1,
+                cornerRadius: TEXTFIELD_RADIUS_REGULAR
               )
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    width: 1,
-                    color: Colors.purple
-                  )
-                ),
-                child: TextField(
-                  maxLines: 1,
-                  obscureText: !viewModel.showPassword,
-                  enabled: !viewModel.doingWork,
-                  decoration: InputDecoration(
-                    labelText: "Password",
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
-                    suffixIcon: Padding(
-                      padding: EdgeInsetsDirectional.only(end: 8.0),
-                      child: InkWell(
-                        onTap: () => viewModel.togglePasswordVisibility(),
-                        child: Icon(
-                          viewModel.showPassword ? Icons.visibility : Icons.visibility_off
-                        )
-                      )
+              child: CustomTextField(
+                errorText: viewModel.passwordError,
+                labelText: "Password",
+                suffixIcon: Padding(
+                  padding: EdgeInsetsDirectional.only(end: 8.0),
+                  child: InkWell(
+                    onTap: () => viewModel.togglePasswordVisibility(),
+                    child: Icon(
+                      viewModel.showPassword ? Icons.visibility : Icons.visibility_off
                     )
                   )
-                )
+                ),
+                enabled: !viewModel.doingWork,
+                obscureText: true,
+                maxLines: 1,
+                cornerRadius: TEXTFIELD_RADIUS_REGULAR
               )
             ),
             Padding(

@@ -2,6 +2,7 @@ import "dart:collection";
 import "dart:math";
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/register/state.dart';
 import 'package:moxxyv2/redux/state.dart';
@@ -73,31 +74,18 @@ class RegistrationPage extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: 8.0)),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(
-                    width: 1,
-                    color: Colors.purple
+              child: CustomTextField(
+                maxLines: 1,
+                labelText: "Username",
+                suffixText: "@" + xmppProviderList[viewModel.providerIndex].jid,
+                suffixIcon: Padding(
+                  padding: EdgeInsetsDirectional.only(end: 6.0),
+                  child: IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: viewModel.doingWork ? null : () => this._generateNewProvider(viewModel)
                   )
                 ),
-                child: TextField(
-                  maxLines: 1,
-                  enabled: !viewModel.doingWork,
-                  decoration: InputDecoration(
-                    labelText: "Username",
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
-                    suffixText: "@" + xmppProviderList[viewModel.providerIndex].jid,
-                    suffixIcon: Padding(
-                      padding: EdgeInsetsDirectional.only(end: 6.0),
-                      child: IconButton(
-                        icon: Icon(Icons.refresh),
-                        onPressed: viewModel.doingWork ? null : () => this._generateNewProvider(viewModel)
-                      )
-                    )
-                  )
-                )
+                cornerRadius: TEXTFIELD_RADIUS_REGULAR
               )
             ),
             Row(
