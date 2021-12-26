@@ -26,6 +26,8 @@ enum ConversationsOptions {
 class ConversationsPage extends StatelessWidget {
   @override
   Widget build(BuildContext buildContext) {
+    double maxTextWidth = MediaQuery.of(buildContext).size.width * 0.6;
+
     return Scaffold(
       appBar: BorderlessTopbar.avatarAndName(
         avatar: AvatarWrapper(
@@ -67,7 +69,7 @@ class ConversationsPage extends StatelessWidget {
                 Conversation item = viewModel.conversations[index];
                 return InkWell(
                   onTap: () => Navigator.pushNamed(buildContext, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
-                  child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter)
+                  child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter, maxTextWidth)
                 );
               }
             );

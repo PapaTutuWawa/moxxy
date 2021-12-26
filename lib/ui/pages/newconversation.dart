@@ -62,6 +62,7 @@ class NewConversationPage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
     var roster = GetIt.I.get<RosterRepository>().getAllRosterItems();
     return Scaffold(
       appBar: BorderlessTopbar.simple(title: "Start new chat"),
@@ -141,7 +142,7 @@ class NewConversationPage extends StatelessWidget {
                 RosterItem item = viewModel.roster[index - 2];
                 return InkWell(
                   onTap: () => this._addNewConversation(viewModel, context, item),
-                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0)
+                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth)
                 );
               }
               break;

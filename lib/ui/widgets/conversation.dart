@@ -1,17 +1,18 @@
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
 
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 
-import 'package:badges/badges.dart';
+import "package:badges/badges.dart";
 
 class ConversationsListRow extends StatelessWidget {
-  String avatarUrl;
-  String name;
-  String lastMessageBody;
-  int unreadCount;
+  final String avatarUrl;
+  final String name;
+  final String lastMessageBody;
+  final int unreadCount;
+  final double maxTextWidth;
 
-  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount);
+  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth);
   
   @override
   Widget build(BuildContext context) {
@@ -33,12 +34,29 @@ class ConversationsListRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                this.name,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+              Container(
+                constraints: BoxConstraints(
+                  maxWidth: this.maxTextWidth
+                ),
+                child: Text(
+                  this.name,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis
+                )
               ),
-              // TODO: Change color, font size and truncate the text when too long
-              Text(this.lastMessageBody)
+              // TODO: Change color and font size
+              Container(
+                constraints: BoxConstraints(
+                  maxWidth: this.maxTextWidth
+                ),
+
+                child: Text(
+                  this.lastMessageBody,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis
+                )
+              )
             ]
           )
         ),
