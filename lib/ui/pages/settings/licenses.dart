@@ -88,7 +88,12 @@ const List<Library> _USED_LIBRARIES = [
     name: "xmpp-providers",
     license: "unknown license",
     url: "https://invent.kde.org/melvo/xmpp-providers"
-  )
+  ),
+   Library(
+    name: "qr_flutter",
+    license: "BSD-3-Clause",
+    url: "https://github.com/theyakka/qr.flutter"
+  ) 
 ];
 
 class LicenseRow extends StatelessWidget {

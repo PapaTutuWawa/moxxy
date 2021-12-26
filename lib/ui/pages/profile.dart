@@ -5,6 +5,8 @@ import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/models/conversation.dart';
 
+import "package:qr_flutter/qr_flutter.dart";
+
 // TODO: Move to separate file
 class ProfilePageArguments {
   final Conversation? conversation;
@@ -29,6 +31,29 @@ class SelfProfileHeader extends StatelessWidget {
     // TODO
     // TODO: Maybe show a LinearProgressIndicator
     this._showingSnackBar = false;
+  }
+
+  Future<void> _showJidQRCode(BuildContext context, String jid) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) => SimpleDialog(
+        title: Text(jid),
+        children: [
+          Center(
+            child: SizedBox(
+              width: 220,
+              height: 220,
+              child: QrImage(
+                data: jid,
+                version: QrVersions.auto,
+                size: 220.0,
+                backgroundColor: Colors.white
+              )
+            )
+          ) 
+        ]
+      )
+    );
   }
   
   @override
@@ -92,12 +117,24 @@ class SelfProfileHeader extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.only(top: 3.0),
-          child: Text(
-            // TODO
-            "testuser@someserver.net",
-            style: TextStyle(
-              fontSize: 15
-            )
+          child: Row(
+            children: [
+              Text(
+                // TODO
+                "testuser@someserver.net",
+                style: TextStyle(
+                  fontSize: 15
+                )
+              ),
+              Padding(
+                padding: EdgeInsetsDirectional.only(start: 3.0),
+                child: IconButton(
+                  icon: Icon(Icons.qr_code),
+                  // TODO
+                  onPressed: () => this._showJidQRCode(context, "testuser@someserver.net")
+                )
+              )
+            ]
           )
         )
       ]
