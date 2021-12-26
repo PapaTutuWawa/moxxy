@@ -12,12 +12,13 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
         jid: action.jid,
         // TODO: Correct?
         unreadCounter: 0,
-        sharedMediaPaths: action.sharedMediaPaths
+        sharedMediaPaths: action.sharedMediaPaths,
+        lastChangeTimestamp: action.lastChangeTimestamp
     ));
   } else if (action is AddMessageAction) {
     return state.map((element) {
         if (element.jid == action.jid) {
-          return element.copyWith(lastMessageBody: action.body);
+          return element.copyWith(lastMessageBody: action.body, lastChangeTimestamp: action.timestamp);
         }
 
         return element;

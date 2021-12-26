@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/constants.dart";
 
 import "package:badges/badges.dart";
 
@@ -13,8 +14,9 @@ class ConversationsListRow extends StatelessWidget {
   final String lastMessageBody;
   final int unreadCount;
   final double maxTextWidth;
+  final int lastChangeTimestamp;
 
-  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth);
+  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp);
   
   @override
   Widget build(BuildContext context) {
@@ -79,14 +81,13 @@ class ConversationsListRow extends StatelessWidget {
         ),
         Visibility(
           // TODO
-          //visible: this.lastChangeTimestamp >= 0,
-          visible: true,
+          visible: this.lastChangeTimestamp != TIMESTAMP_NEVER,
           child: Positioned(
             top: 8,
             right: 8,
             child: Text(
               formatConversationTimestamp(
-                DateTime(2021, 12, 26, 12, 20, 0, 0, 0).millisecondsSinceEpoch,
+                this.lastChangeTimestamp,
                 DateTime.now().millisecondsSinceEpoch
               )
             )

@@ -69,7 +69,7 @@ class ConversationsPage extends StatelessWidget {
                 Conversation item = viewModel.conversations[index];
                 return InkWell(
                   onTap: () => Navigator.pushNamed(buildContext, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
-                  child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter, maxTextWidth)
+                  child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter, maxTextWidth, item.lastChangeTimestamp)
                 );
               }
             );

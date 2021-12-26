@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/helpers.dart";
 
+// TODO: Use a timer to update the timestamp every minute
 class ChatBubble extends StatelessWidget {
   final String messageContent;
   final int timestamp;
