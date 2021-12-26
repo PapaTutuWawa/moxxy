@@ -7,7 +7,7 @@ import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
-import "package:moxxyv2/ui/pages/profile.dart";
+import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";

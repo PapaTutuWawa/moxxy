@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'ui/pages/conversation/conversation.dart';
 import 'ui/pages/conversations.dart';
-import 'ui/pages/profile.dart';
+import 'ui/pages/profile/profile.dart';
 import 'ui/pages/newconversation.dart';
 import 'ui/pages/login/login.dart';
 import 'ui/pages/register/register.dart';
 import 'ui/pages/intro.dart';
 import 'ui/pages/addcontact/addcontact.dart';
-import 'ui/pages/postregister.dart';
+import 'ui/pages/postregister/postregister.dart';
 import 'ui/pages/sendfiles.dart';
 import 'ui/pages/settings/settings.dart';
 import 'ui/pages/settings/licenses.dart';

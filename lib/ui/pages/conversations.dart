@@ -3,7 +3,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/pages/conversation/arguments.dart';
-import 'package:moxxyv2/ui/pages/profile.dart';
+import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/models/conversation.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/ui/constants.dart';

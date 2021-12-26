@@ -3,9 +3,14 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/sharedmedia.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
+import 'package:moxxyv2/ui/widgets/snackbar.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/models/conversation.dart';
+import 'package:moxxyv2/redux/state.dart';
+import 'package:moxxyv2/redux/profile/actions.dart';
 
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 import "package:qr_flutter/qr_flutter.dart";
 
 // TODO: Move to separate file
@@ -18,15 +23,23 @@ class ProfilePageArguments {
   }
 }
 
+class _ProfilePageViewModel {
+  final bool showSnackbar;
+  final void Function(bool show) setShowSnackbar;
+
+  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar });
+}
+
 class SelfProfileHeader extends StatelessWidget {
   // This is to keep the snackbar only on this page. This also removes it once
   // we navigate away from this page.
   final GlobalKey<ScaffoldState> scaffoldKey;
+  final _ProfilePageViewModel viewModel;
   // TODO
-  TextEditingController controller = TextEditingController(text: "Testuser");
+  final TextEditingController controller;
   bool _showingSnackBar = false;
-
-  SelfProfileHeader({ required this.scaffoldKey });
+  
+  SelfProfileHeader({ required this.scaffoldKey, required this.viewModel, required this.controller });
   
   void _applyDisplayNameChange() {
     // TODO
@@ -78,26 +91,8 @@ class SelfProfileHeader extends StatelessWidget {
               maxLines: 1,
               controller: this.controller,
               onChanged: (value) {
-                if (!this._showingSnackBar) {
-                  this._showingSnackBar = true;
-
-                  this.scaffoldKey.currentState!.showSnackBar(SnackBar(
-                      // TODO: The colors are kinda bad
-                      // TODO: This feels like one big hack
-                      duration: Duration(days: 1),
-                      backgroundColor: PRIMARY_COLOR,
-                      content: Text(
-                        "Display name not applied",
-                        style: TextStyle(
-                          color: Colors.white
-                        )
-                      ),
-                      action: SnackBarAction(
-                        label: "Apply",
-                        onPressed: this._applyDisplayNameChange,
-                        textColor: Colors.blue
-                      )
-                  ));
+                if (!this.viewModel.showSnackbar) {
+                  this.viewModel.setShowSnackbar(true);
                 }
               },
               labelText: "Display name",
@@ -172,40 +167,69 @@ class ProfileHeader extends StatelessWidget {
 
 class ProfilePage extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  // NOTE: We need to keep the controller here because a state update would otherwise
+  //       mess with the IME
+  final TextEditingController _controller = TextEditingController(text: "Testuser");
+
+  void _applyDisplayName(_ProfilePageViewModel viewModel) {
+    // TODO
+    viewModel.setShowSnackbar(false);
+  }
 
   @override
   Widget build(BuildContext context) {
     var args = ModalRoute.of(context)!.settings.arguments as ProfilePageArguments;
-    
-    return Scaffold(
-      key: this.scaffoldKey,
-      body: SafeArea(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Positioned(
-              child: Column(
-                children: [
-                  args.isSelfProfile ? SelfProfileHeader(scaffoldKey: this.scaffoldKey) : ProfileHeader(conversation: args.conversation!),
-                  Visibility(
-                    visible: !args.isSelfProfile && args.conversation!.sharedMediaPaths.length > 0,
-                    child: args.isSelfProfile ? SizedBox() : SharedMediaDisplay(
-                      sharedMediaPaths: args.conversation!.sharedMediaPaths
+
+    return SafeArea(
+      child: Scaffold(
+        body: StoreConnector<MoxxyState, _ProfilePageViewModel>(
+          converter: (store) => _ProfilePageViewModel(
+            showSnackbar: store.state.profilePageState.showSnackbar,
+            setShowSnackbar: (show) => store.dispatch(ProfileSetShowSnackbarAction(show: show))
+          ),
+          builder: (context, viewModel) => Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                bottom: 0,
+                left: 0,
+                child: Visibility(
+                  visible: viewModel.showSnackbar,
+                  child: SizedBox(
+                    height: 60,
+                    width: MediaQuery.of(context).size.width,
+                    child: PermanentSnackBar(
+                      text: "Display name not applied",
+                      actionText: "Apply",
+                      onPressed: () => this._applyDisplayName(viewModel)
                     )
-                  ) 
-                ]
+                  )
+                )
               ),
-              top: 8.0,
-              bottom: null,
-              left: null,
-              right: null
-            ),
-            Positioned(
-              top: 8.0,
-              left: 8.0,
-              child: BackButton()
-            )
-          ]
+              Positioned(
+                child: Column(
+                  children: [
+                    args.isSelfProfile ? SelfProfileHeader(scaffoldKey: this.scaffoldKey, viewModel: viewModel, controller: this._controller) : ProfileHeader(conversation: args.conversation!),
+                    Visibility(
+                      visible: !args.isSelfProfile && args.conversation!.sharedMediaPaths.length > 0,
+                      child: args.isSelfProfile ? SizedBox() : SharedMediaDisplay(
+                        sharedMediaPaths: args.conversation!.sharedMediaPaths
+                      )
+                    ) 
+                  ]
+                ),
+                top: 8.0,
+                bottom: null,
+                left: null,
+                right: null
+              ),
+              Positioned(
+                top: 8.0,
+                left: 8.0,
+                child: BackButton()
+              )
+            ]
+          )
         )
       )
     );
