@@ -17,4 +17,13 @@ void main() {
           expect(padInt(99), "99");
       });
   });
+
+  group("listContains", () {
+      test("[] should not contain 1", () {
+          expect(listContains<int>([], (int element) => element == 1), false);
+      });
+      test("[1, 2, 3] should contain 2", () {
+          expect(listContains([ 1, 2, 3 ], (int element) => element == 2), true);
+      });
+  });
 }

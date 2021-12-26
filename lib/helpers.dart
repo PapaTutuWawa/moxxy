@@ -1,3 +1,5 @@
+import "dart:collection";
+
 /*
  * Add a leading zero, if required, to ensure that an integer is rendered
  * as a two "digit" string.
@@ -10,4 +12,17 @@ String padInt(int i) {
   }
 
   return i.toString();
+}
+
+/*
+ * A wrapper around List<T>.firstWhere that does not throw but instead just
+ * returns true if test returns true for an element or false if test never
+ * returned true.
+ */
+bool listContains<T>(List<T> list, bool Function(T element) test) {
+  try {
+    return list.firstWhere(test) != null;
+  } catch(e) {
+    return false;
+  }
 }

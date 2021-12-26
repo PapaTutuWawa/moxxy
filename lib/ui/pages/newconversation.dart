@@ -10,6 +10,7 @@ import 'package:moxxyv2/redux/conversations/actions.dart';
 import 'package:moxxyv2/ui/pages/conversation/arguments.dart';
 import 'package:moxxyv2/repositories/roster.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/helpers.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -27,8 +28,9 @@ class _NewConversationViewModel {
 
 class NewConversationPage extends StatelessWidget {
   void _addNewConversation(_NewConversationViewModel viewModel, BuildContext context, RosterItem rosterItem) {
-    // TODO: firstWhere can throw
-    bool hasConversation = viewModel.conversations.length > 0 && viewModel.conversations.firstWhere((item) => item.jid == rosterItem.jid, orElse: null) != null;
+    // NOTE: If the list of conversations is empty, then everything is fine. But if not, then
+    //       firstWhere can throw if it does not find anything. So just wrap it in a try-catch
+    bool hasConversation = viewModel.conversations.length > 0 && listContains(viewModel.conversations, (Conversation item) => item.jid == rosterItem.jid);
 
     // Prevent adding the same conversation twice to the list of open conversations
     if (!hasConversation) {
