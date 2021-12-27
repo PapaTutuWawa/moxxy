@@ -1,16 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/ui/widgets/sharedmedia.dart';
-import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:moxxyv2/ui/widgets/snackbar.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/models/conversation.dart';
-import 'package:moxxyv2/redux/state.dart';
-import 'package:moxxyv2/redux/profile/actions.dart';
+import "package:flutter/material.dart";
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/widgets/sharedmedia.dart";
+import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/ui/widgets/textfield.dart";
+import "package:moxxyv2/ui/widgets/snackbar.dart";
+import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/redux/state.dart";
+import "package:moxxyv2/redux/profile/actions.dart";
 
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
+import "package:flutter_redux/flutter_redux.dart";
+import "package:redux/redux.dart";
 import "package:qr_flutter/qr_flutter.dart";
 
 // TODO: Move to separate file
@@ -42,12 +43,6 @@ class SelfProfileHeader extends StatelessWidget {
   bool _showingSnackBar = false;
   
   SelfProfileHeader({ required this.viewModel, required this.controller });
-  
-  void _applyDisplayNameChange() {
-    // TODO
-    // TODO: Maybe show a LinearProgressIndicator
-    this._showingSnackBar = false;
-  }
 
   Future<void> _showJidQRCode(BuildContext context, String jid) async {
     await showDialog(
@@ -180,8 +175,9 @@ class ProfilePage extends StatelessWidget {
   }
 
   
-  void _applyDisplayName(_ProfilePageViewModel viewModel) {
+  void _applyDisplayName(BuildContext context, _ProfilePageViewModel viewModel) {
     // TODO
+    dismissSoftKeyboard(context);
     viewModel.setShowSnackbar(false);
   }
 
@@ -213,7 +209,7 @@ class ProfilePage extends StatelessWidget {
                     child: PermanentSnackBar(
                       text: "Display name not applied",
                       actionText: "Apply",
-                      onPressed: () => this._applyDisplayName(viewModel)
+                      onPressed: () => this._applyDisplayName(context, viewModel)
                     )
                   )
                 )

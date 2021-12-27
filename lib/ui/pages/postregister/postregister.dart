@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
+import "package:flutter/material.dart";
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/widgets/snackbar.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
-import 'package:moxxyv2/redux/state.dart';
-import 'package:moxxyv2/redux/postregister/actions.dart';
-import 'package:moxxyv2/ui/pages/postregister/state.dart';
+import "package:moxxyv2/redux/state.dart";
+import "package:moxxyv2/redux/postregister/actions.dart";
+import "package:moxxyv2/ui/pages/postregister/state.dart";
 
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
+import "package:flutter_redux/flutter_redux.dart";
+import "package:redux/redux.dart";
 
 class _PostRegistrationPageViewModel {
   final bool showSnackbar;
@@ -24,9 +25,10 @@ class PostRegistrationPage extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   TextEditingController? _controller;
 
-  void _applyDisplayNameChange(_PostRegistrationPageViewModel viewModel) {
+  void _applyDisplayNameChange(BuildContext context, _PostRegistrationPageViewModel viewModel) {
     // TODO
     // TODO: Maybe show a LinearProgressIndicator
+    dismissSoftKeyboard(context);
     viewModel.setShowSnackbar(false);
   }
 
@@ -67,7 +69,7 @@ class PostRegistrationPage extends StatelessWidget {
                     child: PermanentSnackBar(
                       text: "Display name not applied",
                       actionText: "Apply",
-                      onPressed: () => this._applyDisplayNameChange(viewModel)
+                      onPressed: () => this._applyDisplayNameChange(context, viewModel)
                     )
                   )
                 )
