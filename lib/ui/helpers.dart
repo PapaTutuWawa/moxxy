@@ -24,3 +24,11 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
     }
   );
 }
+
+void dismissSoftKeyboard(BuildContext context) {
+  // NOTE: Thank you, https://flutterigniter.com/dismiss-keyboard-form-lose-focus/
+  FocusScopeNode current = FocusScope.of(context);
+  if (!current.hasPrimaryFocus) {
+    current.unfocus();
+  }
+}

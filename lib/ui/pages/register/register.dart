@@ -1,17 +1,18 @@
 import "dart:collection";
 import "dart:math";
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/pages/register/state.dart';
-import 'package:moxxyv2/redux/state.dart';
-import 'package:moxxyv2/redux/registration/actions.dart';
-import 'package:moxxyv2/redux/account/actions.dart';
+import "package:flutter/material.dart";
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/widgets/textfield.dart";
+import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/ui/pages/register/state.dart";
+import "package:moxxyv2/redux/state.dart";
+import "package:moxxyv2/redux/registration/actions.dart";
+import "package:moxxyv2/redux/account/actions.dart";
 import "package:moxxyv2/data/generated/providers.dart";
 
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
+import "package:flutter_redux/flutter_redux.dart";
+import "package:redux/redux.dart";
 
 class _RegistrationPageViewModel {
   final int providerIndex;
@@ -51,6 +52,8 @@ class RegistrationPage extends StatelessWidget {
       viewModel.setErrorText("Username cannot be empty");
       return;
     }
+
+    dismissSoftKeyboard(context);
 
     viewModel.setAccountJid(this._getCurrentJid(viewModel));
     viewModel.setAccountDisplayName(this.controller.text);
@@ -122,6 +125,7 @@ class RegistrationPage extends StatelessWidget {
                   ),
                   errorText: viewModel.errorText,
                   controller: this.controller,
+                  enabled: !viewModel.doingWork,
                   cornerRadius: TEXTFIELD_RADIUS_REGULAR
                 )
               ),
