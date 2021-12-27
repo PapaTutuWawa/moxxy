@@ -19,7 +19,13 @@ class RosterRepository {
         title: "Momosuzu Nene",
         avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fstatic.miraheze.org%2Fhololivewiki%2Fthumb%2F3%2F36%2FMomosuzu_Nene_-_Portrait_01-1.png%2F580px-Momosuzu_Nene_-_Portrait_01-1.png&f=1&nofb=1",
         jid: "momosuzu.nene@hololive.tv",
+      ),
+      "millie.parfait@nijisanji.co.jp": RosterItem(
+        title: "Millie Parfait",
+        avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.shopify.com%2Fs%2Ffiles%2F1%2F0577%2F1254%2F1891%2Fcollections%2Fv6NAc0V089NywK66.jpg%3Fv%3D1639658990&f=1&nofb=1",
+        jid: "millie.parfait@nijisanji.co.jp",
       )
+
   });
 
   RosterRepository();

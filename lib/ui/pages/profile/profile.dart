@@ -26,20 +26,21 @@ class ProfilePageArguments {
 class _ProfilePageViewModel {
   final bool showSnackbar;
   final void Function(bool show) setShowSnackbar;
+  final String displayName;
+  final String jid;
 
-  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar });
+  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid });
 }
 
 class SelfProfileHeader extends StatelessWidget {
   // This is to keep the snackbar only on this page. This also removes it once
   // we navigate away from this page.
-  final GlobalKey<ScaffoldState> scaffoldKey;
   final _ProfilePageViewModel viewModel;
   // TODO
   final TextEditingController controller;
   bool _showingSnackBar = false;
   
-  SelfProfileHeader({ required this.scaffoldKey, required this.viewModel, required this.controller });
+  SelfProfileHeader({ required this.viewModel, required this.controller });
   
   void _applyDisplayNameChange() {
     // TODO
@@ -106,8 +107,7 @@ class SelfProfileHeader extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                // TODO
-                "testuser@someserver.net",
+                viewModel.jid,
                 style: TextStyle(
                   fontSize: 15
                 )
@@ -116,8 +116,7 @@ class SelfProfileHeader extends StatelessWidget {
                 padding: EdgeInsetsDirectional.only(start: 3.0),
                 child: IconButton(
                   icon: Icon(Icons.qr_code),
-                  // TODO
-                  onPressed: () => this._showJidQRCode(context, "testuser@someserver.net")
+                  onPressed: () => this._showJidQRCode(context, viewModel.jid)
                 )
               )
             ]
@@ -166,11 +165,20 @@ class ProfileHeader extends StatelessWidget {
 }
 
 class ProfilePage extends StatelessWidget {
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   // NOTE: We need to keep the controller here because a state update would otherwise
   //       mess with the IME
-  final TextEditingController _controller = TextEditingController(text: "Testuser");
+  TextEditingController? _controller;
 
+  // Wrapper so that we can set the display name on first initialization
+  TextEditingController _getController(_ProfilePageViewModel viewModel) {
+    if (this._controller == null) {
+      this._controller = TextEditingController(text: viewModel.displayName);
+    }
+
+    return this._controller!;
+  }
+
+  
   void _applyDisplayName(_ProfilePageViewModel viewModel) {
     // TODO
     viewModel.setShowSnackbar(false);
@@ -185,7 +193,9 @@ class ProfilePage extends StatelessWidget {
         body: StoreConnector<MoxxyState, _ProfilePageViewModel>(
           converter: (store) => _ProfilePageViewModel(
             showSnackbar: store.state.profilePageState.showSnackbar,
-            setShowSnackbar: (show) => store.dispatch(ProfileSetShowSnackbarAction(show: show))
+            setShowSnackbar: (show) => store.dispatch(ProfileSetShowSnackbarAction(show: show)),
+            displayName: store.state.accountState.displayName,
+            jid: store.state.accountState.jid
           ),
           builder: (context, viewModel) => Stack(
             alignment: Alignment.center,
@@ -209,7 +219,7 @@ class ProfilePage extends StatelessWidget {
               Positioned(
                 child: Column(
                   children: [
-                    args.isSelfProfile ? SelfProfileHeader(scaffoldKey: this.scaffoldKey, viewModel: viewModel, controller: this._controller) : ProfileHeader(conversation: args.conversation!),
+                    args.isSelfProfile ? SelfProfileHeader(viewModel: viewModel, controller: this._getController(viewModel)) : ProfileHeader(conversation: args.conversation!),
                     Visibility(
                       visible: !args.isSelfProfile && args.conversation!.sharedMediaPaths.length > 0,
                       child: args.isSelfProfile ? SizedBox() : SharedMediaDisplay(

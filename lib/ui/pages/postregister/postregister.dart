@@ -13,19 +13,29 @@ import 'package:redux/redux.dart';
 class _PostRegistrationPageViewModel {
   final bool showSnackbar;
   final void Function(bool show) setShowSnackbar;
+  final String jid;
+  final String displayName;
 
-  _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar });
+  _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName });
 }
 
 class PostRegistrationPage extends StatelessWidget {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  // TODO
-  final TextEditingController controller = TextEditingController(text: "Testuser");
+  TextEditingController? _controller;
 
   void _applyDisplayNameChange(_PostRegistrationPageViewModel viewModel) {
     // TODO
     // TODO: Maybe show a LinearProgressIndicator
     viewModel.setShowSnackbar(false);
+  }
+
+  // Wrapper so that we can set the display name on first initialization
+  TextEditingController _getController(_PostRegistrationPageViewModel viewModel) {
+    if (this._controller == null) {
+      this._controller = TextEditingController(text: viewModel.displayName);
+    }
+
+    return this._controller!;
   }
   
   @override
@@ -37,7 +47,9 @@ class PostRegistrationPage extends StatelessWidget {
         body: StoreConnector<MoxxyState, _PostRegistrationPageViewModel>(
           converter: (store) => _PostRegistrationPageViewModel(
             showSnackbar: store.state.postRegisterPageState.showSnackbar,
-            setShowSnackbar: (show) => store.dispatch(PostRegisterSetShowSnackbarAction(show: show))
+            setShowSnackbar: (show) => store.dispatch(PostRegisterSetShowSnackbarAction(show: show)),
+            jid: store.state.accountState.jid,
+            displayName: store.state.accountState.displayName
           ),
           builder: (context, viewModel) => Stack(
             children: [
@@ -93,7 +105,7 @@ class PostRegistrationPage extends StatelessWidget {
                                 child: CustomTextField(
                                   maxLines: 1,
                                   labelText: "Display name",
-                                  controller: this.controller,
+                                  controller: this._getController(viewModel),
                                   isDense: true,
                                   onChanged: (value) {
                                     if (!viewModel.showSnackbar) {
@@ -105,8 +117,7 @@ class PostRegistrationPage extends StatelessWidget {
                               ),
                               Padding(
                                 padding: EdgeInsets.only(top: 2.0),
-                                // TODO
-                                child: Text("testuser@someprovider.net")
+                                child: Text(viewModel.jid)
                               )
                             ]
                           )

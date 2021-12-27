@@ -7,6 +7,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/register/state.dart';
 import 'package:moxxyv2/redux/state.dart';
 import 'package:moxxyv2/redux/registration/actions.dart';
+import 'package:moxxyv2/redux/account/actions.dart';
 import "package:moxxyv2/data/generated/providers.dart";
 
 import 'package:flutter_redux/flutter_redux.dart';
@@ -16,12 +17,14 @@ class _RegistrationPageViewModel {
   final int providerIndex;
   final bool doingWork;
   final String? errorText;
+  final void Function(String jid) setAccountJid;
+  final void Function(String displayName) setAccountDisplayName;
   final void Function(String text) setErrorText;
   final void Function() resetErrors;
   final void Function(int index) setProviderIndex;
   final void Function() performRegistration;
 
-  _RegistrationPageViewModel({ required this.providerIndex, required this.setProviderIndex, required this.doingWork, required this.performRegistration, this.errorText, required this.setErrorText, required this.resetErrors });
+  _RegistrationPageViewModel({ required this.providerIndex, required this.setProviderIndex, required this.doingWork, required this.performRegistration, this.errorText, required this.setErrorText, required this.resetErrors, required this.setAccountJid, required this.setAccountDisplayName });
 }
 
 class RegistrationPage extends StatelessWidget {
@@ -37,6 +40,10 @@ class RegistrationPage extends StatelessWidget {
     viewModel.setProviderIndex(newIndex);
   }
 
+  String _getCurrentJid(_RegistrationPageViewModel viewModel) {
+    return this.controller.text + "@" + xmppProviderList[viewModel.providerIndex].jid;
+  }
+  
   void _performRegistration(BuildContext context, _RegistrationPageViewModel viewModel) {
     viewModel.resetErrors();
 
@@ -45,6 +52,8 @@ class RegistrationPage extends StatelessWidget {
       return;
     }
 
+    viewModel.setAccountJid(this._getCurrentJid(viewModel));
+    viewModel.setAccountDisplayName(this.controller.text);
     viewModel.performRegistration();
 
     Future.delayed(Duration(seconds: 3), () => Navigator.pushNamedAndRemoveUntil(context, "/register/post", (route) => false));
@@ -62,7 +71,9 @@ class RegistrationPage extends StatelessWidget {
         performRegistration: () => store.dispatch(PerformRegistrationAction()),
         errorText: store.state.registerPageState.errorText,
         setErrorText: (text) => store.dispatch(RegistrationSetErrorTextAction(text: text)),
-        resetErrors: () => store.dispatch(RegistrationResetErrorsAction())
+        resetErrors: () => store.dispatch(RegistrationResetErrorsAction()),
+        setAccountJid: (jid) => store.dispatch(SetJidAction(jid: jid)),
+        setAccountDisplayName: (displayName) => store.dispatch(SetDisplayNameAction(displayName: displayName))
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.simple(title: "Register"),
