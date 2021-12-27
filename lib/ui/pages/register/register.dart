@@ -89,9 +89,10 @@ class RegistrationPage extends StatelessWidget {
           this._generateNewProvider(viewModel);
         }
 
-        return Scaffold(
+        return WillPopScope(
+          onWillPop: () async => !viewModel.doingWork,
+          child: Scaffold(
           appBar: BorderlessTopbar.simple(title: "Register"),
-          // TODO: Disable the inputs and the BackButton if we're working on logging in
           body: Column(
             children: [
               Visibility(
@@ -144,6 +145,7 @@ class RegistrationPage extends StatelessWidget {
               )
             ]
           )
+        )
         );
       }
     );

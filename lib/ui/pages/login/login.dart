@@ -86,82 +86,84 @@ class LoginPage extends StatelessWidget {
         resetErrors: () => store.dispatch(LoginResetErrorsAction())
 
       ),
-      builder: (context, viewModel) => Scaffold(
-        appBar: BorderlessTopbar.simple(title: "Login"),
-        // TODO: Disable the inputs and the BackButton if we're working on logging in
-        body: Column(
-          children: [
-            Visibility(
-              visible: viewModel.doingWork,
-              child: LinearProgressIndicator(
-                value: null,
-                valueColor: AlwaysStoppedAnimation<Color>(PRIMARY_COLOR)
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
-              child: CustomTextField(
-                errorText: viewModel.jidError,
-                labelText: "XMPP-Address",
-                enabled: !viewModel.doingWork,
-                controller: this.jidController,
-                maxLines: 1,
-                cornerRadius: TEXTFIELD_RADIUS_REGULAR
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
-              child: CustomTextField(
-                errorText: viewModel.passwordError,
-                labelText: "Password",
-                controller: this.passwordController,
-                suffixIcon: Padding(
-                  padding: EdgeInsetsDirectional.only(end: 8.0),
-                  child: InkWell(
-                    onTap: () => viewModel.togglePasswordVisibility(),
-                    child: Icon(
-                      viewModel.showPassword ? Icons.visibility : Icons.visibility_off
-                    )
-                  )
-                ),
-                enabled: !viewModel.doingWork,
-                obscureText: true,
-                maxLines: 1,
-                cornerRadius: TEXTFIELD_RADIUS_REGULAR
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
-              child: ExpansionTile(
-                title: Text("Advanced options"),
-                children: [
-                  Column(
-                    children: [
-                      SwitchListTile(
-                        title: Text("Create account on server"),
-                        value: false,
-                        // TODO
-                        onChanged: viewModel.doingWork ? null : (value) {}
+      builder: (context, viewModel) => WillPopScope(
+        onWillPop: () async => !viewModel.doingWork,
+        child: Scaffold(
+          appBar: BorderlessTopbar.simple(title: "Login"),
+          body: Column(
+            children: [
+              Visibility(
+                visible: viewModel.doingWork,
+                child: LinearProgressIndicator(
+                  value: null,
+                  valueColor: AlwaysStoppedAnimation<Color>(PRIMARY_COLOR)
+                )
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                child: CustomTextField(
+                  errorText: viewModel.jidError,
+                  labelText: "XMPP-Address",
+                  enabled: !viewModel.doingWork,
+                  controller: this.jidController,
+                  maxLines: 1,
+                  cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                )
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                child: CustomTextField(
+                  errorText: viewModel.passwordError,
+                  labelText: "Password",
+                  controller: this.passwordController,
+                  suffixIcon: Padding(
+                    padding: EdgeInsetsDirectional.only(end: 8.0),
+                    child: InkWell(
+                      onTap: () => viewModel.togglePasswordVisibility(),
+                      child: Icon(
+                        viewModel.showPassword ? Icons.visibility : Icons.visibility_off
                       )
-                    ]
+                    )
+                  ),
+                  enabled: !viewModel.doingWork,
+                  obscureText: true,
+                  maxLines: 1,
+                  cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                )
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                child: ExpansionTile(
+                  title: Text("Advanced options"),
+                  children: [
+                    Column(
+                      children: [
+                        SwitchListTile(
+                          title: Text("Create account on server"),
+                          value: false,
+                          // TODO
+                          onChanged: viewModel.doingWork ? null : (value) {}
+                        )
+                      ]
+                    )
+                  ]
+                )
+              ), 
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                      child: ElevatedButton(
+                        child: Text("Login"),
+                        onPressed: viewModel.doingWork ? null : () => this._performLogin(context, viewModel)
+                      )
+                    )
                   )
                 ]
               )
-            ), 
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
-                    child: ElevatedButton(
-                      child: Text("Login"),
-                      onPressed: viewModel.doingWork ? null : () => this._performLogin(context, viewModel)
-                    )
-                  )
-                )
-              ]
-            )
-          ]
+            ]
+          )
         )
       )
     );
