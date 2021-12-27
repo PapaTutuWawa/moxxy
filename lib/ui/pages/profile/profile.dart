@@ -88,8 +88,16 @@ class SelfProfileHeader extends StatelessWidget {
               maxLines: 1,
               controller: this.controller,
               onChanged: (value) {
-                if (!this.viewModel.showSnackbar) {
-                  this.viewModel.setShowSnackbar(true);
+                // NOTE: Since hitting the (software) back button triggers this function, "debounce" it
+                //       by only showing the snackbar if the value differs from the state
+                if (value == viewModel.displayName) {
+                  if (viewModel.showSnackbar) {
+                    viewModel.setShowSnackbar(false);
+                  }
+                } else {
+                  if (!viewModel.showSnackbar) {
+                    viewModel.setShowSnackbar(true);
+                  }
                 }
               },
               labelText: "Display name",

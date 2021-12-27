@@ -66,6 +66,8 @@ class PostRegistrationPage extends StatelessWidget {
           await accountDir.create();
           File avatar = File(accountDir.path + "/avatar.png");
           await avatar.writeAsBytes(data);
+
+          // TODO: If the path doesn't change then the UI won't be updated. Hash it and use that as the filename?
           viewModel.setAvatarUrl(avatar.path);
         },
         selectedImageRatio: ImageRatio.RATIO_1_1
@@ -143,8 +145,16 @@ class PostRegistrationPage extends StatelessWidget {
                                   controller: this._getController(viewModel),
                                   isDense: true,
                                   onChanged: (value) {
-                                    if (!viewModel.showSnackbar) {
-                                      viewModel.setShowSnackbar(true); 
+                                    // NOTE: Since hitting the (software) back button triggers this function, "debounce" it
+                                    //       by only showing the snackbar if the value differs from the state
+                                    if (value == viewModel.displayName) {
+                                      if (viewModel.showSnackbar) {
+                                        viewModel.setShowSnackbar(false);
+                                      }
+                                    } else {
+                                      if (!viewModel.showSnackbar) {
+                                        viewModel.setShowSnackbar(true);
+                                      }
                                     }
                                   },
                                   cornerRadius: TEXTFIELD_RADIUS_REGULAR
