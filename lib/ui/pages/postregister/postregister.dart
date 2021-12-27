@@ -15,8 +15,9 @@ class _PostRegistrationPageViewModel {
   final void Function(bool show) setShowSnackbar;
   final String jid;
   final String displayName;
+  final String avatarUrl;
 
-  _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName });
+  _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName, required this.avatarUrl });
 }
 
 class PostRegistrationPage extends StatelessWidget {
@@ -49,7 +50,8 @@ class PostRegistrationPage extends StatelessWidget {
             showSnackbar: store.state.postRegisterPageState.showSnackbar,
             setShowSnackbar: (show) => store.dispatch(PostRegisterSetShowSnackbarAction(show: show)),
             jid: store.state.accountState.jid,
-            displayName: store.state.accountState.displayName
+            displayName: store.state.accountState.displayName,
+            avatarUrl: store.state.accountState.avatarUrl
           ),
           builder: (context, viewModel) => Stack(
             children: [
@@ -85,12 +87,12 @@ class PostRegistrationPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
                     child: Row(
                       children: [
-                        // TODO
                         AvatarWrapper(
                           radius: 35.0,
-                          avatarUrl: "https://3.bp.blogspot.com/-tXOVVeovbNA/XI8EEkbKjgI/AAAAAAAAJrs/3lOV4RQx9kIp9jWBmZhSKyng9iNQrDivgCLcBGAs/s2560/hatsune-miku-4k-fx-2048x2048.jpg",
-                          alt: Text("Tu"),
+                          avatarUrl: viewModel.avatarUrl,
+                          altIcon: Icons.person,
                           showEditButton: false,
+                          // TODO
                           onTapFunction: () {}
                         ),
 
@@ -99,7 +101,6 @@ class PostRegistrationPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // TODO: Show a SnackBar if changed
                               SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.4,
                                 child: CustomTextField(

@@ -4,13 +4,25 @@ import "package:flutter/material.dart";
 class AvatarWrapper extends StatelessWidget {
   final String? avatarUrl;
   final Widget? alt;
+  final IconData? altIcon;
   final double radius;
   final bool showEditButton;
   final void Function()? onTapFunction;
 
-  AvatarWrapper({ required this.radius, this.avatarUrl, this.alt, this.onTapFunction, this.showEditButton = false }) {
-    assert(this.avatarUrl != null || (this.avatarUrl == null || this.avatarUrl == "") && this.alt != null);
+  AvatarWrapper({ required this.radius, this.avatarUrl, this.alt, this.altIcon, this.onTapFunction, this.showEditButton = false }) {
+    assert(this.avatarUrl != null || (this.avatarUrl == null || this.avatarUrl == "") && (this.alt != null || this.altIcon != null));
     assert(this.showEditButton ? this.onTapFunction != null : true);
+  }
+
+  Widget _constructAlt() {
+    if (this.alt != null) {
+      return this.alt!;
+    }
+
+    return Icon(
+      this.altIcon,
+      size: this.radius * (180/110)
+    );
   }
   
   /* Either display the alt or the actual image */
@@ -19,7 +31,7 @@ class AvatarWrapper extends StatelessWidget {
     
     return CircleAvatar(
       backgroundColor: Colors.grey[800]!,
-      child: useAlt ? alt! : null,
+      child: useAlt ? this._constructAlt() : null,
       // TODO
       backgroundImage: !useAlt ? NetworkImage(this.avatarUrl!) : null,
       radius: radius

@@ -28,8 +28,9 @@ class _ProfilePageViewModel {
   final void Function(bool show) setShowSnackbar;
   final String displayName;
   final String jid;
+  final String avatarUrl;
 
-  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid });
+  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid, required this.avatarUrl });
 }
 
 class SelfProfileHeader extends StatelessWidget {
@@ -77,8 +78,8 @@ class SelfProfileHeader extends StatelessWidget {
       children: [
         AvatarWrapper(
           radius: 110.0,
-          avatarUrl: "https://3.bp.blogspot.com/-tXOVVeovbNA/XI8EEkbKjgI/AAAAAAAAJrs/3lOV4RQx9kIp9jWBmZhSKyng9iNQrDivgCLcBGAs/s2560/hatsune-miku-4k-fx-2048x2048.jpg",
-          alt: Text("?"),
+          avatarUrl: this.viewModel.avatarUrl,
+          altIcon: Icons.person,
           showEditButton: false,
           onTapFunction: () {}
         ),
@@ -195,7 +196,8 @@ class ProfilePage extends StatelessWidget {
             showSnackbar: store.state.profilePageState.showSnackbar,
             setShowSnackbar: (show) => store.dispatch(ProfileSetShowSnackbarAction(show: show)),
             displayName: store.state.accountState.displayName,
-            jid: store.state.accountState.jid
+            jid: store.state.accountState.jid,
+            avatarUrl: store.state.accountState.avatarUrl
           ),
           builder: (context, viewModel) => Stack(
             alignment: Alignment.center,

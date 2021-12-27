@@ -16,8 +16,9 @@ import 'package:redux/redux.dart';
 class _ConversationsListViewModel {
   final List<Conversation> conversations;
   final String displayName;
+  final String avatarUrl;
 
-  _ConversationsListViewModel({ required this.conversations, required this.displayName });
+  _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl });
 }
 
 enum ConversationsOptions {
@@ -69,15 +70,15 @@ class ConversationsPage extends StatelessWidget {
     return StoreConnector<MoxxyState, _ConversationsListViewModel>(
       converter: (store) => _ConversationsListViewModel(
         conversations: store.state.conversations,
-        displayName: store.state.accountState.displayName
+        displayName: store.state.accountState.displayName,
+        avatarUrl: store.state.accountState.avatarUrl
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(
           avatar: AvatarWrapper(
             radius: 20.0,
-            avatarUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.MkXhyVPrn9eQGC1CTOyTYAHaHa%26pid%3DApi&f=1",
-            // TODO: Move the StoreConnector up a bit
-            alt: Text("?")
+            avatarUrl: viewModel.avatarUrl,
+            altIcon: Icons.person
           ),
           title: viewModel.displayName,
           onTapFunction: () => Navigator.pushNamed(buildContext, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
