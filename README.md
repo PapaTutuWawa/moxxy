@@ -12,6 +12,12 @@ issues.
 ![Adding a contact](assets/repo/add_contact.png)
 ![Starting a new chat](assets/repo/start_chat.png)
 
+## Developing and Building
+
+Run `nix develop` to get a development shell. On first build, run `python tools/generate_licenses.py`
+and `python tools/generate_providers.py` to generate the data classes. After that, you
+can run the app using `flutter run` or build the app with `flutter build`.
+
 ## License
 
 See `./LICENSE`.
