@@ -1,3 +1,4 @@
+import "dart:async";
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
@@ -13,6 +14,68 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
+class _ListViewWrapperViewModel {
+  final List<Conversation> conversations;
+
+  _ListViewWrapperViewModel({ required this.conversations });
+}
+
+// NOTE: Q: Why wrap the ListView? A: So we can update it every minute to update the timestamps
+// TODO: Replace with something better
+class _ListViewWrapperState extends State<ListViewWrapper> {
+  Timer? _updateTimer;
+  int _tickCounter = 0;
+
+  _ListViewWrapperState() {
+    this._updateTimer = Timer.periodic(Duration(minutes: 1), this._timerCallback);
+  }
+  
+  void _timerCallback(Timer timer) {
+    print("TOCK");
+    setState(() {
+        this._tickCounter++;
+    }); 
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (this._updateTimer != null) {
+      this._updateTimer!.cancel();
+    }
+  }
+  
+  @override
+  Widget build(BuildContext build) {
+    return StoreConnector<MoxxyState, _ListViewWrapperViewModel>(
+      converter: (store) => _ListViewWrapperViewModel(
+        conversations: store.state.conversations
+      ),
+      builder: (context, viewModel) {
+        double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
+
+        return ListView.builder(
+          itemCount: viewModel.conversations.length,
+          itemBuilder: (_context, index) {
+            Conversation item = viewModel.conversations[index];
+            return InkWell(
+              onTap: () => Navigator.pushNamed(context, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
+              child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter, maxTextWidth, item.lastChangeTimestamp)
+            );
+          }
+        );
+      }
+    );
+  }
+}
+
+class ListViewWrapper extends StatefulWidget {
+  ListViewWrapper();
+
+  @override
+  _ListViewWrapperState createState() => _ListViewWrapperState();
+}
+
 class _ConversationsListViewModel {
   final List<Conversation> conversations;
   final String displayName;
@@ -27,19 +90,8 @@ enum ConversationsOptions {
 
 class ConversationsPage extends StatelessWidget {
   Widget _listWrapper(BuildContext context, _ConversationsListViewModel viewModel) {
-    double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
-
     if (viewModel.conversations.length > 0) {
-      return ListView.builder(
-        itemCount: viewModel.conversations.length,
-        itemBuilder: (_context, index) {
-          Conversation item = viewModel.conversations[index];
-          return InkWell(
-            onTap: () => Navigator.pushNamed(context, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
-            child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter, maxTextWidth, item.lastChangeTimestamp)
-          );
-        }
-      );
+      return ListViewWrapper();
     }
 
     return Padding(

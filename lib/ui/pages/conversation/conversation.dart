@@ -1,3 +1,4 @@
+import "dart:async";
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chatbubble.dart';
@@ -37,7 +38,6 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
 
 class _MessageListViewModel {
-  final List<Message> messages;
   final Conversation conversation;
   final SendMessageFunction sendMessage;
   final void Function(bool showSendButton) setShowSendButton;
@@ -45,7 +45,81 @@ class _MessageListViewModel {
   final void Function(bool scrollToEndButton) setShowScrollToEndButton;
   final bool showScrollToEndButton;
   
-  _MessageListViewModel({ required this.conversation, required this.messages, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton });
+  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton });
+}
+
+class _ListViewWrapperViewModel {
+  final List<Message> messages;
+
+  _ListViewWrapperViewModel({ required this.messages });
+}
+
+// NOTE: Q: Why wrap the ListView? A: So we can update it every minute to update the timestamps
+// TODO: Replace with something better
+class _ListViewWrapperState extends State<ListViewWrapper> {
+  final double maxWidth;
+  final String jid;
+  Timer? _updateTimer;
+  int _tickCounter = 0;
+
+  _ListViewWrapperState({ required this.maxWidth, required this.jid }) {
+    this._updateTimer = Timer.periodic(Duration(minutes: 1), this._timerCallback);
+  }
+  
+  void _timerCallback(Timer timer) {
+    setState(() {
+        this._tickCounter++;
+    }); 
+  }
+
+  Widget _renderBubble(List<Message> messages, int index, double maxWidth) {
+    Message item = messages[index];
+    // TODO
+    bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
+    bool end = index + 1 >= messages.length ? true : messages[index + 1].sent != item.sent;
+    bool between = !start && !end;
+    return ChatBubble(
+      messageContent: item.body,
+      timestamp: item.timestamp,
+      sentBySelf: true,
+      start: start,
+      end: end,
+      between: between,
+      closerTogether: !end,
+      maxWidth: maxWidth
+    );
+  }
+  
+  @override
+  void dispose() {
+    super.dispose();
+    if (this._updateTimer != null) {
+      this._updateTimer!.cancel();
+    }
+  }
+  
+  @override
+  Widget build(BuildContext build) {
+    return StoreConnector<MoxxyState, _ListViewWrapperViewModel>(
+      converter: (store) => _ListViewWrapperViewModel(
+        messages: store.state.messages.containsKey(this.jid) ? store.state.messages[this.jid]! : [],
+      ),
+      builder: (context, viewModel) => ListView.builder(
+        itemCount: viewModel.messages.length,
+        itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
+      )
+    );
+  }
+}
+
+class ListViewWrapper extends StatefulWidget {
+  final double maxWidth;
+  final String jid;
+
+  ListViewWrapper({ required this.maxWidth, required this.jid });
+
+  @override
+  _ListViewWrapperState createState() => _ListViewWrapperState(maxWidth: this.maxWidth, jid: this.jid);
 }
 
 class ConversationPage extends StatelessWidget {
@@ -82,24 +156,6 @@ class ConversationPage extends StatelessWidget {
       this._onMessageTextChanged("", viewModel);
     }
   }
-
-  Widget _renderBubble(List<Message> messages, int index, double maxWidth) {
-    Message item = messages[index];
-    // TODO
-    bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
-    bool end = index + 1 >= messages.length ? true : messages[index + 1].sent != item.sent;
-    bool between = !start && !end;
-    return ChatBubble(
-      messageContent: item.body,
-      timestamp: item.timestamp,
-      sentBySelf: true,
-      start: start,
-      end: end,
-      between: between,
-      closerTogether: !end,
-      maxWidth: maxWidth
-    );
-  }
   
   @override
   Widget build(BuildContext context) {
@@ -109,7 +165,6 @@ class ConversationPage extends StatelessWidget {
     
     return StoreConnector<MoxxyState, _MessageListViewModel>(
       converter: (store) => _MessageListViewModel(
-        messages: store.state.messages.containsKey(jid) ? store.state.messages[jid]! : [],
         conversation: store.state.conversations.firstWhere((item) => item.jid == jid),
         showSendButton: store.state.conversationPageState.showSendButton,
         setShowSendButton: (show) => store.dispatch(SetShowSendButtonAction(show: show)),
@@ -172,10 +227,7 @@ class ConversationPage extends StatelessWidget {
               Expanded(
                 child: Stack(
                   children: [
-                    ListView.builder(
-                      itemCount: viewModel.messages.length,
-                      itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
-                    ),
+                    ListViewWrapper(maxWidth: maxWidth, jid: jid),
                     Positioned(
                       bottom: 64.0,
                       right: 16.0,
