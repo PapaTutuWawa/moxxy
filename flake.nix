@@ -27,10 +27,14 @@
       useGoogleTVAddOns = false;
     };
     pinnedJDK = pkgs.jdk11;
+
+    pythonEnv = pkgs.python3.withPackages (ps: with ps; [
+      requests pyyaml
+    ]);
   in {
     devShell = pkgs.mkShell {
       buildInputs = with pkgs; [
-        flutter pinnedJDK android.platform-tools
+        flutter pinnedJDK android.platform-tools pythonEnv jq
       ];
 
       ANDROID_HOME = "${android.androidsdk}/libexec/android-sdk";
