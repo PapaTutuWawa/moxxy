@@ -37,13 +37,15 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
 
 class _MessageListViewModel {
-  final void Function(bool showSendButton) setShowSendButton;
   final List<Message> messages;
   final Conversation conversation;
   final SendMessageFunction sendMessage;
+  final void Function(bool showSendButton) setShowSendButton;
   final bool showSendButton;
+  final void Function(bool scrollToEndButton) setShowScrollToEndButton;
+  final bool showScrollToEndButton;
   
-  _MessageListViewModel({ required this.conversation, required this.messages, required this.showSendButton, required this.sendMessage, required this.setShowSendButton });
+  _MessageListViewModel({ required this.conversation, required this.messages, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton });
 }
 
 class ConversationPage extends StatelessWidget {
@@ -78,9 +80,6 @@ class ConversationPage extends StatelessWidget {
       // NOTE: Calling clear on the controller does not trigger a onChanged on the
       //       TextField
       this._onMessageTextChanged("", viewModel);
-    } else {
-      // TODO: This
-      print("Adding file");
     }
   }
 
@@ -114,6 +113,8 @@ class ConversationPage extends StatelessWidget {
         conversation: store.state.conversations.firstWhere((item) => item.jid == jid),
         showSendButton: store.state.conversationPageState.showSendButton,
         setShowSendButton: (show) => store.dispatch(SetShowSendButtonAction(show: show)),
+        showScrollToEndButton: store.state.conversationPageState.showScrollToEndButton,
+        setShowScrollToEndButton: (show) => store.dispatch(SetShowScrollToEndButtonAction(show: show)),
         sendMessage: (body) => store.dispatch(
           // TODO
           AddMessageAction(
@@ -169,9 +170,30 @@ class ConversationPage extends StatelessWidget {
           body: Column(
             children: [
               Expanded(
-                child: ListView.builder(
-                  itemCount: viewModel.messages.length,
-                  itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
+                child: Stack(
+                  children: [
+                    ListView.builder(
+                      itemCount: viewModel.messages.length,
+                      itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
+                    ),
+                    Positioned(
+                      bottom: 64.0,
+                      right: 16.0,
+                      child: Visibility(
+                        // TODO: Show if we're not scrolled to the end
+                        visible: viewModel.showScrollToEndButton,
+                        child: SizedBox(
+                          height: 30.0,
+                          width: 30.0,
+                          child: FloatingActionButton(
+                            child: Icon(Icons.arrow_downward, color: Colors.white),
+                            // TODO
+                            onPressed: () {}
+                          )
+                        )
+                      )
+                    )
+                  ]
                 )
               ),
               Padding(

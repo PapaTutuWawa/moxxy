@@ -1,12 +1,17 @@
-abstract class MessageAction {}
-
 class SetShowSendButtonAction {
   final bool show;
 
   SetShowSendButtonAction({ required this.show });
 }
 
-class AddMessageAction extends MessageAction {
+class SetShowScrollToEndButtonAction {
+  final bool show;
+
+  SetShowScrollToEndButtonAction({ required this.show });
+}
+
+// TODO: Rename to SendMessageAction
+class AddMessageAction {
   final String body;
   final int timestamp;
   final String from;
