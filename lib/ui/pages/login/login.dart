@@ -4,6 +4,9 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
+// TODO: REMOVE
+import "package:moxxyv2/redux/account/actions.dart";
+// TODO END
 import "package:moxxyv2/helpers.dart";
 
 import 'package:flutter_redux/flutter_redux.dart';
@@ -19,8 +22,13 @@ class _LoginPageViewModel {
   final bool showPassword;
   final String? passwordError;
   final String? jidError;
+  // --- START ---
+  // TODO: REMOVE
+  final void Function(String jid) setAccountJid;
+  final void Function(String displayName) setAccountDisplayName;
+  // --- END ---
 
-  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors });
+  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors, required this.setAccountJid, required this.setAccountDisplayName });
 }
 
 class LoginPage extends StatelessWidget {
@@ -38,8 +46,11 @@ class LoginPage extends StatelessWidget {
   void _performLogin(BuildContext context, _LoginPageViewModel viewModel) {
     viewModel.resetErrors();
 
+    String jid = this.jidController.text;
+    String password = this.passwordController.text;
+    
     // Validate first
-    switch (validateJid(this.jidController.text)) {
+    switch (validateJid(jid)) {
       case JidFormatError.EMPTY: {
         viewModel.setJidError("XMPP-Address cannot be empty");
         return;
@@ -64,13 +75,17 @@ class LoginPage extends StatelessWidget {
       case JidFormatError.NONE: break;
     }
 
-    if (this.passwordController.text.isEmpty) {
+    if (password.isEmpty) {
       viewModel.setPasswordError("Password cannot be empty");
       return;
     }
     
     // TODO: Remove
-    Future.delayed(Duration(seconds: 3), () => this._navigateToConversations(context));
+    Future.delayed(Duration(seconds: 3), () {
+        viewModel.setAccountJid(jid);
+        viewModel.setAccountDisplayName(jid.split("@")[0]);
+        this._navigateToConversations(context);
+    });
 
     viewModel.performLogin();
   }
@@ -87,8 +102,9 @@ class LoginPage extends StatelessWidget {
         jidError: store.state.loginPageState.jidError,
         setJidError: (text) => store.dispatch(LoginSetJidErrorAction(text: text)),
         setPasswordError: (text) => store.dispatch(LoginSetPasswordErrorAction(text: text)),
-        resetErrors: () => store.dispatch(LoginResetErrorsAction())
-
+        resetErrors: () => store.dispatch(LoginResetErrorsAction()),
+        setAccountJid: (jid) => store.dispatch(SetJidAction(jid: jid)),
+        setAccountDisplayName: (displayName) => store.dispatch(SetDisplayNameAction(displayName: displayName))
       ),
       builder: (context, viewModel) => WillPopScope(
         onWillPop: () async => !viewModel.doingWork,

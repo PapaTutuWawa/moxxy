@@ -49,8 +49,8 @@ class _ListViewWrapperState extends State<ListViewWrapper> {
   Widget build(BuildContext build) {
     return StoreConnector<MoxxyState, _ListViewWrapperViewModel>(
       converter: (store) => _ListViewWrapperViewModel(
-        conversations: store.state.conversations
-      ),
+        // TODO: Sort conversations by timestamp
+        conversations: store.state.conversations,
       builder: (context, viewModel) {
         double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
 
