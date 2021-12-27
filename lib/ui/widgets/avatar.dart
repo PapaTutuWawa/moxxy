@@ -1,4 +1,5 @@
 import "dart:ui";
+import "dart:io";
 import "package:flutter/material.dart";
 
 class AvatarWrapper extends StatelessWidget {
@@ -24,6 +25,15 @@ class AvatarWrapper extends StatelessWidget {
       size: this.radius * (180/110)
     );
   }
+
+  // TODO: Remove this. This is just for UI debugging
+  ImageProvider _constructImage() {
+    if (this.avatarUrl!.startsWith("https://")) {
+      return NetworkImage(this.avatarUrl!);
+    } else {
+      return FileImage(File(this.avatarUrl!));
+    }
+  }
   
   /* Either display the alt or the actual image */
   Widget _avatarWrapper() {
@@ -33,7 +43,7 @@ class AvatarWrapper extends StatelessWidget {
       backgroundColor: Colors.grey[800]!,
       child: useAlt ? this._constructAlt() : null,
       // TODO
-      backgroundImage: !useAlt ? NetworkImage(this.avatarUrl!) : null,
+      backgroundImage: !useAlt ? this._constructImage() : null,
       radius: radius
     );
   }

@@ -1,3 +1,4 @@
+import "dart:io";
 import "package:flutter/material.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
@@ -6,10 +7,15 @@ import "package:moxxyv2/ui/widgets/snackbar.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/postregister/actions.dart";
+import "package:moxxyv2/redux/account/actions.dart";
 import "package:moxxyv2/ui/pages/postregister/state.dart";
 
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
+import "package:file_picker/file_picker.dart";
+import "package:image_cropping/constant/enums.dart";
+import "package:image_cropping/image_cropping.dart";
+import "package:path_provider/path_provider.dart";
 
 class _PostRegistrationPageViewModel {
   final bool showSnackbar;
@@ -17,8 +23,9 @@ class _PostRegistrationPageViewModel {
   final String jid;
   final String displayName;
   final String avatarUrl;
+  final void Function(String avatarUrl) setAvatarUrl;
 
-  _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName, required this.avatarUrl });
+  _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName, required this.avatarUrl, required this.setAvatarUrl });
 }
 
 class PostRegistrationPage extends StatelessWidget {
@@ -40,6 +47,32 @@ class PostRegistrationPage extends StatelessWidget {
 
     return this._controller!;
   }
+
+  void _pickAvatar(BuildContext context, _PostRegistrationPageViewModel viewModel) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.image,
+      withData: true
+    );
+
+    if (result != null) {
+      // TODO: Maybe factor this out into a helper
+      ImageCropping.cropImage(
+        context: context,
+        imageBytes: result.files.single.bytes!,
+        onImageDoneListener: (data) async {
+          String cacheDir = (await getTemporaryDirectory()).path;
+          Directory accountDir = Directory(cacheDir + "/account");
+          await accountDir.create();
+          File avatar = File(accountDir.path + "/avatar.png");
+          await avatar.writeAsBytes(data);
+          viewModel.setAvatarUrl(avatar.path);
+        },
+        selectedImageRatio: ImageRatio.RATIO_1_1
+      );
+      print(result.files.single.path);
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -53,7 +86,8 @@ class PostRegistrationPage extends StatelessWidget {
             setShowSnackbar: (show) => store.dispatch(PostRegisterSetShowSnackbarAction(show: show)),
             jid: store.state.accountState.jid,
             displayName: store.state.accountState.displayName,
-            avatarUrl: store.state.accountState.avatarUrl
+            avatarUrl: store.state.accountState.avatarUrl,
+            setAvatarUrl: (url) => store.dispatch(SetAvatarAction(avatarUrl: url))
           ),
           builder: (context, viewModel) => Stack(
             children: [
@@ -94,10 +128,8 @@ class PostRegistrationPage extends StatelessWidget {
                           avatarUrl: viewModel.avatarUrl,
                           altIcon: Icons.person,
                           showEditButton: false,
-                          // TODO
-                          onTapFunction: () {}
+                          onTapFunction: () => this._pickAvatar(context, viewModel)
                         ),
-
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.0),
                           child: Column(

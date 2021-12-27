@@ -31,8 +31,9 @@ dependencies:
   flutter_settings_ui: ^2.0.1
   url_launcher: ^6.0.17
   qr_flutter: ^4.0.0
-  #file_picker: ^4.3.2
-  #image_cropping: ^0.0.8
+  file_picker: ^4.3.0
+  image_cropping: ^0.0.8
+  path_provider: ^2.0.8
   #hive: ^2.0.5
   #hive_flutter: ^1.1.0
 
