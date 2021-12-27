@@ -10,9 +10,11 @@ issues.
 
 ## Developing and Building
 
-Run `nix develop` to get a development shell. On first build, run `python tools/generate_licenses.py`
-and `python tools/generate_providers.py` to generate the data classes. After that, you
-can run the app using `flutter run` or build the app with `flutter build`.
+Clone using `git clone --recursive https://github.com/Polynomdivision/moxxyv2.git`.
+
+Run `nix develop` to get a development shell. Before the first build, run `make data` to
+generate the data classes. After that, you can run the app using `flutter run` or build the
+app with `flutter build`.
 
 ## License
 

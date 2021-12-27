@@ -1,0 +1,3 @@
+[submodule "thirdparty/xmpp-providers"]
+	path = thirdparty/xmpp-providers
+	url = https://invent.kde.org/melvo/xmpp-providers.git
