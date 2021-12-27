@@ -56,7 +56,13 @@ class RegistrationPage extends StatelessWidget {
     viewModel.setAccountDisplayName(this.controller.text);
     viewModel.performRegistration();
 
+    // TODO: Remove
     Future.delayed(Duration(seconds: 3), () => Navigator.pushNamedAndRemoveUntil(context, "/register/post", (route) => false));
+  }
+
+  // Just a safety net to ensure we don't crash during first initialization
+  int _getProviderIndex(_RegistrationPageViewModel viewModel) {
+    return viewModel.providerIndex < 0 ? 0 : viewModel.providerIndex;
   }
   
   @override
@@ -75,61 +81,67 @@ class RegistrationPage extends StatelessWidget {
         setAccountJid: (jid) => store.dispatch(SetJidAction(jid: jid)),
         setAccountDisplayName: (displayName) => store.dispatch(SetDisplayNameAction(displayName: displayName))
       ),
-      builder: (context, viewModel) => Scaffold(
-        appBar: BorderlessTopbar.simple(title: "Register"),
-        // TODO: Disable the inputs and the BackButton if we're working on loggin in
-        body: Column(
-          children: [
-            Visibility(
-              visible: viewModel.doingWork,
-              child: LinearProgressIndicator(
-                value: null,
-                valueColor: AlwaysStoppedAnimation<Color>(PRIMARY_COLOR)
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE, vertical: 16.0),
-              child: Text(
-                "XMPP is a lot like e-mail: You can send e-mails to people who are not using your specific e-mail provider. As such, there are a lot of XMPP providers. To help you, we chose a random one from a curated list. You only have to pick a username.",
-                style: TextStyle(
-                  fontSize: FONTSIZE_BODY
+      builder: (context, viewModel) {
+        if (viewModel.providerIndex < 0) {
+          this._generateNewProvider(viewModel);
+        }
+
+        return Scaffold(
+          appBar: BorderlessTopbar.simple(title: "Register"),
+          // TODO: Disable the inputs and the BackButton if we're working on logging in
+          body: Column(
+            children: [
+              Visibility(
+                visible: viewModel.doingWork,
+                child: LinearProgressIndicator(
+                  value: null,
+                  valueColor: AlwaysStoppedAnimation<Color>(PRIMARY_COLOR)
                 )
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: 8.0)),
-              child: CustomTextField(
-                maxLines: 1,
-                labelText: "Username",
-                suffixText: "@" + xmppProviderList[viewModel.providerIndex].jid,
-                suffixIcon: Padding(
-                  padding: EdgeInsetsDirectional.only(end: 6.0),
-                  child: IconButton(
-                    icon: Icon(Icons.refresh),
-                    onPressed: viewModel.doingWork ? null : () => this._generateNewProvider(viewModel)
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE, vertical: 16.0),
+                child: Text(
+                  "XMPP is a lot like e-mail: You can send e-mails to people who are not using your specific e-mail provider. As such, there are a lot of XMPP providers. To help you, we chose a random one from a curated list. You only have to pick a username.",
+                  style: TextStyle(
+                    fontSize: FONTSIZE_BODY
                   )
-                ),
-                errorText: viewModel.errorText,
-                controller: this.controller,
-                cornerRadius: TEXTFIELD_RADIUS_REGULAR
-              )
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
-                    child: ElevatedButton(
-                      child: Text("Register"),
-                      onPressed: viewModel.doingWork ? null : () => this._performRegistration(context, viewModel)
+                )
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: 8.0)),
+                child: CustomTextField(
+                  maxLines: 1,
+                  labelText: "Username",
+                  suffixText: "@" + xmppProviderList[this._getProviderIndex(viewModel)].jid,
+                  suffixIcon: Padding(
+                    padding: EdgeInsetsDirectional.only(end: 6.0),
+                    child: IconButton(
+                      icon: Icon(Icons.refresh),
+                      onPressed: viewModel.doingWork ? null : () => this._generateNewProvider(viewModel)
+                    )
+                  ),
+                  errorText: viewModel.errorText,
+                  controller: this.controller,
+                  cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                )
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+                      child: ElevatedButton(
+                        child: Text("Register"),
+                        onPressed: viewModel.doingWork ? null : () => this._performRegistration(context, viewModel)
+                      )
                     )
                   )
-                )
-              ]
-            )
-          ]
-        )
-      )
+                ]
+              )
+            ]
+          )
+        );
+      }
     );
   }
 }
