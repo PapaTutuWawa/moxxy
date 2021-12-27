@@ -6,11 +6,7 @@ issues.
 
 ## Screenshots
 
-![Intro](assets/repo/intro.png)
-![Conversations](assets/repo/conversations.png)
-![Conversation](assets/repo/conversation.png)
-![Adding a contact](assets/repo/add_contact.png)
-![Starting a new chat](assets/repo/start_chat.png)
+![screenshots](./assets/repo/title.png)
 
 ## Developing and Building
 
