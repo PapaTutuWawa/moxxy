@@ -79,6 +79,7 @@ String formatMessageTimestamp(int timestamp, int now) {
 enum JidFormatError {
   NONE,
   EMPTY,
+  NO_LOCALPART,
   NO_SEPARATOR,
   TOO_MANY_SEPARATORS,
   NO_DOMAIN
@@ -99,6 +100,10 @@ JidFormatError validateJid(String jid) {
   List<String> parts = jid.split("@");
   if (parts.length != 2) {
     return JidFormatError.TOO_MANY_SEPARATORS;
+  }
+
+  if (parts[0].length == 0) {
+    return JidFormatError.NO_LOCALPART;
   }
 
   if (parts[1].length == 0) {

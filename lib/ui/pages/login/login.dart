@@ -57,6 +57,10 @@ class LoginPage extends StatelessWidget {
         return;
       }
       break;
+      case JidFormatError.NO_LOCALPART: {
+        viewModel.setJidError("Your username must preceed the @");
+        return;
+      }
       case JidFormatError.NONE: break;
     }
 

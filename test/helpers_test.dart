@@ -135,6 +135,7 @@ void main() {
           expect(validateJid("a@"), JidFormatError.NO_DOMAIN);
           expect(validateJid(""), JidFormatError.EMPTY);
           expect(validateJid("a@local@host"), JidFormatError.TOO_MANY_SEPARATORS);
+          expect(validateJid("@local"), JidFormatError.NO_LOCALPART);
       });
   });
 }
