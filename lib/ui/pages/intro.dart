@@ -11,19 +11,19 @@ class IntroPage extends StatelessWidget {
         body: Column(
           children: [
             Padding(
-              padding: EdgeInsetsDirectional.only(top: 32.0),
+              padding: EdgeInsets.only(top: 16.0),
+              child: Image.asset(
+                "assets/images/logo.png",
+                width: 200, height: 200
+              )
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
               child: Text(
                 "moxxy",
                 style: TextStyle(
                   fontSize: FONTSIZE_TITLE
                 )
-              )
-            ),
-            Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Image.asset(
-                "assets/images/logo.png",
-                width: 200, height: 200
               )
             ),
             Padding(
