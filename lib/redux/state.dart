@@ -31,6 +31,7 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
   );
 }
 
+// TODO: Add a global doingWork state and replace them in LoginPageState, RegisterPageState, ...
 class MoxxyState {
   final HashMap<String, List<Message>> messages;
   final List<Conversation> conversations;

@@ -21,6 +21,7 @@ import "redux/start/actions.dart";
 import "redux/conversations/middlewares.dart";
 import "redux/account/middlewares.dart";
 import "redux/start/middlewares.dart";
+import "redux/login/middlewares.dart";
 import "redux/state.dart";
 
 import "package:get_it/get_it.dart";
@@ -40,6 +41,7 @@ Store<MoxxyState> createStore(Isar isar) {
       conversationsMiddleware,
       startMiddleware,
       accountMiddleware,
+      loginMiddleware,
       NavigationMiddleware(),
       // TODO: Hide behind a build flavour
       LoggingMiddleware.printer()

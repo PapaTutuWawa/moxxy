@@ -4,11 +4,6 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
-// TODO: REMOVE
-import "package:moxxyv2/redux/account/actions.dart";
-import "package:moxxyv2/redux/account/state.dart";
-import "package:moxxyv2/backend/account.dart";
-// TODO END
 import "package:moxxyv2/helpers.dart";
 
 import 'package:flutter_redux/flutter_redux.dart';
@@ -16,7 +11,7 @@ import 'package:redux/redux.dart';
 
 class _LoginPageViewModel {
   final void Function() togglePasswordVisibility;
-  final void Function() performLogin;
+  final void Function(String jid /*, String password*/) performLogin;
   final void Function(String text) setJidError;
   final void Function(String text) setPasswordError;
   final void Function() resetErrors;
@@ -24,33 +19,13 @@ class _LoginPageViewModel {
   final bool showPassword;
   final String? passwordError;
   final String? jidError;
-  // --- START ---
-  // TODO: REMOVE
-  final AccountState accountState;
-  final void Function(String jid) setAccountJid;
-  final void Function(String displayName) setAccountDisplayName;
-  // --- END ---
 
-  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors, required this.setAccountJid, required this.setAccountDisplayName, required this.accountState });
+  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors });
 }
 
 class LoginPage extends StatelessWidget {
   final TextEditingController jidController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  void _navigateToConversations(BuildContext context) {
-    setAccountData(AccountState(
-        jid: this.jidController.text,
-        displayName: this.jidController.text.split("@")[0],
-        avatarUrl: "",
-        streamResumptionToken: ""
-    ));
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      "/conversations",
-      (route) => false
-    );
-  }
 
   void _performLogin(BuildContext context, _LoginPageViewModel viewModel) {
     viewModel.resetErrors();
@@ -89,14 +64,7 @@ class LoginPage extends StatelessWidget {
       return;
     }
     
-    // TODO: Remove
-    Future.delayed(Duration(seconds: 3), () {
-        viewModel.setAccountJid(jid);
-        viewModel.setAccountDisplayName(jid.split("@")[0]);
-        this._navigateToConversations(context);
-    });
-
-    viewModel.performLogin();
+    viewModel.performLogin(jid);
   }
   
   @override
@@ -104,17 +72,14 @@ class LoginPage extends StatelessWidget {
     return StoreConnector<MoxxyState, _LoginPageViewModel>(
       converter: (store) => _LoginPageViewModel(
         togglePasswordVisibility: () => store.dispatch(TogglePasswordVisibilityAction()),
-        performLogin: () => store.dispatch(PerformLoginAction()),
+        performLogin: (jid) => store.dispatch(PerformLoginAction(jid: jid)),
         doingWork: store.state.loginPageState.doingWork,
         showPassword: store.state.loginPageState.showPassword,
         passwordError: store.state.loginPageState.passwordError,
         jidError: store.state.loginPageState.jidError,
         setJidError: (text) => store.dispatch(LoginSetJidErrorAction(text: text)),
         setPasswordError: (text) => store.dispatch(LoginSetPasswordErrorAction(text: text)),
-        resetErrors: () => store.dispatch(LoginResetErrorsAction()),
-        setAccountJid: (jid) => store.dispatch(SetJidAction(jid: jid)),
-        setAccountDisplayName: (displayName) => store.dispatch(SetDisplayNameAction(displayName: displayName)),
-        accountState: store.state.accountState
+        resetErrors: () => store.dispatch(LoginResetErrorsAction())
       ),
       builder: (context, viewModel) => WillPopScope(
         onWillPop: () async => !viewModel.doingWork,
