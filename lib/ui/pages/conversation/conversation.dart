@@ -16,7 +16,6 @@ import "package:moxxyv2/ui/helpers.dart";
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
-import 'package:get_it/get_it.dart';
 
 typedef SendMessageFunction = void Function(String body);
 
@@ -174,7 +173,7 @@ class ConversationPage extends StatelessWidget {
           setShowScrollToEndButton: (show) => store.dispatch(SetShowScrollToEndButtonAction(show: show)),
           sendMessage: (body) => store.dispatch(
             // TODO
-            AddMessageAction(
+            SendMessageAction(
               from: "UwU",
               timestamp: DateTime.now().millisecondsSinceEpoch,
               body: body,

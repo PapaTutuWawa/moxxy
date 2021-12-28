@@ -16,7 +16,7 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
         lastChangeTimestamp: action.lastChangeTimestamp,
         id: action.id
     ));
-  } else if (action is AddMessageAction) {
+  } else if (action is SendMessageAction) {
     return state.map((element) {
         if (element.jid == action.jid) {
           return element.copyWith(lastMessageBody: action.body, lastChangeTimestamp: action.timestamp);

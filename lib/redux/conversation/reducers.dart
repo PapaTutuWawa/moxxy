@@ -5,7 +5,7 @@ import "package:moxxyv2/ui/pages/conversation/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 
 HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> state, dynamic action) {
-  if (action is AddMessageAction) {
+  if (action is SendMessageAction) {
     HashMap<String, List<Message>> map = HashMap<String, List<Message>>()..addAll(state);
 
     Message msg = Message(

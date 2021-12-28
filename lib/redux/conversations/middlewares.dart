@@ -15,7 +15,7 @@ void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher nex
     } else {
       repo.addConversationFromAction(action);
     }
-  } else if (action is AddMessageAction) {
+  } else if (action is SendMessageAction) {
     if (repo.hasConversation(action.cid)) {
       repo.updateConversation(id: action.cid, lastMessageBody: action.body, lastChangeTimestamp: action.timestamp);
     } else {

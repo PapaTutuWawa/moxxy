@@ -10,13 +10,12 @@ class SetShowScrollToEndButtonAction {
   SetShowScrollToEndButtonAction({ required this.show });
 }
 
-// TODO: Rename to SendMessageAction
-class AddMessageAction {
+class SendMessageAction {
   final String body;
   final int timestamp;
   final String from;
   final String jid;
   final int cid;
 
-  AddMessageAction({ required this.from, required this.body, required this.timestamp, required this.jid, required this.cid });
+  SendMessageAction({ required this.from, required this.body, required this.timestamp, required this.jid, required this.cid });
 }
