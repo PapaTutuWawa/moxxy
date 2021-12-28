@@ -57,10 +57,15 @@ class SelfProfileHeader extends StatelessWidget {
               width: 220,
               height: 220,
               child: QrImage(
-                data: jid,
+                // TODO: Check if the URI is correct
+                data: "xmpp:" + jid,
                 version: QrVersions.auto,
                 size: 220.0,
-                backgroundColor: Colors.white
+                backgroundColor: Colors.white,
+                embeddedImage: AssetImage("assets/images/logo.png"),
+                embeddedImageStyle: QrEmbeddedImageStyle(
+                  size: Size(50, 50)
+                )
               )
             )
           ) 
