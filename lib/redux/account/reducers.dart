@@ -8,6 +8,8 @@ AccountState accountReducer(AccountState state, dynamic action) {
     return state.copyWith(avatarUrl: action.avatarUrl);
   } else if (action is SetJidAction) {
     return state.copyWith(jid: action.jid);
+  } else if (action is SetAccountAction) {
+    return action.state;
   }
 
   return state;

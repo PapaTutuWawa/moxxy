@@ -6,6 +6,8 @@ import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
 // TODO: REMOVE
 import "package:moxxyv2/redux/account/actions.dart";
+import "package:moxxyv2/redux/account/state.dart";
+import "package:moxxyv2/backend/account.dart";
 // TODO END
 import "package:moxxyv2/helpers.dart";
 
@@ -24,11 +26,12 @@ class _LoginPageViewModel {
   final String? jidError;
   // --- START ---
   // TODO: REMOVE
+  final AccountState accountState;
   final void Function(String jid) setAccountJid;
   final void Function(String displayName) setAccountDisplayName;
   // --- END ---
 
-  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors, required this.setAccountJid, required this.setAccountDisplayName });
+  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors, required this.setAccountJid, required this.setAccountDisplayName, required this.accountState });
 }
 
 class LoginPage extends StatelessWidget {
@@ -36,6 +39,12 @@ class LoginPage extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
 
   void _navigateToConversations(BuildContext context) {
+    setAccountData(AccountState(
+        jid: this.jidController.text,
+        displayName: this.jidController.text.split("@")[0],
+        avatarUrl: "",
+        streamResumptionToken: ""
+    ));
     Navigator.pushNamedAndRemoveUntil(
       context,
       "/conversations",
@@ -104,7 +113,8 @@ class LoginPage extends StatelessWidget {
         setPasswordError: (text) => store.dispatch(LoginSetPasswordErrorAction(text: text)),
         resetErrors: () => store.dispatch(LoginResetErrorsAction()),
         setAccountJid: (jid) => store.dispatch(SetJidAction(jid: jid)),
-        setAccountDisplayName: (displayName) => store.dispatch(SetDisplayNameAction(displayName: displayName))
+        setAccountDisplayName: (displayName) => store.dispatch(SetDisplayNameAction(displayName: displayName)),
+        accountState: store.state.accountState
       ),
       builder: (context, viewModel) => WillPopScope(
         onWillPop: () async => !viewModel.doingWork,

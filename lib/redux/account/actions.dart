@@ -1,3 +1,5 @@
+import "package:moxxyv2/redux/account/state.dart";
+
 class SetDisplayNameAction {
   final String displayName;
 
@@ -14,4 +16,10 @@ class SetJidAction {
   final String jid;
 
   SetJidAction({ required this.jid });
+}
+
+class SetAccountAction {
+  final AccountState state;
+
+  SetAccountAction({ required this.state });
 }

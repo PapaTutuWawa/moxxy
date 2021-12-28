@@ -17,11 +17,15 @@ import 'repositories/roster.dart';
 import "repositories/conversation.dart";
 import "redux/conversation/reducers.dart";
 import "redux/conversation/actions.dart";
+import "redux/start/actions.dart";
 import "redux/conversations/middlewares.dart";
+import "redux/start/middlewares.dart";
 import "redux/state.dart";
 
 import 'package:get_it/get_it.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
+import "package:redux_logging/redux_logging.dart";
 import 'package:redux/redux.dart';
 import "package:isar/isar.dart";
 
@@ -33,8 +37,24 @@ import "isar.g.dart";
 // TODO: Theme the switches
 // TODO: Find a better way to do this
 void main() async {
-  final isar = await openIsar(); 
+  final isar = await openIsar();
+
   runApp(MyApp(isar: isar));
+}
+
+// TODO: Move somewhere else
+class SplashScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Image.asset(
+          "assets/images/logo.png",
+          width: 200, height: 200
+        )
+      )
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -42,7 +62,11 @@ class MyApp extends StatelessWidget {
     moxxyReducer,
     initialState: MoxxyState.initialState(),
     middleware: [
-      conversationsMiddleware
+      conversationsMiddleware,
+      startMiddleware,
+      NavigationMiddleware(),
+      // TODO: Hide behind a build flavour
+      LoggingMiddleware.printer()
     ]
   );
   final Isar isar;
@@ -55,6 +79,8 @@ class MyApp extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    this.store.dispatch(PerformPrestartAction());
+
     return StoreProvider(
       store: this.store,
       child: MaterialApp(
@@ -80,6 +106,7 @@ class MyApp extends StatelessWidget {
             secondary: PRIMARY_COLOR
           )
         ),
+        navigatorKey: NavigatorHolder.navigatorKey,
         //themeMode: ThemeMode.system,
         themeMode: ThemeMode.dark,
         routes: {
@@ -97,7 +124,7 @@ class MyApp extends StatelessWidget {
           "/settings/licenses": (context) => SettingsLicensesPage(),
           "/settings/about": (context) => SettingsAboutPage(),
         },
-        home: IntroPage(),
+        home: SplashScreen(),
       )
     );
   }
