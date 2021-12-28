@@ -12,9 +12,9 @@ issues.
 
 Clone using `git clone --recursive https://github.com/Polynomdivision/moxxyv2.git`.
 
-Run `nix develop` to get a development shell. Before the first build, run `make data` to
-generate the data classes. After that, you can run the app using `flutter run` or build the
-app with `flutter build`.
+Run `nix develop` to get a development shell. Before the first build, run `make data` and
+`make data` and `flutter pub run build_runner build` to generate the data classes. After
+that, you can run the app using `flutter run` or build the app with `flutter build`.
 
 ## License
 

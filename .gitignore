@@ -47,3 +47,4 @@ app.*.map.json
 
 # Generated data classes
 lib/data/generated/*
+lib/isar.g.dart

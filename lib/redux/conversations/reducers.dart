@@ -13,7 +13,8 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
         // TODO: Correct?
         unreadCounter: 0,
         sharedMediaPaths: action.sharedMediaPaths,
-        lastChangeTimestamp: action.lastChangeTimestamp
+        lastChangeTimestamp: action.lastChangeTimestamp,
+        id: action.id
     ));
   } else if (action is AddMessageAction) {
     return state.map((element) {

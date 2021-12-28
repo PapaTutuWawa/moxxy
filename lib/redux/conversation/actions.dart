@@ -16,6 +16,7 @@ class AddMessageAction {
   final int timestamp;
   final String from;
   final String jid;
+  final int cid;
 
-  AddMessageAction({ required this.from, required this.body, required this.timestamp, required this.jid });
+  AddMessageAction({ required this.from, required this.body, required this.timestamp, required this.jid, required this.cid });
 }

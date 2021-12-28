@@ -164,22 +164,26 @@ class ConversationPage extends StatelessWidget {
     double maxWidth = MediaQuery.of(context).size.width * 0.6;
     
     return StoreConnector<MoxxyState, _MessageListViewModel>(
-      converter: (store) => _MessageListViewModel(
-        conversation: store.state.conversations.firstWhere((item) => item.jid == jid),
-        showSendButton: store.state.conversationPageState.showSendButton,
-        setShowSendButton: (show) => store.dispatch(SetShowSendButtonAction(show: show)),
-        showScrollToEndButton: store.state.conversationPageState.showScrollToEndButton,
-        setShowScrollToEndButton: (show) => store.dispatch(SetShowScrollToEndButtonAction(show: show)),
-        sendMessage: (body) => store.dispatch(
-          // TODO
-          AddMessageAction(
-            from: "UwU",
-            timestamp: DateTime.now().millisecondsSinceEpoch,
-            body: body,
-            jid: jid
+      converter: (store) {
+        Conversation conversation = store.state.conversations.firstWhere((item) => item.jid == jid);
+        return _MessageListViewModel(
+          conversation: conversation,
+          showSendButton: store.state.conversationPageState.showSendButton,
+          setShowSendButton: (show) => store.dispatch(SetShowSendButtonAction(show: show)),
+          showScrollToEndButton: store.state.conversationPageState.showScrollToEndButton,
+          setShowScrollToEndButton: (show) => store.dispatch(SetShowScrollToEndButtonAction(show: show)),
+          sendMessage: (body) => store.dispatch(
+            // TODO
+            AddMessageAction(
+              from: "UwU",
+              timestamp: DateTime.now().millisecondsSinceEpoch,
+              body: body,
+              jid: jid,
+              cid: conversation.id
+            )
           )
-        )
-      ),
+        );
+      },
       builder: (context, viewModel) {
         return Scaffold(
           appBar: BorderlessTopbar.avatarAndName(
