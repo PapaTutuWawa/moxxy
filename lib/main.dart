@@ -19,6 +19,7 @@ import "redux/conversation/reducers.dart";
 import "redux/conversation/actions.dart";
 import "redux/start/actions.dart";
 import "redux/conversations/middlewares.dart";
+import "redux/account/middlewares.dart";
 import "redux/start/middlewares.dart";
 import "redux/state.dart";
 
@@ -64,6 +65,7 @@ class MyApp extends StatelessWidget {
     middleware: [
       conversationsMiddleware,
       startMiddleware,
+      accountMiddleware,
       NavigationMiddleware(),
       // TODO: Hide behind a build flavour
       LoggingMiddleware.printer()

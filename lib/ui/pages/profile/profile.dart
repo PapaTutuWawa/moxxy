@@ -9,6 +9,7 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/profile/actions.dart";
+import "package:moxxyv2/redux/account/actions.dart";
 
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
@@ -27,11 +28,12 @@ class ProfilePageArguments {
 class _ProfilePageViewModel {
   final bool showSnackbar;
   final void Function(bool show) setShowSnackbar;
+  final void Function(String name) setDisplayName;
   final String displayName;
   final String jid;
   final String avatarUrl;
 
-  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid, required this.avatarUrl });
+  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid, required this.avatarUrl, required this.setDisplayName });
 }
 
 class SelfProfileHeader extends StatelessWidget {
@@ -184,7 +186,7 @@ class ProfilePage extends StatelessWidget {
 
   
   void _applyDisplayName(BuildContext context, _ProfilePageViewModel viewModel) {
-    // TODO
+    viewModel.setDisplayName(this._controller!.text);
     dismissSoftKeyboard(context);
     viewModel.setShowSnackbar(false);
   }
@@ -201,7 +203,8 @@ class ProfilePage extends StatelessWidget {
             setShowSnackbar: (show) => store.dispatch(ProfileSetShowSnackbarAction(show: show)),
             displayName: store.state.accountState.displayName,
             jid: store.state.accountState.jid,
-            avatarUrl: store.state.accountState.avatarUrl
+            avatarUrl: store.state.accountState.avatarUrl,
+            setDisplayName: (name) => store.dispatch(SetDisplayNameAction(displayName: name))
           ),
           builder: (context, viewModel) => Stack(
             alignment: Alignment.center,
