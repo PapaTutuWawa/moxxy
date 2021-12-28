@@ -23,3 +23,5 @@ class SetAccountAction {
 
   SetAccountAction({ required this.state });
 }
+
+class PerformLogoutAction {}

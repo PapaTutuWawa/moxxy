@@ -23,14 +23,35 @@ import "redux/account/middlewares.dart";
 import "redux/start/middlewares.dart";
 import "redux/state.dart";
 
-import 'package:get_it/get_it.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import "package:get_it/get_it.dart";
+import "package:flutter_redux/flutter_redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:redux_logging/redux_logging.dart";
-import 'package:redux/redux.dart';
+import "package:redux/redux.dart";
 import "package:isar/isar.dart";
 
 import "isar.g.dart";
+
+Store<MoxxyState> createStore(Isar isar) {
+  final store = Store<MoxxyState>(
+    moxxyReducer,
+    initialState: MoxxyState.initialState(),
+    middleware: [
+      conversationsMiddleware,
+      startMiddleware,
+      accountMiddleware,
+      NavigationMiddleware(),
+      // TODO: Hide behind a build flavour
+      LoggingMiddleware.printer()
+    ]
+  );
+
+  GetIt.I.registerSingleton<RosterRepository>(RosterRepository());
+  GetIt.I.registerSingleton<DatabaseRepository>(DatabaseRepository(isar: isar, store: store));
+  GetIt.I.get<DatabaseRepository>().loadConversations();
+
+  return store;
+}
 
 // TODO: Replace all single quotes with double quotes
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -39,8 +60,9 @@ import "isar.g.dart";
 // TODO: Find a better way to do this
 void main() async {
   final isar = await openIsar();
+  final store = createStore(isar);
 
-  runApp(MyApp(isar: isar));
+  runApp(MyApp(isar: isar, store: store));
 }
 
 // TODO: Move somewhere else
@@ -59,25 +81,10 @@ class SplashScreen extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
-  final Store<MoxxyState> store = Store(
-    moxxyReducer,
-    initialState: MoxxyState.initialState(),
-    middleware: [
-      conversationsMiddleware,
-      startMiddleware,
-      accountMiddleware,
-      NavigationMiddleware(),
-      // TODO: Hide behind a build flavour
-      LoggingMiddleware.printer()
-    ]
-  );
+  final Store<MoxxyState> store;
   final Isar isar;
 
-  MyApp({ required this.isar }) {
-    GetIt.I.registerSingleton<RosterRepository>(RosterRepository());
-    GetIt.I.registerSingleton<DatabaseRepository>(DatabaseRepository(isar: isar, store: this.store));
-    GetIt.I.get<DatabaseRepository>().loadConversations();
-  }
+  MyApp({ required this.isar, required this.store });
   
   @override
   Widget build(BuildContext context) {

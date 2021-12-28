@@ -41,3 +41,12 @@ Future<void> setAccountData(AccountState state) async {
     value: jsonEncode(state.toJson())
   );
 }
+
+Future<void> removeAccountData() async {
+  // TODO: This sometimes fails
+  final storage = new FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true)
+  );
+
+  await storage.delete(key: "account");
+}
