@@ -35,7 +35,7 @@ def get_library_data(pkg):
 def get_license(pkg):
     body = requests.get("https://pub.dev/packages/" + pkg + "/license").text
 
-    if "Apache-2.0" in body:
+    if "Apache-2.0" in body or ("Apache License" in body and "Version 2.0" in body):
         return "Apache-2.0"
     elif "BSD-3-Clause" in body:
         return "BSD-3-Clause"
