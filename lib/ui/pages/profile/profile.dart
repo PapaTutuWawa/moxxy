@@ -29,11 +29,12 @@ class _ProfilePageViewModel {
   final bool showSnackbar;
   final void Function(bool show) setShowSnackbar;
   final void Function(String name) setDisplayName;
+  final void Function(String avatarUrl) setAvatarUrl;
   final String displayName;
   final String jid;
   final String avatarUrl;
 
-  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid, required this.avatarUrl, required this.setDisplayName });
+  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid, required this.avatarUrl, required this.setDisplayName, required this.setAvatarUrl });
 }
 
 class SelfProfileHeader extends StatelessWidget {
@@ -83,7 +84,7 @@ class SelfProfileHeader extends StatelessWidget {
           avatarUrl: this.viewModel.avatarUrl,
           altIcon: Icons.person,
           showEditButton: false,
-          onTapFunction: () {}
+          onTapFunction: () => pickAndSetAvatar(context, this.viewModel.setAvatarUrl)
         ),
         Padding(
           padding: EdgeInsets.only(top: 8.0),
@@ -209,7 +210,8 @@ class ProfilePage extends StatelessWidget {
             displayName: store.state.accountState.displayName,
             jid: store.state.accountState.jid,
             avatarUrl: store.state.accountState.avatarUrl,
-            setDisplayName: (name) => store.dispatch(SetDisplayNameAction(displayName: name))
+            setDisplayName: (name) => store.dispatch(SetDisplayNameAction(displayName: name)),
+            setAvatarUrl: (avatarUrl) => store.dispatch(SetAvatarAction(avatarUrl: avatarUrl))
           ),
           builder: (context, viewModel) => Stack(
             alignment: Alignment.center,

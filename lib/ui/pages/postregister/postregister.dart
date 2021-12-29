@@ -1,4 +1,3 @@
-import "dart:io";
 import "package:flutter/material.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
@@ -12,10 +11,6 @@ import "package:moxxyv2/redux/postregister/state.dart";
 
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
-import "package:file_picker/file_picker.dart";
-import "package:image_cropping/constant/enums.dart";
-import "package:image_cropping/image_cropping.dart";
-import "package:path_provider/path_provider.dart";
 
 class _PostRegistrationPageViewModel {
   final bool showSnackbar;
@@ -48,34 +43,6 @@ class PostRegistrationPage extends StatelessWidget {
     return this._controller!;
   }
 
-  void _pickAvatar(BuildContext context, _PostRegistrationPageViewModel viewModel) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: false,
-      type: FileType.image,
-      withData: true
-    );
-
-    if (result != null) {
-      // TODO: Maybe factor this out into a helper
-      ImageCropping.cropImage(
-        context: context,
-        imageBytes: result.files.single.bytes!,
-        onImageDoneListener: (data) async {
-          String cacheDir = (await getTemporaryDirectory()).path;
-          Directory accountDir = Directory(cacheDir + "/account");
-          await accountDir.create();
-          File avatar = File(accountDir.path + "/avatar.png");
-          await avatar.writeAsBytes(data);
-
-          // TODO: If the path doesn't change then the UI won't be updated. Hash it and use that as the filename?
-          viewModel.setAvatarUrl(avatar.path);
-        },
-        selectedImageRatio: ImageRatio.RATIO_1_1
-      );
-      print(result.files.single.path);
-    }
-  }
-  
   @override
   Widget build(BuildContext context) {
     // TODO: Fix the typography
@@ -130,7 +97,7 @@ class PostRegistrationPage extends StatelessWidget {
                           avatarUrl: viewModel.avatarUrl,
                           altIcon: Icons.person,
                           showEditButton: false,
-                          onTapFunction: () => this._pickAvatar(context, viewModel)
+                          onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl)
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.0),
