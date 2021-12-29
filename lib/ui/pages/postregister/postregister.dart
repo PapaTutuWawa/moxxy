@@ -8,7 +8,7 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/postregister/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
-import "package:moxxyv2/ui/pages/postregister/state.dart";
+import "package:moxxyv2/redux/postregister/state.dart";
 
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";

@@ -1,5 +1,5 @@
 import "package:moxxyv2/redux/profile/actions.dart";
-import "package:moxxyv2/ui/pages/profile/state.dart";
+import "package:moxxyv2/redux/profile/state.dart";
 
 ProfilePageState profileReducer(ProfilePageState state, dynamic action) {
   if (action is ProfileSetShowSnackbarAction) {

@@ -19,25 +19,13 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
 
   void _addToRoster(BuildContext context, _AddContactPageViewModel viewModel) {
     viewModel.addContact(this.controller.text);
-
-    // TODO: Remove
-    // TODO: Redirect to a new conversation with the new contact
-    Future.delayed(
-      Duration(seconds: 3),
-      () {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          "/conversations",
-          (route) => false);
-      }
-    );
   }
   
   @override
   Widget build(BuildContext context) {
     return StoreConnector<MoxxyState, _AddContactPageViewModel>(
       converter: (store) => _AddContactPageViewModel(
-        doingWork: store.state.addContactPageState.doingWork,
+        doingWork: store.state.globalState.doingWork,
         addContact: (jid) => store.dispatch(AddContactAction(jid: jid))
       ),
       builder: (context, viewModel) => Scaffold(

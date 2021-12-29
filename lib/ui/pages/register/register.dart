@@ -5,7 +5,7 @@ import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/ui/pages/register/state.dart";
+import "package:moxxyv2/redux/registration/state.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/registration/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
@@ -55,12 +55,10 @@ class RegistrationPage extends StatelessWidget {
 
     dismissSoftKeyboard(context);
 
+    // TODO: Do this in the middleware
     viewModel.setAccountJid(this._getCurrentJid(viewModel));
     viewModel.setAccountDisplayName(this.controller.text);
     viewModel.performRegistration();
-
-    // TODO: Remove
-    Future.delayed(Duration(seconds: 3), () => Navigator.pushNamedAndRemoveUntil(context, "/register/post", (route) => false));
   }
 
   // Just a safety net to ensure we don't crash during first initialization
@@ -76,7 +74,7 @@ class RegistrationPage extends StatelessWidget {
         setProviderIndex: (index) => store.dispatch(NewProviderAction(
             index: index
         )),
-        doingWork: store.state.registerPageState.doingWork,
+        doingWork: store.state.globalState.doingWork,
         performRegistration: () => store.dispatch(PerformRegistrationAction()),
         errorText: store.state.registerPageState.errorText,
         setErrorText: (text) => store.dispatch(RegistrationSetErrorTextAction(text: text)),

@@ -3,6 +3,7 @@ import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/account/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
+import "package:moxxyv2/redux/global/actions.dart";
 import "package:moxxyv2/backend/account.dart";
 
 import "package:redux/redux.dart";
@@ -10,6 +11,7 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 
 void loginMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
   if (action is PerformLoginAction) {
+    store.dispatch(SetDoingWorkAction(state: true));
     // TODO: Remove
     Future.delayed(Duration(seconds: 3), () {
         store.dispatch(LoginSuccessfulAction(
@@ -19,6 +21,7 @@ void loginMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
         ));
     });
   } else if (action is LoginSuccessfulAction) {
+    store.dispatch(SetDoingWorkAction(state: false));
     store.dispatch(SetDisplayNameAction(displayName: action.displayName));
     store.dispatch(SetJidAction(jid: action.jid));
 

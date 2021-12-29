@@ -73,7 +73,7 @@ class LoginPage extends StatelessWidget {
       converter: (store) => _LoginPageViewModel(
         togglePasswordVisibility: () => store.dispatch(TogglePasswordVisibilityAction()),
         performLogin: (jid) => store.dispatch(PerformLoginAction(jid: jid)),
-        doingWork: store.state.loginPageState.doingWork,
+        doingWork: store.state.globalState.doingWork,
         showPassword: store.state.loginPageState.showPassword,
         passwordError: store.state.loginPageState.passwordError,
         jidError: store.state.loginPageState.jidError,
