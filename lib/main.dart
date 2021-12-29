@@ -15,6 +15,7 @@ import 'ui/pages/settings/about.dart';
 import 'ui/constants.dart';
 import 'repositories/roster.dart';
 import "repositories/conversation.dart";
+import "repositories/roster.dart";
 import "redux/conversation/reducers.dart";
 import "redux/conversation/actions.dart";
 import "redux/start/actions.dart";
@@ -24,6 +25,7 @@ import "redux/start/middlewares.dart";
 import "redux/login/middlewares.dart";
 import "redux/registration/middlewares.dart";
 import "redux/addcontact/middlewares.dart";
+import "redux/roster/middlewares.dart";
 import "redux/state.dart";
 
 import "package:get_it/get_it.dart";
@@ -46,14 +48,15 @@ Store<MoxxyState> createStore(Isar isar) {
       loginMiddleware,
       registrationMiddleware,
       addcontactMiddleware,
+      rosterMiddleware,
       NavigationMiddleware(),
       // TODO: Hide behind a build flavour
       LoggingMiddleware.printer()
     ]
   );
 
-  GetIt.I.registerSingleton<RosterRepository>(RosterRepository());
   GetIt.I.registerSingleton<DatabaseRepository>(DatabaseRepository(isar: isar, store: store));
+  GetIt.I.registerSingleton<RosterRepository>(RosterRepository(isar: isar, store: store));
   GetIt.I.get<DatabaseRepository>().loadConversations();
 
   return store;

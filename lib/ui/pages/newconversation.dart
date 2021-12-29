@@ -15,7 +15,6 @@ import 'package:moxxyv2/constants.dart';
 
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
-import 'package:get_it/get_it.dart';
 
 typedef AddConversationFunction = void Function(Conversation conversation);
 
@@ -69,7 +68,6 @@ class NewConversationPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
-    var roster = GetIt.I.get<RosterRepository>().getAllRosterItems();
     return Scaffold(
       appBar: BorderlessTopbar.simple(title: "Start new chat"),
       body: StoreConnector<MoxxyState, _NewConversationViewModel>(
@@ -86,7 +84,7 @@ class NewConversationPage extends StatelessWidget {
             )
           ),
           conversations: store.state.conversations,
-          roster: GetIt.I.get<RosterRepository>().getAllRosterItems()
+          roster: store.state.roster
         ),
         builder: (context, viewModel) => ListView.builder(
           itemCount: viewModel.roster.length + 2,

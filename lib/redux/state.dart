@@ -7,6 +7,7 @@ import "package:moxxyv2/redux/postregister/reducers.dart";
 import "package:moxxyv2/redux/profile/reducers.dart";
 import "package:moxxyv2/redux/account/reducers.dart";
 import "package:moxxyv2/redux/global/reducers.dart";
+import "package:moxxyv2/redux/roster/reducers.dart";
 import "package:moxxyv2/redux/login/state.dart";
 import "package:moxxyv2/redux/conversation/state.dart";
 import "package:moxxyv2/redux/registration/state.dart";
@@ -16,11 +17,13 @@ import "package:moxxyv2/redux/account/state.dart";
 import "package:moxxyv2/redux/global/state.dart";
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/models/roster.dart";
 
 MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
   return MoxxyState(
     messages: messageReducer(state.messages, action),
     conversations: conversationReducer(state.conversations, action),
+    roster: rosterReducer(state.roster, action),
     loginPageState: loginReducer(state.loginPageState, action),
     conversationPageState: conversationPageReducer(state.conversationPageState, action),
     registerPageState: registerReducer(state.registerPageState, action),
@@ -35,6 +38,7 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
 class MoxxyState {
   final HashMap<String, List<Message>> messages;
   final List<Conversation> conversations;
+  final List<RosterItem> roster;
   final LoginPageState loginPageState;
   final ConversationPageState conversationPageState;
   final RegisterPageState registerPageState;
@@ -43,6 +47,6 @@ class MoxxyState {
   final AccountState accountState;
   final GlobalState globalState;
 
-  const MoxxyState({ required this.messages, required this.conversations, required this.loginPageState, required this.conversationPageState, required this.registerPageState, required this.postRegisterPageState, required this.profilePageState, required this.accountState, required this.globalState });
-  MoxxyState.initialState() : messages = HashMap(), conversations = List.empty(growable: true), loginPageState = LoginPageState(showPassword: false), conversationPageState = ConversationPageState(showSendButton: false, showScrollToEndButton: false), registerPageState = RegisterPageState(providerIndex: -1), postRegisterPageState = PostRegisterPageState(showSnackbar: false), profilePageState = ProfilePageState(showSnackbar: false), accountState = AccountState(jid: "", avatarUrl: "", displayName: ""), globalState = GlobalState(doingWork: false);
+  const MoxxyState({ required this.messages, required this.conversations, required this.roster, required this.loginPageState, required this.conversationPageState, required this.registerPageState, required this.postRegisterPageState, required this.profilePageState, required this.accountState, required this.globalState });
+  MoxxyState.initialState() : messages = HashMap(), conversations = List.empty(growable: true), roster = List.empty(growable: true), loginPageState = LoginPageState(showPassword: false), conversationPageState = ConversationPageState(showSendButton: false, showScrollToEndButton: false), registerPageState = RegisterPageState(providerIndex: -1), postRegisterPageState = PostRegisterPageState(showSnackbar: false), profilePageState = ProfilePageState(showSnackbar: false), accountState = AccountState(jid: "", avatarUrl: "", displayName: ""), globalState = GlobalState(doingWork: false);
 }

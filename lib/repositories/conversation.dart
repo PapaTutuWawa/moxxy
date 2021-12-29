@@ -23,7 +23,7 @@ class DatabaseRepository {
   Future<void> loadConversations() async {
     var conversations = await this.isar.conversations.where().findAll();
 
-    return conversations.forEach((c) {
+    conversations.forEach((c) {
         this._cache[c.id!] = c;
         this.store.dispatch(AddConversationAction(
             id: c.id!,
