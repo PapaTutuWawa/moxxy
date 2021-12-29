@@ -7,7 +7,8 @@ class AccountState {
   final String streamResumptionToken;
 
   AccountState({ required this.jid, required this.displayName, required this.avatarUrl, this.streamResumptionToken = "" });
-
+  AccountState.initialState() : jid = "", avatarUrl = "", displayName = "", streamResumptionToken = "";
+  
   factory AccountState.fromJson(Map<String, dynamic> json) {
     return AccountState(
       jid: json["jid"],

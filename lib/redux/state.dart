@@ -34,7 +34,6 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
   );
 }
 
-// TODO: Add to all state classes an .initalState() constructor
 class MoxxyState {
   final HashMap<String, List<Message>> messages;
   final List<Conversation> conversations;
@@ -48,5 +47,5 @@ class MoxxyState {
   final GlobalState globalState;
 
   const MoxxyState({ required this.messages, required this.conversations, required this.roster, required this.loginPageState, required this.conversationPageState, required this.registerPageState, required this.postRegisterPageState, required this.profilePageState, required this.accountState, required this.globalState });
-  MoxxyState.initialState() : messages = HashMap(), conversations = List.empty(growable: true), roster = List.empty(growable: true), loginPageState = LoginPageState(showPassword: false), conversationPageState = ConversationPageState(showSendButton: false, showScrollToEndButton: false), registerPageState = RegisterPageState(providerIndex: -1), postRegisterPageState = PostRegisterPageState(showSnackbar: false), profilePageState = ProfilePageState(showSnackbar: false), accountState = AccountState(jid: "", avatarUrl: "", displayName: ""), globalState = GlobalState(doingWork: false);
+  MoxxyState.initialState() : messages = HashMap(), conversations = List.empty(growable: true), roster = List.empty(growable: true), loginPageState = LoginPageState.initialState(), conversationPageState = ConversationPageState.initialState(), registerPageState = RegisterPageState.initialState(), postRegisterPageState = PostRegisterPageState.initialState(), profilePageState = ProfilePageState.initialState(), accountState = AccountState.initialState(), globalState = GlobalState.initialState();
 }

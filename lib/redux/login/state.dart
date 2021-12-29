@@ -4,6 +4,7 @@ class LoginPageState {
   final String? jidError;
 
   LoginPageState({ required this.showPassword, this.passwordError, this.jidError });
+  LoginPageState.initialState() : showPassword = false, passwordError = null, jidError = null;
 
   LoginPageState copyWith({ bool? showPassword, String? passwordError, String? jidError }) {
     return LoginPageState(
