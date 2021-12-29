@@ -19,5 +19,7 @@ class Conversation {
 
   late String lastMessageBody;
 
+  late bool open;
+
   // sharedMediaPaths
 }

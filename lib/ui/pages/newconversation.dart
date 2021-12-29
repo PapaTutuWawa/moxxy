@@ -51,7 +51,8 @@ class NewConversationPage extends StatelessWidget {
           "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2F64.media.tumblr.com%2Fec84dc5628ca3d8405374b85a51c7328%2Fbb0fc871a5029726-04%2Fs1280x1920%2Ffa6d89e8a2c2f3ce17465d328c2fe0ed6c951f01.jpg&f=1&nofb=1"
         ],
         lastChangeTimestamp: TIMESTAMP_NEVER,
-        id: viewModel.conversations.length
+        id: viewModel.conversations.length,
+        open: true
       );
 
       viewModel.addConversation(conversation);
@@ -80,7 +81,9 @@ class NewConversationPage extends StatelessWidget {
               jid: c.jid,
               sharedMediaPaths: c.sharedMediaPaths,
               lastChangeTimestamp: -1,
-              id: store.state.conversations.length
+              open: c.open,
+              // TODO: What
+              id: store.state.conversations.length,
             )
           ),
           conversations: store.state.conversations,

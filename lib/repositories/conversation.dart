@@ -34,6 +34,7 @@ class DatabaseRepository {
             unreadCounter: c.unreadCounter,
             lastChangeTimestamp: c.lastChangeTimestamp,
             sharedMediaPaths: [],
+            open: c.open,
             triggeredByDatabase: true
         ));
       }
@@ -45,7 +46,7 @@ class DatabaseRepository {
     return this._cache.containsKey(id);
   }
 
-  Future<void> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp }) async {
+  Future<void> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open }) async {
     print("updateConversation");
 
     final c = this._cache[id]!;
@@ -54,6 +55,9 @@ class DatabaseRepository {
     }
     if (lastChangeTimestamp != null) {
       c.lastChangeTimestamp = lastChangeTimestamp;
+    }
+    if (open != null) {
+      c.open = open;
     }
 
     await this.isar.writeTxn((isar) async {
@@ -70,7 +74,8 @@ class DatabaseRepository {
       ..avatarUrl = action.avatarUrl
       ..lastChangeTimestamp = action.lastChangeTimestamp
       ..unreadCounter = action.unreadCounter
-      ..lastMessageBody = action.lastMessageBody;
+      ..lastMessageBody = action.lastMessageBody
+      ..open = action.open;
     await this.isar.writeTxn((isar) async {
         await isar.conversations.put(c);
         print("DONE");
@@ -84,7 +89,8 @@ class DatabaseRepository {
       ..avatarUrl = conversation.avatarUrl
       ..lastChangeTimestamp = conversation.lastChangeTimestamp
       ..unreadCounter = conversation.unreadCounter
-      ..lastMessageBody = conversation.lastMessageBody;
+      ..lastMessageBody = conversation.lastMessageBody
+      ..open = conversation.open;
     await this.isar.writeTxn((isar) async {
         await isar.conversations.put(c);
     });

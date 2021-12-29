@@ -56,6 +56,8 @@ class _ListViewWrapperState extends State<ListViewWrapper> {
       builder: (context, viewModel) {
         double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
 
+        viewModel.conversations.forEach((c) => print(c.jid));
+        
         return ListView.builder(
           itemCount: viewModel.conversations.length,
           itemBuilder: (_context, index) {

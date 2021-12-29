@@ -14,6 +14,7 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
         unreadCounter: 0,
         sharedMediaPaths: action.sharedMediaPaths,
         lastChangeTimestamp: action.lastChangeTimestamp,
+        open: action.open,
         id: action.id
     ));
   } else if (action is SendMessageAction) {
@@ -24,6 +25,9 @@ List<Conversation> conversationReducer(List<Conversation> state, dynamic action)
 
         return element;
     }).toList();
+  } else if (action is CloseConversationAction) {
+    // TODO: Yikes.
+    return state.map((element) => element.jid == action.jid ? element.copyWith(open: false) : element).toList().where((element) => element.open).toList();
   }
 
   return state;

@@ -19,3 +19,10 @@ class SendMessageAction {
 
   SendMessageAction({ required this.from, required this.body, required this.timestamp, required this.jid, required this.cid });
 }
+
+class CloseConversationAction {
+  final String jid;
+  final int id;
+
+  CloseConversationAction({ required this.jid, required this.id });
+}

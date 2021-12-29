@@ -4,6 +4,7 @@ import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/repositories/conversation.dart";
 
 import "package:redux/redux.dart";
+import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:get_it/get_it.dart";
 
 void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
@@ -21,7 +22,8 @@ void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher nex
     } else {
       // TODO
     }
-
+  } else if (action is CloseConversationAction) {
+    store.dispatch(NavigateToAction.replace("/conversations"));
   }
 
   next(action);

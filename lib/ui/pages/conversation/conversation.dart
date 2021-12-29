@@ -1,9 +1,10 @@
 import "dart:async";
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/ui/widgets/chatbubble.dart';
-import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
+import "package:flutter/material.dart";
+
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/widgets/chatbubble.dart";
+import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
@@ -13,11 +14,16 @@ import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
+import "package:flutter_speed_dial/flutter_speed_dial.dart";
+import "package:flutter_redux/flutter_redux.dart";
+import "package:redux/redux.dart";
 
 typedef SendMessageFunction = void Function(String body);
+
+enum ConversationOption {
+  CLOSE,
+  BLOCK
+}
 
 PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
   return PopupMenuItem(
@@ -43,8 +49,9 @@ class _MessageListViewModel {
   final bool showSendButton;
   final void Function(bool scrollToEndButton) setShowScrollToEndButton;
   final bool showScrollToEndButton;
+  final void Function() closeChat;
   
-  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton });
+  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat });
 }
 
 class _ListViewWrapperViewModel {
@@ -171,6 +178,10 @@ class ConversationPage extends StatelessWidget {
           setShowSendButton: (show) => store.dispatch(SetShowSendButtonAction(show: show)),
           showScrollToEndButton: store.state.conversationPageState.showScrollToEndButton,
           setShowScrollToEndButton: (show) => store.dispatch(SetShowScrollToEndButtonAction(show: show)),
+          closeChat: () => store.dispatch(CloseConversationAction(
+              jid: jid,
+              id: conversation.id
+          )),
           sendMessage: (body) => store.dispatch(
             // TODO
             SendMessageAction(
@@ -207,20 +218,26 @@ class ConversationPage extends StatelessWidget {
                   popupItemWithIcon("omemo", "Encrypted", Icons.lock),
                 ]
               ),
-              // TODO: Ask for confirmation
               PopupMenuButton(
                 onSelected: (result) {
-                  if (result == "TODO1") {
-                    showNotImplementedDialog("blocking", context);
-                  } else if (result == "TODO2") {
-                    showNotImplementedDialog("chat-closing", context);
+                  switch (result) {
+                    case ConversationOption.CLOSE: {
+                      // TODO: Ask for confirmation
+                      // TODO: Fix crash because we're still here and our conversation is gone
+                      // => Maybe give the entire conversation as an argument?
+                      viewModel.closeChat();
+                    }
+                    break;
+                    default: {
+                      showNotImplementedDialog("chat-closing", context);
+                    }
+                    break;
                   }
                 },
                 icon: Icon(Icons.more_vert),
                 itemBuilder: (BuildContext c) => [
-                  // TODO: Use enum
-                  popupItemWithIcon("TODO2", "Close chat", Icons.close),
-                  popupItemWithIcon("TODO1", "Block contact", Icons.block)
+                  popupItemWithIcon(ConversationOption.CLOSE, "Close chat", Icons.close),
+                  popupItemWithIcon(ConversationOption.BLOCK, "Block contact", Icons.block)
                 ]
               )
             ]
