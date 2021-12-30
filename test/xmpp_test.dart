@@ -6,6 +6,7 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/scramsha1.dart";
+import "package:moxxyv2/xmpp/jid.dart";
 
 import "package:xml/xml.dart";
 import "package:test/test.dart";
@@ -87,7 +88,7 @@ void main() {
   test("Test SASL PLAIN", () async {
     final fakeSocket = FakeSocket(server: "test.server");
     final XmppConnection conn = XmppConnection(socket: fakeSocket, settings: ConnectionSettings(
-        jid: "polynomdivision@test.server",
+        jid: BareJID.fromString("polynomdivision@test.server"),
         password: "aaaa"
     ));
     await conn.connect();
@@ -114,7 +115,8 @@ void main() {
       expect(challenge.salt, "QSXCR+Q6sek8bf92");
       expect(challenge.iterations, 4096);
 
-      final negotiator = SaslScramSha1Negotiator(settings: ConnectionSettings(jid: "user", password: "pencil"),
+      final negotiator = SaslScramSha1Negotiator(
+        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil"),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         send: (data) {},
@@ -167,5 +169,12 @@ void main() {
       );
 
       expect(await negotiator.calculateChallengeResponse("cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng=="), "c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=");
+  });
+
+  test("Test bare JIDs", () {
+      expect(BareJID.fromString("hallo@welt").toString(), "hallo@welt");
+      expect(BareJID.fromString("@welt").toString(), "@welt");
+      expect(BareJID.fromString("hallo@").toString(), "hallo@");
+      expect(BareJID.fromString("hallo@welt/whatever").toString(), "hallo@welt");
   });
 }

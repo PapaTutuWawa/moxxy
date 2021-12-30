@@ -269,14 +269,11 @@ class XmppConnection {
   }
 
   void _sendStreamHeader() {
-    this._socket.write("<?xml version='1.0'?>" + StreamHeaderNonza(this.settings.jid.split("@")[1]).toXml());
+    this._socket.write("<?xml version='1.0'?>" + StreamHeaderNonza(this.settings.jid.domain).toXml());
   }
   
   Future<void> connect() async {
-    List<String> jidParts = this.settings.jid.split("@");
-    this.domain = jidParts[1];
-
-    await this._socket.connect(jidParts[1], 5223);
+    await this._socket.connect(this.settings.jid.domain, 5223);
 
     this._socketStream = this._socket.asBroadcastStream();
     this._socketStream.listen(this._incomingMiddleware);

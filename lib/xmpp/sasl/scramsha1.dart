@@ -158,7 +158,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
           this.clientNonce = randomAlphaNumeric(40, provider: CoreRandomProvider.from(Random.secure()));
         }
         
-        this.initialMessageNoGS2 = "n=" + this.settings.jid.split("@")[0] + ",r=${this.clientNonce}";
+        this.initialMessageNoGS2 = "n=" + this.settings.jid.local + ",r=${this.clientNonce}";
 
         this.state = ScramState.INITIAL_MESSAGE_SENT;
         this.send(SaslScramSha1AuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2))).toXml());
