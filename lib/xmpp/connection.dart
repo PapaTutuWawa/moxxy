@@ -54,6 +54,12 @@ class ConnectionStateChangedEvent extends XmppEvent {
   ConnectionStateChangedEvent({ required this.state });
 }
 
+class StreamErrorEvent extends XmppEvent {
+  final String error;
+
+  StreamErrorEvent({ required this.error });
+}
+
 class XmppConnection {
   final ConnectionSettings settings;
   late final SocketWrapper _socket;
@@ -100,7 +106,12 @@ class XmppConnection {
 
     if (data.startsWith("<stream:stream")) {
       data = data + "</stream:stream>";
-    }
+    } else {
+      if (data.endsWith("</stream:stream>")) {
+        // TODO: Maybe destroy the stream
+        data = data.substring(0, data.length - 16);
+      }
+    } 
 
     XmlDocument.parse("<root>$data</root>").getElement("root")!.childElements.forEach((element) => sink.add(element));
   }
@@ -134,6 +145,15 @@ class XmppConnection {
   }
   
   Future<void> _handleStreamNegotiation(XmlElement nonza) async {
+    if (nonza.name.qualified != "stream:stream") {
+      // Probably a stream error
+      this._eventStreamController.add(StreamErrorEvent(
+          error: nonza.name.qualified
+      ));
+      
+      return;
+    }
+
     final streamFeatures = nonza.getElement("stream:features");
     if (streamFeatures == null) {
       print("ERROR: No stream features in stream");
