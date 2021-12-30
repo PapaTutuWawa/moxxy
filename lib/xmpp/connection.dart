@@ -48,6 +48,12 @@ class SocketWrapper {
   }
 }
 
+class ConnectionStateChangedEvent extends XmppEvent {
+  final ConnectionState state;
+
+  ConnectionStateChangedEvent({ required this.state });
+}
+
 class XmppConnection {
   final ConnectionSettings settings;
   late final SocketWrapper _socket;
@@ -73,6 +79,11 @@ class XmppConnection {
     this._resource = "";
   }
 
+  void _setConnectionState(ConnectionState state) {
+    this._connectionState = state;
+    this._eventStreamController.add(ConnectionStateChangedEvent(state: state));
+  }
+  
   Stream<XmppEvent> asBroadcastStream() {
     return this._eventStreamController.stream.asBroadcastStream();
   }
@@ -114,7 +125,7 @@ class XmppConnection {
       print("----> " + this._resource);
 
       this._routingState = RoutingState.NORMAL;
-      this._connectionState = ConnectionState.CONNECTED;
+      this._setConnectionState(ConnectionState.CONNECTED);
       this._socket.write(PresenceStanza(
           from: jid.innerText,
           show: PresenceShow.CHAT
@@ -126,13 +137,13 @@ class XmppConnection {
     final streamFeatures = nonza.getElement("stream:features");
     if (streamFeatures == null) {
       print("ERROR: No stream features in stream");
-      this._connectionState = ConnectionState.ERROR;
+      this._setConnectionState(ConnectionState.ERROR);
       return;
     }
     print(nonza.name.qualified);
     
     if (streamFeatures.children.length == 0) {
-      this._connectionState = ConnectionState.CONNECTED;
+      this._setConnectionState(ConnectionState.CONNECTED);
       // TODO: Bind resource
       print("bind resource");
       return;
@@ -187,7 +198,7 @@ class XmppConnection {
 
         if (!supportsScramSha1) {
           print("ERROR: Server does not support SCRAM-SHA-1");
-          this._connectionState = ConnectionState.ERROR;
+          this._setConnectionState(ConnectionState.ERROR);
           return;
         }
 
@@ -297,7 +308,7 @@ class XmppConnection {
       .transform(StreamTransformer<String, XmlElement>.fromHandlers(handleData: this._filterOutStreamBegin))
       .forEach(this.handleXmlStream);
 
-    this._connectionState = ConnectionState.CONNECTING;
+    this._setConnectionState(ConnectionState.CONNECTING);
     this._sendStreamHeader();
   }
 }
