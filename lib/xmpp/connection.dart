@@ -222,33 +222,34 @@ class XmppConnection {
           break;
         }        
       } else {
-        /*
-        final bool supportsPlain = saslMechanisms.findElements("mechanism").any(
-          (node) => node.innerText == "PLAIN"
+        final bool supportsPlain = saslMechanisms.findTags("mechanism").any(
+          (node) => node.innerText() == "PLAIN"
         );
-        */
-
         final bool supportsScramSha1 = saslMechanisms.findTags("mechanism").any(
           (node) => node.innerText() == "SCRAM-SHA-1"
         );
 
-        if (!supportsScramSha1) {
-          print("ERROR: Server does not support SCRAM-SHA-1");
+        if (supportsScramSha1) {
+          print("Proceeding with SASL SCRAM-SHA-1 authentication");
+          this._authenticator = SaslScramSha1Negotiator(
+            settings: this.settings,
+            clientNonce: "",
+            initialMessageNoGS2: "",
+            send: (data) => this._socket.write(data),
+            sendStreamHeader: this._sendStreamHeader
+          );
+          this._routingState = await this._authenticator.next(null);
+          return;
+        } else if (supportsPlain && this.settings.allowPlainAuth) {
+          print("Proceeding with SASL PLAIN authentication");
+          this._authenticator = SaslPlainNegotiator(settings: this.settings, send: (data) => this._socket.write(data), sendStreamHeader: this._sendStreamHeader);
+          this._routingState = await this._authenticator.next(null);
+          return;
+        } else {
+          print("ERROR: No supported authentication mechanisms");
           this._setConnectionState(ConnectionState.ERROR);
           return;
         }
-
-        print("Proceeding with SASL SCRAM-SHA-1 authentication");
-        //this._authenticator = SaslPlainNegotiator(settings: this.settings, send: (data) => this._socket.write(data), sendStreamHeader: this._sendStreamHeader);
-        this._authenticator = SaslScramSha1Negotiator(
-          settings: this.settings,
-          clientNonce: "",
-          initialMessageNoGS2: "",
-          send: (data) => this._socket.write(data),
-          sendStreamHeader: this._sendStreamHeader
-        );
-        this._routingState = await this._authenticator.next(null);
-        // Proceed with PLAIN
       }
     }
     

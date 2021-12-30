@@ -76,7 +76,7 @@ class FakeSocket implements SocketWrapper {
       break;
       case 4: {
         this.state++;
-        expect(str, "<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show >show</show></presence>");
+        expect(str, "<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show>show</show></presence>");
 
         this._streamController.add("<presence /><message />");
       }
@@ -91,7 +91,8 @@ void main() {
     final XmppConnection conn = XmppConnection(socket: fakeSocket, settings: ConnectionSettings(
         jid: BareJID.fromString("polynomdivision@test.server"),
         password: "aaaa",
-        useDirectTLS: true
+        useDirectTLS: true,
+        allowPlainAuth: true
     ));
     await conn.connect();
     await Future.delayed(Duration(seconds: 3), () {
@@ -107,7 +108,7 @@ void main() {
       expect(challenge.iterations, 4096);
 
       final negotiator = SaslScramSha1Negotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true),
+        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         send: (data) {},
@@ -170,7 +171,8 @@ void main() {
 
       XmlDocument doc = builder.buildDocument();
       final element = doc.getElement("root");
-      expect(XMLNode.fromXmlElement(element!).toXml(), "<root owo='uwu' />");
+      // TODO: Not sure about this one
+      expect(XMLNode.fromXmlElement(element!).toXml(), "<root owo='uwu'></root>");
   });
 
   test("Test bare JIDs", () {
