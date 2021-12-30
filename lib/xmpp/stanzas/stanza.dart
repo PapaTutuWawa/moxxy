@@ -88,7 +88,7 @@ class PresenceStanza extends Stanza {
       XMLNode(
         tag: "show",
         attributes: {},
-        children: [ RawTextNode(text: presenceShowString(show)) ]
+        text: presenceShowString(show)
       )
     ]
   );

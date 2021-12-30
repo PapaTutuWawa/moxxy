@@ -1,13 +1,15 @@
 import "dart:collection";
 
+import "package:xml/xml.dart";
+
 class XMLNode {
   final String tag;
   Map<String, dynamic> attributes;
   List<XMLNode> children;
-  // TODO
   bool closeTag;
+  String? text;
 
-  XMLNode({ required this.tag, required this.attributes, List<XMLNode>? children, this.closeTag = true }) : children = children ?? List<XMLNode>.empty();
+  XMLNode({ required this.tag, required this.attributes, List<XMLNode>? children, this.closeTag = true, this.text }) : children = children ?? List<XMLNode>.empty();
   XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String>? attributes, List<XMLNode>? children, this.closeTag = true }) : attributes = { "xmlns": xmlns, ...(attributes ?? {}) }, children = children ?? List<XMLNode>.empty();
 
   void addChild(XMLNode child) {
@@ -27,6 +29,11 @@ class XMLNode {
   }
   
   String toXml() {
+    if (this.text != null) {
+      final attrString = this.attributes.isEmpty ? "" : " " + this.renderAttributes();
+      return "<${this.tag}${attrString}>${this.text}</${this.tag}>";
+    }
+
     if (this.children.isEmpty) {
       return "<${this.tag} ${this.renderAttributes()}" + (this.closeTag ? " />" : ">");
     }
@@ -35,18 +42,43 @@ class XMLNode {
     final xml = "<${this.tag} ${this.renderAttributes()}>${childXml}";
     return xml + (this.closeTag ? "</${this.tag}>" : "");
   }
-}
 
-class RawTextNode extends XMLNode {
-  final String text;
+  XMLNode? firstTag(String tag) {
+    try {
+      return this.children.firstWhere((node) => node.tag == tag);
+    } catch(e) {
+      return null;
+    }
+  }
 
-  RawTextNode({ required this.text }) : super(
-    tag: "",
-    attributes: {}
-  );
+  List<XMLNode> findTags(String tag) {
+    return this.children.where((element) => element.tag == tag).toList();
+  }
 
-  @override
-  String toXml() {
-    return this.text;
+  String innerText() {
+    return this.text ?? "";
+  }
+  
+  // Because this API is better ;)
+  static XMLNode fromXmlElement(XmlElement element) {
+    Map<String, String> attributes = Map();
+
+    element.attributes.forEach((attribute) {
+        attributes[attribute.name.qualified] = attribute.value;
+    });
+
+    if (element.childElements.length == 0) {
+      return XMLNode(
+        tag: element.name.qualified,
+        attributes: attributes,
+        text: element.innerText
+      );
+    } else {
+      return XMLNode(
+        tag: element.name.qualified,
+        attributes: attributes,
+        children: element.childElements.toList().map((e) => XMLNode.fromXmlElement(e)).toList()
+      );
+    }
   }
 }

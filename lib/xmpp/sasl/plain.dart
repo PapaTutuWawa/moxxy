@@ -6,8 +6,7 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
-
-import "package:xml/xml.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 
 class SaslPlainAuthNonza extends XMLNode {
   SaslPlainAuthNonza(String username, String password) : super(
@@ -16,9 +15,7 @@ class SaslPlainAuthNonza extends XMLNode {
       "xmlns": SASL_XMLNS,
       "mechanism": "PLAIN" 
     },
-    children: [
-      RawTextNode(text: base64.encode(utf8.encode("\u0000$username\u0000$password")))
-    ]
+    text: base64.encode(utf8.encode("\u0000$username\u0000$password"))
   );
 }
 
@@ -28,9 +25,9 @@ class SaslPlainNegotiator extends AuthenticationNegotiator {
 
   SaslPlainNegotiator({ required this.settings, required void Function(String) send, required void Function() sendStreamHeader }) : super(send: send, sendStreamHeader: sendStreamHeader);
   
-  Future<RoutingState> next(XmlElement? nonza) async {
+  Future<RoutingState> next(XMLNode? nonza) async {
     if (authSent) {
-      final tag = nonza!.name.qualified;
+      final tag = nonza!.tag;
       if (tag == "failure") {
         print("SASL failure");
         return RoutingState.ERROR;

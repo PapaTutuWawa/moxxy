@@ -1,6 +1,6 @@
 import "package:moxxyv2/xmpp/routing.dart";
 
-import "package:xml/xml.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 
 abstract class AuthenticationNegotiator {
   final void Function(String) send;
@@ -8,5 +8,5 @@ abstract class AuthenticationNegotiator {
 
   AuthenticationNegotiator({ required this.send, required this.sendStreamHeader });
 
-  Future<RoutingState> next(XmlElement? nonza);
+  Future<RoutingState> next(XMLNode? nonza);
 }

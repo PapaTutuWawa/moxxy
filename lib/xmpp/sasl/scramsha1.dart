@@ -7,6 +7,7 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
@@ -23,9 +24,7 @@ class SaslScramSha1AuthNonza extends XMLNode {
       "xmlns": SASL_XMLNS,
       "mechanism": SCRAMSHA1_MECHANISM
     },
-    children: [
-      RawTextNode(text: body)
-    ]
+    text: body
   );
 }
 
@@ -35,9 +34,7 @@ class SaslScramResponseNonza extends XMLNode {
     attributes: {
       "xmlns": SASL_XMLNS,
     },
-    children: [
-      RawTextNode(text: body)
-    ]
+    text: body
   );
 }
 
@@ -150,7 +147,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         return clientFinalMessageBare + ",p=" + base64.encode(clientProof);
   }
   
-  Future<RoutingState> next(XmlElement? nonza) async {
+  Future<RoutingState> next(XMLNode? nonza) async {
     switch (this.state) {
       case ScramState.PRE_SENT: {
         // TODO: saslprep
@@ -166,7 +163,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
       }
       break;
       case ScramState.INITIAL_MESSAGE_SENT: {
-        final challengeBase64 = nonza!.innerText;
+        final challengeBase64 = nonza!.innerText();
         final response = await this.calculateChallengeResponse(challengeBase64);
         final responseBase64 = base64.encode(utf8.encode(response));
         this.state = ScramState.CHALLENGE_RESPONSE_SENT;
@@ -175,7 +172,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
       }
       break;
       case ScramState.CHALLENGE_RESPONSE_SENT: {
-        final tag = nonza!.name.qualified;
+        final tag = nonza!.tag;
 
         if (tag == "success") {
           // TODO: Check the response

@@ -99,17 +99,6 @@ void main() {
     });
   });
 
-  test("Test stringxml", () {
-      final child = XMLNode(tag: "uwu", attributes: { "strength": 10 });
-      final stanza = XMLNode.xmlns(tag: "uwu-meter", xmlns: "uwu", children: [ child ]);
-      expect(XMLNode(tag: "iq", attributes: {"xmlns": "uwu"}).toXml(), "<iq xmlns='uwu' />");
-      expect(XMLNode.xmlns(tag: "iq", xmlns: "uwu", attributes: {"how": "uwu"}).toXml(), "<iq xmlns='uwu' how='uwu' />");
-      expect(stanza.toXml(), "<uwu-meter xmlns='uwu'><uwu strength=10 /></uwu-meter>");
-
-      expect(StreamHeaderNonza("uwu.server").toXml(), "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='uwu.server' xml:lang='en'>");
-  });
-
-  // "
   test("Test XMPP Scram-Sha-1", () async {
 
       final challenge = ServerChallenge.fromBase64("cj02ZDQ0MmI1ZDllNTFhNzQwZjM2OWUzZGNlY2YzMTc4ZWMxMmIzOTg1YmJkNGE4ZTZmODE0YjQyMmFiNzY2NTczLHM9UVNYQ1IrUTZzZWs4YmY5MixpPTQwOTY=");
@@ -171,6 +160,17 @@ void main() {
       );
 
       expect(await negotiator.calculateChallengeResponse("cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng=="), "c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=");
+  });
+
+  test("Test XmlElement", () {
+      XmlBuilder builder = XmlBuilder();
+      builder.element("root", nest: () {
+          builder.attribute("owo", "uwu");
+      });
+
+      XmlDocument doc = builder.buildDocument();
+      final element = doc.getElement("root");
+      expect(XMLNode.fromXmlElement(element!).toXml(), "<root owo='uwu' />");
   });
 
   test("Test bare JIDs", () {

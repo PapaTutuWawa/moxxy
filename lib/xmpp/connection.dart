@@ -71,9 +71,9 @@ class XmppConnection {
   late final AuthenticationNegotiator _authenticator;
   String _resource = "";
   late final StreamController<XmppEvent> _eventStreamController;
-  final Map<String, Completer<XmlElement>> _awaitingResponse = Map();
+  final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
 
-  Future<XmlElement> sendStanza(Stanza stanza) {
+  Future<XMLNode> sendStanza(Stanza stanza) {
     if (stanza.id == null) {
       stanza = stanza.copyWith(id: randomAlphaNumeric(20));
     }
@@ -125,54 +125,58 @@ class XmppConnection {
       }
     } 
 
-    XmlDocument.parse("<root>$data</root>").getElement("root")!.childElements.forEach((element) => sink.add(element));
+    XmlDocument
+      .parse("<root>$data</root>")
+      .getElement("root")!
+      .childElements
+      .forEach((element) => sink.add(XMLNode.fromXmlElement(element)));
   }
 
-  void _handleResourceBinding(XmlElement stanza) {
-    if (stanza.getAttribute("type") == "result") {
+  void _handleResourceBinding(XMLNode stanza) {
+    if (stanza.attributes["type"] == "result") {
       print("SUCCESS: GOT RESOURCE");
 
-      final bind = stanza.getElement("bind");
+      final bind = stanza.firstTag("bind");
       if (bind == null) {
         print("NO BIND ELEMENT");
         return;
       }
 
-      final jid = bind.getElement("jid");
+      final jid = bind.firstTag("jid");
       if (jid == null) {
         print("NO JID");
         return;
       }
 
-      this._resource = jid.innerText.split("/")[1];
+      this._resource = jid.innerText().split("/")[1];
       print("----> " + this._resource);
 
       this._routingState = RoutingState.NORMAL;
       this._setConnectionState(ConnectionState.CONNECTED);
       this._socket.write(PresenceStanza(
-          from: jid.innerText,
+          from: jid.innerText(),
           show: PresenceShow.CHAT
         ).toXml());
     }
   }
   
-  Future<void> _handleStreamNegotiation(XmlElement nonza) async {
-    if (nonza.name.qualified != "stream:stream") {
+  Future<void> _handleStreamNegotiation(XMLNode nonza) async {
+    if (nonza.tag != "stream:stream") {
       // Probably a stream error
       this._eventStreamController.add(StreamErrorEvent(
-          error: nonza.name.qualified
+          // TODO:
+          error: nonza.tag
       ));
       
       return;
     }
 
-    final streamFeatures = nonza.getElement("stream:features");
+    final streamFeatures = nonza.firstTag("stream:features");
     if (streamFeatures == null) {
       print("ERROR: No stream features in stream");
       this._setConnectionState(ConnectionState.ERROR);
       return;
     }
-    print(nonza.name.qualified);
     
     if (streamFeatures.children.length == 0) {
       this._setConnectionState(ConnectionState.CONNECTED);
@@ -180,24 +184,24 @@ class XmppConnection {
       print("bind resource");
       return;
     } else {
-      final saslMechanisms = streamFeatures.getElement("mechanisms", namespace: SASL_XMLNS);
+      final saslMechanisms = streamFeatures.firstTag("mechanisms");
       if (saslMechanisms == null) {
         // Authenticated negotiation
-        print("AUth negotiation");
+        print("Auth negotiation");
 
-        streamFeatures.childElements.forEach((element) {
-            final required = element.getElement("required");
+        streamFeatures.children.forEach((element) {
+            final required = element.firstTag("required");
             final suffix = required == null ? "false" : "true";
-            final tag = element.name.qualified;
+            final tag = element.tag;
             
             print(tag + ": " + suffix);
         });
         
-        final required = streamFeatures.childElements.firstWhere((element) {
-            return element.getElement("required") != null;
+        final required = streamFeatures.children.firstWhere((element) {
+            return element.firstTag("required") != null;
         });
 
-        switch (required.name.qualified) {
+        switch (required.tag) {
           case "bind": {
             this._routingState = RoutingState.RESOURCE_BIND;
             this._socket.write(
@@ -224,8 +228,8 @@ class XmppConnection {
         );
         */
 
-        final bool supportsScramSha1 = saslMechanisms.findElements("mechanism").any(
-          (node) => node.innerText == "SCRAM-SHA-1"
+        final bool supportsScramSha1 = saslMechanisms.findTags("mechanism").any(
+          (node) => node.innerText() == "SCRAM-SHA-1"
         );
 
         if (!supportsScramSha1) {
@@ -250,42 +254,42 @@ class XmppConnection {
     
   }
 
-  void _handleStanza(XmlElement stanza) {
+  void _handleStanza(XMLNode stanza) {
     // TODO: Improve stanza handling
-    print("Got " + stanza.name.qualified);
+    print("Got " + stanza.tag);
 
-    final id = stanza.getAttribute("id");
+    final id = stanza.attributes["id"];
     if (id != null && this._awaitingResponse.containsKey(id)) {
       this._awaitingResponse[id]!.complete(stanza);
       this._awaitingResponse.remove(id);
     }
     
-    switch (stanza.name.qualified) {
+    switch (stanza.tag) {
       case "message": {
         // TODO
 
-        final body = stanza.getElement("body");
+        final body = stanza.firstTag("body");
         if (body != null) {
-          final from = stanza.getAttribute("from")!;
-          final sid = stanza.getAttribute("id")!;
+          final from = stanza.attributes["from"]!;
+          final sid = stanza.attributes["id"]!;
 
           this._eventStreamController.add(
             MessageEvent(
-              body: body.innerText,
+              body: body.innerText(),
               fromJid: from,
               sid: sid
             )
           );
         } else {
           // TODO: This will crash if there are no markers
-          final chatMarker = stanza.childElements.firstWhere(
-            (element) => chatMarkerFromTag(element.name.qualified) != ChatMarkerType.UNKNOWN
+          final chatMarker = stanza.children.firstWhere(
+            (element) => chatMarkerFromTag(element.tag) != ChatMarkerType.UNKNOWN
           );
 
           this._eventStreamController.add(
             ChatMarkerEvent(
-              type: chatMarkerFromTag(chatMarker.name.qualified),
-              sid: stanza.getAttribute("id")!
+              type: chatMarkerFromTag(chatMarker.tag),
+              sid: stanza.attributes["id"]!
             )
           );
         } 
@@ -294,9 +298,8 @@ class XmppConnection {
     }
   }
 
-  void handleXmlStream(XmlElement node) async {
-    print("(xml) <== " + node.toXmlString());
-    final tag = node.name.qualified;
+  void handleXmlStream(XMLNode node) async {
+    print("(xml) <== " + node.toXml());
 
     switch (this._routingState) {
       case RoutingState.NEGOTIATOR: {
@@ -343,7 +346,7 @@ class XmppConnection {
     this._socketStream.listen(this._incomingMiddleware);
 
     this._socketStream
-      .transform(StreamTransformer<String, XmlElement>.fromHandlers(handleData: this._filterOutStreamBegin))
+      .transform(StreamTransformer<String, XMLNode>.fromHandlers(handleData: this._filterOutStreamBegin))
       .forEach(this.handleXmlStream);
 
     this._setConnectionState(ConnectionState.CONNECTING);
