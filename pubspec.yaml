@@ -41,8 +41,12 @@ dependencies:
   isar: ^0.4.0
   isar_flutter_libs: ^0.4.0
   flutter_secure_storage: ^5.0.2
+  xml: ^5.3.1
+  random_string: ^2.3.1
+  cryptography: ^2.0.5
   #flutter_local_notifications: ^9.1.5
   #qr_code_scanner: ^0.6.1
+  #unifiedpush: ^3.0.1
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +57,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.9.2
   isar_generator: ^0.4.0
   redux_logging: ^0.5.0
+  hex: ^0.2.0
 
 extra_licenses:
   undraw.co:

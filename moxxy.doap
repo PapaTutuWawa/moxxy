@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+         xmlns='http://usefulinc.com/ns/doap#'>
+  <Project xml:lang='en'>
+    <name>Moxxy</name>
+    <created>2021-12-26</created>
+    <homepage rdf:resource='https://github.com/Polynomdivision/moxxyv2'/>
+    <os>Android</os>
+
+    <programming-language>Dart</programming-language>
+
+    <maintainer>
+      <foaf:Person>
+	<foaf:name>Alexander "Polynomdivision"</foaf:name>
+	<foaf:homepage rdf:resource="https://blog.polynom.me" />
+      </foaf:Person>
+    </maintainer>
+
+    <implements rdf:resource="https://xmpp.org/rfcs/rfc6120.html" />
+
+    <implements>
+      <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0333.html" />
+	<xmpp:status>partial</xmpp:status>
+	<xmpp:note xml:lang="en">Read-only support</xmpp:note>
+	<xmpp:version>0.4</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+  </Project>
+</rdf:RDF>
