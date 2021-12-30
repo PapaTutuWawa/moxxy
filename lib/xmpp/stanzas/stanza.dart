@@ -33,7 +33,7 @@ class Stanza extends XMLNode {
   StanzaType? type;
   String? id;
 
-  Stanza({ this.to, this.from, this.type, required StanzaTag stanzaTag, List<XMLNode>? children, this.id }) :super(
+  Stanza({ this.to, this.from, this.type, required StanzaTag stanzaTag, List<XMLNode>? children, this.id }) : super(
       tag: stanzaTagName(stanzaTag),
       attributes: {
         "xmlns": STANZA_XMLNS,
@@ -44,10 +44,21 @@ class Stanza extends XMLNode {
       },
       children: children
     );
+
+  Stanza copyWith({ String? id, String? from, String? to }) {
+    return Stanza(
+      to: to ?? this.to,
+      from: from ?? this.from,
+      id: id ?? this.id,
+      type: this.type,
+      children: this.children,
+      stanzaTag: StanzaTag.IQ
+    );
+  }
 }
 
 class IqStanza extends Stanza {
-  IqStanza({ String? to, String? from, required String id, required StanzaType type, List<XMLNode>? children }) : super(
+  IqStanza({ String? to, String? from, String? id, required StanzaType type, List<XMLNode>? children }) : super(
     to: to,
     from: from,
     id: id,

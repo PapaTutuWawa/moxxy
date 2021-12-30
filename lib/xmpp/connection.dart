@@ -60,6 +60,7 @@ class StreamErrorEvent extends XmppEvent {
   StreamErrorEvent({ required this.error });
 }
 
+// TODO: Implement a send queue
 class XmppConnection {
   final ConnectionSettings settings;
   late final SocketWrapper _socket;
@@ -70,7 +71,18 @@ class XmppConnection {
   late final AuthenticationNegotiator _authenticator;
   String _resource = "";
   late final StreamController<XmppEvent> _eventStreamController;
+  final Map<String, Completer<XmlElement>> _awaitingResponse = Map();
 
+  Future<XmlElement> sendStanza(Stanza stanza) {
+    if (stanza.id == null) {
+      stanza = stanza.copyWith(id: randomAlphaNumeric(20));
+    }
+
+    this._awaitingResponse[stanza.id!] = Completer();
+    this._socket.write(stanza.toXml());
+    return this._awaitingResponse[stanza.id!]!.future;
+  }
+  
   // NOTE: For mocking
   XmppConnection({ required this.settings, SocketWrapper? socket }) {
     this._connectionState = ConnectionState.NOT_CONNECTED;
@@ -242,6 +254,12 @@ class XmppConnection {
     // TODO: Improve stanza handling
     print("Got " + stanza.name.qualified);
 
+    final id = stanza.getAttribute("id");
+    if (id != null && this._awaitingResponse.containsKey(id)) {
+      this._awaitingResponse[id]!.complete(stanza);
+      this._awaitingResponse.remove(id);
+    }
+    
     switch (stanza.name.qualified) {
       case "message": {
         // TODO
