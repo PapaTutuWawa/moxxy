@@ -7,6 +7,7 @@ import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/scramsha1.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/xeps/0368.dart";
 
 import "package:xml/xml.dart";
 import "package:test/test.dart";
@@ -89,7 +90,8 @@ void main() {
     final fakeSocket = FakeSocket(server: "test.server");
     final XmppConnection conn = XmppConnection(socket: fakeSocket, settings: ConnectionSettings(
         jid: BareJID.fromString("polynomdivision@test.server"),
-        password: "aaaa"
+        password: "aaaa",
+        useDirectTLS: true
     ));
     await conn.connect();
     await Future.delayed(Duration(seconds: 3), () {
@@ -116,7 +118,7 @@ void main() {
       expect(challenge.iterations, 4096);
 
       final negotiator = SaslScramSha1Negotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil"),
+        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         send: (data) {},

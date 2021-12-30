@@ -13,6 +13,7 @@ import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/xeps/0368.dart";
 
 import "package:xml/xml.dart";
 import "package:xml/xml_events.dart";
@@ -31,7 +32,7 @@ class SocketWrapper {
   SocketWrapper();
 
   Future<void> connect(String host, int port) async {
-    this._socket = await SecureSocket.connect(host, 5223);
+    this._socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ]);
   }
 
   Stream<String> asBroadcastStream() {
@@ -273,7 +274,21 @@ class XmppConnection {
   }
   
   Future<void> connect() async {
-    await this._socket.connect(this.settings.jid.domain, 5223);
+    String hostname = this.settings.jid.domain;
+    int port = 5222;
+    
+    if (this.settings.useDirectTLS) {
+      final query = await perform0368Lookup(this.settings.jid.domain);
+
+      if (query != null) {
+        hostname = query.hostname;
+        port = query.port;
+
+        print("Did XEP-0368 lookup. Using ${hostname}:${port.toString()} now.");
+      }
+    }
+
+    await this._socket.connect(hostname, port);
 
     this._socketStream = this._socket.asBroadcastStream();
     this._socketStream.listen(this._incomingMiddleware);
