@@ -8,7 +8,7 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/plain.dart";
-import "package:moxxyv2/xmpp/sasl/scramsha1.dart";
+import "package:moxxyv2/xmpp/sasl/scram.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/stanzas/handlers.dart";
 import "package:moxxyv2/xmpp/settings.dart";

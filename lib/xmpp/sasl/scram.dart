@@ -15,14 +15,38 @@ import "package:xml/xml.dart";
 
 // NOTE: Inspired by https://github.com/vukoye/xmpp_dart/blob/3b1a0588562b9e591488c99d834088391840911d/lib/src/features/sasl/ScramSaslHandler.dart
 
-const SCRAMSHA1_MECHANISM = "SCRAM-SHA-1";
+enum ScramHashType {
+  SHA1,
+  SHA256,
+  SHA512
+}
 
-class SaslScramSha1AuthNonza extends XMLNode {
-  SaslScramSha1AuthNonza({ required String body }) : super(
+HashAlgorithm hashFromType(ScramHashType type) {
+  switch (type) {
+    case ScramHashType.SHA1: return Sha1();
+    case ScramHashType.SHA256: return Sha256();
+    case ScramHashType.SHA512: return Sha512();
+  }
+}
+
+const SCRAM_SHA1_MECHANISM = "SCRAM-SHA-1";
+const SCRAM_SHA256_MECHANISM = "SCRAM-SHA-256";
+const SCRAM_SHA512_MECHANISM = "SCRAM-SHA-512";
+
+String mechanismNameFromType(ScramHashType type) {
+  switch (type) {
+    case ScramHashType.SHA1: return SCRAM_SHA1_MECHANISM;
+    case ScramHashType.SHA256: return SCRAM_SHA256_MECHANISM;
+    case ScramHashType.SHA512: return SCRAM_SHA512_MECHANISM;
+  }
+}
+
+class SaslScramAuthNonza extends XMLNode {
+  SaslScramAuthNonza({ required String body, required ScramHashType type }) : super(
     tag: "auth",
     attributes: {
       "xmlns": SASL_XMLNS,
-      "mechanism": SCRAMSHA1_MECHANISM
+      "mechanism": mechanismNameFromType(type)
     },
     text: body
   );
@@ -70,20 +94,22 @@ enum ScramState {
 
 const GS2_HEADER = "n,,";
 
-class SaslScramSha1Negotiator extends AuthenticationNegotiator {
+class SaslScramNegotiator extends AuthenticationNegotiator {
   final ConnectionSettings settings;
   ScramState state = ScramState.PRE_SENT;
   String? clientNonce;
   String initialMessageNoGS2;
+  final ScramHashType hashType;
+  final HashAlgorithm _hash;
 
   void Function(XMLNode) sendRawXML;
 
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
-  SaslScramSha1Negotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required this.sendRawXML });
+  SaslScramNegotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required this.sendRawXML, required ScramHashType this.hashType }) : _hash = hashFromType(hashType);
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
     final pbkdf2 = Pbkdf2(
-      macAlgorithm: Hmac(Sha1()),
+      macAlgorithm: Hmac(this._hash),
       iterations: iterations,
       bits: 160 // NOTE: RFC says 20 octets => 20 octets * 8 bits/octet
     );
@@ -96,27 +122,27 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
   }
 
   Future<List<int>> calculateClientKey(List<int> saltedPassword) async {
-    return (await Hmac(Sha1()).calculateMac(
+    return (await Hmac(this._hash).calculateMac(
         utf8.encode("Client Key"), secretKey: SecretKey(saltedPassword)
     )).bytes;
   }
 
   Future<List<int>> calculateClientSignature(String authMessage, List<int> storedKey) async {
-    return (await Hmac(Sha1()).calculateMac(
+    return (await Hmac(this._hash).calculateMac(
         utf8.encode(authMessage),
         secretKey: SecretKey(storedKey)
     )).bytes;
   }
 
   Future<List<int>> calculateServerKey(List<int> saltedPassword) async {
-    return (await Hmac(Sha1()).calculateMac(
+    return (await Hmac(this._hash).calculateMac(
         utf8.encode("Server Key"),
         secretKey: SecretKey(saltedPassword)
     )).bytes;
   }
 
   Future<List<int>> calculateServerSignature(String authMessage, List<int> serverKey) async {
-    return (await Hmac(Sha1()).calculateMac(
+    return (await Hmac(this._hash).calculateMac(
         utf8.encode(authMessage),
         secretKey: SecretKey(serverKey)
     )).bytes;
@@ -135,11 +161,11 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         final challenge = ServerChallenge.fromBase64(base64Challenge);
         final clientFinalMessageBare = "c=biws,r=" + challenge.nonce;
 
-        final hmac = Hmac(Sha1());
+        final hmac = Hmac(this._hash);
         
         final saltedPassword = await this.calculateSaltedPassword(challenge.salt, challenge.iterations);
         final clientKey = await this.calculateClientKey(saltedPassword);
-        final storedKey = (await Sha1().hash(clientKey)).bytes;
+        final storedKey = (await this._hash.hash(clientKey)).bytes;
         final authMessage = this.initialMessageNoGS2 + "," + challenge.firstMessage + "," + clientFinalMessageBare;
         final clientSignature = await this.calculateClientSignature(authMessage, storedKey);
         final clientProof = this.calculateClientProof(clientKey, clientSignature);
@@ -160,7 +186,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         this.initialMessageNoGS2 = "n=" + this.settings.jid.local + ",r=${this.clientNonce}";
 
         this.state = ScramState.INITIAL_MESSAGE_SENT;
-        this.sendRawXML(SaslScramSha1AuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2))));
+        this.sendRawXML(SaslScramAuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2)), type: this.hashType));
         return AuthenticationResult.NOT_DONE;
       }
       break;

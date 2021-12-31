@@ -5,11 +5,12 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/sasl/scramsha1.dart";
+import "package:moxxyv2/xmpp/sasl/scram.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 
 import "package:test/test.dart";
+import "package:xml/xml.dart";
 import "package:hex/hex.dart";
 
 class FakeSocket implements SocketWrapper {
@@ -38,18 +39,7 @@ class FakeSocket implements SocketWrapper {
         this.state++;
         expect(str, "<?xml version='1.0'?><stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='${this.server}' xml:lang='en'>");
 
-        this._streamController.add("""
-<stream:stream
-  xmlns:stream='http://etherx.jabber.org/streams'
-  xmlns='jabber:client'
-  from='${this.server}'
-  xml:lang='en' version='1.0' id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'>
-   <stream:features xmlns='http://etherx.jabber.org/streams'>
-      <mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>
-         <mechanism>PLAIN</mechanism>
-      </mechanisms>
-   </stream:features>
-""");
+        this._streamController.add("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' from='${this.server}' xml:lang='en' version='1.0' id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'><stream:features xmlns='http://etherx.jabber.org/streams'><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features>");
       }
       break;
       case 1: {
@@ -63,12 +53,16 @@ class FakeSocket implements SocketWrapper {
         this.state++;
         expect(str, "<?xml version='1.0'?><stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='${this.server}' xml:lang='en'>");
 
-        this._streamController.add("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' from='${this.server}' xmlns='jabber:client' version='1.0' id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' xml:lang='en'><stream:features><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><required/></bind><session xmlns='urn:ietf:params:xml:ns:xmpp-session'><optional/></session><ver xmlns='urn:xmpp:features:rosterver'/><c hash='sha-1' ver='e6y9LzWVyTcm31DV0THfhNwlHZo=' node='http://prosody.im' xmlns='http://jabber.org/protocol/caps'/><sm xmlns='urn:xmpp:sm:2'><optional/></sm><sm xmlns='urn:xmpp:sm:3'><optional/></sm><csi xmlns='urn:xmpp:csi:0'/></stream:features>");
+        this._streamController.add("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' from='${this.server}' xmlns='jabber:client' version='1.0' id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' xml:lang='en'><stream:features><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><required/></bind><session xmlns='urn:ietf:params:xml:ns:xmpp-session'><optional/></session><ver xmlns='urn:xmpp:features:rosterver'/><c hash='sha-1' ver='e6y9LzWVyTcm31DV0THfhNwlHZo=' node='http://prosody.im' xmlns='http://jabber.org/protocol/caps'/><csi xmlns='urn:xmpp:csi:0'/></stream:features>");
       }
       break;
       case 3: {
         this.state++;
-        expect(str, "<iq xmlns='jabber:client' id='aaaaaaaaaa' type='set'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind' /></iq>");
+        expect(
+          compareXMLNodes(
+            fromString(str),
+            fromString("<iq xmlns='jabber:client' id='aaaaaaaaaa' type='set'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind' /></iq>")),
+          true);
 
         this._streamController.add("<iq type='result' id='aaaaaaaaaa'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><jid>polynomdivision@test.server/MU29eEZn</jid></bind></iq>");
       }
@@ -84,6 +78,30 @@ class FakeSocket implements SocketWrapper {
   }
 }
 
+XMLNode fromString(String str) {
+  return XMLNode.fromXmlElement(XmlDocument.parse(str).firstElementChild!);
+}
+
+bool compareXMLNodes(XMLNode actual, XMLNode expectation, { bool ignoreId = true}) {
+  // Compare attributes
+  if (expectation.tag != actual.tag) return false;
+
+  final attributesEqual = expectation.attributes.keys.every((key) {
+      // Ignore the stanza ID
+      if (key == "id" && ignoreId) return true;
+
+      return actual.attributes[key] == expectation.attributes[key];
+  });
+  if (!attributesEqual) return false;
+  if (actual.attributes.length != expectation.attributes.length) return false;
+
+  if (expectation.innerText() != "" && actual.innerText() != expectation.innerText()) return false;
+
+  return expectation.children.every((childe) {
+      return actual.children.any((childa) => compareXMLNodes(childa, childe));
+  });
+}
+
 void main() {
   test("Test SASL PLAIN", () async {
     final fakeSocket = FakeSocket(server: "test.server");
@@ -95,7 +113,7 @@ void main() {
     ));
     await conn.connect();
     await Future.delayed(Duration(seconds: 3), () {
-        expect(fakeSocket.state, 5);
+        expect(fakeSocket.state, 4);
     });
   });
 
@@ -106,12 +124,12 @@ void main() {
       expect(challenge.salt, "QSXCR+Q6sek8bf92");
       expect(challenge.iterations, 4096);
 
-      final negotiator = SaslScramSha1Negotiator(
+      final negotiator = SaslScramNegotiator(
         settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        send: (data) {},
-        sendStreamHeader: () {}
+        sendRawXML: (data) {},
+        hashType: ScramHashType.SHA1
       );
 
       expect(
