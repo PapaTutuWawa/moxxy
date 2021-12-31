@@ -77,7 +77,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
   String initialMessageNoGS2;
 
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
-  SaslScramSha1Negotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required void Function(String) send, required void Function() sendStreamHeader }) : super(send: send, sendStreamHeader: sendStreamHeader);
+  SaslScramSha1Negotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required void Function(XMLNode) send, required void Function() sendStreamHeader }) : super(send: send, sendStreamHeader: sendStreamHeader);
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
     final pbkdf2 = Pbkdf2(
@@ -158,7 +158,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         this.initialMessageNoGS2 = "n=" + this.settings.jid.local + ",r=${this.clientNonce}";
 
         this.state = ScramState.INITIAL_MESSAGE_SENT;
-        this.send(SaslScramSha1AuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2))).toXml());
+        this.send(SaslScramSha1AuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2))));
         return RoutingState.AUTHENTICATOR;
       }
       break;
@@ -167,7 +167,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         final response = await this.calculateChallengeResponse(challengeBase64);
         final responseBase64 = base64.encode(utf8.encode(response));
         this.state = ScramState.CHALLENGE_RESPONSE_SENT;
-        this.send(SaslScramResponseNonza(body: responseBase64).toXml());
+        this.send(SaslScramResponseNonza(body: responseBase64));
         return RoutingState.AUTHENTICATOR;
       }
       break;

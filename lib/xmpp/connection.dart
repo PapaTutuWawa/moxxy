@@ -2,6 +2,7 @@ import "dart:io";
 import "dart:convert";
 import "dart:async";
 
+import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
@@ -11,10 +12,15 @@ import "package:moxxyv2/xmpp/sasl/scramsha1.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/stanzas/handlers.dart";
 import "package:moxxyv2/xmpp/settings.dart";
+import "package:moxxyv2/xmpp/negotiators/stream.dart";
+import "package:moxxyv2/xmpp/negotiators/sm.dart";
+import "package:moxxyv2/xmpp/negotiators/resource.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
+import "package:moxxyv2/xmpp/nonzas/sm.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
+import "package:moxxyv2/xmpp/xeps/0198.dart";
 import "package:moxxyv2/xmpp/xeps/0030.dart";
 
 import "package:xml/xml.dart";
@@ -70,28 +76,22 @@ class XmppConnection {
   late RoutingState _routingState;
   late final Stream<String> _socketStream;
   late final String domain;
-  late final AuthenticationNegotiator _authenticator;
   String _resource = "";
   late final StreamController<XmppEvent> _eventStreamController;
+  StreamManager? streamManager;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
   final List<StanzaHandler> _stanzaHandlers = [
     StanzaHandler(tagName: "query", xmlns: DISCO_INFO_XMLNS, callback: answerDiscoInfoQuery),
     StanzaHandler(tagName: "query", xmlns: DISCO_ITEMS_XMLNS, callback: answerDiscoItemsQuery)
   ];
+  final Map<String, bool> _streamFeatures = Map(); // Stream feature XMLNS -> required
 
-  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true }) {
-    if (stanza.id == null || stanza.id == "") {
-      stanza = stanza.copyWith(id: randomAlphaNumeric(20));
-    }
-    if (addFrom && (stanza.from == null || stanza.from == "")) {
-      stanza = stanza.copyWith(from: this.settings.jid.withResource(this._resource).toString());
-    }
+  // Negotiators
+  late final StreamManagementNegotiator _smNegotiator;
+  late final StreamFeatureNegotiator _sfNegotiator;
+  late final AuthenticationNegotiator authNegotiator;
+  late final ResourceBindingNegotiator _rbNegotiator;
 
-    this._awaitingResponse[stanza.id!] = Completer();
-    this._socket.write(stanza.toXml());
-    return this._awaitingResponse[stanza.id!]!.future;
-  }
-  
   // NOTE: For mocking
   XmppConnection({ required this.settings, SocketWrapper? socket }) {
     this._connectionState = ConnectionState.NOT_CONNECTED;
@@ -102,10 +102,54 @@ class XmppConnection {
       this._socket = SocketWrapper();
     }
 
+    this._smNegotiator = StreamManagementNegotiator(connection: this);
+    this._sfNegotiator = StreamFeatureNegotiator(connection: this);
+    this._rbNegotiator = ResourceBindingNegotiator(connection: this);
+    
     this._eventStreamController = StreamController();
     this._resource = "";
   }
+  
+  // Returns true if the stream supports the XMLNS @feature.
+  bool streamFeatureSupported(String feature) {
+    return this._streamFeatures.containsKey(feature);
+  }
+  
+  void smResend(String stanza) {
+    assert(this.streamManager != null);
+    
+    this._socket.write(stanza);
+    // NOTE: This function must only be called from within the StreamManager, so it MUST
+    //       be non-null
+    this.streamManager!.clientStanzaSent(stanza);
+  }
+  
+  void sendRawXML(XMLNode node) {
+    this._socket.write(node.toXml());
+  }
+  
+  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
+    if (addId && (stanza.id == null || stanza.id == "")) {
+      stanza = stanza.copyWith(id: randomAlphaNumeric(20));
+    }
+    if (addFrom && (stanza.from == null || stanza.from == "")) {
+      stanza = stanza.copyWith(from: this.settings.jid.withResource(this._resource).toString());
+    }
 
+    final stanzaString = stanza.toXml();
+    
+    if (this.streamManager != null) {
+      this.streamManager!.clientStanzaSent(stanzaString);
+    }
+    
+    this._awaitingResponse[stanza.id!] = Completer();
+    this._socket.write(stanzaString);
+    if (this.streamManager != null) {
+      this.sendRawXML(StreamManagementRequestNonza());
+    }
+    return this._awaitingResponse[stanza.id!]!.future;
+  }
+  
   void _setConnectionState(ConnectionState state) {
     this._connectionState = state;
     this._eventStreamController.add(ConnectionStateChangedEvent(state: state));
@@ -141,39 +185,6 @@ class XmppConnection {
       .forEach((element) => sink.add(XMLNode.fromXmlElement(element)));
   }
 
-  void _handleResourceBinding(XMLNode stanza) {
-    if (stanza.attributes["type"] == "result") {
-      print("SUCCESS: GOT RESOURCE");
-
-      final bind = stanza.firstTag("bind");
-      if (bind == null) {
-        print("NO BIND ELEMENT");
-        return;
-      }
-
-      final jid = bind.firstTag("jid");
-      if (jid == null) {
-        print("NO JID");
-        return;
-      }
-
-      this._resource = jid.innerText().split("/")[1];
-      print("----> " + this._resource);
-
-      this._routingState = RoutingState.NORMAL;
-      this._setConnectionState(ConnectionState.CONNECTED);
-      this._socket.write(Stanza.presence(
-          from: jid.innerText(),
-          children: [
-            XMLNode(
-              tag: "show",
-              text: "chat"
-            )
-          ]
-        ).toXml());
-    }
-  }
-
   // Perform a resource bind with a server-generated resource
   void _performResourceBinding() {
     this._routingState = RoutingState.RESOURCE_BIND;
@@ -191,90 +202,65 @@ class XmppConnection {
       addFrom: false
     );
   }
-  
-  Future<void> _handleStreamNegotiation(XMLNode nonza) async {
-    if (nonza.tag != "stream:stream") {
-      // Probably a stream error
-      this._eventStreamController.add(StreamErrorEvent(
-          // TODO:
-          error: nonza.tag
+
+  void _sendInitialPresence() {
+     this.sendStanza(Stanza.presence(
+          from: this.settings.jid.withResource(this._resource).toString(),
+          children: [
+            XMLNode(
+              tag: "show",
+              text: "chat"
+            )
+          ]
       ));
-      
-      return;
-    }
+  }
+  
+  void setRoutingState(RoutingState state) {
+    final oldState = this._routingState;
+    final hasChanged = state != this._routingState;
+    this._routingState = state;
 
-    final streamFeatures = nonza.firstTag("stream:features");
-    if (streamFeatures == null) {
-      print("ERROR: No stream features in stream");
-      this._setConnectionState(ConnectionState.ERROR);
-      return;
-    }
-    
-    if (streamFeatures.children.length == 0) {
-      this._setConnectionState(ConnectionState.CONNECTED);
-      this._performResourceBinding();
-      return;
-    } else {
-      final saslMechanisms = streamFeatures.firstTag("mechanisms");
-      if (saslMechanisms == null) {
-        // Authenticated negotiation
-        print("Auth negotiation");
-
-        streamFeatures.children.forEach((element) {
-            final required = element.firstTag("required");
-            final suffix = required == null ? "false" : "true";
-            final tag = element.tag;
-            
-            print(tag + ": " + suffix);
-        });
-        
-        final required = streamFeatures.children.firstWhere((element) {
-            return element.firstTag("required") != null;
-        });
-
-        // TODO: This breaks when we have more than one required stream features
-        switch (required.tag) {
-          case "bind": {
-            this._performResourceBinding();
-          }
-          break;
-        }        
-      } else {
-        final bool supportsPlain = saslMechanisms.findTags("mechanism").any(
-          (node) => node.innerText() == "PLAIN"
-        );
-        final bool supportsScramSha1 = saslMechanisms.findTags("mechanism").any(
-          (node) => node.innerText() == "SCRAM-SHA-1"
-        );
-
-        if (supportsScramSha1) {
-          print("Proceeding with SASL SCRAM-SHA-1 authentication");
-          this._authenticator = SaslScramSha1Negotiator(
-            settings: this.settings,
-            clientNonce: "",
-            initialMessageNoGS2: "",
-            send: (data) => this._socket.write(data),
-            sendStreamHeader: this._sendStreamHeader
-          );
-          this._routingState = await this._authenticator.next(null);
-          return;
-        } else if (supportsPlain && this.settings.allowPlainAuth) {
-          print("Proceeding with SASL PLAIN authentication");
-          this._authenticator = SaslPlainNegotiator(settings: this.settings, send: (data) => this._socket.write(data), sendStreamHeader: this._sendStreamHeader);
-          this._routingState = await this._authenticator.next(null);
-          return;
-        } else {
-          print("ERROR: No supported authentication mechanisms");
-          this._setConnectionState(ConnectionState.ERROR);
-          return;
+    if (hasChanged) {
+      switch (state) {
+        case RoutingState.NORMAL: {
+          this._sendInitialPresence();
+          this._setConnectionState(ConnectionState.CONNECTED);
         }
+        break;
+        case RoutingState.RESOURCE_BIND: {
+          if (oldState == RoutingState.STREAM_MANAGEMENT) {
+            this._rbNegotiator.setAttemptSMEnable(true);
+          }
+
+          this._performResourceBinding();
+        }
+        break;
+        case RoutingState.AUTHENTICATOR: {
+          this.authNegotiator.next(null);
+        }
+        break;
+        case RoutingState.STREAM_MANAGEMENT: {
+          if (oldState == RoutingState.RESOURCE_BIND) {
+            this.sendRawXML(StreamManagementEnableNonza());
+          } else {
+            this._smNegotiator.next(null);
+          }
+        }
+        break;
       }
     }
-    
   }
 
   void _handleStanza(XMLNode stanzaRaw) {
     // TODO: Improve stanza handling
+    // Ignore nonzas
+    if (["message", "iq", "presence"].indexOf(stanzaRaw.tag) == -1) {
+      print("Got nonza " + stanzaRaw.tag + " in stanza handler. Ignoring");
+      return;
+    }
+
+    if (stanzaRaw.tag == "presence") return;
+    
     final stanza = Stanza.fromXMLNode(stanzaRaw);
     final id = stanza.attributes["id"];
     if (id != null && this._awaitingResponse.containsKey(id)) {
@@ -283,7 +269,7 @@ class XmppConnection {
       // TODO: Call it a day here?
       return;
     }
-    
+
     for (int i = 0; i < this._stanzaHandlers.length; i++) {
       if (this._stanzaHandlers[i].matches(stanza)) {
         if (this._stanzaHandlers[i].callback(this, stanza)) return;
@@ -330,17 +316,31 @@ class XmppConnection {
   void handleXmlStream(XMLNode node) async {
     print("(xml) <== " + node.toXml());
 
+    if (this.streamManager != null) {
+      if (node.tag == "r") {
+        this.streamManager!.handleAckRequest();
+      } else if (node.tag == "a") {
+        this.streamManager!.handleAckResponse(int.parse(node.attributes["h"]!));
+      } else {
+        this.streamManager!.serverStanzaReceived();
+      }
+    }
+    
     switch (this._routingState) {
       case RoutingState.NEGOTIATOR: {
-        await this._handleStreamNegotiation(node);
+        this.setRoutingState(await this._sfNegotiator.next(node));
       }
       break;
       case RoutingState.AUTHENTICATOR: {
-        this._routingState = await this._authenticator.next(node);
+        this.setRoutingState(await this.authNegotiator.next(node));
+      }
+      break;
+      case RoutingState.STREAM_MANAGEMENT: {
+        this.setRoutingState(await this._smNegotiator.next(node));
       }
       break;
       case RoutingState.RESOURCE_BIND: {
-        this._handleResourceBinding(node);
+        this.setRoutingState(await this._rbNegotiator.next(node));
       }
       break;
       case RoutingState.NORMAL: {
@@ -350,7 +350,19 @@ class XmppConnection {
     }
   }
 
-  void _sendStreamHeader() {
+  void sendEvent(XmppEvent event) {
+    this._eventStreamController.add(event);
+  }
+
+  void setResource(String resource) {
+    this._resource = resource;
+  }
+  
+  void setStreamFeature(String feature, bool _required) {
+    this._streamFeatures[feature] = _required;
+  }
+  
+  void sendStreamHeader() {
     this._socket.write("<?xml version='1.0'?>" + StreamHeaderNonza(this.settings.jid.domain).toXml());
   }
   
@@ -379,6 +391,6 @@ class XmppConnection {
       .forEach(this.handleXmlStream);
 
     this._setConnectionState(ConnectionState.CONNECTING);
-    this._sendStreamHeader();
+    this.sendStreamHeader();
   }
 }

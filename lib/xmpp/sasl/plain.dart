@@ -23,7 +23,7 @@ class SaslPlainNegotiator extends AuthenticationNegotiator {
   bool authSent = false;
   final ConnectionSettings settings;
 
-  SaslPlainNegotiator({ required this.settings, required void Function(String) send, required void Function() sendStreamHeader }) : super(send: send, sendStreamHeader: sendStreamHeader);
+  SaslPlainNegotiator({ required this.settings, required void Function(XMLNode) send, required void Function() sendStreamHeader }) : super(send: send, sendStreamHeader: sendStreamHeader);
   
   Future<RoutingState> next(XMLNode? nonza) async {
     if (authSent) {
@@ -37,7 +37,7 @@ class SaslPlainNegotiator extends AuthenticationNegotiator {
         return RoutingState.NEGOTIATOR;
       }
     } else {
-      this.send(SaslPlainAuthNonza(this.settings.jid.local, this.settings.password).toXml());
+      this.send(SaslPlainAuthNonza(this.settings.jid.local, this.settings.password));
       this.authSent = true;
       return RoutingState.AUTHENTICATOR;
     }

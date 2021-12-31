@@ -29,3 +29,10 @@ class ChatMarkerEvent extends XmppEvent {
 
   ChatMarkerEvent({ required this.type, required this.sid });
 }
+
+// Triggered when we received a Stream resumption ID
+class StreamResumptionEvent extends XmppEvent {
+  final String id;
+
+  StreamResumptionEvent({ required this.id });
+}
