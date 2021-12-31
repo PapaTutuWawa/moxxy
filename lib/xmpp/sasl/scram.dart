@@ -11,6 +11,7 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
+import "package:saslprep/saslprep.dart";
 import "package:xml/xml.dart";
 
 // NOTE: Inspired by https://github.com/vukoye/xmpp_dart/blob/3b1a0588562b9e591488c99d834088391840911d/lib/src/features/sasl/ScramSaslHandler.dart
@@ -115,7 +116,7 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
     );
 
     final saltedPasswordRaw = await pbkdf2.deriveKey(
-      secretKey: SecretKey(utf8.encode(this.settings.password)),
+      secretKey: SecretKey(utf8.encode(Saslprep.saslprep(this.settings.password))),
       nonce: base64.decode(salt)
     );
     return await saltedPasswordRaw.extractBytes();
