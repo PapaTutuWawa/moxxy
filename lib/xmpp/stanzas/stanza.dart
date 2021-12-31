@@ -93,4 +93,31 @@ class Stanza extends XMLNode {
       children: children
     );
   }
+
+  Stanza errorReply(String type, String condition, { String? text }) {
+   return this.copyWith(
+      from: this.attributes["to"],
+      to: this.attributes["from"],
+      type: "error",
+      children: [
+        XMLNode(
+          tag: "error",
+          attributes: { "type": type },
+          children: [
+            XMLNode.xmlns(
+              tag: condition,
+              xmlns: FULL_STANZA_XMLNS,
+              children: text != null ?[
+                XMLNode.xmlns(
+                  tag: "text",
+                  xmlns: FULL_STANZA_XMLNS,
+                  text: text
+                )
+              ] : []
+            )
+          ]
+        )
+      ]
+    );
+  }
 }

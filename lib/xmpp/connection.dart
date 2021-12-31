@@ -9,11 +9,13 @@ import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/plain.dart";
 import "package:moxxyv2/xmpp/sasl/scramsha1.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
-import "package:moxxyv2/xmpp/stanzas/stanza.dart";
+import "package:moxxyv2/xmpp/stanzas/handlers.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
+import "package:moxxyv2/xmpp/xeps/0030.dart";
 
 import "package:xml/xml.dart";
 import "package:xml/xml_events.dart";
@@ -72,6 +74,9 @@ class XmppConnection {
   String _resource = "";
   late final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
+  final List<StanzaHandler> _stanzaHandlers = [
+    StanzaHandler(tagName: "query", xmlns: DISCO_INFO_XMLNS, callback: answerDiscoQuery)
+  ];
 
   Future<XMLNode> sendStanza(Stanza stanza) {
     if (stanza.id == null || stanza.id == "") {
@@ -263,16 +268,25 @@ class XmppConnection {
     
   }
 
-  void _handleStanza(XMLNode stanza) {
+  void _handleStanza(XMLNode stanzaRaw) {
     // TODO: Improve stanza handling
-    print("Got " + stanza.tag);
-
+    final stanza = Stanza.fromXMLNode(stanzaRaw);
     final id = stanza.attributes["id"];
     if (id != null && this._awaitingResponse.containsKey(id)) {
       this._awaitingResponse[id]!.complete(stanza);
       this._awaitingResponse.remove(id);
+      // TODO: Call it a day here?
+      return;
     }
     
+    for (int i = 0; i < this._stanzaHandlers.length; i++) {
+      if (this._stanzaHandlers[i].matches(stanza)) {
+        if (this._stanzaHandlers[i].callback(this, stanza)) return;
+      }
+    }
+    handleUnhandledStanza(this, stanza);
+
+    /*
     switch (stanza.tag) {
       case "message": {
         // TODO
@@ -305,6 +319,7 @@ class XmppConnection {
       }
       break;
     }
+    */
   }
 
   void handleXmlStream(XMLNode node) async {

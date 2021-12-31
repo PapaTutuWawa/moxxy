@@ -10,7 +10,7 @@ class XMLNode {
   String? text;
 
   XMLNode({ required this.tag, this.attributes = const {}, List<XMLNode> children = const [], this.closeTag = true, this.text }) : children = children;
-  XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String> attributes = const {}, this.children = const [], this.closeTag = true }) : attributes = { "xmlns": xmlns, ...attributes };
+  XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String> attributes = const {}, this.children = const [], this.closeTag = true, this.text }) : attributes = { "xmlns": xmlns, ...attributes };
 
   void addChild(XMLNode child) {
     this.children.add(child);
@@ -43,9 +43,15 @@ class XMLNode {
     }
   }
 
-  XMLNode? firstTag(String tag) {
+  XMLNode? firstTag(String tag, { String? xmlns}) {
     try {
-      return this.children.firstWhere((node) => node.tag == tag);
+      return this.children.firstWhere((node) {
+          if (xmlns != null) {
+            return node.tag == tag && node.attributes["xmlns"] == xmlns;
+          }
+
+          return node.tag == tag;
+      });
     } catch(e) {
       return null;
     }

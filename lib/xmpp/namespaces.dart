@@ -7,3 +7,6 @@ const FULL_STANZA_XMLNS = "urn:ietf:params:xml:ns:xmpp-stanzas";
 // XEP-0030
 const DISCO_INFO_XMLNS = "http://jabber.org/protocol/disco#info";
 const DISCO_ITEMS_XMLNS = "http://jabber.org/protocol/disco#items";
+
+// XEP-0333
+const CHAT_MARKERS_XMLNS = "urn:xmpp:chat-markers:0";

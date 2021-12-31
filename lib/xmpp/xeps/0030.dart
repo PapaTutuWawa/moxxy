@@ -108,9 +108,9 @@ Future<List<DiscoItem>?> discoItemsQuery(XmppConnection conn, String entity, { S
   return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
 }
 
-void answerDiscoQuery(XmppConnection conn, Stanza stanza) {
+bool answerDiscoQuery(XmppConnection conn, Stanza stanza) {
   final query = stanza.firstTag("query");
-  if (query == null) return null;
+  if (query == null) return false;
 
   if (query.attributes["node"] != null) {
     conn.sendStanza((Stanza.iq(
@@ -142,5 +142,21 @@ void answerDiscoQuery(XmppConnection conn, Stanza stanza) {
         )
       )
     );
+    return true;
   }
+
+  conn.sendStanza(stanza.reply(
+      children: [
+        XMLNode.xmlns(
+          tag: "query",
+          xmlns: DISCO_INFO_XMLNS,
+          children: [
+            XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
+            XMLNode(tag: "feature", attributes: { "var": DISCO_INFO_XMLNS }),
+            XMLNode(tag: "feature", attributes: { "var": CHAT_MARKERS_XMLNS })
+          ]
+        )
+      ]
+  ));
+  return true;
 }
