@@ -75,12 +75,16 @@ class XmppConnection {
   late final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
   final List<StanzaHandler> _stanzaHandlers = [
-    StanzaHandler(tagName: "query", xmlns: DISCO_INFO_XMLNS, callback: answerDiscoQuery)
+    StanzaHandler(tagName: "query", xmlns: DISCO_INFO_XMLNS, callback: answerDiscoInfoQuery),
+    StanzaHandler(tagName: "query", xmlns: DISCO_ITEMS_XMLNS, callback: answerDiscoItemsQuery)
   ];
 
-  Future<XMLNode> sendStanza(Stanza stanza) {
+  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true }) {
     if (stanza.id == null || stanza.id == "") {
       stanza = stanza.copyWith(id: randomAlphaNumeric(20));
+    }
+    if (addFrom && (stanza.from == null || stanza.from == "")) {
+      stanza = stanza.copyWith(from: this.settings.jid.withResource(this._resource).toString());
     }
 
     this._awaitingResponse[stanza.id!] = Completer();
@@ -183,7 +187,8 @@ class XmppConnection {
             }
           )
         ]
-      )
+      ),
+      addFrom: false
     );
   }
   

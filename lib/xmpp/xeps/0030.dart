@@ -108,10 +108,49 @@ Future<List<DiscoItem>?> discoItemsQuery(XmppConnection conn, String entity, { S
   return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
 }
 
-bool answerDiscoQuery(XmppConnection conn, Stanza stanza) {
-  final query = stanza.firstTag("query");
-  if (query == null) return false;
+bool answerDiscoItemsQuery(XmppConnection conn, Stanza stanza) {
+  final query = stanza.firstTag("query")!;
+  if (query.attributes["node"] != null) {
+    conn.sendStanza((Stanza.iq(
+          to: stanza.from,
+          from: stanza.to,
+          id: stanza.id,
+          type: "error",
+          children: [
+            XMLNode.xmlns(
+              tag: "query",
+              xmlns: query.attributes["xmlns"],
+              attributes: {
+                "node": query.attributes["node"]
+              }
+            ),
+            XMLNode(
+              tag: "error",
+              attributes: {
+                "type": "cancel"
+              },
+              children: [
+                XMLNode.xmlns(
+                  tag: "not-allowed",
+                  xmlns: FULL_STANZA_XMLNS
+                )
+              ]
+            )
+          ]
+        )
+      )
+    );
+    return true;
+  }
 
+  conn.sendStanza(stanza.reply(children: [
+        XMLNode.xmlns(tag: "query", xmlns: DISCO_ITEMS_XMLNS)
+  ]));
+  return true;
+}
+
+bool answerDiscoInfoQuery(XmppConnection conn, Stanza stanza) {
+  final query = stanza.firstTag("query")!;
   if (query.attributes["node"] != null) {
     conn.sendStanza((Stanza.iq(
           to: stanza.from,
@@ -153,6 +192,7 @@ bool answerDiscoQuery(XmppConnection conn, Stanza stanza) {
           children: [
             XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
             XMLNode(tag: "feature", attributes: { "var": DISCO_INFO_XMLNS }),
+            XMLNode(tag: "feature", attributes: { "var": DISCO_ITEMS_XMLNS }),
             XMLNode(tag: "feature", attributes: { "var": CHAT_MARKERS_XMLNS })
           ]
         )
