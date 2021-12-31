@@ -6,6 +6,7 @@ class ConnectionSettings {
   final bool useDirectTLS;
   final bool allowPlainAuth;
   final String? streamResumptionId;
+  final String? resource;
 
-  ConnectionSettings({ required this.jid, required this.password, required this.useDirectTLS, required this.allowPlainAuth, this.streamResumptionId });
+  ConnectionSettings({ required this.jid, required this.password, required this.useDirectTLS, required this.allowPlainAuth, this.streamResumptionId, this.resource });
 }

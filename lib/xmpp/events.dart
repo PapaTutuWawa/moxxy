@@ -32,7 +32,8 @@ class ChatMarkerEvent extends XmppEvent {
 
 // Triggered when we received a Stream resumption ID
 class StreamResumptionEvent extends XmppEvent {
+  final String resource;
   final String id;
 
-  StreamResumptionEvent({ required this.id });
+  StreamResumptionEvent({ required this.id, required this.resource });
 }
