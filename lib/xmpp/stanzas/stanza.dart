@@ -1,95 +1,96 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 
-enum StanzaTag {
-  IQ, PRESENCE
-}
-
-String stanzaTagName(StanzaTag tag) {
-  switch (tag) {
-    case StanzaTag.IQ: return "iq";
-    case StanzaTag.PRESENCE: return "presence";
-  }
-
-  return "";
-}
-
-enum StanzaType {
-  GET, SET, RESULT, ERROR
-}
-
-String stanzaTypeToString(StanzaType type) {
-  switch (type) {
-    case StanzaType.GET: return "get";
-    case StanzaType.SET: return "set";
-    case StanzaType.RESULT: return "result";
-    case StanzaType.ERROR: return "error";
-  }
-}
-
 class Stanza extends XMLNode {
   String? to;
   String? from;
-  StanzaType? type;
+  String? type;
   String? id;
 
-  Stanza({ this.to, this.from, this.type, required StanzaTag stanzaTag, List<XMLNode>? children, this.id }) : super(
-      tag: stanzaTagName(stanzaTag),
+  Stanza({ this.to, this.from, this.type, this.id, List<XMLNode> children = const [], required String tag, Map<String, String> attributes = const {} }) : super(
+    tag: tag,
+    attributes: {
+      ...attributes,
+      ...(type != null ? { "type": type } : {}),
+      ...(id != null ? { "id": id } : {}),
+      ...(to != null ? { "to": to } : {}),
+      ...(from != null ? { "from": from } : {}),
+      "xmlns": STANZA_XMLNS
+    },
+    children: children
+  );
+  static Stanza iq({ String? to, String? from, String? type, String? id, List<XMLNode> children = const [], Map<String, String>? attributes = const {} }) {
+    return Stanza(
+      tag: "iq",
+      from: from,
+      to: to,
+      id: id,
+      type: type,
       attributes: {
-        "xmlns": STANZA_XMLNS,
-        ...(id != null ? { "id": id } : {}),
-        ...(to != null ? { "to": to } : {}),
-        ...(from != null ? { "from": from } : {}),
-        ...(type != null ? { "type": stanzaTypeToString(type) } : {})
+        ...attributes!,
+        "xmlns": STANZA_XMLNS
       },
       children: children
     );
+  }
 
-  Stanza copyWith({ String? id, String? from, String? to }) {
+  static Stanza presence({ String? to, String? from, String? type, String? id, List<XMLNode> children = const [], Map<String, String>? attributes = const {} }) {
     return Stanza(
+      tag: "presence",
+      from: from,
+      to: to,
+      id: id,
+      type: type,
+      attributes: {
+        ...attributes!,
+        "xmlns": STANZA_XMLNS
+      },
+      children: children
+    );
+  }
+  static Stanza message({ String? to, String? from, String? type, String? id, List<XMLNode> children = const [], Map<String, String>? attributes = const {} }) {
+    return Stanza(
+      tag: "message",
+      from: from,
+      to: to,
+      id: id,
+      type: type,
+      attributes: {
+        ...attributes!,
+        "xmlns": STANZA_XMLNS
+      },
+      children: children
+    );
+  }
+
+  Stanza copyWith({ String? id, String? from, String? to, String? type, List<XMLNode>? children }) {
+    return Stanza(
+      tag: this.tag,
       to: to ?? this.to,
       from: from ?? this.from,
       id: id ?? this.id,
-      type: this.type,
-      children: this.children,
-      stanzaTag: StanzaTag.IQ
+      type: type ?? this.type,
+      children: children ?? this.children,
     );
   }
-}
 
-class IqStanza extends Stanza {
-  IqStanza({ String? to, String? from, String? id, required StanzaType type, List<XMLNode>? children }) : super(
-    to: to,
-    from: from,
-    id: id,
-    type: type,
-    stanzaTag: StanzaTag.IQ,
-    children: children
-  );
-}
-
-enum PresenceShow {
-  CHAT
-}
-
-String presenceShowString(PresenceShow show) {
-  switch (show) {
-    case PresenceShow.CHAT: return "show";
+  static Stanza fromXMLNode(XMLNode node) {
+    return Stanza(
+      to: node.attributes["to"],
+      from: node.attributes["from"],
+      id: node.attributes["id"],
+      tag: node.tag,
+      type: node.attributes["type"],
+      children: node.children
+    );
   }
-
-  return "";
-}
-
-class PresenceStanza extends Stanza {
-  PresenceStanza({ required String from, required PresenceShow show }) : super(
-    from: from,
-    stanzaTag: StanzaTag.PRESENCE,
-    children: [
-      XMLNode(
-        tag: "show",
-        attributes: {},
-        text: presenceShowString(show)
-      )
-    ]
-  );
+  
+  Stanza reply({ List<XMLNode>? children }) {
+    return this.copyWith(
+      from: this.attributes["to"],
+      to: this.attributes["from"],
+      type: this.tag == "iq" ? "result" : this.attributes["type"],
+      children: children
+    );
+  }
 }

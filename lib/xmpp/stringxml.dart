@@ -9,8 +9,8 @@ class XMLNode {
   bool closeTag;
   String? text;
 
-  XMLNode({ required this.tag, required this.attributes, List<XMLNode>? children, this.closeTag = true, this.text }) : children = children ?? List<XMLNode>.empty();
-  XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String>? attributes, List<XMLNode>? children, this.closeTag = true }) : attributes = { "xmlns": xmlns, ...(attributes ?? {}) }, children = children ?? List<XMLNode>.empty();
+  XMLNode({ required this.tag, this.attributes = const {}, List<XMLNode> children = const [], this.closeTag = true, this.text }) : children = children;
+  XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String> attributes = const {}, this.children = const [], this.closeTag = true }) : attributes = { "xmlns": xmlns, ...attributes };
 
   void addChild(XMLNode child) {
     this.children.add(child);

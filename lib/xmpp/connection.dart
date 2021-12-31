@@ -74,7 +74,7 @@ class XmppConnection {
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
 
   Future<XMLNode> sendStanza(Stanza stanza) {
-    if (stanza.id == null) {
+    if (stanza.id == null || stanza.id == "") {
       stanza = stanza.copyWith(id: randomAlphaNumeric(20));
     }
 
@@ -153,11 +153,33 @@ class XmppConnection {
 
       this._routingState = RoutingState.NORMAL;
       this._setConnectionState(ConnectionState.CONNECTED);
-      this._socket.write(PresenceStanza(
+      this._socket.write(Stanza.presence(
           from: jid.innerText(),
-          show: PresenceShow.CHAT
+          children: [
+            XMLNode(
+              tag: "show",
+              text: "chat"
+            )
+          ]
         ).toXml());
     }
+  }
+
+  // Perform a resource bind with a server-generated resource
+  void _performResourceBinding() {
+    this._routingState = RoutingState.RESOURCE_BIND;
+    this.sendStanza(Stanza.iq(
+        type: "set",
+        children: [
+          XMLNode(
+            tag: "bind",
+            attributes: {
+              "xmlns": BIND_XMLNS
+            }
+          )
+        ]
+      )
+    );
   }
   
   Future<void> _handleStreamNegotiation(XMLNode nonza) async {
@@ -180,8 +202,7 @@ class XmppConnection {
     
     if (streamFeatures.children.length == 0) {
       this._setConnectionState(ConnectionState.CONNECTED);
-      // TODO: Bind resource
-      print("bind resource");
+      this._performResourceBinding();
       return;
     } else {
       final saslMechanisms = streamFeatures.firstTag("mechanisms");
@@ -201,23 +222,10 @@ class XmppConnection {
             return element.firstTag("required") != null;
         });
 
+        // TODO: This breaks when we have more than one required stream features
         switch (required.tag) {
           case "bind": {
-            this._routingState = RoutingState.RESOURCE_BIND;
-            this._socket.write(
-              IqStanza(
-                id: "aaaaaaaaaa",
-                type: StanzaType.SET,
-                children: [
-                  XMLNode(
-                    tag: "bind",
-                    attributes: {
-                      "xmlns": BIND_XMLNS
-                    }
-                  )
-                ]
-              ).toXml()
-            );
+            this._performResourceBinding();
           }
           break;
         }        
