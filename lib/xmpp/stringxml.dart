@@ -29,18 +29,18 @@ class XMLNode {
   }
   
   String toXml() {
-    if (this.text != null) {
-      final attrString = this.attributes.isEmpty ? "" : " " + this.renderAttributes();
-      return "<${this.tag}${attrString}>${this.text}</${this.tag}>";
-    }
-
     if (this.children.isEmpty) {
-      return "<${this.tag} ${this.renderAttributes()}" + (this.closeTag ? " />" : ">");
+      if (this.text != null && this.text!.isNotEmpty) {
+        final attrString = this.attributes.isEmpty ? "" : " " + this.renderAttributes();
+        return "<${this.tag}${attrString}>${this.text}</${this.tag}>";
+      } else {
+        return "<${this.tag} ${this.renderAttributes()}" + (this.closeTag ? " />" : ">");
+      } 
+    } else {
+      final String childXml = this.children.map((child) => child.toXml()).join();
+      final xml = "<${this.tag} ${this.renderAttributes()}>${childXml}";
+      return xml + (this.closeTag ? "</${this.tag}>" : "");
     }
-
-    final String childXml = this.children.map((child) => child.toXml()).join();
-    final xml = "<${this.tag} ${this.renderAttributes()}>${childXml}";
-    return xml + (this.closeTag ? "</${this.tag}>" : "");
   }
 
   XMLNode? firstTag(String tag) {

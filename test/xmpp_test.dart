@@ -9,7 +9,6 @@ import "package:moxxyv2/xmpp/sasl/scramsha1.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 
-import "package:xml/xml.dart";
 import "package:test/test.dart";
 import "package:hex/hex.dart";
 
@@ -161,18 +160,6 @@ void main() {
       );
 
       expect(await negotiator.calculateChallengeResponse("cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng=="), "c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=");
-  });
-
-  test("Test XmlElement", () {
-      XmlBuilder builder = XmlBuilder();
-      builder.element("root", nest: () {
-          builder.attribute("owo", "uwu");
-      });
-
-      XmlDocument doc = builder.buildDocument();
-      final element = doc.getElement("root");
-      // TODO: Not sure about this one
-      expect(XMLNode.fromXmlElement(element!).toXml(), "<root owo='uwu'></root>");
   });
 
   test("Test bare JIDs", () {

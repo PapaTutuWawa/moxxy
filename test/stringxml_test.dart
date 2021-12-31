@@ -1,6 +1,7 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 
+import "package:xml/xml.dart";
 import "package:test/test.dart";
 
 void main() {
@@ -18,5 +19,9 @@ void main() {
       expect(XMLNode(tag: "text", attributes: { "world": "no" }, text: "hallo").toXml(), "<text world='no'>hallo</text>");
       expect(XMLNode(tag: "text", attributes: {}, text: "hallo").toXml(), "<text>hallo</text>");
       expect(XMLNode(tag: "text", attributes: {}, text: "test").innerText(), "test");
+  });
+
+  test("Test XmlElement", () {
+      expect(XMLNode.fromXmlElement(XmlDocument.parse("<root owo='uwu' />").firstElementChild!).toXml(), "<root owo='uwu' />");
   });
 }
