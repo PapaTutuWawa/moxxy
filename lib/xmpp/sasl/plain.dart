@@ -20,28 +20,28 @@ class SaslPlainAuthNonza extends XMLNode {
 }
 
 class SaslPlainNegotiator extends AuthenticationNegotiator {
+  void Function(XMLNode) sendRawXML;
   bool authSent = false;
   final ConnectionSettings settings;
 
-  SaslPlainNegotiator({ required this.settings, required void Function(XMLNode) send, required void Function() sendStreamHeader }) : super(send: send, sendStreamHeader: sendStreamHeader);
+  SaslPlainNegotiator({ required this.settings, required this.sendRawXML });
   
-  Future<RoutingState> next(XMLNode? nonza) async {
+  Future<AuthenticationResult> next(XMLNode? nonza) async {
     if (authSent) {
       final tag = nonza!.tag;
       if (tag == "failure") {
         print("SASL failure");
-        return RoutingState.ERROR;
+        return AuthenticationResult.FAILURE;
       } else if (tag == "success") {
         print("SASL success");
-        this.sendStreamHeader();
-        return RoutingState.NEGOTIATOR;
+        return AuthenticationResult.SUCCESS;
       }
     } else {
-      this.send(SaslPlainAuthNonza(this.settings.jid.local, this.settings.password));
+      this.sendRawXML(SaslPlainAuthNonza(this.settings.jid.local, this.settings.password));
       this.authSent = true;
-      return RoutingState.AUTHENTICATOR;
+      return AuthenticationResult.NOT_DONE;
     }
 
-    return RoutingState.ERROR;
+    return AuthenticationResult.FAILURE;
   }
 }

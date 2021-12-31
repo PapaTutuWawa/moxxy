@@ -71,13 +71,15 @@ enum ScramState {
 const GS2_HEADER = "n,,";
 
 class SaslScramSha1Negotiator extends AuthenticationNegotiator {
-  ScramState state = ScramState.PRE_SENT;
   final ConnectionSettings settings;
+  ScramState state = ScramState.PRE_SENT;
   String? clientNonce;
   String initialMessageNoGS2;
 
+  void Function(XMLNode) sendRawXML;
+
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
-  SaslScramSha1Negotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required void Function(XMLNode) send, required void Function() sendStreamHeader }) : super(send: send, sendStreamHeader: sendStreamHeader);
+  SaslScramSha1Negotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required this.sendRawXML });
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
     final pbkdf2 = Pbkdf2(
@@ -147,7 +149,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         return clientFinalMessageBare + ",p=" + base64.encode(clientProof);
   }
   
-  Future<RoutingState> next(XMLNode? nonza) async {
+  Future<AuthenticationResult> next(XMLNode? nonza) async {
     switch (this.state) {
       case ScramState.PRE_SENT: {
         // TODO: saslprep
@@ -158,8 +160,8 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         this.initialMessageNoGS2 = "n=" + this.settings.jid.local + ",r=${this.clientNonce}";
 
         this.state = ScramState.INITIAL_MESSAGE_SENT;
-        this.send(SaslScramSha1AuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2))));
-        return RoutingState.AUTHENTICATOR;
+        this.sendRawXML(SaslScramSha1AuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2))));
+        return AuthenticationResult.NOT_DONE;
       }
       break;
       case ScramState.INITIAL_MESSAGE_SENT: {
@@ -167,8 +169,8 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         final response = await this.calculateChallengeResponse(challengeBase64);
         final responseBase64 = base64.encode(utf8.encode(response));
         this.state = ScramState.CHALLENGE_RESPONSE_SENT;
-        this.send(SaslScramResponseNonza(body: responseBase64));
-        return RoutingState.AUTHENTICATOR;
+        this.sendRawXML(SaslScramResponseNonza(body: responseBase64));
+        return AuthenticationResult.NOT_DONE;
       }
       break;
       case ScramState.CHALLENGE_RESPONSE_SENT: {
@@ -177,8 +179,7 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
         if (tag == "success") {
           // TODO: Check the response
           print("SUCCESS!");
-          this.sendStreamHeader();
-          return RoutingState.NEGOTIATOR;
+          return AuthenticationResult.SUCCESS;
         } else {
           print("FUCK");
         }
@@ -186,6 +187,6 @@ class SaslScramSha1Negotiator extends AuthenticationNegotiator {
       break;
     }
 
-    return RoutingState.ERROR;
+    return AuthenticationResult.FAILURE;
   }
 }

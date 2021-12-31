@@ -2,11 +2,13 @@ import "package:moxxyv2/xmpp/routing.dart";
 
 import "package:moxxyv2/xmpp/stringxml.dart";
 
+enum AuthenticationResult {
+  SUCCESS,
+  FAILURE,
+  NOT_DONE
+}
+
 abstract class AuthenticationNegotiator {
-  final void Function(XMLNode) send;
-  final void Function() sendStreamHeader;
-
-  AuthenticationNegotiator({ required this.send, required this.sendStreamHeader });
-
-  Future<RoutingState> next(XMLNode? nonza);
+  // The function **MUST** send the initial <auth /> nonza when called with null
+  Future<AuthenticationResult> next(XMLNode? nonza);
 }
