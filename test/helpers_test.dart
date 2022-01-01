@@ -18,12 +18,12 @@ void main() {
       });
   });
 
-  group("listContains", () {
+  group("firstWhereOrNull", () {
       test("[] should not contain 1", () {
-          expect(listContains<int>([], (int element) => element == 1), false);
+          expect(firstWhereOrNull<int>([], (int element) => element == 1), null);
       });
       test("[1, 2, 3] should contain 2", () {
-          expect(listContains([ 1, 2, 3 ], (int element) => element == 2), true);
+          expect(firstWhereOrNull([ 1, 2, 3 ], (int element) => element == 2), 2);
       });
   });
 

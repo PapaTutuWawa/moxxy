@@ -3,7 +3,7 @@ import "package:moxxyv2/isar.g.dart";
 
 @Collection()
 @Name("Conversation")
-class Conversation {
+class DBConversation {
   int? id;
 
   @Index(caseSensitive: false)

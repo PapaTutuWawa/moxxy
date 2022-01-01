@@ -2,29 +2,13 @@ import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversations/actions.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/repositories/conversation.dart";
+import "package:moxxyv2/models/conversation.dart";
 
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:get_it/get_it.dart";
 
-void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
-  var repo = GetIt.I.get<DatabaseRepository>();
-
-  if (action is AddConversationAction && !action.triggeredByDatabase) {
-    if (repo.hasConversation(action.id)) {
-      // TODO
-    } else {
-      repo.addConversationFromAction(action);
-    }
-  } else if (action is SendMessageAction) {
-    if (repo.hasConversation(action.cid)) {
-      repo.updateConversation(id: action.cid, lastMessageBody: action.body, lastChangeTimestamp: action.timestamp);
-    } else {
-      // TODO
-    }
-  } else if (action is CloseConversationAction) {
-    store.dispatch(NavigateToAction.replace("/conversations"));
-  }
-
+void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
+  
   next(action);
 }

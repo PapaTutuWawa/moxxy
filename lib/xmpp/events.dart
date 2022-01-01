@@ -1,8 +1,10 @@
+import "package:moxxyv2/xmpp/jid.dart";
+
 abstract class XmppEvent {}
 
 class MessageEvent extends XmppEvent {
   final String body;
-  final String fromJid;
+  final FullJID fromJid;
   final String sid;
 
   MessageEvent({ required this.body, required this.fromJid, required this.sid });

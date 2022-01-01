@@ -3,15 +3,17 @@ class Message {
   final int timestamp; // NOTE: Milliseconds since Epoch
   final String from;
   final bool sent;
+  final int id; // Database ID
 
-  const Message({ required this.from, required this.body, required this.timestamp, required this.sent });
+  const Message({ required this.from, required this.body, required this.timestamp, required this.sent, required this.id });
 
   Message copyWith({ String? from, String? body, int? timestamp }) {
     return Message(
       from: from ?? this.from,
       body: body ?? this.body,
       timestamp: timestamp ?? this.timestamp,
-      sent: this.sent
+      sent: this.sent,
+      id: this.id
     );
   }
 }

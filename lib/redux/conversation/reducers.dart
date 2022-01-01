@@ -5,24 +5,14 @@ import "package:moxxyv2/redux/conversation/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 
 HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> state, dynamic action) {
-  if (action is SendMessageAction) {
-    HashMap<String, List<Message>> map = HashMap<String, List<Message>>()..addAll(state);
-
-    Message msg = Message(
-      from: action.from,
-      body: action.body,
-      timestamp: action.timestamp,
-      sent: true
-    );
-    
-    String jid = action.jid;
-    if (!map.containsKey(jid)) {
-      map[jid] = [ msg ];
-      return map;
+  if (action is AddMessageAction) {
+    if (!state.containsKey(action.message.from)) {
+      state[action.message.from] = List.from([ action.message ]);
+    } else {
+      state[action.message.from] = state[action.message.from]!..add(action.message);
     }
 
-    map[jid]!.add(msg);
-    return map;
+    return state;
   }
 
   return state;

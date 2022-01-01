@@ -1,6 +1,7 @@
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/jid.dart";
 
 bool handleMessageStanza(XmppConnection conn, Stanza stanza) {
   final body = stanza.firstTag("body");
@@ -8,7 +9,7 @@ bool handleMessageStanza(XmppConnection conn, Stanza stanza) {
   
   conn.sendEvent(MessageEvent(
       body: body.innerText(),
-      fromJid: stanza.attributes["from"]!,
+      fromJid: FullJID.fromString(stanza.attributes["from"]!),
       sid: stanza.attributes["id"]!
   ));
 

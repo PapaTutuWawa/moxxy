@@ -1,9 +1,12 @@
 import "dart:collection";
 
-import "package:moxxyv2/db/conversation.dart" as db;
-import "package:moxxyv2/models/conversation.dart" as model;
+import "package:moxxyv2/db/conversation.dart";
+import "package:moxxyv2/db/message.dart";
+import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversations/actions.dart";
+import "package:moxxyv2/redux/conversation/actions.dart";
 
 import "package:isar/isar.dart";
 import "package:redux/redux.dart";
@@ -16,16 +19,18 @@ class DatabaseRepository {
   final Isar isar;
   final Store<MoxxyState> store;
 
-  final HashMap<int, db.Conversation> _cache = HashMap();
+  final HashMap<int, DBConversation> _cache = HashMap();
+  final List<String> loadedConversations = List.empty(growable: true);
   
   DatabaseRepository({ required this.isar, required this.store });
-
+ 
   Future<void> loadConversations() async {
-    var conversations = await this.isar.conversations.where().findAll();
-
+    var conversations = await this.isar.dBConversations.where().findAll();
+    
     conversations.forEach((c) {
         this._cache[c.id!] = c;
         this.store.dispatch(AddConversationAction(
+            conversation: Conversation(
             id: c.id!,
             title: c.title,
             jid: c.jid,
@@ -34,19 +39,32 @@ class DatabaseRepository {
             unreadCounter: c.unreadCounter,
             lastChangeTimestamp: c.lastChangeTimestamp,
             sharedMediaPaths: [],
-            open: c.open,
-            triggeredByDatabase: true
+            open: c.open
+          )
         ));
       }
     );
   }
 
+  Future<void> loadMessagesForJid(String jid) async {
+    final messages = await this.isar.dBMessages.where().fromEqualTo(jid).findAll();
+    this.loadedConversations.add(jid);
+
+    messages.forEach((m) => this.store.dispatch(AddMessageAction(message: Message(
+            from: m.from,
+            body: m.body,
+            timestamp: m.timestamp,
+            sent: m.sent,
+            id: m.id!
+    ))));
+  }
+  
   // TODO
   bool hasConversation(int id) {
     return this._cache.containsKey(id);
   }
 
-  Future<void> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open }) async {
+  Future<void> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter }) async {
     print("updateConversation");
 
     final c = this._cache[id]!;
@@ -59,40 +77,64 @@ class DatabaseRepository {
     if (open != null) {
       c.open = open;
     }
+    if (unreadCounter != null) {
+      c.unreadCounter = unreadCounter;
+    }
 
     await this.isar.writeTxn((isar) async {
-        await isar.conversations.put(c);
+        await isar.dBConversations.put(c);
         print("DONE");
     });
   }
-  
-  Future<void> addConversationFromAction(AddConversationAction action) async {
-    print("addConversationFromACtion");
-    final c = db.Conversation()
-      ..jid = action.jid
-      ..title = action.title
-      ..avatarUrl = action.avatarUrl
-      ..lastChangeTimestamp = action.lastChangeTimestamp
-      ..unreadCounter = action.unreadCounter
-      ..lastMessageBody = action.lastMessageBody
-      ..open = action.open;
+
+  Future<Conversation> addConversationFromData(String title, String lastMessageBody, String avatarUrl, String jid, int unreadCounter, int lastChangeTimestamp, List<String> sharedMediaPaths, bool open) async {
+    print("addConversationFromAction");
+    final c = DBConversation()
+      ..jid = jid
+      ..title = title
+      ..avatarUrl = avatarUrl
+      ..lastChangeTimestamp = lastChangeTimestamp
+      ..unreadCounter = unreadCounter
+      ..lastMessageBody = lastMessageBody
+      ..open = open;
     await this.isar.writeTxn((isar) async {
-        await isar.conversations.put(c);
+        await isar.dBConversations.put(c);
         print("DONE");
     });
+    this._cache[c.id!] = c;
+
+    return Conversation(
+      title: title,
+      lastMessageBody: lastMessageBody,
+      avatarUrl: avatarUrl,
+      jid: jid,
+      id: c.id!,
+      unreadCounter: unreadCounter,
+      lastChangeTimestamp: lastChangeTimestamp,
+      sharedMediaPaths: sharedMediaPaths,
+      open: open
+    );
   }
-  
-  Future<void> addConversation(model.Conversation conversation) async {
-    final c = db.Conversation()
-      ..jid = conversation.jid
-      ..title = conversation.title
-      ..avatarUrl = conversation.avatarUrl
-      ..lastChangeTimestamp = conversation.lastChangeTimestamp
-      ..unreadCounter = conversation.unreadCounter
-      ..lastMessageBody = conversation.lastMessageBody
-      ..open = conversation.open;
+
+  Future<Message> addMessageFromData(String body, int timestamp, String from, bool sent) async {
+    print("addMessageFromData");
+    final m = DBMessage()
+      ..from = from
+      ..timestamp = timestamp
+      ..body = body
+      ..sent = sent;
+      
     await this.isar.writeTxn((isar) async {
-        await isar.conversations.put(c);
+        await isar.dBMessages.put(m);
+        print("DONE");
     });
+
+    return Message(
+      body: body,
+      from: from,
+      timestamp: timestamp,
+      sent: sent,
+      id: m.id!
+    );
   }
 }

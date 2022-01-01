@@ -13,10 +13,13 @@ import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/repositories/conversation.dart";
+import "package:moxxyv2/redux/messages/actions.dart";
 
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
+import "package:get_it/get_it.dart";
 
 typedef SendMessageFunction = void Function(String body);
 
@@ -50,8 +53,9 @@ class _MessageListViewModel {
   final void Function(bool scrollToEndButton) setShowScrollToEndButton;
   final bool showScrollToEndButton;
   final void Function() closeChat;
-  
-  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat });
+  final void Function(String) loadMessages;
+ 
+  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.loadMessages });
 }
 
 class _ListViewWrapperViewModel {
@@ -182,6 +186,7 @@ class ConversationPage extends StatelessWidget {
               jid: jid,
               id: conversation.id
           )),
+          loadMessages: (jid) => store.dispatch(LoadMessagesAction(jid: jid)),
           sendMessage: (body) => store.dispatch(
             // TODO
             SendMessageAction(
@@ -195,6 +200,11 @@ class ConversationPage extends StatelessWidget {
         );
       },
       builder: (context, viewModel) {
+        // TODO: Handle this in a middleware
+        if (GetIt.I.get<DatabaseRepository>().loadedConversations.indexOf(jid) == -1) {
+          viewModel.loadMessages(jid);
+        }
+
         return Scaffold(
           appBar: BorderlessTopbar.avatarAndName(
             avatar: AvatarWrapper(
