@@ -61,6 +61,8 @@ class StreamManager {
 
   void _flushStanzaQueue() {
     List<String> stanzas = this._unackedStanzas.values.toList();
+    // TODO: Maybe don't do this
+    //       What we should do: Set our h counter to what the server has sent, kill all those   //       received stanzas from the unacked queue and send the unacked ones again.
     this._unackedStanzas.clear();
 
     stanzas.forEach((stanza) => this.connection.smResend(stanza));

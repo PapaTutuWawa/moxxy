@@ -351,6 +351,8 @@ class XmppConnection {
 
         final streamFeatures = node.firstTag("stream:features")!;
         // TODO: Handle required features?
+        // NOTE: In case of reconnecting
+        this._streamFeatures.clear()
         streamFeatures.children.forEach((node) => this._streamFeatures.add(node.attributes["xmlns"]));
 
         if (this.streamFeatureSupported(SM_XMLNS)) {
