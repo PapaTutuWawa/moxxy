@@ -138,8 +138,7 @@ class _ChatBubbleState extends State<ChatBubble> {
                             this._timestampString,
                             style: TextStyle(
                               fontSize: FONTSIZE_SUBBODY,
-                              // TODO: Maybe a bit too dark on received messages
-                              color: Colors.blueGrey[900]!
+                              color: Color(0xffbdbdbd)
                             )
                           )
                         ) 
