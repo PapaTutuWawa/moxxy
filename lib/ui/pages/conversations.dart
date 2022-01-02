@@ -1,23 +1,26 @@
 import "dart:async";
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/ui/widgets/conversation.dart';
-import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/ui/pages/conversation/arguments.dart';
-import 'package:moxxyv2/ui/pages/profile/profile.dart';
-import 'package:moxxyv2/models/conversation.dart';
-import 'package:moxxyv2/redux/state.dart';
-import 'package:moxxyv2/ui/constants.dart';
+
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/widgets/conversation.dart";
+import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/ui/pages/conversation/arguments.dart";
+import "package:moxxyv2/ui/pages/profile/profile.dart";
+import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/redux/state.dart";
+import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
+import "package:flutter/material.dart";
+import "package:flutter_speed_dial/flutter_speed_dial.dart";
+import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
+import "package:flutter_redux/flutter_redux.dart";
+import "package:redux/redux.dart";
 
 class _ListViewWrapperViewModel {
   final List<Conversation> conversations;
+  final void Function(String) goToConversation;
 
-  _ListViewWrapperViewModel({ required this.conversations });
+  _ListViewWrapperViewModel({ required this.conversations, required this.goToConversation });
 }
 
 // NOTE: Q: Why wrap the ListView? A: So we can update it every minute to update the timestamps
@@ -52,6 +55,10 @@ class _ListViewWrapperState extends State<ListViewWrapper> {
         conversations: store.state.conversations..sort(
           (a, b) => b.lastChangeTimestamp.compareTo(a.lastChangeTimestamp)
         ),
+        goToConversation: (jid) => store.dispatch(NavigateToAction.push(
+            "/conversation",
+            arguments: ConversationPageArguments(jid: jid)
+        ))
       ),
       builder: (context, viewModel) {
         double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
@@ -63,7 +70,7 @@ class _ListViewWrapperState extends State<ListViewWrapper> {
           itemBuilder: (_context, index) {
             Conversation item = viewModel.conversations[index];
             return InkWell(
-              onTap: () => Navigator.pushNamed(context, "/conversation", arguments: ConversationPageArguments(jid: item.jid)),
+              onTap: () => viewModel.goToConversation(item.jid),
               child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter, maxTextWidth, item.lastChangeTimestamp)
             );
           }
