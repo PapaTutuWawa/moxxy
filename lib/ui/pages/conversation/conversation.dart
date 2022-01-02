@@ -78,7 +78,6 @@ class _ConversationPageState extends State<ConversationPage> {
   ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
   bool _shouldScroll = true;
   
-  // TODO
   @override
   void dispose() {
     this.controller.dispose();
@@ -98,8 +97,6 @@ class _ConversationPageState extends State<ConversationPage> {
   void _onSendButtonPressed(_MessageListViewModel viewModel) {
     if (viewModel.showSendButton) {
       viewModel.sendMessage(this.controller.text);
-
-      // TODO: Actual sending
       this.controller.clear();
       // NOTE: Calling clear on the controller does not trigger a onChanged on the
       //       TextField
