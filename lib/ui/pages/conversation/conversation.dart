@@ -26,6 +26,11 @@ enum ConversationOption {
   BLOCK
 }
 
+enum EncryptionOption {
+  OMEMO,
+  NONE
+}
+
 PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
   return PopupMenuItem(
     value: value,
@@ -161,14 +166,14 @@ class ConversationPage extends StatelessWidget {
               extra: [
                 PopupMenuButton(
                   onSelected: (result) {
-                    if (result == "omemo") {
+                    if (result == EncryptionOption.OMEMO) {
                       showNotImplementedDialog("End-to-End encryption", context);
                     }
                   },
                   icon: Icon(Icons.lock_open),
                   itemBuilder: (BuildContext c) => [
-                    popupItemWithIcon("unencrypted", "Unencrypted", Icons.lock_open),
-                    popupItemWithIcon("omemo", "Encrypted", Icons.lock),
+                    popupItemWithIcon(EncryptionOption.NONE, "Unencrypted", Icons.lock_open),
+                    popupItemWithIcon(EncryptionOption.OMEMO, "Encrypted", Icons.lock),
                   ]
                 ),
                 PopupMenuButton(
