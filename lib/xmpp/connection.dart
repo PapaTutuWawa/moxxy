@@ -3,6 +3,7 @@ import "dart:convert";
 import "dart:async";
 
 import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/xmpp/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
@@ -89,7 +90,7 @@ class XmppConnection {
   // final List<String> _serverFeatures = List.empty(growable: true);
   late RoutingState _routingState;
   late String _resource;
-  late String _dataBuffer;
+  late XmlStreamBuffer _streamBuffer;
 
   // Negotiators
   late final AuthenticationNegotiator _authenticator;
@@ -107,7 +108,7 @@ class XmppConnection {
 
     this._eventStreamController = StreamController();
     this._resource = "";
-    this._dataBuffer = "";
+    this._streamBuffer = XmlStreamBuffer();
   }
   
   // Returns true if the stream supports the XMLNS @feature.
@@ -168,38 +169,6 @@ class XmppConnection {
   // Just for logging
   void _incomingMiddleware(String data) {
     print("<== " + data);
-  }
-
-  void _filterOutStreamBegin(data, EventSink sink) {
-    String toParse = this._dataBuffer + data;
-    if (toParse.startsWith("<?xml version='1.0'?>")) {
-      toParse = toParse.substring(21);
-    }
-
-    if (toParse.startsWith("<stream:stream")) {
-      toParse = toParse + "</stream:stream>";
-    } else {
-      if (toParse.endsWith("</stream:stream>")) {
-        // TODO: Maybe destroy the stream
-        toParse = toParse.substring(0, toParse.length - 16);
-      }
-    } 
-
-    // TODO: Test this
-    final document;
-    try {
-      document = XmlDocument.parse("<root>$toParse</root>");
-      this._dataBuffer = "";
-    } catch (ex) {
-      // TODO: Maybe don't just assume that we haven't received everything, i.e. check the
-      //       error message
-      this._dataBuffer = this._dataBuffer + data;
-      return;
-    }
-
-    document.getElement("root")!
-      .childElements
-      .forEach((element) => sink.add(XMLNode.fromXmlElement(element)));
   }
 
   // Perform a resource bind with a server-generated resource
@@ -447,10 +416,7 @@ class XmppConnection {
 
     this._socketStream = this._socket.asBroadcastStream();
     this._socketStream.listen(this._incomingMiddleware);
-
-    this._socketStream
-      .transform(StreamTransformer<String, XMLNode>.fromHandlers(handleData: this._filterOutStreamBegin))
-      .forEach(this.handleXmlStream);
+    this._socketStream.transform(this._streamBuffer).forEach(this.handleXmlStream);
 
     this._setConnectionState(ConnectionState.CONNECTING);
     this._sendStreamHeader();
