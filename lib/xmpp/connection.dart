@@ -76,7 +76,6 @@ class XmppConnection {
   late ConnectionState _connectionState;
   late final Stream<String> _socketStream;
   late final StreamController<XmppEvent> _eventStreamController;
-  StreamManager? streamManager;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
   
   final List<StanzaHandler> _stanzaHandlers = [
@@ -91,6 +90,8 @@ class XmppConnection {
   late RoutingState _routingState;
   late String _resource;
   late XmlStreamBuffer _streamBuffer;
+  StreamManager? streamManager;
+  Timer? _connectionPingTimer;
 
   // Negotiators
   late final AuthenticationNegotiator _authenticator;
@@ -170,6 +171,15 @@ class XmppConnection {
   void _setConnectionState(ConnectionState state) {
     this._connectionState = state;
     this._eventStreamController.add(ConnectionStateChangedEvent(state: state));
+
+    if (state == ConnectionState.CONNECTED) {
+      this._connectionPingTimer = Timer.periodic(Duration(minutes: 5), this._pingConnectionOpen);
+    } else {
+      if (this._connectionPingTimer != null) {
+        this._connectionPingTimer!.cancel();
+        this._connectionPingTimer = null;
+      }
+    }
   }
   
   Stream<XmppEvent> asBroadcastStream() {
@@ -227,6 +237,19 @@ class XmppConnection {
       ));
   }
 
+  // For keeping the connection open
+  void _pingConnectionOpen(Timer timer) {
+    // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
+    // send a whitespace ping
+    if (this._connectionState == ConnectionState.CONNECTED) {
+      if (this.streamManager != null) {
+        this.sendRawXML(StreamManagementRequestNonza());
+      } else {
+        this._socket.write("");
+      }
+    }
+  }
+  
   void _handleStanza(XMLNode stanzaRaw) {
     // TODO: Improve stanza handling
     // Ignore nonzas
@@ -334,7 +357,6 @@ class XmppConnection {
           // Try to work with SM first
           if (this.settings.streamResumptionId != null) {
             // Try to resume the last stream
-            // TODO
             this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
             this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionId!, this.settings.lasth!));
           } else {
@@ -362,6 +384,10 @@ class XmppConnection {
           print("Stream Resumption successful!");
           this.sendEvent(StreamManagementResumptionSuccessfulEvent());
           this._resource = this.settings.resource!;
+          this.streamManager = StreamManager(
+            connection: this,
+            streamResumptionId: this.settings.streamResumptionId!
+          );
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._setConnectionState(ConnectionState.CONNECTED);
         } else if (node.tag == "failed") {
