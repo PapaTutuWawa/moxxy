@@ -25,7 +25,6 @@ class XmlStreamBuffer extends StreamTransformerBase<String, XMLNode> {
       }
     } 
 
-    // TODO: Test this
     final document;
     try {
       document = XmlDocument.parse("<root>$toParse</root>");
