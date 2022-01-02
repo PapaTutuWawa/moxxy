@@ -1,5 +1,4 @@
 import "dart:async";
-import "package:flutter/material.dart";
 
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/chatbubble.dart";
@@ -14,6 +13,9 @@ import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
+import "package:flutter/material.dart";
+import "package:flutter/scheduler.dart";
+import "package:scrollable_positioned_list/scrollable_positioned_list.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
@@ -62,18 +64,26 @@ class _MessageListViewModel {
   _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages, required this.resetCurrentConversation });
 }
 
-class ConversationPage extends StatelessWidget {
-  TextEditingController controller = TextEditingController();
-  ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
+class ConversationPage extends StatefulWidget {
+  ConversationPage({ Key? key }) : super(key: key);
 
+  @override
+  _ConversationPageState createState() => _ConversationPageState();
+}
+
+class _ConversationPageState extends State<ConversationPage> {
+  TextEditingController controller = TextEditingController();
+  ItemScrollController itemScrollController = ItemScrollController();
+  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
+  bool _shouldScroll = true;
+  
   // TODO
-  /*
   @override
   void dispose() {
-  this.controller.dispose();
-  super.dispose();
-}
-  */
+    this.controller.dispose();
+    super.dispose();
+  }
 
   void _onMessageTextChanged(String value, _MessageListViewModel viewModel) {
     // Only dispatch the action if we have to
@@ -94,6 +104,7 @@ class ConversationPage extends StatelessWidget {
       // NOTE: Calling clear on the controller does not trigger a onChanged on the
       //       TextField
       this._onMessageTextChanged("", viewModel);
+      this._shouldScroll = true;
     }
   }
 
@@ -148,6 +159,16 @@ class ConversationPage extends StatelessWidget {
         );
       },
       builder: (context, viewModel) {
+        SchedulerBinding.instance!.addPostFrameCallback((_) {
+            if (this._shouldScroll) {
+              this.itemScrollController.scrollTo(
+                index: viewModel.messages.length - 1,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic
+              );
+              this._shouldScroll = false;
+            }
+        });
         return WillPopScope(
           onWillPop: () async {
             viewModel.resetCurrentConversation();
@@ -205,9 +226,11 @@ class ConversationPage extends StatelessWidget {
                 Expanded(
                   child: Stack(
                     children: [
-                      ListView.builder(
+                      ScrollablePositionedList.builder(
                         itemCount: viewModel.messages.length,
-                        itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
+                        itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth),
+                        itemScrollController: this.itemScrollController,
+                        itemPositionsListener: this.itemPositionsListener
                       ),
                       Positioned(
                         bottom: 64.0,
