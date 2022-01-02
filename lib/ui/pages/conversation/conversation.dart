@@ -81,14 +81,14 @@ class _ListViewWrapperState extends State<ListViewWrapper> {
 
   Widget _renderBubble(List<Message> messages, int index, double maxWidth) {
     Message item = messages[index];
-    // TODO
     bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
     bool end = index + 1 >= messages.length ? true : messages[index + 1].sent != item.sent;
     bool between = !start && !end;
+
     return ChatBubble(
       messageContent: item.body,
       timestamp: item.timestamp,
-      sentBySelf: true,
+      sentBySelf: item.sent,
       start: start,
       end: end,
       between: between,

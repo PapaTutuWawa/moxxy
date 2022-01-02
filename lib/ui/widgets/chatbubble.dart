@@ -29,10 +29,9 @@ class ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        // TODO: Fix padding
-        left: this.start ? 8.0 : 1.0, // Conditional
-        right: 8.0,
-        top: 5.0,
+        left: !this.sentBySelf ? 8.0 : 0.0, // Conditional
+        right: this.sentBySelf ? 8.0 : 0.0,
+        top: 1.0,
         bottom: this.closerTogether ? 1.0 : 8.0
       ),
       child: Row(
@@ -74,6 +73,7 @@ class ChatBubble extends StatelessWidget {
                             ),
                             style: TextStyle(
                               fontSize: FONTSIZE_SUBBODY,
+                              // TODO: Maybe a bit too dark on received messages
                               color: Colors.blueGrey[900]!
                             )
                           )
