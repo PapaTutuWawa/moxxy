@@ -27,23 +27,23 @@ class DatabaseRepository {
   Future<void> loadConversations() async {
     var conversations = await this.isar.dBConversations.where().findAll();
 
-    // TODO: Optimise by creating an action that just sets them all at once
-    conversations.forEach((c) {
-        this._cache[c.id!] = c;
-        this.store.dispatch(AddConversationAction(
-            conversation: Conversation(
-            id: c.id!,
-            title: c.title,
-            jid: c.jid,
-            avatarUrl: c.avatarUrl,
-            lastMessageBody: c.lastMessageBody,
-            unreadCounter: c.unreadCounter,
-            lastChangeTimestamp: c.lastChangeTimestamp,
-            sharedMediaPaths: [],
-            open: c.open
-          )
-        ));
-      }
+    store.dispatch(AddMultipleConversationsAction(
+        conversations: conversations.map((c) {
+            this._cache[c.id!] = c;
+            return Conversation(
+              id: c.id!,
+              title: c.title,
+              jid: c.jid,
+              avatarUrl: c.avatarUrl,
+              lastMessageBody: c.lastMessageBody,
+              unreadCounter: c.unreadCounter,
+              lastChangeTimestamp: c.lastChangeTimestamp,
+              sharedMediaPaths: [],
+              open: c.open
+            );
+          }
+        ).toList()
+      )
     );
   }
 
@@ -51,15 +51,17 @@ class DatabaseRepository {
     final messages = await this.isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
     this.loadedConversations.add(jid);
 
-    // TODO: Optimise by creating an action that just sets them all at once
-    messages.forEach((m) => this.store.dispatch(AddMessageAction(message: Message(
+    store.dispatch(AddMultipleMessagesAction(
+        conversationJid: jid,
+        messages: messages.map((m) => Message(
             from: m.from,
             conversationJid: m.conversationJid,
             body: m.body,
             timestamp: m.timestamp,
             sent: m.sent,
             id: m.id!
-    ))));
+        )).toList()
+    ));
   }
   
   // TODO

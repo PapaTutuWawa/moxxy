@@ -21,6 +21,10 @@ HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> sta
     }
 
     return state;
+  } else if (action is AddMultipleMessagesAction) {
+    final messages = state[action.conversationJid] ?? List.empty(growable: true);
+    state[action.conversationJid] = messages..addAll(action.messages);
+    return state;
   }
 
   return state;

@@ -36,6 +36,13 @@ class AddMessageAction {
   AddMessageAction({ required this.message });
 }
 
+class AddMultipleMessagesAction {
+  final String conversationJid;
+  final List<Message> messages;
+
+  AddMultipleMessagesAction({ required this.messages, required this.conversationJid });
+}
+
 class CloseConversationAction {
   final String jid;
   final int id;
