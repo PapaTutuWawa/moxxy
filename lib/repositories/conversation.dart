@@ -47,11 +47,12 @@ class DatabaseRepository {
   }
 
   Future<void> loadMessagesForJid(String jid) async {
-    final messages = await this.isar.dBMessages.where().fromEqualTo(jid).findAll();
+    final messages = await this.isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
     this.loadedConversations.add(jid);
 
     messages.forEach((m) => this.store.dispatch(AddMessageAction(message: Message(
             from: m.from,
+            conversationJid: m.conversationJid,
             body: m.body,
             timestamp: m.timestamp,
             sent: m.sent,
@@ -116,10 +117,11 @@ class DatabaseRepository {
     );
   }
 
-  Future<Message> addMessageFromData(String body, int timestamp, String from, bool sent) async {
+  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent) async {
     print("addMessageFromData");
     final m = DBMessage()
       ..from = from
+      ..conversationJid = conversationJid
       ..timestamp = timestamp
       ..body = body
       ..sent = sent;
@@ -132,6 +134,7 @@ class DatabaseRepository {
     return Message(
       body: body,
       from: from,
+      conversationJid: conversationJid,
       timestamp: timestamp,
       sent: sent,
       id: m.id!

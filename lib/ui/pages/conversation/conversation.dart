@@ -133,11 +133,9 @@ class ConversationPage extends StatelessWidget {
           sendMessage: (body) => store.dispatch(
             // TODO
             SendMessageAction(
-              from: "UwU",
               timestamp: DateTime.now().millisecondsSinceEpoch,
               body: body,
               jid: jid,
-              cid: conversation.id
             )
           )
         );

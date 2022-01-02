@@ -9,6 +9,9 @@ class DBMessage {
   @Index(caseSensitive: false)
   late String from;
 
+  @Index(caseSensitive: false)
+  late String conversationJid;
+
   late int timestamp;
 
   late String body;

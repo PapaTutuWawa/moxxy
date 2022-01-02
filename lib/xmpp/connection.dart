@@ -129,6 +129,16 @@ class XmppConnection {
   void sendRawXML(XMLNode node) {
     this._socket.write(node.toXml());
   }
+
+  void sendMessage(String body, String to) async {
+    await this.sendStanza(Stanza.message(
+        to: to,
+        type: "normal",
+        children: [
+          XMLNode(tag: "body", text: body)
+        ]
+    ));
+  }
   
   Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
     // Add extra data in case it was not set

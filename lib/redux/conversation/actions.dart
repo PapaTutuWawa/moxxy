@@ -16,11 +16,9 @@ class SetShowScrollToEndButtonAction {
 class SendMessageAction {
   final String body;
   final int timestamp;
-  final String from;
   final String jid;
-  final int cid;
 
-  SendMessageAction({ required this.from, required this.body, required this.timestamp, required this.jid, required this.cid });
+  SendMessageAction({ required this.body, required this.timestamp, required this.jid });
 }
 
 class ReceiveMessageAction {

@@ -6,10 +6,10 @@ import "package:moxxyv2/redux/conversation/actions.dart";
 
 HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> state, dynamic action) {
   if (action is AddMessageAction) {
-    if (!state.containsKey(action.message.from)) {
-      state[action.message.from] = List.from([ action.message ]);
+    if (!state.containsKey(action.message.conversationJid)) {
+      state[action.message.conversationJid] = List.from([ action.message ]);
     } else {
-      state[action.message.from] = state[action.message.from]!..add(action.message);
+      state[action.message.conversationJid] = state[action.message.conversationJid]!..add(action.message);
     }
 
     return state;
