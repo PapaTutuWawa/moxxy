@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
+import "dart:async";
+
+import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/helpers.dart";
 
-// TODO: Use a timer to update the timestamp every minute
-class ChatBubble extends StatelessWidget {
-  final String messageContent;
-  final int timestamp;
+import "package:flutter/material.dart";
+
+class ChatBubble extends StatefulWidget {
+  final Message message;
   final bool sentBySelf;
   // 
   final bool closerTogether;
@@ -15,15 +17,81 @@ class ChatBubble extends StatelessWidget {
   final double maxWidth;
 
   ChatBubble({
-      required this.messageContent,
-      required this.timestamp,
+      required this.message,
+      required this.sentBySelf,
+      required this.closerTogether,
+      required this.between,
+      required this.start,
+      required this.end,
+      required this.maxWidth,
+      Key? key
+  }) : super(key: key);
+
+  @override
+  _ChatBubbleState createState() => _ChatBubbleState(
+      message: this.message,
+      sentBySelf: this.sentBySelf,
+      closerTogether: this.closerTogether,
+      between: this.between,
+      start: this.start,
+      end: this.end,
+      maxWidth: this.maxWidth
+  );
+}
+
+class _ChatBubbleState extends State<ChatBubble> {
+  final Message message;
+  final bool sentBySelf;
+  // 
+  final bool closerTogether;
+  final bool between;
+  final bool start;
+  final bool end;
+  final double maxWidth;
+
+  late String _timestampString;
+  late Timer? _updateTimer;
+
+  _ChatBubbleState({
+      required this.message,
       required this.sentBySelf,
       required this.closerTogether,
       required this.between,
       required this.start,
       required this.end,
       required this.maxWidth
-  });
+  }) {
+    // Different name for now to prevent possible shadowing issues
+    final _now = DateTime.now().millisecondsSinceEpoch;
+    this._timestampString = formatMessageTimestamp(this.message.timestamp, _now);
+
+    // Only start the timer if neccessary
+    if (_now - this.message.timestamp <= 15 * Duration.millisecondsPerMinute) {
+      print("Starting timer");
+      this._updateTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+          this.setState(() {
+              final now = DateTime.now().millisecondsSinceEpoch;
+              this._timestampString = formatMessageTimestamp(this.message.timestamp, now);
+
+              if (now - this.message.timestamp > 15 * Duration.millisecondsPerMinute) {
+                print("Cancelling timer");
+                this._updateTimer!.cancel();
+              }
+          });
+      });
+    } else {
+      this._updateTimer = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (this._updateTimer != null) {
+      this._updateTimer!.cancel();
+    }
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +123,7 @@ class ChatBubble extends StatelessWidget {
               child: IntrinsicWidth(child: Column(
                   children: [
                     Text(
-                      this.messageContent,
+                      this.message.body,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: FONTSIZE_BODY
@@ -67,10 +135,7 @@ class ChatBubble extends StatelessWidget {
                         Padding(
                           padding: EdgeInsets.only(top: 3.0),
                           child: Text(
-                            formatMessageTimestamp(
-                              this.timestamp,
-                              DateTime.now().millisecondsSinceEpoch
-                            ),
+                            this._timestampString,
                             style: TextStyle(
                               fontSize: FONTSIZE_SUBBODY,
                               // TODO: Maybe a bit too dark on received messages
