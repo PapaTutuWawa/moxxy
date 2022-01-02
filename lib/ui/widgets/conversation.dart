@@ -1,14 +1,38 @@
-import "package:flutter/material.dart";
+import "dart:async";
 
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/constants.dart";
 
+import "package:flutter/material.dart";
 import "package:badges/badges.dart";
 
+class ConversationsListRow extends StatefulWidget {
+  final String avatarUrl;
+  final String name;
+  final String lastMessageBody;
+  final int unreadCount;
+  final double maxTextWidth;
+  final int lastChangeTimestamp;
+  final bool update; // Should a timer run to update the timestamp
+  
+  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp, this.update, { Key? key }) : super(key: key);
+
+  @override
+  _ConversationsListRowState createState() => _ConversationsListRowState(
+    this.avatarUrl,
+    this.name,
+    this.lastMessageBody,
+    this.unreadCount,
+    this.maxTextWidth,
+    this.lastChangeTimestamp,
+    this.update
+  );
+}
+
 // TODO: Use a Timer.periodic to update the timestamp every minute
-class ConversationsListRow extends StatelessWidget {
+class _ConversationsListRowState extends State<ConversationsListRow> {
   final String avatarUrl;
   final String name;
   final String lastMessageBody;
@@ -16,7 +40,47 @@ class ConversationsListRow extends StatelessWidget {
   final double maxTextWidth;
   final int lastChangeTimestamp;
 
-  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp);
+  late String _timestampString;
+  late Timer? _updateTimer;
+  
+  _ConversationsListRowState(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp, bool update) {
+    final _now = DateTime.now().millisecondsSinceEpoch;
+
+    this._timestampString = formatConversationTimestamp(
+      this.lastChangeTimestamp,
+      _now
+    );
+
+    // NOTE: We could also check and run the timer hourly, but who has a messenger on the
+    //       conversation screen open for hours on end?
+    if (update && lastChangeTimestamp > -1 && _now - this.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+      this._updateTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+          final now = DateTime.now().millisecondsSinceEpoch;
+          setState(() {
+              this._timestampString = formatConversationTimestamp(
+                this.lastChangeTimestamp,
+                now
+              );
+          });
+
+          if (now - this.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+            this._updateTimer!.cancel();
+            this._updateTimer = null;
+          }
+      });
+    } else {
+      this._updateTimer = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (this._updateTimer != null) {
+      this._updateTimer!.cancel();
+    }
+
+    super.dispose();
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -86,10 +150,7 @@ class ConversationsListRow extends StatelessWidget {
             top: 8,
             right: 8,
             child: Text(
-              formatConversationTimestamp(
-                this.lastChangeTimestamp,
-                DateTime.now().millisecondsSinceEpoch
-              )
+              this._timestampString
             )
           )
         ) 

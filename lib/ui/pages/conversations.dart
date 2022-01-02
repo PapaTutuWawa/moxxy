@@ -16,83 +16,13 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
 
-class _ListViewWrapperViewModel {
-  final List<Conversation> conversations;
-  final void Function(String) goToConversation;
-
-  _ListViewWrapperViewModel({ required this.conversations, required this.goToConversation });
-}
-
-// NOTE: Q: Why wrap the ListView? A: So we can update it every minute to update the timestamps
-// TODO: Replace with something better
-class _ListViewWrapperState extends State<ListViewWrapper> {
-  Timer? _updateTimer;
-  int _tickCounter = 0;
-
-  _ListViewWrapperState() {
-    this._updateTimer = Timer.periodic(Duration(minutes: 1), this._timerCallback);
-  }
-  
-  void _timerCallback(Timer timer) {
-    print("TOCK");
-    setState(() {
-        this._tickCounter++;
-    }); 
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    if (this._updateTimer != null) {
-      this._updateTimer!.cancel();
-    }
-  }
-  
-  @override
-  Widget build(BuildContext build) {
-    return StoreConnector<MoxxyState, _ListViewWrapperViewModel>(
-      converter: (store) => _ListViewWrapperViewModel(
-        conversations: store.state.conversations..sort(
-          (a, b) => b.lastChangeTimestamp.compareTo(a.lastChangeTimestamp)
-        ),
-        goToConversation: (jid) => store.dispatch(NavigateToAction.push(
-            "/conversation",
-            arguments: ConversationPageArguments(jid: jid)
-        ))
-      ),
-      builder: (context, viewModel) {
-        double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
-
-        viewModel.conversations.forEach((c) => print(c.jid));
-        
-        return ListView.builder(
-          itemCount: viewModel.conversations.length,
-          itemBuilder: (_context, index) {
-            Conversation item = viewModel.conversations[index];
-            return InkWell(
-              onTap: () => viewModel.goToConversation(item.jid),
-              child: ConversationsListRow(item.avatarUrl, item.title, item.lastMessageBody, item.unreadCounter, maxTextWidth, item.lastChangeTimestamp)
-            );
-          }
-        );
-      }
-    );
-  }
-}
-
-class ListViewWrapper extends StatefulWidget {
-  ListViewWrapper();
-
-  @override
-  _ListViewWrapperState createState() => _ListViewWrapperState();
-}
-
 class _ConversationsListViewModel {
   final List<Conversation> conversations;
   final String displayName;
   final String avatarUrl;
+  final void Function(String) goToConversation;
 
-  _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl });
+  _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl, required this.goToConversation });
 }
 
 enum ConversationsOptions {
@@ -101,8 +31,29 @@ enum ConversationsOptions {
 
 class ConversationsPage extends StatelessWidget {
   Widget _listWrapper(BuildContext context, _ConversationsListViewModel viewModel) {
+    double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
+
     if (viewModel.conversations.length > 0) {
-      return ListViewWrapper();
+      return ListView.builder(
+        itemCount: viewModel.conversations.length,
+        itemBuilder: (_context, index) {
+          Conversation item = viewModel.conversations[index];
+          return InkWell(
+            onTap: () => viewModel.goToConversation(item.jid),
+            child: ConversationsListRow(
+              item.avatarUrl,
+              item.title,
+              item.lastMessageBody,
+              item.unreadCounter,
+              maxTextWidth,
+              item.lastChangeTimestamp,
+              true,
+              // TODO: Maybe use ValueKey
+              key: UniqueKey()
+            )
+          );
+        }
+      );
     }
 
     return Padding(
@@ -134,7 +85,11 @@ class ConversationsPage extends StatelessWidget {
       converter: (store) => _ConversationsListViewModel(
         conversations: store.state.conversations,
         displayName: store.state.accountState.displayName,
-        avatarUrl: store.state.accountState.avatarUrl
+        avatarUrl: store.state.accountState.avatarUrl,
+        goToConversation: (jid) => store.dispatch(NavigateToAction.push(
+            "/conversation",
+            arguments: ConversationPageArguments(jid: jid)
+        ))
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(
