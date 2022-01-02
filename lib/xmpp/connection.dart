@@ -291,7 +291,8 @@ class XmppConnection {
         this.streamManager!.serverStanzaReceived();
       }
     }
-    
+
+    // TODO: Handle RoutingState.BIND_RESOURCE
     switch (this._routingState) {
       case RoutingState.UNAUTHENTICATED: {
         // We expect the stream header here
@@ -352,15 +353,15 @@ class XmppConnection {
         final streamFeatures = node.firstTag("stream:features")!;
         // TODO: Handle required features?
         // NOTE: In case of reconnecting
-        this._streamFeatures.clear()
+        this._streamFeatures.clear();
         streamFeatures.children.forEach((node) => this._streamFeatures.add(node.attributes["xmlns"]));
 
         if (this.streamFeatureSupported(SM_XMLNS)) {
           // Try to work with SM first
-          if (this.settings.streamResumptionId != null) {
+          if (this.settings.streamResumptionSettings.id != null) {
             // Try to resume the last stream
             this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
-            this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionId!, this.settings.lasth!));
+            this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionSettings.id!, this.settings.streamResumptionSettings.lasth!));
           } else {
             // Try to enable SM
             this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
@@ -385,10 +386,10 @@ class XmppConnection {
         if (node.tag == "resumed") {
           print("Stream Resumption successful!");
           this.sendEvent(StreamManagementResumptionSuccessfulEvent());
-          this._resource = this.settings.resource!;
+          this._resource = this.settings.streamResumptionSettings.resource!;
           this.streamManager = StreamManager(
             connection: this,
-            streamResumptionId: this.settings.streamResumptionId!
+            streamResumptionId: this.settings.streamResumptionSettings.id!
           );
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._setConnectionState(ConnectionState.CONNECTED);
@@ -417,6 +418,7 @@ class XmppConnection {
           this.streamManager = StreamManager(connection: this, streamResumptionId: id);
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._sendInitialPresence();
+          this._setConnectionState(ConnectionState.CONNECTED);
         }
       }
       break;
@@ -450,6 +452,7 @@ class XmppConnection {
       }
     }
 
+    print("Connecting to $hostname:$port");
     await this._socket.connect(hostname, port);
 
     this._socketStream = this._socket.asBroadcastStream();

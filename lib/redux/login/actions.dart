@@ -1,8 +1,9 @@
 // TODO: "Send" the login data to perform the actual login
 class PerformLoginAction {
   final String jid;
+  final String password;
 
-  PerformLoginAction({ required this.jid });
+  PerformLoginAction({ required this.jid, required this.password });
 }
 
 // TODO: Merge
@@ -24,7 +25,6 @@ class TogglePasswordVisibilityAction {}
 class LoginSuccessfulAction {
   final String jid;
   final String displayName;
-  final String streamResumptionToken;
 
-  LoginSuccessfulAction({ required this.jid, required this.displayName, required this.streamResumptionToken });
+  LoginSuccessfulAction({ required this.jid, required this.displayName });
 }

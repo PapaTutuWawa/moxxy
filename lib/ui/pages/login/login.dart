@@ -11,7 +11,7 @@ import 'package:redux/redux.dart';
 
 class _LoginPageViewModel {
   final void Function() togglePasswordVisibility;
-  final void Function(String jid /*, String password*/) performLogin;
+  final void Function(String jid, String password) performLogin;
   final void Function(String text) setJidError;
   final void Function(String text) setPasswordError;
   final void Function() resetErrors;
@@ -64,7 +64,7 @@ class LoginPage extends StatelessWidget {
       return;
     }
     
-    viewModel.performLogin(jid);
+    viewModel.performLogin(jid, password);
   }
   
   @override
@@ -72,7 +72,7 @@ class LoginPage extends StatelessWidget {
     return StoreConnector<MoxxyState, _LoginPageViewModel>(
       converter: (store) => _LoginPageViewModel(
         togglePasswordVisibility: () => store.dispatch(TogglePasswordVisibilityAction()),
-        performLogin: (jid) => store.dispatch(PerformLoginAction(jid: jid)),
+        performLogin: (jid, password) => store.dispatch(PerformLoginAction(jid: jid, password: password)),
         doingWork: store.state.globalState.doingWork,
         showPassword: store.state.loginPageState.showPassword,
         passwordError: store.state.loginPageState.passwordError,

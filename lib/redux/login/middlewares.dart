@@ -5,21 +5,25 @@ import "package:moxxyv2/redux/login/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
 import "package:moxxyv2/redux/global/actions.dart";
 import "package:moxxyv2/backend/account.dart";
+import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/settings.dart";
+import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/repositories/xmpp.dart";
 
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
+import "package:get_it/get_it.dart";
 
-void loginMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
+Future<void> loginMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
   if (action is PerformLoginAction) {
     store.dispatch(SetDoingWorkAction(state: true));
-    // TODO: Remove
-    Future.delayed(Duration(seconds: 3), () {
-        store.dispatch(LoginSuccessfulAction(
-            jid: action.jid,
-            displayName: action.jid.split("@")[0],
-            streamResumptionToken: ""
-        ));
-    });
+    GetIt.I.get<XmppRepository>().connect(ConnectionSettings(
+        jid: BareJID.fromString(action.jid),
+        password: action.password,
+        useDirectTLS: true,
+        allowPlainAuth: false,
+        streamResumptionSettings: StreamResumptionSettings()
+    ), true);
   } else if (action is LoginSuccessfulAction) {
     store.dispatch(SetDoingWorkAction(state: false));
     store.dispatch(SetDisplayNameAction(displayName: action.displayName));
@@ -28,8 +32,7 @@ void loginMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
     setAccountData(AccountState(
         jid: action.jid,
         displayName: action.displayName,
-        avatarUrl: "",
-        streamResumptionToken: action.streamResumptionToken
+        avatarUrl: ""
     ));
     store.dispatch(NavigateToAction.replace("/conversations"));
   }

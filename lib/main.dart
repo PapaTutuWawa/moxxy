@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'ui/pages/conversation/conversation.dart';
 import 'ui/pages/conversations.dart';
 import 'ui/pages/profile/profile.dart';
-import 'ui/pages/newconversation.dart';
+//import 'ui/pages/newconversation.dart';
 import 'ui/pages/login/login.dart';
 import 'ui/pages/register/register.dart';
 import 'ui/pages/intro.dart';
@@ -16,6 +16,8 @@ import 'ui/constants.dart';
 import 'repositories/roster.dart';
 import "repositories/conversation.dart";
 import "repositories/roster.dart";
+import "repositories/xmpp.dart";
+import "redux/conversation/actions.dart";
 import "redux/conversation/reducers.dart";
 import "redux/conversation/actions.dart";
 import "redux/start/actions.dart";
@@ -26,6 +28,8 @@ import "redux/login/middlewares.dart";
 import "redux/registration/middlewares.dart";
 import "redux/addcontact/middlewares.dart";
 import "redux/roster/middlewares.dart";
+import "redux/messages/middleware.dart";
+import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
 
 import "package:get_it/get_it.dart";
@@ -37,7 +41,7 @@ import "package:isar/isar.dart";
 
 import "isar.g.dart";
 
-Store<MoxxyState> createStore(Isar isar) {
+Future<Store<MoxxyState>> createStore(Isar isar) async {
   final store = Store<MoxxyState>(
     moxxyReducer,
     initialState: MoxxyState.initialState(),
@@ -49,16 +53,19 @@ Store<MoxxyState> createStore(Isar isar) {
       registrationMiddleware,
       addcontactMiddleware,
       rosterMiddleware,
+      messageMiddleware,
+      conversationMiddleware,
       NavigationMiddleware(),
       // TODO: Hide behind a build flavour
       LoggingMiddleware.printer()
     ]
   );
-
+  
   GetIt.I.registerSingleton<DatabaseRepository>(DatabaseRepository(isar: isar, store: store));
   GetIt.I.registerSingleton<RosterRepository>(RosterRepository(isar: isar, store: store));
   GetIt.I.get<DatabaseRepository>().loadConversations();
-
+  GetIt.I.registerSingleton<XmppRepository>(XmppRepository(store: store));
+  
   return store;
 }
 
@@ -69,8 +76,8 @@ Store<MoxxyState> createStore(Isar isar) {
 // TODO: Find a better way to do this
 void main() async {
   final isar = await openIsar();
-  final store = createStore(isar);
-
+  final store = await createStore(isar);
+  
   runApp(MyApp(isar: isar, store: store));
 }
 
@@ -136,7 +143,7 @@ class MyApp extends StatelessWidget {
           "/conversation": (context) => ConversationPage(),
           "/conversation/profile": (context) => ProfilePage(),
           "/conversation/send_files": (context) => SendFilesPage(),
-          "/new_conversation": (context) => NewConversationPage(),
+          //"/new_conversation": (context) => NewConversationPage(),
           "/new_conversation/add_contact": (context) => AddContactPage(),
           "/settings": (context) => SettingsPage(),
           "/settings/licenses": (context) => SettingsLicensesPage(),
