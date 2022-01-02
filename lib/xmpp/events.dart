@@ -33,9 +33,20 @@ class ChatMarkerEvent extends XmppEvent {
 }
 
 // Triggered when we received a Stream resumption ID
-class StreamResumptionEvent extends XmppEvent {
+// TODO: Make the id optional since a server doesn't have to support resumption
+class StreamManagementEnabledEvent extends XmppEvent {
   final String resource;
   final String id;
 
-  StreamResumptionEvent({ required this.id, required this.resource });
+  StreamManagementEnabledEvent({ required this.id, required this.resource });
 }
+
+// Triggered when we send out an ack
+class StreamManagementAckSentEvent extends XmppEvent {
+  final int h;
+
+  StreamManagementAckSentEvent({ required this.h });
+}
+
+// Triggered when we were able to successfully resume a stream
+class StreamManagementResumptionSuccessfulEvent extends XmppEvent {}

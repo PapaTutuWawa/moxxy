@@ -1,6 +1,7 @@
 import "dart:collection";
 import "dart:math";
 
+import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/nonzas/sm.dart";
 import "package:moxxyv2/xmpp/connection.dart";
@@ -21,6 +22,7 @@ class StreamManager {
   bool canResume() => this.streamResumptionId != "";
   
   void handleAckRequest() {
+    this.connection.sendEvent(StreamManagementAckSentEvent(h: this._serverStanzaSeq - 1));
     this.connection.sendRawXML(StreamManagementAckNonza(this._serverStanzaSeq - 1));
   }
   

@@ -89,6 +89,7 @@ class XmppConnection {
   // final List<String> _serverFeatures = List.empty(growable: true);
   late RoutingState _routingState;
   late String _resource;
+  late String _dataBuffer;
 
   // Negotiators
   late final AuthenticationNegotiator _authenticator;
@@ -106,6 +107,7 @@ class XmppConnection {
 
     this._eventStreamController = StreamController();
     this._resource = "";
+    this._dataBuffer = "";
   }
   
   // Returns true if the stream supports the XMLNS @feature.
@@ -169,22 +171,33 @@ class XmppConnection {
   }
 
   void _filterOutStreamBegin(data, EventSink sink) {
-    if (data.startsWith("<?xml version='1.0'?>")) {
-      data = data.substring(21);
+    String toParse = this._dataBuffer + data;
+    if (toParse.startsWith("<?xml version='1.0'?>")) {
+      toParse = toParse.substring(21);
     }
 
-    if (data.startsWith("<stream:stream")) {
-      data = data + "</stream:stream>";
+    if (toParse.startsWith("<stream:stream")) {
+      toParse = toParse + "</stream:stream>";
     } else {
-      if (data.endsWith("</stream:stream>")) {
+      if (toParse.endsWith("</stream:stream>")) {
         // TODO: Maybe destroy the stream
-        data = data.substring(0, data.length - 16);
+        toParse = toParse.substring(0, toParse.length - 16);
       }
     } 
 
-    XmlDocument
-      .parse("<root>$data</root>")
-      .getElement("root")!
+    // TODO: Test this
+    final document;
+    try {
+      document = XmlDocument.parse("<root>$toParse</root>");
+      this._dataBuffer = "";
+    } catch (ex) {
+      // TODO: Maybe don't just assume that we haven't received everything, i.e. check the
+      //       error message
+      this._dataBuffer = this._dataBuffer + data;
+      return;
+    }
+
+    document.getElement("root")!
       .childElements
       .forEach((element) => sink.add(XMLNode.fromXmlElement(element)));
   }
@@ -344,7 +357,7 @@ class XmppConnection {
             // Try to resume the last stream
             // TODO
             this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
-            this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionId!, 0 /*TODO*/));
+            this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionId!, this.settings.lasth!));
           } else {
             // Try to enable SM
             this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
@@ -368,6 +381,7 @@ class XmppConnection {
         // TODO: Synchronize the h values
         if (node.tag == "resumed") {
           print("Stream Resumption successful!");
+          this.sendEvent(StreamManagementResumptionSuccessfulEvent());
           this._resource = this.settings.resource!;
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._setConnectionState(ConnectionState.CONNECTED);
@@ -390,7 +404,7 @@ class XmppConnection {
           final id = node.attributes["id"];
           if (id != null && [ "true", "1" ].indexOf(node.attributes["resume"]) != -1) {
             print("Stream resumption possible!");
-            this.sendEvent(StreamResumptionEvent(id: id, resource: this._resource));
+            this.sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
           }
 
           this.streamManager = StreamManager(connection: this, streamResumptionId: id);
