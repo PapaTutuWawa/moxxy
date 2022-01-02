@@ -26,7 +26,8 @@ class DatabaseRepository {
  
   Future<void> loadConversations() async {
     var conversations = await this.isar.dBConversations.where().findAll();
-    
+
+    // TODO: Optimise by creating an action that just sets them all at once
     conversations.forEach((c) {
         this._cache[c.id!] = c;
         this.store.dispatch(AddConversationAction(
@@ -50,6 +51,7 @@ class DatabaseRepository {
     final messages = await this.isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
     this.loadedConversations.add(jid);
 
+    // TODO: Optimise by creating an action that just sets them all at once
     messages.forEach((m) => this.store.dispatch(AddMessageAction(message: Message(
             from: m.from,
             conversationJid: m.conversationJid,
