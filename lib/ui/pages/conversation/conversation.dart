@@ -52,8 +52,9 @@ class _MessageListViewModel {
   final void Function(bool scrollToEndButton) setShowScrollToEndButton;
   final bool showScrollToEndButton;
   final void Function() closeChat;
- 
-  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages });
+  final void Function() resetCurrentConversation;
+  
+  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages, required this.resetCurrentConversation });
 }
 
 class ConversationPage extends StatelessWidget {
@@ -64,9 +65,9 @@ class ConversationPage extends StatelessWidget {
   /*
   @override
   void dispose() {
-    this.controller.dispose();
-    super.dispose();
-  }
+  this.controller.dispose();
+  super.dispose();
+}
   */
 
   void _onMessageTextChanged(String value, _MessageListViewModel viewModel) {
@@ -137,166 +138,173 @@ class ConversationPage extends StatelessWidget {
               body: body,
               jid: jid,
             )
-          )
+          ),
+          resetCurrentConversation: () => store.dispatch(SetOpenConversationAction(jid: null))
         );
       },
       builder: (context, viewModel) {
-        return Scaffold(
-          appBar: BorderlessTopbar.avatarAndName(
-            avatar: AvatarWrapper(
-              radius: 25.0,
-              avatarUrl: viewModel.conversation.avatarUrl,
-              alt: Text(viewModel.conversation.title[0])
+        return WillPopScope(
+          onWillPop: () async {
+            viewModel.resetCurrentConversation();
+            return true;
+          },
+          child: Scaffold(
+            appBar: BorderlessTopbar.avatarAndName(
+              avatar: AvatarWrapper(
+                radius: 25.0,
+                avatarUrl: viewModel.conversation.avatarUrl,
+                alt: Text(viewModel.conversation.title[0])
+              ),
+              title: viewModel.conversation.title,
+              onTapFunction: () => Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false)),
+              showBackButton: true,
+              extra: [
+                PopupMenuButton(
+                  onSelected: (result) {
+                    if (result == "omemo") {
+                      showNotImplementedDialog("End-to-End encryption", context);
+                    }
+                  },
+                  icon: Icon(Icons.lock_open),
+                  itemBuilder: (BuildContext c) => [
+                    popupItemWithIcon("unencrypted", "Unencrypted", Icons.lock_open),
+                    popupItemWithIcon("omemo", "Encrypted", Icons.lock),
+                  ]
+                ),
+                PopupMenuButton(
+                  onSelected: (result) {
+                    switch (result) {
+                      case ConversationOption.CLOSE: {
+                        // TODO: Ask for confirmation
+                        // TODO: Fix crash because we're still here and our conversation is gone
+                        // => Maybe give the entire conversation as an argument?
+                        viewModel.closeChat();
+                      }
+                      break;
+                      default: {
+                        showNotImplementedDialog("chat-closing", context);
+                      }
+                      break;
+                    }
+                  },
+                  icon: Icon(Icons.more_vert),
+                  itemBuilder: (BuildContext c) => [
+                    popupItemWithIcon(ConversationOption.CLOSE, "Close chat", Icons.close),
+                    popupItemWithIcon(ConversationOption.BLOCK, "Block contact", Icons.block)
+                  ]
+                )
+              ]
             ),
-            title: viewModel.conversation.title,
-            onTapFunction: () => Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false)),
-            showBackButton: true,
-            extra: [
-              PopupMenuButton(
-                onSelected: (result) {
-                  if (result == "omemo") {
-                    showNotImplementedDialog("End-to-End encryption", context);
-                  }
-                },
-                icon: Icon(Icons.lock_open),
-                itemBuilder: (BuildContext c) => [
-                  popupItemWithIcon("unencrypted", "Unencrypted", Icons.lock_open),
-                  popupItemWithIcon("omemo", "Encrypted", Icons.lock),
-                ]
-              ),
-              PopupMenuButton(
-                onSelected: (result) {
-                  switch (result) {
-                    case ConversationOption.CLOSE: {
-                      // TODO: Ask for confirmation
-                      // TODO: Fix crash because we're still here and our conversation is gone
-                      // => Maybe give the entire conversation as an argument?
-                      viewModel.closeChat();
-                    }
-                    break;
-                    default: {
-                      showNotImplementedDialog("chat-closing", context);
-                    }
-                    break;
-                  }
-                },
-                icon: Icon(Icons.more_vert),
-                itemBuilder: (BuildContext c) => [
-                  popupItemWithIcon(ConversationOption.CLOSE, "Close chat", Icons.close),
-                  popupItemWithIcon(ConversationOption.BLOCK, "Block contact", Icons.block)
-                ]
-              )
-            ]
-          ),
-          body: Column(
-            children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    ListView.builder(
-                      itemCount: viewModel.messages.length,
-                      itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
-                    ),
-                    Positioned(
-                      bottom: 64.0,
-                      right: 16.0,
-                      child: Visibility(
-                        // TODO: Show if we're not scrolled to the end
-                        visible: viewModel.showScrollToEndButton,
-                        child: SizedBox(
-                          height: 30.0,
-                          width: 30.0,
-                          child: FloatingActionButton(
-                            child: Icon(Icons.arrow_downward, color: Colors.white),
-                            // TODO
-                            onPressed: () {}
+            body: Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      ListView.builder(
+                        itemCount: viewModel.messages.length,
+                        itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
+                      ),
+                      Positioned(
+                        bottom: 64.0,
+                        right: 16.0,
+                        child: Visibility(
+                          // TODO: Show if we're not scrolled to the end
+                          visible: viewModel.showScrollToEndButton,
+                          child: SizedBox(
+                            height: 30.0,
+                            width: 30.0,
+                            child: FloatingActionButton(
+                              child: Icon(Icons.arrow_downward, color: Colors.white),
+                              // TODO
+                              onPressed: () {}
+                            )
                           )
                         )
                       )
-                    )
-                  ]
-                )
-              ),
-              Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: CustomTextField(
-                        maxLines: 5,
-                        minLines: 1,
-                        hintText: "Send a message...",
-                        isDense: true,
-                        controller: this.controller,
-                        onChanged: (value) => this._onMessageTextChanged(value, viewModel),
-                        contentPadding: TEXTFIELD_PADDING_CONVERSATION,
-                        cornerRadius: TEXTFIELD_RADIUS_CONVERSATION,
-                      )
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      // NOTE: https://stackoverflow.com/a/52786741
-                      //       Thank you kind sir
-                      child: Container(
-                        height: 45.0,
-                        width: 45.0,
-                        child: FittedBox(
-                          child: SpeedDial(
-                            icon: viewModel.showSendButton ? Icons.send : Icons.add,
-                            visible: true,
-                            curve: Curves.bounceInOut,
-                            backgroundColor: PRIMARY_COLOR,
-                            // TODO: Theme dependent?
-                            foregroundColor: Colors.white,
-                            openCloseDial: this._isSpeedDialOpen,
-                            onPress: () {
-                              if (viewModel.showSendButton) {
-                                this._onSendButtonPressed(viewModel);
-                              } else {
-                                this._isSpeedDialOpen.value = true;
-                              }
-                            },
-                            children: [
-                              SpeedDialChild(
-                                child: Icon(Icons.image),
-                                onTap: () {
-                                  //showNotImplementedDialog("sending files", context);
-                                  Navigator.pushNamed(context, "/conversation/send_files");
-                                },
-                                backgroundColor: PRIMARY_COLOR,
-                                // TODO: Theme dependent?
-                                foregroundColor: Colors.white,
-                                label: "Send Image"
-                              ),
-                              SpeedDialChild(
-                                child: Icon(Icons.photo_camera),
-                                onTap: () {
-                                  showNotImplementedDialog("sending files", context);
-                                },
-                                backgroundColor: PRIMARY_COLOR,
-                                // TODO: Theme dependent?
-                                foregroundColor: Colors.white,
-                                label: "Take photo"
-                              ),
-                              SpeedDialChild(
-                                child: Icon(Icons.attach_file),
-                                onTap: () {
-                                  showNotImplementedDialog("sending files", context);
-                                },
-                                backgroundColor: PRIMARY_COLOR,
-                                // TODO: Theme dependent?
-                                foregroundColor: Colors.white,
-                                label: "Add file"
-                              ),
-                            ]
+                    ]
+                  )
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CustomTextField(
+                          maxLines: 5,
+                          minLines: 1,
+                          hintText: "Send a message...",
+                          isDense: true,
+                          controller: this.controller,
+                          onChanged: (value) => this._onMessageTextChanged(value, viewModel),
+                          contentPadding: TEXTFIELD_PADDING_CONVERSATION,
+                          cornerRadius: TEXTFIELD_RADIUS_CONVERSATION,
+                        )
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        // NOTE: https://stackoverflow.com/a/52786741
+                        //       Thank you kind sir
+                        child: Container(
+                          height: 45.0,
+                          width: 45.0,
+                          child: FittedBox(
+                            child: SpeedDial(
+                              icon: viewModel.showSendButton ? Icons.send : Icons.add,
+                              visible: true,
+                              curve: Curves.bounceInOut,
+                              backgroundColor: PRIMARY_COLOR,
+                              // TODO: Theme dependent?
+                              foregroundColor: Colors.white,
+                              openCloseDial: this._isSpeedDialOpen,
+                              onPress: () {
+                                if (viewModel.showSendButton) {
+                                  this._onSendButtonPressed(viewModel);
+                                } else {
+                                  this._isSpeedDialOpen.value = true;
+                                }
+                              },
+                              children: [
+                                SpeedDialChild(
+                                  child: Icon(Icons.image),
+                                  onTap: () {
+                                    //showNotImplementedDialog("sending files", context);
+                                    Navigator.pushNamed(context, "/conversation/send_files");
+                                  },
+                                  backgroundColor: PRIMARY_COLOR,
+                                  // TODO: Theme dependent?
+                                  foregroundColor: Colors.white,
+                                  label: "Send Image"
+                                ),
+                                SpeedDialChild(
+                                  child: Icon(Icons.photo_camera),
+                                  onTap: () {
+                                    showNotImplementedDialog("sending files", context);
+                                  },
+                                  backgroundColor: PRIMARY_COLOR,
+                                  // TODO: Theme dependent?
+                                  foregroundColor: Colors.white,
+                                  label: "Take photo"
+                                ),
+                                SpeedDialChild(
+                                  child: Icon(Icons.attach_file),
+                                  onTap: () {
+                                    showNotImplementedDialog("sending files", context);
+                                  },
+                                  backgroundColor: PRIMARY_COLOR,
+                                  // TODO: Theme dependent?
+                                  foregroundColor: Colors.white,
+                                  label: "Add file"
+                                ),
+                              ]
+                            )
                           )
                         )
-                      )
-                    ) 
-                  ]
+                      ) 
+                    ]
+                  )
                 )
-              )
-            ]
+              ]
+            )
           )
         );
       }

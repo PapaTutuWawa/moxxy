@@ -30,7 +30,8 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
     postRegisterPageState: postRegisterReducer(state.postRegisterPageState, action),
     profilePageState: profileReducer(state.profilePageState, action),
     accountState: accountReducer(state.accountState, action),
-    globalState: globalReducer(state.globalState, action)
+    globalState: globalReducer(state.globalState, action),
+    openConversationJid: openConversationJidReducer(state.openConversationJid, action)
   );
 }
 
@@ -45,7 +46,30 @@ class MoxxyState {
   final ProfilePageState profilePageState;
   final AccountState accountState;
   final GlobalState globalState;
+  final String? openConversationJid;
 
-  const MoxxyState({ required this.messages, required this.conversations, required this.roster, required this.loginPageState, required this.conversationPageState, required this.registerPageState, required this.postRegisterPageState, required this.profilePageState, required this.accountState, required this.globalState });
-  MoxxyState.initialState() : messages = HashMap(), conversations = List.empty(growable: true), roster = List.empty(growable: true), loginPageState = LoginPageState.initialState(), conversationPageState = ConversationPageState.initialState(), registerPageState = RegisterPageState.initialState(), postRegisterPageState = PostRegisterPageState.initialState(), profilePageState = ProfilePageState.initialState(), accountState = AccountState.initialState(), globalState = GlobalState.initialState();
+  const MoxxyState({
+      required this.messages,
+      required this.conversations,
+      required this.roster,
+      required this.loginPageState,
+      required this.conversationPageState,
+      required this.registerPageState,
+      required this.postRegisterPageState,
+      required this.profilePageState,
+      required this.accountState,
+      required this.globalState,
+      this.openConversationJid });
+  MoxxyState.initialState()
+    : messages = HashMap(),
+      conversations = List.empty(growable: true),
+      roster = List.empty(growable: true),
+      loginPageState = LoginPageState.initialState(),
+      conversationPageState = ConversationPageState.initialState(),
+      registerPageState = RegisterPageState.initialState(),
+      postRegisterPageState = PostRegisterPageState.initialState(),
+      profilePageState = ProfilePageState.initialState(),
+      accountState = AccountState.initialState(),
+      globalState = GlobalState.initialState(),
+      openConversationJid = null;
 }

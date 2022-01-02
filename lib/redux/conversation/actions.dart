@@ -42,3 +42,9 @@ class CloseConversationAction {
 
   CloseConversationAction({ required this.jid, required this.id });
 }
+
+class SetOpenConversationAction {
+  final String? jid;
+
+  SetOpenConversationAction({ this.jid });
+}

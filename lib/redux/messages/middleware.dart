@@ -42,17 +42,20 @@ void messageMiddleware(Store<MoxxyState> store, action, NextDispatcher next) asy
       repo.loadedConversations.add(bareJidString);
       store.dispatch(AddConversationAction(conversation: conversation));
     } else {
+      print(store.state.openConversationJid);
+      bool incrementUnreadCounter = store.state.openConversationJid == null || store.state.openConversationJid != existantConversation.jid;
+      int unreadCounter = incrementUnreadCounter ? existantConversation.unreadCounter + 1 : existantConversation.unreadCounter;
       await repo.updateConversation(
         id: existantConversation.id,
         lastMessageBody: action.body,
         lastChangeTimestamp: now,
-        unreadCounter: existantConversation.unreadCounter + 1
+        unreadCounter: unreadCounter
       );
       store.dispatch(UpdateConversationAction(
           conversation: existantConversation.copyWith(
             lastMessageBody: action.body,
             lastChangeTimestamp: now,
-            unreadCounter: existantConversation.unreadCounter + 1
+            unreadCounter: unreadCounter
           )
       ));
     }
@@ -68,7 +71,14 @@ void messageMiddleware(Store<MoxxyState> store, action, NextDispatcher next) asy
     );
     GetIt.I.get<XmppConnection>().sendMessage(action.body, action.jid);
 
+    final existantConversation = firstWhereOrNull(store.state.conversations, (Conversation c) => c.jid == action.jid);
+
     store.dispatch(AddMessageAction(message: message));
+    store.dispatch(UpdateConversationAction(
+      conversation: existantConversation!.copyWith(
+        lastMessageBody: action.body
+      )
+    ));
   } else if (action is LoadMessagesAction) {
     GetIt.I.get<DatabaseRepository>().loadMessagesForJid(action.jid);
   }
