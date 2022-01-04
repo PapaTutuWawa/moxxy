@@ -3,7 +3,6 @@ import "dart:convert";
 import "dart:async";
 
 import "package:moxxyv2/helpers.dart";
-import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/xmpp/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -83,7 +82,8 @@ class XmppConnection {
   final List<StanzaHandler> _stanzaHandlers = [
     StanzaHandler(tagName: "query", xmlns: DISCO_INFO_XMLNS, callback: answerDiscoInfoQuery),
     StanzaHandler(tagName: "query", xmlns: DISCO_ITEMS_XMLNS, callback: answerDiscoItemsQuery),
-    StanzaHandler(callback: handleMessageStanza)
+    StanzaHandler(callback: handleMessageStanza),
+    StanzaHandler(callback: handleRosterPush)
   ];
 
   // Stream properties
@@ -168,13 +168,13 @@ class XmppConnection {
 
     final items;
     if (query != null) {
-      items = query.children.map((item) => RosterItem(
-          avatarUrl: "",
-          title: item.attributes["name"] ?? item.attributes["jid"]!.split("@")[0],
-          jid: item.attributes["jid"]!
+      items = query.children.map((item) => XmppRosterItem(
+          name: item.attributes["name"],
+          jid: item.attributes["jid"]!,
+          subscription: item.attributes["subscription"]!
       )).toList();
     } else {
-      items = List<RosterItem>.empty();
+      items = List<XmppRosterItem>.empty();
     }
 
     return RosterRequestResult(
@@ -184,7 +184,7 @@ class XmppConnection {
   }
 
   // TODO: The type makes no sense
-  Future<void> addToRoster(RosterItem item) async {
+  Future<void> addToRoster(String jid, String title) async {
     final response = await this.sendStanza(
       Stanza.iq(
         type: "set",
@@ -196,8 +196,8 @@ class XmppConnection {
               XMLNode(
                 tag: "item",
                 attributes: {
-                  "jid": item.jid,
-                  ...(item.title == item.jid.split("@")[0] ? {} : { "name": item.title })
+                  "jid": jid,
+                  ...(title == jid.split("@")[0] ? {} : { "name": title })
               })
             ]
           )
@@ -206,13 +206,40 @@ class XmppConnection {
     );
 
     if (response == null) {
-      print("Error adding ${item.jid} to roster");
+      print("Error adding ${jid} to roster");
       return;
     }
 
     if (response.attributes["type"] != "result") {
-      print("Error adding ${item.jid} to roster: " + response.toString());
+      print("Error adding ${jid} to roster: " + response.toString());
       return;
+    }
+  }
+
+  Future<String?> removeFromRoster(String jid) async {
+    final response = await this.sendStanza(
+      Stanza.iq(
+        type: "set",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: ROSTER_XMLNS,
+            children: [
+              XMLNode(
+                tag: "item",
+                attributes: {
+                  "jid": jid,
+                  "suscription": "remove"
+                }
+              )
+            ]
+          )
+        ]
+      )
+    );
+
+    if (response.attributes["type"] != "result") {
+      print("Failed to remove roster item: " + response.toString());
     }
   }
   

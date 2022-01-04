@@ -3,18 +3,27 @@ import "dart:collection";
 import "package:moxxyv2/models/roster.dart";
 
 class AddRosterItemAction {
-  final String avatarUrl;
-  final String jid;
-  final String title;
-  final bool triggeredByDatabase;
+  final RosterItem item;
 
-  AddRosterItemAction({ required this.avatarUrl, required this.jid, required this.title, this.triggeredByDatabase = false });
+  AddRosterItemAction({ required this.item });
 }
 
 class AddMultipleRosterItemsAction {
   final List<RosterItem> items;
 
   AddMultipleRosterItemsAction({ required this.items });
+}
+
+class RemoveRosterItemAction {
+  final String jid;
+
+  RemoveRosterItemAction({ required this.jid });
+}
+
+class RosterItemRemovedAction {
+  final String jid;
+
+  RosterItemRemovedAction({ required this.jid });
 }
 
 class SaveCurrentRosterVersionAction {

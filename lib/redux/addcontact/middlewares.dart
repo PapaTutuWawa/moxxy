@@ -32,12 +32,8 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
 
       return;
     } else {
-      await rosterRepo.addToRoster("", action.jid, action.jid.split("@")[0]);
-      store.dispatch(AddRosterItemAction(
-          jid: action.jid,
-          title: action.jid.split("@")[0],
-          avatarUrl: ""
-      ));
+      final item = await rosterRepo.addToRoster("", action.jid, action.jid.split("@")[0]);
+      store.dispatch(AddRosterItemAction(item: item));
     }
 
     final conversation = firstWhereOrNull(store.state.conversations, (Conversation c) => c.jid == action.jid);

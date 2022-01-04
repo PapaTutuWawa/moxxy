@@ -6,14 +6,12 @@ List<RosterItem> rosterReducer(List<RosterItem> roster, dynamic action) {
   if (action is AddRosterItemAction) {
     return [
       ...roster,
-      RosterItem(
-          avatarUrl: action.avatarUrl,
-          jid: action.jid,
-          title: action.title
-      )
+      action.item
     ];
   } else if (action is AddMultipleRosterItemsAction) {
     return roster..addAll(action.items);
+  } else if (action is RosterItemRemovedAction) {
+    return roster.where((item) => item.jid != action.jid).toList();
   }
 
   return roster;

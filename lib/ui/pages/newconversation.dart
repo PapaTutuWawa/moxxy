@@ -13,6 +13,7 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/constants.dart";
 
+import "package:get_it/get_it.dart";
 import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
@@ -113,9 +114,16 @@ class NewConversationPage extends StatelessWidget {
               break;
               default: {
                 RosterItem item = viewModel.roster[index - 2];
-                return InkWell(
-                  onTap: () => this._addNewConversation(viewModel, context, item),
-                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, TIMESTAMP_NEVER, false)
+                return Dismissible(
+                  key: ValueKey("roster;" + item.jid),
+                  // TODO: This is bad and doesn't work
+                  // WHY DIDN'T I WRITE IT USING AN ACTION AT FIRST
+                  onDismissed: (direction) => GetIt.I.get<RosterRepository>().removeFromRoster(item),
+                  background: Container(color: Colors.red),
+                  child: InkWell(
+                    onTap: () => this._addNewConversation(viewModel, context, item),
+                    child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, TIMESTAMP_NEVER, false)
+                  )
                 );
               }
               break;

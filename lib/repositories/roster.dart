@@ -1,4 +1,5 @@
 import "dart:collection";
+import "dart:async";
 
 import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/redux/state.dart";
@@ -27,19 +28,27 @@ class RosterRepository {
             avatarUrl: item.avatarUrl,
             jid: item.jid,
             title: item.title,
+            id: item.id!
         )).toList()
     ));
   }
 
-  Future<void> addToRoster(String avatarUrl, String jid, String title) async {
-    await this.addRosterItemFromData(avatarUrl, jid, title);
-    await GetIt.I.get<XmppConnection>().addToRoster(RosterItem(
-        jid: jid,
-        title: title,
-        avatarUrl: avatarUrl
-    ));
+  Future<RosterItem> addToRoster(String avatarUrl, String jid, String title) async {
+    final item = await this.addRosterItemFromData(avatarUrl, jid, title);
+    await GetIt.I.get<XmppConnection>().addToRoster(jid, title);
+    return item;
   }
-  
+
+  Future<void> removeFromRoster(RosterItem item) async {
+    final ver = await GetIt.I.get<XmppConnection>().removeFromRoster(item.jid);
+
+    await this.isar.writeTxn((isar) async {
+        await isar.rosterItems.delete(item.id);
+    });
+
+    this.store.dispatch(RosterItemRemovedAction(jid: item.jid));
+  }
+
   Future<void> requestRoster(String? lastVersion) async {
     final result = await GetIt.I.get<XmppConnection>().requestRoster(lastVersion);
 
@@ -63,12 +72,11 @@ class RosterRepository {
     final newItems = result.items.where((item) => firstWhereOrNull(this.store.state.roster, (RosterItem i) => i.jid == item.jid) == null);
 
     
-    newItems.forEach((item) => this.addRosterItemFromModel(item));
-    this.store.dispatch(AddMultipleRosterItemsAction(items: newItems.toList()));
+    final newAddedItems = await Future.wait(newItems.map((item) async => await this.addRosterItemFromData("", item.jid, item.name ?? item.jid.split("@")[0])));
+    this.store.dispatch(AddMultipleRosterItemsAction(items: newAddedItems.toList()));
   }
 
-  // TODO: make this return RosterItem
-  Future<void> addRosterItemFromData(String avatarUrl, String jid, String title) async {
+  Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title) async {
     final rosterItem = db.RosterItem()
       ..jid = jid
       ..title = title
@@ -78,17 +86,12 @@ class RosterRepository {
         await isar.rosterItems.put(rosterItem);
         print("DONE");
     });
-  }
-  
-  Future<void> addRosterItemFromModel(RosterItem item) async {
-    final rosterItem = db.RosterItem()
-      ..jid = item.jid
-      ..title = item.title
-      ..avatarUrl = item.avatarUrl;
 
-    await this.isar.writeTxn((isar) async {
-        await isar.rosterItems.put(rosterItem);
-        print("DONE");
-    });
+    return RosterItem(
+      jid: jid,
+      avatarUrl: avatarUrl,
+      title: title,
+      id: rosterItem.id!
+    );
   }
 }

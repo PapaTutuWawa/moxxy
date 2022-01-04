@@ -41,7 +41,7 @@ class XmppRepository {
     return await this._readKeyOrNull(XMPP_LAST_ROSTER_VERSION_KEY);
   }
 
-  Future<String?> saveLastRosterVersion(String ver) async {
+  Future<void> saveLastRosterVersion(String ver) async {
     await this._storage.write(key: XMPP_LAST_ROSTER_VERSION_KEY, value: ver);
   }
   
