@@ -146,7 +146,7 @@ class NewConversationPage extends StatelessWidget {
                 RosterItem item = viewModel.roster[index - 2];
                 return InkWell(
                   onTap: () => this._addNewConversation(viewModel, context, item),
-                  child: ConversationsListRow(item.avatarUrl, item.title, "", 0, maxTextWidth, TIMESTAMP_NEVER, false)
+                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, TIMESTAMP_NEVER, false)
                 );
               }
               break;
