@@ -121,7 +121,7 @@ class LoginPage extends StatelessWidget {
                     )
                   ),
                   enabled: !viewModel.doingWork,
-                  obscureText: true,
+                  obscureText: !viewModel.showPassword,
                   maxLines: 1,
                   cornerRadius: TEXTFIELD_RADIUS_REGULAR
                 )
