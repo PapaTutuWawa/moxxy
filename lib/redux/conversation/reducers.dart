@@ -3,6 +3,7 @@ import 'dart:collection';
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/redux/conversation/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
+import "package:moxxyv2/redux/conversations/actions.dart";
 
 String? openConversationJidReducer(String? openConversationJid, dynamic action) {
   if (action is SetOpenConversationAction) {
@@ -25,6 +26,10 @@ HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> sta
     final messages = state[action.conversationJid] ?? List.empty(growable: true);
     state[action.conversationJid] = messages..addAll(action.messages);
     return state;
+  } else if (action is AddConversationAction) {
+    if (!state.containsKey(action.conversation.jid)) {
+      state[action.conversation.jid] = List.empty(growable: true);
+    }
   }
 
   return state;

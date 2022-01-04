@@ -10,6 +10,7 @@ import "package:moxxyv2/redux/addcontact/actions.dart";
 import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/repositories/conversation.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
+import "package:moxxyv2/redux/conversations/actions.dart";
 import "package:moxxyv2/db/roster.dart" as db;
 
 import "package:flutter/material.dart";
@@ -25,7 +26,10 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
 
     store.dispatch(SetDoingWorkAction(state: true));
     if (firstWhereOrNull(store.state.roster, (RosterItem item) => item.jid == action.jid) != null) {
+      // TODO: Display a message
       print("Already in roster");
+      store.dispatch(SetDoingWorkAction(state: false));
+
       return;
     } else {
       await rosterRepo.addToRoster("", action.jid, action.jid.split("@")[0]);
@@ -38,18 +42,24 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
 
     final conversation = firstWhereOrNull(store.state.conversations, (Conversation c) => c.jid == action.jid);
     if (conversation == null) {
-      await databaseRepo.addConversationFromData(
-        action.jid,
+      final c = await databaseRepo.addConversationFromData(
+        action.jid.split("@")[0],
         "",
-        "", // TODO
+        "",
         action.jid,
         0,
         -1,
         [],
         true
       );
+      store.dispatch(AddConversationAction(conversation: c));
     } else {
       await databaseRepo.updateConversation(id: conversation.id, open: true);
+      store.dispatch(UpdateConversationAction(
+          conversation: conversation.copyWith(
+            open: true
+          )
+      ));
     }
 
     store.dispatch(SetDoingWorkAction(state: false));
