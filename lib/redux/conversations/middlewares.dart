@@ -9,6 +9,21 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:get_it/get_it.dart";
 
 void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
-  
+  if (action is AddConversationFromUIAction) {
+    final conversation = await GetIt.I.get<DatabaseRepository>().addConversationFromData(
+      action.title,
+      "",
+      action.avatarUrl,
+      action.jid,
+      0,
+      -1,
+      [],
+      true
+    );
+    store.dispatch(AddConversationAction(
+        conversation: conversation
+    ));
+  }
+
   next(action);
 }

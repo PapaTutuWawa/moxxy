@@ -7,6 +7,7 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/redux/login/actions.dart";
+import "package:moxxyv2/repositories/roster.dart";
 
 import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
@@ -17,6 +18,7 @@ const String XMPP_ACCOUNT_RESOURCE_KEY = "resource";
 const String XMPP_ACCOUNT_LASTH_KEY = "lasth";
 const String XMPP_ACCOUNT_JID_KEY = "jid";
 const String XMPP_ACCOUNT_PASSWORD_KEY = "password";
+const String XMPP_LAST_ROSTER_VERSION_KEY = "rosterversion";
 
 class XmppRepository {
   final FlutterSecureStorage _storage = FlutterSecureStorage(
@@ -33,6 +35,14 @@ class XmppRepository {
     } else {
       return null;
     }
+  }
+
+  Future<String?> getLastRosterVersion() async {
+    return await this._readKeyOrNull(XMPP_LAST_ROSTER_VERSION_KEY);
+  }
+
+  Future<String?> saveLastRosterVersion(String ver) async {
+    await this._storage.write(key: XMPP_LAST_ROSTER_VERSION_KEY, value: ver);
   }
   
   Future<StreamResumptionSettings> loadStreamResumptionSettings() async {
@@ -86,6 +96,7 @@ class XmppRepository {
       if (event.state == ConnectionState.CONNECTED) {
         final connection = GetIt.I.get<XmppConnection>();
         this.saveConnectionSettings(connection.settings);
+        GetIt.I.get<RosterRepository>().requestRoster(await this.getLastRosterVersion());
 
         if (this.loginTriggeredFromUI) {
           this.store.dispatch(LoginSuccessfulAction(

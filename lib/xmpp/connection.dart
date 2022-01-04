@@ -3,6 +3,7 @@ import "dart:convert";
 import "dart:async";
 
 import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/xmpp/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -19,6 +20,7 @@ import "package:moxxyv2/xmpp/nonzas/sm.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/message.dart";
+import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 import "package:moxxyv2/xmpp/xeps/0198.dart";
@@ -139,6 +141,79 @@ class XmppConnection {
           XMLNode(tag: "body", text: body)
         ]
     ));
+  }
+
+  Future<RosterRequestResult?> requestRoster(String? lastVersion) async {
+    final response = await this.sendStanza(
+      Stanza.iq(
+        type: "get",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: ROSTER_XMLNS,
+            attributes: {
+              ...(lastVersion != null ? { "ver": lastVersion } : {})
+            }
+          )
+        ]
+      )
+    );
+
+    if (response.attributes["type"] != "result") {
+      print("Error requesting roster: " + response.toString());
+      return null;
+    }
+
+    final query = response.firstTag("query");
+
+    final items;
+    if (query != null) {
+      items = query.children.map((item) => RosterItem(
+          avatarUrl: "",
+          title: item.attributes["name"] ?? item.attributes["jid"]!.split("@")[0],
+          jid: item.attributes["jid"]!
+      )).toList();
+    } else {
+      items = List<RosterItem>.empty();
+    }
+
+    return RosterRequestResult(
+      items: items,
+      ver: query != null ? query.attributes["ver"] : lastVersion
+    );
+  }
+
+  // TODO: The type makes no sense
+  Future<void> addToRoster(RosterItem item) async {
+    final response = await this.sendStanza(
+      Stanza.iq(
+        type: "set",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: ROSTER_XMLNS,
+            children: [
+              XMLNode(
+                tag: "item",
+                attributes: {
+                  "jid": item.jid,
+                  ...(item.title == item.jid.split("@")[0] ? {} : { "name": item.title })
+              })
+            ]
+          )
+        ]
+      )
+    );
+
+    if (response == null) {
+      print("Error adding ${item.jid} to roster");
+      return;
+    }
+
+    if (response.attributes["type"] != "result") {
+      print("Error adding ${item.jid} to roster: " + response.toString());
+      return;
+    }
   }
   
   Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {

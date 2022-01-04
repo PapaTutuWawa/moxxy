@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'ui/pages/conversation/conversation.dart';
 import 'ui/pages/conversations.dart';
 import 'ui/pages/profile/profile.dart';
-//import 'ui/pages/newconversation.dart';
+import 'ui/pages/newconversation.dart';
 import 'ui/pages/login/login.dart';
 import 'ui/pages/register/register.dart';
 import 'ui/pages/intro.dart';
@@ -143,7 +143,7 @@ class MyApp extends StatelessWidget {
           "/conversation": (context) => ConversationPage(),
           "/conversation/profile": (context) => ProfilePage(),
           "/conversation/send_files": (context) => SendFilesPage(),
-          //"/new_conversation": (context) => NewConversationPage(),
+          "/new_conversation": (context) => NewConversationPage(),
           "/new_conversation/add_contact": (context) => AddContactPage(),
           "/settings": (context) => SettingsPage(),
           "/settings/licenses": (context) => SettingsLicensesPage(),

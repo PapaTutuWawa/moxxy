@@ -74,16 +74,11 @@ class NewConversationPage extends StatelessWidget {
       body: StoreConnector<MoxxyState, _NewConversationViewModel>(
         converter: (store) => _NewConversationViewModel(
           addConversation: (c) => store.dispatch(
-            AddConversationAction(
+            AddConversationFromUIAction(
               title: c.title,
               avatarUrl: c.avatarUrl,
               lastMessageBody: c.lastMessageBody,
-              jid: c.jid,
-              sharedMediaPaths: c.sharedMediaPaths,
-              lastChangeTimestamp: -1,
-              open: c.open,
-              // TODO: What
-              id: store.state.conversations.length,
+              jid: c.jid
             )
           ),
           conversations: store.state.conversations,
@@ -151,7 +146,7 @@ class NewConversationPage extends StatelessWidget {
                 RosterItem item = viewModel.roster[index - 2];
                 return InkWell(
                   onTap: () => this._addNewConversation(viewModel, context, item),
-                  child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, TIMESTAMP_NEVER)
+                  child: ConversationsListRow(item.avatarUrl, item.title, "", 0, maxTextWidth, TIMESTAMP_NEVER, false)
                 );
               }
               break;

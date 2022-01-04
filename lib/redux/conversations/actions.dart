@@ -3,6 +3,17 @@ import "dart:collection";
 import "package:moxxyv2/models/conversation.dart";
 
 // TODO: Move to lib/redux/conversation
+class AddConversationFromUIAction {
+  final String title;
+  final String lastMessageBody;
+  final String avatarUrl;
+  final String jid;
+
+  
+  AddConversationFromUIAction({ required this.title, required this.lastMessageBody, required this.avatarUrl, required this.jid });
+}
+
+// TODO: Move to lib/redux/conversation
 class AddConversationAction {
   Conversation conversation;
 

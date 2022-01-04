@@ -2,6 +2,7 @@ import "dart:collection";
 
 import "package:moxxyv2/db/conversation.dart";
 import "package:moxxyv2/db/message.dart";
+import "package:moxxyv2/db/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/redux/state.dart";

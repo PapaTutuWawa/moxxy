@@ -12,6 +12,8 @@ List<RosterItem> rosterReducer(List<RosterItem> roster, dynamic action) {
           title: action.title
       )
     ];
+  } else if (action is AddMultipleRosterItemsAction) {
+    return roster..addAll(action.items);
   }
 
   return roster;
