@@ -1,5 +1,6 @@
 import "dart:collection";
 
+import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/db/roster.dart" as db;
@@ -57,9 +58,13 @@ class RosterRepository {
       this.store.dispatch(SaveCurrentRosterVersionAction(ver: result.ver!));
     }
 
-    // TODO: This will add the same items to the database on every start. FIX!
-    result.items.forEach((item) => this.addRosterItemFromModel(item));
-    this.store.dispatch(AddMultipleRosterItemsAction(items: result.items));
+    // TODO: Update updated items
+    // NOTE: Removed items will be handled in connection.dart
+    final newItems = result.items.where((item) => firstWhereOrNull(this.store.state.roster, (RosterItem i) => i.jid == item.jid) == null);
+
+    
+    newItems.forEach((item) => this.addRosterItemFromModel(item));
+    this.store.dispatch(AddMultipleRosterItemsAction(items: newItems.toList()));
   }
 
   // TODO: make this return RosterItem
