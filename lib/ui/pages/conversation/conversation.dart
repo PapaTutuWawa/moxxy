@@ -145,7 +145,6 @@ class _ConversationPageState extends State<ConversationPage> {
               id: conversation.id
           )),
           sendMessage: (body) => store.dispatch(
-            // TODO
             SendMessageAction(
               timestamp: DateTime.now().millisecondsSinceEpoch,
               body: body,
@@ -158,11 +157,14 @@ class _ConversationPageState extends State<ConversationPage> {
       builder: (context, viewModel) {
         SchedulerBinding.instance!.addPostFrameCallback((_) {
             if (this._shouldScroll) {
-              this.itemScrollController.scrollTo(
-                index: viewModel.messages.length - 1,
-                duration: Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic
-              );
+              // NOTE: Workaround for https://github.com/google/flutter.widgets/issues/287
+              Future.delayed(
+                Duration(milliseconds: 300),
+                () => this.itemScrollController.scrollTo(
+                  index: viewModel.messages.length - 1,
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic
+              ));
               this._shouldScroll = false;
             }
         });
