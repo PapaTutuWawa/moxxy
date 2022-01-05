@@ -17,36 +17,46 @@ import "package:moxxyv2/isar.g.dart";
 class RosterRepository {
   final Isar isar;
   final Store<MoxxyState> store;
-
-  RosterRepository({ required this.isar, required this.store });
+  final Map<String, RosterItem> _cache;
+  
+  RosterRepository({ required this.isar, required this.store }) : _cache = Map();
 
   Future<void> loadRosterFromDatabase() async {
-    var roster = await this.isar.rosterItems.where().findAll();
-
+    final roster = await this.isar.rosterItems.where().findAll();
+    final items = roster.map((item) => RosterItem(
+        avatarUrl: item.avatarUrl,
+        jid: item.jid,
+        title: item.title,
+        id: item.id!
+    ));
+    this._cache.clear();
+    items.forEach((item) => this._cache[item.jid] = item);
+        
     this.store.dispatch(AddMultipleRosterItemsAction(
-        items: roster.map((item) => RosterItem(
-            avatarUrl: item.avatarUrl,
-            jid: item.jid,
-            title: item.title,
-            id: item.id!
-        )).toList()
+        items: items.toList()
     ));
   }
 
   Future<RosterItem> addToRoster(String avatarUrl, String jid, String title) async {
     final item = await this.addRosterItemFromData(avatarUrl, jid, title);
+    this._cache[jid] = item;
     await GetIt.I.get<XmppConnection>().addToRoster(jid, title);
     return item;
   }
 
-  Future<void> removeFromRoster(RosterItem item) async {
-    final ver = await GetIt.I.get<XmppConnection>().removeFromRoster(item.jid);
-
-    await this.isar.writeTxn((isar) async {
-        await isar.rosterItems.delete(item.id);
-    });
-
-    this.store.dispatch(RosterItemRemovedAction(jid: item.jid));
+  Future<void> removeFromRoster(String jid, { bool nullOkay = false }) async {
+    //final ver = await GetIt.I.get<XmppConnection>().removeFromRoster(item.jid);
+    final item = this._cache[jid];
+    print("RosterRepository::removeFromRoster");
+    
+    if (item != null) {
+      await this.isar.writeTxn((isar) async {
+          await isar.rosterItems.delete(item.id);
+      });
+      this._cache.remove(jid);
+    } else if (!nullOkay) {
+      print("RosterRepository::removeFromRoster: Could not find $jid in roster state");
+    }
   }
 
   Future<void> requestRoster(String? lastVersion) async {
@@ -73,6 +83,7 @@ class RosterRepository {
 
     
     final newAddedItems = await Future.wait(newItems.map((item) async => await this.addRosterItemFromData("", item.jid, item.name ?? item.jid.split("@")[0])));
+    newAddedItems.forEach((item) => this._cache[item.jid] = item);
     this.store.dispatch(AddMultipleRosterItemsAction(items: newAddedItems.toList()));
   }
 

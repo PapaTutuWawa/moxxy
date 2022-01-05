@@ -216,7 +216,7 @@ class XmppConnection {
     }
   }
 
-  Future<String?> removeFromRoster(String jid) async {
+  Future<void> removeFromRoster(String jid) async {
     final response = await this.sendStanza(
       Stanza.iq(
         type: "set",
@@ -229,7 +229,7 @@ class XmppConnection {
                 tag: "item",
                 attributes: {
                   "jid": jid,
-                  "suscription": "remove"
+                  "subscription": "remove"
                 }
               )
             ]
@@ -239,7 +239,14 @@ class XmppConnection {
     );
 
     if (response.attributes["type"] != "result") {
-      print("Failed to remove roster item: " + response.toString());
+      print("Failed to remove roster item: " + response.toXml());
+
+      final error = response.firstTag("error")!;
+      final notFound = error.firstTag("item-not-found") != null;
+
+      if (notFound) {
+        this.sendEvent(RosterItemNotFoundEvent(jid: jid, trigger: RosterItemNotFoundTrigger.REMOVE));
+      }
     }
   }
   

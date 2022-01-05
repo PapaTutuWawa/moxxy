@@ -3,10 +3,12 @@ import "dart:async";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/redux/login/actions.dart";
+import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/repositories/roster.dart";
 
 import "package:redux/redux.dart";
@@ -44,6 +46,8 @@ class XmppRepository {
   Future<void> saveLastRosterVersion(String ver) async {
     await this._storage.write(key: XMPP_LAST_ROSTER_VERSION_KEY, value: ver);
   }
+
+  bool isInRoster(String jid) => this._cache.containsKey(jid);
   
   Future<StreamResumptionSettings> loadStreamResumptionSettings() async {
     final srid = await this._readKeyOrNull(XMPP_ACCOUNT_SRID_KEY);
@@ -117,6 +121,27 @@ class XmppRepository {
           from: event.fromJid,
           jid: "" // TODO
       ));
+    } else if (event is RosterPushEvent) {
+      final item = event.item; 
+
+      switch (item.subscription) {
+        // TODO: Handle other cases
+        case "removed": {
+          this.store.dispatch(RosterItemRemovedAction(jid: item.jid));
+          GetIt.I.get<RosterRepository>().removeFromRoster(item.jid);
+        }
+        break;
+      }
+
+      print("Roster push version: " + (event.ver ?? "(null)"));
+      if (event.ver != null) {
+        this.store.dispatch(SaveCurrentRosterVersionAction(ver: event.ver!));
+      }
+    } else if (event is RosterItemNotFoundEvent) {
+      if (event.trigger == RosterItemNotFoundTrigger.REMOVE) {
+          this.store.dispatch(RosterItemRemovedAction(jid: event.jid));
+          GetIt.I.get<RosterRepository>().removeFromRoster(event.jid);
+      }
     }
   }
   

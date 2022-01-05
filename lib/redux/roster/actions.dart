@@ -14,6 +14,12 @@ class AddMultipleRosterItemsAction {
   AddMultipleRosterItemsAction({ required this.items });
 }
 
+class RemoveRosterItemUIAction {
+  final String jid;
+
+  RemoveRosterItemUIAction({ required this.jid });
+}
+
 class RemoveRosterItemAction {
   final String jid;
 

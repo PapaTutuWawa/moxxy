@@ -7,6 +7,7 @@ import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversations/actions.dart";
+import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/ui/helpers.dart";
@@ -20,10 +21,11 @@ import "package:redux/redux.dart";
 
 class _NewConversationViewModel {
   final void Function(String, String, String, String) addConversation;
+  final void Function(String) removeRosterItem;
   final List<Conversation> conversations;
   final List<RosterItem> roster;
 
-  _NewConversationViewModel({ required this.conversations, required this.roster, required this.addConversation });
+  _NewConversationViewModel({ required this.conversations, required this.roster, required this.addConversation, required this.removeRosterItem });
 }
 
 class NewConversationPage extends StatelessWidget {
@@ -51,6 +53,7 @@ class NewConversationPage extends StatelessWidget {
               jid: jid
             )
           ),
+          removeRosterItem: (jid) => store.dispatch(RemoveRosterItemUIAction(jid: jid)),
           conversations: store.state.conversations,
           roster: store.state.roster
         ),
@@ -118,7 +121,8 @@ class NewConversationPage extends StatelessWidget {
                   key: ValueKey("roster;" + item.jid),
                   // TODO: This is bad and doesn't work
                   // WHY DIDN'T I WRITE IT USING AN ACTION AT FIRST
-                  onDismissed: (direction) => GetIt.I.get<RosterRepository>().removeFromRoster(item),
+                  //onDismissed: (direction) => GetIt.I.get<RosterRepository>().removeFromRoster(item),
+                  onDismissed: (direction) => viewModel.removeRosterItem(item.jid),
                   background: Container(color: Colors.red),
                   child: InkWell(
                     onTap: () => this._addNewConversation(viewModel, context, item),

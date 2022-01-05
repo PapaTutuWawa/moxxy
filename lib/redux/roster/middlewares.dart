@@ -6,6 +6,7 @@ import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/repositories/xmpp.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/db/roster.dart" as db;
 
 import "package:redux/redux.dart";
@@ -19,6 +20,9 @@ void rosterMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
     GetIt.I.get<RosterRepository>().addRosterItemFromData(action.avatarUrl, action.jid, action.title);
   } else */ if (action is SaveCurrentRosterVersionAction) {
     GetIt.I.get<XmppRepository>().saveLastRosterVersion(action.ver);
+  } else if (action is RemoveRosterItemUIAction) {
+    store.dispatch(RosterItemRemovedAction(jid: action.jid));
+    GetIt.I.get<XmppConnection>().removeFromRoster(action.jid);
   }
 
   next(action);

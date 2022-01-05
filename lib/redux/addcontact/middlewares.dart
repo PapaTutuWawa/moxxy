@@ -25,7 +25,7 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
     final databaseRepo = GetIt.I.get<DatabaseRepository>();
 
     store.dispatch(SetDoingWorkAction(state: true));
-    if (firstWhereOrNull(store.state.roster, (RosterItem item) => item.jid == action.jid) != null) {
+    if (rosterRepo.isInRoster(action.jid)) {
       // TODO: Display a message
       print("Already in roster");
       store.dispatch(SetDoingWorkAction(state: false));
