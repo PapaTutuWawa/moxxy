@@ -21,6 +21,10 @@ class RosterRepository {
   
   RosterRepository({ required this.isar, required this.store }) : _cache = Map();
 
+  bool isInRoster(String jid) {
+    return this._cache.containsKey(jid);
+  }
+  
   Future<void> loadRosterFromDatabase() async {
     final roster = await this.isar.rosterItems.where().findAll();
     final items = roster.map((item) => RosterItem(

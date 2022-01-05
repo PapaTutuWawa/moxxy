@@ -46,8 +46,6 @@ class XmppRepository {
   Future<void> saveLastRosterVersion(String ver) async {
     await this._storage.write(key: XMPP_LAST_ROSTER_VERSION_KEY, value: ver);
   }
-
-  bool isInRoster(String jid) => this._cache.containsKey(jid);
   
   Future<StreamResumptionSettings> loadStreamResumptionSettings() async {
     final srid = await this._readKeyOrNull(XMPP_ACCOUNT_SRID_KEY);
