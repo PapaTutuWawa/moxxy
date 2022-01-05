@@ -441,6 +441,7 @@ class XmppConnection {
         } else if (result.getState() == AuthenticationResult.FAILURE) {
           print("SASL failed");
           this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          this._setConnectionState(ConnectionState.ERROR);
           this._routingState = RoutingState.ERROR;
         }
       }
@@ -454,6 +455,7 @@ class XmppConnection {
         } else if (result.getState() == AuthenticationResult.FAILURE) {
           print("SASL failed");
           this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          this._setConnectionState(ConnectionState.ERROR);
           this._routingState = RoutingState.ERROR;
         }
       }
