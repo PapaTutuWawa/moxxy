@@ -11,7 +11,12 @@ LoginPageState loginReducer(LoginPageState state, dynamic action) {
   } else if (action is LoginResetErrorsAction) {
     return state.copyWith(
       passwordError: null,
-      jidError: null
+      jidError: null,
+      loginError: null
+    );
+  } else if (action is LoginFailedAction) {
+    return state.copyWith(
+      loginError: action.reason
     );
   }
 

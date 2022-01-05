@@ -35,6 +35,8 @@ Future<void> loginMiddleware(Store<MoxxyState> store, action, NextDispatcher nex
         avatarUrl: ""
     ));
     store.dispatch(NavigateToAction.replace("/conversations"));
+  } else if (action is LoginFailedAction) {
+    store.dispatch(SetDoingWorkAction(state: false));
   }
   
   next(action);

@@ -1,7 +1,9 @@
 import "dart:convert";
 
+import "package:moxxyv2/types/result.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
+import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
@@ -25,23 +27,24 @@ class SaslPlainNegotiator extends AuthenticationNegotiator {
   final ConnectionSettings settings;
 
   SaslPlainNegotiator({ required this.settings, required this.sendRawXML });
-  
-  Future<AuthenticationResult> next(XMLNode? nonza) async {
+
+  @override
+  Future<Result<AuthenticationResult, String>> next(XMLNode? nonza) async {
     if (authSent) {
       final tag = nonza!.tag;
       if (tag == "failure") {
         print("SASL failure");
-        return AuthenticationResult.FAILURE;
+        return Result(AuthenticationResult.FAILURE, getSaslError(nonza));
       } else if (tag == "success") {
         print("SASL success");
-        return AuthenticationResult.SUCCESS;
+        return Result(AuthenticationResult.SUCCESS, "");
       }
     } else {
       this.sendRawXML(SaslPlainAuthNonza(this.settings.jid.local, this.settings.password));
       this.authSent = true;
-      return AuthenticationResult.NOT_DONE;
+      return Result(AuthenticationResult.NOT_DONE, "");
     }
 
-    return AuthenticationResult.FAILURE;
+    return Result(AuthenticationResult.FAILURE, "");
   }
 }

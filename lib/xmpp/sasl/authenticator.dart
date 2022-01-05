@@ -1,6 +1,6 @@
 import "package:moxxyv2/xmpp/routing.dart";
-
 import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/types/result.dart";
 
 enum AuthenticationResult {
   SUCCESS,
@@ -10,5 +10,5 @@ enum AuthenticationResult {
 
 abstract class AuthenticationNegotiator {
   // The function **MUST** send the initial <auth /> nonza when called with null
-  Future<AuthenticationResult> next(XMLNode? nonza);
+  Future<Result<AuthenticationResult, String>> next(XMLNode? nonza);
 }

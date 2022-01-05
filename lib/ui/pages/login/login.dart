@@ -19,8 +19,9 @@ class _LoginPageViewModel {
   final bool showPassword;
   final String? passwordError;
   final String? jidError;
+  final String? loginError;
 
-  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors });
+  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors, this.loginError });
 }
 
 class LoginPage extends StatelessWidget {
@@ -77,6 +78,7 @@ class LoginPage extends StatelessWidget {
         showPassword: store.state.loginPageState.showPassword,
         passwordError: store.state.loginPageState.passwordError,
         jidError: store.state.loginPageState.jidError,
+        loginError: store.state.loginPageState.loginError,
         setJidError: (text) => store.dispatch(LoginSetJidErrorAction(text: text)),
         setPasswordError: (text) => store.dispatch(LoginSetPasswordErrorAction(text: text)),
         resetErrors: () => store.dispatch(LoginResetErrorsAction())
@@ -124,6 +126,18 @@ class LoginPage extends StatelessWidget {
                   obscureText: !viewModel.showPassword,
                   maxLines: 1,
                   cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                )
+              ),
+              Visibility(
+                visible: viewModel.loginError != null,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 3.0)),
+                  child: Text(
+                    viewModel.loginError ?? "",
+                    style: TextStyle(
+                      color: Colors.red
+                    )
+                  )
                 )
               ),
               Padding(

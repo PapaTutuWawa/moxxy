@@ -1,8 +1,9 @@
 import "dart:async";
 import "dart:io";
 
-import "package:flutter/material.dart";
+import "package:moxxyv2/xmpp/sasl/errors.dart";
 
+import "package:flutter/material.dart";
 import "package:file_picker/file_picker.dart";
 import "package:image_cropping/constant/enums.dart";
 import "package:image_cropping/image_cropping.dart";
@@ -84,4 +85,13 @@ Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAva
     // TODO: If the path doesn't change then the UI won't be updated. Hash it and use that as the filename?
     setAvatarUrl(avatar.path);
   }
+}
+
+// Turn the SASL error into a string that a regular user could understand
+String saslErrorToHumanReadable(String saslError) {
+  switch (saslError) {
+    case SASL_ERROR_NOT_AUTHORIZED: return "Wrong XMPP address or password";
+  }
+
+  return "SASL error: " + saslError;
 }

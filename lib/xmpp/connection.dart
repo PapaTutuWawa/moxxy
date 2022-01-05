@@ -42,7 +42,7 @@ class SocketWrapper {
   SocketWrapper();
 
   Future<void> connect(String host, int port) async {
-    this._socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ]);
+    this._socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ], timeout: Duration(seconds: 15));
   }
 
   Stream<String> asBroadcastStream() {
@@ -68,6 +68,12 @@ class StreamErrorEvent extends XmppEvent {
   final String error;
 
   StreamErrorEvent({ required this.error });
+}
+
+class AuthenticationFailedEvent extends XmppEvent {
+  final String saslError;
+
+  AuthenticationFailedEvent({ required this.saslError });
 }
 
 // TODO: Implement a send queue
@@ -429,12 +435,12 @@ class XmppConnection {
 
         this._routingState = RoutingState.PERFORM_SASL_AUTH;
         final result = await this._authenticator.next(null);
-        //this._handleSaslResult();
-        if (result == AuthenticationResult.SUCCESS) {
+        if (result.getState() == AuthenticationResult.SUCCESS) {
           this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
           this._sendStreamHeader();
-        } else if (result == AuthenticationResult.FAILURE) {
+        } else if (result.getState() == AuthenticationResult.FAILURE) {
           print("SASL failed");
+          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           this._routingState = RoutingState.ERROR;
         }
       }
@@ -445,8 +451,9 @@ class XmppConnection {
         if (result == AuthenticationResult.SUCCESS) {
           this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
           this._sendStreamHeader();
-        } else if (result == AuthenticationResult.FAILURE) {
+        } else if (result.getState() == AuthenticationResult.FAILURE) {
           print("SASL failed");
+          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           this._routingState = RoutingState.ERROR;
         }
       }

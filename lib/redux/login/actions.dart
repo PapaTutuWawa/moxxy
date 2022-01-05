@@ -28,3 +28,9 @@ class LoginSuccessfulAction {
 
   LoginSuccessfulAction({ required this.jid, required this.displayName });
 }
+
+class LoginFailedAction {
+  final String reason;
+
+  LoginFailedAction({ required this.reason });
+}

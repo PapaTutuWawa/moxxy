@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -140,6 +141,8 @@ class XmppRepository {
           this.store.dispatch(RosterItemRemovedAction(jid: event.jid));
           GetIt.I.get<RosterRepository>().removeFromRoster(event.jid);
       }
+    } else if (event is AuthenticationFailedEvent) {
+      this.store.dispatch(LoginFailedAction(reason: saslErrorToHumanReadable(event.saslError)));
     }
   }
   

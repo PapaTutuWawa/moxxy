@@ -1,8 +1,10 @@
 import "dart:convert";
 import "dart:math" show Random;
 
+import "package:moxxyv2/types/result.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
+import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
@@ -62,7 +64,6 @@ class SaslScramResponseNonza extends XMLNode {
     text: body
   );
 }
-
 
 class ServerChallenge {
   late final String nonce;
@@ -175,11 +176,11 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
 
         return clientFinalMessageBare + ",p=" + base64.encode(clientProof);
   }
-  
-  Future<AuthenticationResult> next(XMLNode? nonza) async {
+
+  @override
+  Future<Result<AuthenticationResult, String>> next(XMLNode? nonza) async {
     switch (this.state) {
       case ScramState.PRE_SENT: {
-        // TODO: saslprep
         if (this.clientNonce == null || this.clientNonce == "") {
           this.clientNonce = randomAlphaNumeric(40, provider: CoreRandomProvider.from(Random.secure()));
         }
@@ -188,16 +189,21 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
 
         this.state = ScramState.INITIAL_MESSAGE_SENT;
         this.sendRawXML(SaslScramAuthNonza(body: base64.encode(utf8.encode(GS2_HEADER + this.initialMessageNoGS2)), type: this.hashType));
-        return AuthenticationResult.NOT_DONE;
+        return Result(AuthenticationResult.NOT_DONE, "");
       }
       break;
       case ScramState.INITIAL_MESSAGE_SENT: {
-        final challengeBase64 = nonza!.innerText();
+        if (nonza!.tag == "failure") {
+          print("SCRAM failed in INITIAL_MESSAGE_SENT");
+          return Result(AuthenticationResult.FAILURE, getSaslError(nonza));
+        }
+
+        final challengeBase64 = nonza.innerText();
         final response = await this.calculateChallengeResponse(challengeBase64);
         final responseBase64 = base64.encode(utf8.encode(response));
         this.state = ScramState.CHALLENGE_RESPONSE_SENT;
         this.sendRawXML(SaslScramResponseNonza(body: responseBase64));
-        return AuthenticationResult.NOT_DONE;
+        return Result(AuthenticationResult.NOT_DONE, "");
       }
       break;
       case ScramState.CHALLENGE_RESPONSE_SENT: {
@@ -206,14 +212,15 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
         if (tag == "success") {
           // TODO: Check the response
           print("SUCCESS!");
-          return AuthenticationResult.SUCCESS;
+          return Result(AuthenticationResult.SUCCESS, "");
         } else {
-          print("FUCK");
+          print("SASL SCRAM failed");
+          return Result(AuthenticationResult.FAILURE, getSaslError(nonza));
         }
       }
       break;
     }
 
-    return AuthenticationResult.FAILURE;
+    return Result(AuthenticationResult.FAILURE, "");
   }
 }
