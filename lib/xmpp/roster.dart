@@ -10,8 +10,9 @@ class XmppRosterItem {
   final String jid;
   final String? name;
   final String subscription;
+  final List<String> groups;
 
-  XmppRosterItem({ required this.jid, required this.subscription, this.name });
+  XmppRosterItem({ required this.jid, required this.subscription, this.name, this.groups = const [] });
 }
 
 class RosterRequestResult {
@@ -42,11 +43,12 @@ class RosterItemNotFoundEvent extends XmppEvent {
 bool handleRosterPush(XmppConnection conn, Stanza stanza) {
   // TODO: Test
   // Ignore
+  print("Received roster push");
+
   if (stanza.attributes["from"] != null && stanza.attributes["from"] != conn.settings.jid) {
+    print("Roster push invalid!");
     return true;
   }
-
-  print("Received roster push");
   
   // TODO: Handle the real roster push stuff and move it out of the repository
   // NOTE: StanzaHandler gurantees that this is != null

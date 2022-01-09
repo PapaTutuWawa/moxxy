@@ -94,8 +94,8 @@ class XmppConnection {
   final List<StanzaHandler> _stanzaHandlers = [
     StanzaHandler(tagName: "query", xmlns: DISCO_INFO_XMLNS, callback: answerDiscoInfoQuery),
     StanzaHandler(tagName: "query", xmlns: DISCO_ITEMS_XMLNS, callback: answerDiscoItemsQuery),
-    StanzaHandler(callback: handleMessageStanza),
-    StanzaHandler(callback: handleRosterPush)
+    StanzaHandler(callback: handleMessageStanza, stanzaTag: "message"),
+    StanzaHandler(callback: handleRosterPush, stanzaTag: "iq", tagName: "query", xmlns: ROSTER_XMLNS)
   ];
 
   // Stream properties
@@ -437,6 +437,7 @@ class XmppConnection {
           this._setConnectionState(ConnectionState.CONNECTED);
 
           final h = int.parse(node.attributes["h"]!);
+          this.streamManager.enableStreamManagement();
           this.streamManager.onStreamResumed(h);
         } else if (node.tag == "failed") {
           print("Stream resumption failed. Proceeding with new stream...");
@@ -513,7 +514,8 @@ class XmppConnection {
       items = query.children.map((item) => XmppRosterItem(
           name: item.attributes["name"],
           jid: item.attributes["jid"]!,
-          subscription: item.attributes["subscription"]!
+          subscription: item.attributes["subscription"]!,
+          groups: item.findTags("group").map((groupNode) => groupNode.innerText()).toList()
       )).toList();
     } else {
       items = List<XmppRosterItem>.empty();
@@ -590,6 +592,16 @@ class XmppConnection {
         this.sendEvent(RosterItemNotFoundEvent(jid: jid, trigger: RosterItemNotFoundTrigger.REMOVE));
       }
     }
+  }
+
+  /// Sends a subscription request to [to].
+  Future<void> sendSubscriptionRequest(String to) async {
+    this.sendStanza(
+      Stanza.presence(
+        type: "subscribe",
+        to: to
+      )
+    );
   }
   
   Future<void> connect() async {

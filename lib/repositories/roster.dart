@@ -46,11 +46,11 @@ class RosterRepository {
     final item = await this.addRosterItemFromData(avatarUrl, jid, title);
     this._cache[jid] = item;
     await GetIt.I.get<XmppConnection>().addToRoster(jid, title);
+    await GetIt.I.get<XmppConnection>().sendSubscriptionRequest(jid);
     return item;
   }
 
   Future<void> removeFromRoster(String jid, { bool nullOkay = false }) async {
-    //final ver = await GetIt.I.get<XmppConnection>().removeFromRoster(item.jid);
     final item = this._cache[jid];
     print("RosterRepository::removeFromRoster");
     

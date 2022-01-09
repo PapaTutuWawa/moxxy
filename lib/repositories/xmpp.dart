@@ -125,7 +125,7 @@ class XmppRepository {
 
       switch (item.subscription) {
         // TODO: Handle other cases
-        case "removed": {
+        case "remove": {
           this.store.dispatch(RosterItemRemovedAction(jid: item.jid));
           GetIt.I.get<RosterRepository>().removeFromRoster(item.jid);
         }
