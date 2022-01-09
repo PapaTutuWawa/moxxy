@@ -49,7 +49,8 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
 }
 
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
-
+// TODO: Have a list header that appears when the conversation partner is not in the user's
+//       roster. It should allow adding the contact to the user's roster or block them.
 class _MessageListViewModel {
   final Conversation conversation;
   final List<Message> messages;
