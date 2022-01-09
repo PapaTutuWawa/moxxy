@@ -4,6 +4,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 
 class XmppRosterItem {
   final String jid;

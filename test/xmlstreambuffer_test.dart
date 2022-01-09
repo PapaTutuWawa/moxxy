@@ -1,6 +1,6 @@
 import "dart:async";
 
-import "package:moxxyv2/xmpp/stream.dart";
+import "package:moxxyv2/xmpp/buffer.dart";
 
 import "package:test/test.dart";
 

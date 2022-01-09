@@ -7,6 +7,7 @@ import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/db/roster.dart" as db;
 import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/roster.dart";
 
 import "package:redux/redux.dart";
 import "package:isar/isar.dart";

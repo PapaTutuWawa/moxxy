@@ -1,9 +1,11 @@
 import "dart:io";
 import "dart:convert";
 import "dart:async";
+import "dart:math";
 
 import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/xmpp/stream.dart";
+import "package:moxxyv2/xmpp/buffer.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
@@ -22,7 +24,6 @@ import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
-import "package:moxxyv2/xmpp/xeps/0198.dart";
 import "package:moxxyv2/xmpp/xeps/0030.dart";
 
 import "package:xml/xml.dart";
@@ -37,7 +38,7 @@ enum ConnectionState {
 }
 
 class SocketWrapper {
-  late final Socket _socket;
+  late Socket _socket;
 
   SocketWrapper();
 
@@ -45,6 +46,11 @@ class SocketWrapper {
     this._socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ], timeout: Duration(seconds: 15));
   }
 
+  void close() {
+    this._socket.close();
+    this._socket.flush();
+  }
+  
   Stream<String> asBroadcastStream() {
     return this._socket.cast<List<int>>().transform(utf8.decoder).asBroadcastStream();
   }
@@ -93,13 +99,18 @@ class XmppConnection {
   ];
 
   // Stream properties
-  final List<String> _streamFeatures = List.empty(growable: true); // Stream feature XMLNS
+  //
+  // Stream feature XMLNS
+  final List<String> _streamFeatures = List.empty(growable: true);
+  // TODO
   // final List<String> _serverFeatures = List.empty(growable: true);
   late RoutingState _routingState;
   late String _resource;
   late XmlStreamBuffer _streamBuffer;
-  StreamManager? streamManager;
+  late final StreamManager streamManager;
   Timer? _connectionPingTimer;
+  late int _currentBackoffAttempt;
+  Timer? _backoffTimer;
 
   // Negotiators
   late final AuthenticationNegotiator _authenticator;
@@ -118,35 +129,360 @@ class XmppConnection {
     this._eventStreamController = StreamController();
     this._resource = "";
     this._streamBuffer = XmlStreamBuffer();
+    this._currentBackoffAttempt = 0;
+    this.streamManager = StreamManager(connection: this);
   }
-  
-  // Returns true if the stream supports the XMLNS @feature.
+
+  void _handleError(Object error) {
+    print("ERROR: " + error.toString());
+
+    // TODO: This may be to harsh for every error
+    this._setConnectionState(ConnectionState.NOT_CONNECTED);
+    this._socket.close();
+
+    if (this._currentBackoffAttempt == 0) {
+      final minutes = pow(2, this._currentBackoffAttempt).toInt();
+      this._currentBackoffAttempt++;
+      this._backoffTimer = Timer(Duration(minutes: minutes), () {
+          this.connect();
+      });
+    }
+  }
+
+  /// Returns true if the stream supports the XMLNS @feature.
   bool streamFeatureSupported(String feature) {
     return this._streamFeatures.indexOf(feature) != -1;
   }
 
-  // Internal function for support of XEP-0198
-  void smResend(String stanza) {
-    assert(this.streamManager != null);
-    
-    this._socket.write(stanza);
-    // NOTE: This function must only be called from within the StreamManager, so it MUST
-    //       be non-null
-    this.streamManager!.clientStanzaSent(stanza);
-  }
-  
+  /// Sends an [XMLNode] without any further processing to the server.
   void sendRawXML(XMLNode node) {
     this._socket.write(node.toXml());
   }
 
+  /// Send a message to [to] with the content [body].
   void sendMessage(String body, String to) async {
-    await this.sendStanza(Stanza.message(
+    this.sendStanza(Stanza.message(
         to: to,
         type: "normal",
         children: [
           XMLNode(tag: "body", text: body)
         ]
     ));
+  }
+
+  /// Sends a [stanza] to the server. If stream management is enabled, then keeping track
+  /// of the stanza is taken care of. Returns a Future that resolves when we receive a
+  /// response to the stanza.
+  ///
+  /// If addFrom is true, then a "from" attribute will be added to the stanza if
+  /// [stanza] has none.
+  /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
+  /// none.
+  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
+    // Add extra data in case it was not set
+    if (addId && (stanza.id == null || stanza.id == "")) {
+      stanza = stanza.copyWith(id: randomAlphaNumeric(20));
+    }
+    if (addFrom && (stanza.from == null || stanza.from == "")) {
+      stanza = stanza.copyWith(from: this.settings.jid.withResource(this._resource).toString());
+    }
+
+    final stanzaString = stanza.toXml();
+
+    // Tell the SM manager that we're about to send a stanza
+    if (this.streamManager.streamManagementEnabled()) {
+      this.streamManager.clientStanzaSent(stanza);
+    }
+    
+    this._awaitingResponse[stanza.id!] = Completer();
+    this._socket.write(stanzaString);
+
+    // Try to ack every stanza
+    if (this.streamManager.streamManagementEnabled()) {
+      this.sendRawXML(StreamManagementRequestNonza());
+    }
+
+    return this._awaitingResponse[stanza.id!]!.future;
+  }
+
+  /// Sets the connection state to [state] and triggers an event of type
+  /// [ConnectionStateChangedEvent].
+  void _setConnectionState(ConnectionState state) {
+    this._connectionState = state;
+    this._eventStreamController.add(ConnectionStateChangedEvent(state: state));
+
+    if (state == ConnectionState.CONNECTED) {
+      this._connectionPingTimer = Timer.periodic(Duration(minutes: 5), this._pingConnectionOpen);
+    } else {
+      if (this._connectionPingTimer != null) {
+        this._connectionPingTimer!.cancel();
+        this._connectionPingTimer = null;
+      }
+    }
+  }
+
+  /// Returns the connection's events as a stream.
+  Stream<XmppEvent> asBroadcastStream() {
+    return this._eventStreamController.stream.asBroadcastStream();
+  }
+  
+  // Just for logging
+  void _incomingMiddleware(String data) {
+    print("<== " + data);
+  }
+
+  /// Perform a resource bind with a server-generated resource.
+  void _performResourceBinding() {
+    this.sendStanza(Stanza.iq(
+        type: "set",
+        children: [
+          XMLNode(
+            tag: "bind",
+            attributes: {
+              "xmlns": BIND_XMLNS
+            }
+          )
+        ]
+      ),
+      addFrom: false
+    );
+  }
+
+  /// Handles the result to the resource binding request and returns true if we should
+  /// proceed and false if not.
+  bool _handleResourceBindingResult(XMLNode stanza) {
+    if (stanza.tag != "iq" || stanza.attributes["type"] != "result") {
+      print("ERROR: Resource binding failed!");
+      this._routingState = RoutingState.ERROR;
+      return false;
+    }
+
+    // Success
+    final bind = stanza.firstTag("bind")!;
+    final jid = bind.firstTag("jid")!;
+    // TODO: Use our FullJID class
+    this._resource = jid.innerText().split("/")[1];
+    return true;
+  }
+
+  /// Sends the initial presence to enable receiving messages.
+  void _sendInitialPresence() {
+     this.sendStanza(Stanza.presence(
+          from: this.settings.jid.withResource(this._resource).toString(),
+          children: [
+            XMLNode(
+              tag: "show",
+              text: "chat"
+            )
+          ]
+      ));
+  }
+
+  /// Timer callback to prevent the connection from timing out.
+  void _pingConnectionOpen(Timer timer) {
+    // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
+    // send a whitespace ping
+    if (this._connectionState == ConnectionState.CONNECTED) {
+      if (this.streamManager.streamManagementEnabled()) {
+        this.sendRawXML(StreamManagementRequestNonza());
+      } else {
+        this._socket.write("");
+      }
+    }
+  }
+
+  /// Called whenever we receive a stanza after resource binding or stream resumption.
+  void _handleStanza(XMLNode stanzaRaw) {
+    // TODO: Improve stanza handling
+    // Ignore nonzas
+    if (["message", "iq", "presence"].indexOf(stanzaRaw.tag) == -1) {
+      print("Got nonza " + stanzaRaw.tag + " in stanza handler. Ignoring");
+      return;
+    }
+
+    // TODO: Otherwise they will be bounced
+    if (stanzaRaw.tag == "presence") return;
+    
+    final stanza = Stanza.fromXMLNode(stanzaRaw);
+    final id = stanza.attributes["id"];
+    if (id != null && this._awaitingResponse.containsKey(id)) {
+      this._awaitingResponse[id]!.complete(stanza);
+      this._awaitingResponse.remove(id);
+      // TODO: Call it a day here?
+      return;
+    }
+
+    for (int i = 0; i < this._stanzaHandlers.length; i++) {
+      if (this._stanzaHandlers[i].matches(stanza)) {
+        if (this._stanzaHandlers[i].callback(this, stanza)) return;
+      }
+    }
+
+    handleUnhandledStanza(this, stanza);
+  }
+
+  /// Called whenever we receive data that has been parsed as XML.
+  void handleXmlStream(XMLNode node) async {
+    print("(xml) <== " + node.toXml());
+
+    if (this.streamManager.streamManagementEnabled()) {
+      if (node.tag == "r") {
+        this.streamManager.handleAckRequest();
+      } else if (node.tag == "a") {
+        this.streamManager.handleAckResponse(int.parse(node.attributes["h"]!));
+      } else {
+        this.streamManager.serverStanzaReceived();
+      }
+    }
+
+    // TODO: Handle RoutingState.BIND_RESOURCE
+    switch (this._routingState) {
+      case RoutingState.UNAUTHENTICATED: {
+        // We expect the stream header here
+        if (node.tag != "stream:stream") {
+          print("ERROR: Expected stream header");
+          this._routingState = RoutingState.ERROR;
+          return;
+        }
+
+        final streamFeatures = node.firstTag("stream:features")!;
+        final mechanismNodes = streamFeatures.firstTag("mechanisms")!;
+        final mechanisms = mechanismNodes.children.map((node) => node.innerText()).toList();
+        final authenticator = getAuthenticator(
+          mechanisms,
+          this.settings,
+          this.sendRawXML,
+        );
+
+        if (authenticator == null) {
+          this._routingState = RoutingState.ERROR;
+          return;
+        } else {
+          this._authenticator = authenticator;
+        }
+
+        this._routingState = RoutingState.PERFORM_SASL_AUTH;
+        final result = await this._authenticator.next(null);
+        if (result.getState() == AuthenticationResult.SUCCESS) {
+          this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
+          this._sendStreamHeader();
+        } else if (result.getState() == AuthenticationResult.FAILURE) {
+          print("SASL failed");
+          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          this._setConnectionState(ConnectionState.ERROR);
+          this._routingState = RoutingState.ERROR;
+        }
+      }
+      break;
+      case RoutingState.PERFORM_SASL_AUTH: {
+        final result = await this._authenticator.next(node);
+        //this._handleSaslResult();
+        if (result.getState() == AuthenticationResult.SUCCESS) {
+          this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
+          this._sendStreamHeader();
+        } else if (result.getState() == AuthenticationResult.FAILURE) {
+          print("SASL failed");
+          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          this._setConnectionState(ConnectionState.ERROR);
+          this._routingState = RoutingState.ERROR;
+        }
+      }
+      break;
+      case RoutingState.CHECK_STREAM_MANAGEMENT: {
+        // We expect the stream header here
+        if (node.tag != "stream:stream") {
+          print("ERROR: Expected stream header");
+          this._routingState = RoutingState.ERROR;
+          return;
+        }
+
+        final streamFeatures = node.firstTag("stream:features")!;
+        // TODO: Handle required features?
+        // NOTE: In case of reconnecting
+        this._streamFeatures.clear();
+        streamFeatures.children.forEach((node) => this._streamFeatures.add(node.attributes["xmlns"]));
+
+        if (this.streamFeatureSupported(SM_XMLNS)) {
+          // Try to work with SM first
+          if (this.settings.streamResumptionSettings.id != null) {
+            // Try to resume the last stream
+            this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
+            this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionSettings.id!, this.settings.streamResumptionSettings.lasth!));
+          } else {
+            // Try to enable SM
+            this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
+            this._performResourceBinding();
+          }
+        } else {
+          this._routingState = RoutingState.BIND_RESOURCE;
+          this._performResourceBinding();
+        }
+      }
+      break;
+      case RoutingState.BIND_RESOURCE_PRE_SM: {
+        final proceed = this._handleResourceBindingResult(node);
+        if (proceed) {
+          this._routingState = RoutingState.ENABLE_SM;
+          this.sendRawXML(StreamManagementEnableNonza());
+        }
+      }
+      break;
+      case RoutingState.PERFORM_STREAM_RESUMPTION: {
+        // TODO: Synchronize the h values
+        if (node.tag == "resumed") {
+          print("Stream Resumption successful!");
+          this.sendEvent(StreamManagementResumptionSuccessfulEvent());
+          this._resource = this.settings.streamResumptionSettings.resource!;
+          this._routingState = RoutingState.HANDLE_STANZAS;
+          this._setConnectionState(ConnectionState.CONNECTED);
+
+          final h = int.parse(node.attributes["h"]!);
+          this.streamManager.onStreamResumed(h);
+        } else if (node.tag == "failed") {
+          print("Stream resumption failed. Proceeding with new stream...");
+          this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
+          this._performResourceBinding();
+        }
+      }
+      break;
+      case RoutingState.ENABLE_SM: {
+        if (node.tag == "failed") {
+          // Not critical
+          print("Failed to enable SM: " + node.tag);
+          this._routingState = RoutingState.HANDLE_STANZAS;
+          this._sendInitialPresence();
+        } else if (node.tag == "enabled") {
+          print("SM enabled!");
+
+          final id = node.attributes["id"];
+          if (id != null && [ "true", "1" ].indexOf(node.attributes["resume"]) != -1) {
+            print("Stream resumption possible!");
+            this.sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
+          }
+
+          this.streamManager.enableStreamManagement();
+          this._routingState = RoutingState.HANDLE_STANZAS;
+          this._sendInitialPresence();
+          this._setConnectionState(ConnectionState.CONNECTED);
+          // TODO: Can we handle this more elegantly?
+          this.streamManager.onStreamResumed(0);
+        }
+      }
+      break;
+      case RoutingState.HANDLE_STANZAS: {
+        this._handleStanza(node);
+      }
+      break;
+    }
+  }
+
+  /// Sends an event to the connection's event stream.
+  void sendEvent(XmppEvent event) {
+    this._eventStreamController.add(event);
+  }
+
+  void _sendStreamHeader() {
+    this._socket.write("<?xml version='1.0'?>" + StreamHeaderNonza(this.settings.jid.domain).toXml());
   }
 
   Future<RosterRequestResult?> requestRoster(String? lastVersion) async {
@@ -256,308 +592,14 @@ class XmppConnection {
     }
   }
   
-  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
-    // Add extra data in case it was not set
-    if (addId && (stanza.id == null || stanza.id == "")) {
-      stanza = stanza.copyWith(id: randomAlphaNumeric(20));
-    }
-    if (addFrom && (stanza.from == null || stanza.from == "")) {
-      stanza = stanza.copyWith(from: this.settings.jid.withResource(this._resource).toString());
-    }
-
-    final stanzaString = stanza.toXml();
-
-    // Tell the SM manager that we're about to send a stanza
-    if (this.streamManager != null) {
-      this.streamManager!.clientStanzaSent(stanzaString);
-    }
-    
-    this._awaitingResponse[stanza.id!] = Completer();
-    this._socket.write(stanzaString);
-
-    // Try to ack every stanza
-    if (this.streamManager != null) {
-      this.sendRawXML(StreamManagementRequestNonza());
-    }
-
-    return this._awaitingResponse[stanza.id!]!.future;
-  }
-  
-  void _setConnectionState(ConnectionState state) {
-    this._connectionState = state;
-    this._eventStreamController.add(ConnectionStateChangedEvent(state: state));
-
-    if (state == ConnectionState.CONNECTED) {
-      this._connectionPingTimer = Timer.periodic(Duration(minutes: 5), this._pingConnectionOpen);
-    } else {
-      if (this._connectionPingTimer != null) {
-        this._connectionPingTimer!.cancel();
-        this._connectionPingTimer = null;
-      }
-    }
-  }
-  
-  Stream<XmppEvent> asBroadcastStream() {
-    return this._eventStreamController.stream.asBroadcastStream();
-  }
-  
-  // Just for logging
-  void _incomingMiddleware(String data) {
-    print("<== " + data);
-  }
-
-  // Perform a resource bind with a server-generated resource
-  void _performResourceBinding() {
-    this.sendStanza(Stanza.iq(
-        type: "set",
-        children: [
-          XMLNode(
-            tag: "bind",
-            attributes: {
-              "xmlns": BIND_XMLNS
-            }
-          )
-        ]
-      ),
-      addFrom: false
-    );
-  }
-
-  // Returns true if we should proceed and false if not.
-  bool _handleResourceBindingResult(XMLNode stanza) {
-    if (stanza.tag != "iq" || stanza.attributes["type"] != "result") {
-      print("ERROR: Resource binding failed!");
-      this._routingState = RoutingState.ERROR;
-      return false;
-    }
-
-    // Success
-    final bind = stanza.firstTag("bind")!;
-    final jid = bind.firstTag("jid")!;
-    // TODO: Use our FullJID class
-    this._resource = jid.innerText().split("/")[1];
-    return true;
-  }
-
-  // Sends the initial presence to enable receiving messages
-  void _sendInitialPresence() {
-     this.sendStanza(Stanza.presence(
-          from: this.settings.jid.withResource(this._resource).toString(),
-          children: [
-            XMLNode(
-              tag: "show",
-              text: "chat"
-            )
-          ]
-      ));
-  }
-
-  // For keeping the connection open
-  void _pingConnectionOpen(Timer timer) {
-    // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
-    // send a whitespace ping
-    if (this._connectionState == ConnectionState.CONNECTED) {
-      if (this.streamManager != null) {
-        this.sendRawXML(StreamManagementRequestNonza());
-      } else {
-        this._socket.write("");
-      }
-    }
-  }
-  
-  void _handleStanza(XMLNode stanzaRaw) {
-    // TODO: Improve stanza handling
-    // Ignore nonzas
-    if (["message", "iq", "presence"].indexOf(stanzaRaw.tag) == -1) {
-      print("Got nonza " + stanzaRaw.tag + " in stanza handler. Ignoring");
-      return;
-    }
-
-    // TODO: Otherwise they will be bounced
-    if (stanzaRaw.tag == "presence") return;
-    
-    final stanza = Stanza.fromXMLNode(stanzaRaw);
-    final id = stanza.attributes["id"];
-    if (id != null && this._awaitingResponse.containsKey(id)) {
-      this._awaitingResponse[id]!.complete(stanza);
-      this._awaitingResponse.remove(id);
-      // TODO: Call it a day here?
-      return;
-    }
-
-    for (int i = 0; i < this._stanzaHandlers.length; i++) {
-      if (this._stanzaHandlers[i].matches(stanza)) {
-        if (this._stanzaHandlers[i].callback(this, stanza)) return;
-      }
-    }
-
-    handleUnhandledStanza(this, stanza);
-  }
- 
-  void handleXmlStream(XMLNode node) async {
-    print("(xml) <== " + node.toXml());
-
-    if (this.streamManager != null) {
-      if (node.tag == "r") {
-        this.streamManager!.handleAckRequest();
-      } else if (node.tag == "a") {
-        this.streamManager!.handleAckResponse(int.parse(node.attributes["h"]!));
-      } else {
-        this.streamManager!.serverStanzaReceived();
-      }
-    }
-
-    // TODO: Handle RoutingState.BIND_RESOURCE
-    switch (this._routingState) {
-      case RoutingState.UNAUTHENTICATED: {
-        // We expect the stream header here
-        if (node.tag != "stream:stream") {
-          print("ERROR: Expected stream header");
-          this._routingState = RoutingState.ERROR;
-          return;
-        }
-
-        final streamFeatures = node.firstTag("stream:features")!;
-        final mechanismNodes = streamFeatures.firstTag("mechanisms")!;
-        final mechanisms = mechanismNodes.children.map((node) => node.innerText()).toList();
-        final authenticator = getAuthenticator(
-          mechanisms,
-          this.settings,
-          this.sendRawXML,
-        );
-
-        if (authenticator == null) {
-          this._routingState = RoutingState.ERROR;
-          return;
-        } else {
-          this._authenticator = authenticator;
-        }
-
-        this._routingState = RoutingState.PERFORM_SASL_AUTH;
-        final result = await this._authenticator.next(null);
-        if (result.getState() == AuthenticationResult.SUCCESS) {
-          this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
-          this._sendStreamHeader();
-        } else if (result.getState() == AuthenticationResult.FAILURE) {
-          print("SASL failed");
-          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          this._setConnectionState(ConnectionState.ERROR);
-          this._routingState = RoutingState.ERROR;
-        }
-      }
-      break;
-      case RoutingState.PERFORM_SASL_AUTH: {
-        final result = await this._authenticator.next(node);
-        //this._handleSaslResult();
-        if (result == AuthenticationResult.SUCCESS) {
-          this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
-          this._sendStreamHeader();
-        } else if (result.getState() == AuthenticationResult.FAILURE) {
-          print("SASL failed");
-          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          this._setConnectionState(ConnectionState.ERROR);
-          this._routingState = RoutingState.ERROR;
-        }
-      }
-      break;
-      case RoutingState.CHECK_STREAM_MANAGEMENT: {
-        // We expect the stream header here
-        if (node.tag != "stream:stream") {
-          print("ERROR: Expected stream header");
-          this._routingState = RoutingState.ERROR;
-          return;
-        }
-
-        final streamFeatures = node.firstTag("stream:features")!;
-        // TODO: Handle required features?
-        // NOTE: In case of reconnecting
-        this._streamFeatures.clear();
-        streamFeatures.children.forEach((node) => this._streamFeatures.add(node.attributes["xmlns"]));
-
-        if (this.streamFeatureSupported(SM_XMLNS)) {
-          // Try to work with SM first
-          if (this.settings.streamResumptionSettings.id != null) {
-            // Try to resume the last stream
-            this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
-            this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionSettings.id!, this.settings.streamResumptionSettings.lasth!));
-          } else {
-            // Try to enable SM
-            this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
-            this._performResourceBinding();
-          }
-        } else {
-          this._routingState = RoutingState.BIND_RESOURCE;
-          this._performResourceBinding();
-        }
-      }
-      break;
-      case RoutingState.BIND_RESOURCE_PRE_SM: {
-        final proceed = this._handleResourceBindingResult(node);
-        if (proceed) {
-          this._routingState = RoutingState.ENABLE_SM;
-          this.sendRawXML(StreamManagementEnableNonza());
-        }
-      }
-      break;
-      case RoutingState.PERFORM_STREAM_RESUMPTION: {
-        // TODO: Synchronize the h values
-        if (node.tag == "resumed") {
-          print("Stream Resumption successful!");
-          this.sendEvent(StreamManagementResumptionSuccessfulEvent());
-          this._resource = this.settings.streamResumptionSettings.resource!;
-          this.streamManager = StreamManager(
-            connection: this,
-            streamResumptionId: this.settings.streamResumptionSettings.id!
-          );
-          this._routingState = RoutingState.HANDLE_STANZAS;
-          this._setConnectionState(ConnectionState.CONNECTED);
-        } else if (node.tag == "failed") {
-          print("Stream resumption failed. Proceeding with new stream...");
-          this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
-          this._performResourceBinding();
-        }
-      }
-      break;
-      case RoutingState.ENABLE_SM: {
-        if (node.tag == "failed") {
-          // Not critical
-          print("Failed to enable SM: " + node.tag);
-          this._routingState = RoutingState.HANDLE_STANZAS;
-          this._sendInitialPresence();
-        } else if (node.tag == "enabled") {
-          print("SM enabled!");
-
-          final id = node.attributes["id"];
-          if (id != null && [ "true", "1" ].indexOf(node.attributes["resume"]) != -1) {
-            print("Stream resumption possible!");
-            this.sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
-          }
-
-          this.streamManager = StreamManager(connection: this, streamResumptionId: id);
-          this._routingState = RoutingState.HANDLE_STANZAS;
-          this._sendInitialPresence();
-          this._setConnectionState(ConnectionState.CONNECTED);
-        }
-      }
-      break;
-      case RoutingState.HANDLE_STANZAS: {
-        this._handleStanza(node);
-      }
-      break;
-    }
-  }
-
-  void sendEvent(XmppEvent event) {
-    this._eventStreamController.add(event);
-  }
-
-  void _sendStreamHeader() {
-    this._socket.write("<?xml version='1.0'?>" + StreamHeaderNonza(this.settings.jid.domain).toXml());
-  }
-  
   Future<void> connect() async {
     String hostname = this.settings.jid.domain;
     int port = 5222;
+
+    if (this._backoffTimer != null) {
+      this._backoffTimer!.cancel();
+      this._backoffTimer = null;
+    }
     
     if (this.settings.useDirectTLS) {
       final query = await perform0368Lookup(this.settings.jid.domain);
@@ -571,13 +613,25 @@ class XmppConnection {
     }
 
     print("Connecting to $hostname:$port");
-    await this._socket.connect(hostname, port);
+    try {
+      await this._socket.connect(hostname, port);
+    } catch (ex) {
+      print("Exception while connecting: " + ex.toString());
+      this._handleError(ex);
+      return;
+    }
 
+    this._currentBackoffAttempt = 0;
     this._socketStream = this._socket.asBroadcastStream();
-    this._socketStream.listen(this._incomingMiddleware);
+    // TODO: Handle on done
+    this._socketStream.listen(
+      this._incomingMiddleware,
+      onError: this._handleError
+    );
     this._socketStream.transform(this._streamBuffer).forEach(this.handleXmlStream);
 
     this._setConnectionState(ConnectionState.CONNECTING);
+    this._routingState = RoutingState.UNAUTHENTICATED;
     this._sendStreamHeader();
   }
 }
