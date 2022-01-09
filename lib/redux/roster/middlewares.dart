@@ -15,10 +15,7 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 
 // TODO: Add an action for when we're done
 void rosterMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
-  /*
-  if (action is AddRosterItemAction && !action.triggeredByDatabase) {
-    GetIt.I.get<RosterRepository>().addRosterItemFromData(action.avatarUrl, action.jid, action.title);
-  } else */ if (action is SaveCurrentRosterVersionAction) {
+  if (action is SaveCurrentRosterVersionAction) {
     GetIt.I.get<XmppRepository>().saveLastRosterVersion(action.ver);
   } else if (action is RemoveRosterItemUIAction) {
     store.dispatch(RosterItemRemovedAction(jid: action.jid));
