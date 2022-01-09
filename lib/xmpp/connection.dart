@@ -603,6 +603,16 @@ class XmppConnection {
       )
     );
   }
+
+  /// Sends an unsubscription request to [to].
+  Future<void> sendUnsubscriptionRequest(String to) async {
+    this.sendStanza(
+      Stanza.presence(
+        type: "unsubscribe",
+        to: to
+      )
+    );
+  }
   
   Future<void> connect() async {
     String hostname = this.settings.jid.domain;

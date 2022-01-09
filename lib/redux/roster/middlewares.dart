@@ -23,6 +23,7 @@ void rosterMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
   } else if (action is RemoveRosterItemUIAction) {
     store.dispatch(RosterItemRemovedAction(jid: action.jid));
     GetIt.I.get<XmppConnection>().removeFromRoster(action.jid);
+    GetIt.I.get<XmppConnection>().sendUnsubscriptionRequest(action.jid);
   }
 
   next(action);
