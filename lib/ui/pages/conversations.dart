@@ -54,8 +54,7 @@ class ConversationsPage extends StatelessWidget {
                 maxTextWidth,
                 item.lastChangeTimestamp,
                 true,
-                // TODO: Maybe use ValueKey
-                key: UniqueKey()
+                key: ValueKey("conversationRow;" + item.jid)
               )
             ) 
           );
@@ -118,7 +117,6 @@ class ConversationsPage extends StatelessWidget {
               },
               icon: Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
-                // TODO: Use enum
                 PopupMenuItem(
                   value: ConversationsOptions.SETTINGS,
                   child: Text("Settings")
@@ -128,7 +126,6 @@ class ConversationsPage extends StatelessWidget {
           ]
         ),
         body: this._listWrapper(context, viewModel),
-        // TODO: Maybe don't use a SpeedDial
         floatingActionButton: SpeedDial(
           icon: Icons.chat,
           visible: true,
