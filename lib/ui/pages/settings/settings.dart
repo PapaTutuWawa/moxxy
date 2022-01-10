@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/account/actions.dart";
@@ -14,27 +15,6 @@ class _SettingsPageViewModel {
 }
 
 class SettingsPage extends StatelessWidget {
-  void _showLogoutDialog(BuildContext context, _SettingsPageViewModel viewModel) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text("Sign Out"),
-        content: Text("You are about to sign out. Proceed?"),
-        actions: [
-          TextButton(
-            child: Text("Yes"),
-            onPressed: viewModel.performLogout
-          ),
-          TextButton(
-            child: Text("No"),
-            onPressed: Navigator.of(context).pop
-          )
-        ]
-      )
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +34,12 @@ class SettingsPage extends StatelessWidget {
                 SettingsTile(
                   title: "Sign out",
                   leading: Icon(Icons.logout),
-                  onTap: () => this._showLogoutDialog(context, viewModel)
+                  onTap: () => showConfirmationDialog(
+                    "Sign Out",
+                    "You are about to sign out. Proceed?",
+                    context,
+                    viewModel.performLogout
+                  )
                 )
               ]
             ),

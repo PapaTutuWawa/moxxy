@@ -9,6 +9,30 @@ import "package:image_cropping/constant/enums.dart";
 import "package:image_cropping/image_cropping.dart";
 import "package:path_provider/path_provider.dart";
 
+/// Shows a dialog asking the user if they are sure that they want to proceed with an
+/// action.
+Future<void> showConfirmationDialog(String title, String body, BuildContext context, void Function() callback) async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        TextButton(
+          child: Text("Yes"),
+          onPressed: callback
+        ),
+        TextButton(
+          child: Text("No"),
+          onPressed: Navigator.of(context).pop
+        )
+      ]
+    )
+  );
+}
+
+/// Shows a dialog telling the user that the [feature] feature is not implemented.
 Future<void> showNotImplementedDialog(String feature, BuildContext context) async {
   return showDialog<void>(
     context: context,
@@ -34,6 +58,7 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
   );
 }
 
+/// Dismissed the softkeyboard.
 void dismissSoftKeyboard(BuildContext context) {
   // NOTE: Thank you, https://flutterigniter.com/dismiss-keyboard-form-lose-focus/
   FocusScopeNode current = FocusScope.of(context);
@@ -42,11 +67,9 @@ void dismissSoftKeyboard(BuildContext context) {
   }
 }
 
-/*
- * Open the file picker to pick an image and open the cropping tool.
- * The Future either resolves to null if the user cancels the action or
- * the actual image data
- */
+/// Open the file picker to pick an image and open the cropping tool.
+/// The Future either resolves to null if the user cancels the action or
+/// the actual image data.
 Future<dynamic> pickAndCropImage(BuildContext context) async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(
     allowMultiple: false,
@@ -68,10 +91,8 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
   return null;
 }
 
-/*
- * Open the file picker to pick an image, open the cropping tool and then send it to
- * the backend.
- */
+/// Open the file picker to pick an image, open the cropping tool and then send it to
+/// the backend.
 Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAvatarUrl) async {
   final data = await pickAndCropImage(context);
 
@@ -87,7 +108,7 @@ Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAva
   }
 }
 
-// Turn the SASL error into a string that a regular user could understand
+/// Turn the SASL error into a string that a regular user could understand.
 String saslErrorToHumanReadable(String saslError) {
   switch (saslError) {
     case SASL_ERROR_NOT_AUTHORIZED: return "Wrong XMPP address or password";

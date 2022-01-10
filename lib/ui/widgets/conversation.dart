@@ -31,7 +31,6 @@ class ConversationsListRow extends StatefulWidget {
   );
 }
 
-// TODO: Use a Timer.periodic to update the timestamp every minute
 class _ConversationsListRowState extends State<ConversationsListRow> {
   final String avatarUrl;
   final String name;
@@ -95,7 +94,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
               child: AvatarWrapper(
                 radius: 35.0,
                 avatarUrl: this.avatarUrl,
-                // TODO: Clamp
+                // TODO: Make this consistent by moving this inside the AvatarWrapper widget
                 alt: Text(this.name[0] + this.name[1])
               )
             ),
@@ -144,7 +143,6 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
           ]
         ),
         Visibility(
-          // TODO
           visible: this.lastChangeTimestamp != TIMESTAMP_NEVER,
           child: Positioned(
             top: 8,

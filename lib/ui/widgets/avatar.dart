@@ -14,7 +14,7 @@ class AvatarWrapper extends StatelessWidget {
     assert(this.avatarUrl != null || (this.avatarUrl == null || this.avatarUrl == "") && (this.alt != null || this.altIcon != null));
     assert(this.showEditButton ? this.onTapFunction != null : true);
   }
-
+  
   Widget _constructAlt() {
     if (this.alt != null) {
       return this.alt!;

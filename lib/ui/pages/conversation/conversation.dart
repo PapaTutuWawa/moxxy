@@ -4,14 +4,14 @@ import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/chatbubble.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
-import "package:moxxyv2/models/message.dart";
-import "package:moxxyv2/models/conversation.dart";
-import "package:moxxyv2/redux/state.dart";
-import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/models/message.dart";
+import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/redux/state.dart";
+import "package:moxxyv2/redux/conversation/actions.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/scheduler.dart";
@@ -120,8 +120,7 @@ class _ConversationPageState extends State<ConversationPage> {
       between: between,
       closerTogether: !end,
       maxWidth: maxWidth,
-      // TODO: Maybe just use a ValueKey
-      key: UniqueKey()
+      key: ValueKey("message;" + item.body)
     );
   }
   
@@ -201,10 +200,12 @@ class _ConversationPageState extends State<ConversationPage> {
                   onSelected: (result) {
                     switch (result) {
                       case ConversationOption.CLOSE: {
-                        // TODO: Ask for confirmation
-                        // TODO: Fix crash because we're still here and our conversation is gone
-                        // => Maybe give the entire conversation as an argument?
-                        viewModel.closeChat();
+                        showConfirmationDialog(
+                          "Close Chat",
+                          "Are you sure you want to close this chat?",
+                          context,
+                          viewModel.closeChat
+                        );
                       }
                       break;
                       default: {
