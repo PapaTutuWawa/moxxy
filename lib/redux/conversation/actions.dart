@@ -47,8 +47,9 @@ class AddMessageAction {
 class AddMultipleMessagesAction {
   final String conversationJid;
   final List<Message> messages;
+  final bool replace; // Replace whatever was in the state before for [conversationJid]
 
-  AddMultipleMessagesAction({ required this.messages, required this.conversationJid });
+  AddMultipleMessagesAction({ required this.messages, required this.conversationJid, this.replace = true });
 }
 
 /// Triggered when a conversation should be marked as closed
