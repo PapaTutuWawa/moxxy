@@ -31,5 +31,8 @@ class Conversation extends Equatable {
   }
 
   @override
+  bool get stringify => true;
+  
+  @override
   List<Object> get props => [ title, lastMessageBody, avatarUrl, id, jid, unreadCounter, lastChangeTimestamp, open ];
 }

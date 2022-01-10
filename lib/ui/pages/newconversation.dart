@@ -119,9 +119,6 @@ class NewConversationPage extends StatelessWidget {
                 RosterItem item = viewModel.roster[index - 2];
                 return Dismissible(
                   key: ValueKey("roster;" + item.jid),
-                  // TODO: This is bad and doesn't work
-                  // WHY DIDN'T I WRITE IT USING AN ACTION AT FIRST
-                  //onDismissed: (direction) => GetIt.I.get<RosterRepository>().removeFromRoster(item),
                   onDismissed: (direction) => viewModel.removeRosterItem(item.jid),
                   background: Container(
                     color: Colors.red,
