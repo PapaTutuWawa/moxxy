@@ -68,8 +68,7 @@ class LoginPage extends StatelessWidget {
     viewModel.performLogin(jid, password);
   }
   
-  @override
-  Widget build(BuildContext context) {
+  @override Widget build(BuildContext context) {
     return StoreConnector<MoxxyState, _LoginPageViewModel>(
       converter: (store) => _LoginPageViewModel(
         togglePasswordVisibility: () => store.dispatch(TogglePasswordVisibilityAction()),
@@ -104,7 +103,8 @@ class LoginPage extends StatelessWidget {
                   enabled: !viewModel.doingWork,
                   controller: this.jidController,
                   maxLines: 1,
-                  cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                  cornerRadius: TEXTFIELD_RADIUS_REGULAR,
+                  enableIMEFeatures: false
                 )
               ),
               Padding(
@@ -125,7 +125,8 @@ class LoginPage extends StatelessWidget {
                   enabled: !viewModel.doingWork,
                   obscureText: !viewModel.showPassword,
                   maxLines: 1,
-                  cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                  cornerRadius: TEXTFIELD_RADIUS_REGULAR,
+                  enableIMEFeatures: false
                 )
               ),
               Visibility(

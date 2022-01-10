@@ -13,6 +13,7 @@ class CustomTextField extends StatelessWidget {
   final bool enabled;
   final bool obscureText;
   final bool isDense;
+  final bool enableIMEFeatures; // suggestions and autocorrect
   final int maxLines;
   final int minLines;
   final TextEditingController? controller;
@@ -33,7 +34,8 @@ class CustomTextField extends StatelessWidget {
       this.controller,
       this.onChanged,
       this.isDense = false,
-      this.contentPadding = TEXTFIELD_PADDING_REGULAR
+      this.contentPadding = TEXTFIELD_PADDING_REGULAR,
+      this.enableIMEFeatures = true
   });
   
   @override
@@ -55,6 +57,8 @@ class CustomTextField extends StatelessWidget {
             enabled: this.enabled,
             controller: this.controller,
             onChanged: this.onChanged,
+            enableSuggestions: this.enableIMEFeatures,
+            autocorrect: this.enableIMEFeatures,
             decoration: InputDecoration(
               labelText: this.labelText,
               hintText: this.hintText,
