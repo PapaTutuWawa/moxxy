@@ -7,10 +7,10 @@ import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/global/actions.dart";
 import "package:moxxyv2/redux/addcontact/actions.dart";
+import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/repositories/conversation.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
-import "package:moxxyv2/redux/conversations/actions.dart";
 import "package:moxxyv2/db/roster.dart" as db;
 
 import "package:flutter/material.dart";

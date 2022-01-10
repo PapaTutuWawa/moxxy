@@ -3,7 +3,6 @@ import 'dart:collection';
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/redux/conversation/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
-import "package:moxxyv2/redux/conversations/actions.dart";
 
 String? openConversationJidReducer(String? openConversationJid, dynamic action) {
   if (action is SetOpenConversationAction) {

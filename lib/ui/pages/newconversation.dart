@@ -3,14 +3,14 @@ import "dart:collection";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/ui/pages/conversation/arguments.dart";
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
-import "package:moxxyv2/redux/conversations/actions.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
-import "package:moxxyv2/ui/pages/conversation/arguments.dart";
+import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/repositories/roster.dart";
-import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/constants.dart";
 
