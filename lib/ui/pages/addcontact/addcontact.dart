@@ -1,12 +1,12 @@
-import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/redux/state.dart';
-import 'package:moxxyv2/redux/addcontact/actions.dart';
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/redux/state.dart";
+import "package:moxxyv2/redux/addcontact/actions.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
-import 'package:flutter/material.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
+import "package:flutter/material.dart";
+import "package:flutter_redux/flutter_redux.dart";
+import "package:redux/redux.dart";
 
 class _AddContactPageViewModel {
   final bool doingWork;
@@ -30,9 +30,6 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.simple(title: "Add new contact"),
-        // TODO: The TextFields look a bit too smal
-        // TODO: Hide the LinearProgressIndicator if we're not doing anything
-        // TODO: Disable the inputs and the BackButton if we're working on loggin in
         body: Column(
           children: [
             Visibility(
@@ -82,7 +79,6 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
                     padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
                     child: ElevatedButton(
                       child: Text("Add to contacts"),
-                      // TODO: Add to roster and open a chat
                       onPressed: viewModel.doingWork ? null : () => _addToRoster(context, viewModel)
                     )
                   )
