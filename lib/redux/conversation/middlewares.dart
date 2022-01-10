@@ -4,7 +4,7 @@ import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/messages/actions.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
-import "package:moxxyv2/repositories/conversation.dart";
+import "package:moxxyv2/repositories/database.dart";
 
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";

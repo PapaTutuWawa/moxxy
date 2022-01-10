@@ -13,8 +13,6 @@ import "package:redux/redux.dart";
 
 import "package:moxxyv2/isar.g.dart";
 
-// TODO: Either rename this ConversationRepository or put all the database stuff here and
-//       rename the file to database.dart
 class DatabaseRepository {
   final Isar isar;
   final Store<MoxxyState> store;
@@ -23,7 +21,8 @@ class DatabaseRepository {
   final List<String> loadedConversations = List.empty(growable: true);
   
   DatabaseRepository({ required this.isar, required this.store });
- 
+
+  /// Loads all conversations from the database and adds them to the state and cache.
   Future<void> loadConversations() async {
     var conversations = await this.isar.dBConversations.where().findAll();
 
@@ -47,6 +46,7 @@ class DatabaseRepository {
     );
   }
 
+  /// Loads all messages for the conversation with jid [jid].
   Future<void> loadMessagesForJid(String jid) async {
     final messages = await this.isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
     this.loadedConversations.add(jid);
@@ -63,12 +63,8 @@ class DatabaseRepository {
         )).toList()
     ));
   }
-  
-  // TODO
-  bool hasConversation(int id) {
-    return this._cache.containsKey(id);
-  }
 
+  /// Updates the conversation with id [id] inside the database.
   Future<void> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter }) async {
     print("updateConversation");
 
@@ -92,6 +88,8 @@ class DatabaseRepository {
     });
   }
 
+  /// Creates a [Conversation] inside the database given the data. This is so that the
+  /// [Conversation] object can carry its database id.
   Future<Conversation> addConversationFromData(String title, String lastMessageBody, String avatarUrl, String jid, int unreadCounter, int lastChangeTimestamp, List<String> sharedMediaPaths, bool open) async {
     print("addConversationFromAction");
     final c = DBConversation()
@@ -121,6 +119,7 @@ class DatabaseRepository {
     );
   }
 
+  /// Same as [this.addConversationFromData] but for a [Message].
   Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent) async {
     print("addMessageFromData");
     final m = DBMessage()

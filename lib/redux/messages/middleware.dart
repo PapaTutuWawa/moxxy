@@ -1,9 +1,9 @@
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
-import "package:moxxyv2/repositories/conversation.dart";
+import "package:moxxyv2/redux/messages/actions.dart";
+import "package:moxxyv2/repositories/database.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/models/message.dart";
-import "package:moxxyv2/redux/messages/actions.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/helpers.dart";
 

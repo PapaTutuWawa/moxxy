@@ -41,7 +41,6 @@ class RosterItemNotFoundEvent extends XmppEvent {
 }
 
 bool handleRosterPush(XmppConnection conn, Stanza stanza) {
-  // TODO: Test
   // Ignore
   print("Received roster push");
 
@@ -50,7 +49,6 @@ bool handleRosterPush(XmppConnection conn, Stanza stanza) {
     return true;
   }
   
-  // TODO: Handle the real roster push stuff and move it out of the repository
   // NOTE: StanzaHandler gurantees that this is != null
   final query = stanza.firstTag("query", xmlns: ROSTER_XMLNS)!;
   final item = query.firstTag("item");

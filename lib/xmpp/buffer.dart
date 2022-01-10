@@ -20,12 +20,12 @@ class XmlStreamBuffer extends StreamTransformerBase<String, XMLNode> {
       toParse = toParse + "</stream:stream>";
     } else {
       if (toParse.endsWith("</stream:stream>")) {
-        // TODO: Maybe destroy the stream
+        // TODO: Maybe prepend <stream:stream> so that we can detect it within
+        //       [XmppConnection]
         toParse = toParse.substring(0, toParse.length - 16);
       }
     } 
 
-    // TODO: Test this
     final document;
     try {
       document = XmlDocument.parse("<root>$toParse</root>");
