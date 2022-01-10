@@ -1,8 +1,9 @@
 import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/addcontact/actions.dart";
-import "package:moxxyv2/ui/helpers.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
@@ -10,14 +11,19 @@ import "package:redux/redux.dart";
 
 class _AddContactPageViewModel {
   final bool doingWork;
+  final String? errorText;
   final void Function(String jid) addContact;
+  final void Function() resetErrors;
 
-  _AddContactPageViewModel({ required this.addContact, required this.doingWork});
+  _AddContactPageViewModel({ required this.addContact, required this.doingWork, required this.resetErrors, this.errorText });
 }
 
-class AddContactPage extends StatelessWidget {TextEditingController controller = TextEditingController();
+// TODO: Reset the errorText using WillPopScope
+class AddContactPage extends StatelessWidget {
+  TextEditingController controller = TextEditingController();
 
   void _addToRoster(BuildContext context, _AddContactPageViewModel viewModel) {
+    viewModel.resetErrors();
     viewModel.addContact(this.controller.text);
   }
   
@@ -26,7 +32,9 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
     return StoreConnector<MoxxyState, _AddContactPageViewModel>(
       converter: (store) => _AddContactPageViewModel(
         doingWork: store.state.globalState.doingWork,
-        addContact: (jid) => store.dispatch(AddContactAction(jid: jid))
+        errorText: store.state.addContactErrorText,
+        addContact: (jid) => store.dispatch(AddContactAction(jid: jid)),
+        resetErrors: () => store.dispatch(AddContactSetErrorLogin())
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.simple(title: "Add new contact"),
@@ -47,23 +55,18 @@ class AddContactPage extends StatelessWidget {TextEditingController controller =
                     color: Colors.purple
                   )
                 ),
-                child: TextField(
+                child: CustomTextField(
                   maxLines: 1,
-                  enabled: !viewModel.doingWork,
                   controller: this.controller,
-                  decoration: InputDecoration(
-                    labelText: "XMPP-Address",
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
-                    suffixIcon: Padding(
-                      padding: EdgeInsetsDirectional.only(end: 6.0),
-                      child: IconButton(
-                        icon: Icon(Icons.qr_code),
-                        onPressed: () {
-                          showNotImplementedDialog("QR-code scanning", context);
-                        }
-                      )
-                    )
+                  labelText: "XMPP-Address",
+                  cornerRadius: TEXTFIELD_RADIUS_REGULAR,
+                  contentPadding: EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
+                  errorText: viewModel.errorText,
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.qr_code),
+                    onPressed: () {
+                      showNotImplementedDialog("QR-code scanning", context);
+                    }
                   )
                 )
               )

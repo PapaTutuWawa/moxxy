@@ -26,9 +26,8 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
 
     store.dispatch(SetDoingWorkAction(state: true));
     if (rosterRepo.isInRoster(action.jid)) {
-      // TODO: Display a message
-      print("Already in roster");
       store.dispatch(SetDoingWorkAction(state: false));
+      store.dispatch(AddContactSetErrorLogin(errorText: "Already in contact list"));
 
       return;
     } else {

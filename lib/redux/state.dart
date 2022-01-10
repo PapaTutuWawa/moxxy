@@ -1,4 +1,5 @@
 import "dart:collection";
+
 import "package:moxxyv2/redux/conversation/reducers.dart";
 import "package:moxxyv2/redux/conversations/reducers.dart";
 import "package:moxxyv2/redux/login/reducers.dart";
@@ -15,6 +16,7 @@ import "package:moxxyv2/redux/postregister/state.dart";
 import "package:moxxyv2/redux/profile/state.dart";
 import "package:moxxyv2/redux/account/state.dart";
 import "package:moxxyv2/redux/global/state.dart";
+import "package:moxxyv2/redux/addcontact/reducers.dart";
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/models/roster.dart";
@@ -31,7 +33,8 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
     profilePageState: profileReducer(state.profilePageState, action),
     accountState: accountReducer(state.accountState, action),
     globalState: globalReducer(state.globalState, action),
-    openConversationJid: openConversationJidReducer(state.openConversationJid, action)
+    openConversationJid: openConversationJidReducer(state.openConversationJid, action),
+    addContactErrorText: addContactErrorTextReducer(state.addContactErrorText, action)
   );
 }
 
@@ -47,6 +50,7 @@ class MoxxyState {
   final AccountState accountState;
   final GlobalState globalState;
   final String? openConversationJid;
+  final String? addContactErrorText;
 
   const MoxxyState({
       required this.messages,
@@ -59,7 +63,9 @@ class MoxxyState {
       required this.profilePageState,
       required this.accountState,
       required this.globalState,
-      this.openConversationJid });
+      this.openConversationJid,
+      this.addContactErrorText
+  });
   MoxxyState.initialState()
     : messages = HashMap(),
       conversations = HashMap(),
@@ -71,5 +77,6 @@ class MoxxyState {
       profilePageState = ProfilePageState.initialState(),
       accountState = AccountState.initialState(),
       globalState = GlobalState.initialState(),
-      openConversationJid = null;
+      openConversationJid = null,
+      addContactErrorText = null;
 }
