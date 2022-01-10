@@ -123,7 +123,19 @@ class NewConversationPage extends StatelessWidget {
                   // WHY DIDN'T I WRITE IT USING AN ACTION AT FIRST
                   //onDismissed: (direction) => GetIt.I.get<RosterRepository>().removeFromRoster(item),
                   onDismissed: (direction) => viewModel.removeRosterItem(item.jid),
-                  background: Container(color: Colors.red),
+                  background: Container(
+                    color: Colors.red,
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete),
+                          Spacer(),
+                          Icon(Icons.delete)
+                        ]
+                      )
+                    )
+                  ),
                   child: InkWell(
                     onTap: () => this._addNewConversation(viewModel, context, item),
                     child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, TIMESTAMP_NEVER, false)
