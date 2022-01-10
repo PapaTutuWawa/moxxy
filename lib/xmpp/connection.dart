@@ -84,7 +84,7 @@ class AuthenticationFailedEvent extends XmppEvent {
 
 // TODO: Implement a send queue
 class XmppConnection {
-  final ConnectionSettings settings;
+  late ConnectionSettings settings;
   late final SocketWrapper _socket;
   late ConnectionState _connectionState;
   late final Stream<String> _socketStream;
@@ -115,7 +115,7 @@ class XmppConnection {
   // Negotiators
   late final AuthenticationNegotiator _authenticator;
 
-  XmppConnection({ required this.settings, SocketWrapper? socket }) {
+  XmppConnection({ SocketWrapper? socket }) {
     this._connectionState = ConnectionState.NOT_CONNECTED;
     this._routingState = RoutingState.UNAUTHENTICATED;
 
@@ -133,6 +133,10 @@ class XmppConnection {
     this.streamManager = StreamManager(connection: this);
   }
 
+  void setConnectionSettings(ConnectionSettings settings) {
+    this.settings = settings;
+  }
+  
   void _handleError(Object error) {
     print("ERROR: " + error.toString());
 

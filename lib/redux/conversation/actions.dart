@@ -46,8 +46,9 @@ class AddMultipleMessagesAction {
 class CloseConversationAction {
   final String jid;
   final int id;
+  final bool redirect;
 
-  CloseConversationAction({ required this.jid, required this.id });
+  CloseConversationAction({ required this.jid, required this.id, this.redirect = true });
 }
 
 class SetOpenConversationAction {

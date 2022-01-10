@@ -54,7 +54,7 @@ class NewConversationPage extends StatelessWidget {
             )
           ),
           removeRosterItem: (jid) => store.dispatch(RemoveRosterItemUIAction(jid: jid)),
-          conversations: store.state.conversations,
+          conversations: store.state.conversations.values.toList(),
           roster: store.state.roster
         ),
         builder: (context, viewModel) => ListView.builder(

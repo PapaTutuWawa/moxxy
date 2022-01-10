@@ -1,8 +1,8 @@
 import "dart:collection";
 
-import "package:isar/isar.dart";
+import "package:equatable/equatable.dart";
 
-class Conversation {
+class Conversation extends Equatable {
   final String title;
   final String lastMessageBody;
   final String avatarUrl;
@@ -29,4 +29,7 @@ class Conversation {
       id: this.id
     );
   }
+
+  @override
+  List<Object> get props => [ title, lastMessageBody, avatarUrl, id, jid, unreadCounter, lastChangeTimestamp, open ];
 }

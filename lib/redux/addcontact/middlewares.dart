@@ -36,7 +36,9 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
       store.dispatch(AddRosterItemAction(item: item));
     }
 
-    final conversation = firstWhereOrNull(store.state.conversations, (Conversation c) => c.jid == action.jid);
+    // TODO: Don't rely on the state here
+    // TODO: Move this into a repository class
+    final conversation = store.state.conversations[action.jid];
     if (conversation == null) {
       final c = await databaseRepo.addConversationFromData(
         action.jid.split("@")[0],

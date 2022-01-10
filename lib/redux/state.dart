@@ -37,7 +37,7 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
 
 class MoxxyState {
   final HashMap<String, List<Message>> messages;
-  final List<Conversation> conversations;
+  final HashMap<String, Conversation> conversations;
   final List<RosterItem> roster;
   final LoginPageState loginPageState;
   final ConversationPageState conversationPageState;
@@ -62,7 +62,7 @@ class MoxxyState {
       this.openConversationJid });
   MoxxyState.initialState()
     : messages = HashMap(),
-      conversations = List.empty(growable: true),
+      conversations = HashMap(),
       roster = List.empty(growable: true),
       loginPageState = LoginPageState.initialState(),
       conversationPageState = ConversationPageState.initialState(),

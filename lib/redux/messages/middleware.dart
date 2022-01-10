@@ -27,7 +27,7 @@ void messageMiddleware(Store<MoxxyState> store, action, NextDispatcher next) asy
       false
     );
 
-    final existantConversation = firstWhereOrNull(store.state.conversations, (Conversation c) => c.jid == bareJidString);
+    final existantConversation = store.state.conversations[bareJidString];
     if (existantConversation == null) {
       final conversation = await databaseRepo.addConversationFromData(
         action.from.local,
@@ -72,7 +72,7 @@ void messageMiddleware(Store<MoxxyState> store, action, NextDispatcher next) asy
     );
     connection.sendMessage(action.body, action.jid);
 
-    final existantConversation = firstWhereOrNull(store.state.conversations, (Conversation c) => c.jid == action.jid);
+    final existantConversation = store.state.conversations[action.jid];
 
     store.dispatch(AddMessageAction(message: message));
     store.dispatch(UpdateConversationAction(

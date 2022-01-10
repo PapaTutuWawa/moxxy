@@ -47,6 +47,7 @@ dependencies:
   basic_utils: ^3.9.4
   saslprep: ^1.0.2
   scrollable_positioned_list: ^0.2.3
+  equatable: ^2.0.3
   #flutter_local_notifications: ^9.1.5
   #qr_code_scanner: ^0.6.1
   #unifiedpush: ^3.0.1

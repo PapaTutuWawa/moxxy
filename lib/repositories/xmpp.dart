@@ -152,9 +152,7 @@ class XmppRepository {
 
   void connect(ConnectionSettings settings, bool triggeredFromUI) {
     this.loginTriggeredFromUI = triggeredFromUI;
-    GetIt.I.registerSingleton<XmppConnection>(XmppConnection(
-        settings: settings
-    ));
+    GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
     GetIt.I.get<XmppConnection>().connect();
     this.installEventHandlers();
   }

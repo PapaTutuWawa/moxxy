@@ -133,7 +133,7 @@ class _ConversationPageState extends State<ConversationPage> {
     
     return StoreConnector<MoxxyState, _MessageListViewModel>(
       converter: (store) {
-        Conversation conversation = store.state.conversations.firstWhere((item) => item.jid == jid);
+        Conversation conversation = store.state.conversations[jid]!;
         return _MessageListViewModel(
           conversation: conversation,
           messages: store.state.messages.containsKey(jid) ? store.state.messages[jid]! : [],

@@ -31,6 +31,7 @@ import "redux/roster/middlewares.dart";
 import "redux/messages/middleware.dart";
 import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
+import "xmpp/connection.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_redux/flutter_redux.dart";
@@ -65,7 +66,8 @@ Future<Store<MoxxyState>> createStore(Isar isar) async {
   GetIt.I.registerSingleton<RosterRepository>(RosterRepository(isar: isar, store: store));
   GetIt.I.get<DatabaseRepository>().loadConversations();
   GetIt.I.registerSingleton<XmppRepository>(XmppRepository(store: store));
-  
+  GetIt.I.registerSingleton<XmppConnection>(XmppConnection());
+ 
   return store;
 }
 

@@ -7,6 +7,7 @@ import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
+import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
@@ -21,8 +22,9 @@ class _ConversationsListViewModel {
   final String displayName;
   final String avatarUrl;
   final void Function(String) goToConversation;
+  final void Function(Conversation) closeConversation;
 
-  _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl, required this.goToConversation });
+  _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl, required this.goToConversation, required this.closeConversation });
 }
 
 enum ConversationsOptions {
@@ -38,19 +40,24 @@ class ConversationsPage extends StatelessWidget {
         itemCount: viewModel.conversations.length,
         itemBuilder: (_context, index) {
           Conversation item = viewModel.conversations[index];
-          return InkWell(
-            onTap: () => viewModel.goToConversation(item.jid),
-            child: ConversationsListRow(
-              item.avatarUrl,
-              item.title,
-              item.lastMessageBody,
-              item.unreadCounter,
-              maxTextWidth,
-              item.lastChangeTimestamp,
-              true,
-              // TODO: Maybe use ValueKey
-              key: UniqueKey()
-            )
+          return Dismissible(
+            key: ValueKey("conversation;" + item.jid),
+            onDismissed: (direction) => viewModel.closeConversation(item),
+            background: Container(color: Colors.red),
+            child: InkWell(
+              onTap: () => viewModel.goToConversation(item.jid),
+              child: ConversationsListRow(
+                item.avatarUrl,
+                item.title,
+                item.lastMessageBody,
+                item.unreadCounter,
+                maxTextWidth,
+                item.lastChangeTimestamp,
+                true,
+                // TODO: Maybe use ValueKey
+                key: UniqueKey()
+              )
+            ) 
           );
         }
       );
@@ -83,13 +90,14 @@ class ConversationsPage extends StatelessWidget {
   Widget build(BuildContext buildContext) {
     return StoreConnector<MoxxyState, _ConversationsListViewModel>(
       converter: (store) => _ConversationsListViewModel(
-        conversations: store.state.conversations,
+        conversations: store.state.conversations.values.where((c) => c.open).toList(),
         displayName: store.state.accountState.displayName,
         avatarUrl: store.state.accountState.avatarUrl,
         goToConversation: (jid) => store.dispatch(NavigateToAction.push(
             "/conversation",
             arguments: ConversationPageArguments(jid: jid)
-        ))
+        )),
+        closeConversation: (c) => store.dispatch(CloseConversationAction(jid: c.jid, id: c.id, redirect: false))
       ),
       builder: (context, viewModel) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(

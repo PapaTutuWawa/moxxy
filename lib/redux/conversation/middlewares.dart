@@ -18,7 +18,7 @@ void conversationMiddleware(Store<MoxxyState> store, action, NextDispatcher next
       store.dispatch(LoadMessagesAction(jid: args.jid));
     }
 
-    final conversation = firstWhereOrNull(store.state.conversations, (Conversation c) => c.jid == args.jid);
+    final conversation = store.state.conversations[args.jid];
     if (conversation != null && conversation.unreadCounter > 0) {
       store.dispatch(UpdateConversationAction(
           conversation: conversation.copyWith(unreadCounter: 0)
