@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/widgets/sharedimage.dart';
+import "package:moxxyv2/ui/widgets/sharedimage.dart";
+
+import "package:flutter/material.dart";
 
 class SharedMediaDisplay extends StatelessWidget {
   final List<String> sharedMediaPaths;

@@ -1,8 +1,9 @@
 import "dart:collection";
-import 'package:flutter/material.dart';
+
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 
+import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 
 // TODO: Include license text?

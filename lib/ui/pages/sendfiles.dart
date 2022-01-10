@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/ui/widgets/sharedimage.dart';
+import "package:flutter/material.dart";
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/widgets/sharedimage.dart";
 import "package:moxxyv2/ui/constants.dart";
 
 class SendFilesPage extends StatelessWidget {

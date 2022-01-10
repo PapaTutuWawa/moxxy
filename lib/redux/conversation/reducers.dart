@@ -1,4 +1,4 @@
-import 'dart:collection';
+import "dart:collection";
 
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/redux/conversation/state.dart";

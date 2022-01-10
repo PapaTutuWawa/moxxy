@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:moxxyv2/ui/constants.dart';
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/widgets/textfield.dart";
+import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
 import "package:moxxyv2/helpers.dart";
 
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
+import "package:flutter/material.dart";
+import "package:flutter_redux/flutter_redux.dart";
+import "package:redux/redux.dart";
 
 class _LoginPageViewModel {
   final void Function() togglePasswordVisibility;

@@ -1,4 +1,3 @@
-import "package:flutter/material.dart";
 import "ui/pages/conversation/conversation.dart";
 import "ui/pages/conversations.dart";
 import "ui/pages/profile/profile.dart";
@@ -32,6 +31,8 @@ import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
 import "xmpp/connection.dart";
 
+import "package:flutter/material.dart";
+import "package:flutter/foundation.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
@@ -56,8 +57,9 @@ Future<Store<MoxxyState>> createStore(Isar isar) async {
       messageMiddleware,
       conversationMiddleware,
       NavigationMiddleware(),
-      // TODO: Hide behind a build flavour
-      LoggingMiddleware.printer()
+
+      // We only need this while debugging
+      ...(kDebugMode ? [ LoggingMiddleware.printer() ] : [])
     ]
   );
   
@@ -70,7 +72,6 @@ Future<Store<MoxxyState>> createStore(Isar isar) async {
   return store;
 }
 
-// TODO: Replace all single quotes with double quotes
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
 //       Padding(padding: ..., child: Column(children: [ ... ]))
 // TODO: Theme the switches

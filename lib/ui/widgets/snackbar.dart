@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/constants.dart';
+import "package:moxxyv2/ui/constants.dart";
+
+import "package:flutter/material.dart";
 
 class PermanentSnackBar extends StatefulWidget {
   final String text;

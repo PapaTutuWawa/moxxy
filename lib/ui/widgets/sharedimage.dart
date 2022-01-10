@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:moxxyv2/ui/constants.dart';
+import "package:moxxyv2/ui/constants.dart";
 
-/*
- * A class for adding a shadow to Containers which even works if the
- * Container is transparent.
- *
- * NOTE: https://stackoverflow.com/a/55833281; Thank you kind stranger
- */
+import "package:flutter/material.dart";
+
+/// A class for adding a shadow to Containers which even works if the
+/// Container is transparent.
+///
+/// NOTE: https://stackoverflow.com/a/55833281; Thank you kind stranger
 class TransparentBoxShadow extends BoxShadow {
   const TransparentBoxShadow({
       required double blurRadius
@@ -22,9 +21,7 @@ class TransparentBoxShadow extends BoxShadow {
   }
 }
 
-/*
- * A widget to show a message that was sent within a chat or is about to be sent
- */
+/// A widget to show a message that was sent within a chat or is about to be sent.
 class SharedMediaContainer extends StatelessWidget {
   Widget? child;
   ImageProvider? image;

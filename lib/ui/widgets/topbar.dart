@@ -1,11 +1,10 @@
 import "dart:collection";
-import 'package:flutter/material.dart';
 
 import "package:moxxyv2/ui/widgets/avatar.dart";
 
-/*
-Provides a Signal-like topbar without borders or anything else
-*/
+import "package:flutter/material.dart";
+
+/// Provides a Signal-like topbar without borders or anything else
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   List<Widget> children;
 
@@ -15,10 +14,8 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
     BackButton()
   ];
   
-  /*
-   * A simple borderless topbar that displays just the back button (if wanted) and a
-   * Text() title
-   */
+  /// A simple borderless topbar that displays just the back button (if wanted) and a
+  /// Text() title.
   BorderlessTopbar.simple({ required String title , List<Widget>? extra, bool showBackButton = true }) : children = [
     Visibility(
       child: BackButton(),
@@ -33,9 +30,7 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
     ...(extra ?? [])
   ];
 
-  /*
-   * Displays a clickable avatar and title and a back button, if wanted
-   */
+  /// Displays a clickable avatar and title and a back button, if wanted
   // TODO: Reuse BorderlessTopbar.simple
   BorderlessTopbar.avatarAndName({ required AvatarWrapper avatar, required String title, void Function()? onTapFunction, List<Widget>? extra, bool showBackButton = true }) : children = [
     Visibility(
