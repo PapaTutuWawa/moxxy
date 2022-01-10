@@ -9,7 +9,6 @@ import "package:moxxyv2/xmpp/connection.dart";
 
 const XML_UINT_MAX = 4294967296; // 2**32
 
-// TODO: Store them somewhere in case the app get's killed
 class StreamManager {
   // NOTE: _{client,server}StanzaSeq is the next sequence number to use
   int _clientStanzaSeq;

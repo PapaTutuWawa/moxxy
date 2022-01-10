@@ -194,16 +194,21 @@ class XmppConnection {
     final stanzaString = stanza.toXml();
 
     // Tell the SM manager that we're about to send a stanza
-    if (this.streamManager.streamManagementEnabled()) {
-      this.streamManager.clientStanzaSent(stanza);
-    }
+    //if (this.streamManager.streamManagementEnabled()) {
+    this.streamManager.clientStanzaSent(stanza);
+    //}
     
     this._awaitingResponse[stanza.id!] = Completer();
-    this._socket.write(stanzaString);
 
-    // Try to ack every stanza
-    if (this.streamManager.streamManagementEnabled()) {
-      this.sendRawXML(StreamManagementRequestNonza());
+    // TODO: Restrict the CONNECTING condition s.t. routingState must be one of
+    // This uses the StreamManager to behave like a send queue
+    if (this._connectionState == ConnectionState.CONNECTED || this._connectionState == ConnectionState.CONNECTING) {
+      this._socket.write(stanzaString);
+
+      // Try to ack every stanza
+      if (this.streamManager.streamManagementEnabled()) {
+        this.sendRawXML(StreamManagementRequestNonza());
+      }
     }
 
     return this._awaitingResponse[stanza.id!]!.future;
