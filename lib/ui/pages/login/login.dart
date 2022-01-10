@@ -78,9 +78,9 @@ class LoginPage extends StatelessWidget {
         passwordError: store.state.loginPageState.passwordError,
         jidError: store.state.loginPageState.jidError,
         loginError: store.state.loginPageState.loginError,
-        setJidError: (text) => store.dispatch(LoginSetJidErrorAction(text: text)),
-        setPasswordError: (text) => store.dispatch(LoginSetPasswordErrorAction(text: text)),
-        resetErrors: () => store.dispatch(LoginResetErrorsAction())
+        setJidError: (text) => store.dispatch(LoginSetErrorAction(jidError: text)),
+        setPasswordError: (text) => store.dispatch(LoginSetErrorAction(passwordError: text)),
+        resetErrors: () => store.dispatch(LoginSetErrorAction())
       ),
       builder: (context, viewModel) => WillPopScope(
         onWillPop: () async => !viewModel.doingWork,
