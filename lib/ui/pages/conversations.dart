@@ -43,7 +43,19 @@ class ConversationsPage extends StatelessWidget {
           return Dismissible(
             key: ValueKey("conversation;" + item.jid),
             onDismissed: (direction) => viewModel.closeConversation(item),
-            background: Container(color: Colors.red),
+            background: Container(
+              color: Colors.red,
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.delete),
+                    Spacer(),
+                    Icon(Icons.delete)
+                  ]
+                )
+              )
+            ),
             child: InkWell(
               onTap: () => viewModel.goToConversation(item.jid),
               child: ConversationsListRow(
