@@ -15,7 +15,6 @@ import "package:moxxyv2/redux/conversation/actions.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/scheduler.dart";
-import "package:scrollable_positioned_list/scrollable_positioned_list.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
@@ -74,8 +73,6 @@ class ConversationPage extends StatefulWidget {
 
 class _ConversationPageState extends State<ConversationPage> {
   TextEditingController controller = TextEditingController();
-  ItemScrollController itemScrollController = ItemScrollController();
-  ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
   bool _shouldScroll = true;
   
@@ -107,7 +104,8 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   Widget _renderBubble(List<Message> messages, int index, double maxWidth) {
-    Message item = messages[index];
+    // TODO: Since we reverse the list: Fix start, end and between
+    Message item = messages[messages.length - 1 - index];
     bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
     bool end = index + 1 >= messages.length ? true : messages[index + 1].sent != item.sent;
     bool between = !start && !end;
@@ -155,19 +153,6 @@ class _ConversationPageState extends State<ConversationPage> {
         );
       },
       builder: (context, viewModel) {
-        SchedulerBinding.instance!.addPostFrameCallback((_) {
-            if (this._shouldScroll) {
-              // NOTE: Workaround for https://github.com/google/flutter.widgets/issues/287
-              Future.delayed(
-                Duration(milliseconds: 300),
-                () => this.itemScrollController.scrollTo(
-                  index: viewModel.messages.length - 1,
-                  duration: Duration(milliseconds: 300),
-                  curve: Curves.easeInOutCubic
-              ));
-              this._shouldScroll = false;
-            }
-        });
         return WillPopScope(
           onWillPop: () async {
             viewModel.resetCurrentConversation();
@@ -227,11 +212,10 @@ class _ConversationPageState extends State<ConversationPage> {
                 Expanded(
                   child: Stack(
                     children: [
-                      ScrollablePositionedList.builder(
+                      ListView.builder(
+                        reverse: true,
                         itemCount: viewModel.messages.length,
-                        itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth),
-                        itemScrollController: this.itemScrollController,
-                        itemPositionsListener: this.itemPositionsListener
+                        itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
                       ),
                       Positioned(
                         bottom: 64.0,
