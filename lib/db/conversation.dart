@@ -1,5 +1,8 @@
-import "package:isar/isar.dart";
+import "dart:collection";
+
 import "package:moxxyv2/isar.g.dart";
+
+import "package:isar/isar.dart";
 
 @Collection()
 @Name("Conversation")
@@ -21,5 +24,5 @@ class DBConversation {
 
   late bool open;
 
-  // sharedMediaPaths
+  late List<String> sharedMediaPaths;
 }

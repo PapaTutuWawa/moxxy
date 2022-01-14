@@ -27,10 +27,10 @@ class XmppRepository {
   final FlutterSecureStorage _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
-  final Store<MoxxyState> store;
+  final void Function(Map<String, dynamic>) sendData;
   bool loginTriggeredFromUI = false;
 
-  XmppRepository({ required this.store });
+  XmppRepository({ required this.sendData });
   
   Future<String?> _readKeyOrNull(String key) async {
     if (await this._storage.containsKey(key: key)) {
@@ -102,10 +102,11 @@ class XmppRepository {
         GetIt.I.get<RosterRepository>().requestRoster(await this.getLastRosterVersion());
 
         if (this.loginTriggeredFromUI) {
-          this.store.dispatch(LoginSuccessfulAction(
-              jid: connection.settings.jid.toString(),
-              displayName: connection.settings.jid.local
-          ));
+          this.sendData({
+              "type": "LoginSuccessfulEvent",
+              "jid": connection.settings.jid.toString(),
+              "displayName": connection.settings.jid.local
+          });
         }
       }
     } else if (event is StreamManagementEnabledEvent) {
@@ -114,19 +115,23 @@ class XmppRepository {
       this.saveStreamResumptionLastH(event.h);
     } else if (event is MessageEvent) {
       print("'${event.body}' from ${event.fromJid} (${event.sid})");
-      this.store.dispatch(ReceiveMessageAction(
-          body: event.body,
-          timestamp: DateTime.now().millisecondsSinceEpoch,
-          from: event.fromJid,
-          jid: "" // TODO
-      ));
+
+      this.sendData({
+          "type": "MessageReceivedEvent",
+          "timestamp": DateTime.now().millisecondsSinceEpoch,
+          "from": event.fromJid,
+          "jid": "" // TODO
+      });
     } else if (event is RosterPushEvent) {
       final item = event.item; 
 
       switch (item.subscription) {
         // TODO: Handle other cases
         case "remove": {
-          this.store.dispatch(RosterItemRemovedAction(jid: item.jid));
+          this.sendData({
+              "type": "RosterItemRemovedEvent",
+              "jid": item.jid
+          });
           GetIt.I.get<RosterRepository>().removeFromRoster(item.jid);
         }
         break;
@@ -134,15 +139,23 @@ class XmppRepository {
 
       print("Roster push version: " + (event.ver ?? "(null)"));
       if (event.ver != null) {
+        /* TODO
         this.store.dispatch(SaveCurrentRosterVersionAction(ver: event.ver!));
+        */
       }
     } else if (event is RosterItemNotFoundEvent) {
       if (event.trigger == RosterItemNotFoundTrigger.REMOVE) {
-          this.store.dispatch(RosterItemRemovedAction(jid: event.jid));
-          GetIt.I.get<RosterRepository>().removeFromRoster(event.jid);
+        this.sendData({
+            "type": "RosterItemRemovedEvent",
+            "jid": event.jid
+        });
+        GetIt.I.get<RosterRepository>().removeFromRoster(event.jid);
       }
     } else if (event is AuthenticationFailedEvent) {
-      this.store.dispatch(LoginFailedAction(reason: saslErrorToHumanReadable(event.saslError)));
+      this.sendData({
+          "type": "LoginFailedEvent",
+          "reason": saslErrorToHumanReadable(event.saslError)
+      });
     }
   }
   

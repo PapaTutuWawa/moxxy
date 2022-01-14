@@ -30,6 +30,28 @@ class Conversation extends Equatable {
     );
   }
 
+  Conversation.fromJson(Map<String, dynamic> json)
+  : title = json["title"],
+  lastMessageBody = json["lastMessageBody"],
+  avatarUrl = json["avatarUrl"],
+  jid = json["jid"],
+  unreadCounter = json["unreadCounter"],
+  sharedMediaPaths = json["sharedMediaPaths"],
+  lastChangeTimestamp = json["lastChangeTimestamp"],
+  open = json["open"],
+  id = json["id"];
+
+  Map<String, dynamic> toJson() => {
+    "title": this.title,
+    "lastMessageBody": this.lastMessageBody,
+    "jid": this.jid,
+    "unreadCounter": this.unreadCounter,
+    "sharedMediaPaths": this.sharedMediaPaths,
+    "lastChangeTimestamp": this.lastChangeTimestamp,
+    "open": this.open,
+    "id": this.id
+  };
+  
   @override
   bool get stringify => true;
   

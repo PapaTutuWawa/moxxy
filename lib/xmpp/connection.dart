@@ -40,7 +40,9 @@ enum ConnectionState {
 class SocketWrapper {
   late Socket _socket;
 
-  SocketWrapper();
+  final void Function(String) _log;
+
+  SocketWrapper({ void Function(String) log = print }) : _log = log;
 
   Future<void> connect(String host, int port) async {
     this._socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ], timeout: Duration(seconds: 15));
@@ -57,7 +59,7 @@ class SocketWrapper {
   
   void write(Object? object) {
     if (object != null && object is String) {
-      print("==> " + object);
+      this._log("==> " + object);
     }
 
     this._socket.write(object);
@@ -115,7 +117,10 @@ class XmppConnection {
   // Negotiators
   late final AuthenticationNegotiator _authenticator;
 
-  XmppConnection({ SocketWrapper? socket }) {
+  // Misc
+  late final void Function(String) _log;
+  
+  XmppConnection({ SocketWrapper? socket, Function(String) log = print }) {
     this._connectionState = ConnectionState.NOT_CONNECTED;
     this._routingState = RoutingState.UNAUTHENTICATED;
 
@@ -123,7 +128,7 @@ class XmppConnection {
     if (socket != null) {
       this._socket = socket;
     } else {
-      this._socket = SocketWrapper();
+      this._socket = SocketWrapper(log: log);
     }
 
     this._eventStreamController = StreamController();
@@ -131,6 +136,8 @@ class XmppConnection {
     this._streamBuffer = XmlStreamBuffer();
     this._currentBackoffAttempt = 0;
     this.streamManager = StreamManager(connection: this);
+
+    this._log = log;
   }
 
   void setConnectionSettings(ConnectionSettings settings) {
@@ -138,7 +145,7 @@ class XmppConnection {
   }
   
   void _handleError(Object error) {
-    print("ERROR: " + error.toString());
+    this._log("ERROR: " + error.toString());
 
     // TODO: This may be to harsh for every error
     this._setConnectionState(ConnectionState.NOT_CONNECTED);
@@ -237,7 +244,7 @@ class XmppConnection {
   
   // Just for logging
   void _incomingMiddleware(String data) {
-    print("<== " + data);
+    this._log("<== " + data);
   }
 
   /// Perform a resource bind with a server-generated resource.
@@ -261,7 +268,7 @@ class XmppConnection {
   /// proceed and false if not.
   bool _handleResourceBindingResult(XMLNode stanza) {
     if (stanza.tag != "iq" || stanza.attributes["type"] != "result") {
-      print("ERROR: Resource binding failed!");
+      this._log("ERROR: Resource binding failed!");
       this._routingState = RoutingState.ERROR;
       return false;
     }
@@ -305,7 +312,7 @@ class XmppConnection {
     // TODO: Improve stanza handling
     // Ignore nonzas
     if (["message", "iq", "presence"].indexOf(stanzaRaw.tag) == -1) {
-      print("Got nonza " + stanzaRaw.tag + " in stanza handler. Ignoring");
+      this._log("Got nonza " + stanzaRaw.tag + " in stanza handler. Ignoring");
       return;
     }
 
@@ -332,7 +339,7 @@ class XmppConnection {
 
   /// Called whenever we receive data that has been parsed as XML.
   void handleXmlStream(XMLNode node) async {
-    print("(xml) <== " + node.toXml());
+    this._log("(xml) <== " + node.toXml());
 
     if (this.streamManager.streamManagementEnabled()) {
       if (node.tag == "r") {
@@ -349,7 +356,7 @@ class XmppConnection {
       case RoutingState.UNAUTHENTICATED: {
         // We expect the stream header here
         if (node.tag != "stream:stream") {
-          print("ERROR: Expected stream header");
+          this._log("ERROR: Expected stream header");
           this._routingState = RoutingState.ERROR;
           return;
         }
@@ -376,7 +383,7 @@ class XmppConnection {
           this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
           this._sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.FAILURE) {
-          print("SASL failed");
+          this._log("SASL failed");
           this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           this._setConnectionState(ConnectionState.ERROR);
           this._routingState = RoutingState.ERROR;
@@ -390,7 +397,7 @@ class XmppConnection {
           this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
           this._sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.FAILURE) {
-          print("SASL failed");
+          this._log("SASL failed");
           this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           this._setConnectionState(ConnectionState.ERROR);
           this._routingState = RoutingState.ERROR;
@@ -400,7 +407,7 @@ class XmppConnection {
       case RoutingState.CHECK_STREAM_MANAGEMENT: {
         // We expect the stream header here
         if (node.tag != "stream:stream") {
-          print("ERROR: Expected stream header");
+          this._log("ERROR: Expected stream header");
           this._routingState = RoutingState.ERROR;
           return;
         }
@@ -439,7 +446,7 @@ class XmppConnection {
       case RoutingState.PERFORM_STREAM_RESUMPTION: {
         // TODO: Synchronize the h values
         if (node.tag == "resumed") {
-          print("Stream Resumption successful!");
+          this._log("Stream Resumption successful!");
           this.sendEvent(StreamManagementResumptionSuccessfulEvent());
           this._resource = this.settings.streamResumptionSettings.resource!;
           this._routingState = RoutingState.HANDLE_STANZAS;
@@ -449,7 +456,7 @@ class XmppConnection {
           this.streamManager.enableStreamManagement();
           this.streamManager.onStreamResumed(h);
         } else if (node.tag == "failed") {
-          print("Stream resumption failed. Proceeding with new stream...");
+          this._log("Stream resumption failed. Proceeding with new stream...");
           this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
           this._performResourceBinding();
         }
@@ -458,15 +465,15 @@ class XmppConnection {
       case RoutingState.ENABLE_SM: {
         if (node.tag == "failed") {
           // Not critical
-          print("Failed to enable SM: " + node.tag);
+          this._log("Failed to enable SM: " + node.tag);
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._sendInitialPresence();
         } else if (node.tag == "enabled") {
-          print("SM enabled!");
+          this._log("SM enabled!");
 
           final id = node.attributes["id"];
           if (id != null && [ "true", "1" ].indexOf(node.attributes["resume"]) != -1) {
-            print("Stream resumption possible!");
+            this._log("Stream resumption possible!");
             this.sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
           }
 
@@ -512,7 +519,7 @@ class XmppConnection {
     );
 
     if (response.attributes["type"] != "result") {
-      print("Error requesting roster: " + response.toString());
+      this._log("Error requesting roster: " + response.toString());
       return null;
     }
 
@@ -559,12 +566,12 @@ class XmppConnection {
     );
 
     if (response == null) {
-      print("Error adding ${jid} to roster");
+      this._log("Error adding ${jid} to roster");
       return;
     }
 
     if (response.attributes["type"] != "result") {
-      print("Error adding ${jid} to roster: " + response.toString());
+      this._log("Error adding ${jid} to roster: " + response.toString());
       return;
     }
   }
@@ -592,7 +599,7 @@ class XmppConnection {
     );
 
     if (response.attributes["type"] != "result") {
-      print("Failed to remove roster item: " + response.toXml());
+      this._log("Failed to remove roster item: " + response.toXml());
 
       final error = response.firstTag("error")!;
       final notFound = error.firstTag("item-not-found") != null;
@@ -639,15 +646,15 @@ class XmppConnection {
         hostname = query.hostname;
         port = query.port;
 
-        print("Did XEP-0368 lookup. Using ${hostname}:${port.toString()} now.");
+        this._log("Did XEP-0368 lookup. Using ${hostname}:${port.toString()} now.");
       }
     }
 
-    print("Connecting to $hostname:$port");
+    this._log("Connecting to $hostname:$port");
     try {
       await this._socket.connect(hostname, port);
     } catch (ex) {
-      print("Exception while connecting: " + ex.toString());
+      this._log("Exception while connecting: " + ex.toString());
       this._handleError(ex);
       return;
     }

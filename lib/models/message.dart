@@ -18,4 +18,21 @@ class Message {
       id: this.id
     );
   }
+
+  Message.fromJson(Map<String, dynamic> json)
+  : from = json["from"],
+  body = json["body"],
+  timestamp = json["timestamp"],
+  sent = json["sent"],
+  conversationJid = json["conversationJid"],
+  id = json["id"];
+  
+  Map<String, dynamic> toJson() => {
+    "from": this.from,
+    "body": this.body,
+    "timestamp": this.timestamp,
+    "sent": this.sent,
+    "conversationJid": this.conversationJid,
+    "id": this.id
+  };
 }

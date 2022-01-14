@@ -12,6 +12,7 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:get_it/get_it.dart";
 
 void messageMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
+  /* TODO
   final databaseRepo = GetIt.I.get<DatabaseRepository>();
   final connection = GetIt.I.get<XmppConnection>();
   if (action is ReceiveMessageAction) {
@@ -82,6 +83,7 @@ void messageMiddleware(Store<MoxxyState> store, action, NextDispatcher next) asy
   } else if (action is LoadMessagesAction) {
     GetIt.I.get<DatabaseRepository>().loadMessagesForJid(action.jid);
   }
+  */
   
   next(action);
 }

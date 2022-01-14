@@ -12,9 +12,6 @@ import "ui/pages/settings/settings.dart";
 import "ui/pages/settings/licenses.dart";
 import "ui/pages/settings/about.dart";
 import "ui/constants.dart";
-import "repositories/database.dart";
-import "repositories/roster.dart";
-import "repositories/xmpp.dart";
 import "redux/conversation/actions.dart";
 import "redux/conversation/reducers.dart";
 import "redux/conversation/actions.dart";
@@ -29,7 +26,7 @@ import "redux/roster/middlewares.dart";
 import "redux/messages/middleware.dart";
 import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
-import "xmpp/connection.dart";
+import "service/xmpp.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -38,11 +35,9 @@ import "package:flutter_redux/flutter_redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:redux_logging/redux_logging.dart";
 import "package:redux/redux.dart";
-import "package:isar/isar.dart";
+import "package:flutter_background_service/flutter_background_service.dart";
 
-import "isar.g.dart";
-
-Future<Store<MoxxyState>> createStore(Isar isar) async {
+Store<MoxxyState> createStore() {
   final store = Store<MoxxyState>(
     moxxyReducer,
     initialState: MoxxyState.initialState(),
@@ -63,12 +58,6 @@ Future<Store<MoxxyState>> createStore(Isar isar) async {
     ]
   );
   
-  GetIt.I.registerSingleton<DatabaseRepository>(DatabaseRepository(isar: isar, store: store));
-  GetIt.I.registerSingleton<RosterRepository>(RosterRepository(isar: isar, store: store));
-  GetIt.I.get<DatabaseRepository>().loadConversations();
-  GetIt.I.registerSingleton<XmppRepository>(XmppRepository(store: store));
-  GetIt.I.registerSingleton<XmppConnection>(XmppConnection());
- 
   return store;
 }
 
@@ -77,10 +66,29 @@ Future<Store<MoxxyState>> createStore(Isar isar) async {
 // TODO: Theme the switches
 // TODO: Find a better way to do this
 void main() async {
-  final isar = await openIsar();
-  final store = await createStore(isar);
+  final store = createStore();
+  await initializeServiceIfNeeded();
+
+  GetIt.I.get<FlutterBackgroundService>().onDataReceived.listen((data) {
+      print("GOT: " + data!.toString());
+
+      switch (data["type"]) {
+        case "PreStartResult": {
+          if (data["state"] == "logged_in") {
+            store.dispatch(NavigateToAction.replace("/conversations"));
+          } else {
+            store.dispatch(NavigateToAction.replace("/intro"));
+          }
+        }
+        break;
+        case "__LOG__": {
+          print(data["log"]!);
+        }
+        break;
+      }
+  });
   
-  runApp(MyApp(isar: isar, store: store));
+  runApp(MyApp(store: store));
 }
 
 // TODO: Move somewhere else
@@ -100,14 +108,11 @@ class SplashScreen extends StatelessWidget {
 
 class MyApp extends StatelessWidget {
   final Store<MoxxyState> store;
-  final Isar isar;
 
-  MyApp({ required this.isar, required this.store });
+  MyApp({ required this.store });
   
   @override
   Widget build(BuildContext context) {
-    this.store.dispatch(PerformPrestartAction());
-
     return StoreProvider(
       store: this.store,
       child: MaterialApp(

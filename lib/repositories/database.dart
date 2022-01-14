@@ -1,4 +1,5 @@
 import "dart:collection";
+import "dart:async";
 
 import "package:moxxyv2/db/conversation.dart";
 import "package:moxxyv2/db/message.dart";
@@ -13,37 +14,43 @@ import "package:redux/redux.dart";
 
 import "package:moxxyv2/isar.g.dart";
 
+Conversation dbToModel(DBConversation c) {
+  return Conversation(
+    id: c.id!,
+    title: c.title,
+    jid: c.jid,
+    avatarUrl: c.avatarUrl,
+    lastMessageBody: c.lastMessageBody,
+    unreadCounter: c.unreadCounter,
+    lastChangeTimestamp: c.lastChangeTimestamp,
+    sharedMediaPaths: [],
+    open: c.open
+  );
+}
+
 class DatabaseRepository {
   final Isar isar;
-  final Store<MoxxyState> store;
 
-  final HashMap<int, DBConversation> _cache = HashMap();
+  final HashMap<int, Conversation> _conversationCache = HashMap();
+  final HashMap<String, List<Message>> _messageCache = HashMap();
   final List<String> loadedConversations = List.empty(growable: true);
+
+  final void Function(Map<String, dynamic>) sendData;
   
-  DatabaseRepository({ required this.isar, required this.store });
+  DatabaseRepository({ required this.isar, required this.sendData });
 
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<void> loadConversations() async {
     var conversations = await this.isar.dBConversations.where().findAll();
 
-    store.dispatch(AddMultipleConversationsAction(
-        conversations: conversations.map((c) {
-            this._cache[c.id!] = c;
-            return Conversation(
-              id: c.id!,
-              title: c.title,
-              jid: c.jid,
-              avatarUrl: c.avatarUrl,
-              lastMessageBody: c.lastMessageBody,
-              unreadCounter: c.unreadCounter,
-              lastChangeTimestamp: c.lastChangeTimestamp,
-              sharedMediaPaths: [],
-              open: c.open
-            );
-          }
-        ).toList()
-      )
-    );
+    this.sendData({
+        "type": "LoadConversationsResult",
+        "conversations": conversations.map((c) {
+            final conversation = dbToModel(c);
+            this._conversationCache[c.id!] = conversation;
+            return conversation.toJson();
+        }).toList()
+    });
   }
 
   /// Loads all messages for the conversation with jid [jid].
@@ -51,24 +58,33 @@ class DatabaseRepository {
     final messages = await this.isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
     this.loadedConversations.add(jid);
 
-    store.dispatch(AddMultipleMessagesAction(
-        conversationJid: jid,
-        messages: messages.map((m) => Message(
-            from: m.from,
-            conversationJid: m.conversationJid,
-            body: m.body,
-            timestamp: m.timestamp,
-            sent: m.sent,
-            id: m.id!
-        )).toList()
-    ));
+    if (!this._messageCache.containsKey(jid)) {
+      this._messageCache[jid] = List.empty(growable: true);
+    }
+    
+    this.sendData({
+        "type": "LoadMessagesForJidResult",
+        "jid": jid,
+        "messages": messages.map((m) {
+            final message = Message(
+              from: m.from,
+              conversationJid: m.conversationJid,
+              body: m.body,
+              timestamp: m.timestamp,
+              sent: m.sent,
+              id: m.id!
+            );
+            this._messageCache[jid]!.add(message);
+            return message.toJson();
+        }).toList()
+    });
   }
 
   /// Updates the conversation with id [id] inside the database.
   Future<void> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter }) async {
     print("updateConversation");
 
-    final c = this._cache[id]!;
+    final c = (await this.isar.dBConversations.get(id))!;
     if (lastMessageBody != null) {
       c.lastMessageBody = lastMessageBody;
     }
@@ -86,6 +102,8 @@ class DatabaseRepository {
         await isar.dBConversations.put(c);
         print("DONE");
     });
+
+    this._conversationCache[c.id!] = dbToModel(c);
   }
 
   /// Creates a [Conversation] inside the database given the data. This is so that the
@@ -99,24 +117,17 @@ class DatabaseRepository {
       ..lastChangeTimestamp = lastChangeTimestamp
       ..unreadCounter = unreadCounter
       ..lastMessageBody = lastMessageBody
+      ..sharedMediaPaths = sharedMediaPaths
       ..open = open;
     await this.isar.writeTxn((isar) async {
         await isar.dBConversations.put(c);
         print("DONE");
-    });
-    this._cache[c.id!] = c;
+    }); 
 
-    return Conversation(
-      title: title,
-      lastMessageBody: lastMessageBody,
-      avatarUrl: avatarUrl,
-      jid: jid,
-      id: c.id!,
-      unreadCounter: unreadCounter,
-      lastChangeTimestamp: lastChangeTimestamp,
-      sharedMediaPaths: sharedMediaPaths,
-      open: open
-    );
+    final conversation = dbToModel(c); 
+    this._conversationCache[c.id!] = conversation;
+
+    return conversation;
   }
 
   /// Same as [this.addConversationFromData] but for a [Message].
