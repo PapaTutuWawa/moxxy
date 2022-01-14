@@ -42,6 +42,7 @@ class RosterRepository {
     ));
   }
 
+  // TODO: Move all these database functions into DatabaseRepository
   Future<RosterItem> addToRoster(String avatarUrl, String jid, String title) async {
     final item = await this.addRosterItemFromData(avatarUrl, jid, title);
     this._cache[jid] = item;

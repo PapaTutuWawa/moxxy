@@ -1,3 +1,5 @@
+import "package:moxxyv2/xmpp/jid.dart";
+
 class Message {
   final String body;
   final int timestamp; // NOTE: Milliseconds since Epoch

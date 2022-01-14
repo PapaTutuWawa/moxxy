@@ -1,6 +1,7 @@
 import "dart:collection";
 import "dart:async";
 
+import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/db/conversation.dart";
 import "package:moxxyv2/db/message.dart";
 import "package:moxxyv2/db/roster.dart";
@@ -39,18 +40,34 @@ class DatabaseRepository {
   
   DatabaseRepository({ required this.isar, required this.sendData });
 
-  /// Loads all conversations from the database and adds them to the state and cache.
-  Future<void> loadConversations() async {
-    var conversations = await this.isar.dBConversations.where().findAll();
+  /// Returns the database ID of the conversation with jid [jid] or null if not found.
+  Future<Conversation?> getConversationByJid(String jid) async {
+    // TODO: Check if we already tried to load once
+    if (this._conversationCache.isEmpty) {
+      await this.loadConversations(notify: false);
+    }
 
-    this.sendData({
-        "type": "LoadConversationsResult",
-        "conversations": conversations.map((c) {
-            final conversation = dbToModel(c);
-            this._conversationCache[c.id!] = conversation;
-            return conversation.toJson();
-        }).toList()
+    return firstWhereOrNull(
+      // TODO: Maybe have it accept an iterable
+      this._conversationCache.values.toList(),
+      (Conversation c) => c.jid == jid
+    );
+  }
+  
+  /// Loads all conversations from the database and adds them to the state and cache.
+  Future<void> loadConversations({ bool notify = true }) async {
+    final conversationsRaw = await this.isar.dBConversations.where().findAll();
+    final conversations = conversationsRaw.map((c) => dbToModel(c));
+    conversations.forEach((c) {
+        this._conversationCache[c.id] = c;
     });
+
+    if (notify) {
+      this.sendData({
+          "type": "LoadConversationsResult",
+          "conversations": conversations.map((c) => c.toJson()).toList()
+      });
+    }
   }
 
   /// Loads all messages for the conversation with jid [jid].
@@ -81,7 +98,7 @@ class DatabaseRepository {
   }
 
   /// Updates the conversation with id [id] inside the database.
-  Future<void> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter }) async {
+  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter }) async {
     print("updateConversation");
 
     final c = (await this.isar.dBConversations.get(id))!;
@@ -103,7 +120,9 @@ class DatabaseRepository {
         print("DONE");
     });
 
-    this._conversationCache[c.id!] = dbToModel(c);
+    final conversation = dbToModel(c);
+    this._conversationCache[c.id!] = conversation;
+    return conversation;
   }
 
   /// Creates a [Conversation] inside the database given the data. This is so that the
@@ -119,6 +138,7 @@ class DatabaseRepository {
       ..lastMessageBody = lastMessageBody
       ..sharedMediaPaths = sharedMediaPaths
       ..open = open;
+
     await this.isar.writeTxn((isar) async {
         await isar.dBConversations.put(c);
         print("DONE");

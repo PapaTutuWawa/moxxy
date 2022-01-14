@@ -11,6 +11,7 @@ import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/redux/login/actions.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/repositories/roster.dart";
+import "package:moxxyv2/repositories/database.dart";
 
 import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
@@ -116,10 +117,46 @@ class XmppRepository {
     } else if (event is MessageEvent) {
       print("'${event.body}' from ${event.fromJid} (${event.sid})");
 
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+      final db = GetIt.I.get<DatabaseRepository>();
+      final fromBare = event.fromJid.toBare().toString();
+      await db.addMessageFromData(
+        event.body,
+        timestamp,
+        event.fromJid.toString(),
+        fromBare,
+        false
+      );
+
+      final conversation = await db.getConversationByJid(fromBare);
+      if (conversation != null) {
+        final newConversation = await db.updateConversation(
+          id: conversation.id,
+          lastMessageBody: event.body,
+          lastChangeTimestamp: timestamp,
+          unreadCounter: conversation.unreadCounter + 1 // TODO
+        );
+        this.sendData({
+            "type": "ConversationUpdatedEvent",
+            "conversation": newConversation.toJson()
+        });
+      } else {
+        // TODO: Create the conversation
+        /*
+        this.sendData({
+            "type": "ConversationCreatedEvent",
+            "conversation": newConversation.toJson()
+        });
+        */
+      }
+      
       this.sendData({
           "type": "MessageReceivedEvent",
-          "timestamp": DateTime.now().millisecondsSinceEpoch,
-          "from": event.fromJid,
+          "body": event.body,
+          "timestamp": timestamp,
+          "from": event.fromJid.toString(),
+          "conversationJid": fromBare,
           "jid": "" // TODO
       });
     } else if (event is RosterPushEvent) {

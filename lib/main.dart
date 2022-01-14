@@ -71,7 +71,7 @@ void main() async {
 
   GetIt.I.get<FlutterBackgroundService>().onDataReceived.listen((data) {
       if (data!["type"]! != "__LOG__") {
-        print("GOT: " + data!.toString());
+        print("GOT: " + data.toString());
       }
 
       switch (data["type"]) {
