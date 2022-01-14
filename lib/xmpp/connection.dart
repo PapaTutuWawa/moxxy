@@ -192,6 +192,7 @@ class XmppConnection {
   Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
+      // TODO: Use uuidv4
       stanza = stanza.copyWith(id: randomAlphaNumeric(20));
     }
     if (addFrom && (stanza.from == null || stanza.from == "")) {

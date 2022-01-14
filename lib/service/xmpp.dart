@@ -8,6 +8,7 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 
 import "package:flutter/material.dart";
+import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
 import "package:isar/isar.dart";
@@ -17,6 +18,13 @@ import "package:moxxyv2/isar.g.dart";
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final service = FlutterBackgroundService();
+  if (await service.isServiceRunning()) {
+    if (kDebugMode) {
+      // TODO: Stop the background service
+    }
+  }
+  
   GetIt.I.registerSingleton<FlutterBackgroundService>(await initializeService());
 }
 

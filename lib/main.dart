@@ -70,7 +70,9 @@ void main() async {
   await initializeServiceIfNeeded();
 
   GetIt.I.get<FlutterBackgroundService>().onDataReceived.listen((data) {
-      print("GOT: " + data!.toString());
+      if (data!["type"]! != "__LOG__") {
+        print("GOT: " + data!.toString());
+      }
 
       switch (data["type"]) {
         case "PreStartResult": {
@@ -82,7 +84,7 @@ void main() async {
         }
         break;
         case "__LOG__": {
-          print(data["log"]!);
+          print("[S] " + data["log"]!);
         }
         break;
       }
