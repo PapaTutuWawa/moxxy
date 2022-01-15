@@ -244,8 +244,8 @@ class DatabaseRepository {
   }
 
   /// Returns the roster item if it exists
-  Future<RosterItem?> getRosterItemByJid(String jid) {
-    if (this.isInRoster(jid)) {
+  Future<RosterItem?> getRosterItemByJid(String jid) async {
+    if (await this.isInRoster(jid)) {
       return this._rosterCache[jid];
     }
 
