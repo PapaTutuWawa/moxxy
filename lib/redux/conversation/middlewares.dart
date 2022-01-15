@@ -25,6 +25,11 @@ void conversationMiddleware(Store<MoxxyState> store, action, NextDispatcher next
           "jid": args.jid
       });
     }
+  } else if (action is SetOpenConversationAction) {
+    FlutterBackgroundService().sendData({
+        "type": "SetCurrentlyOpenChatAction",
+        "jid": action.jid ?? ""
+    });
   }
   
   next(action);
