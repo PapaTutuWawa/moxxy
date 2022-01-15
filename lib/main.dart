@@ -79,6 +79,9 @@ void main() async {
       switch (data["type"]) {
         case "PreStartResult": {
           if (data["state"] == "logged_in") {
+            FlutterBackgroundService().sendData({
+                "type": "LoadConversationsAction"
+            });
             store.dispatch(NavigateToAction.replace("/conversations"));
           } else {
             store.dispatch(NavigateToAction.replace("/intro"));
@@ -118,8 +121,9 @@ void main() async {
         }
         break;
         case "LoadConversationsResult": {
+          final List<Conversation> tmp = List<Conversation>.from(data["conversations"]!.map((c) => Conversation.fromJson(c)));
           store.dispatch(AddMultipleConversationsAction(
-              conversations: data["conversations"]!.map((c) => Conversation.fromJson(c)).toList()
+              conversations: tmp
           ));
         }
         break;
