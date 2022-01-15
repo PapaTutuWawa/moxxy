@@ -96,8 +96,21 @@ class XmppRepository {
     await this._storage.write(key: XMPP_ACCOUNT_LASTH_KEY, value: h.toString());
   }
 
-  void setCurrentlyOpenedChatJid(String jid) {
+  /// Marks the conversation with jid [jid] as open and resets its unread counter if it is
+  /// greater than 0.
+  Future<void> setCurrentlyOpenedChatJid(String jid) async {
+    final db = GetIt.I.get<DatabaseRepository>();
+
     this._currentlyOpenedChatJid = jid;
+    final conversation = await db.getConversationByJid(jid);
+
+    if (conversation != null && conversation.unreadCounter > 0) {
+      final newConversation = await db.updateConversation(id: conversation.id, unreadCounter: 0);
+      this.sendData({
+          "type": "ConversationUpdatedEvent",
+          "conversation": newConversation.toJson()
+      });
+    }
   }
   
   Future<void> _handleEvent(XmppEvent event) async {

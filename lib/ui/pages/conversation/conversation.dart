@@ -19,6 +19,7 @@ import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
+import "package:flutter_background_service/flutter_background_service.dart";
 
 typedef SendMessageFunction = void Function(String body);
 
@@ -59,9 +60,8 @@ class _MessageListViewModel {
   final void Function(bool scrollToEndButton) setShowScrollToEndButton;
   final bool showScrollToEndButton;
   final void Function() closeChat;
-  final void Function() resetCurrentConversation;
   
-  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages, required this.resetCurrentConversation });
+  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages });
 }
 
 class ConversationPage extends StatefulWidget {
@@ -148,14 +148,17 @@ class _ConversationPageState extends State<ConversationPage> {
               body: body,
               jid: jid,
             )
-          ),
-          resetCurrentConversation: () => store.dispatch(SetOpenConversationAction(jid: null))
+          )
         );
       },
       builder: (context, viewModel) {
         return WillPopScope(
           onWillPop: () async {
-            viewModel.resetCurrentConversation();
+            FlutterBackgroundService().sendData({
+                "type": "SetCurrentlyOpenChatAction",
+                "jid": ""
+            });
+
             return true;
           },
           child: Scaffold(
