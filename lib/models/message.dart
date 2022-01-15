@@ -1,6 +1,8 @@
 import "package:moxxyv2/xmpp/jid.dart";
 
-class Message {
+import "package:equatable/equatable.dart";
+
+class Message extends Equatable {
   final String body;
   final int timestamp; // NOTE: Milliseconds since Epoch
   final String from;
@@ -37,4 +39,10 @@ class Message {
     "conversationJid": this.conversationJid,
     "id": this.id
   };
+
+  @override
+  bool get stringify => true;
+
+  @override
+  List<Object> get props => [ from, body, timestamp, sent, conversationJid, id ];
 }

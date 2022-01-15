@@ -144,6 +144,14 @@ void handleEvent(Map<String, dynamic>? data) {
       ), true);
     }
     break;
+    case "LoadMessagesForJidAction": {
+      GetIt.I.get<DatabaseRepository>().loadMessagesForJid(data["jid"]);
+    }
+    break;
+    case "SetCurrentlyOpenChatAction": {
+      GetIt.I.get<XmppRepository>().setCurrentlyOpenedChatJid(data["jid"]);
+    }
+    break;
     case "__STOP__": {
       FlutterBackgroundService().stopBackgroundService();
     }

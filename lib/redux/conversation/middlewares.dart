@@ -9,22 +9,22 @@ import "package:moxxyv2/repositories/database.dart";
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:get_it/get_it.dart";
+import "package:flutter_background_service/flutter_background_service.dart";
 
 void conversationMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
   if (action is NavigateToAction && action.type == NavigationType.shouldPush && action.name == "/conversation") {
     final args = action.arguments as ConversationPageArguments;
-    if (GetIt.I.get<DatabaseRepository>().loadedConversations.indexOf(args.jid) == -1) {
-      store.dispatch(LoadMessagesAction(jid: args.jid));
-    }
+    FlutterBackgroundService().sendData({
+        "type": "SetCurrentlyOpenChatAction",
+        "jid": args.jid
+    });
 
-    final conversation = store.state.conversations[args.jid];
-    if (conversation != null && conversation.unreadCounter > 0) {
-      store.dispatch(UpdateConversationAction(
-          conversation: conversation.copyWith(unreadCounter: 0)
-      ));
+    if (!store.state.messages.containsKey(args.jid)) {
+      FlutterBackgroundService().sendData({
+          "type": "LoadMessagesForJidAction",
+          "jid": args.jid
+      });
     }
-
-    store.dispatch(SetOpenConversationAction(jid: args.jid));
   }
   
   next(action);

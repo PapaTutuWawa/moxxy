@@ -28,6 +28,7 @@ import "redux/messages/middleware.dart";
 import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
 import "models/conversation.dart";
+import "models/message.dart";
 import "service/xmpp.dart";
 
 import "package:flutter/material.dart";
@@ -125,6 +126,17 @@ void main() async {
           store.dispatch(AddMultipleConversationsAction(
               conversations: tmp
           ));
+        }
+        break;
+        case "LoadMessagesForJidResult": {
+          final List<Message> tmp = List<Message>.from(data["messages"]!.map((m) => Message.fromJson(m)));
+          store.dispatch(
+            AddMultipleMessagesAction(
+              conversationJid: data["jid"]!,
+              messages: tmp,
+              replace: true
+            )
+          );
         }
         break;
         case "__LOG__": {

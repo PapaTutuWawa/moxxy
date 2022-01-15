@@ -30,8 +30,9 @@ class XmppRepository {
   );
   final void Function(Map<String, dynamic>) sendData;
   bool loginTriggeredFromUI = false;
+  String _currentlyOpenedChatJid;
 
-  XmppRepository({ required this.sendData });
+  XmppRepository({ required this.sendData }) : _currentlyOpenedChatJid = "";
   
   Future<String?> _readKeyOrNull(String key) async {
     if (await this._storage.containsKey(key: key)) {
@@ -95,6 +96,10 @@ class XmppRepository {
     await this._storage.write(key: XMPP_ACCOUNT_LASTH_KEY, value: h.toString());
   }
 
+  void setCurrentlyOpenedChatJid(String jid) {
+    this._currentlyOpenedChatJid = jid;
+  }
+  
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
       if (event.state == ConnectionState.CONNECTED) {
@@ -131,11 +136,12 @@ class XmppRepository {
 
       final conversation = await db.getConversationByJid(fromBare);
       if (conversation != null) {
+        final isChatOpen = this._currentlyOpenedChatJid == conversation.jid;
         final newConversation = await db.updateConversation(
           id: conversation.id,
           lastMessageBody: event.body,
           lastChangeTimestamp: timestamp,
-          unreadCounter: conversation.unreadCounter + 1 // TODO: Check if the conversation is open
+          unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
         );
         this.sendData({
             "type": "ConversationUpdatedEvent",
