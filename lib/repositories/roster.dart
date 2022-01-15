@@ -41,10 +41,12 @@ class RosterRepository {
   Future<void> removeFromRoster(String jid, { bool nullOkay = false }) async {
     await GetIt.I.get<DatabaseRepository>().removeRosterItemByJid(jid, nullOkay: nullOkay);
 
+    /* TODO: Maybe uncomment
     this.sendData({
         "type": "RosterItemRemovedEvent",
         "jid": jid
     });
+    */
   }
 
   Future<void> requestRoster(String? lastVersion) async {

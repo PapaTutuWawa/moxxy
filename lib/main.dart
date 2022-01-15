@@ -23,12 +23,15 @@ import "redux/login/middlewares.dart";
 import "redux/login/actions.dart";
 import "redux/registration/middlewares.dart";
 import "redux/addcontact/middlewares.dart";
+import "redux/addcontact/actions.dart";
 import "redux/roster/middlewares.dart";
+import "redux/roster/actions.dart";
 import "redux/messages/middleware.dart";
 import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
 import "models/conversation.dart";
 import "models/message.dart";
+import "models/roster.dart";
 import "service/xmpp.dart";
 
 import "package:flutter/material.dart";
@@ -122,7 +125,12 @@ void main() async {
         }
         break;
         case "LoadRosterItemsResult": {
-          // TODO
+          final List<RosterItem> tmp = List<RosterItem>.from(data["items"]!.map((i) => RosterItem.fromJson(i)));
+          store.dispatch(
+            AddMultipleRosterItemsAction(
+              items: tmp
+            )
+          );
         }
         break;
         case "LoadConversationsResult": {
@@ -139,6 +147,24 @@ void main() async {
               conversationJid: data["jid"]!,
               messages: tmp,
               replace: true
+            )
+          );
+        }
+        break;
+        case "AddToRosterResult": {
+          store.dispatch(
+            AddToRosterDoneAction(
+              result: data["result"]!,
+              msg: data["msg"],
+              jid: data["jid"]
+            )
+          );
+        }
+        break;
+        case "RosterItemModifiedEvent": {
+          store.dispatch(
+            ModifyRosterItemAction(
+              item: RosterItem.fromJson(data["item"]!)
             )
           );
         }

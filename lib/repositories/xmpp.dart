@@ -6,12 +6,9 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/redux/state.dart";
-import "package:moxxyv2/redux/conversation/actions.dart";
-import "package:moxxyv2/redux/login/actions.dart";
-import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/repositories/database.dart";
+import "package:moxxyv2/models/roster.dart";
 
 import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
@@ -188,11 +185,38 @@ class XmppRepository {
       switch (item.subscription) {
         // TODO: Handle other cases
         case "remove": {
+          GetIt.I.get<RosterRepository>().removeFromRoster(item.jid);
+
           this.sendData({
               "type": "RosterItemRemovedEvent",
               "jid": item.jid
           });
-          GetIt.I.get<RosterRepository>().removeFromRoster(item.jid);
+        }
+        break;
+        default: {
+          (() async {
+              final db = GetIt.I.get<DatabaseRepository>();
+              final rosterItem = await db.getRosterItemByJid(item.jid);
+              final RosterItem modelRosterItem;
+              
+              if (rosterItem != null) {
+                // TODO: Update
+                modelRosterItem = await db.updateRosterItem(
+                  id: rosterItem.id,
+                );
+              } else {
+                modelRosterItem = await db.addRosterItemFromData(
+                  "", // TODO
+                  item.jid,
+                  item.jid.split("@")[0]
+                );
+              }
+
+              this.sendData({
+                  "type": "RosterItemModifiedEvent",
+                  "item": modelRosterItem.toJson()
+              });
+          })();
         }
         break;
       }

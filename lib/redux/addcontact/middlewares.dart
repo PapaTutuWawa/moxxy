@@ -17,57 +17,35 @@ import "package:flutter/material.dart";
 import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
+import "package:flutter_background_service/flutter_background_service.dart";
 
 Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
-  /* TODO
   if (action is AddContactAction) {
     print("Adding ${action.jid} to roster");
-    final rosterRepo = GetIt.I.get<RosterRepository>();
-    final databaseRepo = GetIt.I.get<DatabaseRepository>();
-
+    
+    FlutterBackgroundService().sendData({
+        "type": "AddToRosterAction",
+        "jid": action.jid
+    });
     store.dispatch(SetDoingWorkAction(state: true));
-    if (rosterRepo.isInRoster(action.jid)) {
-      store.dispatch(SetDoingWorkAction(state: false));
-      store.dispatch(AddContactSetErrorLogin(errorText: "Already in contact list"));
-
-      return;
-    } else {
-      final item = await rosterRepo.addToRoster("", action.jid, action.jid.split("@")[0]);
-      store.dispatch(AddRosterItemAction(item: item));
-    }
-
-    // TODO: Don't rely on the state here
-    // TODO: Move this into a repository class
-    final conversation = store.state.conversations[action.jid];
-    if (conversation == null) {
-      final c = await databaseRepo.addConversationFromData(
-        action.jid.split("@")[0],
-        "",
-        "",
-        action.jid,
-        0,
-        -1,
-        [],
-        true
-      );
-      store.dispatch(AddConversationAction(conversation: c));
-    } else {
-      await databaseRepo.updateConversation(id: conversation.id, open: true);
-      store.dispatch(UpdateConversationAction(
-          conversation: conversation.copyWith(
-            open: true
-          )
-      ));
-    }
-
+  } else if (action is AddToRosterDoneAction) {
     store.dispatch(SetDoingWorkAction(state: false));
-    store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
-        "/conversation",
-        ModalRoute.withName("/conversations"),
-        arguments: ConversationPageArguments(jid: action.jid)
-    ));
+
+    if (action.result == "success") {
+      store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
+          "/conversation",
+          ModalRoute.withName("/conversations"),
+          arguments: ConversationPageArguments(jid: action.jid!)
+      ));
+    } else if (action.result == "error") {
+      store.dispatch(
+        AddContactSetErrorLogin(
+          errorText: action.msg!
+        )
+      );
+      return;
+    }
   }
-  */
 
   next(action);
 }

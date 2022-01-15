@@ -233,6 +233,23 @@ class DatabaseRepository {
     return item;
   }
 
+  /// Updates the roster item with id [id] inside the database.
+  Future<RosterItem> updateRosterItem({ required int id, String? avatarUrl }) async {
+    final i = (await this.isar.dBRosterItems.get(id))!;
+    if (avatarUrl != null) {
+      i.avatarUrl = avatarUrl;
+    }
+
+    await this.isar.writeTxn((isar) async {
+        await isar.dBRosterItems.put(i);
+        print("DONE");
+    });
+
+    final item = rosterDbToModel(i);
+    this._rosterCache[item.jid] = item;
+    return item;
+  }
+  
   /// Returns true if a roster item with jid [jid] exists
   Future<bool> isInRoster(String jid) async {
     // TODO: Check if we already loaded it once

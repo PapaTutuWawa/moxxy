@@ -12,15 +12,14 @@ import "package:moxxyv2/db/roster.dart" as db;
 import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
+import "package:flutter_background_service/flutter_background_service.dart";
 
-// TODO: Add an action for when we're done
 void rosterMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
-  if (action is SaveCurrentRosterVersionAction) {
-    GetIt.I.get<XmppRepository>().saveLastRosterVersion(action.ver);
-  } else if (action is RemoveRosterItemUIAction) {
-    store.dispatch(RosterItemRemovedAction(jid: action.jid));
-    GetIt.I.get<XmppConnection>().removeFromRoster(action.jid);
-    GetIt.I.get<XmppConnection>().sendUnsubscriptionRequest(action.jid);
+  if (action is RemoveRosterItemUIAction) {
+    FlutterBackgroundService().sendData({
+        "type": "RemoveRosterItemAction",
+        "jid": action.jid
+    });
   }
 
   next(action);

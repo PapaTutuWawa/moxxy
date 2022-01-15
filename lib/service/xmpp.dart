@@ -152,6 +152,62 @@ void handleEvent(Map<String, dynamic>? data) {
       GetIt.I.get<XmppRepository>().setCurrentlyOpenedChatJid(data["jid"]);
     }
     break;
+    case "AddToRosterAction": {
+      final String jid = data["jid"];
+      (() async {
+          final roster = GetIt.I.get<RosterRepository>();
+          if (await roster.isInRoster(jid)) {
+            FlutterBackgroundService().sendData({
+                "type": "AddToRosterResult",
+                "result": "error",
+                "msg": "Already in contact list"
+            });
+            return;
+          }
+
+          final db = GetIt.I.get<DatabaseRepository>();
+          final conversation = await db.getConversationByJid(jid);
+          if (conversation != null) {
+            final c = await db.updateConversation(id: conversation.id, open: true);
+            FlutterBackgroundService().sendData({
+                "type": "ConversationUpdatedEvent",
+                "conversation": c.toJson()
+            });
+          } else {
+            final c = await db.addConversationFromData(
+              jid.split("@")[0],
+              "",
+              "",
+              jid,
+              0,
+              -1,
+              [],
+              true
+            );
+            FlutterBackgroundService().sendData({
+                "type": "ConversationCreatedEvent",
+                "conversation": c.toJson()
+            });
+          }
+          
+          await roster.addToRoster("", jid, jid.split("@")[0]);
+          FlutterBackgroundService().sendData({
+              "type": "AddToRosterResult",
+              "result": "success",
+              "jid": jid
+          });
+      })();
+    }
+    break;
+    case "RemoveRosterItemAction": {
+      (() async {
+          final jid = data["jid"]!;
+          //await GetIt.I.get<DatabaseRepository>().removeRosterItemByJid(jid, nullOkay: true);
+          await GetIt.I.get<XmppConnection>().removeFromRoster(jid);
+          await GetIt.I.get<XmppConnection>().sendUnsubscriptionRequest(jid);
+      })();
+    }
+    break;
     case "__STOP__": {
       FlutterBackgroundService().stopBackgroundService();
     }

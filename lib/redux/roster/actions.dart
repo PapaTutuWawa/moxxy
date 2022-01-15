@@ -14,6 +14,12 @@ class AddMultipleRosterItemsAction {
   AddMultipleRosterItemsAction({ required this.items });
 }
 
+class ModifyRosterItemAction {
+  final RosterItem item;
+
+  ModifyRosterItemAction({ required this.item });
+}
+
 class RemoveRosterItemUIAction {
   final String jid;
 
@@ -30,10 +36,4 @@ class RosterItemRemovedAction {
   final String jid;
 
   RosterItemRemovedAction({ required this.jid });
-}
-
-class SaveCurrentRosterVersionAction {
-  final String ver;
-
-  SaveCurrentRosterVersionAction({ required this.ver });
 }
