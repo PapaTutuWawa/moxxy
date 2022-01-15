@@ -139,7 +139,7 @@ class XmppRepository {
 
       final db = GetIt.I.get<DatabaseRepository>();
       final fromBare = event.fromJid.toBare().toString();
-      await db.addMessageFromData(
+      final msg = await db.addMessageFromData(
         event.body,
         timestamp,
         event.fromJid.toString(),
@@ -180,11 +180,7 @@ class XmppRepository {
       
       this.sendData({
           "type": "MessageReceivedEvent",
-          "body": event.body,
-          "timestamp": timestamp,
-          "from": event.fromJid.toString(),
-          "conversationJid": fromBare,
-          "jid": "" // TODO
+          "message": msg.toJson()
       });
     } else if (event is RosterPushEvent) {
       final item = event.item; 

@@ -114,7 +114,11 @@ void main() async {
         }
         break;
         case "MessageReceivedEvent": {
-          // TODO
+          store.dispatch(
+            AddMessageAction(
+              message: Message.fromJson(data["message"]!)
+            )
+          );
         }
         break;
         case "LoadRosterItemsResult": {
