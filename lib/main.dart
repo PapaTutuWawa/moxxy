@@ -169,6 +169,14 @@ void main() async {
           );
         }
         break;
+        case "MessageSendResult": {
+          store.dispatch(
+            AddMessageAction(
+              message: Message.fromJson(data["message"]!)
+            )
+          );
+        }
+        break;
         case "__LOG__": {
           print("[S] " + data["log"]!);
         }

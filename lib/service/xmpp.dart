@@ -208,6 +208,10 @@ void handleEvent(Map<String, dynamic>? data) {
       })();
     }
     break;
+    case "SendMessageAction": {
+      GetIt.I.get<XmppRepository>().sendMessage(body: data["body"]!, jid: data["jid"]!);
+    }
+    break;
     case "__STOP__": {
       FlutterBackgroundService().stopBackgroundService();
     }

@@ -109,6 +109,37 @@ class XmppRepository {
       });
     }
   }
+
+  /// Sends a message to [jid] with the body of [body].
+  Future<void> sendMessage({ required String body, required String jid }) async {
+    final db = GetIt.I.get<DatabaseRepository>();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final message = await db.addMessageFromData(
+      body,
+      timestamp,
+      GetIt.I.get<XmppConnection>().settings.jid.toString(),
+      jid,
+      true
+    );
+
+    this.sendData({
+        "type": "MessageSendResult",
+        "message": message.toJson()
+    });
+
+    GetIt.I.get<XmppConnection>().sendMessage(body, jid);
+
+    final conversation = await db.getConversationByJid(jid);
+    final newConversation = await db.updateConversation(
+      id: conversation!.id,
+      lastMessageBody: body,
+      lastChangeTimestamp: timestamp
+    );
+    this.sendData({
+        "type": "ConversationUpdatedEvent",
+        "conversation": newConversation.toJson()
+    });
+  }
   
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
