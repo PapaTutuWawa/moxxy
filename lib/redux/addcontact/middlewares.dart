@@ -19,6 +19,7 @@ import "package:get_it/get_it.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 
 Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
+  /* TODO
   if (action is AddContactAction) {
     print("Adding ${action.jid} to roster");
     final rosterRepo = GetIt.I.get<RosterRepository>();
@@ -66,6 +67,7 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
         arguments: ConversationPageArguments(jid: action.jid)
     ));
   }
+  */
 
   next(action);
 }

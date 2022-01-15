@@ -51,15 +51,6 @@ void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher nex
           (route) => false
       ));
     }
-  } else if (action is UpdateConversationAction) {
-    final c = action.conversation;
-    GetIt.I.get<DatabaseRepository>().updateConversation(
-      id: c.id,
-      lastMessageBody: c.lastMessageBody,
-      lastChangeTimestamp: c.lastChangeTimestamp,
-      open: c.open,
-      unreadCounter: c.unreadCounter
-    );
   }
 
   next(action);

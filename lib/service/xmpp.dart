@@ -3,6 +3,7 @@ import "dart:async";
 import "package:moxxyv2/backend/account.dart";
 import "package:moxxyv2/repositories/database.dart";
 import "package:moxxyv2/repositories/xmpp.dart";
+import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -68,6 +69,7 @@ void onStart() {
           middleware(data);
       });
       GetIt.I.registerSingleton<XmppRepository>(xmpp);
+      GetIt.I.registerSingleton<RosterRepository>(RosterRepository(sendData: service.sendData));
 
       final connection = XmppConnection(log: (data) {
           service.sendData({ "type": "__LOG__", "log": data });
@@ -78,9 +80,8 @@ void onStart() {
       final settings = await xmpp.loadConnectionSettings();
 
       if (account!= null && settings != null) {
-        /* TODO
         await GetIt.I.get<RosterRepository>().loadRosterFromDatabase();
-        */
+
         middleware({
             "type": "__LOG__",
             "log": "Connecting..."
@@ -126,6 +127,10 @@ void handleEvent(Map<String, dynamic>? data) {
   switch (data!["type"]) {
     case "LoadConversationsAction": {
       GetIt.I.get<DatabaseRepository>().loadConversations();
+    }
+    break;
+    case "LoadRosterAction": {
+      GetIt.I.get<DatabaseRepository>().loadRosterItems(notify: true);
     }
     break;
     case "PerformLoginAction": {

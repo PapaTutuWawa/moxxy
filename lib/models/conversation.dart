@@ -36,7 +36,7 @@ class Conversation extends Equatable {
   avatarUrl = json["avatarUrl"],
   jid = json["jid"],
   unreadCounter = json["unreadCounter"],
-  sharedMediaPaths = json["sharedMediaPaths"],
+  sharedMediaPaths = List<String>.from(json["sharedMediaPaths"]),
   lastChangeTimestamp = json["lastChangeTimestamp"],
   open = json["open"],
   id = json["id"];
@@ -45,6 +45,7 @@ class Conversation extends Equatable {
     "title": this.title,
     "lastMessageBody": this.lastMessageBody,
     "jid": this.jid,
+    "avatarUrl": this.avatarUrl,
     "unreadCounter": this.unreadCounter,
     "sharedMediaPaths": this.sharedMediaPaths,
     "lastChangeTimestamp": this.lastChangeTimestamp,

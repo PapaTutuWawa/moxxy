@@ -7,6 +7,7 @@ import "package:moxxyv2/db/message.dart";
 import "package:moxxyv2/db/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/models/message.dart";
+import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 
@@ -15,7 +16,7 @@ import "package:redux/redux.dart";
 
 import "package:moxxyv2/isar.g.dart";
 
-Conversation dbToModel(DBConversation c) {
+Conversation conversationDbToModel(DBConversation c) {
   return Conversation(
     id: c.id!,
     title: c.title,
@@ -29,11 +30,21 @@ Conversation dbToModel(DBConversation c) {
   );
 }
 
+RosterItem rosterDbToModel(DBRosterItem i) {
+  return RosterItem(
+    id: i.id!,
+    avatarUrl: i.avatarUrl,
+    jid: i.jid,
+    title: i.title
+  );
+}
+
 class DatabaseRepository {
   final Isar isar;
 
   final HashMap<int, Conversation> _conversationCache = HashMap();
   final HashMap<String, List<Message>> _messageCache = HashMap();
+  final HashMap<String, RosterItem> _rosterCache = HashMap();
   final List<String> loadedConversations = List.empty(growable: true);
 
   final void Function(Map<String, dynamic>) sendData;
@@ -57,7 +68,7 @@ class DatabaseRepository {
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<void> loadConversations({ bool notify = true }) async {
     final conversationsRaw = await this.isar.dBConversations.where().findAll();
-    final conversations = conversationsRaw.map((c) => dbToModel(c));
+    final conversations = conversationsRaw.map((c) => conversationDbToModel(c));
     conversations.forEach((c) {
         this._conversationCache[c.id] = c;
     });
@@ -120,7 +131,7 @@ class DatabaseRepository {
         print("DONE");
     });
 
-    final conversation = dbToModel(c);
+    final conversation = conversationDbToModel(c);
     this._conversationCache[c.id!] = conversation;
     return conversation;
   }
@@ -144,7 +155,7 @@ class DatabaseRepository {
         print("DONE");
     }); 
 
-    final conversation = dbToModel(c); 
+    final conversation = conversationDbToModel(c); 
     this._conversationCache[c.id!] = conversation;
 
     return conversation;
@@ -173,5 +184,71 @@ class DatabaseRepository {
       sent: sent,
       id: m.id!
     );
+  }
+
+  /// Loads roster items from the database
+  Future<void> loadRosterItems({ bool notify = true }) async {
+    final roster = await this.isar.dBRosterItems.where().findAll();
+    final items = roster.map((item) => rosterDbToModel(item));
+    this._rosterCache.clear();
+    items.forEach((item) => this._rosterCache[item.jid] = item);
+
+    if (notify) {
+      this.sendData({
+          "type": "LoadRosterItemsResult",
+          "items": items.map((i) => i.toJson()).toList()
+      });
+    }
+  }
+
+  /// Removes a roster item from the database and cache
+  Future<void> removeRosterItemByJid(String jid, { bool nullOkay = false }) async {
+    final item = this._rosterCache[jid];
+    
+    if (item != null) {
+      await this.isar.writeTxn((isar) async {
+          await isar.dBRosterItems.delete(item.id);
+      });
+      this._rosterCache.remove(jid);
+    } else if (!nullOkay) {
+      print("RosterRepository::removeFromRoster: Could not find $jid in roster state");
+    }
+  }
+  
+  /// Create a roster item from data
+  Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title) async {
+    final rosterItem = DBRosterItem()
+      ..jid = jid
+      ..title = title
+      ..avatarUrl = avatarUrl;
+
+    await this.isar.writeTxn((isar) async {
+        await isar.dBRosterItems.put(rosterItem);
+        print("DONE");
+    });
+
+    final item = rosterDbToModel(rosterItem);
+
+    this._rosterCache[item.jid] = item;
+    return item;
+  }
+
+  /// Returns true if a roster item with jid [jid] exists
+  Future<bool> isInRoster(String jid) async {
+    // TODO: Check if we already loaded it once
+    if (this._rosterCache.isEmpty) {
+      await this.loadRosterItems(notify: false);
+    }
+
+    return this._rosterCache.containsKey(jid);
+  }
+
+  /// Returns the roster item if it exists
+  Future<RosterItem?> getRosterItemByJid(String jid) {
+    if (this.isInRoster(jid)) {
+      return this._rosterCache[jid];
+    }
+
+    return null;
   }
 }

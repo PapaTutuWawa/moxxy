@@ -135,20 +135,28 @@ class XmppRepository {
           id: conversation.id,
           lastMessageBody: event.body,
           lastChangeTimestamp: timestamp,
-          unreadCounter: conversation.unreadCounter + 1 // TODO
+          unreadCounter: conversation.unreadCounter + 1 // TODO: Check if the conversation is open
         );
         this.sendData({
             "type": "ConversationUpdatedEvent",
             "conversation": newConversation.toJson()
         });
       } else {
-        // TODO: Create the conversation
-        /*
+        final conv = await db.addConversationFromData(
+          fromBare.split("@")[0], // TODO: Check with the roster first
+          event.body,
+          "", // TODO: avatarUrl
+          fromBare, // TODO: jid
+          1,
+          timestamp,
+          [],
+          true
+        );
+
         this.sendData({
             "type": "ConversationCreatedEvent",
-            "conversation": newConversation.toJson()
+            "conversation": conv.toJson()
         });
-        */
       }
       
       this.sendData({
@@ -176,9 +184,7 @@ class XmppRepository {
 
       print("Roster push version: " + (event.ver ?? "(null)"));
       if (event.ver != null) {
-        /* TODO
-        this.store.dispatch(SaveCurrentRosterVersionAction(ver: event.ver!));
-        */
+        this.saveLastRosterVersion(event.ver!);
       }
     } else if (event is RosterItemNotFoundEvent) {
       if (event.trigger == RosterItemNotFoundTrigger.REMOVE) {

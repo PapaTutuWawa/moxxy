@@ -20,12 +20,14 @@ import "redux/conversations/middlewares.dart";
 import "redux/account/middlewares.dart";
 import "redux/start/middlewares.dart";
 import "redux/login/middlewares.dart";
+import "redux/login/actions.dart";
 import "redux/registration/middlewares.dart";
 import "redux/addcontact/middlewares.dart";
 import "redux/roster/middlewares.dart";
 import "redux/messages/middleware.dart";
 import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
+import "models/conversation.dart";
 import "service/xmpp.dart";
 
 import "package:flutter/material.dart";
@@ -81,6 +83,44 @@ void main() async {
           } else {
             store.dispatch(NavigateToAction.replace("/intro"));
           }
+        }
+        break;
+        case "LoginSuccessfulEvent": {
+          store.dispatch(
+            LoginSuccessfulAction(
+              jid: data["jid"]!,
+              displayName: data["displayName"]!
+            )
+          );
+        }
+        break;
+        case "ConversationCreatedEvent": {
+          store.dispatch(AddConversationAction(
+              conversation: Conversation.fromJson(data["conversations"]!)
+            )
+          );
+        }
+        break;
+        case "ConversationUpdatedEvent": {
+          store.dispatch(
+            UpdateConversationAction(
+              conversation: Conversation.fromJson(data["conversation"]!)
+            )
+          );
+        }
+        break;
+        case "MessageReceivedEvent": {
+          // TODO
+        }
+        break;
+        case "LoadRosterItemsResult": {
+          // TODO
+        }
+        break;
+        case "LoadConversationsResult": {
+          store.dispatch(AddMultipleConversationsAction(
+              conversations: data["conversations"]!.map((c) => Conversation.fromJson(c)).toList()
+          ));
         }
         break;
         case "__LOG__": {
