@@ -103,7 +103,7 @@ void main() async {
         break;
         case "ConversationCreatedEvent": {
           store.dispatch(AddConversationAction(
-              conversation: Conversation.fromJson(data["conversations"]!)
+              conversation: Conversation.fromJson(data["conversation"]!)
             )
           );
         }
