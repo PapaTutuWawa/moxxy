@@ -90,7 +90,7 @@ class XmppConnection {
   late ConnectionSettings settings;
   late final SocketWrapper _socket;
   late ConnectionState _connectionState;
-  late Stream<String> _socketStream;
+  late Stream<String>? _socketStream;
   late final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
   
@@ -137,8 +137,10 @@ class XmppConnection {
     this._streamBuffer = XmlStreamBuffer();
     this._currentBackoffAttempt = 0;
     this.streamManager = StreamManager(connection: this);
-
+    this._connectionState = ConnectionState.NOT_CONNECTED;
     this._log = log;
+
+    this._socketStream = null;
   }
 
   void setConnectionSettings(ConnectionSettings settings) {
@@ -674,15 +676,17 @@ class XmppConnection {
       return;
     }
 
-    this._currentBackoffAttempt = 0;
-    this._socketStream = this._socket.asBroadcastStream();
-    // TODO: Handle on done
-    this._socketStream.listen(
-      this._incomingMiddleware,
-      onError: this._handleError
-    );
-    this._socketStream.transform(this._streamBuffer).forEach(this.handleXmlStream);
-
+    if (this._socketStream == null) {
+      this._socketStream = this._socket.asBroadcastStream();
+      // TODO: Handle on done
+      this._socketStream!.listen(
+        this._incomingMiddleware,
+        onError: this._handleError
+      );
+      this._socketStream!.transform(this._streamBuffer).forEach(this.handleXmlStream);
+    }
+    
+    this._currentBackoffAttempt = 0; 
     this._setConnectionState(ConnectionState.CONNECTING);
     this._routingState = RoutingState.UNAUTHENTICATED;
     this._sendStreamHeader();
