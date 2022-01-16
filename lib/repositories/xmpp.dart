@@ -181,6 +181,7 @@ class XmppRepository {
         false
       );
       final isChatOpen = this._currentlyOpenedChatJid == fromBare;
+      final isInRoster = await GetIt.I.get<RosterRepository>().isInRoster(fromBare);
       
       final conversation = await db.getConversationByJid(fromBare);
       if (conversation != null) { 
@@ -200,7 +201,7 @@ class XmppRepository {
             content: NotificationContent(
               id: msg.id,
               channelKey: "message_channel",
-              title: conversation.title,
+              title: isInRoster ? conversation.title : fromBare,
               body: event.body,
               groupKey: fromBare
             )
@@ -228,7 +229,7 @@ class XmppRepository {
             content: NotificationContent(
               id: msg.id,
               channelKey: "message_channel",
-              title: fromBare,
+              title: isInRoster ? conv.title : fromBare,
               body: event.body,
               groupKey: fromBare
             )
