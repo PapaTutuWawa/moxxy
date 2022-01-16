@@ -37,6 +37,7 @@ enum ConnectionState {
   ERROR
 }
 
+// TODO: Maybe have a secondary stream that communicates errors and so on
 class SocketWrapper {
   late Socket _socket;
 
@@ -89,7 +90,7 @@ class XmppConnection {
   late ConnectionSettings settings;
   late final SocketWrapper _socket;
   late ConnectionState _connectionState;
-  late final Stream<String> _socketStream;
+  late Stream<String> _socketStream;
   late final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
   
@@ -629,6 +630,19 @@ class XmppConnection {
         to: to
       )
     );
+  }
+
+  /// To be called when we lost network connection
+  Future<void> onNetworkConnectionLost() async {
+    this._socket.close();
+    this._setConnectionState(ConnectionState.NOT_CONNECTED);
+  }
+
+  /// To be called when we lost network connection
+  Future<void> onNetworkConnectionRegained() async {
+    if (this._connectionState == ConnectionState.NOT_CONNECTED) {
+      this.connect();
+    }
   }
   
   Future<void> connect() async {

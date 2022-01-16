@@ -50,6 +50,7 @@ dependencies:
   equatable: ^2.0.3
   flutter_background_service: ^0.2.2
   awesome_notifications: ^0.6.20
+  connectivity_plus: ^2.2.0
   #qr_code_scanner: ^0.6.1
   #unifiedpush: ^3.0.1
 

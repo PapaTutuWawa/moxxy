@@ -14,6 +14,7 @@ import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:awesome_notifications/awesome_notifications.dart";
+import "package:connectivity_plus/connectivity_plus.dart";
 
 const String XMPP_ACCOUNT_SRID_KEY = "srid";
 const String XMPP_ACCOUNT_RESOURCE_KEY = "resource";
@@ -29,8 +30,9 @@ class XmppRepository {
   final void Function(Map<String, dynamic>) sendData;
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
+  StreamSubscription<ConnectivityResult>? _networkStateSubscription;
 
-  XmppRepository({ required this.sendData }) : _currentlyOpenedChatJid = "";
+  XmppRepository({ required this.sendData }) : _currentlyOpenedChatJid = "", _networkStateSubscription = null;
   
   Future<String?> _readKeyOrNull(String key) async {
     if (await this._storage.containsKey(key: key)) {
@@ -149,6 +151,27 @@ class XmppRepository {
           "state": event.state.toString().split(".")[1]
       });
 
+      if (this._networkStateSubscription == null) {
+        // TODO: This will fire as soon as we listen to the stream. So we either have to debounce it here or in [XmppConnection]
+        this._networkStateSubscription = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+            this.sendData({ "type": "__LOG__", "log": "Got ConnectivityResult: " + result.toString()});
+
+            switch (result) { 
+              case ConnectivityResult.none: {
+                GetIt.I.get<XmppConnection>().onNetworkConnectionLost();
+              }
+              break;
+              case ConnectivityResult.wifi:
+              case ConnectivityResult.mobile:
+              case ConnectivityResult.ethernet: {
+                // TODO: This will crash inside [XmppConnection] as soon as this happens
+                GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
+              }
+              break;
+            }
+        });
+      }
+      
       if (event.state == ConnectionState.CONNECTED) {
         final connection = GetIt.I.get<XmppConnection>();
         this.saveConnectionSettings(connection.settings);
@@ -307,7 +330,7 @@ class XmppRepository {
     GetIt.I.get<XmppConnection>().asBroadcastStream().listen(this._handleEvent);
   }
 
-  void connect(ConnectionSettings settings, bool triggeredFromUI) {
+  Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
     this.loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
     GetIt.I.get<XmppConnection>().connect();
