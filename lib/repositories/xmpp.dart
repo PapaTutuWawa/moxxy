@@ -143,11 +143,16 @@ class XmppRepository {
   
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
+      this.sendData({
+          "type": "ConnectionStateEvent",
+          "state": event.state.toString().split(".")[1]
+      });
+
       if (event.state == ConnectionState.CONNECTED) {
         final connection = GetIt.I.get<XmppConnection>();
         this.saveConnectionSettings(connection.settings);
         GetIt.I.get<RosterRepository>().requestRoster(await this.getLastRosterVersion());
-
+        
         if (this.loginTriggeredFromUI) {
           this.sendData({
               "type": "LoginSuccessfulEvent",

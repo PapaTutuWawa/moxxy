@@ -58,11 +58,11 @@ void onStart() {
       final xmpp = XmppRepository(sendData: (data) {
           if (data["type"] == "ConnectionStateEvent") {
             if (data["state"] == "CONNECTED") {
-              service.setNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
+              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
             } else if (data["state"] == "CONNECTING") {
-              service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
+              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Connecting...");
             } else {
-              service.setNotificationInfo(title: "Moxxy", content: "Disconnected");
+              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Disconnected");
             }
           }
 
