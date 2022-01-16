@@ -83,6 +83,16 @@ class DatabaseRepository {
 
   /// Loads all messages for the conversation with jid [jid].
   Future<void> loadMessagesForJid(String jid) async {
+    if (this.loadedConversations.indexOf(jid) != -1) {
+      this.sendData({
+          "type": "LoadMessagesForJidResult",
+          "jid": jid,
+          "messages": this._messageCache[jid]!.map((m) => m.toJson()).toList()
+      });
+     
+      return;
+    }
+
     final messages = await this.isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
     this.loadedConversations.add(jid);
 
