@@ -13,6 +13,7 @@ import "package:moxxyv2/models/roster.dart";
 import "package:redux/redux.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
+import "package:awesome_notifications/awesome_notifications.dart";
 
 const String XMPP_ACCOUNT_SRID_KEY = "srid";
 const String XMPP_ACCOUNT_RESOURCE_KEY = "resource";
@@ -179,10 +180,10 @@ class XmppRepository {
         fromBare,
         false
       );
-
+      final isChatOpen = this._currentlyOpenedChatJid == fromBare;
+      
       final conversation = await db.getConversationByJid(fromBare);
-      if (conversation != null) {
-        final isChatOpen = this._currentlyOpenedChatJid == conversation.jid;
+      if (conversation != null) { 
         final newConversation = await db.updateConversation(
           id: conversation.id,
           lastMessageBody: event.body,
@@ -193,6 +194,18 @@ class XmppRepository {
             "type": "ConversationUpdatedEvent",
             "conversation": newConversation.toJson()
         });
+
+        if (!isChatOpen) {
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: msg.id,
+              channelKey: "message_channel",
+              title: conversation.title,
+              body: event.body,
+              groupKey: fromBare
+            )
+          );
+        }
       } else {
         final conv = await db.addConversationFromData(
           fromBare.split("@")[0], // TODO: Check with the roster first
@@ -209,6 +222,18 @@ class XmppRepository {
             "type": "ConversationCreatedEvent",
             "conversation": conv.toJson()
         });
+
+        if (!isChatOpen) {
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: msg.id,
+              channelKey: "message_channel",
+              title: fromBare,
+              body: event.body,
+              groupKey: fromBare
+            )
+          );
+        }
       }
       
       this.sendData({

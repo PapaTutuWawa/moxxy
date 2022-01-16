@@ -44,6 +44,7 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:redux_logging/redux_logging.dart";
 import "package:redux/redux.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
+import "package:awesome_notifications/awesome_notifications.dart";
 
 Store<MoxxyState> createStore() {
   final store = Store<MoxxyState>(
@@ -75,8 +76,25 @@ Store<MoxxyState> createStore() {
 // TODO: Find a better way to do this
 void main() async {
   final store = createStore();
-  await initializeServiceIfNeeded();
 
+  WidgetsFlutterBinding.ensureInitialized();
+  AwesomeNotifications().initialize(
+    // TODO: Add icon
+    null,
+    [
+      NotificationChannel(
+        channelGroupKey: "messages",
+        channelKey: "message_channel",
+        channelName: "Message notifications",
+        channelDescription: "Notifications for messages go here",
+        importance: NotificationImportance.High
+      )
+    ],
+    debug: true
+  );
+
+  await initializeServiceIfNeeded();
+  
   GetIt.I.get<FlutterBackgroundService>().onDataReceived.listen((data) {
       if (data!["type"]! != "__LOG__") {
         print("GOT: " + data.toString());
