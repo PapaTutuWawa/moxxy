@@ -5,6 +5,8 @@ import "package:moxxyv2/redux/account/state.dart";
 
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 
+// TODO: Move into XmppRepository
+
 Future<void> secureDebugPrint(FlutterSecureStorage storage) async {
   final data = await storage.readAll();
   print(data.toString());

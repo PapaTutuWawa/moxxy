@@ -18,6 +18,7 @@ import "redux/conversation/actions.dart";
 import "redux/start/actions.dart";
 import "redux/conversations/middlewares.dart";
 import "redux/account/middlewares.dart";
+import "package:moxxyv2/redux/account/actions.dart";
 import "redux/start/middlewares.dart";
 import "redux/login/middlewares.dart";
 import "redux/login/actions.dart";
@@ -32,6 +33,7 @@ import "redux/state.dart";
 import "models/conversation.dart";
 import "models/message.dart";
 import "models/roster.dart";
+import "backend/account.dart";
 import "service/xmpp.dart";
 
 import "package:flutter/material.dart";
@@ -86,6 +88,17 @@ void main() async {
             FlutterBackgroundService().sendData({
                 "type": "LoadConversationsAction"
             });
+            /* TODO: Move this into the XmppRepository
+            FlutterBackgroundService().sendData({
+                "type": "GetAccountStateAction"
+            });
+            */
+
+            (() async {
+                final state = await getAccountData();
+                store.dispatch(SetAccountAction(state: state!));
+            })();
+            
             store.dispatch(NavigateToAction.replace("/conversations"));
           } else {
             store.dispatch(NavigateToAction.replace("/intro"));
