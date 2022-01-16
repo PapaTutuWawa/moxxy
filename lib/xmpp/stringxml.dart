@@ -8,9 +8,10 @@ class XMLNode {
   List<XMLNode> children;
   bool closeTag;
   String? text;
+  bool isDeclaration;
 
-  XMLNode({ required this.tag, this.attributes = const {}, List<XMLNode> children = const [], this.closeTag = true, this.text }) : children = children;
-  XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String> attributes = const {}, this.children = const [], this.closeTag = true, this.text }) : attributes = { "xmlns": xmlns, ...attributes };
+  XMLNode({ required this.tag, this.attributes = const {}, List<XMLNode> children = const [], this.closeTag = true, this.text, this.isDeclaration = false }) : children = children;
+  XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String> attributes = const {}, this.children = const [], this.closeTag = true, this.text }) : attributes = { "xmlns": xmlns, ...attributes }, isDeclaration = false;
 
   void addChild(XMLNode child) {
     this.children.add(child);
@@ -29,16 +30,17 @@ class XMLNode {
   }
   
   String toXml() {
+    final decl = this.isDeclaration ? "?" : "";
     if (this.children.isEmpty) {
       if (this.text != null && this.text!.isNotEmpty) {
         final attrString = this.attributes.isEmpty ? "" : " " + this.renderAttributes();
         return "<${this.tag}${attrString}>${this.text}</${this.tag}>";
       } else {
-        return "<${this.tag} ${this.renderAttributes()}" + (this.closeTag ? " />" : ">");
+        return "<${decl}${this.tag} ${this.renderAttributes()}" + (this.closeTag ? " />" : "${decl}>");
       } 
-    } else {
+    } else { 
       final String childXml = this.children.map((child) => child.toXml()).join();
-      final xml = "<${this.tag} ${this.renderAttributes()}>${childXml}";
+      final xml = "<${decl}${this.tag} ${this.renderAttributes()}${decl}>${childXml}";
       return xml + (this.closeTag ? "</${this.tag}>" : "");
     }
   }
@@ -64,7 +66,14 @@ class XMLNode {
   String innerText() {
     return this.text ?? "";
   }
-  
+
+  /// Just for testing purposes
+  static XMLNode fromString(String str) {
+    return XMLNode.fromXmlElement(
+      XmlDocument.parse(str).firstElementChild!
+    );
+  }
+
   // Because this API is better ;)
   static XMLNode fromXmlElement(XmlElement element) {
     Map<String, String> attributes = Map();

@@ -9,112 +9,174 @@ import "package:moxxyv2/xmpp/sasl/scram.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 
+import "helpers/xml.dart";
+import "helpers/xmpp.dart";
+
 import "package:test/test.dart";
 import "package:xml/xml.dart";
 import "package:hex/hex.dart";
 
-class FakeSocket implements SocketWrapper {
-  int state;
-  final StreamController<String> _streamController = StreamController<String>();
-  final String server;
-
-  FakeSocket({ required this.server }) : state = 0;
-  
-  @override
-  Future<void> connect(String host, int port) async {}
-
-  @override
-  Stream<String> asBroadcastStream() {
-    return this._streamController.stream.asBroadcastStream();
-  }
-  
-  @override
-  void write(Object? object) {
-    final str = object as String;
-
-    print("==> " + str);
-    
-    switch (this.state) {
-      case 0: {
-        this.state++;
-        expect(str, "<?xml version='1.0'?><stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='${this.server}' xml:lang='en'>");
-
-        this._streamController.add("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:client' from='${this.server}' xml:lang='en' version='1.0' id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'><stream:features xmlns='http://etherx.jabber.org/streams'><mechanisms xmlns='urn:ietf:params:xml:ns:xmpp-sasl'><mechanism>PLAIN</mechanism></mechanisms></stream:features>");
-      }
-      break;
-      case 1: {
-        this.state++;
-        expect(str, "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='PLAIN'>AHBvbHlub21kaXZpc2lvbgBhYWFh</auth>");
-
-        this._streamController.add("<success xmlns='$SASL_XMLNS' />");
-      }
-      break;
-      case 2: {
-        this.state++;
-        expect(str, "<?xml version='1.0'?><stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='${this.server}' xml:lang='en'>");
-
-        this._streamController.add("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' from='${this.server}' xmlns='jabber:client' version='1.0' id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' xml:lang='en'><stream:features><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><required/></bind><session xmlns='urn:ietf:params:xml:ns:xmpp-session'><optional/></session><ver xmlns='urn:xmpp:features:rosterver'/><c hash='sha-1' ver='e6y9LzWVyTcm31DV0THfhNwlHZo=' node='http://prosody.im' xmlns='http://jabber.org/protocol/caps'/><csi xmlns='urn:xmpp:csi:0'/></stream:features>");
-      }
-      break;
-      case 3: {
-        this.state++;
-        expect(
-          compareXMLNodes(
-            fromString(str),
-            fromString("<iq xmlns='jabber:client' id='aaaaaaaaaa' type='set'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind' /></iq>")),
-          true);
-
-        this._streamController.add("<iq type='result' id='aaaaaaaaaa'><bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><jid>polynomdivision@test.server/MU29eEZn</jid></bind></iq>");
-      }
-      break;
-      case 4: {
-        this.state++;
-        expect(str, "<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show>show</show></presence>");
-
-        this._streamController.add("<presence /><message />");
-      }
-      break;
-    }
-  }
-}
-
-XMLNode fromString(String str) {
-  return XMLNode.fromXmlElement(XmlDocument.parse(str).firstElementChild!);
-}
-
-bool compareXMLNodes(XMLNode actual, XMLNode expectation, { bool ignoreId = true}) {
-  // Compare attributes
-  if (expectation.tag != actual.tag) return false;
-
-  final attributesEqual = expectation.attributes.keys.every((key) {
-      // Ignore the stanza ID
-      if (key == "id" && ignoreId) return true;
-
-      return actual.attributes[key] == expectation.attributes[key];
-  });
-  if (!attributesEqual) return false;
-  if (actual.attributes.length != expectation.attributes.length) return false;
-
-  if (expectation.innerText() != "" && actual.innerText() != expectation.innerText()) return false;
-
-  return expectation.children.every((childe) {
-      return actual.children.any((childa) => compareXMLNodes(childa, childe));
-  });
-}
-
 void main() {
   test("Test SASL PLAIN", () async {
-    final fakeSocket = FakeSocket(server: "test.server");
-    final XmppConnection conn = XmppConnection(socket: fakeSocket, settings: ConnectionSettings(
-        jid: BareJID.fromString("polynomdivision@test.server"),
-        password: "aaaa",
-        useDirectTLS: true,
-        allowPlainAuth: true
-    ));
-    await conn.connect();
-    await Future.delayed(Duration(seconds: 3), () {
-        expect(fakeSocket.state, 4);
-    });
+      final fakeSocket = StubTCPSocket(
+        play: [
+          Expectation(
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "to": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false
+            ),
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "from": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false,
+              children: [
+                XMLNode.xmlns(
+                  tag: "stream:features",
+                  xmlns: "http://etherx.jabber.org/streams",
+                  children: [
+                    XMLNode.xmlns(
+                      tag: "mechanisms",
+                      xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+                      children: [
+                        XMLNode(tag: "mechanism", text: "PLAIN")
+                      ]
+                    )
+                  ]
+                )
+              ]
+            )
+          ),
+          Expectation(
+            XMLNode.xmlns(
+              tag: "auth",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+              attributes: {
+                "mechanism": "PLAIN"
+              },
+              text: "AHBvbHlub21kaXZpc2lvbgBhYWFh"
+            ),
+            XMLNode.xmlns(
+              tag: "success",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl"
+            )
+          ),
+          Expectation(
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "to": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false
+            ),
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "from": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false,
+              children: [
+                XMLNode.xmlns(
+                  tag: "stream:features",
+                  xmlns: "http://etherx.jabber.org/streams",
+                  children: [
+                    XMLNode.xmlns(
+                      tag: "bind",
+                      xmlns: "urn:ietf:params:xml:ns:xmpp-bind",
+                      children: [
+                        XMLNode(tag: "required")
+                      ]
+                    ),
+                    XMLNode.xmlns(
+                      tag: "session",
+                      xmlns: "urn:ietf:params:xml:ns:xmpp-session",
+                      children: [
+                        XMLNode(tag: "optional")
+                      ]
+                    ),
+                    XMLNode.xmlns(
+                      tag: "csi",
+                      xmlns: "urn:xmpp:csi:0",
+                    )
+                  ]
+                )
+              ]
+            ),            
+          ),
+          Expectation(
+            XMLNode.xmlns(
+              tag: "iq",
+              xmlns: "jabber:client",
+              attributes: { "type": "set", "id": "a" },
+              children: [
+                XMLNode.xmlns(
+                  tag: "bind",
+                  xmlns: "urn:ietf:params:xml:ns:xmpp-bind"
+                )
+              ]
+            ),
+            XMLNode.xmlns(
+              tag: "iq",
+              xmlns: "jabber:client",
+              attributes: { "type": "set" },
+              children: [
+                XMLNode(
+                  tag: "jid",
+                  text: "polynomdivision@test.server/MU29eEZn"
+                )
+              ]
+            )
+          ),
+          Expectation(
+            XMLNode.xmlns(
+              tag: "presence",
+              xmlns: "jabber:client",
+              attributes: { "from": "polynomdivision@test.server/MU29eEZn" },
+              children: [
+                XMLNode(
+                  tag: "show",
+                  text: "show"
+                )
+              ]
+            ),
+            XMLNode(
+              tag: "presence",
+            )
+          ),
+        ]
+      );
+      final XmppConnection conn = XmppConnection(socket: fakeSocket);
+      conn.setConnectionSettings(ConnectionSettings(
+          jid: BareJID.fromString("polynomdivision@test.server"),
+          password: "aaaa",
+          useDirectTLS: true,
+          allowPlainAuth: true,
+          streamResumptionSettings: StreamResumptionSettings()
+      ));
+      await conn.connect();
+      await Future.delayed(Duration(seconds: 3), () {
+          expect(fakeSocket.getState(), 4);
+      });
   });
 
   test("Test XMPP Scram-Sha-1", () async {
@@ -125,7 +187,7 @@ void main() {
       expect(challenge.iterations, 4096);
 
       final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true, streamResumptionSettings: StreamResumptionSettings()),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         sendRawXML: (data) {},
