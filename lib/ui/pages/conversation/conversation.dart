@@ -103,9 +103,10 @@ class _ConversationPageState extends State<ConversationPage> {
     }
   }
 
-  Widget _renderBubble(List<Message> messages, int index, double maxWidth) {
+  Widget _renderBubble(List<Message> messages, int _index, double maxWidth) {
     // TODO: Since we reverse the list: Fix start, end and between
-    Message item = messages[messages.length - 1 - index];
+    final index = messages.length - 1 - _index;
+    Message item = messages[index];
     bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
     bool end = index + 1 >= messages.length ? true : messages[index + 1].sent != item.sent;
     bool between = !start && !end;
@@ -118,7 +119,7 @@ class _ConversationPageState extends State<ConversationPage> {
       between: between,
       closerTogether: !end,
       maxWidth: maxWidth,
-      key: ValueKey("message;" + item.body)
+      key: ValueKey("message;" + item.toString())
     );
   }
   
