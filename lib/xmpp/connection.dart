@@ -112,12 +112,10 @@ class XmppConnection {
 
     this._socketStream = this._socket.getDataStream();
     // TODO: Handle on done
-    this._socketStream.listen(
-      this._incomingMiddleware,
-      onError: this._handleError
-    );
+    this._socketStream.listen(this._incomingMiddleware);
     // TODO: Handle the stream buffer in the socket
     this._socketStream.transform(this._streamBuffer).forEach(this.handleXmlStream);
+    this._socket.getErrorStream().listen(this._handleError);
   }
 
   void setConnectionSettings(ConnectionSettings settings) {
