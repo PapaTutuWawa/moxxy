@@ -56,10 +56,9 @@ class AuthenticationFailedEvent extends XmppEvent {
   AuthenticationFailedEvent({ required this.saslError });
 }
 
-// TODO: Implement a send queue
 class XmppConnection {
   late ConnectionSettings settings;
-  late final SocketWrapper _socket;
+  late final BaseSocketWrapper _socket;
   late ConnectionState _connectionState;
   late final Stream<String> _socketStream;
   late final StreamController<XmppEvent> _eventStreamController;
@@ -92,7 +91,7 @@ class XmppConnection {
   // Misc
   late final void Function(String) _log;
   
-  XmppConnection({ SocketWrapper? socket, Function(String) log = print }) {
+  XmppConnection({ BaseSocketWrapper? socket, Function(String) log = print }) {
     this._connectionState = ConnectionState.NOT_CONNECTED;
     this._routingState = RoutingState.UNAUTHENTICATED;
 
@@ -100,7 +99,7 @@ class XmppConnection {
     if (socket != null) {
       this._socket = socket;
     } else {
-      this._socket = SocketWrapper(log: log);
+      this._socket = TCPSocketWrapper(log: log);
     }
 
     this._eventStreamController = StreamController();

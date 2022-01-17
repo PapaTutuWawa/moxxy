@@ -16,7 +16,7 @@ class Expectation {
   Expectation(this.expectation, this.response, { this.ignoreId = true });
 }
 
-class StubTCPSocket implements SocketWrapper {
+class StubTCPSocket extends BaseSocketWrapper {
   int _state = 0;
   final StreamController<String> _dataStream;
   final StreamController<Object> _errorStream;
