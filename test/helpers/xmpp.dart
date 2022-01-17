@@ -2,7 +2,7 @@ import "dart:collection";
 import "dart:async";
 
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/socket.dart";
 
 import "xml.dart";
 
@@ -18,17 +18,22 @@ class Expectation {
 
 class StubTCPSocket implements SocketWrapper {
   int _state = 0;
-  final StreamController<String> _streamController;
+  final StreamController<String> _dataStream;
+  final StreamController<Object> _errorStream;
   final List<Expectation> _play; // Request -> Response(s)
 
   StubTCPSocket({ required List<Expectation> play })
-  : _play = play, _streamController = StreamController<String>();
+  : _play = play,
+  _dataStream = StreamController<String>.broadcast(),
+  _errorStream = StreamController<Object>.broadcast();
 
   @override
   Future<void> connect(String host, int port) async {}
 
   @override
-  Stream<String> asBroadcastStream() => this._streamController.stream.asBroadcastStream();
+  Stream<String> getDataStream() => this._dataStream.stream.asBroadcastStream();
+  @override
+  Stream<Object> getErrorStream() => this._errorStream.stream.asBroadcastStream();
 
   @override
   void write(Object? object) {
@@ -60,7 +65,7 @@ class StubTCPSocket implements SocketWrapper {
       reason: "Expected: ${expectation.expectation.toXml()}, Got: ${recv.toXml()}"
     );
 
-    this._streamController.add(expectation.response.toXml());
+    this._dataStream.add(expectation.response.toXml());
   }
 
   @override

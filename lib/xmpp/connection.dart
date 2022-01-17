@@ -4,6 +4,7 @@ import "dart:async";
 import "dart:math";
 
 import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/xmpp/socket.dart";
 import "package:moxxyv2/xmpp/stream.dart";
 import "package:moxxyv2/xmpp/buffer.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
@@ -37,36 +38,6 @@ enum ConnectionState {
   ERROR
 }
 
-// TODO: Maybe have a secondary stream that communicates errors and so on
-class SocketWrapper {
-  late Socket _socket;
-
-  final void Function(String) _log;
-
-  SocketWrapper({ void Function(String) log = print }) : _log = log;
-
-  Future<void> connect(String host, int port) async {
-    this._socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ], timeout: Duration(seconds: 15));
-  }
-
-  void close() {
-    this._socket.close();
-    this._socket.flush();
-  }
-  
-  Stream<String> asBroadcastStream() {
-    return this._socket.cast<List<int>>().transform(utf8.decoder).asBroadcastStream();
-  }
-  
-  void write(Object? object) {
-    if (object != null && object is String) {
-      this._log("==> " + object);
-    }
-
-    this._socket.write(object);
-  }
-}
-
 class ConnectionStateChangedEvent extends XmppEvent {
   final ConnectionState state;
 
@@ -90,7 +61,7 @@ class XmppConnection {
   late ConnectionSettings settings;
   late final SocketWrapper _socket;
   late ConnectionState _connectionState;
-  late Stream<String>? _socketStream;
+  late final Stream<String> _socketStream;
   late final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
   
@@ -104,7 +75,7 @@ class XmppConnection {
   // Stream properties
   //
   // Stream feature XMLNS
-  final List<String> _streamFeatures = List.empty(growable: true);
+  List<String> _streamFeatures = List.empty(growable: true);
   // TODO
   // final List<String> _serverFeatures = List.empty(growable: true);
   late RoutingState _routingState;
@@ -116,7 +87,7 @@ class XmppConnection {
   Timer? _backoffTimer;
 
   // Negotiators
-  late final AuthenticationNegotiator _authenticator;
+  late AuthenticationNegotiator _authenticator;
 
   // Misc
   late final void Function(String) _log;
@@ -140,7 +111,14 @@ class XmppConnection {
     this._connectionState = ConnectionState.NOT_CONNECTED;
     this._log = log;
 
-    this._socketStream = null;
+    this._socketStream = this._socket.getDataStream();
+    // TODO: Handle on done
+    this._socketStream.listen(
+      this._incomingMiddleware,
+      onError: this._handleError
+    );
+    // TODO: Handle the stream buffer in the socket
+    this._socketStream.transform(this._streamBuffer).forEach(this.handleXmlStream);
   }
 
   void setConnectionSettings(ConnectionSettings settings) {
@@ -676,16 +654,6 @@ class XmppConnection {
       return;
     }
 
-    if (this._socketStream == null) {
-      this._socketStream = this._socket.asBroadcastStream();
-      // TODO: Handle on done
-      this._socketStream!.listen(
-        this._incomingMiddleware,
-        onError: this._handleError
-      );
-      this._socketStream!.transform(this._streamBuffer).forEach(this.handleXmlStream);
-    }
-    
     this._currentBackoffAttempt = 0; 
     this._setConnectionState(ConnectionState.CONNECTING);
     this._routingState = RoutingState.UNAUTHENTICATED;
