@@ -16,7 +16,7 @@ import "package:get_it/get_it.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 
 Future<void> loginMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
-  if (action is PerformLoginAction) { 
+  if (action is PerformLoginAction) {
     store.dispatch(SetDoingWorkAction(state: true));
     GetIt.I.get<FlutterBackgroundService>().sendData({
         "type": "PerformLoginAction",

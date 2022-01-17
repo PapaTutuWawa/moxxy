@@ -10,6 +10,10 @@ LoginPageState loginReducer(LoginPageState state, dynamic action) {
     return state.copyWith(
       loginError: action.reason
     );
+  } else if (action is PerformLoginAction) {
+    return state.copyWith(
+      showPassword: false
+    );
   }
 
   return state;
