@@ -3,8 +3,8 @@ import "dart:collection";
 import "dart:convert";
 import "dart:async";
 
+/// This class is the base for a socket that [XmppConnection] can use.
 abstract class BaseSocketWrapper {
-
   /// This must return the unbuffered string stream that the socket receives.
   Stream<String> getDataStream();
 
@@ -22,6 +22,7 @@ abstract class BaseSocketWrapper {
   Future<void> connect(String host, int port);
 }
 
+/// TCP socket implementation for [XmppConnection]
 class TCPSocketWrapper extends BaseSocketWrapper {
   late Socket _socket;
   final StreamController<String> _dataStream;
