@@ -17,3 +17,6 @@ const SM_XMLNS = "urn:xmpp:sm:3";
 
 // XEP-0333
 const CHAT_MARKERS_XMLNS = "urn:xmpp:chat-markers:0";
+
+// XEP-0352
+const CSI_XMLNS = "urn:xmpp:csi:0";

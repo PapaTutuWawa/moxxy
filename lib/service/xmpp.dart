@@ -13,6 +13,7 @@ import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
 import "package:isar/isar.dart";
+import "package:awesome_notifications/awesome_notifications.dart";
 
 import "package:moxxyv2/isar.g.dart";
 
@@ -40,6 +41,22 @@ void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService 
 
 void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  AwesomeNotifications().initialize(
+    // TODO: Add icon
+    null,
+    [
+      NotificationChannel(
+        channelGroupKey: "messages",
+        channelKey: "message_channel",
+        channelName: "Message notifications",
+        channelDescription: "Notifications for messages go here",
+        importance: NotificationImportance.High
+      )
+    ],
+    debug: true
+  );
+
   final service = FlutterBackgroundService();
   service.onDataReceived.listen(handleEvent);
   service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
@@ -210,6 +227,10 @@ void handleEvent(Map<String, dynamic>? data) {
     break;
     case "SendMessageAction": {
       GetIt.I.get<XmppRepository>().sendMessage(body: data["body"]!, jid: data["jid"]!);
+    }
+    break;
+    case "SetCSIState": {
+      GetIt.I.get<XmppConnection>().sendCSIState(data["state"] == "foreground");
     }
     break;
     case "__STOP__": {

@@ -19,6 +19,7 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/nonzas/sm.dart";
+import "package:moxxyv2/xmpp/nonzas/csi.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/message.dart";
@@ -472,6 +473,20 @@ class XmppConnection {
     }
   }
 
+  /// Sets the CSI state (true: <active />, false: <inactive />) if the stream supports
+  /// CSI.
+  // TODO: Remember the CSI state in case we resume a stream
+  void sendCSIState(bool state) {
+    // TODO: Maybe cache this result
+    if (this._streamFeatures.indexOf(CSI_XMLNS) == -1) {
+      return;
+    }
+    
+    this._socket.write(
+      (state ? CSIActiveNonza() : CSIInactiveNonza()).toXml()
+    );
+  }
+  
   /// Sends an event to the connection's event stream.
   void sendEvent(XmppEvent event) {
     this._eventStreamController.add(event);

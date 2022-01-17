@@ -44,7 +44,6 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:redux_logging/redux_logging.dart";
 import "package:redux/redux.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
-import "package:awesome_notifications/awesome_notifications.dart";
 
 Store<MoxxyState> createStore() {
   final store = Store<MoxxyState>(
@@ -76,22 +75,6 @@ Store<MoxxyState> createStore() {
 // TODO: Find a better way to do this
 void main() async {
   final store = createStore();
-
-  WidgetsFlutterBinding.ensureInitialized();
-  AwesomeNotifications().initialize(
-    // TODO: Add icon
-    null,
-    [
-      NotificationChannel(
-        channelGroupKey: "messages",
-        channelKey: "message_channel",
-        channelName: "Message notifications",
-        channelDescription: "Notifications for messages go here",
-        importance: NotificationImportance.High
-      )
-    ],
-    debug: true
-  );
 
   await initializeServiceIfNeeded();
   
@@ -233,10 +216,53 @@ class SplashScreen extends StatelessWidget {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final Store<MoxxyState> store;
 
-  MyApp({ required this.store });
+  const MyApp({Key? key, required this.store }) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState(store: this.store);
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final Store<MoxxyState> store;
+
+  _MyAppState({ required this.store });
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance!.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.paused: {
+        FlutterBackgroundService().sendData({
+            "type": "SetCSIState",
+            "state": "background"
+        });
+      }
+      break;
+      case AppLifecycleState.resumed: {
+        FlutterBackgroundService().sendData({
+            "type": "SetCSIState",
+            "state": "foreground"
+        });
+      }
+      break;
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
