@@ -492,8 +492,21 @@ class XmppConnection {
     this._eventStreamController.add(event);
   }
 
+  /// Sends a stream header to the socket
   void _sendStreamHeader() {
-    this._socket.write("<?xml version='1.0'?>" + StreamHeaderNonza(this.settings.jid.domain).toXml());
+    this._socket.write(
+      XMLNode(
+        tag: "xml",
+        attributes: {
+          "version": "1.0"
+        },
+        closeTag: false,
+        isDeclaration: true,
+        children: [
+          StreamHeaderNonza(this.settings.jid.domain)
+        ]
+      ).toXml()
+    );
   }
 
   Future<RosterRequestResult?> requestRoster(String? lastVersion) async {
