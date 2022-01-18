@@ -5,19 +5,27 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 
+const DISCO_FEATURES = [
+  DISCO_INFO_XMLNS, DISCO_ITEMS_XMLNS,
+  CHAT_MARKERS_XMLNS,
+  CAPS_XMLNS
+];
+
 class Identity {
   final String category;
   final String type;
   final String name;
+  final String? lang;
 
-  Identity({ required this.category, required this.type, required this.name });
+  Identity({ required this.category, required this.type, required this.name, this.lang });
 }
 
 class DiscoInfo {
   final List<String> features;
   final List<Identity> identities;
+  final Map<String, List<String>>? extendedInfo;
 
-  DiscoInfo({ required this.features, required this.identities });
+  DiscoInfo({ required this.features, required this.identities, this.extendedInfo });
 }
 
 class DiscoItem {
@@ -184,6 +192,7 @@ bool answerDiscoInfoQuery(XmppConnection conn, Stanza stanza) {
     return true;
   }
 
+  // TODO: Answer for node="http://moxxy.im#<capHash>"
   conn.sendStanza(stanza.reply(
       children: [
         XMLNode.xmlns(
@@ -191,9 +200,8 @@ bool answerDiscoInfoQuery(XmppConnection conn, Stanza stanza) {
           xmlns: DISCO_INFO_XMLNS,
           children: [
             XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
-            XMLNode(tag: "feature", attributes: { "var": DISCO_INFO_XMLNS }),
-            XMLNode(tag: "feature", attributes: { "var": DISCO_ITEMS_XMLNS }),
-            XMLNode(tag: "feature", attributes: { "var": CHAT_MARKERS_XMLNS })
+
+            ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
           ]
         )
       ]

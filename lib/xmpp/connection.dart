@@ -27,6 +27,7 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 import "package:moxxyv2/xmpp/xeps/0030.dart";
+import "package:moxxyv2/xmpp/xeps/0115.dart";
 
 import "package:xml/xml.dart";
 import "package:xml/xml_events.dart";
@@ -262,16 +263,38 @@ class XmppConnection {
   }
 
   /// Sends the initial presence to enable receiving messages.
-  void _sendInitialPresence() {
-     this.sendStanza(Stanza.presence(
-          from: this.settings.jid.withResource(this._resource).toString(),
-          children: [
-            XMLNode(
-              tag: "show",
-              text: "chat"
-            )
-          ]
-      ));
+  Future<void> _sendInitialPresence() async {
+    // TODO: Cache for the next presence broadcast
+    final capHash = await calculateCapabilityHash(
+      DiscoInfo(
+        features: DISCO_FEATURES,
+        identities: [
+          Identity(
+            category: "client",
+            type: "phone",
+            name: "Moxxy"
+          )
+        ]
+      )
+    );
+    this.sendStanza(Stanza.presence(
+        from: this.settings.jid.withResource(this._resource).toString(),
+        children: [
+          XMLNode(
+            tag: "show",
+            text: "chat"
+          ),
+          XMLNode.xmlns(
+            tag: "c",
+            xmlns: CAPS_XMLNS,
+            attributes: {
+              "hash": "sha-1",
+              "node": "http://moxxy.im",
+              "ver": capHash
+            }
+          )
+        ]
+    ));
   }
 
   /// Timer callback to prevent the connection from timing out.
@@ -435,6 +458,7 @@ class XmppConnection {
           final h = int.parse(node.attributes["h"]!);
           this.streamManager.enableStreamManagement();
           this.streamManager.onStreamResumed(h);
+          this._sendInitialPresence();
         } else if (node.tag == "failed") {
           this._log("Stream resumption failed. Proceeding with new stream...");
           this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
