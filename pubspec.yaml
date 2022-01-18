@@ -51,6 +51,7 @@ dependencies:
   flutter_background_service: ^0.2.2
   awesome_notifications: ^0.6.20
   connectivity_plus: ^2.2.0
+  uuid: ^3.0.5
   #qr_code_scanner: ^0.6.1
   #unifiedpush: ^3.0.1
 

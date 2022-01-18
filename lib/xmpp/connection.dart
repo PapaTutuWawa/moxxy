@@ -31,7 +31,7 @@ import "package:moxxyv2/xmpp/xeps/0115.dart";
 
 import "package:xml/xml.dart";
 import "package:xml/xml_events.dart";
-import "package:random_string/random_string.dart";
+import "package:uuid/uuid.dart";
 
 enum ConnectionState {
   NOT_CONNECTED,
@@ -86,6 +86,7 @@ class XmppConnection {
   Timer? _connectionPingTimer;
   late int _currentBackoffAttempt;
   Timer? _backoffTimer;
+  late final Uuid _uuid;
 
   // Negotiators
   late AuthenticationNegotiator _authenticator;
@@ -118,6 +119,8 @@ class XmppConnection {
     // TODO: Handle the stream buffer in the socket
     this._socketStream.transform(this._streamBuffer).forEach(this.handleXmlStream);
     this._socket.getErrorStream().listen(this._handleError);
+
+    this._uuid = Uuid();
   }
 
   void setConnectionSettings(ConnectionSettings settings) {
@@ -172,8 +175,7 @@ class XmppConnection {
   Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
-      // TODO: Use uuidv4
-      stanza = stanza.copyWith(id: randomAlphaNumeric(20));
+      stanza = stanza.copyWith(id: this._uuid.v4());
     }
     if (addFrom && (stanza.from == null || stanza.from == "")) {
       stanza = stanza.copyWith(from: this.settings.jid.withResource(this._resource).toString());
