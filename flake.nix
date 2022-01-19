@@ -34,7 +34,7 @@
   in {
     devShell = pkgs.mkShell {
       buildInputs = with pkgs; [
-        flutter pinnedJDK android.platform-tools pythonEnv jq gnumake dart scrcpy
+        flutter pinnedJDK android.platform-tools pythonEnv jq gnumake dart scrcpy gitlint
       ];
 
       ANDROID_HOME = "${android.androidsdk}/libexec/android-sdk";

@@ -1,0 +1,14 @@
+[general]
+ignore=B5,B6,B7,B8
+
+[title-max-length]
+line-length=72
+
+[title-trailing-punctuation]
+[title-hard-tab]
+[title-match-regex]
+regex=^(xmpp|redux|ui|style|docs|build|misc|flake|meta):.*$
+
+
+[body-trailing-whitespace]
+[body-first-line-empty]
