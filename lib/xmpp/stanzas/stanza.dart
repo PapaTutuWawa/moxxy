@@ -19,6 +19,7 @@ class Stanza extends XMLNode {
     },
     children: children
   );
+
   static Stanza iq({ String? to, String? from, String? type, String? id, List<XMLNode> children = const [], Map<String, String>? attributes = const {} }) {
     return Stanza(
       tag: "iq",
@@ -81,7 +82,10 @@ class Stanza extends XMLNode {
       id: node.attributes["id"],
       tag: node.tag,
       type: node.attributes["type"],
-      children: node.children
+      children: node.children,
+      // TODO: Remove to, from, id, and type
+      // TODO: Not sure if this is the correct way to approach this
+      attributes: node.attributes.map<String, String>((key, value) => MapEntry(key, value.toString()))
     );
   }
   

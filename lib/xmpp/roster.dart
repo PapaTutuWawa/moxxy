@@ -5,6 +5,9 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 
 class XmppRosterItem {
   final String jid;
@@ -40,34 +43,50 @@ class RosterItemNotFoundEvent extends XmppEvent {
   RosterItemNotFoundEvent({ required this.jid, required this.trigger });
 }
 
-bool handleRosterPush(XmppConnection conn, Stanza stanza) {
-  // Ignore
-  print("Received roster push");
+// TODO: Add override-able functions commitRoster and commitRosterVersion
+class RosterManager extends XmppManagerBase {
+  @override
+  String getId() => ROSTER_MANAGER;
 
-  if (stanza.attributes["from"] != null && stanza.attributes["from"] != conn.settings.jid) {
-    print("Roster push invalid!");
+  @override
+  List<StanzaHandler> getStanzaHandlers() => [
+    StanzaHandler(
+      stanzaTag: "iq",
+      tagName: "query",
+      tagXmlns: ROSTER_XMLNS,
+      callback: this._onRosterPush
+    )
+  ];
+
+  bool _onRosterPush(Stanza stanza) {
+    final attrs = this.getAttributes();
+
+    attrs.log("Received roster push");
+
+    if (stanza.attributes["from"] != null && stanza.attributes["from"] != attrs.getConnectionSettings().jid) {
+      attrs.log("Roster push invalid! Unexpected from attribute");
+      return true;
+    }
+
+    final query = stanza.firstTag("query", xmlns: ROSTER_XMLNS)!;
+    final item = query.firstTag("item");
+
+    if (item == null) {
+      attrs.log("Error: Received empty roster push");
+      // TODO: Error reply
+      return true;
+    }
+
+    attrs.sendEvent(RosterPushEvent(
+        item: XmppRosterItem(
+          jid: item.attributes["jid"]!,
+          subscription: item.attributes["subscription"]!,
+          name: item.attributes["name"], 
+        ),
+        ver: query.attributes["ver"]
+    ));
+    attrs.sendStanza(stanza.reply());
+
     return true;
   }
-  
-  // NOTE: StanzaHandler gurantees that this is != null
-  final query = stanza.firstTag("query", xmlns: ROSTER_XMLNS)!;
-  final item = query.firstTag("item");
-
-  if (item == null) {
-    print("Error: Received empty roster push: " + stanza.toXml());
-    // TODO: Error reply
-    return true;
-  }
-
-  conn.sendEvent(RosterPushEvent(
-      item: XmppRosterItem(
-        jid: item.attributes["jid"]!,
-        subscription: item.attributes["subscription"]!,
-        name: item.attributes["name"], 
-      ),
-      ver: query.attributes["ver"]
-  ));
-  conn.sendStanza(stanza.reply());
-  
-  return true;
 }

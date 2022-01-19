@@ -5,7 +5,6 @@ import "dart:math";
 
 import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/xmpp/socket.dart";
-import "package:moxxyv2/xmpp/stream.dart";
 import "package:moxxyv2/xmpp/buffer.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -14,7 +13,6 @@ import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/plain.dart";
 import "package:moxxyv2/xmpp/sasl/scram.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
-import "package:moxxyv2/xmpp/stanzas/handlers.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
@@ -22,6 +20,9 @@ import "package:moxxyv2/xmpp/nonzas/sm.dart";
 import "package:moxxyv2/xmpp/nonzas/csi.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
+import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/attributes.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
@@ -59,20 +60,14 @@ class AuthenticationFailedEvent extends XmppEvent {
 }
 
 class XmppConnection {
-  late ConnectionSettings settings;
+  late ConnectionSettings _connectionSettings;
   late final BaseSocketWrapper _socket;
   late ConnectionState _connectionState;
   late final Stream<String> _socketStream;
   late final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = Map();
+  final Map<String, XmppManagerBase> _xmppManagers = Map();
   
-  final List<StanzaHandler> _stanzaHandlers = [
-    StanzaHandler(tagName: "query", xmlns: DISCO_INFO_XMLNS, callback: answerDiscoInfoQuery),
-    StanzaHandler(tagName: "query", xmlns: DISCO_ITEMS_XMLNS, callback: answerDiscoItemsQuery),
-    StanzaHandler(callback: handleMessageStanza, stanzaTag: "message"),
-    StanzaHandler(callback: handleRosterPush, stanzaTag: "iq", tagName: "query", xmlns: ROSTER_XMLNS)
-  ];
-
   // Stream properties
   //
   // Stream feature XMLNS
@@ -82,7 +77,6 @@ class XmppConnection {
   late RoutingState _routingState;
   late String _resource;
   late XmlStreamBuffer _streamBuffer;
-  late final StreamManager streamManager;
   Timer? _connectionPingTimer;
   late int _currentBackoffAttempt;
   Timer? _backoffTimer;
@@ -109,7 +103,6 @@ class XmppConnection {
     this._resource = "";
     this._streamBuffer = XmlStreamBuffer();
     this._currentBackoffAttempt = 0;
-    this.streamManager = StreamManager(connection: this);
     this._connectionState = ConnectionState.NOT_CONNECTED;
     this._log = log;
 
@@ -123,9 +116,29 @@ class XmppConnection {
     this._uuid = Uuid();
   }
 
-  void setConnectionSettings(ConnectionSettings settings) {
-    this.settings = settings;
+  /// Registers an [XmppManagerBase] subclass as a manager on this connection
+  void registerManager(XmppManagerBase manager) {
+    this._log("Registering ${manager.getId()}");
+    manager.register(XmppManagerAttributes(
+        log: (message) {
+          this._log("[${manager.getId()}] $message");
+        },
+        sendStanza: this.sendStanza,
+        sendNonza: this.sendRawXML,
+        sendRawXml: this._socket.write,
+        sendEvent: this.sendEvent,
+        getConnectionSettings: () => this._connectionSettings,
+        getManager: () => Map<String,dynamic>()
+    ));
+
+    this._xmppManagers[manager.getId()] = manager;
   }
+  
+  void setConnectionSettings(ConnectionSettings settings) {
+    this._connectionSettings = settings;
+  }
+
+  ConnectionSettings getConnectionSettings() => this._connectionSettings;
   
   void _handleError(Object error) {
     this._log("ERROR: " + error.toString());
@@ -178,15 +191,10 @@ class XmppConnection {
       stanza = stanza.copyWith(id: this._uuid.v4());
     }
     if (addFrom && (stanza.from == null || stanza.from == "")) {
-      stanza = stanza.copyWith(from: this.settings.jid.withResource(this._resource).toString());
+      stanza = stanza.copyWith(from: this._connectionSettings.jid.withResource(this._resource).toString());
     }
 
     final stanzaString = stanza.toXml();
-
-    // Tell the SM manager that we're about to send a stanza
-    //if (this.streamManager.streamManagementEnabled()) {
-    this.streamManager.clientStanzaSent(stanza);
-    //}
     
     this._awaitingResponse[stanza.id!] = Completer();
 
@@ -196,11 +204,12 @@ class XmppConnection {
       this._socket.write(stanzaString);
 
       // Try to ack every stanza
-      if (this.streamManager.streamManagementEnabled()) {
-        this.sendRawXML(StreamManagementRequestNonza());
-      }
+      // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
     }
 
+    // Tell the SM manager that we're about to send a stanza
+    this.sendEvent(StanzaSentEvent(stanza: stanza));
+    
     return this._awaitingResponse[stanza.id!]!.future;
   }
 
@@ -280,7 +289,7 @@ class XmppConnection {
       )
     );
     this.sendStanza(Stanza.presence(
-        from: this.settings.jid.withResource(this._resource).toString(),
+        from: this._connectionSettings.jid.withResource(this._resource).toString(),
         children: [
           XMLNode(
             tag: "show",
@@ -304,11 +313,9 @@ class XmppConnection {
     // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
     // send a whitespace ping
     if (this._connectionState == ConnectionState.CONNECTED) {
-      if (this.streamManager.streamManagementEnabled()) {
-        this.sendRawXML(StreamManagementRequestNonza());
-      } else {
-        this._socket.write("");
-      }
+      final smManager = this._xmppManagers[SM_MANAGER];
+      // TODO: Maybe just trigger an event
+      this.sendEvent(SendPingEvent());
     }
   }
 
@@ -317,12 +324,23 @@ class XmppConnection {
     // TODO: Improve stanza handling
     // Ignore nonzas
     if (["message", "iq", "presence"].indexOf(stanzaRaw.tag) == -1) {
-      this._log("Got nonza " + stanzaRaw.tag + " in stanza handler. Ignoring");
+      bool nonzaHandled = false;
+      this._xmppManagers.values.forEach((manager) {
+          // TODO: Maybe abort after the first match
+          final handlers = manager.getNonzaHandlers();
+          handlers.forEach((handler) {
+              if (handler.matches(stanzaRaw)) {
+                handler.callback(stanzaRaw);
+                nonzaHandled = true;
+              }
+          });
+      });
+
+      if (!nonzaHandled) {
+        this._log("Unhandled nonza received: " + stanzaRaw.toXml());
+      }
       return;
     }
-
-    // TODO: Otherwise they will be bounced
-    if (stanzaRaw.tag == "presence") return;
     
     final stanza = Stanza.fromXMLNode(stanzaRaw);
     final id = stanza.attributes["id"];
@@ -333,28 +351,26 @@ class XmppConnection {
       return;
     }
 
-    for (int i = 0; i < this._stanzaHandlers.length; i++) {
-      if (this._stanzaHandlers[i].matches(stanza)) {
-        if (this._stanzaHandlers[i].callback(this, stanza)) return;
-      }
-    }
+    bool handled = false;
+    this._xmppManagers.values.forEach((manager) {
+        // TODO: Maybe abort after the first match
+        final handlers = manager.getStanzaHandlers();
+        handlers.forEach((handler) {
+            if (handler.matches(stanza)) {
+              final result = handler.callback(stanza);
+              handled = true;
+            }
+        });
+    });
 
-    handleUnhandledStanza(this, stanza);
+    if (!handled) {
+      handleUnhandledStanza(this, stanza);
+    }
   }
 
   /// Called whenever we receive data that has been parsed as XML.
   void handleXmlStream(XMLNode node) async {
     this._log("(xml) <== " + node.toXml());
-
-    if (this.streamManager.streamManagementEnabled()) {
-      if (node.tag == "r") {
-        this.streamManager.handleAckRequest();
-      } else if (node.tag == "a") {
-        this.streamManager.handleAckResponse(int.parse(node.attributes["h"]!));
-      } else {
-        this.streamManager.serverStanzaReceived();
-      }
-    }
 
     // TODO: Handle RoutingState.BIND_RESOURCE
     switch (this._routingState) {
@@ -371,7 +387,7 @@ class XmppConnection {
         final mechanisms = mechanismNodes.children.map((node) => node.innerText()).toList();
         final authenticator = getAuthenticator(
           mechanisms,
-          this.settings,
+          this._connectionSettings,
           this.sendRawXML,
         );
 
@@ -425,10 +441,10 @@ class XmppConnection {
 
         if (this.streamFeatureSupported(SM_XMLNS)) {
           // Try to work with SM first
-          if (this.settings.streamResumptionSettings.id != null) {
+          if (this._connectionSettings.streamResumptionSettings.id != null) {
             // Try to resume the last stream
             this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
-            this.sendRawXML(StreamManagementResumeNonza(this.settings.streamResumptionSettings.id!, this.settings.streamResumptionSettings.lasth!));
+            this.sendRawXML(StreamManagementResumeNonza(this._connectionSettings.streamResumptionSettings.id!, this._connectionSettings.streamResumptionSettings.lasth!));
           } else {
             // Try to enable SM
             this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
@@ -453,13 +469,12 @@ class XmppConnection {
         if (node.tag == "resumed") {
           this._log("Stream Resumption successful!");
           this.sendEvent(StreamManagementResumptionSuccessfulEvent());
-          this._resource = this.settings.streamResumptionSettings.resource!;
+          this._resource = this._connectionSettings.streamResumptionSettings.resource!;
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._setConnectionState(ConnectionState.CONNECTED);
 
           final h = int.parse(node.attributes["h"]!);
-          this.streamManager.enableStreamManagement();
-          this.streamManager.onStreamResumed(h);
+          this.sendEvent(StreamResumedEvent(h: h));
           this._sendInitialPresence();
         } else if (node.tag == "failed") {
           this._log("Stream resumption failed. Proceeding with new stream...");
@@ -483,12 +498,9 @@ class XmppConnection {
             this.sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
           }
 
-          this.streamManager.enableStreamManagement();
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._sendInitialPresence();
           this._setConnectionState(ConnectionState.CONNECTED);
-          // TODO: Can we handle this more elegantly?
-          this.streamManager.onStreamResumed(0);
         }
       }
       break;
@@ -515,6 +527,8 @@ class XmppConnection {
   
   /// Sends an event to the connection's event stream.
   void sendEvent(XmppEvent event) {
+    this._xmppManagers.values.forEach((manager) => manager.onXmppEvent(event));
+
     this._eventStreamController.add(event);
   }
 
@@ -529,7 +543,7 @@ class XmppConnection {
         closeTag: false,
         isDeclaration: true,
         children: [
-          StreamHeaderNonza(this.settings.jid.domain)
+          StreamHeaderNonza(this._connectionSettings.jid.domain)
         ]
       ).toXml()
     );
@@ -677,7 +691,7 @@ class XmppConnection {
   }
   
   Future<void> connect() async {
-    String hostname = this.settings.jid.domain;
+    String hostname = this._connectionSettings.jid.domain;
     int port = 5222;
 
     if (this._backoffTimer != null) {
@@ -685,8 +699,8 @@ class XmppConnection {
       this._backoffTimer = null;
     }
     
-    if (this.settings.useDirectTLS) {
-      final query = await perform0368Lookup(this.settings.jid.domain);
+    if (this._connectionSettings.useDirectTLS) {
+      final query = await perform0368Lookup(this._connectionSettings.jid.domain);
 
       if (query != null) {
         hostname = query.hostname;

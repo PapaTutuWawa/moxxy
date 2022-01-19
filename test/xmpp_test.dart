@@ -138,11 +138,17 @@ void main() {
             XMLNode.xmlns(
               tag: "iq",
               xmlns: "jabber:client",
-              attributes: { "type": "set" },
+              attributes: { "type": "result" },
               children: [
-                XMLNode(
-                  tag: "jid",
-                  text: "polynomdivision@test.server/MU29eEZn"
+                XMLNode.xmlns(
+                  tag: "bind",
+                  xmlns: "urn:ietf:params:xml:ns:xmpp-bind",
+                  children: [
+                    XMLNode(
+                      tag: "jid",
+                      text: "polynomdivision@test.server/MU29eEZn"
+                    )
+                  ]
                 )
               ]
             )

@@ -4,6 +4,9 @@ import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 
 const DISCO_FEATURES = [
   DISCO_INFO_XMLNS, DISCO_ITEMS_XMLNS,
@@ -36,16 +39,6 @@ class DiscoItem {
   DiscoItem({ required this.jid, required this.node, required this.name });
 }
 
-Stanza buildDiscoInfoQueryStanza(String entity, String? node) {
-  return Stanza.iq(to: entity, type: "get", children: [
-      XMLNode.xmlns(
-        tag: "query",
-        xmlns: DISCO_INFO_XMLNS,
-        attributes: node != null ? { "node": node } : {}
-      )
-  ]);
-}
-
 DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
   final query = stanza.firstTag("query");
   if (query == null) return null;
@@ -73,20 +66,11 @@ DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
       }
   });
 
+  // TODO: Include extendedInfo
   return DiscoInfo(
     features: features,
     identities: identities
   );
-}
-
-Stanza buildDiscoItemsQueryStanza(String entity, { String? node }) {
-  return Stanza.iq(to: entity, type: "get", children: [
-      XMLNode.xmlns(
-        tag: "query",
-        xmlns: DISCO_ITEMS_XMLNS,
-        attributes: node != null ? { "node": node } : {}
-      )
-  ]);
 }
 
 List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
@@ -98,7 +82,8 @@ List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
     print("Disco Items error: " + error.toXml());
     return null;
   }
-  
+
+  // TODO: Include extendedInfo
   return query.findTags("item").map((node) => DiscoItem(
       jid: node.attributes["jid"]!,
       node: node.attributes["node"]!,
@@ -106,105 +91,154 @@ List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
   )).toList();
 }
 
-Future<DiscoInfo?> discoInfoQuery(XmppConnection conn, String entity, { String? node}) async {
-  final stanza = await conn.sendStanza(buildDiscoInfoQueryStanza(entity, node));
-  return parseDiscoInfoResponse(stanza);
-}
+class DiscoManager extends XmppManagerBase {
+  @override
+  List<StanzaHandler> getStanzaHandlers() => [
+    StanzaHandler(
+      tagName: "query",
+      tagXmlns: DISCO_INFO_XMLNS,
+      stanzaTag: "iq",
+      callback: this._onDiscoInfoRequest
+    ),
+    StanzaHandler(
+      tagName: "query",
+      tagXmlns: DISCO_ITEMS_XMLNS,
+      stanzaTag: "iq",
+      callback: this._onDiscoItemsRequest
+    ),
+  ];
 
-Future<List<DiscoItem>?> discoItemsQuery(XmppConnection conn, String entity, { String? node }) async {
-  final stanza = await conn.sendStanza(buildDiscoItemsQueryStanza(entity, node: node));
-  return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
-}
+  @override
+  String getId() => DISCO_MANAGER;
+  
+  bool _onDiscoInfoRequest(Stanza stanza) {
+    final query = stanza.firstTag("query")!;
+    if (query.attributes["node"] != null) {
+      // TODO: Handle the node we specified for XEP-0115
+      this.getAttributes().sendStanza((Stanza.iq(
+            to: stanza.from,
+            from: stanza.to,
+            id: stanza.id,
+            type: "error",
+            children: [
+              XMLNode.xmlns(
+                tag: "query",
+                xmlns: query.attributes["xmlns"],
+                attributes: {
+                  "node": query.attributes["node"]
+                }
+              ),
+              XMLNode(
+                tag: "error",
+                attributes: {
+                  "type": "cancel"
+                },
+                children: [
+                  XMLNode.xmlns(
+                    tag: "not-allowed",
+                    xmlns: FULL_STANZA_XMLNS
+                  )
+                ]
+              )
+            ]
+          )
+      ));
 
-bool answerDiscoItemsQuery(XmppConnection conn, Stanza stanza) {
-  final query = stanza.firstTag("query")!;
-  if (query.attributes["node"] != null) {
-    conn.sendStanza((Stanza.iq(
-          to: stanza.from,
-          from: stanza.to,
-          id: stanza.id,
-          type: "error",
-          children: [
-            XMLNode.xmlns(
-              tag: "query",
-              xmlns: query.attributes["xmlns"],
-              attributes: {
-                "node": query.attributes["node"]
-              }
-            ),
-            XMLNode(
-              tag: "error",
-              attributes: {
-                "type": "cancel"
-              },
-              children: [
-                XMLNode.xmlns(
-                  tag: "not-allowed",
-                  xmlns: FULL_STANZA_XMLNS
-                )
-              ]
-            )
-          ]
-        )
-      )
-    );
+      return true;
+    }
+
+    this.getAttributes().sendStanza(stanza.reply(
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: DISCO_INFO_XMLNS,
+            children: [
+              XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
+
+              ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
+            ]
+          )
+        ]
+    ));
     return true;
   }
 
-  conn.sendStanza(stanza.reply(children: [
-        XMLNode.xmlns(tag: "query", xmlns: DISCO_ITEMS_XMLNS)
-  ]));
-  return true;
-}
+  bool _onDiscoItemsRequest(Stanza stanza) {
+    final query = stanza.firstTag("query")!;
+    if (query.attributes["node"] != null) {
+      // TODO: Handle the node we specified for XEP-0115
+      this.getAttributes().sendStanza((Stanza.iq(
+            to: stanza.from,
+            from: stanza.to,
+            id: stanza.id,
+            type: "error",
+            children: [
+              XMLNode.xmlns(
+                tag: "query",
+                xmlns: query.attributes["xmlns"],
+                attributes: {
+                  "node": query.attributes["node"]
+                }
+              ),
+              XMLNode(
+                tag: "error",
+                attributes: {
+                  "type": "cancel"
+                },
+                children: [
+                  XMLNode.xmlns(
+                    tag: "not-allowed",
+                    xmlns: FULL_STANZA_XMLNS
+                  )
+                ]
+              )
+            ]
+          )
+      ));
 
-bool answerDiscoInfoQuery(XmppConnection conn, Stanza stanza) {
-  final query = stanza.firstTag("query")!;
-  if (query.attributes["node"] != null) {
-    conn.sendStanza((Stanza.iq(
-          to: stanza.from,
-          from: stanza.to,
-          id: stanza.id,
-          type: "error",
-          children: [
-            XMLNode.xmlns(
-              tag: "query",
-              xmlns: query.attributes["xmlns"],
-              attributes: {
-                "node": query.attributes["node"]
-              }
-            ),
-            XMLNode(
-              tag: "error",
-              attributes: {
-                "type": "cancel"
-              },
-              children: [
-                XMLNode.xmlns(
-                  tag: "not-allowed",
-                  xmlns: FULL_STANZA_XMLNS
-                )
-              ]
-            )
-          ]
-        )
-      )
-    );
+      return true;
+    }
+
+    this.getAttributes().sendStanza(stanza.reply(
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: DISCO_ITEMS_XMLNS
+          )
+        ]
+    ));
     return true;
   }
 
-  // TODO: Answer for node="http://moxxy.im#<capHash>"
-  conn.sendStanza(stanza.reply(
-      children: [
-        XMLNode.xmlns(
-          tag: "query",
-          xmlns: DISCO_INFO_XMLNS,
-          children: [
-            XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
+  /// Sends a disco info query to the (full) jid [entity], optionally with node=[node].
+  Future<DiscoInfo?> discoInfoQuery(String entity, { String? node}) async {
+    final stanza = await this.getAttributes().sendStanza(buildDiscoInfoQueryStanza(entity, node));
+    return parseDiscoInfoResponse(stanza);
+  }
 
-            ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
-          ]
-        )
-      ]
-  ));
-  return true;
+  /// Sends a disco items query to the (full) jid [entity], optionally with node=[node].
+  Future<List<DiscoItem>?> discoItemsQuery(XmppConnection conn, String entity, { String? node }) async {
+    final stanza = await this.getAttributes().sendStanza(buildDiscoItemsQueryStanza(entity, node: node));
+    return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
+  }
+}
+
+Stanza buildDiscoInfoQueryStanza(String entity, String? node) {
+  return Stanza.iq(to: entity, type: "get", children: [
+      XMLNode.xmlns(
+        tag: "query",
+        xmlns: DISCO_INFO_XMLNS,
+        attributes: node != null ? { "node": node } : {}
+      )
+  ]);
+}
+
+Stanza buildDiscoItemsQueryStanza(String entity, { String? node }) {
+  return Stanza.iq(to: entity, type: "get", children: [
+      XMLNode.xmlns(
+        tag: "query",
+        xmlns: DISCO_ITEMS_XMLNS,
+        attributes: node != null ? { "node": node } : {}
+      )
+  ]);
 }

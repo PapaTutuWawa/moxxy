@@ -120,7 +120,7 @@ class XmppRepository {
     final message = await db.addMessageFromData(
       body,
       timestamp,
-      GetIt.I.get<XmppConnection>().settings.jid.toString(),
+      GetIt.I.get<XmppConnection>().getConnectionSettings().jid.toString(),
       jid,
       true
     );
@@ -174,14 +174,14 @@ class XmppRepository {
       
       if (event.state == ConnectionState.CONNECTED) {
         final connection = GetIt.I.get<XmppConnection>();
-        this.saveConnectionSettings(connection.settings);
+        this.saveConnectionSettings(connection.getConnectionSettings());
         GetIt.I.get<RosterRepository>().requestRoster(await this.getLastRosterVersion());
         
         if (this.loginTriggeredFromUI) {
           this.sendData({
               "type": "LoginSuccessfulEvent",
-              "jid": connection.settings.jid.toString(),
-              "displayName": connection.settings.jid.local
+              "jid": connection.getConnectionSettings().jid.toString(),
+              "displayName": connection.getConnectionSettings().jid.local
           });
         }
       }

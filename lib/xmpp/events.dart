@@ -1,6 +1,24 @@
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 
 abstract class XmppEvent {}
+
+/// Triggered when we send a stanza to the socket
+class StanzaSentEvent extends XmppEvent {
+  final Stanza stanza;
+
+  StanzaSentEvent({ required this.stanza });
+}
+
+/// Triggered when we want to ping the connection open
+class SendPingEvent extends XmppEvent {}
+
+/// Triggered when the stream resumption was successful
+class StreamResumedEvent extends XmppEvent {
+  final int h;
+
+  StreamResumedEvent({ required this.h });
+}
 
 class MessageEvent extends XmppEvent {
   final String body;

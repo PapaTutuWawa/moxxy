@@ -7,6 +7,11 @@ import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/roster.dart";
+import "package:moxxyv2/xmpp/presence.dart";
+import "package:moxxyv2/xmpp/message.dart";
+import "package:moxxyv2/xmpp/xeps/0030.dart";
+import "package:moxxyv2/xmpp/xeps/0198.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -24,6 +29,8 @@ Future<void> initializeServiceIfNeeded() async {
   if (await service.isServiceRunning()) {
     if (kDebugMode) {
       // TODO: Stop the background service
+    } else {
+      // TODO: Just don't run initializeService again
     }
   }
   
@@ -91,6 +98,11 @@ void onStart() {
       final connection = XmppConnection(log: (data) {
           service.sendData({ "type": "__LOG__", "log": data });
       });
+      connection.registerManager(StreamManagementManager());
+      connection.registerManager(DiscoManager());
+      connection.registerManager(MessageManager());
+      connection.registerManager(RosterManager());
+      connection.registerManager(PresenceManager());
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
       final account = await getAccountData();
