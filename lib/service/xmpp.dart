@@ -13,6 +13,7 @@ import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/0030.dart";
 import "package:moxxyv2/xmpp/xeps/0198.dart";
+import "package:moxxyv2/xmpp/xeps/0352.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -104,6 +105,7 @@ void onStart() {
       connection.registerManager(MessageManager());
       connection.registerManager(RosterManager());
       connection.registerManager(PresenceManager());
+      connection.registerManager(CSIManager());
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
       final account = await getAccountData();
@@ -220,9 +222,7 @@ void handleEvent(Map<String, dynamic>? data) {
             });
           }
 
-          print("pre-ok");
           roster.addToRoster("", jid, jid.split("@")[0]);
-          print("ok");
           FlutterBackgroundService().sendData({
               "type": "AddToRosterResult",
               "result": "success",
@@ -245,7 +245,16 @@ void handleEvent(Map<String, dynamic>? data) {
     }
     break;
     case "SetCSIState": {
-      GetIt.I.get<XmppConnection>().sendCSIState(data["state"] == "foreground");
+      final csi = GetIt.I.get<XmppConnection>().getManagerById(CSI_MANAGER);
+      if (csi == null) {
+        return;
+      }
+
+      if (data["state"] == "foreground") {
+        csi.setActive();
+      } else {
+        csi.setInactive();
+      }
     }
     break;
     case "__STOP__": {

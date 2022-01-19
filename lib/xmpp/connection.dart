@@ -118,23 +118,24 @@ class XmppConnection {
 
   /// Registers an [XmppManagerBase] subclass as a manager on this connection
   void registerManager(XmppManagerBase manager) {
-    this._log("Registering ${manager.getId()}");
+    _log("Registering ${manager.getId()}");
     manager.register(XmppManagerAttributes(
         log: (message) {
-          this._log("[${manager.getId()}] $message");
+          _log("[${manager.getId()}] $message");
         },
-        sendStanza: this.sendStanza,
-        sendNonza: this.sendRawXML,
-        sendRawXml: this._socket.write,
-        sendEvent: this.sendEvent,
+        sendStanza: sendStanza,
+        sendNonza: sendRawXML,
+        sendRawXml: _socket.write,
+        sendEvent: sendEvent,
         getConnectionSettings: () => this._connectionSettings,
-        getManager: getManagerById
+        getManagerById: getManagerById,
+        isStreamFeatureSupported: isStreamFeatureSupported
     ));
 
-    this._xmppManagers[manager.getId()] = manager;
+    _xmppManagers[manager.getId()] = manager;
   }
 
-  /// Returns the Manager with id [id] or null if such a manager is not registered
+  /// Returns the Manager with id [id] or null if such a manager is not registered.
   T? getManagerById<T>(String id) {
     final manager = _xmppManagers[id];
     if (manager != null) {
@@ -143,12 +144,16 @@ class XmppConnection {
 
     return null;
   }
-  
+
+  /// Set the connection settings of this connection.
   void setConnectionSettings(ConnectionSettings settings) {
-    this._connectionSettings = settings;
+    _connectionSettings = settings;
   }
 
-  ConnectionSettings getConnectionSettings() => this._connectionSettings;
+  /// Returns the connection settings of this connection.
+  ConnectionSettings getConnectionSettings() {
+    return _connectionSettings;
+  }
   
   void _handleError(Object error) {
     this._log("ERROR: " + error.toString());
@@ -167,7 +172,7 @@ class XmppConnection {
   }
 
   /// Returns true if the stream supports the XMLNS @feature.
-  bool streamFeatureSupported(String feature) {
+  bool isStreamFeatureSupported(String feature) {
     return this._streamFeatures.indexOf(feature) != -1;
   }
 
@@ -324,7 +329,6 @@ class XmppConnection {
     // send a whitespace ping
     if (this._connectionState == ConnectionState.CONNECTED) {
       final smManager = this._xmppManagers[SM_MANAGER];
-      // TODO: Maybe just trigger an event
       this.sendEvent(SendPingEvent());
     }
   }
@@ -423,7 +427,6 @@ class XmppConnection {
       break;
       case RoutingState.PERFORM_SASL_AUTH: {
         final result = await this._authenticator.next(node);
-        //this._handleSaslResult();
         if (result.getState() == AuthenticationResult.SUCCESS) {
           this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
           this._sendStreamHeader();
@@ -449,7 +452,7 @@ class XmppConnection {
         this._streamFeatures.clear();
         streamFeatures.children.forEach((node) => this._streamFeatures.add(node.attributes["xmlns"]));
 
-        if (this.streamFeatureSupported(SM_XMLNS)) {
+        if (this.isStreamFeatureSupported(SM_XMLNS)) {
           // Try to work with SM first
           if (this._connectionSettings.streamResumptionSettings.id != null) {
             // Try to resume the last stream
@@ -521,20 +524,6 @@ class XmppConnection {
     }
   }
 
-  /// Sets the CSI state (true: <active />, false: <inactive />) if the stream supports
-  /// CSI.
-  // TODO: Remember the CSI state in case we resume a stream
-  void sendCSIState(bool state) {
-    // TODO: Maybe cache this result
-    if (this._streamFeatures.indexOf(CSI_XMLNS) == -1) {
-      return;
-    }
-    
-    this._socket.write(
-      (state ? CSIActiveNonza() : CSIInactiveNonza()).toXml()
-    );
-  }
-  
   /// Sends an event to the connection's event stream.
   void sendEvent(XmppEvent event) {
     this._xmppManagers.values.forEach((manager) => manager.onXmppEvent(event));
@@ -542,7 +531,7 @@ class XmppConnection {
     this._eventStreamController.add(event);
   }
 
-  /// Sends a stream header to the socket
+  /// Sends a stream header to the socket.
   void _sendStreamHeader() {
     this._socket.write(
       XMLNode(
@@ -571,7 +560,8 @@ class XmppConnection {
       this.connect();
     }
   }
-  
+
+  /// Start the connection process using the provided connection settings.
   Future<void> connect() async {
     String hostname = this._connectionSettings.jid.domain;
     int port = 5222;
