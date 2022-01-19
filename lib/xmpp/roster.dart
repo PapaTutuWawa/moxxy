@@ -89,4 +89,139 @@ class RosterManager extends XmppManagerBase {
 
     return true;
   }
+
+  /// Requests the roster from the server. [lastVersion] refers to the last version
+  /// of the roster we know about according to roster versioning.
+  Future<RosterRequestResult?> requestRoster(String? lastVersion) async {
+    final attrs = getAttributes();
+    final response = await attrs.sendStanza(
+      Stanza.iq(
+        type: "get",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: ROSTER_XMLNS,
+            attributes: {
+              ...(lastVersion != null ? { "ver": lastVersion } : {})
+            }
+          )
+        ]
+      )
+    );
+
+    if (response.attributes["type"] != "result") {
+      attrs.log("Error requesting roster: " + response.toString());
+      return null;
+    }
+
+    final query = response.firstTag("query");
+
+    final items;
+    if (query != null) {
+      items = query.children.map((item) => XmppRosterItem(
+          name: item.attributes["name"],
+          jid: item.attributes["jid"]!,
+          subscription: item.attributes["subscription"]!,
+          groups: item.findTags("group").map((groupNode) => groupNode.innerText()).toList()
+      )).toList();
+    } else {
+      items = List<XmppRosterItem>.empty();
+    }
+
+    return RosterRequestResult(
+      items: items,
+      ver: query != null ? query.attributes["ver"] : lastVersion
+    );
+  }
+
+  // TODO: The type makes no sense (how?)
+  /// Attempts to add [jid] with a title of [title] to the roster.
+  Future<void> addToRoster(String jid, String title) async {
+    final attrs = getAttributes();
+    final response = await attrs.sendStanza(
+      Stanza.iq(
+        type: "set",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: ROSTER_XMLNS,
+            children: [
+              XMLNode(
+                tag: "item",
+                attributes: {
+                  "jid": jid,
+                  ...(title == jid.split("@")[0] ? {} : { "name": title })
+              })
+            ]
+          )
+        ]
+      )
+    );
+
+    if (response == null) {
+      attrs.log("Error adding ${jid} to roster");
+      return;
+    }
+
+    if (response.attributes["type"] != "result") {
+      attrs.log("Error adding ${jid} to roster: " + response.toString());
+      return;
+    }
+  }
+
+  /// Attempts to remove [jid] from the roster.
+  Future<void> removeFromRoster(String jid) async {
+    final attrs = getAttributes();
+    final response = await attrs.sendStanza(
+      Stanza.iq(
+        type: "set",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: ROSTER_XMLNS,
+            children: [
+              XMLNode(
+                tag: "item",
+                attributes: {
+                  "jid": jid,
+                  "subscription": "remove"
+                }
+              )
+            ]
+          )
+        ]
+      )
+    );
+
+    if (response.attributes["type"] != "result") {
+      attrs.log("Failed to remove roster item: " + response.toXml());
+
+      final error = response.firstTag("error")!;
+      final notFound = error.firstTag("item-not-found") != null;
+
+      if (notFound) {
+        attrs.sendEvent(RosterItemNotFoundEvent(jid: jid, trigger: RosterItemNotFoundTrigger.REMOVE));
+      }
+    }
+  }
+
+  /// Sends a subscription request to [to].
+  Future<void> sendSubscriptionRequest(String to) async {
+    await getAttributes().sendStanza(
+      Stanza.presence(
+        type: "subscribe",
+        to: to
+      )
+    );
+  }
+
+  /// Sends an unsubscription request to [to].
+  Future<void> sendUnsubscriptionRequest(String to) async {
+    await getAttributes().sendStanza(
+      Stanza.presence(
+        type: "unsubscribe",
+        to: to
+      )
+    );
+  }
 }

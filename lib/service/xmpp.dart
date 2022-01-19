@@ -10,6 +10,7 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/0030.dart";
 import "package:moxxyv2/xmpp/xeps/0198.dart";
 
@@ -218,8 +219,10 @@ void handleEvent(Map<String, dynamic>? data) {
                 "conversation": c.toJson()
             });
           }
-          
-          await roster.addToRoster("", jid, jid.split("@")[0]);
+
+          print("pre-ok");
+          roster.addToRoster("", jid, jid.split("@")[0]);
+          print("ok");
           FlutterBackgroundService().sendData({
               "type": "AddToRosterResult",
               "result": "success",
@@ -232,8 +235,8 @@ void handleEvent(Map<String, dynamic>? data) {
       (() async {
           final jid = data["jid"]!;
           //await GetIt.I.get<DatabaseRepository>().removeRosterItemByJid(jid, nullOkay: true);
-          await GetIt.I.get<XmppConnection>().removeFromRoster(jid);
-          await GetIt.I.get<XmppConnection>().sendUnsubscriptionRequest(jid);
+          await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.removeFromRoster(jid);
+          await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.sendUnsubscriptionRequest(jid);
       })();
     }
     break;

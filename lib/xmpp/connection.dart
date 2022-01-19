@@ -128,10 +128,20 @@ class XmppConnection {
         sendRawXml: this._socket.write,
         sendEvent: this.sendEvent,
         getConnectionSettings: () => this._connectionSettings,
-        getManager: () => Map<String,dynamic>()
+        getManager: getManagerById
     ));
 
     this._xmppManagers[manager.getId()] = manager;
+  }
+
+  /// Returns the Manager with id [id] or null if such a manager is not registered
+  T? getManagerById<T>(String id) {
+    final manager = _xmppManagers[id];
+    if (manager != null) {
+      return manager as T;
+    }
+
+    return null;
   }
   
   void setConnectionSettings(ConnectionSettings settings) {
@@ -546,134 +556,6 @@ class XmppConnection {
           StreamHeaderNonza(this._connectionSettings.jid.domain)
         ]
       ).toXml()
-    );
-  }
-
-  Future<RosterRequestResult?> requestRoster(String? lastVersion) async {
-    final response = await this.sendStanza(
-      Stanza.iq(
-        type: "get",
-        children: [
-          XMLNode.xmlns(
-            tag: "query",
-            xmlns: ROSTER_XMLNS,
-            attributes: {
-              ...(lastVersion != null ? { "ver": lastVersion } : {})
-            }
-          )
-        ]
-      )
-    );
-
-    if (response.attributes["type"] != "result") {
-      this._log("Error requesting roster: " + response.toString());
-      return null;
-    }
-
-    final query = response.firstTag("query");
-
-    final items;
-    if (query != null) {
-      items = query.children.map((item) => XmppRosterItem(
-          name: item.attributes["name"],
-          jid: item.attributes["jid"]!,
-          subscription: item.attributes["subscription"]!,
-          groups: item.findTags("group").map((groupNode) => groupNode.innerText()).toList()
-      )).toList();
-    } else {
-      items = List<XmppRosterItem>.empty();
-    }
-
-    return RosterRequestResult(
-      items: items,
-      ver: query != null ? query.attributes["ver"] : lastVersion
-    );
-  }
-
-  // TODO: The type makes no sense
-  Future<void> addToRoster(String jid, String title) async {
-    final response = await this.sendStanza(
-      Stanza.iq(
-        type: "set",
-        children: [
-          XMLNode.xmlns(
-            tag: "query",
-            xmlns: ROSTER_XMLNS,
-            children: [
-              XMLNode(
-                tag: "item",
-                attributes: {
-                  "jid": jid,
-                  ...(title == jid.split("@")[0] ? {} : { "name": title })
-              })
-            ]
-          )
-        ]
-      )
-    );
-
-    if (response == null) {
-      this._log("Error adding ${jid} to roster");
-      return;
-    }
-
-    if (response.attributes["type"] != "result") {
-      this._log("Error adding ${jid} to roster: " + response.toString());
-      return;
-    }
-  }
-
-  Future<void> removeFromRoster(String jid) async {
-    final response = await this.sendStanza(
-      Stanza.iq(
-        type: "set",
-        children: [
-          XMLNode.xmlns(
-            tag: "query",
-            xmlns: ROSTER_XMLNS,
-            children: [
-              XMLNode(
-                tag: "item",
-                attributes: {
-                  "jid": jid,
-                  "subscription": "remove"
-                }
-              )
-            ]
-          )
-        ]
-      )
-    );
-
-    if (response.attributes["type"] != "result") {
-      this._log("Failed to remove roster item: " + response.toXml());
-
-      final error = response.firstTag("error")!;
-      final notFound = error.firstTag("item-not-found") != null;
-
-      if (notFound) {
-        this.sendEvent(RosterItemNotFoundEvent(jid: jid, trigger: RosterItemNotFoundTrigger.REMOVE));
-      }
-    }
-  }
-
-  /// Sends a subscription request to [to].
-  Future<void> sendSubscriptionRequest(String to) async {
-    this.sendStanza(
-      Stanza.presence(
-        type: "subscribe",
-        to: to
-      )
-    );
-  }
-
-  /// Sends an unsubscription request to [to].
-  Future<void> sendUnsubscriptionRequest(String to) async {
-    this.sendStanza(
-      Stanza.presence(
-        type: "unsubscribe",
-        to: to
-      )
     );
   }
 

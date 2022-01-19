@@ -6,6 +6,7 @@ import "package:moxxyv2/db/roster.dart";
 import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/roster.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/repositories/database.dart";
 
 import "package:get_it/get_it.dart";
@@ -27,8 +28,8 @@ class RosterRepository {
   Future<RosterItem> addToRoster(String avatarUrl, String jid, String title) async {
     final item = await GetIt.I.get<DatabaseRepository>().addRosterItemFromData(avatarUrl, jid, title);
 
-    await GetIt.I.get<XmppConnection>().addToRoster(jid, title);
-    await GetIt.I.get<XmppConnection>().sendSubscriptionRequest(jid);
+    await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.addToRoster(jid, title);
+    await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.sendSubscriptionRequest(jid);
 
     this.sendData({
         "type": "RosterItemAddedEvent",
@@ -50,7 +51,7 @@ class RosterRepository {
   }
 
   Future<void> requestRoster(String? lastVersion) async {
-    final result = await GetIt.I.get<XmppConnection>().requestRoster(lastVersion);
+    final result = await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.requestRoster(lastVersion);
 
     print("requestRoster done");
     
