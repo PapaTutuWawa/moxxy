@@ -1,6 +1,8 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 
+import "helpers/xml.dart";
+
 import "package:xml/xml.dart";
 import "package:test/test.dart";
 
@@ -23,5 +25,12 @@ void main() {
 
   test("Test XmlElement", () {
       expect(XMLNode.fromXmlElement(XmlDocument.parse("<root owo='uwu' />").firstElementChild!).toXml(), "<root owo='uwu' />");
+  });
+
+  test("Test the find functions", () {
+      final node1 = XMLNode.fromString("<message><a xmlns=\"a\" /><body>Hallo</body></message>");
+
+      expect(compareXMLNodes(node1.firstTag("body")!, XMLNode.fromString("<body>Hallo</body>")), true);
+      expect(compareXMLNodes(node1.firstTagByXmlns("a")!, XMLNode.fromString("<a xmlns=\"a\" />")), true);
   });
 }

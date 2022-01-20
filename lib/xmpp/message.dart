@@ -19,9 +19,31 @@ class MessageManager extends XmppManagerBase {
     )
   ];
 
+  void _handleChatMarker(Stanza message, XMLNode marker) {
+    final attrs = getAttributes();
+
+    if (["received", "displayed", "acknowledged"].indexOf(marker.tag) == -1) {
+      attrs.log("Unknown message marker '${marker.tag}' found.");
+      return;
+    }
+
+    attrs.sendEvent(ChatMarkerEvent(
+        type: marker.tag,
+        sid: message.id! // TODO: Also recognise Unique and Stable IDs
+    ));
+  }
+  
   Future<bool> _onMessage(Stanza message) async {
     final body = message.firstTag("body");
-    if (body == null) return true;
+    if (body == null) {
+      final marker = message.firstTagByXmlns(CHAT_MARKERS_XMLNS);
+      if (marker != null) {
+        // Response to a marker
+        _handleChatMarker(message, marker);
+      }
+
+      return true;
+    }
 
     this.getAttributes().sendEvent(MessageEvent(
       body: body.innerText(),

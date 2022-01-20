@@ -28,23 +28,8 @@ class MessageEvent extends XmppEvent {
   MessageEvent({ required this.body, required this.fromJid, required this.sid });
 }
 
-enum ChatMarkerType {
-  MARKABLE, RECEIVED, DISPLAYED, ACKNOWLEDGED, UNKNOWN
-}
-
-ChatMarkerType chatMarkerFromTag(String tag) {
-  switch (tag) {
-    case "markable": return ChatMarkerType.MARKABLE;
-    case "received": return ChatMarkerType.RECEIVED;
-    case "displayed": return ChatMarkerType.DISPLAYED;
-    case "acknowledged": return ChatMarkerType.ACKNOWLEDGED;
-  }
-
-  return ChatMarkerType.UNKNOWN;
-}
-
 class ChatMarkerEvent extends XmppEvent {
-  final ChatMarkerType type;
+  final String type;
   final String sid;
 
   ChatMarkerEvent({ required this.type, required this.sid });
