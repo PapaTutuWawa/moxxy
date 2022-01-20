@@ -19,9 +19,10 @@ class StreamManagementManager extends XmppManagerBase {
   int _clientStanzaSeq;
   int _serverStanzaSeq;
   Map<int, Stanza> _unackedStanzas;
+  String? _streamResumptionId;
   bool _streamManagementEnabled;
 
-  StreamManagementManager() : _clientStanzaSeq = 0, _serverStanzaSeq = 0, _unackedStanzas = Map(), _streamManagementEnabled = false;
+  StreamManagementManager() : _clientStanzaSeq = 0, _serverStanzaSeq = 0, _unackedStanzas = Map(), _streamResumptionId = null, _streamManagementEnabled = false;
 
   /// Functions for testing
   int getClientStanzaSeq() => this._clientStanzaSeq;
@@ -30,11 +31,27 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// May be overwritten by a subclass. Should save [_clientStanzaSeq] and [_serverStanzaSeq]
   /// so that they can be loaded again with [this.loadSequenceCounters].
-  /* TODO
-  Future<void> commitSequenceCounters() async {}
-  Future<void> loadSequenceCounters() async {}
-  */
-  
+  Future<void> commitClientSeq() async {}
+  Future<void> loadClientSeq() async {}
+
+  void setClientSeq(int h) {
+    // Prevent this being called multiple times
+    assert(_clientStanzaSeq == 0);
+
+    _clientStanzaSeq = h;
+  }
+
+  /// May be overwritten by a subclass. Should save and load [_streamResumptionId].
+  Future<void> commitStreamResumptionId() async {}
+  Future<void> loadStreamResumptionId() async {}
+
+  void setStreamResumptionId(String id) {
+    // Prevent this being called multiple times
+    assert(_streamResumptionId == null);
+
+    _streamResumptionId = id;
+  }
+
   @override
   String getId() => SM_MANAGER;
 
@@ -62,26 +79,29 @@ class StreamManagementManager extends XmppManagerBase {
   @override
   void onXmppEvent(XmppEvent event) {
     if (event is StanzaSentEvent) {
-      this._onClientStanzaSent(event.stanza);
+      _onClientStanzaSent(event.stanza);
     } else if (event is SendPingEvent) {
-      if (this.isStreamManagementEnabled()) {
-        this._sendAckRequestPing();
+      if (isStreamManagementEnabled()) {
+        _sendAckRequestPing();
       } else {
-        this.getAttributes().sendRawXml("");
+        getAttributes().sendRawXml("");
       }
     } else if (event is StreamResumedEvent) {
       this._enableStreamManagement();
       this._onStreamResumed(event.h);
     } else if (event is StreamManagementEnabledEvent) {
-      this._enableStreamManagement();
+      _streamResumptionId = event.id;
+      commitStreamResumptionId();
+      _enableStreamManagement();
+
       // TODO: Can we handle this more elegantly?
-      this._onStreamResumed(0);
+      _onStreamResumed(0);
     }
   }
 
   /// Enables support for XEP-0198 stream management
   void _enableStreamManagement() {
-    this._streamManagementEnabled = true;
+    _streamManagementEnabled = true;
   }
   
   /// Returns whether XEP-0198 stream management is enabled
@@ -140,6 +160,8 @@ class StreamManagementManager extends XmppManagerBase {
     if (this.isStreamManagementEnabled()) {
       this.getAttributes().sendNonza(StreamManagementRequestNonza());
     }
+
+    commitClientSeq();
   }
 
   /// Removes all stanzas in the unacked queue that have a sequence number less-than or
@@ -175,5 +197,10 @@ class StreamManagementManager extends XmppManagerBase {
   /// Pings the connection open by send an ack request
   void _sendAckRequestPing() {
     this.getAttributes().sendNonza(StreamManagementRequestNonza());
+  }
+
+  /// Returns the stream resumption id we have
+  String? getStreamResumptionId() {
+    return _streamResumptionId;
   }
 }

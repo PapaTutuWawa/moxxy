@@ -25,10 +25,10 @@ import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/roster.dart";
-import "package:moxxyv2/xmpp/xeps/0368.dart";
-import "package:moxxyv2/xmpp/xeps/0368.dart";
 import "package:moxxyv2/xmpp/xeps/0030.dart";
 import "package:moxxyv2/xmpp/xeps/0115.dart";
+import "package:moxxyv2/xmpp/xeps/0198.dart";
+import "package:moxxyv2/xmpp/xeps/0368.dart";
 
 import "package:xml/xml.dart";
 import "package:xml/xml_events.dart";
@@ -285,6 +285,9 @@ class XmppConnection {
     final jid = bind.firstTag("jid")!;
     // TODO: Use our FullJID class
     this._resource = jid.innerText().split("/")[1];
+
+    sendEvent(ResourceBindingSuccessEvent(resource: _resource));
+
     return true;
   }
 
@@ -452,12 +455,18 @@ class XmppConnection {
         this._streamFeatures.clear();
         streamFeatures.children.forEach((node) => this._streamFeatures.add(node.attributes["xmlns"]));
 
-        if (this.isStreamFeatureSupported(SM_XMLNS)) {
+        if (this.isStreamFeatureSupported(SM_XMLNS) && _xmppManagers.containsKey(SM_MANAGER)) {
+          final manager = _xmppManagers[SM_MANAGER]! as StreamManagementManager;;
+          await manager.loadStreamResumptionId();
+          await manager.loadClientSeq();
+          final srid = manager.getStreamResumptionId();
+          final h = manager.getClientStanzaSeq();
+          
           // Try to work with SM first
-          if (this._connectionSettings.streamResumptionSettings.id != null) {
+          if (srid != null) {
             // Try to resume the last stream
             this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
-            this.sendRawXML(StreamManagementResumeNonza(this._connectionSettings.streamResumptionSettings.id!, this._connectionSettings.streamResumptionSettings.lasth!));
+            this.sendRawXML(StreamManagementResumeNonza(srid, h));
           } else {
             // Try to enable SM
             this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
@@ -482,7 +491,7 @@ class XmppConnection {
         if (node.tag == "resumed") {
           this._log("Stream Resumption successful!");
           this.sendEvent(StreamManagementResumptionSuccessfulEvent());
-          this._resource = this._connectionSettings.streamResumptionSettings.resource!;
+          // NOTE: _resource is already set if we resume
           this._routingState = RoutingState.HANDLE_STANZAS;
           this._setConnectionState(ConnectionState.CONNECTED);
 
@@ -562,10 +571,14 @@ class XmppConnection {
   }
 
   /// Start the connection process using the provided connection settings.
-  Future<void> connect() async {
+  Future<void> connect({ String? lastResource }) async {
     String hostname = this._connectionSettings.jid.domain;
     int port = 5222;
 
+    if (lastResource != null) {
+      _resource = lastResource;
+    }
+    
     if (this._backoffTimer != null) {
       this._backoffTimer!.cancel();
       this._backoffTimer = null;

@@ -42,26 +42,35 @@ class XmppRepository {
     }
   }
 
+  Future<String?> getStreamResumptionId() async {
+    return await _readKeyOrNull(XMPP_ACCOUNT_SRID_KEY);
+  }
+  Future<void> saveStreamResumptionId(String srid) async {
+    await _storage.write(key: XMPP_ACCOUNT_SRID_KEY, value: srid);
+  }
+
+  Future<int?> getStreamManagementLastH() async {
+    final value = await _readKeyOrNull(XMPP_ACCOUNT_LASTH_KEY);
+    return value != null ? int.parse(value) : null;
+  }
+  Future<void> saveStreamManagementLastH(int h) async {
+    await this._storage.write(key: XMPP_ACCOUNT_LASTH_KEY, value: h.toString());
+  }
+  
   Future<String?> getLastRosterVersion() async {
     return await this._readKeyOrNull(XMPP_LAST_ROSTER_VERSION_KEY);
   }
-
   Future<void> saveLastRosterVersion(String ver) async {
     await this._storage.write(key: XMPP_LAST_ROSTER_VERSION_KEY, value: ver);
+  }  
+
+  Future<String?> getLastResource() async {
+    return await _readKeyOrNull(XMPP_ACCOUNT_RESOURCE_KEY);
+  }
+  Future<void> saveLastResource(String resource) async {
+    await _storage.write(key: XMPP_ACCOUNT_RESOURCE_KEY, value: resource);
   }
   
-  Future<StreamResumptionSettings> loadStreamResumptionSettings() async {
-    final srid = await this._readKeyOrNull(XMPP_ACCOUNT_SRID_KEY);
-    final resource = await this._readKeyOrNull(XMPP_ACCOUNT_RESOURCE_KEY);
-    final h = await this._readKeyOrNull(XMPP_ACCOUNT_LASTH_KEY);
-
-    return StreamResumptionSettings(
-      id: srid,
-      lasth: h != null ? int.parse(h) : null,
-      resource: resource
-    );
-  }
-
   Future<ConnectionSettings?> loadConnectionSettings() async {
     final jidString = await this._readKeyOrNull(XMPP_ACCOUNT_JID_KEY);
     final password = await this._readKeyOrNull(XMPP_ACCOUNT_PASSWORD_KEY);
@@ -73,8 +82,7 @@ class XmppRepository {
         jid: BareJID.fromString(jidString),
         password: password,
         useDirectTLS: true,
-        allowPlainAuth: false,
-        streamResumptionSettings: await this.loadStreamResumptionSettings()
+        allowPlainAuth: false
       );
     }
   }
@@ -189,6 +197,8 @@ class XmppRepository {
       this.saveStreamResumptionSettings(event.id, event.resource);
     } else if (event is StreamManagementAckSentEvent) {
       this.saveStreamResumptionLastH(event.h);
+    } else if (event is ResourceBindingSuccessEvent) {
+      saveLastResource(event.resource);
     } else if (event is MessageEvent) {
       print("'${event.body}' from ${event.fromJid} (${event.sid})");
 
@@ -331,9 +341,11 @@ class XmppRepository {
   }
 
   Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
+    final lastResource = await this.getLastResource();
+
     this.loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
-    GetIt.I.get<XmppConnection>().connect();
+    GetIt.I.get<XmppConnection>().connect(lastResource: lastResource);
     this.installEventHandlers();
   }
 }

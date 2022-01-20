@@ -24,6 +24,35 @@ import "package:awesome_notifications/awesome_notifications.dart";
 
 import "package:moxxyv2/isar.g.dart";
 
+class MoxxyStreamManagementManager extends StreamManagementManager {
+  @override
+  Future<void> commitClientSeq() async {
+    await GetIt.I.get<XmppRepository>().saveStreamManagementLastH(getClientStanzaSeq());
+  }
+
+  @override
+  Future<void> loadClientSeq() async {
+    final seq = await GetIt.I.get<XmppRepository>().getStreamManagementLastH();
+    setClientSeq(seq ?? 0);
+  }
+
+  @override
+  Future<void> commitStreamResumptionId() async {
+    final srid = getStreamResumptionId();
+    if (srid !=  null) {
+      await GetIt.I.get<XmppRepository>().saveStreamResumptionId(srid);
+    }
+  }
+
+  @override
+  Future<void> loadStreamResumptionId() async {
+    final id = await GetIt.I.get<XmppRepository>().getStreamResumptionId();
+    if (id != null) {
+      setStreamResumptionId(id);
+    }
+  }
+}
+
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -100,7 +129,7 @@ void onStart() {
       final connection = XmppConnection(log: (data) {
           service.sendData({ "type": "__LOG__", "log": data });
       });
-      connection.registerManager(StreamManagementManager());
+      connection.registerManager(MoxxyStreamManagementManager());
       connection.registerManager(DiscoManager());
       connection.registerManager(MessageManager());
       connection.registerManager(RosterManager());
@@ -171,8 +200,7 @@ void handleEvent(Map<String, dynamic>? data) {
           jid: BareJID.fromString(data["jid"]!),
           password: data["password"]!,
           useDirectTLS: data["useDirectTLS"]!,
-          allowPlainAuth: data["allowPlainAuth"],
-          streamResumptionSettings: StreamResumptionSettings()
+          allowPlainAuth: data["allowPlainAuth"]
       ), true);
     }
     break;
