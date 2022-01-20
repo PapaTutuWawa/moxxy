@@ -19,14 +19,14 @@ void main() {
         sendNonza: (nonza) {},
         sendEvent: (event) {},
         sendRawXml: (raw) {},
-        getManager: () => {},
+        getManagerById: (id) => null,
         getConnectionSettings: () => ConnectionSettings(
           jid: BareJID.fromString("hallo@example.server"),
           password: "password",
           useDirectTLS: true,
           allowPlainAuth: false,
-          streamResumptionSettings: StreamResumptionSettings()
-        )
+        ),
+        isStreamFeatureSupported: (feat) => false
       );
 
       final manager = StreamManagementManager();

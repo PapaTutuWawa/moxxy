@@ -176,8 +176,7 @@ void main() {
           jid: BareJID.fromString("polynomdivision@test.server"),
           password: "aaaa",
           useDirectTLS: true,
-          allowPlainAuth: true,
-          streamResumptionSettings: StreamResumptionSettings()
+          allowPlainAuth: true
       ));
       await conn.connect();
       await Future.delayed(Duration(seconds: 3), () {
@@ -193,7 +192,7 @@ void main() {
       expect(challenge.iterations, 4096);
 
       final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true, streamResumptionSettings: StreamResumptionSettings()),
+        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         sendRawXML: (data) {},
