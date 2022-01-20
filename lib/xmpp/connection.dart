@@ -181,17 +181,6 @@ class XmppConnection {
     this._socket.write(node.toXml());
   }
 
-  /// Send a message to [to] with the content [body].
-  void sendMessage(String body, String to) async {
-    this.sendStanza(Stanza.message(
-        to: to,
-        type: "normal",
-        children: [
-          XMLNode(tag: "body", text: body)
-        ]
-    ));
-  }
-
   /// Sends a [stanza] to the server. If stream management is enabled, then keeping track
   /// of the stanza is taken care of. Returns a Future that resolves when we receive a
   /// response to the stanza.

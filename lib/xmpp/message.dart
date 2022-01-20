@@ -1,6 +1,7 @@
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
@@ -29,5 +30,16 @@ class MessageManager extends XmppManagerBase {
     ));
 
     return true;
+  }
+
+  /// Send a message to [to] with the content [body].
+  void sendMessage(String body, String to) {
+    getAttributes().sendStanza(Stanza.message(
+        to: to,
+        type: "normal",
+        children: [
+          XMLNode(tag: "body", text: body)
+        ]
+    ));
   }
 }

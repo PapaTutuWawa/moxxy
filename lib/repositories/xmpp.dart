@@ -6,6 +6,7 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/repositories/database.dart";
 import "package:moxxyv2/models/roster.dart";
@@ -138,7 +139,7 @@ class XmppRepository {
         "message": message.toJson()
     });
 
-    GetIt.I.get<XmppConnection>().sendMessage(body, jid);
+    GetIt.I.get<XmppConnection>().getManagerById(MESSAGE_MANAGER)!.sendMessage(body, jid);
 
     final conversation = await db.getConversationByJid(jid);
     final newConversation = await db.updateConversation(
