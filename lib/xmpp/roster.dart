@@ -45,6 +45,10 @@ class RosterItemNotFoundEvent extends XmppEvent {
 
 // TODO: Add override-able functions commitRoster and commitRosterVersion
 class RosterManager extends XmppManagerBase {
+  String? _rosterVersion;
+
+  RosterManager() : _rosterVersion = null, super();
+  
   @override
   String getId() => ROSTER_MANAGER;
 
@@ -58,6 +62,16 @@ class RosterManager extends XmppManagerBase {
     )
   ];
 
+  /// Override-able functions
+  Future<void> commitLastRosterVersion(String version) async {}
+  Future<void> loadLastRosterVersion() async {}
+
+  void setRosterVersion(String ver) {
+    assert(_rosterVersion == null);
+
+    _rosterVersion = ver;
+  }
+ 
   bool _onRosterPush(Stanza stanza) {
     final attrs = this.getAttributes();
 
@@ -77,6 +91,11 @@ class RosterManager extends XmppManagerBase {
       return true;
     }
 
+    if (query.attributes["ver"] != null) {
+      commitLastRosterVersion(query.attributes["ver"]);
+      _rosterVersion = query.attributes["ver"];
+    }
+    
     attrs.sendEvent(RosterPushEvent(
         item: XmppRosterItem(
           jid: item.attributes["jid"]!,
@@ -92,7 +111,11 @@ class RosterManager extends XmppManagerBase {
 
   /// Requests the roster from the server. [lastVersion] refers to the last version
   /// of the roster we know about according to roster versioning.
-  Future<RosterRequestResult?> requestRoster(String? lastVersion) async {
+  Future<RosterRequestResult?> requestRoster() async {
+    if (_rosterVersion == null) {
+      await loadLastRosterVersion();
+    }
+
     final attrs = getAttributes();
     final response = await attrs.sendStanza(
       Stanza.iq(
@@ -102,7 +125,7 @@ class RosterManager extends XmppManagerBase {
             tag: "query",
             xmlns: ROSTER_XMLNS,
             attributes: {
-              ...(lastVersion != null ? { "ver": lastVersion } : {})
+              ...(_rosterVersion != null ? { "ver": _rosterVersion! } : {})
             }
           )
         ]
@@ -130,7 +153,7 @@ class RosterManager extends XmppManagerBase {
 
     return RosterRequestResult(
       items: items,
-      ver: query != null ? query.attributes["ver"] : lastVersion
+      ver: query != null ? query.attributes["ver"] : _rosterVersion
     );
   }
 

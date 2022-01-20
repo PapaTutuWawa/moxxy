@@ -53,6 +53,21 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
   }
 }
 
+class MoxxyRosterManger extends RosterManager {
+  @override
+  Future<void> commitLastRosterVersion(String ver) async {
+    await GetIt.I.get<XmppRepository>().saveLastRosterVersion(ver);
+  }
+
+  @override
+  Future<void> loadLastRosterVersion() async {
+    final ver = await GetIt.I.get<XmppRepository>().getLastRosterVersion();
+    if (ver != null) {
+      setRosterVersion(ver);
+    }
+  }
+}
+
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -132,7 +147,7 @@ void onStart() {
       connection.registerManager(MoxxyStreamManagementManager());
       connection.registerManager(DiscoManager());
       connection.registerManager(MessageManager());
-      connection.registerManager(RosterManager());
+      connection.registerManager(MoxxyRosterManger());
       connection.registerManager(PresenceManager());
       connection.registerManager(CSIManager());
       GetIt.I.registerSingleton<XmppConnection>(connection);

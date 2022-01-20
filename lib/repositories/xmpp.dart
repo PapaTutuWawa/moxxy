@@ -183,7 +183,7 @@ class XmppRepository {
       if (event.state == ConnectionState.CONNECTED) {
         final connection = GetIt.I.get<XmppConnection>();
         this.saveConnectionSettings(connection.getConnectionSettings());
-        GetIt.I.get<RosterRepository>().requestRoster(await this.getLastRosterVersion());
+        GetIt.I.get<RosterRepository>().requestRoster();
         
         if (this.loginTriggeredFromUI) {
           this.sendData({

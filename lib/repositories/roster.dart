@@ -50,24 +50,14 @@ class RosterRepository {
     */
   }
 
-  Future<void> requestRoster(String? lastVersion) async {
-    final result = await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.requestRoster(lastVersion);
+  Future<void> requestRoster() async {
+    final result = await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.requestRoster();
 
     print("requestRoster done");
     
     if (result == null) return;
     if (result.items.isEmpty) {
       print("No roster items received");
-    }
-
-    if (result.ver == lastVersion) {
-      print("Roster is up-to-date");
-      return;
-    } else if (result.ver != null){
-      print("Got new roster version: " + result.ver!);
-      /* TODO
-      this.store.dispatch(SaveCurrentRosterVersionAction(ver: result.ver!));
-      */
     }
 
     // TODO: Update updated items
