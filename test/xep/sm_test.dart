@@ -26,7 +26,8 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: false,
         ),
-        isStreamFeatureSupported: (feat) => false
+        isStreamFeatureSupported: (feat) => false,
+        getFullJID: () => FullJID.fromString("hallo@example.server/uwu")
       );
 
       final manager = StreamManagementManager();
