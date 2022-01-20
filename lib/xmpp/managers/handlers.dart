@@ -7,7 +7,7 @@ class NonzaHandler {
   final String? nonzaTag;
   final String? nonzaXmlns;
   final bool matchStanzas;
-  final bool Function(XMLNode) callback;
+  final Future<bool> Function(XMLNode) callback;
 
   NonzaHandler({ this.nonzaTag, this.nonzaXmlns, required this.callback, this.matchStanzas = false });
 
@@ -35,11 +35,11 @@ class StanzaHandler extends NonzaHandler {
   final String? tagXmlns;
   final String? tagName;
 
-  StanzaHandler({ this.tagXmlns, this.tagName, String? stanzaTag, required bool Function(Stanza) callback }) : super(
+  StanzaHandler({ this.tagXmlns, this.tagName, String? stanzaTag, required Future<bool> Function(Stanza) callback }) : super(
       matchStanzas: true,
       nonzaTag: stanzaTag,
       nonzaXmlns: STANZA_XMLNS,
-      callback: (XMLNode node) => callback(Stanza.fromXMLNode(node))
+      callback: (XMLNode node) async => await callback(Stanza.fromXMLNode(node))
     );
 
   @override

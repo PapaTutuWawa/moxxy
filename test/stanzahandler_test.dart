@@ -13,7 +13,7 @@ final stanza2 = Stanza.message(children: [
 
 void main() {
   test("match all", () {
-      final handler = StanzaHandler(callback: (_) => true);
+      final handler = StanzaHandler(callback: (_) async => true);
 
       expect(handler.matches(Stanza.iq()), true);
       expect(handler.matches(Stanza.message()), true);
@@ -22,7 +22,7 @@ void main() {
       expect(handler.matches(stanza2), true);
   });
   test("xmlns matching", () {
-      final handler = StanzaHandler(callback: (_) => true, tagXmlns: "owo");
+      final handler = StanzaHandler(callback: (_) async => true, tagXmlns: "owo");
 
       expect(handler.matches(Stanza.iq()), false);
       expect(handler.matches(Stanza.message()), false);
@@ -32,7 +32,7 @@ void main() {
   });
   test("stanzaTag matching", () {
       bool run = false;
-      final handler = StanzaHandler(callback: (_) {
+      final handler = StanzaHandler(callback: (_) async {
           run = true;
           return true;
       }, stanzaTag: "iq");
@@ -47,7 +47,7 @@ void main() {
       expect(run, true);
   });
   test("tagName matching", () {
-      final handler = StanzaHandler(callback: (_) => true, tagName: "tag");
+      final handler = StanzaHandler(callback: (_) async => true, tagName: "tag");
 
       expect(handler.matches(Stanza.iq()), false);
       expect(handler.matches(Stanza.message()), false);
@@ -56,7 +56,7 @@ void main() {
       expect(handler.matches(stanza2), false);
   });
   test("combined matching", () {
-      final handler = StanzaHandler(callback: (_) => true, tagName: "tag", stanzaTag: "iq", tagXmlns: "owo");
+      final handler = StanzaHandler(callback: (_) async => true, tagName: "tag", stanzaTag: "iq", tagXmlns: "owo");
 
       expect(handler.matches(Stanza.iq()), false);
       expect(handler.matches(Stanza.message()), false);

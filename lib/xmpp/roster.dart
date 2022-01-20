@@ -72,7 +72,7 @@ class RosterManager extends XmppManagerBase {
     _rosterVersion = ver;
   }
  
-  bool _onRosterPush(Stanza stanza) {
+  Future<bool> _onRosterPush(Stanza stanza) async {
     final attrs = this.getAttributes();
 
     attrs.log("Received roster push");

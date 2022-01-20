@@ -23,6 +23,7 @@ import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/presence.dart";
@@ -301,21 +302,25 @@ class XmppConnection {
   }
 
   /// Called whenever we receive a stanza after resource binding or stream resumption.
-  void _handleStanza(XMLNode stanzaRaw) {
-    // TODO: Improve stanza handling
-    // Ignore nonzas
+  Future<void> _handleStanza(XMLNode stanzaRaw) async {
+    // Process nonzas separately
     if (["message", "iq", "presence"].indexOf(stanzaRaw.tag) == -1) {
       bool nonzaHandled = false;
-      this._xmppManagers.values.forEach((manager) {
+      await Future.forEach(
+        _xmppManagers.values,
+        (XmppManagerBase manager) async {
           // TODO: Maybe abort after the first match
-          final handlers = manager.getNonzaHandlers();
-          handlers.forEach((handler) {
+          await Future.forEach(
+            manager.getNonzaHandlers(),
+            (NonzaHandler handler) async {
               if (handler.matches(stanzaRaw)) {
-                handler.callback(stanzaRaw);
+                await handler.callback(stanzaRaw);
                 nonzaHandled = true;
               }
-          });
-      });
+            }
+          );
+        }
+      );
 
       if (!nonzaHandled) {
         this._log("Unhandled nonza received: " + stanzaRaw.toXml());
@@ -333,16 +338,22 @@ class XmppConnection {
     }
 
     bool handled = false;
-    this._xmppManagers.values.forEach((manager) {
+    await Future.forEach(
+      _xmppManagers.values,
+      (XmppManagerBase manager) async {
         // TODO: Maybe abort after the first match
-        final handlers = manager.getStanzaHandlers();
-        handlers.forEach((handler) {
+        await Future.forEach(
+          manager.getStanzaHandlers(),
+          (StanzaHandler handler) async {
             if (handler.matches(stanza)) {
-              final result = handler.callback(stanza);
+              // TODO: Respect the return value
+              await handler.callback(stanza);
               handled = true;
             }
-        });
-    });
+          }
+        );
+      }
+    );
 
     if (!handled) {
       handleUnhandledStanza(this, stanza);
@@ -492,7 +503,7 @@ class XmppConnection {
       }
       break;
       case RoutingState.HANDLE_STANZAS: {
-        _handleStanza(node);
+        await _handleStanza(node);
       }
       break;
     }

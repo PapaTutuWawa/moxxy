@@ -108,38 +108,39 @@ class StreamManagementManager extends XmppManagerBase {
   bool isStreamManagementEnabled() => this._streamManagementEnabled;
 
   /// To be called when receiving a <a /> nonza.
-  bool _handleAckRequest(XMLNode nonza) {
-    this.getAttributes().log("Sending ack response");
-    this.getAttributes().sendEvent(StreamManagementAckSentEvent(h: this._serverStanzaSeq - 1));
-    this.getAttributes().sendNonza(StreamManagementAckNonza(this._serverStanzaSeq - 1));
+  Future<bool> _handleAckRequest(XMLNode nonza) async {
+    final attrs = getAttributes();
+    attrs.log("Sending ack response");
+    attrs.sendEvent(StreamManagementAckSentEvent(h: this._serverStanzaSeq - 1));
+    attrs.sendNonza(StreamManagementAckNonza(this._serverStanzaSeq - 1));
 
     return true;
   }
 
   /// To be called when we receive a <r /> nonza from the server.
-  bool _handleAckResponse(XMLNode nonza) {
+  Future<bool> _handleAckResponse(XMLNode nonza) async {
     final h = int.parse(nonza.attributes["h"]!);
     
-    this._removeHandledStanzas(h);
+    _removeHandledStanzas(h);
 
     // TODO: Set clientSequence
     
     if (this._unackedStanzas.isNotEmpty) {
-      this._clientStanzaSeq = h + 1;
+      _clientStanzaSeq = h + 1;
       print("QUEUE NOT EMPTY. FLUSHING");
-      this._flushStanzaQueue();
+      _flushStanzaQueue();
     }
 
     return true;
   }
    
   /// To be called whenever we receive a stanza from the server.
-  bool _serverStanzaReceived(stanza) {
+  Future<bool> _serverStanzaReceived(stanza) async {
     print("called");
-    if (this._serverStanzaSeq + 1 == XML_UINT_MAX) {
-      this._serverStanzaSeq = 0;
+    if (_serverStanzaSeq + 1 == XML_UINT_MAX) {
+      _serverStanzaSeq = 0;
     } else {
-      this._serverStanzaSeq++;
+      _serverStanzaSeq++;
     }
 
     return false;

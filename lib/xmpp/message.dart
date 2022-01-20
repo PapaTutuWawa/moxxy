@@ -19,7 +19,7 @@ class MessageManager extends XmppManagerBase {
     )
   ];
 
-  bool _onMessage(Stanza message) {
+  Future<bool> _onMessage(Stanza message) async {
     final body = message.firstTag("body");
     if (body == null) return true;
 

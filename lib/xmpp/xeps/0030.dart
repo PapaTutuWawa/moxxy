@@ -112,72 +112,69 @@ class DiscoManager extends XmppManagerBase {
   @override
   String getId() => DISCO_MANAGER;
   
-  bool _onDiscoInfoRequest(Stanza stanza) {
-    // TODO: Maybe make all callbacks async
-    (() async {
-        final presenceManager = getAttributes().getManagerById(PRESENCE_MANAGER)! as PresenceManager;
-        final query = stanza.firstTag("query")!;
-        final node = query.attributes["node"];
-        final capHash = await presenceManager.getCapabilityHash();
-        final isCapabilityNode = node == "http://moxxy.im#" + capHash;
+  Future<bool> _onDiscoInfoRequest(Stanza stanza) async {
+    final presenceManager = getAttributes().getManagerById(PRESENCE_MANAGER)! as PresenceManager;
+    final query = stanza.firstTag("query")!;
+    final node = query.attributes["node"];
+    final capHash = await presenceManager.getCapabilityHash();
+    final isCapabilityNode = node == "http://moxxy.im#" + capHash;
 
-        if (!isCapabilityNode && node != null) {
-          this.getAttributes().sendStanza((Stanza.iq(
-                to: stanza.from,
-                from: stanza.to,
-                id: stanza.id,
-                type: "error",
-                children: [
-                  XMLNode.xmlns(
-                    tag: "query",
-                    xmlns: query.attributes["xmlns"],
-                    attributes: {
-                      "node": query.attributes["node"]
-                    }
-                  ),
-                  XMLNode(
-                    tag: "error",
-                    attributes: {
-                      "type": "cancel"
-                    },
-                    children: [
-                      XMLNode.xmlns(
-                        tag: "not-allowed",
-                        xmlns: FULL_STANZA_XMLNS
-                      )
-                    ]
-                  )
-                ]
-              )
-          ));
-
-          return true;
-        }
-
-        this.getAttributes().sendStanza(stanza.reply(
+    if (!isCapabilityNode && node != null) {
+      this.getAttributes().sendStanza((Stanza.iq(
+            to: stanza.from,
+            from: stanza.to,
+            id: stanza.id,
+            type: "error",
             children: [
               XMLNode.xmlns(
                 tag: "query",
-                xmlns: DISCO_INFO_XMLNS,
+                xmlns: query.attributes["xmlns"],
                 attributes: {
-                  ...(!isCapabilityNode ? {} : {
-                      "node": "http://moxxy.im#" + capHash
-                  })
+                  "node": query.attributes["node"]
+                }
+              ),
+              XMLNode(
+                tag: "error",
+                attributes: {
+                  "type": "cancel"
                 },
                 children: [
-                  XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
-
-                  ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
+                  XMLNode.xmlns(
+                    tag: "not-allowed",
+                    xmlns: FULL_STANZA_XMLNS
+                  )
                 ]
               )
             ]
-        ));
-    })();
+          )
+      ));
+
+      return true;
+    }
+
+    this.getAttributes().sendStanza(stanza.reply(
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: DISCO_INFO_XMLNS,
+            attributes: {
+              ...(!isCapabilityNode ? {} : {
+                  "node": "http://moxxy.im#" + capHash
+              })
+            },
+            children: [
+              XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
+
+              ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
+            ]
+          )
+        ]
+    ));
 
     return true;
   }
 
-  bool _onDiscoItemsRequest(Stanza stanza) {
+  Future<bool> _onDiscoItemsRequest(Stanza stanza) async {
     final query = stanza.firstTag("query")!;
     if (query.attributes["node"] != null) {
       // TODO: Handle the node we specified for XEP-0115

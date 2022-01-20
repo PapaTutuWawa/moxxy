@@ -23,8 +23,8 @@ class PresenceManager extends XmppManagerBase {
     )
   ];
 
-  bool _onPresence(Stanza presence) {
-    this.getAttributes().log("Received presence from '${presence.from ?? ''}'");
+  Future<bool> _onPresence(Stanza presence) async {
+    getAttributes().log("Received presence from '${presence.from ?? ''}'");
 
     return true;
   }
