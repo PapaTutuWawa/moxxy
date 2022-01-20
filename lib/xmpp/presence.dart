@@ -28,11 +28,11 @@ class PresenceManager extends XmppManagerBase {
 
     return true;
   }
-  
-  /// Sends the initial presence to enable receiving messages.
-  Future<void> sendInitialPresence() async {
-    // TODO: Maybe factor this out
+
+  /// Returns the capability hash.
+  Future<String> getCapabilityHash() async {
     if (_capabilityHash == null) {
+      // TODO: Maybe factor this out
       _capabilityHash = await calculateCapabilityHash(
         DiscoInfo(
           features: DISCO_FEATURES,
@@ -47,6 +47,11 @@ class PresenceManager extends XmppManagerBase {
       );
     }
 
+    return _capabilityHash!;
+  }
+  
+  /// Sends the initial presence to enable receiving messages.
+  Future<void> sendInitialPresence() async {
     final attrs = getAttributes();
     attrs.sendStanza(Stanza.presence(
         from: attrs.getFullJID().toString(),
@@ -61,7 +66,7 @@ class PresenceManager extends XmppManagerBase {
             attributes: {
               "hash": "sha-1",
               "node": "http://moxxy.im",
-              "ver": _capabilityHash!
+              "ver": await getCapabilityHash()
             }
           )
         ]

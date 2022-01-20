@@ -4,6 +4,7 @@ import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
@@ -112,54 +113,67 @@ class DiscoManager extends XmppManagerBase {
   String getId() => DISCO_MANAGER;
   
   bool _onDiscoInfoRequest(Stanza stanza) {
-    final query = stanza.firstTag("query")!;
-    if (query.attributes["node"] != null) {
-      // TODO: Handle the node we specified for XEP-0115
-      this.getAttributes().sendStanza((Stanza.iq(
-            to: stanza.from,
-            from: stanza.to,
-            id: stanza.id,
-            type: "error",
-            children: [
-              XMLNode.xmlns(
-                tag: "query",
-                xmlns: query.attributes["xmlns"],
-                attributes: {
-                  "node": query.attributes["node"]
-                }
-              ),
-              XMLNode(
-                tag: "error",
-                attributes: {
-                  "type": "cancel"
-                },
+    // TODO: Maybe make all callbacks async
+    (() async {
+        final presenceManager = getAttributes().getManagerById(PRESENCE_MANAGER)! as PresenceManager;
+        final query = stanza.firstTag("query")!;
+        final node = query.attributes["node"];
+        final capHash = await presenceManager.getCapabilityHash();
+        final isCapabilityNode = node == "http://moxxy.im#" + capHash;
+
+        if (!isCapabilityNode && node != null) {
+          this.getAttributes().sendStanza((Stanza.iq(
+                to: stanza.from,
+                from: stanza.to,
+                id: stanza.id,
+                type: "error",
                 children: [
                   XMLNode.xmlns(
-                    tag: "not-allowed",
-                    xmlns: FULL_STANZA_XMLNS
+                    tag: "query",
+                    xmlns: query.attributes["xmlns"],
+                    attributes: {
+                      "node": query.attributes["node"]
+                    }
+                  ),
+                  XMLNode(
+                    tag: "error",
+                    attributes: {
+                      "type": "cancel"
+                    },
+                    children: [
+                      XMLNode.xmlns(
+                        tag: "not-allowed",
+                        xmlns: FULL_STANZA_XMLNS
+                      )
+                    ]
                   )
                 ]
               )
-            ]
-          )
-      ));
+          ));
 
-      return true;
-    }
+          return true;
+        }
 
-    this.getAttributes().sendStanza(stanza.reply(
-        children: [
-          XMLNode.xmlns(
-            tag: "query",
-            xmlns: DISCO_INFO_XMLNS,
+        this.getAttributes().sendStanza(stanza.reply(
             children: [
-              XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
+              XMLNode.xmlns(
+                tag: "query",
+                xmlns: DISCO_INFO_XMLNS,
+                attributes: {
+                  ...(!isCapabilityNode ? {} : {
+                      "node": "http://moxxy.im#" + capHash
+                  })
+                },
+                children: [
+                  XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
 
-              ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
+                  ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
+                ]
+              )
             ]
-          )
-        ]
-    ));
+        ));
+    })();
+
     return true;
   }
 
