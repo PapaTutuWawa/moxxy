@@ -2,10 +2,11 @@ import "dart:async";
 import "dart:collection";
 
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/settings.dart";
+import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 
 class XmppManagerAttributes {
   /// Somehow display logging info.
@@ -31,6 +32,9 @@ class XmppManagerAttributes {
 
   /// Returns true if a stream feature is supported
   final bool Function(String) isStreamFeatureSupported;
+
+  /// Returns the full JID of the current account
+  final FullJID Function() getFullJID;
   
-  XmppManagerAttributes({ required this.log, required this.sendStanza, required this.sendNonza, required this.getManagerById, required this.sendEvent, required this.sendRawXml, required this.getConnectionSettings, required this.isStreamFeatureSupported });
+  XmppManagerAttributes({ required this.log, required this.sendStanza, required this.sendNonza, required this.getManagerById, required this.sendEvent, required this.sendRawXml, required this.getConnectionSettings, required this.isStreamFeatureSupported, required this.getFullJID });
 }

@@ -25,6 +25,7 @@ import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/roster.dart";
+import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/xeps/0030.dart";
 import "package:moxxyv2/xmpp/xeps/0115.dart";
 import "package:moxxyv2/xmpp/xeps/0198.dart";
@@ -127,9 +128,10 @@ class XmppConnection {
         sendNonza: sendRawXML,
         sendRawXml: _socket.write,
         sendEvent: sendEvent,
-        getConnectionSettings: () => this._connectionSettings,
+        getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
-        isStreamFeatureSupported: isStreamFeatureSupported
+        isStreamFeatureSupported: isStreamFeatureSupported,
+        getFullJID: () => _connectionSettings.jid.withResource(_resource)
     ));
 
     _xmppManagers[manager.getId()] = manager;
@@ -145,6 +147,14 @@ class XmppConnection {
     return null;
   }
 
+  /// A [PresenceManager] is required so have a wrapper for getting it.
+  /// Returns the registered [PresenceManager].
+  PresenceManager getPresenceManager() {
+    assert(_xmppManagers.containsKey(PRESENCE_MANAGER));
+
+    return getManagerById(PRESENCE_MANAGER)!;
+  }
+  
   /// Set the connection settings of this connection.
   void setConnectionSettings(ConnectionSettings settings) {
     _connectionSettings = settings;
@@ -280,41 +290,6 @@ class XmppConnection {
     return true;
   }
 
-  /// Sends the initial presence to enable receiving messages.
-  Future<void> _sendInitialPresence() async {
-    // TODO: Cache for the next presence broadcast
-    final capHash = await calculateCapabilityHash(
-      DiscoInfo(
-        features: DISCO_FEATURES,
-        identities: [
-          Identity(
-            category: "client",
-            type: "phone",
-            name: "Moxxy"
-          )
-        ]
-      )
-    );
-    this.sendStanza(Stanza.presence(
-        from: this._connectionSettings.jid.withResource(this._resource).toString(),
-        children: [
-          XMLNode(
-            tag: "show",
-            text: "chat"
-          ),
-          XMLNode.xmlns(
-            tag: "c",
-            xmlns: CAPS_XMLNS,
-            attributes: {
-              "hash": "sha-1",
-              "node": "http://moxxy.im",
-              "ver": capHash
-            }
-          )
-        ]
-    ));
-  }
-
   /// Timer callback to prevent the connection from timing out.
   void _pingConnectionOpen(Timer timer) {
     // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
@@ -376,15 +351,15 @@ class XmppConnection {
 
   /// Called whenever we receive data that has been parsed as XML.
   void handleXmlStream(XMLNode node) async {
-    this._log("(xml) <== " + node.toXml());
+    _log("(xml) <== " + node.toXml());
 
     // TODO: Handle RoutingState.BIND_RESOURCE
-    switch (this._routingState) {
+    switch (_routingState) {
       case RoutingState.UNAUTHENTICATED: {
         // We expect the stream header here
         if (node.tag != "stream:stream") {
-          this._log("ERROR: Expected stream header");
-          this._routingState = RoutingState.ERROR;
+          _log("ERROR: Expected stream header");
+          _routingState = RoutingState.ERROR;
           return;
         }
 
@@ -393,48 +368,48 @@ class XmppConnection {
         final mechanisms = mechanismNodes.children.map((node) => node.innerText()).toList();
         final authenticator = getAuthenticator(
           mechanisms,
-          this._connectionSettings,
-          this.sendRawXML,
+          _connectionSettings,
+          sendRawXML,
         );
 
         if (authenticator == null) {
-          this._routingState = RoutingState.ERROR;
+          _routingState = RoutingState.ERROR;
           return;
         } else {
-          this._authenticator = authenticator;
+          _authenticator = authenticator;
         }
 
         this._routingState = RoutingState.PERFORM_SASL_AUTH;
         final result = await this._authenticator.next(null);
         if (result.getState() == AuthenticationResult.SUCCESS) {
-          this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
-          this._sendStreamHeader();
+          _routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
+          _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.FAILURE) {
-          this._log("SASL failed");
-          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          this._setConnectionState(ConnectionState.ERROR);
-          this._routingState = RoutingState.ERROR;
+          _log("SASL failed");
+          sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          _setConnectionState(ConnectionState.ERROR);
+          _routingState = RoutingState.ERROR;
         }
       }
       break;
       case RoutingState.PERFORM_SASL_AUTH: {
-        final result = await this._authenticator.next(node);
+        final result = await _authenticator.next(node);
         if (result.getState() == AuthenticationResult.SUCCESS) {
-          this._routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
-          this._sendStreamHeader();
+          _routingState = RoutingState.CHECK_STREAM_MANAGEMENT;
+          _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.FAILURE) {
-          this._log("SASL failed");
-          this.sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          this._setConnectionState(ConnectionState.ERROR);
-          this._routingState = RoutingState.ERROR;
+          _log("SASL failed");
+          sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          _setConnectionState(ConnectionState.ERROR);
+          _routingState = RoutingState.ERROR;
         }
       }
       break;
       case RoutingState.CHECK_STREAM_MANAGEMENT: {
         // We expect the stream header here
         if (node.tag != "stream:stream") {
-          this._log("ERROR: Expected stream header");
-          this._routingState = RoutingState.ERROR;
+          _log("ERROR: Expected stream header");
+          _routingState = RoutingState.ERROR;
           return;
         }
 
@@ -442,9 +417,9 @@ class XmppConnection {
         // TODO: Handle required features?
         // NOTE: In case of reconnecting
         this._streamFeatures.clear();
-        streamFeatures.children.forEach((node) => this._streamFeatures.add(node.attributes["xmlns"]));
+        streamFeatures.children.forEach((node) => _streamFeatures.add(node.attributes["xmlns"]));
 
-        if (this.isStreamFeatureSupported(SM_XMLNS) && _xmppManagers.containsKey(SM_MANAGER)) {
+        if (isStreamFeatureSupported(SM_XMLNS) && _xmppManagers.containsKey(SM_MANAGER)) {
           final manager = _xmppManagers[SM_MANAGER]! as StreamManagementManager;;
           await manager.loadStreamResumptionId();
           await manager.loadClientSeq();
@@ -454,69 +429,70 @@ class XmppConnection {
           // Try to work with SM first
           if (srid != null) {
             // Try to resume the last stream
-            this._routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
-            this.sendRawXML(StreamManagementResumeNonza(srid, h));
+            _routingState = RoutingState.PERFORM_STREAM_RESUMPTION;
+            sendRawXML(StreamManagementResumeNonza(srid, h));
           } else {
             // Try to enable SM
-            this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
-            this._performResourceBinding();
+            _routingState = RoutingState.BIND_RESOURCE_PRE_SM;
+            _performResourceBinding();
           }
         } else {
-          this._routingState = RoutingState.BIND_RESOURCE;
-          this._performResourceBinding();
+          _routingState = RoutingState.BIND_RESOURCE;
+          _performResourceBinding();
         }
       }
       break;
       case RoutingState.BIND_RESOURCE_PRE_SM: {
-        final proceed = this._handleResourceBindingResult(node);
+        final proceed = _handleResourceBindingResult(node);
         if (proceed) {
-          this._routingState = RoutingState.ENABLE_SM;
-          this.sendRawXML(StreamManagementEnableNonza());
+          _routingState = RoutingState.ENABLE_SM;
+          sendRawXML(StreamManagementEnableNonza());
         }
       }
       break;
       case RoutingState.PERFORM_STREAM_RESUMPTION: {
         // TODO: Synchronize the h values
         if (node.tag == "resumed") {
-          this._log("Stream Resumption successful!");
-          this.sendEvent(StreamManagementResumptionSuccessfulEvent());
+          _log("Stream Resumption successful!");
+          sendEvent(StreamManagementResumptionSuccessfulEvent());
           // NOTE: _resource is already set if we resume
-          this._routingState = RoutingState.HANDLE_STANZAS;
-          this._setConnectionState(ConnectionState.CONNECTED);
+          _routingState = RoutingState.HANDLE_STANZAS;
+          _setConnectionState(ConnectionState.CONNECTED);
 
           final h = int.parse(node.attributes["h"]!);
-          this.sendEvent(StreamResumedEvent(h: h));
-          this._sendInitialPresence();
+          sendEvent(StreamResumedEvent(h: h));
+          // TODO: Do we really need to send an initial presence here?
+          //getPresenceManager().sendInitialPresence();
         } else if (node.tag == "failed") {
-          this._log("Stream resumption failed. Proceeding with new stream...");
-          this._routingState = RoutingState.BIND_RESOURCE_PRE_SM;
-          this._performResourceBinding();
+          _log("Stream resumption failed. Proceeding with new stream...");
+          _routingState = RoutingState.BIND_RESOURCE_PRE_SM;
+          _performResourceBinding();
         }
       }
       break;
       case RoutingState.ENABLE_SM: {
         if (node.tag == "failed") {
           // Not critical
-          this._log("Failed to enable SM: " + node.tag);
-          this._routingState = RoutingState.HANDLE_STANZAS;
-          this._sendInitialPresence();
+          _log("Failed to enable SM: " + node.tag);
+          _routingState = RoutingState.HANDLE_STANZAS;
+          getPresenceManager().sendInitialPresence();
         } else if (node.tag == "enabled") {
-          this._log("SM enabled!");
+          _log("SM enabled!");
 
           final id = node.attributes["id"];
           if (id != null && [ "true", "1" ].indexOf(node.attributes["resume"]) != -1) {
-            this._log("Stream resumption possible!");
-            this.sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
+            _log("Stream resumption possible!");
+            sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
           }
 
-          this._routingState = RoutingState.HANDLE_STANZAS;
-          this._sendInitialPresence();
-          this._setConnectionState(ConnectionState.CONNECTED);
+          _routingState = RoutingState.HANDLE_STANZAS;
+          getPresenceManager().sendInitialPresence();
+          _setConnectionState(ConnectionState.CONNECTED);
         }
       }
       break;
       case RoutingState.HANDLE_STANZAS: {
-        this._handleStanza(node);
+        _handleStanza(node);
       }
       break;
     }
