@@ -127,7 +127,7 @@ class XmppConnection {
         sendStanza: sendStanza,
         sendNonza: sendRawXML,
         sendRawXml: _socket.write,
-        sendEvent: sendEvent,
+        sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
         isStreamFeatureSupported: isStreamFeatureSupported,
@@ -222,7 +222,7 @@ class XmppConnection {
     }
 
     // Tell the SM manager that we're about to send a stanza
-    this.sendEvent(StanzaSentEvent(stanza: stanza));
+    this._sendEvent(StanzaSentEvent(stanza: stanza));
     
     return this._awaitingResponse[stanza.id!]!.future;
   }
@@ -285,7 +285,7 @@ class XmppConnection {
     // TODO: Use our FullJID class
     this._resource = jid.innerText().split("/")[1];
 
-    sendEvent(ResourceBindingSuccessEvent(resource: _resource));
+    _sendEvent(ResourceBindingSuccessEvent(resource: _resource));
 
     return true;
   }
@@ -296,7 +296,7 @@ class XmppConnection {
     // send a whitespace ping
     if (this._connectionState == ConnectionState.CONNECTED) {
       final smManager = this._xmppManagers[SM_MANAGER];
-      this.sendEvent(SendPingEvent());
+      this._sendEvent(SendPingEvent());
     }
   }
 
@@ -386,7 +386,7 @@ class XmppConnection {
           _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.FAILURE) {
           _log("SASL failed");
-          sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(ConnectionState.ERROR);
           _routingState = RoutingState.ERROR;
         }
@@ -399,7 +399,7 @@ class XmppConnection {
           _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.FAILURE) {
           _log("SASL failed");
-          sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(ConnectionState.ERROR);
           _routingState = RoutingState.ERROR;
         }
@@ -454,13 +454,13 @@ class XmppConnection {
         // TODO: Synchronize the h values
         if (node.tag == "resumed") {
           _log("Stream Resumption successful!");
-          sendEvent(StreamManagementResumptionSuccessfulEvent());
+          _sendEvent(StreamManagementResumptionSuccessfulEvent());
           // NOTE: _resource is already set if we resume
           _routingState = RoutingState.HANDLE_STANZAS;
           _setConnectionState(ConnectionState.CONNECTED);
 
           final h = int.parse(node.attributes["h"]!);
-          sendEvent(StreamResumedEvent(h: h));
+          _sendEvent(StreamResumedEvent(h: h));
           // TODO: Do we really need to send an initial presence here?
           //getPresenceManager().sendInitialPresence();
         } else if (node.tag == "failed") {
@@ -482,7 +482,7 @@ class XmppConnection {
           final id = node.attributes["id"];
           if (id != null && [ "true", "1" ].indexOf(node.attributes["resume"]) != -1) {
             _log("Stream resumption possible!");
-            sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
+            _sendEvent(StreamManagementEnabledEvent(id: id, resource: this._resource));
           }
 
           _routingState = RoutingState.HANDLE_STANZAS;
@@ -499,7 +499,7 @@ class XmppConnection {
   }
 
   /// Sends an event to the connection's event stream.
-  void sendEvent(XmppEvent event) {
+  void _sendEvent(XmppEvent event) {
     this._xmppManagers.values.forEach((manager) => manager.onXmppEvent(event));
 
     this._eventStreamController.add(event);
