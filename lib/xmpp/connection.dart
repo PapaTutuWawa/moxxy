@@ -473,18 +473,16 @@ class XmppConnection {
       }
       break;
       case RoutingState.PERFORM_STREAM_RESUMPTION: {
-        // TODO: Synchronize the h values
         if (node.tag == "resumed") {
           _log("Stream Resumption successful!");
           _sendEvent(StreamManagementResumptionSuccessfulEvent());
           // NOTE: _resource is already set if we resume
+          assert(_resource != null);
           _routingState = RoutingState.HANDLE_STANZAS;
           _setConnectionState(ConnectionState.CONNECTED);
 
           final h = int.parse(node.attributes["h"]!);
           _sendEvent(StreamResumedEvent(h: h));
-          // TODO: Do we really need to send an initial presence here?
-          //getPresenceManager().sendInitialPresence();
         } else if (node.tag == "failed") {
           _log("Stream resumption failed. Proceeding with new stream...");
           _routingState = RoutingState.BIND_RESOURCE_PRE_SM;
