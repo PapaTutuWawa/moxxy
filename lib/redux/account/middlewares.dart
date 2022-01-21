@@ -1,6 +1,5 @@
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/account/actions.dart";
-import "package:moxxyv2/redux/account/state.dart";
 import "package:moxxyv2/backend/account.dart";
 
 import "package:redux/redux.dart";

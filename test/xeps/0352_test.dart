@@ -13,6 +13,7 @@ void main() {
           bool nonzaSent = false;
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
+              // ignore: avoid_print
               log: (str) => print(str),
               sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {},
@@ -39,11 +40,12 @@ void main() {
       test("Test setting the CSI state when CSI is supported", () {
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
+              // ignore: avoid_print
               log: (str) => print(str),
               sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {},
               sendNonza: (nonza) {
-                expect(nonza.attributes["xmlns"] == CSI_XMLNS, true, reason: "Expected only nonzas with XMLNS '${CSI_XMLNS}'");
+                expect(nonza.attributes["xmlns"] == csiXmlns, true, reason: "Expected only nonzas with XMLNS '$csiXmlns'");
               },
               sendRawXml: (_) {},
               getConnectionSettings: () => ConnectionSettings(
@@ -53,7 +55,7 @@ void main() {
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
-              isStreamFeatureSupported: (xmlns) => xmlns == CSI_XMLNS,
+              isStreamFeatureSupported: (xmlns) => xmlns == csiXmlns,
               getFullJID: () => FullJID.fromString("some.user@example.server/aaaaa")
           ));
 

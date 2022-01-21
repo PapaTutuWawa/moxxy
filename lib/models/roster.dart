@@ -1,5 +1,3 @@
-import "dart:collection";
-
 import "package:equatable/equatable.dart";
 
 class RosterItem extends Equatable {
@@ -8,7 +6,7 @@ class RosterItem extends Equatable {
   final String title;
   final int id;
 
-  RosterItem({ required this.avatarUrl, required this.jid, required this.title, required this.id });
+  const RosterItem({ required this.avatarUrl, required this.jid, required this.title, required this.id });
 
   RosterItem.fromJson(Map<String, dynamic> json)
   : avatarUrl = json["avatarUrl"],
@@ -17,10 +15,10 @@ class RosterItem extends Equatable {
   id = json["id"];
 
   Map<String, dynamic> toJson() => {
-    "avatarUrl": this.avatarUrl,
-    "jid": this.jid,
-    "title": this.title,
-    "id": this.id
+    "avatarUrl": avatarUrl,
+    "jid": jid,
+    "title": title,
+    "id": id
   };
   
   @override

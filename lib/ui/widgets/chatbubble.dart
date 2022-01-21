@@ -16,7 +16,7 @@ class ChatBubble extends StatefulWidget {
   final bool end;
   final double maxWidth;
 
-  ChatBubble({
+  const ChatBubble({
       required this.message,
       required this.sentBySelf,
       required this.closerTogether,
@@ -28,14 +28,15 @@ class ChatBubble extends StatefulWidget {
   }) : super(key: key);
 
   @override
+  // ignore: no_logic_in_create_state
   _ChatBubbleState createState() => _ChatBubbleState(
-      message: this.message,
-      sentBySelf: this.sentBySelf,
-      closerTogether: this.closerTogether,
-      between: this.between,
-      start: this.start,
-      end: this.end,
-      maxWidth: this.maxWidth
+      message: message,
+      sentBySelf: sentBySelf,
+      closerTogether: closerTogether,
+      between: between,
+      start: start,
+      end: end,
+      maxWidth: maxWidth
   );
 }
 
@@ -63,31 +64,29 @@ class _ChatBubbleState extends State<ChatBubble> {
   }) {
     // Different name for now to prevent possible shadowing issues
     final _now = DateTime.now().millisecondsSinceEpoch;
-    this._timestampString = formatMessageTimestamp(this.message.timestamp, _now);
+    _timestampString = formatMessageTimestamp(message.timestamp, _now);
 
     // Only start the timer if neccessary
-    if (_now - this.message.timestamp <= 15 * Duration.millisecondsPerMinute) {
-      print("Starting timer");
-      this._updateTimer = Timer.periodic(Duration(minutes: 1), (timer) {
-          this.setState(() {
+    if (_now - message.timestamp <= 15 * Duration.millisecondsPerMinute) {
+      _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+          setState(() {
               final now = DateTime.now().millisecondsSinceEpoch;
-              this._timestampString = formatMessageTimestamp(this.message.timestamp, now);
+              _timestampString = formatMessageTimestamp(message.timestamp, now);
 
-              if (now - this.message.timestamp > 15 * Duration.millisecondsPerMinute) {
-                print("Cancelling timer");
-                this._updateTimer!.cancel();
+              if (now - message.timestamp > 15 * Duration.millisecondsPerMinute) {
+                _updateTimer!.cancel();
               }
           });
       });
     } else {
-      this._updateTimer = null;
+      _updateTimer = null;
     }
   }
 
   @override
   void dispose() {
-    if (this._updateTimer != null) {
-      this._updateTimer!.cancel();
+    if (_updateTimer != null) {
+      _updateTimer!.cancel();
     }
 
     super.dispose();
@@ -97,47 +96,47 @@ class _ChatBubbleState extends State<ChatBubble> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        left: !this.sentBySelf ? 8.0 : 0.0, // Conditional
-        right: this.sentBySelf ? 8.0 : 0.0,
+        left: !sentBySelf ? 8.0 : 0.0, // Conditional
+        right: sentBySelf ? 8.0 : 0.0,
         top: 1.0,
-        bottom: this.closerTogether ? 1.0 : 8.0
+        bottom: closerTogether ? 1.0 : 8.0
       ),
       child: Row(
-        mainAxisAlignment: this.sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Container(
             constraints: BoxConstraints(
-              maxWidth: this.maxWidth
+              maxWidth: maxWidth
             ),
             decoration: BoxDecoration(
-              color: this.sentBySelf ? BUBBLE_COLOR_SENT : BUBBLE_COLOR_RECEIVED,
+              color: sentBySelf ? bubbleColorSent : bubbleColorReceived,
               borderRadius: BorderRadius.only(
-                topLeft: !this.sentBySelf && (this.between || this.end) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE,
-                topRight: this.sentBySelf && (this.between || this.end) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE,
-                bottomLeft: !this.sentBySelf && (this.between || this.start) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE,
-                bottomRight: this.sentBySelf && (this.between || this.start) && !(this.start && this.end) ? RADIUS_SMALL : RADIUS_LARGE
+                topLeft: !sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
+                topRight: sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
+                bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
+                bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
               )
             ),
             child: Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: IntrinsicWidth(child: Column(
                   children: [
                     Text(
-                      this.message.body,
-                      style: TextStyle(
+                      message.body,
+                      style: const TextStyle(
                         color: Colors.white,
-                        fontSize: FONTSIZE_BODY
+                        fontSize: fontsizeBody
                       )
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Padding(
-                          padding: EdgeInsets.only(top: 3.0),
+                          padding: const EdgeInsets.only(top: 3.0),
                           child: Text(
-                            this._timestampString,
-                            style: TextStyle(
-                              fontSize: FONTSIZE_SUBBODY,
+                            _timestampString,
+                            style: const TextStyle(
+                              fontSize: fontsizeSubbody,
                               color: Color(0xffbdbdbd)
                             )
                           )

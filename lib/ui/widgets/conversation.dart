@@ -17,17 +17,18 @@ class ConversationsListRow extends StatefulWidget {
   final int lastChangeTimestamp;
   final bool update; // Should a timer run to update the timestamp
   
-  ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp, this.update, { Key? key }) : super(key: key);
+  const ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp, this.update, { Key? key }) : super(key: key);
 
   @override
+  // ignore: no_logic_in_create_state
   _ConversationsListRowState createState() => _ConversationsListRowState(
-    this.avatarUrl,
-    this.name,
-    this.lastMessageBody,
-    this.unreadCount,
-    this.maxTextWidth,
-    this.lastChangeTimestamp,
-    this.update
+    avatarUrl,
+    name,
+    lastMessageBody,
+    unreadCount,
+    maxTextWidth,
+    lastChangeTimestamp,
+    update
   );
 }
 
@@ -45,37 +46,37 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
   _ConversationsListRowState(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp, bool update) {
     final _now = DateTime.now().millisecondsSinceEpoch;
 
-    this._timestampString = formatConversationTimestamp(
-      this.lastChangeTimestamp,
+    _timestampString = formatConversationTimestamp(
+      lastChangeTimestamp,
       _now
     );
 
     // NOTE: We could also check and run the timer hourly, but who has a messenger on the
     //       conversation screen open for hours on end?
-    if (update && lastChangeTimestamp > -1 && _now - this.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
-      this._updateTimer = Timer.periodic(Duration(minutes: 1), (timer) {
+    if (update && lastChangeTimestamp > -1 && _now - lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+      _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
           final now = DateTime.now().millisecondsSinceEpoch;
           setState(() {
-              this._timestampString = formatConversationTimestamp(
-                this.lastChangeTimestamp,
+              _timestampString = formatConversationTimestamp(
+                lastChangeTimestamp,
                 now
               );
           });
 
-          if (now - this.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
-            this._updateTimer!.cancel();
-            this._updateTimer = null;
+          if (now - lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+            _updateTimer!.cancel();
+            _updateTimer = null;
           }
       });
     } else {
-      this._updateTimer = null;
+      _updateTimer = null;
     }
   }
 
   @override
   void dispose() {
-    if (this._updateTimer != null) {
-      this._updateTimer!.cancel();
+    if (_updateTimer != null) {
+      _updateTimer!.cancel();
     }
 
     super.dispose();
@@ -83,33 +84,33 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
   
   @override
   Widget build(BuildContext context) {
-    String badgeText = this.unreadCount > 99 ? "99+" : this.unreadCount.toString();
+    String badgeText = unreadCount > 99 ? "99+" : unreadCount.toString();
 
     return Stack(
       children: [
         Row(
           children: [
             Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: AvatarWrapper(
                 radius: 35.0,
-                avatarUrl: this.avatarUrl,
+                avatarUrl: avatarUrl,
                 // TODO: Make this consistent by moving this inside the AvatarWrapper widget
-                alt: Text(this.name[0] + this.name[1])
+                alt: Text(name[0] + name[1])
               )
             ),
             Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     constraints: BoxConstraints(
-                      maxWidth: this.maxTextWidth
+                      maxWidth: maxTextWidth
                     ),
                     child: Text(
-                      this.name,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                      name,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis
                     )
@@ -117,11 +118,11 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                   // TODO: Change color and font size
                   Container(
                     constraints: BoxConstraints(
-                      maxWidth: this.maxTextWidth
+                      maxWidth: maxTextWidth
                     ),
 
                     child: Text(
-                      this.lastMessageBody,
+                      lastMessageBody,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis
                     )
@@ -129,26 +130,26 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                 ]
               )
             ),
-            Spacer(),
+            const Spacer(),
             Visibility(
-              visible: this.unreadCount > 0,
+              visible: unreadCount > 0,
               child: Padding(
-                padding: EdgeInsetsDirectional.only(end: 8.0),
+                padding: const EdgeInsetsDirectional.only(end: 8.0),
                 child: Badge(
                   badgeContent: Text(badgeText),
-                  badgeColor: BUBBLE_COLOR_SENT
+                  badgeColor: bubbleColorSent
                 )
               )
             )
           ]
         ),
         Visibility(
-          visible: this.lastChangeTimestamp != TIMESTAMP_NEVER,
+          visible: lastChangeTimestamp != timestampNever,
           child: Positioned(
             top: 8,
             right: 8,
             child: Text(
-              this._timestampString
+              _timestampString
             )
           )
         ) 

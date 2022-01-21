@@ -7,10 +7,13 @@ class PermanentSnackBar extends StatefulWidget {
   final String actionText;
   final void Function() onPressed;
 
-  PermanentSnackBar({ required this.text, required this.actionText, required this.onPressed });
-  
+  // TODO: Remove linter ignore
+  // ignore: prefer_const_constructors_in_immutables
+  PermanentSnackBar({ required this.text, required this.actionText, required this.onPressed, Key? key }) : super(key: key);
+
   @override
-  _PermanentSnackBarState createState() => _PermanentSnackBarState(text: this.text, actionText: this.actionText, onPressed: this.onPressed);
+  // ignore: no_logic_in_create_state
+  _PermanentSnackBarState createState() => _PermanentSnackBarState(text: text, actionText: actionText, onPressed: onPressed);
 }
 
 class _PermanentSnackBarState extends State<PermanentSnackBar> with TickerProviderStateMixin {
@@ -27,15 +30,15 @@ class _PermanentSnackBarState extends State<PermanentSnackBar> with TickerProvid
   void initState() {
     super.initState();
 
-    this._controller = AnimationController(
-      duration: Duration(milliseconds: 200),
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
       vsync: this
     )..forward();
-    this._animation = Tween(
-      begin: Offset(0.0, 1.0),
+    _animation = Tween(
+      begin: const Offset(0.0, 1.0),
       end: Offset.zero
     ).animate(CurvedAnimation(
-        parent: this._controller!,
+        parent: _controller!,
         curve: Curves.easeOutCubic
     ));
   }
@@ -43,24 +46,24 @@ class _PermanentSnackBarState extends State<PermanentSnackBar> with TickerProvid
   @override
   Widget build(BuildContext context) {
     return SlideTransition(
-      position: this._animation!,
+      position: _animation!,
       child: Container(
-        color: PRIMARY_COLOR,
+        color: primaryColor,
         child: Padding(
-          padding: EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(this.text),
-              Spacer(),
+              Text(text),
+              const Spacer(),
               TextButton(
                 child: Text(
-                  this.actionText,
-                  style: TextStyle(
+                  actionText,
+                  style: const TextStyle(
                     color: Colors.white
                   )
                 ),
-                onPressed: this.onPressed
+                onPressed: onPressed
               )
             ]
           )

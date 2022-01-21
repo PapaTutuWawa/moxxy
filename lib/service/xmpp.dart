@@ -19,7 +19,6 @@ import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
-import "package:isar/isar.dart";
 import "package:awesome_notifications/awesome_notifications.dart";
 
 import "package:moxxyv2/isar.g.dart";
@@ -55,8 +54,8 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
 
 class MoxxyRosterManger extends RosterManager {
   @override
-  Future<void> commitLastRosterVersion(String ver) async {
-    await GetIt.I.get<XmppRepository>().saveLastRosterVersion(ver);
+  Future<void> commitLastRosterVersion(String version) async {
+    await GetIt.I.get<XmppRepository>().saveLastRosterVersion(version);
   }
 
   @override
@@ -86,6 +85,7 @@ Future<void> initializeServiceIfNeeded() async {
 void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService srv) {
   return (data) {
     // NOTE: *S*erver to *F*oreground
+    // ignore: avoid_print
     print("[S2F] " + data.toString());
 
     srv.sendData(data);
@@ -198,6 +198,7 @@ Future<FlutterBackgroundService> initializeService() async {
 
 void handleEvent(Map<String, dynamic>? data) {
   // NOTE: *F*oreground to *S*ervice
+  // ignore: avoid_print
   print("[F2S] " + data.toString());
 
   switch (data!["type"]) {
@@ -278,8 +279,8 @@ void handleEvent(Map<String, dynamic>? data) {
       (() async {
           final jid = data["jid"]!;
           //await GetIt.I.get<DatabaseRepository>().removeRosterItemByJid(jid, nullOkay: true);
-          await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.removeFromRoster(jid);
-          await GetIt.I.get<XmppConnection>().getManagerById(ROSTER_MANAGER)!.sendUnsubscriptionRequest(jid);
+          await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.removeFromRoster(jid);
+          await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.sendUnsubscriptionRequest(jid);
       })();
     }
     break;
@@ -288,7 +289,7 @@ void handleEvent(Map<String, dynamic>? data) {
     }
     break;
     case "SetCSIState": {
-      final csi = GetIt.I.get<XmppConnection>().getManagerById(CSI_MANAGER);
+      final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager);
       if (csi == null) {
         return;
       }

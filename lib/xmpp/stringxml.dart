@@ -1,5 +1,3 @@
-import "dart:collection";
-
 import "package:xml/xml.dart";
 
 class XMLNode {
@@ -13,8 +11,9 @@ class XMLNode {
   XMLNode({ required this.tag, this.attributes = const {}, List<XMLNode> children = const [], this.closeTag = true, this.text, this.isDeclaration = false }) : children = children;
   XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String> attributes = const {}, this.children = const [], this.closeTag = true, this.text }) : attributes = { "xmlns": xmlns, ...attributes }, isDeclaration = false;
 
+  /// Adds a child to this node.
   void addChild(XMLNode child) {
-    this.children.add(child);
+    children.add(child);
   }
 
   /// Renders the attributes of the node into "attr1=\"value\" attr2=...".
@@ -23,7 +22,7 @@ class XMLNode {
         final value = attributes[key]!;
         assert(value is String || value is int);
         if (value is String) {
-          return "$key='${value}'";
+          return "$key='$value'";
         } else {
           return "$key=${value.toString()}";
         }
@@ -36,14 +35,14 @@ class XMLNode {
     if (children.isEmpty) {
       if (text != null && text!.isNotEmpty) {
         final attrString = attributes.isEmpty ? "" : " " + renderAttributes();
-        return "<${tag}${attrString}>${text}</${tag}>";
+        return "<$tag$attrString>$text</$tag>";
       } else {
-        return "<${decl}${tag} ${renderAttributes()}" + (closeTag ? " />" : "${decl}>");
+        return "<$decl$tag ${renderAttributes()}" + (closeTag ? " />" : "$decl>");
       } 
     } else { 
       final String childXml = children.map((child) => child.toXml()).join();
-      final xml = "<${decl}${tag} ${renderAttributes()}${decl}>${childXml}";
-      return xml + (closeTag ? "</${tag}>" : "");
+      final xml = "<$decl$tag ${renderAttributes()}$decl>$childXml";
+      return xml + (closeTag ? "</$tag>" : "");
     }
   }
 
@@ -99,13 +98,13 @@ class XMLNode {
   /// Because this API is better ;)
   /// Don't use in production. Just for testing
   static XMLNode fromXmlElement(XmlElement element) {
-    Map<String, String> attributes = Map();
+    Map<String, String> attributes = {};
 
-    element.attributes.forEach((attribute) {
-        attributes[attribute.name.qualified] = attribute.value;
-    });
+    for (var attribute in element.attributes) {
+      attributes[attribute.name.qualified] = attribute.value;
+    }
 
-    if (element.childElements.length == 0) {
+    if (element.childElements.isEmpty) {
       return XMLNode(
         tag: element.name.qualified,
         attributes: attributes,

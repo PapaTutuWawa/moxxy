@@ -19,7 +19,7 @@ Future<XEP0368LookupResult?> perform0368Lookup(String domain) async {
   );
 
   if (records == null) return null;
-  if (records.length == 0) return null;
+  if (records.isEmpty) return null;
 
   // TODO: We are ignoring the priority
   final dataParts = records[0].data.split(" ");

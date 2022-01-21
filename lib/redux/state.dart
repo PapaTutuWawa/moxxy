@@ -75,7 +75,7 @@ class MoxxyState {
       registerPageState = RegisterPageState.initialState(),
       postRegisterPageState = PostRegisterPageState.initialState(),
       profilePageState = ProfilePageState.initialState(),
-      accountState = AccountState.initialState(),
+      accountState = const AccountState.initialState(),
       globalState = GlobalState.initialState(),
       openConversationJid = null,
       addContactErrorText = null;

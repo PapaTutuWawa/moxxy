@@ -1,5 +1,3 @@
-import "dart:async";
-
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
@@ -15,7 +13,6 @@ import "package:flutter/material.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
 
 class _ConversationsListViewModel {
   final List<Conversation> conversations;
@@ -24,18 +21,20 @@ class _ConversationsListViewModel {
   final void Function(String) goToConversation;
   final void Function(Conversation) closeConversation;
 
-  _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl, required this.goToConversation, required this.closeConversation });
+  const _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl, required this.goToConversation, required this.closeConversation });
 }
 
 enum ConversationsOptions {
-  SETTINGS
+  settings
 }
 
 class ConversationsPage extends StatelessWidget {
+  const ConversationsPage({ Key? key }) : super(key: key);
+
   Widget _listWrapper(BuildContext context, _ConversationsListViewModel viewModel) {
     double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
 
-    if (viewModel.conversations.length > 0) {
+    if (viewModel.conversations.isNotEmpty) {
       return ListView.builder(
         itemCount: viewModel.conversations.length,
         itemBuilder: (_context, index) {
@@ -46,9 +45,9 @@ class ConversationsPage extends StatelessWidget {
             background: Container(
               color: Colors.red,
               child: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
-                  children: [
+                  children: const [
                     Icon(Icons.delete),
                     Spacer(),
                     Icon(Icons.delete)
@@ -75,21 +74,21 @@ class ConversationsPage extends StatelessWidget {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+      padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 8.0),
+            padding: const EdgeInsets.only(top: 8.0),
             // TODO: Maybe somehow render the svg
             child: Image.asset("assets/images/begin_chat.png")
           ),
-          Padding(
+          const Padding(
             padding: EdgeInsets.only(top: 8.0),
             child: Text("You have no open chats")
           ),
           TextButton(
-            child: Text("Start a chat"),
+            child: const Text("Start a chat"),
             onPressed: () => Navigator.pushNamed(context, "/new_conversation")
           )
         ]
@@ -98,7 +97,7 @@ class ConversationsPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext buildContext) {
+  Widget build(BuildContext context) {
     return StoreConnector<MoxxyState, _ConversationsListViewModel>(
       converter: (store) => _ConversationsListViewModel(
         conversations: store.state.conversations.values.where((c) => c.open).toList(),
@@ -118,46 +117,46 @@ class ConversationsPage extends StatelessWidget {
             altIcon: Icons.person
           ),
           title: viewModel.displayName,
-          onTapFunction: () => Navigator.pushNamed(buildContext, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
+          onTapFunction: () => Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
           showBackButton: false,
           extra: [
             PopupMenuButton(
               onSelected: (ConversationsOptions result) {
-                if (result == ConversationsOptions.SETTINGS) {
-                  Navigator.pushNamed(buildContext, "/settings");
+                if (result == ConversationsOptions.settings) {
+                  Navigator.pushNamed(context, "/settings");
                 }
               },
-              icon: Icon(Icons.more_vert),
+              icon: const Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
-                PopupMenuItem(
-                  value: ConversationsOptions.SETTINGS,
+                const PopupMenuItem(
+                  value: ConversationsOptions.settings,
                   child: Text("Settings")
                 )
               ]
             )
           ]
         ),
-        body: this._listWrapper(context, viewModel),
+        body: _listWrapper(context, viewModel),
         floatingActionButton: SpeedDial(
           icon: Icons.chat,
           visible: true,
           curve: Curves.bounceInOut,
-          backgroundColor: PRIMARY_COLOR,
+          backgroundColor: primaryColor,
           // TODO: Theme dependent?
           foregroundColor: Colors.white,
           children: [
             SpeedDialChild(
-              child: Icon(Icons.group),
-              onTap: () => showNotImplementedDialog("groupchat", buildContext),
-              backgroundColor: PRIMARY_COLOR,
+              child: const Icon(Icons.group),
+              onTap: () => showNotImplementedDialog("groupchat", context),
+              backgroundColor: primaryColor,
               // TODO: Theme dependent?
               foregroundColor: Colors.white,
               label: "Join groupchat"
             ),
             SpeedDialChild(
-              child: Icon(Icons.person_add),
-              onTap: () => Navigator.pushNamed(buildContext, "/new_conversation"),
-              backgroundColor: PRIMARY_COLOR,
+              child: const Icon(Icons.person_add),
+              onTap: () => Navigator.pushNamed(context, "/new_conversation"),
+              backgroundColor: primaryColor,
               // TODO: Theme dependent?
               foregroundColor: Colors.white,
               label: "New chat"

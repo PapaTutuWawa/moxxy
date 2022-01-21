@@ -1,13 +1,11 @@
-import "dart:collection";
-
 class AccountState {
   final String jid;
   final String displayName;
   final String avatarUrl;
   final String streamResumptionToken;
 
-  AccountState({ required this.jid, required this.displayName, required this.avatarUrl, this.streamResumptionToken = "" });
-  AccountState.initialState() : jid = "", avatarUrl = "", displayName = "", streamResumptionToken = "";
+  const AccountState({ required this.jid, required this.displayName, required this.avatarUrl, this.streamResumptionToken = "" });
+  const AccountState.initialState() : jid = "", avatarUrl = "", displayName = "", streamResumptionToken = "";
   
   factory AccountState.fromJson(Map<String, dynamic> json) {
     return AccountState(
@@ -20,10 +18,10 @@ class AccountState {
 
   Map<String, dynamic> toJson() {
     return {
-      "jid": this.jid,
-      "displayName": this.displayName,
-      "avatarUrl": this.avatarUrl,
-      "streamResumptionToken": this.streamResumptionToken
+      "jid": jid,
+      "displayName": displayName,
+      "avatarUrl": avatarUrl,
+      "streamResumptionToken": streamResumptionToken
     };
   }
   

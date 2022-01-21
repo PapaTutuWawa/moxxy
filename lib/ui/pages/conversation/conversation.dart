@@ -1,5 +1,3 @@
-import "dart:async";
-
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/chatbubble.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
@@ -14,22 +12,19 @@ import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 
 import "package:flutter/material.dart";
-import "package:flutter/scheduler.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
-import "package:get_it/get_it.dart";
 
 typedef SendMessageFunction = void Function(String body);
 
 enum ConversationOption {
-  CLOSE,
-  BLOCK
+  close,
+  block
 }
 
 enum EncryptionOption {
-  OMEMO,
-  NONE
+  omemo,
+  none
 }
 
 PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
@@ -38,7 +33,7 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
     child: Row(
       children: [
         Padding(
-          padding: EdgeInsets.only(right: 8.0),
+          padding: const EdgeInsets.only(right: 8.0),
           child: Icon(icon)
         ),
         Text(text)
@@ -65,20 +60,20 @@ class _MessageListViewModel {
 }
 
 class ConversationPage extends StatefulWidget {
-  ConversationPage({ Key? key }) : super(key: key);
+  const ConversationPage({ Key? key }) : super(key: key);
 
   @override
   _ConversationPageState createState() => _ConversationPageState();
 }
 
 class _ConversationPageState extends State<ConversationPage> {
-  TextEditingController controller = TextEditingController();
-  ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
-  bool _shouldScroll = true;
+  final TextEditingController controller = TextEditingController();
+  final ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
   
   @override
   void dispose() {
-    this.controller.dispose();
+    controller.dispose();
+
     super.dispose();
   }
 
@@ -94,12 +89,11 @@ class _ConversationPageState extends State<ConversationPage> {
 
   void _onSendButtonPressed(_MessageListViewModel viewModel) {
     if (viewModel.showSendButton) {
-      viewModel.sendMessage(this.controller.text);
-      this.controller.clear();
+      viewModel.sendMessage(controller.text);
+      controller.clear();
       // NOTE: Calling clear on the controller does not trigger a onChanged on the
       //       TextField
-      this._onMessageTextChanged("", viewModel);
-      this._shouldScroll = true;
+      _onMessageTextChanged("", viewModel);
     }
   }
 
@@ -172,20 +166,20 @@ class _ConversationPageState extends State<ConversationPage> {
               extra: [
                 PopupMenuButton(
                   onSelected: (result) {
-                    if (result == EncryptionOption.OMEMO) {
+                    if (result == EncryptionOption.omemo) {
                       showNotImplementedDialog("End-to-End encryption", context);
                     }
                   },
-                  icon: Icon(Icons.lock_open),
+                  icon: const Icon(Icons.lock_open),
                   itemBuilder: (BuildContext c) => [
-                    popupItemWithIcon(EncryptionOption.NONE, "Unencrypted", Icons.lock_open),
-                    popupItemWithIcon(EncryptionOption.OMEMO, "Encrypted", Icons.lock),
+                    popupItemWithIcon(EncryptionOption.none, "Unencrypted", Icons.lock_open),
+                    popupItemWithIcon(EncryptionOption.omemo, "Encrypted", Icons.lock),
                   ]
                 ),
                 PopupMenuButton(
                   onSelected: (result) {
                     switch (result) {
-                      case ConversationOption.CLOSE: {
+                      case ConversationOption.close: {
                         showConfirmationDialog(
                           "Close Chat",
                           "Are you sure you want to close this chat?",
@@ -200,10 +194,10 @@ class _ConversationPageState extends State<ConversationPage> {
                       break;
                     }
                   },
-                  icon: Icon(Icons.more_vert),
+                  icon: const Icon(Icons.more_vert),
                   itemBuilder: (BuildContext c) => [
-                    popupItemWithIcon(ConversationOption.CLOSE, "Close chat", Icons.close),
-                    popupItemWithIcon(ConversationOption.BLOCK, "Block contact", Icons.block)
+                    popupItemWithIcon(ConversationOption.close, "Close chat", Icons.close),
+                    popupItemWithIcon(ConversationOption.block, "Block contact", Icons.block)
                   ]
                 )
               ]
@@ -216,7 +210,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       ListView.builder(
                         reverse: true,
                         itemCount: viewModel.messages.length,
-                        itemBuilder: (context, index) => this._renderBubble(viewModel.messages, index, maxWidth)
+                        itemBuilder: (context, index) => _renderBubble(viewModel.messages, index, maxWidth)
                       ),
                       Positioned(
                         bottom: 64.0,
@@ -228,7 +222,7 @@ class _ConversationPageState extends State<ConversationPage> {
                             height: 30.0,
                             width: 30.0,
                             child: FloatingActionButton(
-                              child: Icon(Icons.arrow_downward, color: Colors.white),
+                              child: const Icon(Icons.arrow_downward, color: Colors.white),
                               // TODO
                               onPressed: () {}
                             )
@@ -239,7 +233,7 @@ class _ConversationPageState extends State<ConversationPage> {
                   )
                 ),
                 Padding(
-                  padding: EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Row(
                     children: [
                       Expanded(
@@ -248,14 +242,14 @@ class _ConversationPageState extends State<ConversationPage> {
                           minLines: 1,
                           hintText: "Send a message...",
                           isDense: true,
-                          controller: this.controller,
-                          onChanged: (value) => this._onMessageTextChanged(value, viewModel),
-                          contentPadding: TEXTFIELD_PADDING_CONVERSATION,
-                          cornerRadius: TEXTFIELD_RADIUS_CONVERSATION,
+                          controller: controller,
+                          onChanged: (value) => _onMessageTextChanged(value, viewModel),
+                          contentPadding: textfieldPaddingConversation,
+                          cornerRadius: textfieldRadiusConversation,
                         )
                       ),
                       Padding(
-                        padding: EdgeInsets.only(left: 8.0),
+                        padding: const EdgeInsets.only(left: 8.0),
                         // NOTE: https://stackoverflow.com/a/52786741
                         //       Thank you kind sir
                         child: Container(
@@ -266,45 +260,45 @@ class _ConversationPageState extends State<ConversationPage> {
                               icon: viewModel.showSendButton ? Icons.send : Icons.add,
                               visible: true,
                               curve: Curves.bounceInOut,
-                              backgroundColor: PRIMARY_COLOR,
+                              backgroundColor: primaryColor,
                               // TODO: Theme dependent?
                               foregroundColor: Colors.white,
-                              openCloseDial: this._isSpeedDialOpen,
+                              openCloseDial: _isSpeedDialOpen,
                               onPress: () {
                                 if (viewModel.showSendButton) {
-                                  this._onSendButtonPressed(viewModel);
+                                  _onSendButtonPressed(viewModel);
                                 } else {
-                                  this._isSpeedDialOpen.value = true;
+                                  _isSpeedDialOpen.value = true;
                                 }
                               },
                               children: [
                                 SpeedDialChild(
-                                  child: Icon(Icons.image),
+                                  child: const Icon(Icons.image),
                                   onTap: () {
                                     //showNotImplementedDialog("sending files", context);
                                     Navigator.pushNamed(context, "/conversation/send_files");
                                   },
-                                  backgroundColor: PRIMARY_COLOR,
+                                  backgroundColor: primaryColor,
                                   // TODO: Theme dependent?
                                   foregroundColor: Colors.white,
                                   label: "Send Image"
                                 ),
                                 SpeedDialChild(
-                                  child: Icon(Icons.photo_camera),
+                                  child: const Icon(Icons.photo_camera),
                                   onTap: () {
                                     showNotImplementedDialog("sending files", context);
                                   },
-                                  backgroundColor: PRIMARY_COLOR,
+                                  backgroundColor: primaryColor,
                                   // TODO: Theme dependent?
                                   foregroundColor: Colors.white,
                                   label: "Take photo"
                                 ),
                                 SpeedDialChild(
-                                  child: Icon(Icons.attach_file),
+                                  child: const Icon(Icons.attach_file),
                                   onTap: () {
                                     showNotImplementedDialog("sending files", context);
                                   },
-                                  backgroundColor: PRIMARY_COLOR,
+                                  backgroundColor: primaryColor,
                                   // TODO: Theme dependent?
                                   foregroundColor: Colors.white,
                                   label: "Add file"

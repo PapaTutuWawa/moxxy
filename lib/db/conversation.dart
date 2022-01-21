@@ -1,7 +1,3 @@
-import "dart:collection";
-
-import "package:moxxyv2/isar.g.dart";
-
 import "package:isar/isar.dart";
 
 @Collection()

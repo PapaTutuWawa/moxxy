@@ -1,4 +1,3 @@
-import "dart:collection";
 import "dart:convert";
 
 import "package:moxxyv2/xmpp/rfc/4790.dart";
@@ -20,14 +19,14 @@ Future<String> calculateCapabilityHash(DiscoInfo info) async {
     s += info.extendedInfo!["FORM_TYPE"]![0] + "<";
     final sortedVars = info.extendedInfo!.keys.where((k) => k != "FORM_TYPE").toList()..sort(ioctetSortComparator);
 
-    sortedVars.forEach((key) {
-        s += key + "<";
+    for (var key in sortedVars) {
+      s += key + "<";
 
-        final sortedValues = info.extendedInfo![key]!;
-        sortedValues.sort(ioctetSortComparator);
+      final sortedValues = info.extendedInfo![key]!;
+      sortedValues.sort(ioctetSortComparator);
 
-        s += sortedValues.join("<") + "<";
-    });
+      s += sortedValues.join("<") + "<";
+    }
   }
   
   return base64.encode((await Sha1().hash(utf8.encode(s))).bytes);

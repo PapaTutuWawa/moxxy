@@ -1,5 +1,3 @@
-import "package:moxxyv2/xmpp/jid.dart";
-
 import "package:equatable/equatable.dart";
 
 class Message extends Equatable {
@@ -17,9 +15,9 @@ class Message extends Equatable {
       from: from ?? this.from,
       body: body ?? this.body,
       timestamp: timestamp ?? this.timestamp,
-      sent: this.sent,
-      conversationJid: this.conversationJid,
-      id: this.id
+      sent: sent,
+      conversationJid: conversationJid,
+      id: id
     );
   }
 
@@ -32,12 +30,12 @@ class Message extends Equatable {
   id = json["id"];
   
   Map<String, dynamic> toJson() => {
-    "from": this.from,
-    "body": this.body,
-    "timestamp": this.timestamp,
-    "sent": this.sent,
-    "conversationJid": this.conversationJid,
-    "id": this.id
+    "from": from,
+    "body": body,
+    "timestamp": timestamp,
+    "sent": sent,
+    "conversationJid": conversationJid,
+    "id": id
   };
 
   @override

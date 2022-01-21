@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:collection";
 
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/events.dart";

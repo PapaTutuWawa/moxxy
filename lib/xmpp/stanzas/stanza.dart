@@ -15,7 +15,7 @@ class Stanza extends XMLNode {
       ...(id != null ? { "id": id } : {}),
       ...(to != null ? { "to": to } : {}),
       ...(from != null ? { "from": from } : {}),
-      "xmlns": STANZA_XMLNS
+      "xmlns": stanzaXmlns
     },
     children: children
   );
@@ -29,7 +29,7 @@ class Stanza extends XMLNode {
       type: type,
       attributes: {
         ...attributes!,
-        "xmlns": STANZA_XMLNS
+        "xmlns": stanzaXmlns
       },
       children: children
     );
@@ -44,7 +44,7 @@ class Stanza extends XMLNode {
       type: type,
       attributes: {
         ...attributes!,
-        "xmlns": STANZA_XMLNS
+        "xmlns": stanzaXmlns
       },
       children: children
     );
@@ -58,7 +58,7 @@ class Stanza extends XMLNode {
       type: type,
       attributes: {
         ...attributes!,
-        "xmlns": STANZA_XMLNS
+        "xmlns": stanzaXmlns
       },
       children: children
     );
@@ -66,7 +66,7 @@ class Stanza extends XMLNode {
 
   Stanza copyWith({ String? id, String? from, String? to, String? type, List<XMLNode>? children }) {
     return Stanza(
-      tag: this.tag,
+      tag: tag,
       to: to ?? this.to,
       from: from ?? this.from,
       id: id ?? this.id,
@@ -90,18 +90,18 @@ class Stanza extends XMLNode {
   }
   
   Stanza reply({ List<XMLNode>? children }) {
-    return this.copyWith(
-      from: this.attributes["to"],
-      to: this.attributes["from"],
-      type: this.tag == "iq" ? "result" : this.attributes["type"],
+    return copyWith(
+      from: attributes["to"],
+      to: attributes["from"],
+      type: tag == "iq" ? "result" : attributes["type"],
       children: children
     );
   }
 
   Stanza errorReply(String type, String condition, { String? text }) {
-   return this.copyWith(
-      from: this.attributes["to"],
-      to: this.attributes["from"],
+   return copyWith(
+      from: attributes["to"],
+      to: attributes["from"],
       type: "error",
       children: [
         XMLNode(
@@ -110,11 +110,11 @@ class Stanza extends XMLNode {
           children: [
             XMLNode.xmlns(
               tag: condition,
-              xmlns: FULL_STANZA_XMLNS,
+              xmlns: fullStanzaXmlns,
               children: text != null ?[
                 XMLNode.xmlns(
                   tag: "text",
-                  xmlns: FULL_STANZA_XMLNS,
+                  xmlns: fullStanzaXmlns,
                   text: text
                 )
               ] : []

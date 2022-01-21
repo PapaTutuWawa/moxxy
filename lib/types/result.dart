@@ -4,6 +4,6 @@ class Result<S, V> {
 
   Result(S state, V value) : _state = state, _value = value;
 
-  S getState() => this._state;
-  V getValue() => this._value;
+  S getState() => _state;
+  V getValue() => _value;
 }

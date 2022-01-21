@@ -7,7 +7,6 @@ import "package:moxxyv2/helpers.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
 
 class _LoginPageViewModel {
   final void Function() togglePasswordVisibility;
@@ -21,43 +20,38 @@ class _LoginPageViewModel {
   final String? jidError;
   final String? loginError;
 
-  _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors, this.loginError });
+  const _LoginPageViewModel({ required this.togglePasswordVisibility, required this.performLogin, required this.doingWork, required this.showPassword, required this.setJidError, required this.setPasswordError, this.passwordError, this.jidError, required this.resetErrors, this.loginError });
 }
 
 class LoginPage extends StatelessWidget {
-  final TextEditingController jidController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController _jidController;
+  final TextEditingController _passwordController;
 
+  LoginPage({ Key? key }) : _jidController = TextEditingController(), _passwordController = TextEditingController(), super(key: key);
+  
   void _performLogin(BuildContext context, _LoginPageViewModel viewModel) {
     viewModel.resetErrors();
 
-    String jid = this.jidController.text;
-    String password = this.passwordController.text;
+    String jid = _jidController.text;
+    String password = _passwordController.text;
     
     // Validate first
     switch (validateJid(jid)) {
-      case JidFormatError.EMPTY: {
+      case JidFormatError.empty:
         viewModel.setJidError("XMPP-Address cannot be empty");
         return;
-      }
-      break;
-      case JidFormatError.NO_SEPARATOR:
-      case JidFormatError.TOO_MANY_SEPARATORS: {
+      case JidFormatError.noSeparator:
+      case JidFormatError.tooManySeparators:
         viewModel.setJidError("XMPP-Address must contain exactly one @");
         return;
-      }
-      break;
-      case JidFormatError.NO_DOMAIN: {
+      case JidFormatError.noDomain:
         // TODO: Find a better text
         viewModel.setJidError("A domain must follow the @");
         return;
-      }
-      break;
-      case JidFormatError.NO_LOCALPART: {
+      case JidFormatError.noLocalpart:
         viewModel.setJidError("Your username must preceed the @");
         return;
-      }
-      case JidFormatError.NONE: break;
+      case JidFormatError.none: break;
     }
 
     if (password.isEmpty) {
@@ -90,31 +84,31 @@ class LoginPage extends StatelessWidget {
             children: [
               Visibility(
                 visible: viewModel.doingWork,
-                child: LinearProgressIndicator(
+                child: const LinearProgressIndicator(
                   value: null,
-                  valueColor: AlwaysStoppedAnimation<Color>(PRIMARY_COLOR)
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor)
                 )
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
                 child: CustomTextField(
                   errorText: viewModel.jidError,
                   labelText: "XMPP-Address",
                   enabled: !viewModel.doingWork,
-                  controller: this.jidController,
+                  controller: _jidController,
                   maxLines: 1,
-                  cornerRadius: TEXTFIELD_RADIUS_REGULAR,
+                  cornerRadius: textfieldRadiusRegular,
                   enableIMEFeatures: false
                 )
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
                 child: CustomTextField(
                   errorText: viewModel.passwordError,
                   labelText: "Password",
-                  controller: this.passwordController,
+                  controller: _passwordController,
                   suffixIcon: Padding(
-                    padding: EdgeInsetsDirectional.only(end: 8.0),
+                    padding: const EdgeInsetsDirectional.only(end: 8.0),
                     child: InkWell(
                       onTap: () => viewModel.togglePasswordVisibility(),
                       child: Icon(
@@ -125,31 +119,31 @@ class LoginPage extends StatelessWidget {
                   enabled: !viewModel.doingWork,
                   obscureText: !viewModel.showPassword,
                   maxLines: 1,
-                  cornerRadius: TEXTFIELD_RADIUS_REGULAR,
+                  cornerRadius: textfieldRadiusRegular,
                   enableIMEFeatures: false
                 )
               ),
               Visibility(
                 visible: viewModel.loginError != null,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 3.0)),
+                  padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 3.0)),
                   child: Text(
                     viewModel.loginError ?? "",
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.red
                     )
                   )
                 )
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
                 child: ExpansionTile(
-                  title: Text("Advanced options"),
+                  title: const Text("Advanced options"),
                   children: [
                     Column(
                       children: [
                         SwitchListTile(
-                          title: Text("Create account on server"),
+                          title: const Text("Create account on server"),
                           value: false,
                           // TODO
                           onChanged: viewModel.doingWork ? null : (value) {}
@@ -163,10 +157,10 @@ class LoginPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 8.0)),
+                      padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
                       child: ElevatedButton(
-                        child: Text("Login"),
-                        onPressed: viewModel.doingWork ? null : () => this._performLogin(context, viewModel)
+                        child: const Text("Login"),
+                        onPressed: viewModel.doingWork ? null : () => _performLogin(context, viewModel)
                       )
                     )
                   )

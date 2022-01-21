@@ -7,7 +7,9 @@ HashMap<String, Conversation> conversationReducer(HashMap<String, Conversation> 
   if (action is AddConversationAction) {
     state[action.conversation.jid] = action.conversation;
   } else if (action is AddMultipleConversationsAction) {
-    action.conversations.forEach((c) => state[c.jid] = c);
+    for (var c in action.conversations) {
+      state[c.jid] = c;
+    }
   } else if (action is UpdateConversationAction) {
     state[action.conversation.jid] = action.conversation;
   } else if (action is CloseConversationAction) {

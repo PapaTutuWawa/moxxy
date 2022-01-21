@@ -5,7 +5,7 @@ import "package:flutter/material.dart";
 class SharedMediaDisplay extends StatelessWidget {
   final List<String> sharedMediaPaths;
 
-  SharedMediaDisplay({ required this.sharedMediaPaths });
+  const SharedMediaDisplay({ required this.sharedMediaPaths, Key? key }) : super(key: key);
 
   Widget _renderSharedItem(String item) {
     return SharedMediaContainer(
@@ -18,10 +18,10 @@ class SharedMediaDisplay extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    int clampedEnd = this.sharedMediaPaths.length >= 8 ? 8 : this.sharedMediaPaths.length;
+    int clampedEnd = sharedMediaPaths.length >= 8 ? 8 : sharedMediaPaths.length;
     return Column(
       children: [
-        Padding(
+        const Padding(
           padding: EdgeInsets.only(top: 25.0),
           child: Text(
             "Shared Media",
@@ -31,13 +31,13 @@ class SharedMediaDisplay extends StatelessWidget {
           )
         ),
         Padding(
-          padding: EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 8.0),
           child: Container(
             alignment: Alignment.topLeft,
             child: Wrap(
               spacing: 5,
               runSpacing: 5,
-              children: this.sharedMediaPaths.getRange(0, clampedEnd).map((item) => this._renderSharedItem(item)).toList()
+              children: sharedMediaPaths.getRange(0, clampedEnd).map((item) => _renderSharedItem(item)).toList()
             )
           )
         )

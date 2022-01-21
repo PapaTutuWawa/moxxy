@@ -1,5 +1,4 @@
 import "dart:io";
-import "dart:collection";
 import "dart:convert";
 import "dart:async";
 
@@ -36,34 +35,40 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   _dataStream = StreamController.broadcast(),
   _errorStream = StreamController.broadcast();
 
+  @override
   Future<void> connect(String host, int port) async {
-    this._socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ], timeout: Duration(seconds: 15));
+    _socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ], timeout: const Duration(seconds: 15));
 
-    this._socketSubscription = this._socket.listen(
+    _socketSubscription = _socket.listen(
       (List<int> event) {
-        this._dataStream.add(utf8.decode(event));
+        _dataStream.add(utf8.decode(event));
       },
       onError: (Object error) {
-        this._log(error.toString());
-        this._errorStream.add(error);
+        _log(error.toString());
+        _errorStream.add(error);
       }
     );
   }
 
+  @override
   void close() {
-    this._socket.close();
-    this._socket.flush();
-    this._socketSubscription.cancel();
+    _socket.close();
+    _socket.flush();
+    _socketSubscription.cancel();
   }
 
-  Stream<String> getDataStream() => this._dataStream.stream.asBroadcastStream();
-  Stream<Object> getErrorStream() => this._errorStream.stream.asBroadcastStream();
- 
-  void write(Object? object) {
-    if (object != null && object is String) {
-      this._log("==> " + object);
+  @override
+  Stream<String> getDataStream() => _dataStream.stream.asBroadcastStream();
+
+  @override
+  Stream<Object> getErrorStream() => _errorStream.stream.asBroadcastStream();
+
+  @override
+  void write(Object? data) {
+    if (data != null && data is String) {
+      _log("==> " + data);
     }
 
-    this._socket.write(object);
+    _socket.write(data);
   }
 }

@@ -1,4 +1,3 @@
-import "dart:collection";
 import "dart:async";
 
 import "package:moxxyv2/xmpp/stringxml.dart";
@@ -34,21 +33,21 @@ class StubTCPSocket extends BaseSocketWrapper {
   Future<void> connect(String host, int port) async {}
 
   @override
-  Stream<String> getDataStream() => this._dataStream.stream.asBroadcastStream();
+  Stream<String> getDataStream() => _dataStream.stream.asBroadcastStream();
   @override
-  Stream<Object> getErrorStream() => this._errorStream.stream.asBroadcastStream();
+  Stream<Object> getErrorStream() => _errorStream.stream.asBroadcastStream();
 
   @override
   void write(Object? object) {
     String str = object as String;
+    // ignore: avoid_print
     print("==> " + str);
 
     if (_state >= _play.length) {
       return;
     }
 
-    final expectation = this._play[this._state];
-    this._state++;
+    final expectation = _play[_state];
 
     // TODO: Implement an XML matcher
     if (str.startsWith("<?xml version='1.0'?>")) {
@@ -82,12 +81,14 @@ class StubTCPSocket extends BaseSocketWrapper {
       }
     }
 
-    this._dataStream.add(expectation.response.toXml());
+    // Make sure to only progress if everything passed so far
+    _state++;
+    _dataStream.add(expectation.response.toXml());
   }
 
   @override
   void close() {}
   
-  int getState() => this._state;
-  void resetState() => this._state = 0;
+  int getState() => _state;
+  void resetState() => _state = 0;
 }

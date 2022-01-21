@@ -1,21 +1,17 @@
-import "dart:collection";
-
 import "package:flutter/material.dart";
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/data/libraries.dart";
 import "package:moxxyv2/data/generated/licenses.dart";
 
-import "package:flutter_settings_ui/flutter_settings_ui.dart";
 import "package:url_launcher/url_launcher.dart";
 
 class LicenseRow extends StatelessWidget {
   final Library library;
 
-  LicenseRow({ required this.library });
+  const LicenseRow({ required this.library, Key? key }) : super(key: key);
 
   void _openUrl() async {
-    if (!await launch(this.library.url)) {
+    if (!await launch(library.url)) {
       // TODO: Show a popup to copy the url
     }
   }
@@ -23,15 +19,16 @@ class LicenseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(this.library.name),
-      subtitle: Text("Licensed under " + this.library.license),
-      // TODO
-      onTap: this._openUrl
+      title: Text(library.name),
+      subtitle: Text("Licensed under " + library.license),
+      onTap: _openUrl
    );
   }
 }
 
 class SettingsLicensesPage extends StatelessWidget {
+  const SettingsLicensesPage({ Key? key }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

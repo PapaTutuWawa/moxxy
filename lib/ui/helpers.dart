@@ -20,11 +20,11 @@ Future<void> showConfirmationDialog(String title, String body, BuildContext cont
       content: Text(body),
       actions: [
         TextButton(
-          child: Text("Yes"),
+          child: const Text("Yes"),
           onPressed: callback
         ),
         TextButton(
-          child: Text("No"),
+          child: const Text("No"),
           onPressed: Navigator.of(context).pop
         )
       ]
@@ -39,7 +39,7 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
     barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text("Not Implemented"),
+        title: const Text("Not Implemented"),
         content: SingleChildScrollView(
           child: ListBody(
             children: [
@@ -49,7 +49,7 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
         ),
         actions: [
           TextButton(
-            child: Text("Okay"),
+            child: const Text("Okay"),
             onPressed: () => Navigator.of(context).pop()
           )
         ]
@@ -78,7 +78,7 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
   );
 
   if (result != null) {
-    Completer completer = new Completer();
+    Completer completer = Completer();
     ImageCropping.cropImage(
       context: context,
       imageBytes: result.files.single.bytes!,
@@ -111,7 +111,7 @@ Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAva
 /// Turn the SASL error into a string that a regular user could understand.
 String saslErrorToHumanReadable(String saslError) {
   switch (saslError) {
-    case SASL_ERROR_NOT_AUTHORIZED: return "Wrong XMPP address or password";
+    case saslErrorNotAuthorized: return "Wrong XMPP address or password";
   }
 
   return "SASL error: " + saslError;

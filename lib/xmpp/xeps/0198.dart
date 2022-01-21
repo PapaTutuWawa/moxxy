@@ -1,33 +1,29 @@
-import "dart:collection";
-import "dart:math";
-
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/nonzas/sm.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 
-const XML_UINT_MAX = 4294967296; // 2**32
+const xmlUintMax = 4294967296; // 2**32
 
 // TODO: We need to save both the client and server h values and send them accordingly
 class StreamManagementManager extends XmppManagerBase {
   // NOTE: _{client,server}StanzaSeq is the next sequence number to use
   int _clientStanzaSeq;
   int _serverStanzaSeq;
-  Map<int, Stanza> _unackedStanzas;
+  final Map<int, Stanza> _unackedStanzas;
   String? _streamResumptionId;
   bool _streamManagementEnabled;
 
-  StreamManagementManager() : _clientStanzaSeq = 0, _serverStanzaSeq = 0, _unackedStanzas = Map(), _streamResumptionId = null, _streamManagementEnabled = false;
+  StreamManagementManager() : _clientStanzaSeq = 0, _serverStanzaSeq = 0, _unackedStanzas = {}, _streamResumptionId = null, _streamManagementEnabled = false;
 
   /// Functions for testing
-  int getClientStanzaSeq() => this._clientStanzaSeq;
-  int getServerStanzaSeq() => this._serverStanzaSeq;
-  Map<int, Stanza> getUnackedStanzas() => this._unackedStanzas;
+  int getClientStanzaSeq() => _clientStanzaSeq;
+  int getServerStanzaSeq() => _serverStanzaSeq;
+  Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
 
   /// May be overwritten by a subclass. Should save [_clientStanzaSeq] and [_serverStanzaSeq]
   /// so that they can be loaded again with [this.loadSequenceCounters].
@@ -53,26 +49,26 @@ class StreamManagementManager extends XmppManagerBase {
   }
 
   @override
-  String getId() => SM_MANAGER;
+  String getId() => smManager;
 
   @override
   List<NonzaHandler> getNonzaHandlers() => [
     NonzaHandler(
       nonzaTag: "r",
-      nonzaXmlns: SM_XMLNS,
-      callback: this._handleAckRequest
+      nonzaXmlns: smXmlns,
+      callback: _handleAckRequest
     ),
     NonzaHandler(
       nonzaTag: "a",
-      nonzaXmlns: SM_XMLNS,
-      callback: this._handleAckResponse
+      nonzaXmlns: smXmlns,
+      callback: _handleAckResponse
     )
   ];
 
   @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
-      callback: this._serverStanzaReceived
+      callback: _serverStanzaReceived
     )
   ];
 
@@ -87,8 +83,8 @@ class StreamManagementManager extends XmppManagerBase {
         getAttributes().sendRawXml("");
       }
     } else if (event is StreamResumedEvent) {
-      this._enableStreamManagement();
-      this._onStreamResumed(event.h);
+      _enableStreamManagement();
+      _onStreamResumed(event.h);
     } else if (event is StreamManagementEnabledEvent) {
       _streamResumptionId = event.id;
       commitStreamResumptionId();
@@ -105,14 +101,14 @@ class StreamManagementManager extends XmppManagerBase {
   }
   
   /// Returns whether XEP-0198 stream management is enabled
-  bool isStreamManagementEnabled() => this._streamManagementEnabled;
+  bool isStreamManagementEnabled() => _streamManagementEnabled;
 
   /// To be called when receiving a <a /> nonza.
   Future<bool> _handleAckRequest(XMLNode nonza) async {
     final attrs = getAttributes();
     attrs.log("Sending ack response");
-    attrs.sendEvent(StreamManagementAckSentEvent(h: this._serverStanzaSeq - 1));
-    attrs.sendNonza(StreamManagementAckNonza(this._serverStanzaSeq - 1));
+    attrs.sendEvent(StreamManagementAckSentEvent(h: _serverStanzaSeq - 1));
+    attrs.sendNonza(StreamManagementAckNonza(_serverStanzaSeq - 1));
 
     return true;
   }
@@ -125,9 +121,9 @@ class StreamManagementManager extends XmppManagerBase {
 
     // TODO: Set clientSequence
     
-    if (this._unackedStanzas.isNotEmpty) {
+    if (_unackedStanzas.isNotEmpty) {
       _clientStanzaSeq = h + 1;
-      print("QUEUE NOT EMPTY. FLUSHING");
+      getAttributes().log("QUEUE NOT EMPTY. FLUSHING");
       _flushStanzaQueue();
     }
 
@@ -136,8 +132,7 @@ class StreamManagementManager extends XmppManagerBase {
    
   /// To be called whenever we receive a stanza from the server.
   Future<bool> _serverStanzaReceived(stanza) async {
-    print("called");
-    if (_serverStanzaSeq + 1 == XML_UINT_MAX) {
+    if (_serverStanzaSeq + 1 == xmlUintMax) {
       _serverStanzaSeq = 0;
     } else {
       _serverStanzaSeq++;
@@ -148,18 +143,18 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// To be called whenever we send a stanza.
   void _onClientStanzaSent(Stanza stanza) {
-    this._unackedStanzas[this._clientStanzaSeq] = stanza;
+    _unackedStanzas[_clientStanzaSeq] = stanza;
 
-    if (this._clientStanzaSeq + 1 == XML_UINT_MAX) {
-      this._clientStanzaSeq = 0;
+    if (_clientStanzaSeq + 1 == xmlUintMax) {
+      _clientStanzaSeq = 0;
     } else {
-      this._clientStanzaSeq++;
+      _clientStanzaSeq++;
     }
 
-    print("Queue after sending: " + this._unackedStanzas.toString());
+    getAttributes().log("Queue after sending: " + _unackedStanzas.toString());
 
-    if (this.isStreamManagementEnabled()) {
-      this.getAttributes().sendNonza(StreamManagementRequestNonza());
+    if (isStreamManagementEnabled()) {
+      getAttributes().sendNonza(StreamManagementRequestNonza());
     }
 
     commitClientSeq();
@@ -168,36 +163,38 @@ class StreamManagementManager extends XmppManagerBase {
   /// Removes all stanzas in the unacked queue that have a sequence number less-than or
   /// equal to [h].
   void _removeHandledStanzas(int h) {
-    this._unackedStanzas.removeWhere(
+    _unackedStanzas.removeWhere(
       (key, _) => key <= h
     );
-    print("Queue after cleaning: " + this._unackedStanzas.toString());
+    getAttributes().log("Queue after cleaning: " + _unackedStanzas.toString());
   }
 
   /// To be called when the stream has been resumed
   void _onStreamResumed(int h) {
-    this._removeHandledStanzas(h);
+    _removeHandledStanzas(h);
     
-    //this._clientStanzaSeq = 0;
-    this._serverStanzaSeq = h == 0 ? 0 : h + 1;
+    //_clientStanzaSeq = 0;
+    _serverStanzaSeq = h == 0 ? 0 : h + 1;
 
-    this._flushStanzaQueue();
+    _flushStanzaQueue();
   }
 
   /// This empties the unacked queue by sending the items out again.
   void _flushStanzaQueue() {
-    List<Stanza> stanzas = this._unackedStanzas.values.toList();
+    List<Stanza> stanzas = _unackedStanzas.values.toList();
     // TODO: Maybe don't do this
     //       What we should do: Set our h counter to what the server has sent, kill all those   //       received stanzas from the unacked queue and send the unacked ones again.
-    this._unackedStanzas.clear();
+    _unackedStanzas.clear();
 
-    final attributes = this.getAttributes();
-    stanzas.forEach((stanza) => attributes.sendStanza(stanza));
+    final attrs = getAttributes();
+    for (var stanza in stanzas) {
+      attrs.sendStanza(stanza);
+    }
   }
 
   /// Pings the connection open by send an ack request
   void _sendAckRequestPing() {
-    this.getAttributes().sendNonza(StreamManagementRequestNonza());
+    getAttributes().sendNonza(StreamManagementRequestNonza());
   }
 
   /// Returns the stream resumption id we have

@@ -1,5 +1,3 @@
-import "dart:collection";
-
 import "package:equatable/equatable.dart";
 
 class Conversation extends Equatable {
@@ -16,17 +14,18 @@ class Conversation extends Equatable {
 
   const Conversation({ required this.title, required this.lastMessageBody, required this.avatarUrl, required this.jid, required this.unreadCounter, required this.lastChangeTimestamp, required this.sharedMediaPaths, required this.id, required this.open });
 
+  // TODO: The title and avatarUrl can also change
   Conversation copyWith({ String? lastMessageBody, int? unreadCounter, int unreadDelta = 0, List<String>? sharedMediaPaths, int? lastChangeTimestamp, bool? open }) {
     return Conversation(
-      title: this.title,
+      title: title,
       lastMessageBody: lastMessageBody ?? this.lastMessageBody,
-      avatarUrl: this.avatarUrl,
-      jid: this.jid,
+      avatarUrl: avatarUrl,
+      jid: jid,
       unreadCounter: (unreadCounter ?? this.unreadCounter) + unreadDelta,
       sharedMediaPaths: sharedMediaPaths ?? this.sharedMediaPaths,
       lastChangeTimestamp: lastChangeTimestamp ?? this.lastChangeTimestamp,
       open: open ?? this.open,
-      id: this.id
+      id: id
     );
   }
 
@@ -42,15 +41,15 @@ class Conversation extends Equatable {
   id = json["id"];
 
   Map<String, dynamic> toJson() => {
-    "title": this.title,
-    "lastMessageBody": this.lastMessageBody,
-    "jid": this.jid,
-    "avatarUrl": this.avatarUrl,
-    "unreadCounter": this.unreadCounter,
-    "sharedMediaPaths": this.sharedMediaPaths,
-    "lastChangeTimestamp": this.lastChangeTimestamp,
-    "open": this.open,
-    "id": this.id
+    "title": title,
+    "lastMessageBody": lastMessageBody,
+    "jid": jid,
+    "avatarUrl": avatarUrl,
+    "unreadCounter": unreadCounter,
+    "sharedMediaPaths": sharedMediaPaths,
+    "lastChangeTimestamp": lastChangeTimestamp,
+    "open": open,
+    "id": id
   };
   
   @override

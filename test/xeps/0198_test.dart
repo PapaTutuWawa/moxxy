@@ -12,6 +12,7 @@ void main() {
   // TODO: Test resumption
   test("Test Stream Management", () {
       final attributes = XmppManagerAttributes(
+        // ignore: avoid_print
         log: (msg) => print(msg),
         sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async {
           return XMLNode(tag: "hallo");

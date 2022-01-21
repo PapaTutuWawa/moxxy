@@ -3,5 +3,5 @@ class XMPPProvider {
   final String homepageUrl;
   final String tosUrl;
 
-  XMPPProvider(this.jid, this.homepageUrl, this.tosUrl);
+  const XMPPProvider(this.jid, this.homepageUrl, this.tosUrl);
 }

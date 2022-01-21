@@ -1,1 +1,1 @@
-const int TIMESTAMP_NEVER = -1;
+const int timestampNever = -1;

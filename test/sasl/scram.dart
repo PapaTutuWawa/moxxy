@@ -1,11 +1,8 @@
-import "dart:async";
-
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/sasl/scram.dart";
 
 import "package:test/test.dart";
-import "package:xml/xml.dart";
 import "package:hex/hex.dart";
 
 void main() {
@@ -20,7 +17,7 @@ void main() {
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         sendRawXML: (data) {},
-        hashType: ScramHashType.SHA1
+        hashType: ScramHashType.sha1
       );
 
       expect(
@@ -33,7 +30,7 @@ void main() {
         ),
         "e234c47bf6c36696dd6d852b99aaa2ba26555728"
       );
-      final String authMessage = "n=user,r=fyko+d2lbbFgONRv9qkxdawL,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,s=QSXCR+Q6sek8bf92,i=4096,c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j";
+      const authMessage = "n=user,r=fyko+d2lbbFgONRv9qkxdawL,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,s=QSXCR+Q6sek8bf92,i=4096,c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j";
       expect(
         HEX.encode(
           await negotiator.calculateClientSignature(authMessage, HEX.decode("e9d94660c39d65c38fbad91c358f14da0eef2bd6"))

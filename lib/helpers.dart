@@ -1,6 +1,3 @@
-import "dart:collection";
-import "dart:developer";
-
 /*
  * Add a leading zero, if required, to ensure that an integer is rendered
  * as a two "digit" string.
@@ -85,12 +82,12 @@ String formatMessageTimestamp(int timestamp, int now) {
 }
 
 enum JidFormatError {
-  NONE,
-  EMPTY,
-  NO_LOCALPART,
-  NO_SEPARATOR,
-  TOO_MANY_SEPARATORS,
-  NO_DOMAIN
+  none,
+  empty,
+  noLocalpart,
+  noSeparator,
+  tooManySeparators,
+  noDomain
 }
 
 /*
@@ -98,25 +95,25 @@ enum JidFormatError {
  */
 JidFormatError validateJid(String jid) {
   if (jid.isEmpty) {
-    return JidFormatError.EMPTY;
+    return JidFormatError.empty;
   }
 
   if (!jid.contains("@")) {
-    return JidFormatError.NO_SEPARATOR;
+    return JidFormatError.noSeparator;
   }
 
   List<String> parts = jid.split("@");
   if (parts.length != 2) {
-    return JidFormatError.TOO_MANY_SEPARATORS;
+    return JidFormatError.tooManySeparators;
   }
 
-  if (parts[0].length == 0) {
-    return JidFormatError.NO_LOCALPART;
+  if (parts[0].isEmpty) {
+    return JidFormatError.noLocalpart;
   }
 
-  if (parts[1].length == 0) {
-    return JidFormatError.NO_DOMAIN;
+  if (parts[1].isEmpty) {
+    return JidFormatError.noDomain;
   }
 
-  return JidFormatError.NONE;
+  return JidFormatError.none;
 }

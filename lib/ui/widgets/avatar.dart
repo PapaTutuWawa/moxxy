@@ -1,4 +1,3 @@
-import "dart:ui";
 import "dart:io";
 import "package:flutter/material.dart";
 
@@ -10,40 +9,40 @@ class AvatarWrapper extends StatelessWidget {
   final bool showEditButton;
   final void Function()? onTapFunction;
 
-  AvatarWrapper({ required this.radius, this.avatarUrl, this.alt, this.altIcon, this.onTapFunction, this.showEditButton = false }) {
-    assert(this.avatarUrl != null || (this.avatarUrl == null || this.avatarUrl == "") && (this.alt != null || this.altIcon != null));
-    assert(this.showEditButton ? this.onTapFunction != null : true);
+  AvatarWrapper({ required this.radius, this.avatarUrl, this.alt, this.altIcon, this.onTapFunction, this.showEditButton = false, Key? key }) : super(key: key) {
+    assert(avatarUrl != null || (avatarUrl == null || avatarUrl == "") && (alt != null || altIcon != null));
+    assert(showEditButton ? onTapFunction != null : true);
   }
   
   Widget _constructAlt() {
-    if (this.alt != null) {
-      return this.alt!;
+    if (alt != null) {
+      return alt!;
     }
 
     return Icon(
-      this.altIcon,
-      size: this.radius * (180/110)
+      altIcon,
+      size: radius * (180/110)
     );
   }
 
   // TODO: Remove this. This is just for UI debugging
   ImageProvider _constructImage() {
-    if (this.avatarUrl!.startsWith("https://")) {
-      return NetworkImage(this.avatarUrl!);
+    if (avatarUrl!.startsWith("https://")) {
+      return NetworkImage(avatarUrl!);
     } else {
-      return FileImage(File(this.avatarUrl!));
+      return FileImage(File(avatarUrl!));
     }
   }
   
   /* Either display the alt or the actual image */
   Widget _avatarWrapper() {
-    bool useAlt = this.avatarUrl == null || this.avatarUrl == "";
+    bool useAlt = avatarUrl == null || avatarUrl == "";
     
     return CircleAvatar(
       backgroundColor: Colors.grey[800]!,
-      child: useAlt ? this._constructAlt() : null,
+      child: useAlt ? _constructAlt() : null,
       // TODO
-      backgroundImage: !useAlt ? this._constructImage() : null,
+      backgroundImage: !useAlt ? _constructImage() : null,
       radius: radius
     );
   }
@@ -51,20 +50,20 @@ class AvatarWrapper extends StatelessWidget {
   Widget _withEditButton() {
     return Stack(
       children: [
-        this._avatarWrapper(),
+        _avatarWrapper(),
         Positioned(
           bottom: 0,
           right: 0,
           child: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.black38,
               shape: BoxShape.circle
             ),
             child: Padding(
-              padding: EdgeInsets.all((3/35) * this.radius),
+              padding: EdgeInsets.all((3/35) * radius),
               child: Icon(
                 Icons.edit,
-                size: (2/4) * this.radius
+                size: (2/4) * radius
               )
             )
           )
@@ -76,8 +75,8 @@ class AvatarWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: this.onTapFunction,
-      child: this.showEditButton ? this._withEditButton() : this._avatarWrapper()
+      onTap: onTapFunction,
+      child: showEditButton ? _withEditButton() : _avatarWrapper()
     );
   }
 }

@@ -13,13 +13,9 @@ import "ui/pages/settings/licenses.dart";
 import "ui/pages/settings/about.dart";
 import "ui/constants.dart";
 import "redux/conversation/actions.dart";
-import "redux/conversation/reducers.dart";
-import "redux/conversation/actions.dart";
-import "redux/start/actions.dart";
 import "redux/conversations/middlewares.dart";
 import "redux/account/middlewares.dart";
 import "package:moxxyv2/redux/account/actions.dart";
-import "redux/start/middlewares.dart";
 import "redux/login/middlewares.dart";
 import "redux/login/actions.dart";
 import "redux/registration/middlewares.dart";
@@ -30,6 +26,7 @@ import "redux/roster/actions.dart";
 import "redux/messages/middleware.dart";
 import "redux/conversation/middlewares.dart";
 import "redux/state.dart";
+import "package:moxxyv2/redux/start/middlewares.dart";
 import "models/conversation.dart";
 import "models/message.dart";
 import "models/roster.dart";
@@ -59,7 +56,7 @@ Store<MoxxyState> createStore() {
       rosterMiddleware,
       messageMiddleware,
       conversationMiddleware,
-      NavigationMiddleware(),
+      const NavigationMiddleware(),
 
       // We only need this while debugging
       ...(kDebugMode ? [ LoggingMiddleware.printer() ] : [])
@@ -80,6 +77,8 @@ void main() async {
   
   GetIt.I.get<FlutterBackgroundService>().onDataReceived.listen((data) {
       if (data!["type"]! != "__LOG__") {
+        // TODO: Use logging function and only print on when debugging
+        // ignore: avoid_print
         print("GOT: " + data.toString());
       }
 
@@ -192,6 +191,8 @@ void main() async {
         }
         break;
         case "__LOG__": {
+          // TODO: Use logging function and only print on when debugging
+          // ignore: avoid_print
           print("[S] " + data["log"]!);
         }
         break;
@@ -203,6 +204,8 @@ void main() async {
 
 // TODO: Move somewhere else
 class SplashScreen extends StatelessWidget {
+  const SplashScreen({ Key? key }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -222,7 +225,8 @@ class MyApp extends StatefulWidget {
   const MyApp({Key? key, required this.store }) : super(key: key);
 
   @override
-  _MyAppState createState() => _MyAppState(store: this.store);
+  // ignore: no_logic_in_create_state
+  _MyAppState createState() => _MyAppState(store: store);
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
@@ -247,27 +251,26 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.didChangeAppLifecycleState(state);
 
     switch (state) {
-      case AppLifecycleState.paused: {
+      case AppLifecycleState.paused:
         FlutterBackgroundService().sendData({
             "type": "SetCSIState",
             "state": "background"
         });
-      }
-      break;
-      case AppLifecycleState.resumed: {
+        break;
+      case AppLifecycleState.resumed:
         FlutterBackgroundService().sendData({
             "type": "SetCSIState",
             "state": "foreground"
         });
-      }
-      break;
+        break;
+      default: break;
     }
   }
   
   @override
   Widget build(BuildContext context) {
     return StoreProvider(
-      store: this.store,
+      store: store,
       child: MaterialApp(
         title: "Moxxy",
         theme: ThemeData(
@@ -277,39 +280,39 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           brightness: Brightness.dark,
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              primary: PRIMARY_COLOR,
+              primary: primaryColor,
               onPrimary: Colors.white
             )
           ),
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
-              primary: PRIMARY_COLOR
+              primary: primaryColor
             )
           ),
           // NOTE: Mainly for the SettingsSection
-          colorScheme: ColorScheme.dark(
-            secondary: PRIMARY_COLOR
+          colorScheme: const ColorScheme.dark(
+            secondary: primaryColor
           )
         ),
         navigatorKey: NavigatorHolder.navigatorKey,
         //themeMode: ThemeMode.system,
         themeMode: ThemeMode.dark,
         routes: {
-          "/intro": (context) => IntroPage(),
+          "/intro": (context) => const IntroPage(),
           "/login": (context) => LoginPage(),
           "/register": (context) => RegistrationPage(),
           "/register/post": (context) => PostRegistrationPage(),
-          "/conversations": (context) => ConversationsPage(),
-          "/conversation": (context) => ConversationPage(),
+          "/conversations": (context) => const ConversationsPage(),
+          "/conversation": (context) => const ConversationPage(),
           "/conversation/profile": (context) => ProfilePage(),
-          "/conversation/send_files": (context) => SendFilesPage(),
-          "/new_conversation": (context) => NewConversationPage(),
+          "/conversation/send_files": (context) => const SendFilesPage(),
+          "/new_conversation": (context) => const NewConversationPage(),
           "/new_conversation/add_contact": (context) => AddContactPage(),
-          "/settings": (context) => SettingsPage(),
-          "/settings/licenses": (context) => SettingsLicensesPage(),
-          "/settings/about": (context) => SettingsAboutPage(),
+          "/settings": (context) => const SettingsPage(),
+          "/settings/licenses": (context) => const SettingsLicensesPage(),
+          "/settings/about": (context) => const SettingsAboutPage(),
         },
-        home: SplashScreen(),
+        home: const SplashScreen(),
       )
     );
   }

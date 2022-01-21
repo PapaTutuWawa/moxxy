@@ -20,11 +20,12 @@ class BareJID extends JID {
   }
 
   FullJID withResource(String resource) {
-    return FullJID(local: this.local, domain: this.domain, resource: resource);
+    return FullJID(local: local, domain: domain, resource: resource);
   }
-  
+
+  @override
   String toString() {
-    return "${this.local}@${this.domain}";
+    return "$local@$domain";
   }
 }
 
@@ -32,7 +33,7 @@ class FullJID extends JID {
   FullJID({ required String local, required String domain, required String resource }) : super(local: local, domain: domain, resource: resource);
   
   BareJID toBare() {
-    return BareJID(local: this.local, domain: this.domain);
+    return BareJID(local: local, domain: domain);
   }
 
   static FullJID fromString(String fullJid) {
@@ -40,8 +41,9 @@ class FullJID extends JID {
     final other = jidParts[1].split("/");
     return FullJID(local: jidParts[0], domain: other[0], resource: other[1]);
   }
-  
+
+  @override
   String toString() {
-    return "${this.local}@${this.domain}/${this.resource}";
+    return "$local@$domain/$resource";
   }
 }

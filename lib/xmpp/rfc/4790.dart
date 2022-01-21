@@ -1,5 +1,3 @@
-import "dart:collection";
-
 /// Sorts [toSort] using the i;octet collation defined by RFC 4790
 /// TODO: Maybe enforce utf8?
 int ioctetSortComparator(String a, String b) {

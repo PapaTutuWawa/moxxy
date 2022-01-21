@@ -1,5 +1,3 @@
-import "package:flutter/material.dart";
-import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/sharedmedia.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
@@ -11,8 +9,8 @@ import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/profile/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
 
+import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
 import "package:qr_flutter/qr_flutter.dart";
 
 // TODO: Move to separate file
@@ -21,7 +19,7 @@ class ProfilePageArguments {
   final bool isSelfProfile;
 
   ProfilePageArguments({ this.conversation, required this.isSelfProfile }) {
-    assert(this.isSelfProfile ? true : this.conversation != null);
+    assert(isSelfProfile ? true : conversation != null);
   }
 }
 
@@ -34,7 +32,7 @@ class _ProfilePageViewModel {
   final String jid;
   final String avatarUrl;
 
-  _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid, required this.avatarUrl, required this.setDisplayName, required this.setAvatarUrl });
+  const _ProfilePageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.displayName, required this.jid, required this.avatarUrl, required this.setDisplayName, required this.setAvatarUrl });
 }
 
 class SelfProfileHeader extends StatelessWidget {
@@ -45,7 +43,7 @@ class SelfProfileHeader extends StatelessWidget {
   final TextEditingController controller;
   bool _showingSnackBar = false;
   
-  SelfProfileHeader({ required this.viewModel, required this.controller });
+  SelfProfileHeader({ required this.viewModel, required this.controller, Key? key }) : super(key: key);
 
   Future<void> _showJidQRCode(BuildContext context, String jid) async {
     await showDialog(
@@ -63,9 +61,9 @@ class SelfProfileHeader extends StatelessWidget {
                 version: QrVersions.auto,
                 size: 220.0,
                 backgroundColor: Colors.white,
-                embeddedImage: AssetImage("assets/images/logo.png"),
+                embeddedImage: const AssetImage("assets/images/logo.png"),
                 embeddedImageStyle: QrEmbeddedImageStyle(
-                  size: Size(50, 50)
+                  size: const Size(50, 50)
                 )
               )
             )
@@ -81,20 +79,20 @@ class SelfProfileHeader extends StatelessWidget {
       children: [
         AvatarWrapper(
           radius: 110.0,
-          avatarUrl: this.viewModel.avatarUrl,
+          avatarUrl: viewModel.avatarUrl,
           altIcon: Icons.person,
           showEditButton: false,
-          onTapFunction: () => pickAndSetAvatar(context, this.viewModel.setAvatarUrl)
+          onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl)
         ),
         Padding(
-          padding: EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 8.0),
           child: Container(
-            constraints: BoxConstraints(
+            constraints: const BoxConstraints(
               maxWidth: 220
             ),
             child: CustomTextField(
               maxLines: 1,
-              controller: this.controller,
+              controller: controller,
               onChanged: (value) {
                 // NOTE: Since hitting the (software) back button triggers this function, "debounce" it
                 //       by only showing the snackbar if the value differs from the state
@@ -110,25 +108,25 @@ class SelfProfileHeader extends StatelessWidget {
               },
               labelText: "Display name",
               isDense: true,
-              cornerRadius: TEXTFIELD_RADIUS_REGULAR
+              cornerRadius: textfieldRadiusRegular
             )
           )
         ),
         Padding(
-          padding: EdgeInsets.only(top: 3.0),
+          padding: const EdgeInsets.only(top: 3.0),
           child: Row(
             children: [
               Text(
                 viewModel.jid,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 15
                 )
               ),
               Padding(
-                padding: EdgeInsetsDirectional.only(start: 3.0),
+                padding: const EdgeInsetsDirectional.only(start: 3.0),
                 child: IconButton(
-                  icon: Icon(Icons.qr_code),
-                  onPressed: () => this._showJidQRCode(context, viewModel.jid)
+                  icon: const Icon(Icons.qr_code),
+                  onPressed: () => _showJidQRCode(context, viewModel.jid)
                 )
               )
             ]
@@ -142,7 +140,7 @@ class SelfProfileHeader extends StatelessWidget {
 class ProfileHeader extends StatelessWidget {
   final Conversation conversation;
 
-  ProfileHeader({ required this.conversation });
+  const ProfileHeader({ required this.conversation, Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -150,23 +148,23 @@ class ProfileHeader extends StatelessWidget {
       children: [
         AvatarWrapper(
           radius: 110.0,
-          avatarUrl: this.conversation.avatarUrl,
-          alt: Text(this.conversation.title[0])
+          avatarUrl: conversation.avatarUrl,
+          alt: Text(conversation.title[0])
         ),
         Padding(
-          padding: EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 8.0),
           child: Text(
-            this.conversation.title,
-            style: TextStyle(
+            conversation.title,
+            style: const TextStyle(
               fontSize: 30
             )
           )
         ),
         Padding(
-          padding: EdgeInsets.only(top: 3.0),
+          padding: const EdgeInsets.only(top: 3.0),
           child: Text(
-            this.conversation.jid,
-            style: TextStyle(
+            conversation.jid,
+            style: const TextStyle(
               fontSize: 15
             )
           )
@@ -181,18 +179,17 @@ class ProfilePage extends StatelessWidget {
   //       mess with the IME
   TextEditingController? _controller;
 
+  ProfilePage({ Key? key }) : super(key: key);
+  
   // Wrapper so that we can set the display name on first initialization
   TextEditingController _getController(_ProfilePageViewModel viewModel) {
-    if (this._controller == null) {
-      this._controller = TextEditingController(text: viewModel.displayName);
-    }
-
-    return this._controller!;
+    _controller ??= TextEditingController(text: viewModel.displayName);
+    return _controller!;
   }
 
   
   void _applyDisplayName(BuildContext context, _ProfilePageViewModel viewModel) {
-    viewModel.setDisplayName(this._controller!.text);
+    viewModel.setDisplayName(_controller!.text);
     dismissSoftKeyboard(context);
     viewModel.setShowSnackbar(false);
   }
@@ -227,7 +224,7 @@ class ProfilePage extends StatelessWidget {
                     child: PermanentSnackBar(
                       text: "Display name not applied",
                       actionText: "Apply",
-                      onPressed: () => this._applyDisplayName(context, viewModel)
+                      onPressed: () => _applyDisplayName(context, viewModel)
                     )
                   )
                 )
@@ -235,10 +232,10 @@ class ProfilePage extends StatelessWidget {
               Positioned(
                 child: Column(
                   children: [
-                    args.isSelfProfile ? SelfProfileHeader(viewModel: viewModel, controller: this._getController(viewModel)) : ProfileHeader(conversation: args.conversation!),
+                    args.isSelfProfile ? SelfProfileHeader(viewModel: viewModel, controller: _getController(viewModel)) : ProfileHeader(conversation: args.conversation!),
                     Visibility(
-                      visible: !args.isSelfProfile && args.conversation!.sharedMediaPaths.length > 0,
-                      child: args.isSelfProfile ? SizedBox() : SharedMediaDisplay(
+                      visible: !args.isSelfProfile && args.conversation!.sharedMediaPaths.isEmpty,
+                      child: args.isSelfProfile ? const SizedBox() : SharedMediaDisplay(
                         sharedMediaPaths: args.conversation!.sharedMediaPaths
                       )
                     ) 
@@ -249,7 +246,7 @@ class ProfilePage extends StatelessWidget {
                 left: null,
                 right: null
               ),
-              Positioned(
+              const Positioned(
                 top: 8.0,
                 left: 8.0,
                 child: BackButton()

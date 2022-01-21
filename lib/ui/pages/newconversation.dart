@@ -1,23 +1,16 @@
-import "dart:collection";
-
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/roster/actions.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
-import "package:moxxyv2/repositories/roster.dart";
-import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/constants.dart";
 
-import "package:get_it/get_it.dart";
 import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
 
 class _NewConversationViewModel {
   final void Function(String, String, String, String) addConversation;
@@ -25,10 +18,12 @@ class _NewConversationViewModel {
   final List<Conversation> conversations;
   final List<RosterItem> roster;
 
-  _NewConversationViewModel({ required this.conversations, required this.roster, required this.addConversation, required this.removeRosterItem });
+  const _NewConversationViewModel({ required this.conversations, required this.roster, required this.addConversation, required this.removeRosterItem });
 }
 
 class NewConversationPage extends StatelessWidget {
+  const NewConversationPage({ Key? key }) : super(key: key);
+
   void _addNewConversation(_NewConversationViewModel viewModel, BuildContext context, RosterItem rosterItem) {
     viewModel.addConversation(
       rosterItem.title,
@@ -61,19 +56,19 @@ class NewConversationPage extends StatelessWidget {
           itemCount: viewModel.roster.length + 2,
           itemBuilder: (context, index) {
             switch(index) {
-              case 0: {
+              case 0:
                 return InkWell(
                   onTap: () => Navigator.pushNamed(context, "/new_conversation/add_contact"),
                   child: Row(
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: AvatarWrapper(
                           radius: 35.0,
-                          alt: Icon(Icons.person_add)
+                          alt: const Icon(Icons.person_add)
                         )
                       ),
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Text(
                           "Add contact",
@@ -86,21 +81,19 @@ class NewConversationPage extends StatelessWidget {
                     ]
                   )
                 );
-              }
-              break;
-              case 1: {
+              case 1:
                 return InkWell(
                   onTap: () => showNotImplementedDialog("groupchat", context),
                   child: Row(
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: AvatarWrapper(
                           radius: 35.0,
-                          alt: Icon(Icons.group_add)
+                          alt: const Icon(Icons.group_add)
                         )
                       ),
-                      Padding(
+                      const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Text(
                           "Create groupchat",
@@ -113,9 +106,7 @@ class NewConversationPage extends StatelessWidget {
                     ]
                   )
                 );
-              }
-              break;
-              default: {
+              default:
                 RosterItem item = viewModel.roster[index - 2];
                 return Dismissible(
                   key: ValueKey("roster;" + item.jid),
@@ -123,9 +114,9 @@ class NewConversationPage extends StatelessWidget {
                   background: Container(
                     color: Colors.red,
                     child: Padding(
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       child: Row(
-                        children: [
+                        children: const [
                           Icon(Icons.delete),
                           Spacer(),
                           Icon(Icons.delete)
@@ -134,12 +125,10 @@ class NewConversationPage extends StatelessWidget {
                     )
                   ),
                   child: InkWell(
-                    onTap: () => this._addNewConversation(viewModel, context, item),
-                    child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, TIMESTAMP_NEVER, false)
+                    onTap: () => _addNewConversation(viewModel, context, item),
+                    child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, timestampNever, false)
                   )
                 );
-              }
-              break;
             }
           }
         )

@@ -1,4 +1,3 @@
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/redux/state.dart";
@@ -11,10 +10,12 @@ import "package:flutter_redux/flutter_redux.dart";
 class _SettingsPageViewModel {
   final void Function() performLogout;
 
-  _SettingsPageViewModel({ required this.performLogout });
+  const _SettingsPageViewModel({ required this.performLogout });
 }
 
 class SettingsPage extends StatelessWidget {
+  const SettingsPage({ Key? key }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,16 +26,16 @@ class SettingsPage extends StatelessWidget {
         ),
         builder: (context, viewModel) => SettingsList(
           // TODO: Seems hacky
-          darkBackgroundColor: Color(0xff303030),
-          contentPadding: EdgeInsets.all(16.0),
+          darkBackgroundColor: const Color(0xff303030),
+          contentPadding: const EdgeInsets.all(16.0),
           sections: [
             SettingsSection(
               title: "Account",
               tiles: [
                 SettingsTile(
                   title: "Sign out",
-                  leading: Icon(Icons.logout),
-                  onTap: () => showConfirmationDialog(
+                  leading: const Icon(Icons.logout),
+                  onPressed: (context) => showConfirmationDialog(
                     "Sign Out",
                     "You are about to sign out. Proceed?",
                     context,
@@ -48,13 +49,13 @@ class SettingsPage extends StatelessWidget {
               tiles: [
                 SettingsTile(
                   title: "About",
-                  leading: Icon(Icons.info),
-                  onTap: () => Navigator.pushNamed(context, "/settings/about")
+                  leading: const Icon(Icons.info),
+                  onPressed: (context) => Navigator.pushNamed(context, "/settings/about")
                 ),
                 SettingsTile(
                   title: "Open-Source licenses",
-                  leading: Icon(Icons.description),
-                  onTap: () => Navigator.pushNamed(context, "/settings/licenses")
+                  leading: const Icon(Icons.description),
+                  onPressed: (context) => Navigator.pushNamed(context, "/settings/licenses")
                 )
               ]
             )

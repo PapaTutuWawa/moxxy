@@ -1,8 +1,6 @@
-import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/repositories/database.dart";
-import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 
 import "package:flutter/material.dart";
@@ -11,11 +9,11 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:get_it/get_it.dart";
 
 void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
+  // TODO: I think this all has to go
   if (action is AddConversationFromUIAction) {
     // TODO: This should not depend on store.state. Use the cache
     // TODO: Move this into the repository
     final conversation = store.state.conversations[action.jid];
-    final repo = GetIt.I.get<DatabaseRepository>();
 
     if (conversation == null) {
       final conversation = await GetIt.I.get<DatabaseRepository>().addConversationFromData(

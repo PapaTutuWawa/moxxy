@@ -1,5 +1,3 @@
-import "dart:collection";
-
 import "package:moxxyv2/models/roster.dart";
 
 class AddRosterItemAction {

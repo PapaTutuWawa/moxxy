@@ -13,13 +13,13 @@ class PresenceManager extends XmppManagerBase {
   PresenceManager() : _capabilityHash = null, super();
   
   @override
-  String getId() => PRESENCE_MANAGER;
+  String getId() => presenceManager;
 
   @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "presence",
-      callback: this._onPresence
+      callback: _onPresence
     )
   ];
 
@@ -31,21 +31,19 @@ class PresenceManager extends XmppManagerBase {
 
   /// Returns the capability hash.
   Future<String> getCapabilityHash() async {
-    if (_capabilityHash == null) {
-      // TODO: Maybe factor this out
-      _capabilityHash = await calculateCapabilityHash(
-        DiscoInfo(
-          features: DISCO_FEATURES,
-          identities: [
-            Identity(
-              category: "client",
-              type: "phone",
-              name: "Moxxy"
-            )
-          ]
-        )
-      );
-    }
+    // TODO: Maybe factor this out
+    _capabilityHash ??= await calculateCapabilityHash(
+      DiscoInfo(
+        features: discoFeatures,
+        identities: [
+          Identity(
+            category: "client",
+            type: "phone",
+            name: "Moxxy"
+          )
+        ]
+      )
+    );
 
     return _capabilityHash!;
   }
@@ -62,7 +60,7 @@ class PresenceManager extends XmppManagerBase {
           ),
           XMLNode.xmlns(
             tag: "c",
-            xmlns: CAPS_XMLNS,
+            xmlns: capsXmlns,
             attributes: {
               "hash": "sha-1",
               "node": "http://moxxy.im",

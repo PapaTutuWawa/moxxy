@@ -5,10 +5,6 @@ import "package:moxxyv2/redux/login/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
 import "package:moxxyv2/redux/global/actions.dart";
 import "package:moxxyv2/backend/account.dart";
-import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/repositories/xmpp.dart";
 
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";

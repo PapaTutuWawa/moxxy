@@ -1,8 +1,5 @@
-import "dart:collection";
-
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
@@ -33,7 +30,7 @@ class RosterPushEvent extends XmppEvent {
 }
 
 enum RosterItemNotFoundTrigger {
-  REMOVE
+  remove
 }
 
 class RosterItemNotFoundEvent extends XmppEvent {
@@ -50,15 +47,15 @@ class RosterManager extends XmppManagerBase {
   RosterManager() : _rosterVersion = null, super();
   
   @override
-  String getId() => ROSTER_MANAGER;
+  String getId() => rosterManager;
 
   @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "iq",
       tagName: "query",
-      tagXmlns: ROSTER_XMLNS,
-      callback: this._onRosterPush
+      tagXmlns: rosterXmlns,
+      callback: _onRosterPush
     )
   ];
 
@@ -73,7 +70,7 @@ class RosterManager extends XmppManagerBase {
   }
  
   Future<bool> _onRosterPush(Stanza stanza) async {
-    final attrs = this.getAttributes();
+    final attrs = getAttributes();
 
     attrs.log("Received roster push");
 
@@ -82,7 +79,7 @@ class RosterManager extends XmppManagerBase {
       return true;
     }
 
-    final query = stanza.firstTag("query", xmlns: ROSTER_XMLNS)!;
+    final query = stanza.firstTag("query", xmlns: rosterXmlns)!;
     final item = query.firstTag("item");
 
     if (item == null) {
@@ -123,7 +120,7 @@ class RosterManager extends XmppManagerBase {
         children: [
           XMLNode.xmlns(
             tag: "query",
-            xmlns: ROSTER_XMLNS,
+            xmlns: rosterXmlns,
             attributes: {
               ...(_rosterVersion != null ? { "ver": _rosterVersion! } : {})
             }
@@ -137,9 +134,9 @@ class RosterManager extends XmppManagerBase {
       return null;
     }
 
-    final query = response.firstTag("query");
+    final XMLNode? query = response.firstTag("query");
 
-    final items;
+    final List<XmppRosterItem> items;
     if (query != null) {
       items = query.children.map((item) => XmppRosterItem(
           name: item.attributes["name"],
@@ -167,7 +164,7 @@ class RosterManager extends XmppManagerBase {
         children: [
           XMLNode.xmlns(
             tag: "query",
-            xmlns: ROSTER_XMLNS,
+            xmlns: rosterXmlns,
             children: [
               XMLNode(
                 tag: "item",
@@ -181,13 +178,8 @@ class RosterManager extends XmppManagerBase {
       )
     );
 
-    if (response == null) {
-      attrs.log("Error adding ${jid} to roster");
-      return;
-    }
-
     if (response.attributes["type"] != "result") {
-      attrs.log("Error adding ${jid} to roster: " + response.toString());
+      attrs.log("Error adding $jid to roster: " + response.toString());
       return;
     }
   }
@@ -201,7 +193,7 @@ class RosterManager extends XmppManagerBase {
         children: [
           XMLNode.xmlns(
             tag: "query",
-            xmlns: ROSTER_XMLNS,
+            xmlns: rosterXmlns,
             children: [
               XMLNode(
                 tag: "item",
@@ -223,7 +215,7 @@ class RosterManager extends XmppManagerBase {
       final notFound = error.firstTag("item-not-found") != null;
 
       if (notFound) {
-        attrs.sendEvent(RosterItemNotFoundEvent(jid: jid, trigger: RosterItemNotFoundTrigger.REMOVE));
+        attrs.sendEvent(RosterItemNotFoundEvent(jid: jid, trigger: RosterItemNotFoundTrigger.remove));
       }
     }
   }

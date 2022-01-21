@@ -6,15 +6,13 @@ import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/routing.dart";
-import "package:moxxyv2/xmpp/nonzas/stream.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
 
+// TODO: Factor out to share with SCRAM
 class SaslPlainAuthNonza extends XMLNode {
   SaslPlainAuthNonza(String username, String password) : super(
     tag: "auth",
     attributes: {
-      "xmlns": SASL_XMLNS,
+      "xmlns": saslXmlns,
       "mechanism": "PLAIN" 
     },
     text: base64.encode(utf8.encode("\u0000$username\u0000$password"))
@@ -33,18 +31,16 @@ class SaslPlainNegotiator extends AuthenticationNegotiator {
     if (authSent) {
       final tag = nonza!.tag;
       if (tag == "failure") {
-        print("SASL failure");
-        return Result(AuthenticationResult.FAILURE, getSaslError(nonza));
+        return Result(AuthenticationResult.failure, getSaslError(nonza));
       } else if (tag == "success") {
-        print("SASL success");
-        return Result(AuthenticationResult.SUCCESS, "");
+        return Result(AuthenticationResult.success, "");
       }
     } else {
-      this.sendRawXML(SaslPlainAuthNonza(this.settings.jid.local, this.settings.password));
-      this.authSent = true;
-      return Result(AuthenticationResult.NOT_DONE, "");
+      sendRawXML(SaslPlainAuthNonza(settings.jid.local, settings.password));
+      authSent = true;
+      return Result(AuthenticationResult.notDone, "");
     }
 
-    return Result(AuthenticationResult.FAILURE, "");
+    return Result(AuthenticationResult.failure, "");
   }
 }

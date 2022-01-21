@@ -1,5 +1,3 @@
-import "dart:collection";
-
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -9,10 +7,11 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 
-const DISCO_FEATURES = [
-  DISCO_INFO_XMLNS, DISCO_ITEMS_XMLNS,
-  CHAT_MARKERS_XMLNS,
-  CAPS_XMLNS
+// TODO: Factor out of lib/xmpp. Maybe have managers register their supported xmlns?
+const discoFeatures = [
+  discoInfoXmlns, discoItemsXmlns,
+  chatMarkersXmlns,
+  capsXmlns
 ];
 
 class Identity {
@@ -46,26 +45,26 @@ DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
 
   final error = stanza.firstTag("error");
   if (error != null && stanza.attributes["type"] == "error") {
-    print("Disco Items error: " + error.toXml());
+    //print("Disco Items error: " + error.toXml());
     return null;
   }
   
   final List<String> features = List.empty(growable: true);
   final List<Identity> identities = List.empty(growable: true);
 
-  query.children.forEach((element) {
-      if (element.tag == "feature") {
-        features.add(element.attributes["var"]!);
-      } else if (element.tag == "identity") {
-        identities.add(Identity(
-            category: element.attributes["category"]!,
-            type: element.attributes["type"]!,
-            name: element.attributes["name"]!
-        ));
-      } else {
-        print("Unknown disco tag: " + element.tag);
-      }
-  });
+  for (var element in query.children) {
+    if (element.tag == "feature") {
+      features.add(element.attributes["var"]!);
+    } else if (element.tag == "identity") {
+      identities.add(Identity(
+          category: element.attributes["category"]!,
+          type: element.attributes["type"]!,
+          name: element.attributes["name"]!
+      ));
+    } else {
+      //print("Unknown disco tag: " + element.tag);
+    }
+  }
 
   // TODO: Include extendedInfo
   return DiscoInfo(
@@ -80,7 +79,7 @@ List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
 
   final error = stanza.firstTag("error");
   if (error != null && stanza.type == "error") {
-    print("Disco Items error: " + error.toXml());
+    //print("Disco Items error: " + error.toXml());
     return null;
   }
 
@@ -97,30 +96,30 @@ class DiscoManager extends XmppManagerBase {
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
       tagName: "query",
-      tagXmlns: DISCO_INFO_XMLNS,
+      tagXmlns: discoInfoXmlns,
       stanzaTag: "iq",
-      callback: this._onDiscoInfoRequest
+      callback: _onDiscoInfoRequest
     ),
     StanzaHandler(
       tagName: "query",
-      tagXmlns: DISCO_ITEMS_XMLNS,
+      tagXmlns: discoItemsXmlns,
       stanzaTag: "iq",
-      callback: this._onDiscoItemsRequest
+      callback: _onDiscoItemsRequest
     ),
   ];
 
   @override
-  String getId() => DISCO_MANAGER;
+  String getId() => discoManager;
   
   Future<bool> _onDiscoInfoRequest(Stanza stanza) async {
-    final presenceManager = getAttributes().getManagerById(PRESENCE_MANAGER)! as PresenceManager;
+    final presence = getAttributes().getManagerById(presenceManager)! as PresenceManager;
     final query = stanza.firstTag("query")!;
     final node = query.attributes["node"];
-    final capHash = await presenceManager.getCapabilityHash();
+    final capHash = await presence.getCapabilityHash();
     final isCapabilityNode = node == "http://moxxy.im#" + capHash;
 
     if (!isCapabilityNode && node != null) {
-      this.getAttributes().sendStanza((Stanza.iq(
+      getAttributes().sendStanza((Stanza.iq(
             to: stanza.from,
             from: stanza.to,
             id: stanza.id,
@@ -141,7 +140,7 @@ class DiscoManager extends XmppManagerBase {
                 children: [
                   XMLNode.xmlns(
                     tag: "not-allowed",
-                    xmlns: FULL_STANZA_XMLNS
+                    xmlns: fullStanzaXmlns
                   )
                 ]
               )
@@ -152,11 +151,11 @@ class DiscoManager extends XmppManagerBase {
       return true;
     }
 
-    this.getAttributes().sendStanza(stanza.reply(
+    getAttributes().sendStanza(stanza.reply(
         children: [
           XMLNode.xmlns(
             tag: "query",
-            xmlns: DISCO_INFO_XMLNS,
+            xmlns: discoInfoXmlns,
             attributes: {
               ...(!isCapabilityNode ? {} : {
                   "node": "http://moxxy.im#" + capHash
@@ -165,7 +164,7 @@ class DiscoManager extends XmppManagerBase {
             children: [
               XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
 
-              ...(DISCO_FEATURES.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
+              ...(discoFeatures.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
             ]
           )
         ]
@@ -178,7 +177,7 @@ class DiscoManager extends XmppManagerBase {
     final query = stanza.firstTag("query")!;
     if (query.attributes["node"] != null) {
       // TODO: Handle the node we specified for XEP-0115
-      this.getAttributes().sendStanza((Stanza.iq(
+      getAttributes().sendStanza((Stanza.iq(
             to: stanza.from,
             from: stanza.to,
             id: stanza.id,
@@ -199,7 +198,7 @@ class DiscoManager extends XmppManagerBase {
                 children: [
                   XMLNode.xmlns(
                     tag: "not-allowed",
-                    xmlns: FULL_STANZA_XMLNS
+                    xmlns: fullStanzaXmlns
                   )
                 ]
               )
@@ -210,11 +209,11 @@ class DiscoManager extends XmppManagerBase {
       return true;
     }
 
-    this.getAttributes().sendStanza(stanza.reply(
+    getAttributes().sendStanza(stanza.reply(
         children: [
           XMLNode.xmlns(
             tag: "query",
-            xmlns: DISCO_ITEMS_XMLNS
+            xmlns: discoItemsXmlns
           )
         ]
     ));
@@ -223,13 +222,13 @@ class DiscoManager extends XmppManagerBase {
 
   /// Sends a disco info query to the (full) jid [entity], optionally with node=[node].
   Future<DiscoInfo?> discoInfoQuery(String entity, { String? node}) async {
-    final stanza = await this.getAttributes().sendStanza(buildDiscoInfoQueryStanza(entity, node));
+    final stanza = await getAttributes().sendStanza(buildDiscoInfoQueryStanza(entity, node));
     return parseDiscoInfoResponse(stanza);
   }
 
   /// Sends a disco items query to the (full) jid [entity], optionally with node=[node].
   Future<List<DiscoItem>?> discoItemsQuery(XmppConnection conn, String entity, { String? node }) async {
-    final stanza = await this.getAttributes().sendStanza(buildDiscoItemsQueryStanza(entity, node: node));
+    final stanza = await getAttributes().sendStanza(buildDiscoItemsQueryStanza(entity, node: node));
     return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
   }
 }
@@ -238,7 +237,7 @@ Stanza buildDiscoInfoQueryStanza(String entity, String? node) {
   return Stanza.iq(to: entity, type: "get", children: [
       XMLNode.xmlns(
         tag: "query",
-        xmlns: DISCO_INFO_XMLNS,
+        xmlns: discoInfoXmlns,
         attributes: node != null ? { "node": node } : {}
       )
   ]);
@@ -248,7 +247,7 @@ Stanza buildDiscoItemsQueryStanza(String entity, { String? node }) {
   return Stanza.iq(to: entity, type: "get", children: [
       XMLNode.xmlns(
         tag: "query",
-        xmlns: DISCO_ITEMS_XMLNS,
+        xmlns: discoItemsXmlns,
         attributes: node != null ? { "node": node } : {}
       )
   ]);

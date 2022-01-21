@@ -18,7 +18,7 @@ def main():
 import "dart:collection";
 import "package:moxxyv2/data/providers.dart";
 
-final List<XMPPProvider> xmppProviderList = [
+const List<XMPPProvider> xmppProviderList = [
 {}
 ];
 '''.format(",\n".join([

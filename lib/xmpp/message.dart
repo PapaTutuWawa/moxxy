@@ -1,5 +1,4 @@
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
-import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -10,20 +9,20 @@ import "package:moxxyv2/xmpp/managers/handlers.dart";
 
 class MessageManager extends XmppManagerBase {
   @override
-  String getId() => MESSAGE_MANAGER;
+  String getId() => messageManager;
 
   @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "message",
-      callback: this._onMessage
+      callback: _onMessage
     )
   ];
 
   void _handleChatMarker(Stanza message, XMLNode marker) {
     final attrs = getAttributes();
 
-    if (["received", "displayed", "acknowledged"].indexOf(marker.tag) == -1) {
+    if (["received", "displayed", "acknowledged"].contains(marker.tag)) {
       attrs.log("Unknown message marker '${marker.tag}' found.");
       return;
     }
@@ -37,7 +36,7 @@ class MessageManager extends XmppManagerBase {
   Future<bool> _onMessage(Stanza message) async {
     final body = message.firstTag("body");
     if (body == null) {
-      final marker = message.firstTagByXmlns(CHAT_MARKERS_XMLNS);
+      final marker = message.firstTagByXmlns(chatMarkersXmlns);
       if (marker != null) {
         // Response to a marker
         _handleChatMarker(message, marker);
@@ -46,7 +45,7 @@ class MessageManager extends XmppManagerBase {
       return true;
     }
 
-    this.getAttributes().sendEvent(MessageEvent(
+    getAttributes().sendEvent(MessageEvent(
       body: body.innerText(),
       fromJid: FullJID.fromString(message.attributes["from"]!),
       sid: message.attributes["id"]!

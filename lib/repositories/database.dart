@@ -8,11 +8,8 @@ import "package:moxxyv2/db/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/roster.dart";
-import "package:moxxyv2/redux/state.dart";
-import "package:moxxyv2/redux/conversation/actions.dart";
 
 import "package:isar/isar.dart";
-import "package:redux/redux.dart";
 
 import "package:moxxyv2/isar.g.dart";
 
@@ -25,7 +22,7 @@ Conversation conversationDbToModel(DBConversation c) {
     lastMessageBody: c.lastMessageBody,
     unreadCounter: c.unreadCounter,
     lastChangeTimestamp: c.lastChangeTimestamp,
-    sharedMediaPaths: [],
+    sharedMediaPaths: const [],
     open: c.open
   );
 }
@@ -54,27 +51,27 @@ class DatabaseRepository {
   /// Returns the database ID of the conversation with jid [jid] or null if not found.
   Future<Conversation?> getConversationByJid(String jid) async {
     // TODO: Check if we already tried to load once
-    if (this._conversationCache.isEmpty) {
-      await this.loadConversations(notify: false);
+    if (_conversationCache.isEmpty) {
+      await loadConversations(notify: false);
     }
 
     return firstWhereOrNull(
       // TODO: Maybe have it accept an iterable
-      this._conversationCache.values.toList(),
+      _conversationCache.values.toList(),
       (Conversation c) => c.jid == jid
     );
   }
   
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<void> loadConversations({ bool notify = true }) async {
-    final conversationsRaw = await this.isar.dBConversations.where().findAll();
+    final conversationsRaw = await isar.dBConversations.where().findAll();
     final conversations = conversationsRaw.map((c) => conversationDbToModel(c));
-    conversations.forEach((c) {
-        this._conversationCache[c.id] = c;
-    });
+    for (var c in conversations) {
+      _conversationCache[c.id] = c;
+    }
 
     if (notify) {
-      this.sendData({
+      sendData({
           "type": "LoadConversationsResult",
           "conversations": conversations.map((c) => c.toJson()).toList()
       });
@@ -83,24 +80,24 @@ class DatabaseRepository {
 
   /// Loads all messages for the conversation with jid [jid].
   Future<void> loadMessagesForJid(String jid) async {
-    if (this.loadedConversations.indexOf(jid) != -1) {
-      this.sendData({
+    if (loadedConversations.contains(jid)) {
+      sendData({
           "type": "LoadMessagesForJidResult",
           "jid": jid,
-          "messages": this._messageCache[jid]!.map((m) => m.toJson()).toList()
+          "messages": _messageCache[jid]!.map((m) => m.toJson()).toList()
       });
      
       return;
     }
 
-    final messages = await this.isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
-    this.loadedConversations.add(jid);
+    final messages = await isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
+    loadedConversations.add(jid);
 
-    if (!this._messageCache.containsKey(jid)) {
-      this._messageCache[jid] = List.empty(growable: true);
+    if (!_messageCache.containsKey(jid)) {
+      _messageCache[jid] = List.empty(growable: true);
     }
     
-    this.sendData({
+    sendData({
         "type": "LoadMessagesForJidResult",
         "jid": jid,
         "messages": messages.map((m) {
@@ -112,7 +109,7 @@ class DatabaseRepository {
               sent: m.sent,
               id: m.id!
             );
-            this._messageCache[jid]!.add(message);
+            _messageCache[jid]!.add(message);
             return message.toJson();
         }).toList()
     });
@@ -120,9 +117,7 @@ class DatabaseRepository {
 
   /// Updates the conversation with id [id] inside the database.
   Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter }) async {
-    print("updateConversation");
-
-    final c = (await this.isar.dBConversations.get(id))!;
+    final c = (await isar.dBConversations.get(id))!;
     if (lastMessageBody != null) {
       c.lastMessageBody = lastMessageBody;
     }
@@ -136,20 +131,18 @@ class DatabaseRepository {
       c.unreadCounter = unreadCounter;
     }
 
-    await this.isar.writeTxn((isar) async {
+    await isar.writeTxn((isar) async {
         await isar.dBConversations.put(c);
-        print("DONE");
     });
 
     final conversation = conversationDbToModel(c);
-    this._conversationCache[c.id!] = conversation;
+    _conversationCache[c.id!] = conversation;
     return conversation;
   }
 
   /// Creates a [Conversation] inside the database given the data. This is so that the
   /// [Conversation] object can carry its database id.
   Future<Conversation> addConversationFromData(String title, String lastMessageBody, String avatarUrl, String jid, int unreadCounter, int lastChangeTimestamp, List<String> sharedMediaPaths, bool open) async {
-    print("addConversationFromAction");
     final c = DBConversation()
       ..jid = jid
       ..title = title
@@ -160,20 +153,18 @@ class DatabaseRepository {
       ..sharedMediaPaths = sharedMediaPaths
       ..open = open;
 
-    await this.isar.writeTxn((isar) async {
+    await isar.writeTxn((isar) async {
         await isar.dBConversations.put(c);
-        print("DONE");
     }); 
 
     final conversation = conversationDbToModel(c); 
-    this._conversationCache[c.id!] = conversation;
+    _conversationCache[c.id!] = conversation;
 
     return conversation;
   }
 
-  /// Same as [this.addConversationFromData] but for a [Message].
+  /// Same as [addConversationFromData] but for a [Message].
   Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent) async {
-    print("addMessageFromData");
     final m = DBMessage()
       ..from = from
       ..conversationJid = conversationJid
@@ -181,9 +172,8 @@ class DatabaseRepository {
       ..body = body
       ..sent = sent;
       
-    await this.isar.writeTxn((isar) async {
+    await isar.writeTxn((isar) async {
         await isar.dBMessages.put(m);
-        print("DONE");
     });
 
     return Message(
@@ -198,13 +188,16 @@ class DatabaseRepository {
 
   /// Loads roster items from the database
   Future<void> loadRosterItems({ bool notify = true }) async {
-    final roster = await this.isar.dBRosterItems.where().findAll();
+    final roster = await isar.dBRosterItems.where().findAll();
     final items = roster.map((item) => rosterDbToModel(item));
-    this._rosterCache.clear();
-    items.forEach((item) => this._rosterCache[item.jid] = item);
+
+    _rosterCache.clear();
+    for (var item in items) {
+      _rosterCache[item.jid] = item;
+    }
 
     if (notify) {
-      this.sendData({
+      sendData({
           "type": "LoadRosterItemsResult",
           "items": items.map((i) => i.toJson()).toList()
       });
@@ -213,14 +206,16 @@ class DatabaseRepository {
 
   /// Removes a roster item from the database and cache
   Future<void> removeRosterItemByJid(String jid, { bool nullOkay = false }) async {
-    final item = this._rosterCache[jid];
+    final item = _rosterCache[jid];
     
     if (item != null) {
-      await this.isar.writeTxn((isar) async {
+      await isar.writeTxn((isar) async {
           await isar.dBRosterItems.delete(item.id);
       });
-      this._rosterCache.remove(jid);
+      _rosterCache.remove(jid);
     } else if (!nullOkay) {
+      // TODO: Use logging function
+      // ignore: avoid_print
       print("RosterRepository::removeFromRoster: Could not find $jid in roster state");
     }
   }
@@ -232,48 +227,46 @@ class DatabaseRepository {
       ..title = title
       ..avatarUrl = avatarUrl;
 
-    await this.isar.writeTxn((isar) async {
+    await isar.writeTxn((isar) async {
         await isar.dBRosterItems.put(rosterItem);
-        print("DONE");
     });
 
     final item = rosterDbToModel(rosterItem);
 
-    this._rosterCache[item.jid] = item;
+    _rosterCache[item.jid] = item;
     return item;
   }
 
   /// Updates the roster item with id [id] inside the database.
   Future<RosterItem> updateRosterItem({ required int id, String? avatarUrl }) async {
-    final i = (await this.isar.dBRosterItems.get(id))!;
+    final i = (await isar.dBRosterItems.get(id))!;
     if (avatarUrl != null) {
       i.avatarUrl = avatarUrl;
     }
 
-    await this.isar.writeTxn((isar) async {
+    await isar.writeTxn((isar) async {
         await isar.dBRosterItems.put(i);
-        print("DONE");
     });
 
     final item = rosterDbToModel(i);
-    this._rosterCache[item.jid] = item;
+    _rosterCache[item.jid] = item;
     return item;
   }
   
   /// Returns true if a roster item with jid [jid] exists
   Future<bool> isInRoster(String jid) async {
     // TODO: Check if we already loaded it once
-    if (this._rosterCache.isEmpty) {
-      await this.loadRosterItems(notify: false);
+    if (_rosterCache.isEmpty) {
+      await loadRosterItems(notify: false);
     }
 
-    return this._rosterCache.containsKey(jid);
+    return _rosterCache.containsKey(jid);
   }
 
   /// Returns the roster item if it exists
   Future<RosterItem?> getRosterItemByJid(String jid) async {
-    if (await this.isInRoster(jid)) {
-      return this._rosterCache[jid];
+    if (await isInRoster(jid)) {
+      return _rosterCache[jid];
     }
 
     return null;

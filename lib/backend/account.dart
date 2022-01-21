@@ -1,6 +1,6 @@
 import "dart:async";
 import "dart:convert";
-import "dart:collection";
+
 import "package:moxxyv2/redux/account/state.dart";
 
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
@@ -9,11 +9,13 @@ import "package:flutter_secure_storage/flutter_secure_storage.dart";
 
 Future<void> secureDebugPrint(FlutterSecureStorage storage) async {
   final data = await storage.readAll();
+  // TODO: Use a logging function
+  // ignore: avoid_print
   print(data.toString());
 }
 
 Future<AccountState?> getAccountData() async {
-  final storage = new FlutterSecureStorage(
+  const storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
 
@@ -34,7 +36,7 @@ Future<AccountState?> getAccountData() async {
 
 Future<void> setAccountData(AccountState state) async {
   // TODO: This sometimes fails
-  final storage = new FlutterSecureStorage(
+  const storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
 
@@ -46,7 +48,7 @@ Future<void> setAccountData(AccountState state) async {
 
 Future<void> removeAccountData() async {
   // TODO: This sometimes fails
-  final storage = new FlutterSecureStorage(
+  const storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
 

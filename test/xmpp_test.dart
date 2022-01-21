@@ -2,8 +2,6 @@ import "dart:async";
 
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
@@ -11,14 +9,10 @@ import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/xeps/0368.dart";
 
-import "helpers/xml.dart";
 import "helpers/xmpp.dart";
 
 import "package:test/test.dart";
-import "package:xml/xml.dart";
-import "package:hex/hex.dart";
 
 void main() {
   test("Test a successful login attempt with no SM", () async {
@@ -193,7 +187,7 @@ void main() {
       ));
       conn.registerManager(PresenceManager());
       await conn.connect();
-      await Future.delayed(Duration(seconds: 3), () {
+      await Future.delayed(const Duration(seconds: 3), () {
           expect(fakeSocket.getState(), 5);
       });
   });
@@ -274,7 +268,7 @@ void main() {
       });
 
       await conn.connect();
-      await Future.delayed(Duration(seconds: 3), () {
+      await Future.delayed(const Duration(seconds: 3), () {
           expect(receivedEvent, true);
       });
   });
@@ -355,7 +349,7 @@ void main() {
       });
 
       await conn.connect();
-      await Future.delayed(Duration(seconds: 3), () {
+      await Future.delayed(const Duration(seconds: 3), () {
           expect(receivedEvent, true);
       });
   });
@@ -425,7 +419,6 @@ void main() {
           )
         ]
       );
-      bool receivedScram = false;
       final XmppConnection conn = XmppConnection(socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
           jid: BareJID.fromString("polynomdivision@test.server"),
@@ -434,7 +427,9 @@ void main() {
           allowPlainAuth: false
       ));
       await conn.connect();
-      await Future.delayed(Duration(seconds: 3), () {});
+      await Future.delayed(const Duration(seconds: 3), () {
+          expect(fakeSocket.getState(), 2);
+      });
   });
 
   group("Test roster pushes", () {
@@ -442,6 +437,7 @@ void main() {
           bool eventTriggered = false;
           final roster = RosterManager();
           roster.register(XmppManagerAttributes(
+              // ignore: avoid_print
               log: (str) => print(str),
               sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {

@@ -1,8 +1,10 @@
-import "package:flutter/material.dart";
-import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/constants.dart";
 
+import "package:flutter/material.dart";
+
 class IntroPage extends StatelessWidget {
+  const IntroPage({ Key? key }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     // TODO: Fix the typography
@@ -11,27 +13,27 @@ class IntroPage extends StatelessWidget {
         body: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: 16.0),
+              padding: const EdgeInsets.only(top: 16.0),
               child: Image.asset(
                 "assets/images/logo.png",
                 width: 200, height: 200
               )
             ),
-            Padding(
+            const Padding(
               padding: EdgeInsets.symmetric(vertical: 16.0),
               child: Text(
                 "moxxy",
                 style: TextStyle(
-                  fontSize: FONTSIZE_TITLE
+                  fontSize: fontsizeTitle
                 )
               )
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: paddingVeryLarge),
               child: Text(
                 "An experiment into building a modern, easy and beautiful XMPP client.",
                 style: TextStyle(
-                  fontSize: FONTSIZE_BODY
+                  fontSize: fontsizeBody
                 )
               )
             ),
@@ -39,22 +41,22 @@ class IntroPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
                     child: ElevatedButton(
-                      child: Text("Login"),
+                      child: const Text("Login"),
                       onPressed: () => Navigator.pushNamed(context, "/login")
                     )
                   )
                 )
               ]
             ),
-            Spacer(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+            const Spacer(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: paddingVeryLarge),
               child: Text(
                 "Have no XMPP account? No worries, creating one is really easy.",
                 style: TextStyle(
-                  fontSize: FONTSIZE_BODY
+                  fontSize: fontsizeBody
                 )
               )
             ),
@@ -62,9 +64,9 @@ class IntroPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: PADDING_VERY_LARGE)),
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(bottom: paddingVeryLarge)),
                     child: TextButton(
-                      child: Text("Register"),
+                      child: const Text("Register"),
                       onPressed: () => Navigator.pushNamed(context, "/register")
                     )
                   )

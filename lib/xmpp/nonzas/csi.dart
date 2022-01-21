@@ -5,7 +5,7 @@ class CSIActiveNonza extends XMLNode {
   CSIActiveNonza() : super(
     tag: "active",
     attributes: {
-      "xmlns": CSI_XMLNS
+      "xmlns": csiXmlns
     }
   );
 }
@@ -14,7 +14,7 @@ class CSIInactiveNonza extends XMLNode {
   CSIInactiveNonza() : super(
     tag: "inactive",
     attributes: {
-      "xmlns": CSI_XMLNS
+      "xmlns": csiXmlns
     }
   );
 }

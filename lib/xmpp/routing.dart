@@ -1,11 +1,11 @@
 enum RoutingState {
-  ERROR,
-  UNAUTHENTICATED,
-  PERFORM_SASL_AUTH,
-  CHECK_STREAM_MANAGEMENT,
-  PERFORM_STREAM_RESUMPTION,
-  BIND_RESOURCE_PRE_SM,
-  ENABLE_SM,
-  BIND_RESOURCE,
-  HANDLE_STANZAS
+  error,
+  unauthenticated,
+  performSaslAuth,
+  checkStreamManagement,
+  performStreamResumption,
+  bindResourcePreSM,
+  enableSM,
+  bindResource,
+  handleStanzas
 }

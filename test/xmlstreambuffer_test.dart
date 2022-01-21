@@ -12,7 +12,7 @@ void main() {
     final buffer = XmlStreamBuffer();
     final controller = StreamController<String>();
 
-    final transformed = controller
+    controller
     .stream
     .transform(buffer)
     .forEach((node) {
@@ -24,7 +24,7 @@ void main() {
     });
     controller.add("<childa /><childb />");
 
-    await Future.delayed(Duration(seconds: 2), () {
+    await Future.delayed(const Duration(seconds: 2), () {
       expect(childa, true);
       expect(childb, true);
     });
@@ -36,7 +36,7 @@ void main() {
     final buffer = XmlStreamBuffer();
     final controller = StreamController<String>();
 
-    final transformed = controller
+    controller
     .stream
     .transform(buffer)
     .forEach((node) {
@@ -49,7 +49,7 @@ void main() {
     controller.add("<childa");
     controller.add(" /><childb />");
 
-    await Future.delayed(Duration(seconds: 2), () {
+    await Future.delayed(const Duration(seconds: 2), () {
       expect(childa, true);
       expect(childb, true);
     });

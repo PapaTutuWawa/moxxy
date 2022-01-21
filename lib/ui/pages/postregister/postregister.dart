@@ -1,4 +1,3 @@
-import "package:flutter/material.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
@@ -7,10 +6,9 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/postregister/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
-import "package:moxxyv2/redux/postregister/state.dart";
 
+import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
 
 class _PostRegistrationPageViewModel {
   final bool showSnackbar;
@@ -20,13 +18,15 @@ class _PostRegistrationPageViewModel {
   final String avatarUrl;
   final void Function(String avatarUrl) setAvatarUrl;
 
-  _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName, required this.avatarUrl, required this.setAvatarUrl });
+  const _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName, required this.avatarUrl, required this.setAvatarUrl });
 }
 
 class PostRegistrationPage extends StatelessWidget {
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> scaffoldKey;
   TextEditingController? _controller;
 
+  PostRegistrationPage({ Key? key }) : scaffoldKey = GlobalKey<ScaffoldState>(), super(key: key);
+  
   void _applyDisplayNameChange(BuildContext context, _PostRegistrationPageViewModel viewModel) {
     // TODO
     // TODO: Maybe show a LinearProgressIndicator
@@ -36,11 +36,8 @@ class PostRegistrationPage extends StatelessWidget {
 
   // Wrapper so that we can set the display name on first initialization
   TextEditingController _getController(_PostRegistrationPageViewModel viewModel) {
-    if (this._controller == null) {
-      this._controller = TextEditingController(text: viewModel.displayName);
-    }
-
-    return this._controller!;
+    _controller ??= TextEditingController(text: viewModel.displayName);
+    return _controller!;
   }
 
   @override
@@ -48,7 +45,7 @@ class PostRegistrationPage extends StatelessWidget {
     // TODO: Fix the typography
     return SafeArea(
       child: Scaffold(
-        key: this.scaffoldKey,
+        key: scaffoldKey,
         body: StoreConnector<MoxxyState, _PostRegistrationPageViewModel>(
           converter: (store) => _PostRegistrationPageViewModel(
             showSnackbar: store.state.postRegisterPageState.showSnackbar,
@@ -72,24 +69,24 @@ class PostRegistrationPage extends StatelessWidget {
                     child: PermanentSnackBar(
                       text: "Display name not applied",
                       actionText: "Apply",
-                      onPressed: () => this._applyDisplayNameChange(context, viewModel)
+                      onPressed: () => _applyDisplayNameChange(context, viewModel)
                     )
                   )
                 )
               ),
               Column(
                 children: [
-                  Padding(
+                  const Padding(
                     padding: EdgeInsetsDirectional.only(top: 32.0),
                     child: Text(
                       "This is you!",
                       style: TextStyle(
-                        fontSize: FONTSIZE_TITLE
+                        fontSize: fontsizeTitle
                       )
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
                     child: Row(
                       children: [
                         AvatarWrapper(
@@ -100,7 +97,7 @@ class PostRegistrationPage extends StatelessWidget {
                           onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl)
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -109,7 +106,7 @@ class PostRegistrationPage extends StatelessWidget {
                                 child: CustomTextField(
                                   maxLines: 1,
                                   labelText: "Display name",
-                                  controller: this._getController(viewModel),
+                                  controller: _getController(viewModel),
                                   isDense: true,
                                   onChanged: (value) {
                                     // NOTE: Since hitting the (software) back button triggers this function, "debounce" it
@@ -124,11 +121,11 @@ class PostRegistrationPage extends StatelessWidget {
                                       }
                                     }
                                   },
-                                  cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                                  cornerRadius: textfieldRadiusRegular
                                 )
                               ),
                               Padding(
-                                padding: EdgeInsets.only(top: 2.0),
+                                padding: const EdgeInsets.only(top: 2.0),
                                 child: Text(viewModel.jid)
                               )
                             ]
@@ -138,17 +135,17 @@ class PostRegistrationPage extends StatelessWidget {
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 16.0)),
-                    child: Text(
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 16.0)),
+                    child: const Text(
                       "We have auto-generated a password for you. You should write it down somewhere safe.",
                       style: TextStyle(
-                        fontSize: FONTSIZE_BODY
+                        fontSize: fontsizeBody
                       )
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 16.0)),
-                    child: ExpansionTile(
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 16.0)),
+                    child: const ExpansionTile(
                       title: Text("Show password"),
                       children: [
                         ListTile(title: Text("s3cr3t_p4ssw0rd"))
@@ -156,19 +153,19 @@ class PostRegistrationPage extends StatelessWidget {
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
                     child: ExpansionTile(
-                      title: Text("Advanced settings"),
+                      title: const Text("Advanced settings"),
                       children: [
                         SwitchListTile(
-                          title: Text("Enable link previews"),
-                          value: true,
+                          title: const Text("Enable link previews"),
+                          value: false,
                           // TODO
                           onChanged: (value) {}
                         ),
                         SwitchListTile(
-                          title: Text("Use Push Services"),
-                          value: true,
+                          title: const Text("Use Push Notification Services"),
+                          value: false,
                           // TODO
                           onChanged: (value) {}
                         )
@@ -176,22 +173,22 @@ class PostRegistrationPage extends StatelessWidget {
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(top: 16.0)),
-                    child: Text(
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 16.0)),
+                    child: const Text(
                       // TODO: Maybe rephrase
                       "You can now be contacted by your XMPP address. If you want, you can set a profile picture now.",
                       style: TextStyle(
-                        fontSize: FONTSIZE_BODY
+                        fontSize: fontsizeBody
                       )
                     )
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
                     child: Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            child: Text("Start chatting"),
+                            child: const Text("Start chatting"),
                             // TODO
                             onPressed: () => Navigator.pushNamedAndRemoveUntil(context, "/conversations", (route) => false)
                           )

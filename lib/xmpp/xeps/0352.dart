@@ -7,7 +7,7 @@ class CSIActiveNonza extends XMLNode {
   CSIActiveNonza() : super(
     tag: "active",
     attributes: {
-      "xmlns": CSI_XMLNS
+      "xmlns": csiXmlns
     }
   );
 }
@@ -16,7 +16,7 @@ class CSIInactiveNonza extends XMLNode {
   CSIInactiveNonza() : super(
     tag: "inactive",
     attributes: {
-      "xmlns": CSI_XMLNS
+      "xmlns": csiXmlns
     }
   );
 }
@@ -24,12 +24,12 @@ class CSIInactiveNonza extends XMLNode {
 // TODO: Remember the CSI state in case we resume a stream
 class CSIManager extends XmppManagerBase {
   @override
-  String getId() => CSI_MANAGER;
+  String getId() => csiManager;
 
   /// Tells the server to top optimizing traffic
   void setActive() {
     final attrs = getAttributes();
-    if (attrs.isStreamFeatureSupported(CSI_XMLNS)) {
+    if (attrs.isStreamFeatureSupported(csiXmlns)) {
       attrs.sendNonza(CSIActiveNonza());
     }
   }
@@ -37,7 +37,7 @@ class CSIManager extends XmppManagerBase {
   /// Tells the server to optimize traffic following XEP-0352
   void setInactive() {
     final attrs = getAttributes();
-    if (attrs.isStreamFeatureSupported(CSI_XMLNS)) {
+    if (attrs.isStreamFeatureSupported(csiXmlns)) {
       attrs.sendNonza(CSIInactiveNonza());
     }
   }

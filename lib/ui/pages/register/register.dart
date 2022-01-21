@@ -1,18 +1,16 @@
-import "dart:collection";
 import "dart:math";
-import "package:flutter/material.dart";
+
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/redux/registration/state.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/registration/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
 import "package:moxxyv2/data/generated/providers.dart";
 
+import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
 
 class _RegistrationPageViewModel {
   final int providerIndex;
@@ -29,8 +27,10 @@ class _RegistrationPageViewModel {
 }
 
 class RegistrationPage extends StatelessWidget {
-  final TextEditingController controller = TextEditingController();
+  final TextEditingController _controller;
 
+  RegistrationPage({ Key? key }) : _controller = TextEditingController(), super(key: key);
+  
   void _generateNewProvider(_RegistrationPageViewModel viewModel) {
     int newIndex = Random().nextInt(xmppProviderList.length);
     // Prevent generating the same provider twice back-to-back
@@ -42,13 +42,13 @@ class RegistrationPage extends StatelessWidget {
   }
 
   String _getCurrentJid(_RegistrationPageViewModel viewModel) {
-    return this.controller.text + "@" + xmppProviderList[viewModel.providerIndex].jid;
+    return _controller.text + "@" + xmppProviderList[viewModel.providerIndex].jid;
   }
   
   void _performRegistration(BuildContext context, _RegistrationPageViewModel viewModel) {
     viewModel.resetErrors();
 
-    if (this.controller.text.isEmpty) {
+    if (_controller.text.isEmpty) {
       viewModel.setErrorText("Username cannot be empty");
       return;
     }
@@ -56,8 +56,8 @@ class RegistrationPage extends StatelessWidget {
     dismissSoftKeyboard(context);
 
     // TODO: Do this in the middleware
-    viewModel.setAccountJid(this._getCurrentJid(viewModel));
-    viewModel.setAccountDisplayName(this.controller.text);
+    viewModel.setAccountJid(_getCurrentJid(viewModel));
+    viewModel.setAccountDisplayName(_controller.text);
     viewModel.performRegistration();
   }
 
@@ -84,7 +84,7 @@ class RegistrationPage extends StatelessWidget {
       ),
       builder: (context, viewModel) {
         if (viewModel.providerIndex < 0) {
-          this._generateNewProvider(viewModel);
+          _generateNewProvider(viewModel);
         }
 
         return WillPopScope(
@@ -95,47 +95,48 @@ class RegistrationPage extends StatelessWidget {
             children: [
               Visibility(
                 visible: viewModel.doingWork,
-                child: LinearProgressIndicator(
+                child: const LinearProgressIndicator(
+                  // TODO
                   value: null,
-                  valueColor: AlwaysStoppedAnimation<Color>(PRIMARY_COLOR)
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor)
                 )
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE, vertical: 16.0),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: paddingVeryLarge, vertical: 16.0),
                 child: Text(
                   "XMPP is a lot like e-mail: You can send e-mails to people who are not using your specific e-mail provider. As such, there are a lot of XMPP providers. To help you, we chose a random one from a curated list. You only have to pick a username.",
                   style: TextStyle(
-                    fontSize: FONTSIZE_BODY
+                    fontSize: fontsizeBody
                   )
                 )
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE).add(EdgeInsets.only(bottom: 8.0)),
+                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(bottom: 8.0)),
                 child: CustomTextField(
                   maxLines: 1,
                   labelText: "Username",
-                  suffixText: "@" + xmppProviderList[this._getProviderIndex(viewModel)].jid,
+                  suffixText: "@" + xmppProviderList[_getProviderIndex(viewModel)].jid,
                   suffixIcon: Padding(
-                    padding: EdgeInsetsDirectional.only(end: 6.0),
+                    padding: const EdgeInsetsDirectional.only(end: 6.0),
                     child: IconButton(
-                      icon: Icon(Icons.refresh),
-                      onPressed: viewModel.doingWork ? null : () => this._generateNewProvider(viewModel)
+                      icon: const Icon(Icons.refresh),
+                      onPressed: viewModel.doingWork ? null : () => _generateNewProvider(viewModel)
                     )
                   ),
                   errorText: viewModel.errorText,
-                  controller: this.controller,
+                  controller: _controller,
                   enabled: !viewModel.doingWork,
-                  cornerRadius: TEXTFIELD_RADIUS_REGULAR
+                  cornerRadius: textfieldRadiusRegular
                 )
               ),
               Row(
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: PADDING_VERY_LARGE),
+                      padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
                       child: ElevatedButton(
-                        child: Text("Register"),
-                        onPressed: viewModel.doingWork ? null : () => this._performRegistration(context, viewModel)
+                        child: const Text("Register"),
+                        onPressed: viewModel.doingWork ? null : () => _performRegistration(context, viewModel)
                       )
                     )
                   )

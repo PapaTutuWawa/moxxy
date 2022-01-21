@@ -128,17 +128,17 @@ void main() {
 
   group("validateJid", () {
       test("Valid JIDs", () {
-          expect(validateJid("polynomdivision@someserver.example"), JidFormatError.NONE);
-          expect(validateJid("a@b.c"), JidFormatError.NONE);
-          expect(validateJid("a@192.168.178.1"), JidFormatError.NONE);
-          expect(validateJid("a@local"), JidFormatError.NONE);
+          expect(validateJid("polynomdivision@someserver.example"), JidFormatError.none);
+          expect(validateJid("a@b.c"), JidFormatError.none);
+          expect(validateJid("a@192.168.178.1"), JidFormatError.none);
+          expect(validateJid("a@local"), JidFormatError.none);
       });
       test("Invalid JIDs", () {
-          expect(validateJid("polynomdivision"), JidFormatError.NO_SEPARATOR);
-          expect(validateJid("a@"), JidFormatError.NO_DOMAIN);
-          expect(validateJid(""), JidFormatError.EMPTY);
-          expect(validateJid("a@local@host"), JidFormatError.TOO_MANY_SEPARATORS);
-          expect(validateJid("@local"), JidFormatError.NO_LOCALPART);
+          expect(validateJid("polynomdivision"), JidFormatError.noSeparator);
+          expect(validateJid("a@"), JidFormatError.noDomain);
+          expect(validateJid(""), JidFormatError.empty);
+          expect(validateJid("a@local@host"), JidFormatError.tooManySeparators);
+          expect(validateJid("@local"), JidFormatError.noLocalpart);
       });
   });
 
