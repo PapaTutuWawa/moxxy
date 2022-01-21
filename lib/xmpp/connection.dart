@@ -309,33 +309,26 @@ class XmppConnection {
   }
 
   /// Called whenever we receive a stanza after resource binding or stream resumption.
-  Future<void> _handleStanza(XMLNode stanzaRaw) async {
+  Future<void> _handleStanza(XMLNode nonza) async {
     // Process nonzas separately
-    if (["message", "iq", "presence"].indexOf(stanzaRaw.tag) == -1) {
+    if (["message", "iq", "presence"].indexOf(nonza.tag) == -1) {
       bool nonzaHandled = false;
       await Future.forEach(
         _xmppManagers.values,
         (XmppManagerBase manager) async {
-          // TODO: Maybe abort after the first match
-          await Future.forEach(
-            manager.getNonzaHandlers(),
-            (NonzaHandler handler) async {
-              if (handler.matches(stanzaRaw)) {
-                await handler.callback(stanzaRaw);
-                nonzaHandled = true;
-              }
-            }
-          );
+          final handled = await manager.runNonzaHandlers(nonza);
+
+          if (!nonzaHandled && handled) nonzaHandled = true;
         }
       );
 
       if (!nonzaHandled) {
-        this._log("Unhandled nonza received: " + stanzaRaw.toXml());
+        this._log("Unhandled nonza received: " + nonza.toXml());
       }
       return;
     }
     
-    final stanza = Stanza.fromXMLNode(stanzaRaw);
+    final stanza = Stanza.fromXMLNode(nonza);
     final id = stanza.attributes["id"];
     if (id != null && this._awaitingResponse.containsKey(id)) {
       this._awaitingResponse[id]!.complete(stanza);
@@ -344,25 +337,17 @@ class XmppConnection {
       return;
     }
 
-    bool handled = false;
+    bool stanzaHandled = false;
     await Future.forEach(
       _xmppManagers.values,
       (XmppManagerBase manager) async {
-        // TODO: Maybe abort after the first match
-        await Future.forEach(
-          manager.getStanzaHandlers(),
-          (StanzaHandler handler) async {
-            if (handler.matches(stanza)) {
-              // TODO: Respect the return value
-              await handler.callback(stanza);
-              handled = true;
-            }
-          }
-        );
+        final handled = await manager.runStanzaHandlers(stanza);
+
+        if (!stanzaHandled && handled) stanzaHandled = true;
       }
     );
 
-    if (!handled) {
+    if (!stanzaHandled) {
       handleUnhandledStanza(this, stanza);
     }
   }
