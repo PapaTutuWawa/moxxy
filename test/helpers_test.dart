@@ -1,6 +1,9 @@
 import 'package:test/test.dart';
 
 import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
+
+import "./helpers/xml.dart";
 
 void main() {
   group("padInt", () {
@@ -136,6 +139,68 @@ void main() {
           expect(validateJid(""), JidFormatError.EMPTY);
           expect(validateJid("a@local@host"), JidFormatError.TOO_MANY_SEPARATORS);
           expect(validateJid("@local"), JidFormatError.NO_LOCALPART);
+      });
+  });
+
+  group("compareXMLNodes", () {
+      test("Compare simple nodes", () {
+          expect(
+            compareXMLNodes(
+              XMLNode.fromString("<a xmlns=\"a:b:c\"></a>"),
+              XMLNode.fromString("<a xmlns=\"a:b:c\" />")
+            ),
+            true
+          );
+
+          expect(
+            compareXMLNodes(
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child count=\"1\"></child></a>"),
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child count=\"1\" /></a>")
+            ),
+            true
+          );
+
+          expect(
+            compareXMLNodes(
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child count=\"1\" /></a>"),
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child count=\"2\" /></a>")
+            ),
+            false
+          );
+
+          expect(
+            compareXMLNodes(
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child>some text</child></a>"),
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child>some other text</child></a>")
+            ),
+            false
+          );
+
+          expect(
+            compareXMLNodes(
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child>some text</child></a>"),
+              XMLNode.fromString("<a xmlns=\"a:b:c\"><child>some text</child></a>")
+            ),
+            true
+          );
+      });
+      test("Compare nodes and ignore the id attribute", () {
+          expect(
+            compareXMLNodes(
+              XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn' id='3c080624-949f-4c9f-9646-2cc6088d820b'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' node='http://moxxy.im' hash='sha-1' /></presence>"),
+              XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' hash='sha-1' node='http://moxxy.im' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' /></presence>"),
+              ignoreId: false
+            ),
+            false
+          );
+          expect(
+            compareXMLNodes(
+              XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn' id='3c080624-949f-4c9f-9646-2cc6088d820b'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' node='http://moxxy.im' hash='sha-1' /></presence>"),
+              XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' hash='sha-1' node='http://moxxy.im' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' /></presence>"),
+              ignoreId: true
+            ),
+            true
+          );
       });
   });
 }

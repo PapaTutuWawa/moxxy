@@ -7,6 +7,7 @@ import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/scram.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 
 import "helpers/xml.dart";
@@ -17,7 +18,7 @@ import "package:xml/xml.dart";
 import "package:hex/hex.dart";
 
 void main() {
-  test("Test SASL PLAIN", () async {
+  test("Test a successful login attempt with no SM", () async {
       final fakeSocket = StubTCPSocket(
         play: [
           Expectation(
@@ -59,8 +60,7 @@ void main() {
               ]
             )
           ),
-          Expectation(
-            XMLNode.xmlns(
+          Expectation(XMLNode.xmlns(
               tag: "auth",
               xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
               attributes: {
@@ -161,7 +161,17 @@ void main() {
               children: [
                 XMLNode(
                   tag: "show",
-                  text: "show"
+                  text: "chat"
+                ),
+                XMLNode.xmlns(
+                  tag: "c",
+                  xmlns: "http://jabber.org/protocol/caps",
+                  attributes: {
+                    // TODO: Somehow make the test ignore this attribute
+                    "ver": "eTczQOjOi9iroU5zVG7uBBTD4eQ=",
+                    "node": "http://moxxy.im",
+                    "hash": "sha-1"
+                  }
                 )
               ]
             ),
@@ -178,9 +188,10 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
+      conn.registerManager(PresenceManager());
       await conn.connect();
       await Future.delayed(Duration(seconds: 3), () {
-          expect(fakeSocket.getState(), 4);
+          expect(fakeSocket.getState(), 5);
       });
   });
 

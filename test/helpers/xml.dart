@@ -11,7 +11,14 @@ bool compareXMLNodes(XMLNode actual, XMLNode expectation, { bool ignoreId = true
       return actual.attributes[key] == expectation.attributes[key];
   });
   if (!attributesEqual) return false;
-  if (actual.attributes.length != expectation.attributes.length) return false;
+
+  final actualAttributeLength = !ignoreId ? actual.attributes.length : (
+    actual.attributes.containsKey("id") ? actual.attributes.length - 1 : actual.attributes.length
+  );
+  final expectedAttributeLength = !ignoreId ? expectation.attributes.length : (
+    expectation.attributes.containsKey("id") ? expectation.attributes.length - 1 : expectation.attributes.length
+  );
+  if (actualAttributeLength != expectedAttributeLength) return false;
 
   if (expectation.innerText() != "" && actual.innerText() != expectation.innerText()) return false;
 

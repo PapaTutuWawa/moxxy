@@ -364,7 +364,6 @@ class XmppConnection {
   void handleXmlStream(XMLNode node) async {
     _log("(xml) <== " + node.toXml());
 
-    // TODO: Handle RoutingState.BIND_RESOURCE
     switch (_routingState) {
       case RoutingState.UNAUTHENTICATED: {
         // We expect the stream header here
@@ -450,6 +449,18 @@ class XmppConnection {
         } else {
           _routingState = RoutingState.BIND_RESOURCE;
           _performResourceBinding();
+        }
+      }
+      break;
+      case RoutingState.BIND_RESOURCE: {
+        final proceed = _handleResourceBindingResult(node);
+        if (proceed) {
+          _routingState = RoutingState.HANDLE_STANZAS;
+          getPresenceManager().sendInitialPresence();
+        } else {
+          _log("Resource binding failed!");
+          _routingState = RoutingState.ERROR;
+          _setConnectionState(ConnectionState.ERROR);
         }
       }
       break;
