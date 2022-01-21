@@ -77,7 +77,7 @@ class RosterManager extends XmppManagerBase {
 
     attrs.log("Received roster push");
 
-    if (stanza.attributes["from"] != null && stanza.attributes["from"] != attrs.getConnectionSettings().jid) {
+    if (stanza.attributes["from"] != null || stanza.attributes["from"] != attrs.getConnectionSettings().jid) {
       attrs.log("Roster push invalid! Unexpected from attribute");
       return true;
     }

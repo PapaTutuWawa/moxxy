@@ -8,12 +8,15 @@ import "xml.dart";
 
 import "package:test/test.dart";
 
+// TODO: Turn this into multiple Expectation classes
 class Expectation {
   final XMLNode expectation;
   final XMLNode response;
   final bool ignoreId;
+  final String? containsTag;
+  final Map<String, String>? justCheckAttributes;
 
-  Expectation(this.expectation, this.response, { this.ignoreId = true });
+  Expectation(this.expectation, this.response, { this.ignoreId = true, this.containsTag, this.justCheckAttributes });
 }
 
 class StubTCPSocket extends BaseSocketWrapper {
@@ -40,6 +43,10 @@ class StubTCPSocket extends BaseSocketWrapper {
     String str = object as String;
     print("==> " + str);
 
+    if (_state >= _play.length) {
+      return;
+    }
+
     final expectation = this._play[this._state];
     this._state++;
 
@@ -59,11 +66,21 @@ class StubTCPSocket extends BaseSocketWrapper {
     }
 
     final recv = XMLNode.fromString(str);
-    expect(
-      compareXMLNodes(recv, expectation.expectation, ignoreId: expectation.ignoreId),
-      true,
-      reason: "Expected: ${expectation.expectation.toXml()}, Got: ${recv.toXml()}"
-    );
+    if (expectation.justCheckAttributes != null) {
+      expectation.justCheckAttributes!.forEach((key, value) {
+          expect(recv.attributes[key] == value, true);
+      });
+    } else {
+      expect(
+        compareXMLNodes(recv, expectation.expectation, ignoreId: expectation.ignoreId),
+        true,
+        reason: "Expected: ${expectation.expectation.toXml()}, Got: ${recv.toXml()}"
+      );
+
+      if (expectation.containsTag != null) {
+        expect(recv.firstTag(expectation.containsTag!) != null, true, reason: "Tag ${expectation.containsTag!} not found");
+      }
+    }
 
     this._dataStream.add(expectation.response.toXml());
   }

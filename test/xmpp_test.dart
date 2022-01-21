@@ -5,9 +5,12 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/nonzas/stream.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/sasl/scram.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/presence.dart";
+import "package:moxxyv2/xmpp/roster.dart";
+import "package:moxxyv2/xmpp/managers/attributes.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/0368.dart";
 
 import "helpers/xml.dart";
@@ -195,69 +198,283 @@ void main() {
       });
   });
 
-  test("Test XMPP Scram-Sha-1", () async {
-
-      final challenge = ServerChallenge.fromBase64("cj02ZDQ0MmI1ZDllNTFhNzQwZjM2OWUzZGNlY2YzMTc4ZWMxMmIzOTg1YmJkNGE4ZTZmODE0YjQyMmFiNzY2NTczLHM9UVNYQ1IrUTZzZWs4YmY5MixpPTQwOTY=");
-      expect(challenge.nonce, "6d442b5d9e51a740f369e3dcecf3178ec12b3985bbd4a8e6f814b422ab766573");
-      expect(challenge.salt, "QSXCR+Q6sek8bf92");
-      expect(challenge.iterations, 4096);
-
-      final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
-        clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
-        initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        sendRawXML: (data) {},
-        hashType: ScramHashType.SHA1
-      );
-
-      expect(
-        HEX.encode(await negotiator.calculateSaltedPassword("QSXCR+Q6sek8bf92", 4096)),
-        "1d96ee3a529b5a5f9e47c01f229a2cb8a6e15f7d"
-      );
-      expect(
-        HEX.encode(
-          await negotiator.calculateClientKey(HEX.decode("1d96ee3a529b5a5f9e47c01f229a2cb8a6e15f7d"))
-        ),
-        "e234c47bf6c36696dd6d852b99aaa2ba26555728"
-      );
-      final String authMessage = "n=user,r=fyko+d2lbbFgONRv9qkxdawL,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,s=QSXCR+Q6sek8bf92,i=4096,c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j";
-      expect(
-        HEX.encode(
-          await negotiator.calculateClientSignature(authMessage, HEX.decode("e9d94660c39d65c38fbad91c358f14da0eef2bd6"))
-        ),
-        "5d7138c486b0bfabdf49e3e2da8bd6e5c79db613"
-      );
-      expect(
-        HEX.encode(
-          negotiator.calculateClientProof(HEX.decode("e234c47bf6c36696dd6d852b99aaa2ba26555728"), HEX.decode("5d7138c486b0bfabdf49e3e2da8bd6e5c79db613"))
-        ),
-        "bf45fcbf7073d93d022466c94321745fe1c8e13b"
-      );
-      expect(
-        HEX.encode(
-          await negotiator.calculateServerSignature(authMessage, HEX.decode("0fe09258b3ac852ba502cc62ba903eaacdbf7d31"))
-        ),
-        "ae617da6a57c4bbb2e0286568dae1d251905b0a4"
-      );
-      expect(
-        HEX.encode(
-          await negotiator.calculateServerKey(HEX.decode("1d96ee3a529b5a5f9e47c01f229a2cb8a6e15f7d"))
-        ),
-        "0fe09258b3ac852ba502cc62ba903eaacdbf7d31"
-      );
-      expect(
-        HEX.encode(
-          negotiator.calculateClientProof(
-            HEX.decode("e234c47bf6c36696dd6d852b99aaa2ba26555728"),
-            HEX.decode("5d7138c486b0bfabdf49e3e2da8bd6e5c79db613")
+  test("Test a failed SASL auth", () async {
+      final fakeSocket = StubTCPSocket(
+        play: [
+          Expectation(
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "to": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false
+            ),
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "from": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false,
+              children: [
+                XMLNode.xmlns(
+                  tag: "stream:features",
+                  xmlns: "http://etherx.jabber.org/streams",
+                  children: [
+                    XMLNode.xmlns(
+                      tag: "mechanisms",
+                      xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+                      children: [
+                        XMLNode(tag: "mechanism", text: "PLAIN")
+                      ]
+                    )
+                  ]
+                )
+              ]
+            )
+          ),
+          Expectation(XMLNode.xmlns(
+              tag: "auth",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+              attributes: {
+                "mechanism": "PLAIN"
+              },
+              text: "AHBvbHlub21kaXZpc2lvbgBhYWFh"
+            ),
+            XMLNode.xmlns(
+              tag: "failure",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+              children: [
+                XMLNode(tag: "not-authorized")
+              ]
+            )
           )
-        ),
-        "bf45fcbf7073d93d022466c94321745fe1c8e13b"
+        ]
       );
+      bool receivedEvent = false;
+      final XmppConnection conn = XmppConnection(socket: fakeSocket);
+      conn.setConnectionSettings(ConnectionSettings(
+          jid: BareJID.fromString("polynomdivision@test.server"),
+          password: "aaaa",
+          useDirectTLS: true,
+          allowPlainAuth: true
+      ));
 
-      expect(await negotiator.calculateChallengeResponse("cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng=="), "c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=");
+      conn.asBroadcastStream().listen((event) {
+          if (event is AuthenticationFailedEvent && event.saslError == "not-authorized") {
+            receivedEvent = true;
+          }
+      });
+
+      await conn.connect();
+      await Future.delayed(Duration(seconds: 3), () {
+          expect(receivedEvent, true);
+      });
   });
 
+  test("Test another failed SASL auth", () async {
+      final fakeSocket = StubTCPSocket(
+        play: [
+          Expectation(
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "to": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false
+            ),
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "from": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false,
+              children: [
+                XMLNode.xmlns(
+                  tag: "stream:features",
+                  xmlns: "http://etherx.jabber.org/streams",
+                  children: [
+                    XMLNode.xmlns(
+                      tag: "mechanisms",
+                      xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+                      children: [
+                        XMLNode(tag: "mechanism", text: "PLAIN")
+                      ]
+                    )
+                  ]
+                )
+              ]
+            )
+          ),
+          Expectation(XMLNode.xmlns(
+              tag: "auth",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+              attributes: {
+                "mechanism": "PLAIN"
+              },
+              text: "AHBvbHlub21kaXZpc2lvbgBhYWFh"
+            ),
+            XMLNode.xmlns(
+              tag: "failure",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+              children: [
+                XMLNode(tag: "mechanism-too-weak")
+              ]
+            )
+          )
+        ]
+      );
+      bool receivedEvent = false;
+      final XmppConnection conn = XmppConnection(socket: fakeSocket);
+      conn.setConnectionSettings(ConnectionSettings(
+          jid: BareJID.fromString("polynomdivision@test.server"),
+          password: "aaaa",
+          useDirectTLS: true,
+          allowPlainAuth: true
+      ));
+
+      conn.asBroadcastStream().listen((event) {
+          if (event is AuthenticationFailedEvent && event.saslError == "mechanism-too-weak") {
+            receivedEvent = true;
+          }
+      });
+
+      await conn.connect();
+      await Future.delayed(Duration(seconds: 3), () {
+          expect(receivedEvent, true);
+      });
+  });
+
+  test("Test choosing SCRAM-SHA-1", () async {
+      final fakeSocket = StubTCPSocket(
+        play: [
+          Expectation(
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "to": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false
+            ),
+            XMLNode(
+              tag: "stream:stream",
+              attributes: {
+                "xmlns": "jabber:client",
+                "version": "1.0",
+                "xmlns:stream": "http://etherx.jabber.org/streams",
+                "from": "test.server",
+                "xml:lang": "en"
+              },
+              closeTag: false,
+              children: [
+                XMLNode.xmlns(
+                  tag: "stream:features",
+                  xmlns: "http://etherx.jabber.org/streams",
+                  children: [
+                    XMLNode.xmlns(
+                      tag: "mechanisms",
+                      xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+                      children: [
+                        XMLNode(tag: "mechanism", text: "PLAIN"),
+                        XMLNode(tag: "mechanism", text: "SCRAM-SHA-1")
+                      ]
+                    )
+                  ]
+                )
+              ]
+            )
+          ),
+          Expectation(XMLNode.xmlns(
+              tag: "auth",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+              attributes: {
+                "mechanism": "SCRAM-SHA-1"
+              },
+              text: "..."
+            ),
+            XMLNode.xmlns(
+              tag: "challenge",
+              xmlns: "urn:ietf:params:xml:ns:xmpp-sasl",
+              attributes: {
+                "mechanism": "SCRAM-SHA-1"
+              },
+              text: "cj02ZDQ0MmI1ZDllNTFhNzQwZjM2OWUzZGNlY2YzMTc4ZWMxMmIzOTg1YmJkNGE4ZTZmODE0YjQyMmFiNzY2NTczLHM9UVNYQ1IrUTZzZWs4YmY5MixpPTQwOTY="
+            ),
+            justCheckAttributes: {
+              "mechanism": "SCRAM-SHA-1"
+            }
+          )
+        ]
+      );
+      bool receivedScram = false;
+      final XmppConnection conn = XmppConnection(socket: fakeSocket);
+      conn.setConnectionSettings(ConnectionSettings(
+          jid: BareJID.fromString("polynomdivision@test.server"),
+          password: "aaaa",
+          useDirectTLS: true,
+          allowPlainAuth: false
+      ));
+      await conn.connect();
+      await Future.delayed(Duration(seconds: 3), () {});
+  });
+
+  group("Test roster pushes", () {
+      test("Test for a CVE-2015-8688 style vulnerability", () async {
+          bool eventTriggered = false;
+          final roster = RosterManager();
+          roster.register(XmppManagerAttributes(
+              log: (str) => print(str),
+              sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
+              sendEvent: (event) {
+                eventTriggered = true;
+              },
+              sendNonza: (_) {},
+              sendRawXml: (_) {},
+              getConnectionSettings: () => ConnectionSettings(
+                jid: BareJID.fromString("some.user@example.server"),
+                password: "password",
+                useDirectTLS: true,
+                allowPlainAuth: false,
+              ),
+              getManagerById: (_) => null,
+              isStreamFeatureSupported: (_) => false,
+              getFullJID: () => FullJID.fromString("some.user@example.server/aaaaa")
+          ));
+
+          // NOTE: Based on https://gultsch.de/gajim_roster_push_and_message_interception.html
+          final maliciousStanza = Stanza.fromXMLNode(XMLNode.fromString("<iq type=\"set\" to=\"some.user@example.server/aaaaa\"><query xmlns='jabber:iq:roster'><item subscription=\"both\" jid=\"eve@siacs.eu\" name=\"Bob\" /></query></iq>"));
+          await Future.forEach(
+            roster.getStanzaHandlers(),
+            (StanzaHandler handler) async {
+              if (handler.matches(maliciousStanza)) {
+                await handler.callback(maliciousStanza);
+              }
+            }
+          );
+
+          expect(eventTriggered, false, reason: "Was able to inject a malicious roster push");
+      });
+  });
+  
   test("Test bare JIDs", () {
       expect(BareJID.fromString("hallo@welt").toString(), "hallo@welt");
       expect(BareJID.fromString("@welt").toString(), "@welt");

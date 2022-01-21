@@ -167,21 +167,28 @@ class XmppConnection {
   }
   
   void _handleError(Object error) {
-    this._log("ERROR: " + error.toString());
+    _log("ERROR: " + error.toString());
 
-    // TODO: This may be to harsh for every error
-    this._setConnectionState(ConnectionState.NOT_CONNECTED);
-    this._socket.close();
+    // TODO: This may be too harsh for every error
+    _setConnectionState(ConnectionState.NOT_CONNECTED);
+    _socket.close();
 
-    if (this._currentBackoffAttempt == 0) {
+    if (_currentBackoffAttempt == 0) {
+      // TODO: This may to too long
       final minutes = pow(2, this._currentBackoffAttempt).toInt();
-      this._currentBackoffAttempt++;
-      this._backoffTimer = Timer(Duration(minutes: minutes), () {
-          this.connect();
+      _currentBackoffAttempt++;
+      _backoffTimer = Timer(Duration(minutes: minutes), () {
+          connect();
       });
     }
   }
 
+  /// NOTE: For debugging purposes only
+  /// Returns the internal state of the state machine
+  RoutingState getRoutingState() {
+    return _routingState;
+  }
+  
   /// Returns true if the stream supports the XMLNS @feature.
   bool isStreamFeatureSupported(String feature) {
     return this._streamFeatures.indexOf(feature) != -1;
@@ -189,7 +196,7 @@ class XmppConnection {
 
   /// Sends an [XMLNode] without any further processing to the server.
   void sendRawXML(XMLNode node) {
-    this._socket.write(node.toXml());
+    _socket.write(node.toXml());
   }
 
   /// Sends a [stanza] to the server. If stream management is enabled, then keeping track
@@ -203,43 +210,43 @@ class XmppConnection {
   Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
-      stanza = stanza.copyWith(id: this._uuid.v4());
+      stanza = stanza.copyWith(id: _uuid.v4());
     }
     if (addFrom && (stanza.from == null || stanza.from == "")) {
-      stanza = stanza.copyWith(from: this._connectionSettings.jid.withResource(this._resource).toString());
+      stanza = stanza.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());
     }
 
     final stanzaString = stanza.toXml();
     
-    this._awaitingResponse[stanza.id!] = Completer();
+    _awaitingResponse[stanza.id!] = Completer();
 
     // TODO: Restrict the CONNECTING condition s.t. routingState must be one of
     // This uses the StreamManager to behave like a send queue
-    if (this._connectionState == ConnectionState.CONNECTED || this._connectionState == ConnectionState.CONNECTING) {
-      this._socket.write(stanzaString);
+    if (_connectionState == ConnectionState.CONNECTED || _connectionState == ConnectionState.CONNECTING) {
+      _socket.write(stanzaString);
 
       // Try to ack every stanza
       // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
     }
 
     // Tell the SM manager that we're about to send a stanza
-    this._sendEvent(StanzaSentEvent(stanza: stanza));
+    _sendEvent(StanzaSentEvent(stanza: stanza));
     
-    return this._awaitingResponse[stanza.id!]!.future;
+    return _awaitingResponse[stanza.id!]!.future;
   }
 
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
   void _setConnectionState(ConnectionState state) {
-    this._connectionState = state;
-    this._eventStreamController.add(ConnectionStateChangedEvent(state: state));
+    _connectionState = state;
+    _eventStreamController.add(ConnectionStateChangedEvent(state: state));
 
     if (state == ConnectionState.CONNECTED) {
-      this._connectionPingTimer = Timer.periodic(Duration(minutes: 5), this._pingConnectionOpen);
+      _connectionPingTimer = Timer.periodic(Duration(minutes: 5), this._pingConnectionOpen);
     } else {
-      if (this._connectionPingTimer != null) {
-        this._connectionPingTimer!.cancel();
-        this._connectionPingTimer = null;
+      if (_connectionPingTimer != null) {
+        _connectionPingTimer!.cancel();
+        _connectionPingTimer = null;
       }
     }
   }
@@ -517,7 +524,7 @@ class XmppConnection {
       break;
     }
   }
-
+  
   /// Sends an event to the connection's event stream.
   void _sendEvent(XmppEvent event) {
     this._xmppManagers.values.forEach((manager) => manager.onXmppEvent(event));
