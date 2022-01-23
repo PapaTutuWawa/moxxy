@@ -21,11 +21,27 @@ class _PostRegistrationPageViewModel {
   const _PostRegistrationPageViewModel({required this.showSnackbar, required this.setShowSnackbar, required this.jid, required this.displayName, required this.avatarUrl, required this.setAvatarUrl });
 }
 
-class PostRegistrationPage extends StatelessWidget {
-  final GlobalKey<ScaffoldState> scaffoldKey;
+class PostRegistrationPage extends StatefulWidget {
+  const PostRegistrationPage({ Key? key }) : super(key: key);
+
+  @override
+  _PostRegistrationPageState createState() => _PostRegistrationPageState();
+}
+
+class _PostRegistrationPageState extends State<PostRegistrationPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey;
   TextEditingController? _controller;
 
-  PostRegistrationPage({ Key? key }) : scaffoldKey = GlobalKey<ScaffoldState>(), super(key: key);
+  _PostRegistrationPageState() : _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void dispose() {
+    if (_controller != null) {
+      _controller!.dispose();
+    }
+
+    super.dispose();
+  }
   
   void _applyDisplayNameChange(BuildContext context, _PostRegistrationPageViewModel viewModel) {
     // TODO
@@ -45,7 +61,7 @@ class PostRegistrationPage extends StatelessWidget {
     // TODO: Fix the typography
     return SafeArea(
       child: Scaffold(
-        key: scaffoldKey,
+        key: _scaffoldKey,
         body: StoreConnector<MoxxyState, _PostRegistrationPageViewModel>(
           converter: (store) => _PostRegistrationPageViewModel(
             showSnackbar: store.state.postRegisterPageState.showSnackbar,

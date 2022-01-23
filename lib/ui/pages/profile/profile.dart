@@ -39,11 +39,9 @@ class SelfProfileHeader extends StatelessWidget {
   // This is to keep the snackbar only on this page. This also removes it once
   // we navigate away from this page.
   final _ProfilePageViewModel viewModel;
-  // TODO
-  final TextEditingController controller;
-  bool _showingSnackBar = false;
+  final TextEditingController _controller;
   
-  SelfProfileHeader({ required this.viewModel, required this.controller, Key? key }) : super(key: key);
+  const SelfProfileHeader({ required this.viewModel, required TextEditingController controller, Key? key }) : _controller = controller, super(key: key);
 
   Future<void> _showJidQRCode(BuildContext context, String jid) async {
     await showDialog(
@@ -92,7 +90,7 @@ class SelfProfileHeader extends StatelessWidget {
             ),
             child: CustomTextField(
               maxLines: 1,
-              controller: controller,
+              controller: _controller,
               onChanged: (value) {
                 // NOTE: Since hitting the (software) back button triggers this function, "debounce" it
                 //       by only showing the snackbar if the value differs from the state
@@ -174,12 +172,26 @@ class ProfileHeader extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({ Key? key }) : super(key: key);
+
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
   // NOTE: We need to keep the controller here because a state update would otherwise
   //       mess with the IME
   TextEditingController? _controller;
 
-  ProfilePage({ Key? key }) : super(key: key);
+  @override
+  void dispose() {
+    if (_controller != null) {
+      _controller!.dispose();
+    }
+
+    super.dispose();
+  }
   
   // Wrapper so that we can set the display name on first initialization
   TextEditingController _getController(_ProfilePageViewModel viewModel) {
