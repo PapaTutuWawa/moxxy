@@ -7,13 +7,13 @@ import "package:moxxyv2/repositories/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
+import "package:moxxyv2/service/managers/roster.dart";
+import "package:moxxyv2/service/managers/disco.dart";
+import "package:moxxyv2/service/managers/stream.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -22,64 +22,6 @@ import "package:get_it/get_it.dart";
 import "package:awesome_notifications/awesome_notifications.dart";
 
 import "package:moxxyv2/isar.g.dart";
-
-class MoxxyStreamManagementManager extends StreamManagementManager {
-  @override
-  Future<void> commitState() async {
-    await Future.wait([
-        GetIt.I.get<XmppRepository>().saveStreamManagementC2SH(getC2SStanzaCount()),
-        GetIt.I.get<XmppRepository>().saveStreamManagementS2CH(getS2CStanzaCount())
-    ]);
-  }
-
-  @override
-  Future<void> loadState() async {
-    final result = await Future.wait<int?>([
-        GetIt.I.get<XmppRepository>().getStreamManagementC2SH(),
-        GetIt.I.get<XmppRepository>().getStreamManagementS2CH()
-    ]);
-
-    setState(result[0] ?? 0, result[1] ?? 0);
-  }
-
-  @override
-  Future<void> commitStreamResumptionId() async {
-    final srid = getStreamResumptionId();
-    if (srid !=  null) {
-      getAttributes().log("Saving resumption token: $srid");
-      await GetIt.I.get<XmppRepository>().saveStreamResumptionId(srid);
-    }
-  }
-
-  @override
-  Future<void> loadStreamResumptionId() async {
-    final id = await GetIt.I.get<XmppRepository>().getStreamResumptionId();
-    getAttributes().log("Setting resumption token: " + (id ?? ""));
-    if (id != null) {
-      setStreamResumptionId(id);
-    }
-  }
-}
-
-class MoxxyRosterManger extends RosterManager {
-  @override
-  Future<void> commitLastRosterVersion(String version) async {
-    await GetIt.I.get<XmppRepository>().saveLastRosterVersion(version);
-  }
-
-  @override
-  Future<void> loadLastRosterVersion() async {
-    final ver = await GetIt.I.get<XmppRepository>().getLastRosterVersion();
-    if (ver != null) {
-      setRosterVersion(ver);
-    }
-  }
-}
-
-class MoxxyDiscoManager extends DiscoManager {
-  @override
-  List<Identity> getIdentities() => const [ Identity(category: "client", type: "phone", name: "Moxxy") ];
-}
 
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -159,7 +101,7 @@ void onStart() {
           service.sendData({ "type": "__LOG__", "log": data });
       });
       connection.registerManager(MoxxyStreamManagementManager());
-      connection.registerManager(DiscoManager());
+      connection.registerManager(MoxxyDiscoManager());
       connection.registerManager(MessageManager());
       connection.registerManager(MoxxyRosterManger());
       connection.registerManager(PresenceManager());
