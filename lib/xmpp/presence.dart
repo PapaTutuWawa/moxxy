@@ -4,8 +4,8 @@ import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/xeps/0030.dart";
-import "package:moxxyv2/xmpp/xeps/0115.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0115.dart";
 
 class PresenceManager extends XmppManagerBase {
   String? _capabilityHash;

@@ -18,8 +18,8 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/presence.dart";
-import "package:moxxyv2/xmpp/xeps/0198.dart";
-import "package:moxxyv2/xmpp/xeps/0368.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
 
 import "package:uuid/uuid.dart";
 

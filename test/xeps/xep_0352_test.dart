@@ -3,7 +3,7 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
-import "package:moxxyv2/xmpp/xeps/0352.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 
 import "package:test/test.dart";
 

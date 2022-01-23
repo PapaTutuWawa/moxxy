@@ -1,7 +1,7 @@
 import "dart:convert";
 
-import "package:moxxyv2/xmpp/rfc/4790.dart";
-import "package:moxxyv2/xmpp/xeps/0030.dart";
+import "package:moxxyv2/xmpp/rfcs/rfc_4790.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 
 import "package:cryptography/cryptography.dart";
 

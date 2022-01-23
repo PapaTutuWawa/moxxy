@@ -4,7 +4,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stanzas/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/xeps/0198.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 
 import "package:test/test.dart";
 

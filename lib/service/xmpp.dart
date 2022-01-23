@@ -11,9 +11,9 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/0030.dart";
-import "package:moxxyv2/xmpp/xeps/0198.dart";
-import "package:moxxyv2/xmpp/xeps/0352.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
