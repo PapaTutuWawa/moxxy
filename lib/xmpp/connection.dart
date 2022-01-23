@@ -496,6 +496,10 @@ class XmppConnection {
         await _handleStanza(node);
       }
       break;
+      case RoutingState.error: {
+        _log("Received node while in error state. Ignoring: ${node.toXml()}");
+      }
+      break;
     }
   }
   
