@@ -18,7 +18,8 @@ import "package:connectivity_plus/connectivity_plus.dart";
 
 const String xmppAccountSRIDKey = "srid";
 const String xmppAccountResourceKey = "resource";
-const String xmppAccountLastHKey = "lasth";
+const String xmppAccountC2SKey = "c2sh";
+const String xmppAccountS2CKey = "s2ch";
 const String xmppAccountJIDKey = "jid";
 const String xmppAccountPasswordKey = "password";
 const String xmppLastRosterVersionKey = "rosterversion";
@@ -49,12 +50,20 @@ class XmppRepository {
     await _storage.write(key: xmppAccountSRIDKey, value: srid);
   }
 
-  Future<int?> getStreamManagementLastH() async {
-    final value = await _readKeyOrNull(xmppAccountLastHKey);
+  // TODO: Merge those two
+  Future<int?> getStreamManagementC2SH() async {
+    final value = await _readKeyOrNull(xmppAccountC2SKey);
     return value != null ? int.parse(value) : null;
   }
-  Future<void> saveStreamManagementLastH(int h) async {
-    await _storage.write(key: xmppAccountLastHKey, value: h.toString());
+  Future<void> saveStreamManagementC2SH(int h) async {
+    await _storage.write(key: xmppAccountC2SKey, value: h.toString());
+  }
+  Future<int?> getStreamManagementS2CH() async {
+    final value = await _readKeyOrNull(xmppAccountS2CKey);
+    return value != null ? int.parse(value) : null;
+  }
+  Future<void> saveStreamManagementS2CH(int h) async {
+    await _storage.write(key: xmppAccountS2CKey, value: h.toString());
   }
   
   Future<String?> getLastRosterVersion() async {
@@ -96,12 +105,7 @@ class XmppRepository {
 
   Future<void> saveStreamResumptionSettings(String srid, String resource) async {
     await _storage.write(key: xmppAccountSRIDKey, value: srid);
-    await _storage.write(key: xmppAccountLastHKey, value: "0");
     await _storage.write(key: xmppAccountResourceKey, value: resource);
-  }
-
-  Future<void> saveStreamResumptionLastH(int h) async {
-    await _storage.write(key: xmppAccountLastHKey, value: h.toString());
   }
 
   /// Marks the conversation with jid [jid] as open and resets its unread counter if it is
@@ -195,8 +199,6 @@ class XmppRepository {
     } else if (event is StreamManagementEnabledEvent) {
       // TODO: Remove
       saveStreamResumptionSettings(event.id, event.resource);
-    } else if (event is StreamManagementAckSentEvent) {
-      saveStreamResumptionLastH(event.h);
     } else if (event is ResourceBindingSuccessEvent) {
       saveLastResource(event.resource);
     } else if (event is MessageEvent) {

@@ -413,9 +413,9 @@ class XmppConnection {
         if (isStreamFeatureSupported(smXmlns) && _xmppManagers.containsKey(smManager)) {
           final manager = _xmppManagers[smManager]! as StreamManagementManager;
           await manager.loadStreamResumptionId();
-          await manager.loadClientSeq();
+          await manager.loadState();
           final srid = manager.getStreamResumptionId();
-          final h = manager.getClientStanzaSeq();
+          final h = manager.getS2CStanzaCount();
           
           // Try to work with SM first
           if (srid != null) {

@@ -25,14 +25,21 @@ import "package:moxxyv2/isar.g.dart";
 
 class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
-  Future<void> commitClientSeq() async {
-    await GetIt.I.get<XmppRepository>().saveStreamManagementLastH(getClientStanzaSeq());
+  Future<void> commitState() async {
+    await Future.wait([
+        GetIt.I.get<XmppRepository>().saveStreamManagementC2SH(getC2SStanzaCount()),
+        GetIt.I.get<XmppRepository>().saveStreamManagementS2CH(getS2CStanzaCount())
+    ]);
   }
 
   @override
-  Future<void> loadClientSeq() async {
-    final seq = await GetIt.I.get<XmppRepository>().getStreamManagementLastH();
-    setClientSeq(seq ?? 0);
+  Future<void> loadState() async {
+    final result = await Future.wait<int?>([
+        GetIt.I.get<XmppRepository>().getStreamManagementC2SH(),
+        GetIt.I.get<XmppRepository>().getStreamManagementS2CH()
+    ]);
+
+    setState(result[0] ?? 0, result[1] ?? 0);
   }
 
   @override

@@ -44,13 +44,6 @@ class StreamManagementEnabledEvent extends XmppEvent {
   StreamManagementEnabledEvent({ required this.id, required this.resource });
 }
 
-// Triggered when we send out an ack
-class StreamManagementAckSentEvent extends XmppEvent {
-  final int h;
-
-  StreamManagementAckSentEvent({ required this.h });
-}
-
 // Triggered when we were able to successfully resume a stream
 class StreamManagementResumptionSuccessfulEvent extends XmppEvent {}
 

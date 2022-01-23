@@ -11,30 +11,32 @@ const xmlUintMax = 4294967296; // 2**32
 
 // TODO: We need to save both the client and server h values and send them accordingly
 class StreamManagementManager extends XmppManagerBase {
-  // NOTE: _{client,server}StanzaSeq is the next sequence number to use
-  int _clientStanzaSeq;
-  int _serverStanzaSeq;
+  // Amount of stanzas we have sent or handled
+  int _c2sStanzaCount;
+  int _s2cStanzaCount;
   final Map<int, Stanza> _unackedStanzas;
   String? _streamResumptionId;
   bool _streamManagementEnabled;
 
-  StreamManagementManager() : _clientStanzaSeq = 0, _serverStanzaSeq = 0, _unackedStanzas = {}, _streamResumptionId = null, _streamManagementEnabled = false;
+  StreamManagementManager() : _s2cStanzaCount = 0, _c2sStanzaCount = 0, _unackedStanzas = {}, _streamResumptionId = null, _streamManagementEnabled = false;
 
   /// Functions for testing
-  int getClientStanzaSeq() => _clientStanzaSeq;
-  int getServerStanzaSeq() => _serverStanzaSeq;
+  int getC2SStanzaCount() => _c2sStanzaCount;
+  int getS2CStanzaCount() => _s2cStanzaCount;
   Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
 
-  /// May be overwritten by a subclass. Should save [_clientStanzaSeq] and [_serverStanzaSeq]
-  /// so that they can be loaded again with [this.loadSequenceCounters].
-  Future<void> commitClientSeq() async {}
-  Future<void> loadClientSeq() async {}
+  /// May be overwritten by a subclass. Should save [_c2sStanzaCount] and [_s2cStanzaCount]
+  /// so that they can be loaded again with [this.loadState].
+  Future<void> commitState() async {}
+  Future<void> loadState() async {}
 
-  void setClientSeq(int h) {
+  void setState(int c2s, int s2c) {
     // Prevent this being called multiple times
-    assert(_clientStanzaSeq == 0);
+    assert(_c2sStanzaCount == 0);
+    assert(_s2cStanzaCount == 0);
 
-    _clientStanzaSeq = h;
+    _c2sStanzaCount = c2s;
+    _s2cStanzaCount = s2c;
   }
 
   /// May be overwritten by a subclass. Should save and load [_streamResumptionId].
@@ -107,49 +109,53 @@ class StreamManagementManager extends XmppManagerBase {
   Future<bool> _handleAckRequest(XMLNode nonza) async {
     final attrs = getAttributes();
     attrs.log("Sending ack response");
-    attrs.sendEvent(StreamManagementAckSentEvent(h: _serverStanzaSeq - 1));
-    attrs.sendNonza(StreamManagementAckNonza(_serverStanzaSeq - 1));
+    attrs.sendNonza(StreamManagementAckNonza(_s2cStanzaCount));
 
     return true;
   }
 
-  /// To be called when we receive a <r /> nonza from the server.
+  /// Called when we receive an <a /> nonza from the server.
+  /// This is a response to the question "How many of my stanzas have you handled".
   Future<bool> _handleAckResponse(XMLNode nonza) async {
     final h = int.parse(nonza.attributes["h"]!);
     
     _removeHandledStanzas(h);
-
-    // TODO: Set clientSequence
+    _c2sStanzaCount = h;
     
     if (_unackedStanzas.isNotEmpty) {
-      _clientStanzaSeq = h + 1;
       getAttributes().log("QUEUE NOT EMPTY. FLUSHING");
       _flushStanzaQueue();
     }
 
     return true;
   }
-   
-  /// To be called whenever we receive a stanza from the server.
-  Future<bool> _serverStanzaReceived(stanza) async {
-    if (_serverStanzaSeq + 1 == xmlUintMax) {
-      _serverStanzaSeq = 0;
-    } else {
-      _serverStanzaSeq++;
-    }
 
+  // Just a helper function to not increment the counters above xmlUintMax
+  void _incrementC2S() {
+     if (_c2sStanzaCount + 1 == xmlUintMax) {
+      _c2sStanzaCount = 0;
+    } else {
+      _c2sStanzaCount++;
+    }   
+  }
+  void _incrementS2C() {
+    if (_s2cStanzaCount + 1 == xmlUintMax) {
+      _s2cStanzaCount = 0;
+    } else {
+      _s2cStanzaCount++;
+    }
+  }
+  
+  /// Called whenever we receive a stanza from the server.
+  Future<bool> _serverStanzaReceived(stanza) async {
+    _incrementS2C();
     return false;
   }
 
-  /// To be called whenever we send a stanza.
+  /// Called whenever we send a stanza.
   void _onClientStanzaSent(Stanza stanza) {
-    _unackedStanzas[_clientStanzaSeq] = stanza;
-
-    if (_clientStanzaSeq + 1 == xmlUintMax) {
-      _clientStanzaSeq = 0;
-    } else {
-      _clientStanzaSeq++;
-    }
+    _incrementC2S();
+    _unackedStanzas[_c2sStanzaCount] = stanza;
 
     getAttributes().log("Queue after sending: " + _unackedStanzas.toString());
 
@@ -157,7 +163,7 @@ class StreamManagementManager extends XmppManagerBase {
       getAttributes().sendNonza(StreamManagementRequestNonza());
     }
 
-    commitClientSeq();
+    commitState();
   }
 
   /// Removes all stanzas in the unacked queue that have a sequence number less-than or
@@ -171,20 +177,14 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// To be called when the stream has been resumed
   void _onStreamResumed(int h) {
+    _c2sStanzaCount = h;
     _removeHandledStanzas(h);
-    
-    //_clientStanzaSeq = 0;
-    _serverStanzaSeq = h == 0 ? 0 : h + 1;
-
     _flushStanzaQueue();
   }
 
   /// This empties the unacked queue by sending the items out again.
   void _flushStanzaQueue() {
     List<Stanza> stanzas = _unackedStanzas.values.toList();
-    // TODO: Maybe don't do this
-    //       What we should do: Set our h counter to what the server has sent, kill all those   //       received stanzas from the unacked queue and send the unacked ones again.
-    _unackedStanzas.clear();
 
     final attrs = getAttributes();
     for (var stanza in stanzas) {
