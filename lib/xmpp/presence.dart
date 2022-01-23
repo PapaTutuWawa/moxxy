@@ -23,6 +23,9 @@ class PresenceManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  List<String> getDiscoFeatures() => [ capsXmlns ];
+  
   Future<bool> _onPresence(Stanza presence) async {
     getAttributes().log("Received presence from '${presence.from ?? ''}'");
 
@@ -31,17 +34,11 @@ class PresenceManager extends XmppManagerBase {
 
   /// Returns the capability hash.
   Future<String> getCapabilityHash() async {
-    // TODO: Maybe factor this out
+    final manager = getAttributes().getManagerById(discoManager)! as DiscoManager;
     _capabilityHash ??= await calculateCapabilityHash(
       DiscoInfo(
-        features: discoFeatures,
-        identities: [
-          Identity(
-            category: "client",
-            type: "phone",
-            name: "Moxxy"
-          )
-        ]
+        features: manager.getRegisteredDiscoFeatures(),
+        identities: manager.getIdentities()
       )
     );
 

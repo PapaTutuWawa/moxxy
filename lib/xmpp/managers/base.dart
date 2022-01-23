@@ -24,6 +24,9 @@ abstract class XmppManagerBase {
   /// Return the [NonzaHandler]s associated with this manager.
   List<NonzaHandler> getNonzaHandlers() => [];
 
+  /// Return a list of features that should be included in a disco response
+  List<String> getDiscoFeatures() => [];
+  
   /// Return the Id (akin to xmlns) of this manager.
   String getId();
 

@@ -9,6 +9,7 @@ import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 
 import "helpers/xmpp.dart";
 
@@ -165,7 +166,7 @@ void main() {
                   xmlns: "http://jabber.org/protocol/caps",
                   attributes: {
                     // TODO: Somehow make the test ignore this attribute
-                    "ver": "eTczQOjOi9iroU5zVG7uBBTD4eQ=",
+                    "ver": "QRTBC5cg/oYd+UOTYazSQR4zb/I=",
                     "node": "http://moxxy.im",
                     "hash": "sha-1"
                   }
@@ -185,7 +186,10 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
+      conn.registerManager(RosterManager());
+      conn.registerManager(DiscoManager());
       conn.registerManager(PresenceManager());
+
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
           expect(fakeSocket.getState(), 5);
@@ -260,6 +264,9 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
+      conn.registerManager(PresenceManager());
+      conn.registerManager(RosterManager());
+      conn.registerManager(DiscoManager());
 
       conn.asBroadcastStream().listen((event) {
           if (event is AuthenticationFailedEvent && event.saslError == "not-authorized") {
@@ -341,6 +348,9 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
+      conn.registerManager(PresenceManager());
+      conn.registerManager(RosterManager());
+      conn.registerManager(DiscoManager());
 
       conn.asBroadcastStream().listen((event) {
           if (event is AuthenticationFailedEvent && event.saslError == "mechanism-too-weak") {
@@ -426,6 +436,10 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: false
       ));
+      conn.registerManager(RosterManager());
+      conn.registerManager(DiscoManager());
+      conn.registerManager(PresenceManager());
+
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
           expect(fakeSocket.getState(), 2);

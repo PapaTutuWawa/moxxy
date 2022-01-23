@@ -5,13 +5,15 @@ import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 
 import "package:cryptography/cryptography.dart";
 
+/// Calculates the Entitiy Capability hash according to XEP-0115 based on the
+/// disco information.
 Future<String> calculateCapabilityHash(DiscoInfo info) async {
   String s = "";
-  final identitiesSorted = info.identities.map((i) => i.category + "/" + i.type + "/" + (i.lang ?? "") + "/" + i.name).toList();
+  final List<String> identitiesSorted = info.identities.toList().map((i) => i.category + "/" + i.type + "/" + (i.lang ?? "") + "/" + i.name).toList();
   identitiesSorted.sort(ioctetSortComparator);
   s += identitiesSorted.join("<") + "<";
 
-  List<String> featuresSorted = info.features.toList();
+  List<String> featuresSorted = List.from(info.features);
   featuresSorted.sort(ioctetSortComparator);
   s += featuresSorted.join("<") + "<";
 
@@ -22,7 +24,7 @@ Future<String> calculateCapabilityHash(DiscoInfo info) async {
     for (var key in sortedVars) {
       s += key + "<";
 
-      final sortedValues = info.extendedInfo![key]!;
+      final sortedValues = info.extendedInfo![key]!.toList();
       sortedValues.sort(ioctetSortComparator);
 
       s += sortedValues.join("<") + "<";

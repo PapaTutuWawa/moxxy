@@ -7,20 +7,25 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 
-// TODO: Factor out of lib/xmpp. Maybe have managers register their supported xmlns?
-const discoFeatures = [
-  discoInfoXmlns, discoItemsXmlns,
-  chatMarkersXmlns,
-  capsXmlns
-];
-
 class Identity {
   final String category;
   final String type;
   final String name;
   final String? lang;
 
-  Identity({ required this.category, required this.type, required this.name, this.lang });
+  const Identity({ required this.category, required this.type, required this.name, this.lang });
+
+  XMLNode toXMLNode() {
+    return XMLNode(
+      tag: "identity",
+      attributes: {
+        "category": category,
+        "type": type,
+        "name": name,
+        ...(lang == null ? {} : { "xml:lang": lang!})
+      }
+    );
+  }
 }
 
 class DiscoInfo {
@@ -28,7 +33,7 @@ class DiscoInfo {
   final List<Identity> identities;
   final Map<String, List<String>>? extendedInfo;
 
-  DiscoInfo({ required this.features, required this.identities, this.extendedInfo });
+  const DiscoInfo({ required this.features, required this.identities, this.extendedInfo });
 }
 
 class DiscoItem {
@@ -36,7 +41,7 @@ class DiscoItem {
   final String node;
   final String? name;
 
-  DiscoItem({ required this.jid, required this.node, required this.name });
+  const DiscoItem({ required this.jid, required this.node, required this.name });
 }
 
 DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
@@ -92,6 +97,10 @@ List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
 }
 
 class DiscoManager extends XmppManagerBase {
+  final List<String> _features;
+
+  DiscoManager() : _features = List.empty(growable: true);
+  
   @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
@@ -110,6 +119,25 @@ class DiscoManager extends XmppManagerBase {
 
   @override
   String getId() => discoManager;
+
+  @override
+  List<String> getDiscoFeatures() => [ discoInfoXmlns, discoItemsXmlns ];
+
+  /// Adds a list of features to the possible disco info response.
+  /// This function only adds features that are not already present in the disco features.
+  void addDiscoFeatures(List<String> features) {
+    for (var feat in features) {
+      if (!_features.contains(feat)) {
+        _features.add(feat);
+      }
+    }
+  }
+
+  /// Returns the list of disco features registered.
+  List<String> getRegisteredDiscoFeatures() => _features;
+  
+  /// May be overriden. Specifies the identities which will be returned in a disco info response.
+  List<Identity> getIdentities() => const [ Identity(category: "client", type: "pc", name: "moxxmpp", lang: "en") ];
   
   Future<bool> _onDiscoInfoRequest(Stanza stanza) async {
     final presence = getAttributes().getManagerById(presenceManager)! as PresenceManager;
@@ -162,9 +190,8 @@ class DiscoManager extends XmppManagerBase {
               })
             },
             children: [
-              XMLNode(tag: "identity", attributes: { "category": "client", "type": "phone", "name": "Moxxy" }),
-
-              ...(discoFeatures.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
+              ...(getIdentities().map((identity) => identity.toXMLNode()).toList()),
+              ...(_features.map((feat) => XMLNode(tag: "feature", attributes: { "var": feat })).toList())
             ]
           )
         ]

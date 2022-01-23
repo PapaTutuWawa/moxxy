@@ -18,6 +18,7 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/presence.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
 
@@ -122,7 +123,18 @@ class XmppConnection {
         getFullJID: () => _connectionSettings.jid.withResource(_resource)
     ));
 
-    _xmppManagers[manager.getId()] = manager;
+    final id = manager.getId();
+    _xmppManagers[id] = manager;
+
+    if (id == discoManager) {
+      // NOTE: It is intentional that we do not exclude the [DiscoManager] from this
+      //       loop. It may also register features.
+      for (var man in _xmppManagers.values) {
+        (manager as DiscoManager).addDiscoFeatures(man.getDiscoFeatures());
+      }
+    } else if (_xmppManagers.containsKey(discoManager)) {
+      (_xmppManagers[discoManager] as DiscoManager).addDiscoFeatures(manager.getDiscoFeatures());
+    }
   }
 
   /// Returns the Manager with id [id] or null if such a manager is not registered.
@@ -543,6 +555,10 @@ class XmppConnection {
 
   /// Start the connection process using the provided connection settings.
   Future<void> connect({ String? lastResource }) async {
+    assert(_xmppManagers.containsKey(presenceManager));
+    assert(_xmppManagers.containsKey(rosterManager));
+    assert(_xmppManagers.containsKey(discoManager));
+
     String hostname = _connectionSettings.jid.domain;
     int port = 5222;
 

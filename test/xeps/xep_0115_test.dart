@@ -5,7 +5,7 @@ import "package:test/test.dart";
 
 void main() {
   test("Test XEP example", () async {
-      final data = DiscoInfo(
+      const data = DiscoInfo(
         features: [
           "http://jabber.org/protocol/caps",
           "http://jabber.org/protocol/disco#info",
@@ -26,7 +26,7 @@ void main() {
   });
 
   test("Test complex generation example", () async {
-      final data = DiscoInfo(
+      const data = DiscoInfo(
         identities: [
           Identity(
             category: "client",
@@ -121,7 +121,7 @@ void main() {
   });
 
   test("Test Conversations hash computation", () async {
-      final data = DiscoInfo(
+      const data = DiscoInfo(
         features: [
           "eu.siacs.conversations.axolotl.devicelist+notify",
           "http://jabber.org/protocol/caps",

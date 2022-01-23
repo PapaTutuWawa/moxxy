@@ -19,6 +19,9 @@ class MessageManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  List<String> getDiscoFeatures() => [ chatMarkersXmlns ];
+  
   void _handleChatMarker(Stanza message, XMLNode marker) {
     final attrs = getAttributes();
 

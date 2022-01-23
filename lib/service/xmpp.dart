@@ -76,6 +76,11 @@ class MoxxyRosterManger extends RosterManager {
   }
 }
 
+class MoxxyDiscoManager extends DiscoManager {
+  @override
+  List<Identity> getIdentities() => const [ Identity(category: "client", type: "phone", name: "Moxxy") ];
+}
+
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
