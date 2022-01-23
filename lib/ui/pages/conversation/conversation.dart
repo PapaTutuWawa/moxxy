@@ -252,7 +252,7 @@ class _ConversationPageState extends State<ConversationPage> {
                         padding: const EdgeInsets.only(left: 8.0),
                         // NOTE: https://stackoverflow.com/a/52786741
                         //       Thank you kind sir
-                        child: Container(
+                        child: SizedBox(
                           height: 45.0,
                           width: 45.0,
                           child: FittedBox(

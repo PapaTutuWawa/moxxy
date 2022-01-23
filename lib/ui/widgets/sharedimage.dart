@@ -35,7 +35,7 @@ class SharedMediaContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         height: 75,
         width: 75,
         child: AspectRatio(
