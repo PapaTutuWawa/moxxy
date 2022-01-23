@@ -22,7 +22,7 @@ class MessageManager extends XmppManagerBase {
   void _handleChatMarker(Stanza message, XMLNode marker) {
     final attrs = getAttributes();
 
-    if (["received", "displayed", "acknowledged"].contains(marker.tag)) {
+    if (!["received", "displayed", "acknowledged"].contains(marker.tag)) {
       attrs.log("Unknown message marker '${marker.tag}' found.");
       return;
     }
