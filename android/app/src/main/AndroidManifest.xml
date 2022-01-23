@@ -2,7 +2,7 @@
     package="com.example.moxxyv2">
    <application
         android:label="Moxxy"
-        android:name="${applicationName}"
+        android:name="io.flutter.app.FlutterApplication"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
