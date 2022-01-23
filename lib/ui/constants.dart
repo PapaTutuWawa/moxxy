@@ -11,7 +11,7 @@ const EdgeInsetsGeometry textfieldPaddingConversation = EdgeInsets.all(10);
 const int primaryColorHexRGBO = 0xffcf4aff;
 const Color primaryColor = Color(primaryColorHexRGBO);
 
-const Color bubbleColorSent = PRIMARY_COLOR;
+const Color bubbleColorSent = primaryColor;
 const Color bubbleColorReceived = Color.fromRGBO(44, 62, 80, 1.0);
 
 const double paddingVeryLarge = 64.0;
