@@ -69,6 +69,10 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       _log("==> " + data);
     }
 
-    _socket.write(data);
+    try {
+      _socket.write(data);
+    } on SocketException catch (e) {
+      _errorStream.add(e);
+    }
   }
 }

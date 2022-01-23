@@ -93,6 +93,7 @@ class StreamManagementManager extends XmppManagerBase {
       _enableStreamManagement();
 
       // TODO: Can we handle this more elegantly?
+      // TODO: Should we even do that?
       _onStreamResumed(0);
     }
   }
@@ -136,7 +137,9 @@ class StreamManagementManager extends XmppManagerBase {
       _c2sStanzaCount = 0;
     } else {
       _c2sStanzaCount++;
-    }   
+    }
+
+    commitState();
   }
   void _incrementS2C() {
     if (_s2cStanzaCount + 1 == xmlUintMax) {
@@ -144,6 +147,8 @@ class StreamManagementManager extends XmppManagerBase {
     } else {
       _s2cStanzaCount++;
     }
+
+    commitState();
   }
   
   /// Called whenever we receive a stanza from the server.
@@ -162,8 +167,6 @@ class StreamManagementManager extends XmppManagerBase {
     if (isStreamManagementEnabled()) {
       getAttributes().sendNonza(StreamManagementRequestNonza());
     }
-
-    commitState();
   }
 
   /// Removes all stanzas in the unacked queue that have a sequence number less-than or
@@ -178,6 +181,9 @@ class StreamManagementManager extends XmppManagerBase {
   /// To be called when the stream has been resumed
   void _onStreamResumed(int h) {
     _c2sStanzaCount = h;
+
+    commitState();
+
     _removeHandledStanzas(h);
     _flushStanzaQueue();
   }

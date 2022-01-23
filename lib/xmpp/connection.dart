@@ -297,7 +297,7 @@ class XmppConnection {
   /// Called whenever we receive a stanza after resource binding or stream resumption.
   Future<void> _handleStanza(XMLNode nonza) async {
     // Process nonzas separately
-    if (["message", "iq", "presence"].contains(nonza.tag)) {
+    if (!["message", "iq", "presence"].contains(nonza.tag)) {
       bool nonzaHandled = false;
       await Future.forEach(
         _xmppManagers.values,
@@ -456,7 +456,6 @@ class XmppConnection {
       case RoutingState.performStreamResumption: {
         if (node.tag == "resumed") {
           _log("Stream Resumption successful!");
-          _sendEvent(StreamManagementResumptionSuccessfulEvent());
           // NOTE: _resource is already set if we resume
           assert(_resource != "");
           _routingState = RoutingState.handleStanzas;
