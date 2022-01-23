@@ -183,7 +183,7 @@ class XmppRepository {
           }
       });
       
-      if (event.state == ConnectionState.connected) {
+      if (event.state == XmppConnectionState.connected) {
         final connection = GetIt.I.get<XmppConnection>();
         saveConnectionSettings(connection.getConnectionSettings());
         GetIt.I.get<RosterRepository>().requestRoster();

@@ -24,7 +24,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
 
 import "package:uuid/uuid.dart";
 
-enum ConnectionState {
+enum XmppConnectionState {
   notConnected,
   connecting,
   connected,
@@ -32,7 +32,7 @@ enum ConnectionState {
 }
 
 class ConnectionStateChangedEvent extends XmppEvent {
-  final ConnectionState state;
+  final XmppConnectionState state;
 
   ConnectionStateChangedEvent({ required this.state });
 }
@@ -52,7 +52,7 @@ class AuthenticationFailedEvent extends XmppEvent {
 class XmppConnection {
   late ConnectionSettings _connectionSettings;
   late final BaseSocketWrapper _socket;
-  late ConnectionState _connectionState;
+  late XmppConnectionState _connectionState;
   late final Stream<String> _socketStream;
   late final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = {};
@@ -79,7 +79,7 @@ class XmppConnection {
   late final void Function(String) _log;
   
   XmppConnection({ BaseSocketWrapper? socket, Function(String) log = print }) {
-    _connectionState = ConnectionState.notConnected;
+    _connectionState = XmppConnectionState.notConnected;
     _routingState = RoutingState.unauthenticated;
 
     // NOTE: For testing 
@@ -93,7 +93,7 @@ class XmppConnection {
     _resource = "";
     _streamBuffer = XmlStreamBuffer();
     _currentBackoffAttempt = 0;
-    _connectionState = ConnectionState.notConnected;
+    _connectionState = XmppConnectionState.notConnected;
     _log = log;
 
     _socketStream = _socket.getDataStream();
@@ -169,7 +169,7 @@ class XmppConnection {
     _log("ERROR: " + error.toString());
 
     // TODO: This may be too harsh for every error
-    _setConnectionState(ConnectionState.notConnected);
+    _setConnectionState(XmppConnectionState.notConnected);
     _socket.close();
 
     if (_currentBackoffAttempt == 0) {
@@ -221,7 +221,7 @@ class XmppConnection {
 
     // TODO: Restrict the connecteing condition s.t. routingState must be one of
     // This uses the StreamManager to behave like a send queue
-    if (_connectionState == ConnectionState.connected || _connectionState == ConnectionState.connecting) {
+    if (_connectionState == XmppConnectionState.connected || _connectionState == XmppConnectionState.connecting) {
       _socket.write(stanzaString);
 
       // Try to ack every stanza
@@ -236,11 +236,11 @@ class XmppConnection {
 
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
-  void _setConnectionState(ConnectionState state) {
+  void _setConnectionState(XmppConnectionState state) {
     _connectionState = state;
     _eventStreamController.add(ConnectionStateChangedEvent(state: state));
 
-    if (state == ConnectionState.connected) {
+    if (state == XmppConnectionState.connected) {
       _connectionPingTimer = Timer.periodic(const Duration(minutes: 5), _pingConnectionOpen);
     } else {
       if (_connectionPingTimer != null) {
@@ -301,7 +301,7 @@ class XmppConnection {
   void _pingConnectionOpen(Timer timer) {
     // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
     // send a whitespace ping
-    if (_connectionState == ConnectionState.connected) {
+    if (_connectionState == XmppConnectionState.connected) {
       _sendEvent(SendPingEvent());
     }
   }
@@ -387,7 +387,7 @@ class XmppConnection {
         } else if (result.getState() == AuthenticationResult.failure) {
           _log("SASL failed");
           _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          _setConnectionState(ConnectionState.error);
+          _setConnectionState(XmppConnectionState.error);
           _routingState = RoutingState.error;
         }
       }
@@ -400,7 +400,7 @@ class XmppConnection {
         } else if (result.getState() == AuthenticationResult.failure) {
           _log("SASL failed");
           _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          _setConnectionState(ConnectionState.error);
+          _setConnectionState(XmppConnectionState.error);
           _routingState = RoutingState.error;
         }
       }
@@ -453,7 +453,7 @@ class XmppConnection {
         } else {
           _log("Resource binding failed!");
           _routingState = RoutingState.error;
-          _setConnectionState(ConnectionState.error);
+          _setConnectionState(XmppConnectionState.error);
         }
       }
       break;
@@ -471,7 +471,7 @@ class XmppConnection {
           // NOTE: _resource is already set if we resume
           assert(_resource != "");
           _routingState = RoutingState.handleStanzas;
-          _setConnectionState(ConnectionState.connected);
+          _setConnectionState(XmppConnectionState.connected);
 
           final h = int.parse(node.attributes["h"]!);
           _sendEvent(StreamResumedEvent(h: h));
@@ -499,7 +499,7 @@ class XmppConnection {
 
           _routingState = RoutingState.handleStanzas;
           getPresenceManager().sendInitialPresence();
-          _setConnectionState(ConnectionState.connected);
+          _setConnectionState(XmppConnectionState.connected);
         }
       }
       break;
@@ -543,12 +543,12 @@ class XmppConnection {
   /// To be called when we lost network connection
   Future<void> onNetworkConnectionLost() async {
     _socket.close();
-    _setConnectionState(ConnectionState.notConnected);
+    _setConnectionState(XmppConnectionState.notConnected);
   }
 
   /// To be called when we lost network connection
   Future<void> onNetworkConnectionRegained() async {
-    if (_connectionState == ConnectionState.notConnected) {
+    if (_connectionState == XmppConnectionState.notConnected) {
       connect();
     }
   }
@@ -592,7 +592,7 @@ class XmppConnection {
     }
 
     _currentBackoffAttempt = 0; 
-    _setConnectionState(ConnectionState.connecting);
+    _setConnectionState(XmppConnectionState.connecting);
     _routingState = RoutingState.unauthenticated;
     _sendStreamHeader();
   }

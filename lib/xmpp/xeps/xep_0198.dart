@@ -32,8 +32,8 @@ class StreamManagementManager extends XmppManagerBase {
 
   void setState(int c2s, int s2c) {
     // Prevent this being called multiple times
-    assert(_c2sStanzaCount == 0);
-    assert(_s2cStanzaCount == 0);
+    //assert(_c2sStanzaCount == 0);
+    //assert(_s2cStanzaCount == 0);
 
     _c2sStanzaCount = c2s;
     _s2cStanzaCount = s2c;
@@ -45,7 +45,7 @@ class StreamManagementManager extends XmppManagerBase {
 
   void setStreamResumptionId(String id) {
     // Prevent this being called multiple times
-    assert(_streamResumptionId == null);
+    //assert(_streamResumptionId == null);
 
     _streamResumptionId = id;
   }
