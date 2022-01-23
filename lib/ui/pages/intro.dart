@@ -1,4 +1,5 @@
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
 
 import "package:flutter/material.dart";
 
@@ -67,7 +68,10 @@ class IntroPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(bottom: paddingVeryLarge)),
                     child: TextButton(
                       child: const Text("Register"),
-                      onPressed: () => Navigator.pushNamed(context, "/register")
+                      onPressed: () {
+                        // Navigator.pushNamed(context, "/register");
+                        showNotImplementedDialog("registration", context);
+                      }
                     )
                   )
                 )

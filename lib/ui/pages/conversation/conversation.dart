@@ -275,8 +275,8 @@ class _ConversationPageState extends State<ConversationPage> {
                                 SpeedDialChild(
                                   child: const Icon(Icons.image),
                                   onTap: () {
-                                    //showNotImplementedDialog("sending files", context);
-                                    Navigator.pushNamed(context, "/conversation/send_files");
+                                    showNotImplementedDialog("sending files", context);
+                                    //Navigator.pushNamed(context, "/conversation/send_files");
                                   },
                                   backgroundColor: primaryColor,
                                   // TODO: Theme dependent?
