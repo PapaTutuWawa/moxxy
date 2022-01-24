@@ -1,54 +1,14 @@
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
-import "package:moxxyv2/repositories/database.dart";
-import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 
-import "package:flutter/material.dart";
 import "package:redux/redux.dart";
-import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
-import "package:get_it/get_it.dart";
 
 void conversationsMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
   // TODO: I think this all has to go
   if (action is AddConversationFromUIAction) {
-    // TODO: This should not depend on store.state. Use the cache
-    // TODO: Move this into the repository
-    final conversation = store.state.conversations[action.jid];
-
-    if (conversation == null) {
-      final conversation = await GetIt.I.get<DatabaseRepository>().addConversationFromData(
-        action.title,
-        "",
-        action.avatarUrl,
-        action.jid,
-        0,
-        -1,
-        [],
-        true
-      );
-      store.dispatch(AddConversationAction(
-          conversation: conversation
-      ));
-    } else {
-      store.dispatch(UpdateConversationAction(
-          conversation: conversation.copyWith(open: true)
-      ));
-    }
-
-    store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
-        "/conversation",
-        ModalRoute.withName("/conversations"),
-        arguments: ConversationPageArguments(jid: action.jid)
-    ));
+    // TODO: Notify the backend
   } else if (action is CloseConversationAction) {
-    GetIt.I.get<DatabaseRepository>().updateConversation(id: action.id, open: false);
-
-    if (action.redirect) {
-      store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
-          "/conversations",
-          (route) => false
-      ));
-    }
+    // TODO: Notify the backend
   }
 
   next(action);

@@ -28,14 +28,17 @@ Future<void> initializeServiceIfNeeded() async {
 
   final service = FlutterBackgroundService();
   if (await service.isServiceRunning()) {
+    // TODO: Use logging function
+    // ignore: avoid_print
+    print("Stopping background service");
     if (kDebugMode) {
-      // TODO: Stop the background service
+      service.stopBackgroundService();
     } else {
-      // TODO: Just don't run initializeService again
+      return;
     }
   }
   
-  GetIt.I.registerSingleton<FlutterBackgroundService>(await initializeService());
+  await initializeService();
 }
 
 void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService srv) {
@@ -71,8 +74,6 @@ void onStart() {
   service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
 
   service.sendData({ "type": "__LOG__", "log": "Running" });
-
-  GetIt.I.registerSingleton<FlutterBackgroundService>(service);
   
   (() async {
       final middleware = sendDataMiddleware(service);
@@ -167,7 +168,7 @@ void handleEvent(Map<String, dynamic>? data) {
     }
     break;
     case "PerformLoginAction": {
-      GetIt.I.get<FlutterBackgroundService>().sendData({ "type": "__LOG__", "log": "Performing login"});
+      FlutterBackgroundService().sendData({ "type": "__LOG__", "log": "Performing login"});
       GetIt.I.get<XmppRepository>().connect(ConnectionSettings(
           jid: BareJID.fromString(data["jid"]!),
           password: data["password"]!,

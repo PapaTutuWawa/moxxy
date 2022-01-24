@@ -35,7 +35,6 @@ import "package:moxxyv2/service/xmpp.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
-import "package:get_it/get_it.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:redux_logging/redux_logging.dart";
@@ -75,7 +74,7 @@ void main() async {
 
   await initializeServiceIfNeeded();
   
-  GetIt.I.get<FlutterBackgroundService>().onDataReceived.listen((data) {
+  FlutterBackgroundService().onDataReceived.listen((data) {
       if (data!["type"]! != "__LOG__") {
         // TODO: Use logging function and only print on when debugging
         // ignore: avoid_print
