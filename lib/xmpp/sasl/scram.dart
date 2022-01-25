@@ -1,7 +1,7 @@
 import "dart:convert";
 import "dart:math" show Random;
 
-import "package:moxxyv2/types/result.dart";
+import "package:moxxyv2/xmpp/types/result.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/errors.dart";

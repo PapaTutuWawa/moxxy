@@ -1,5 +1,5 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/types/result.dart";
+import "package:moxxyv2/xmpp/types/result.dart";
 
 enum AuthenticationResult {
   success,
