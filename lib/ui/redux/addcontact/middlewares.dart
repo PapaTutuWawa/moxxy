@@ -1,12 +1,11 @@
 import "dart:async";
 
-import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/global/actions.dart";
 import "package:moxxyv2/ui/redux/addcontact/actions.dart";
 
-import "package:moxxyv2/ui/constants.dart";
 import "package:flutter/material.dart";
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";

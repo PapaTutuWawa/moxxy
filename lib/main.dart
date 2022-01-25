@@ -1,3 +1,4 @@
+import "package:moxxyv2/ui/handler.dart";
 import "package:moxxyv2/ui/pages/conversation/conversation.dart";
 import "package:moxxyv2/ui/pages/conversations.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
@@ -13,23 +14,16 @@ import "package:moxxyv2/ui/pages/settings/licenses.dart";
 import "package:moxxyv2/ui/pages/settings/about.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/redux/conversations/middlewares.dart";
 import "package:moxxyv2/ui/redux/account/middlewares.dart";
 import "package:moxxyv2/ui/redux/login/middlewares.dart";
-import "package:moxxyv2/ui/redux/login/actions.dart";
 import "package:moxxyv2/ui/redux/registration/middlewares.dart";
 import "package:moxxyv2/ui/redux/addcontact/middlewares.dart";
-import "package:moxxyv2/ui/redux/addcontact/actions.dart";
 import "package:moxxyv2/ui/redux/roster/middlewares.dart";
-import "package:moxxyv2/ui/redux/roster/actions.dart";
 import "package:moxxyv2/ui/redux/messages/middleware.dart";
 import "package:moxxyv2/ui/redux/conversation/middlewares.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/start/middlewares.dart";
-import "package:moxxyv2/models/conversation.dart";
-import "package:moxxyv2/models/message.dart";
-import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/service/xmpp.dart";
 
 import "package:flutter/material.dart";
@@ -39,8 +33,13 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:redux_logging/redux_logging.dart";
 import "package:redux/redux.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
+import "package:get_it/get_it.dart";
 
-Store<MoxxyState> createStore() {
+// TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
+//       Padding(padding: ..., child: Column(children: [ ... ]))
+// TODO: Theme the switches
+// TODO: Find a better way to do this
+void main() async {
   final store = Store<MoxxyState>(
     moxxyReducer,
     initialState: MoxxyState.initialState(),
@@ -60,137 +59,10 @@ Store<MoxxyState> createStore() {
       ...(kDebugMode ? [ LoggingMiddleware.printer() ] : [])
     ]
   );
-  
-  return store;
-}
-
-// TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
-//       Padding(padding: ..., child: Column(children: [ ... ]))
-// TODO: Theme the switches
-// TODO: Find a better way to do this
-void main() async {
-  final store = createStore();
+  GetIt.I.registerSingleton<Store<MoxxyState>>(store);
 
   await initializeServiceIfNeeded();
-  
-  FlutterBackgroundService().onDataReceived.listen((data) {
-      if (data!["type"]! != "__LOG__") {
-        // TODO: Use logging function and only print on when debugging
-        // ignore: avoid_print
-        print("GOT: " + data.toString());
-      }
-
-      switch (data["type"]) {
-        case "PreStartResult": {
-          if (data["state"] == "logged_in") {
-            FlutterBackgroundService().sendData({
-                "type": "LoadConversationsAction"
-            });
-            /* TODO: Move this into the XmppRepository
-            FlutterBackgroundService().sendData({
-                "type": "GetAccountStateAction"
-            });
-            */
-
-            store.dispatch(NavigateToAction.replace(conversationsRoute));
-          } else {
-            store.dispatch(NavigateToAction.replace(loginRoute));
-          }
-        }
-        break;
-        case "LoginSuccessfulEvent": {
-          store.dispatch(
-            LoginSuccessfulAction(
-              jid: data["jid"]!,
-              displayName: data["displayName"]!
-            )
-          );
-        }
-        break;
-        case "ConversationCreatedEvent": {
-          store.dispatch(AddConversationAction(
-              conversation: Conversation.fromJson(data["conversation"]!)
-            )
-          );
-        }
-        break;
-        case "ConversationUpdatedEvent": {
-          store.dispatch(
-            UpdateConversationAction(
-              conversation: Conversation.fromJson(data["conversation"]!)
-            )
-          );
-        }
-        break;
-        case "MessageReceivedEvent": {
-          store.dispatch(
-            AddMessageAction(
-              message: Message.fromJson(data["message"]!)
-            )
-          );
-        }
-        break;
-        case "LoadRosterItemsResult": {
-          final List<RosterItem> tmp = List<RosterItem>.from(data["items"]!.map((i) => RosterItem.fromJson(i)));
-          store.dispatch(
-            AddMultipleRosterItemsAction(
-              items: tmp
-            )
-          );
-        }
-        break;
-        case "LoadConversationsResult": {
-          final List<Conversation> tmp = List<Conversation>.from(data["conversations"]!.map((c) => Conversation.fromJson(c)));
-          store.dispatch(AddMultipleConversationsAction(
-              conversations: tmp
-          ));
-        }
-        break;
-        case "LoadMessagesForJidResult": {
-          final List<Message> tmp = List<Message>.from(data["messages"]!.map((m) => Message.fromJson(m)));
-          store.dispatch(
-            AddMultipleMessagesAction(
-              conversationJid: data["jid"]!,
-              messages: tmp,
-              replace: true
-            )
-          );
-        }
-        break;
-        case "AddToRosterResult": {
-          store.dispatch(
-            AddToRosterDoneAction(
-              result: data["result"]!,
-              msg: data["msg"],
-              jid: data["jid"]
-            )
-          );
-        }
-        break;
-        case "RosterItemModifiedEvent": {
-          store.dispatch(
-            ModifyRosterItemAction(
-              item: RosterItem.fromJson(data["item"]!)
-            )
-          );
-        }
-        break;
-        case "MessageSendResult": {
-          store.dispatch(
-            AddMessageAction(
-              message: Message.fromJson(data["message"]!)
-            )
-          );
-        }
-        break;
-        case "__LOG__": {
-          // TODO: Use logging function and only print on when debugging
-          // ignore: avoid_print
-          print("[S] " + data["log"]!);
-        }
-        break;
-      }
-  });
+  FlutterBackgroundService().onDataReceived.listen(handleBackgroundServiceData);
   
   runApp(MyApp(store: store));
 }
