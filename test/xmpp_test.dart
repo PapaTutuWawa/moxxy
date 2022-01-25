@@ -4,7 +4,7 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/stanzas/stanza.dart";
+import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";

@@ -5,7 +5,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/stanzas/stanza.dart";
+import "package:moxxyv2/xmpp/stanza.dart";
 
 class XmppManagerAttributes {
   /// Somehow display logging info.

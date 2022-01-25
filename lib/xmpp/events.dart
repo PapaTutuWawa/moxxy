@@ -1,5 +1,5 @@
 import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/stanzas/stanza.dart";
+import "package:moxxyv2/xmpp/stanza.dart";
 
 abstract class XmppEvent {}
 

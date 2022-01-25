@@ -1,6 +1,6 @@
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/stanzas/stanza.dart";
+import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 
