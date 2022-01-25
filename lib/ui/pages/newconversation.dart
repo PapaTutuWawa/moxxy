@@ -2,6 +2,7 @@ import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/redux/state.dart";
@@ -58,7 +59,7 @@ class NewConversationPage extends StatelessWidget {
             switch(index) {
               case 0:
                 return InkWell(
-                  onTap: () => Navigator.pushNamed(context, "/new_conversation/add_contact"),
+                  onTap: () => Navigator.pushNamed(context, addContactRoute),
                   child: Row(
                     children: [
                       Padding(

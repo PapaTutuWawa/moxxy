@@ -1,4 +1,5 @@
 import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/account/actions.dart";
@@ -50,12 +51,12 @@ class SettingsPage extends StatelessWidget {
                 SettingsTile(
                   title: "About",
                   leading: const Icon(Icons.info),
-                  onPressed: (context) => Navigator.pushNamed(context, "/settings/about")
+                  onPressed: (context) => Navigator.pushNamed(context, aboutRoute)
                 ),
                 SettingsTile(
                   title: "Open-Source licenses",
                   leading: const Icon(Icons.description),
-                  onPressed: (context) => Navigator.pushNamed(context, "/settings/licenses")
+                  onPressed: (context) => Navigator.pushNamed(context, licensesRoute)
                 )
               ]
             )

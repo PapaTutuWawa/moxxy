@@ -92,9 +92,9 @@ void main() async {
             });
             */
 
-            store.dispatch(NavigateToAction.replace("/conversations"));
+            store.dispatch(NavigateToAction.replace(conversationsRoute));
           } else {
-            store.dispatch(NavigateToAction.replace("/intro"));
+            store.dispatch(NavigateToAction.replace(loginRoute));
           }
         }
         break;
@@ -274,19 +274,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         //themeMode: ThemeMode.system,
         themeMode: ThemeMode.dark,
         routes: {
-          "/intro": (context) => const IntroPage(),
-          "/login": (context) => LoginPage(),
-          "/register": (context) => RegistrationPage(),
-          "/register/post": (context) => const PostRegistrationPage(),
-          "/conversations": (context) => const ConversationsPage(),
-          "/conversation": (context) => const ConversationPage(),
-          "/conversation/profile": (context) => const ProfilePage(),
-          "/conversation/send_files": (context) => const SendFilesPage(),
-          "/new_conversation": (context) => const NewConversationPage(),
-          "/new_conversation/add_contact": (context) => AddContactPage(),
-          "/settings": (context) => const SettingsPage(),
-          "/settings/licenses": (context) => const SettingsLicensesPage(),
-          "/settings/about": (context) => const SettingsAboutPage(),
+          introRoute: (context) => const IntroPage(),
+          loginRoute: (context) => LoginPage(),
+          registrationRoute: (context) => RegistrationPage(),
+          postRegistrationRoute: (context) => const PostRegistrationPage(),
+          conversationsRoute: (context) => const ConversationsPage(),
+          conversationRoute: (context) => const ConversationPage(),
+          profileRoute: (context) => const ProfilePage(),
+          sendFilesRoute: (context) => const SendFilesPage(),
+          newConversationRoute: (context) => const NewConversationPage(),
+          addContactRoute: (context) => AddContactPage(),
+          settingsRoute: (context) => const SettingsPage(),
+          licensesRoute: (context) => const SettingsLicensesPage(),
+          aboutRoute: (context) => const SettingsAboutPage(),
         },
         home: const SplashScreen(),
       )

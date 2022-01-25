@@ -1,4 +1,6 @@
 import "dart:async";
+
+import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/login/actions.dart";
 import "package:moxxyv2/redux/account/actions.dart";
@@ -22,7 +24,7 @@ Future<void> loginMiddleware(Store<MoxxyState> store, action, NextDispatcher nex
     store.dispatch(SetDoingWorkAction(state: false));
     store.dispatch(SetDisplayNameAction(displayName: action.displayName));
     store.dispatch(SetJidAction(jid: action.jid));
-    store.dispatch(NavigateToAction.replace("/conversations"));
+    store.dispatch(NavigateToAction.replace(conversationsRoute));
   } else if (action is LoginFailedAction) {
     store.dispatch(SetDoingWorkAction(state: false));
   }

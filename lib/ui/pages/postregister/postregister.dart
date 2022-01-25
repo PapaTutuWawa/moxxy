@@ -206,7 +206,7 @@ class _PostRegistrationPageState extends State<PostRegistrationPage> {
                           child: ElevatedButton(
                             child: const Text("Start chatting"),
                             // TODO
-                            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, "/conversations", (route) => false)
+                            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, conversationsRoute, (route) => false)
                           )
                         )
                       ]

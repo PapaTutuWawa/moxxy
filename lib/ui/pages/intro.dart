@@ -45,7 +45,7 @@ class IntroPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
                     child: ElevatedButton(
                       child: const Text("Login"),
-                      onPressed: () => Navigator.pushNamed(context, "/login")
+                      onPressed: () => Navigator.pushNamed(context, loginRoute)
                     )
                   )
                 )
@@ -69,7 +69,7 @@ class IntroPage extends StatelessWidget {
                     child: TextButton(
                       child: const Text("Register"),
                       onPressed: () {
-                        // Navigator.pushNamed(context, "/register");
+                        // Navigator.pushNamed(context, registrationRoute);
                         showNotImplementedDialog("registration", context);
                       }
                     )

@@ -21,3 +21,18 @@ const double fontsizeSubtitle = 25;
 const double fontsizeAppbar = 20;
 const double fontsizeBody = 15;
 const double fontsizeSubbody = 10;
+
+// Navigation constants
+const String introRoute = "/intro";
+const String loginRoute = "/route";
+const String registrationRoute = "/registration";
+const String postRegistrationRoute = registrationRoute + "/post";
+const String conversationsRoute = "/conversations";
+const String conversationRoute = "/conversation";
+const String profileRoute = conversationRoute + "/profile";
+const String sendFilesRoute = conversationRoute + "/send_files";
+const String newConversationRoute = "/new_conversation";
+const String addContactRoute = newConversationRoute + "/add_contact";
+const String settingsRoute = "/settings";
+const String licensesRoute = settingsRoute + "/licenses";
+const String aboutRoute = settingsRoute + "/licenses";

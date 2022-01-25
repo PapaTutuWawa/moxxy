@@ -161,7 +161,7 @@ class _ConversationPageState extends State<ConversationPage> {
                 alt: Text(viewModel.conversation.title[0])
               ),
               title: viewModel.conversation.title,
-              onTapFunction: () => Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false)),
+              onTapFunction: () => Navigator.pushNamed(context, profileRoute, arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false)),
               showBackButton: true,
               extra: [
                 PopupMenuButton(
@@ -276,7 +276,7 @@ class _ConversationPageState extends State<ConversationPage> {
                                   child: const Icon(Icons.image),
                                   onTap: () {
                                     showNotImplementedDialog("sending files", context);
-                                    //Navigator.pushNamed(context, "/conversation/send_files");
+                                    //Navigator.pushNamed(context, sendFilesRoute);
                                   },
                                   backgroundColor: primaryColor,
                                   // TODO: Theme dependent?

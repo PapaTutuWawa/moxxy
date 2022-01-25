@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/global/actions.dart";
 import "package:moxxyv2/redux/registration/actions.dart";
@@ -14,7 +15,7 @@ void registrationMiddleware(Store<MoxxyState> store, action, NextDispatcher next
     Future.delayed(const Duration(seconds: 3), () {
         // TODO: Trigger some action when done
         store.dispatch(SetDoingWorkAction(state: false));
-        store.dispatch(NavigateToAction.replace("/register/post"));
+        store.dispatch(NavigateToAction.replace(postRegistrationRoute));
     });
   }
 

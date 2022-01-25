@@ -1,10 +1,12 @@
 import "dart:async";
 
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
+import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/redux/state.dart";
 import "package:moxxyv2/redux/global/actions.dart";
 import "package:moxxyv2/redux/addcontact/actions.dart";
 
+import "package:moxxyv2/ui/constants.dart";
 import "package:flutter/material.dart";
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
@@ -22,8 +24,8 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
 
     if (action.result == "success") {
       store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
-          "/conversation",
-          ModalRoute.withName("/conversations"),
+          conversationRoute,
+          ModalRoute.withName(conversationsRoute),
           arguments: ConversationPageArguments(jid: action.jid!)
       ));
     } else if (action.result == "error") {

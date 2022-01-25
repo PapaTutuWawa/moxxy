@@ -89,7 +89,7 @@ class ConversationsPage extends StatelessWidget {
           ),
           TextButton(
             child: const Text("Start a chat"),
-            onPressed: () => Navigator.pushNamed(context, "/new_conversation")
+            onPressed: () => Navigator.pushNamed(context, newConversationRoute)
           )
         ]
       )
@@ -104,7 +104,7 @@ class ConversationsPage extends StatelessWidget {
         displayName: store.state.accountState.displayName,
         avatarUrl: store.state.accountState.avatarUrl,
         goToConversation: (jid) => store.dispatch(NavigateToAction.push(
-            "/conversation",
+            conversationRoute,
             arguments: ConversationPageArguments(jid: jid)
         )),
         closeConversation: (c) => store.dispatch(CloseConversationAction(jid: c.jid, id: c.id, redirect: false))
@@ -117,13 +117,13 @@ class ConversationsPage extends StatelessWidget {
             altIcon: Icons.person
           ),
           title: viewModel.displayName,
-          onTapFunction: () => Navigator.pushNamed(context, "/conversation/profile", arguments: ProfilePageArguments(isSelfProfile: true)),
+          onTapFunction: () => Navigator.pushNamed(context, profileRoute, arguments: ProfilePageArguments(isSelfProfile: true)),
           showBackButton: false,
           extra: [
             PopupMenuButton(
               onSelected: (ConversationsOptions result) {
                 if (result == ConversationsOptions.settings) {
-                  Navigator.pushNamed(context, "/settings");
+                  Navigator.pushNamed(context, settingsRoute);
                 }
               },
               icon: const Icon(Icons.more_vert),
@@ -155,7 +155,7 @@ class ConversationsPage extends StatelessWidget {
             ),
             SpeedDialChild(
               child: const Icon(Icons.person_add),
-              onTap: () => Navigator.pushNamed(context, "/new_conversation"),
+              onTap: () => Navigator.pushNamed(context, newConversationRoute),
               backgroundColor: primaryColor,
               // TODO: Theme dependent?
               foregroundColor: Colors.white,
