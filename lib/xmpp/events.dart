@@ -1,7 +1,30 @@
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 
 abstract class XmppEvent {}
+
+/// Triggered when the connection state of the [XmppConnection] has
+/// changed.
+class ConnectionStateChangedEvent extends XmppEvent {
+  final XmppConnectionState state;
+
+  ConnectionStateChangedEvent({ required this.state });
+}
+
+/// Triggered when we encounter a stream error.
+class StreamErrorEvent extends XmppEvent {
+  final String error;
+
+  StreamErrorEvent({ required this.error });
+}
+
+/// Triggered after the SASL authentication has failed.
+class AuthenticationFailedEvent extends XmppEvent {
+  final String saslError;
+
+  AuthenticationFailedEvent({ required this.saslError });
+}
 
 /// Triggered when we send a stanza to the socket
 class StanzaSentEvent extends XmppEvent {

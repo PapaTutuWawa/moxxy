@@ -29,24 +29,6 @@ enum XmppConnectionState {
   error
 }
 
-class ConnectionStateChangedEvent extends XmppEvent {
-  final XmppConnectionState state;
-
-  ConnectionStateChangedEvent({ required this.state });
-}
-
-class StreamErrorEvent extends XmppEvent {
-  final String error;
-
-  StreamErrorEvent({ required this.error });
-}
-
-class AuthenticationFailedEvent extends XmppEvent {
-  final String saslError;
-
-  AuthenticationFailedEvent({ required this.saslError });
-}
-
 class StreamHeaderNonza extends XMLNode {
   StreamHeaderNonza(String serverDomain) : super(
       tag: "stream:stream",
