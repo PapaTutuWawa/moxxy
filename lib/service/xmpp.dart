@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:moxxyv2/backend/account.dart";
 import "package:moxxyv2/repositories/database.dart";
 import "package:moxxyv2/repositories/xmpp.dart";
 import "package:moxxyv2/repositories/roster.dart";
@@ -109,7 +108,7 @@ void onStart() {
       connection.registerManager(CSIManager());
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
-      final account = await getAccountData();
+      final account = await xmpp.getAccountData();
       final settings = await xmpp.loadConnectionSettings();
 
       if (account!= null && settings != null) {

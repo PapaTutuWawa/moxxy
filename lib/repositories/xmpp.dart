@@ -1,6 +1,9 @@
 import "dart:async";
+import "dart:convert";
 
 import "package:moxxyv2/ui/helpers.dart";
+// TODO: Maybe move this file somewhere else
+import "package:moxxyv2/redux/account/state.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -23,6 +26,7 @@ const String xmppAccountS2CKey = "s2ch";
 const String xmppAccountJIDKey = "jid";
 const String xmppAccountPasswordKey = "password";
 const String xmppLastRosterVersionKey = "rosterversion";
+const String xmppAccountDataKey = "account";
 
 class XmppRepository {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
@@ -125,6 +129,25 @@ class XmppRepository {
     }
   }
 
+  /// Load the [AccountState] from storage. Returns null if not found.
+  Future<AccountState?> getAccountData() async {
+    final data = await _readKeyOrNull(xmppAccountDataKey);
+    if (data == null) {
+      return null;
+    }
+
+    return AccountState.fromJson(jsonDecode(data));
+  }
+  /// Save [state] to storage such that it can be loaded again by [getAccountData].
+  Future<void> setAccountData(AccountState state) async {
+    return await _storage.write(key: xmppAccountDataKey, value: jsonEncode(state.toJson()));
+  }
+  /// Removes the account data from storage.
+  Future<void> removeAccountData() async {
+    // TODO: This sometimes fails
+    await _storage.delete(key: xmppAccountDataKey);
+  }
+
   /// Sends a message to [jid] with the body of [body].
   Future<void> sendMessage({ required String body, required String jid }) async {
     final db = GetIt.I.get<DatabaseRepository>();
@@ -189,6 +212,13 @@ class XmppRepository {
         GetIt.I.get<RosterRepository>().requestRoster();
         
         if (loginTriggeredFromUI) {
+          // TODO: Trigger another event so the UI can see this aswell
+          await setAccountData(AccountState(
+              jid: connection.getConnectionSettings().jid.toString(),
+              displayName: connection.getConnectionSettings().jid.local,
+              avatarUrl: ""
+          ));
+
           sendData({
               "type": "LoginSuccessfulEvent",
               "jid": connection.getConnectionSettings().jid.toString(),

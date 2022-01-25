@@ -15,7 +15,6 @@ import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/redux/conversations/middlewares.dart";
 import "package:moxxyv2/redux/account/middlewares.dart";
-import "package:moxxyv2/redux/account/actions.dart";
 import "package:moxxyv2/redux/login/middlewares.dart";
 import "package:moxxyv2/redux/login/actions.dart";
 import "package:moxxyv2/redux/registration/middlewares.dart";
@@ -30,7 +29,6 @@ import "package:moxxyv2/redux/start/middlewares.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/roster.dart";
-import "package:moxxyv2/backend/account.dart";
 import "package:moxxyv2/service/xmpp.dart";
 
 import "package:flutter/material.dart";
@@ -93,11 +91,6 @@ void main() async {
             });
             */
 
-            (() async {
-                final state = await getAccountData();
-                store.dispatch(SetAccountAction(state: state!));
-            })();
-            
             store.dispatch(NavigateToAction.replace("/conversations"));
           } else {
             store.dispatch(NavigateToAction.replace("/intro"));
