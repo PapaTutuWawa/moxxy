@@ -1,7 +1,6 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/nonzas/sm.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
@@ -9,7 +8,46 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 
 const xmlUintMax = 4294967296; // 2**32
 
-// TODO: We need to save both the client and server h values and send them accordingly
+class StreamManagementEnableNonza extends XMLNode {
+  StreamManagementEnableNonza() : super(
+    tag: "enable",
+    attributes: {
+      "xmlns": smXmlns,
+      "resume": "true"
+    }
+  );
+}
+
+class StreamManagementResumeNonza extends XMLNode {
+  StreamManagementResumeNonza(String id, int h) : super(
+    tag: "resume",
+    attributes: {
+      "xmlns": smXmlns,
+      "previd": id,
+      "h": h.toString()
+    }
+  );
+}
+
+class StreamManagementAckNonza extends XMLNode {
+  StreamManagementAckNonza(int h) : super(
+    tag: "a",
+    attributes: {
+      "xmlns": smXmlns,
+      "h": h.toString()
+    }
+  );
+}
+
+class StreamManagementRequestNonza extends XMLNode {
+  StreamManagementRequestNonza() : super(
+    tag: "r",
+    attributes: {
+      "xmlns": smXmlns,
+    }
+  );
+}
+
 class StreamManagementManager extends XmppManagerBase {
   // Amount of stanzas we have sent or handled
   int _c2sStanzaCount;

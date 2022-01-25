@@ -10,8 +10,6 @@ import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/sasl/authenticators.dart";
-import "package:moxxyv2/xmpp/nonzas/stream.dart";
-import "package:moxxyv2/xmpp/nonzas/sm.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
@@ -47,6 +45,20 @@ class AuthenticationFailedEvent extends XmppEvent {
   final String saslError;
 
   AuthenticationFailedEvent({ required this.saslError });
+}
+
+class StreamHeaderNonza extends XMLNode {
+  StreamHeaderNonza(String serverDomain) : super(
+      tag: "stream:stream",
+      attributes: {
+        "xmlns": stanzaXmlns,
+        "version": "1.0",
+        "xmlns:stream": streamXmlns,
+        "to": serverDomain,
+        "xml:lang": "en"
+      },
+      closeTag: false
+    );
 }
 
 class XmppConnection {

@@ -1,5 +1,5 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/nonzas/stream.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 
 import "helpers/xml.dart";
 
