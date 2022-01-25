@@ -3,7 +3,7 @@ import "dart:convert";
 
 import "package:moxxyv2/ui/helpers.dart";
 // TODO: Maybe move this file somewhere else
-import "package:moxxyv2/redux/account/state.dart";
+import "package:moxxyv2/ui/redux/account/state.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";

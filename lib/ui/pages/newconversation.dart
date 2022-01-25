@@ -5,9 +5,9 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/models/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
-import "package:moxxyv2/redux/state.dart";
-import "package:moxxyv2/redux/roster/actions.dart";
-import "package:moxxyv2/redux/conversation/actions.dart";
+import "package:moxxyv2/ui/redux/state.dart";
+import "package:moxxyv2/ui/redux/roster/actions.dart";
+import "package:moxxyv2/ui/redux/conversation/actions.dart";
 import "package:moxxyv2/constants.dart";
 
 import "package:flutter/material.dart";

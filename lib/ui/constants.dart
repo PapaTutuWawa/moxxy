@@ -35,4 +35,4 @@ const String newConversationRoute = "/new_conversation";
 const String addContactRoute = newConversationRoute + "/add_contact";
 const String settingsRoute = "/settings";
 const String licensesRoute = settingsRoute + "/licenses";
-const String aboutRoute = settingsRoute + "/licenses";
+const String aboutRoute = settingsRoute + "/about";

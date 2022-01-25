@@ -1,8 +1,8 @@
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/redux/state.dart";
-import "package:moxxyv2/redux/account/actions.dart";
+import "package:moxxyv2/ui/redux/state.dart";
+import "package:moxxyv2/ui/redux/account/actions.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";

@@ -4,8 +4,8 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/models/conversation.dart";
-import "package:moxxyv2/redux/state.dart";
-import "package:moxxyv2/redux/conversation/actions.dart";
+import "package:moxxyv2/ui/redux/state.dart";
+import "package:moxxyv2/ui/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
