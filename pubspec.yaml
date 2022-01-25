@@ -44,7 +44,6 @@ dependencies:
   xml: ^5.3.1
   random_string: ^2.3.1
   cryptography: ^2.0.5
-  basic_utils: ^3.9.4
   saslprep: ^1.0.2
   #scrollable_positioned_list: ^0.2.3
   equatable: ^2.0.3
@@ -52,6 +51,10 @@ dependencies:
   awesome_notifications: ^0.6.20
   connectivity_plus: ^2.2.0
   uuid: ^3.0.5
+  moxdns:
+    git:
+      url: https://github.com/PapaTutuWawa/moxdns.git
+      ref: 35fc89584f05472e17846770603313bbd9cf31d9
   #qr_code_scanner: ^0.6.1
   #unifiedpush: ^3.0.1
 

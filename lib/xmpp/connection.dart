@@ -6,16 +6,17 @@ import "package:moxxyv2/xmpp/buffer.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
-import "package:moxxyv2/xmpp/sasl/authenticator.dart";
+import "package:moxxyv2/xmpp/address.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
+import "package:moxxyv2/xmpp/presence.dart";
+import "package:moxxyv2/xmpp/sasl/authenticator.dart";
+import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
@@ -159,8 +160,8 @@ class XmppConnection {
     return _connectionSettings;
   }
   
-  void _handleError(Object error) {
-    _log("ERROR: " + error.toString());
+  void _handleError(Object? error) {
+    _log("ERROR: " + (error ?? "").toString());
 
     // TODO: This may be too harsh for every error
     _setConnectionState(XmppConnectionState.notConnected);
@@ -547,15 +548,31 @@ class XmppConnection {
     }
   }
 
+  /// Attempts to connect using the results of a SRV lookup.
+  Future<bool> _connectUsingList(List<XmppConnectionAddress> results) async {
+    for (var result in results) {
+      try {
+        await _socket.connect(result.hostname, result.port);
+        _log("Did XEP-0368 lookup. Using ${result.hostname}:${result.port.toString()} now.");
+        return true;
+      } catch (ex) {
+        continue;
+      }
+    }
+
+    _log("Did XEP-0368 lookup. But no record was working...");
+    return false;
+  }
+  
   /// Start the connection process using the provided connection settings.
   Future<void> connect({ String? lastResource }) async {
     assert(_xmppManagers.containsKey(presenceManager));
     assert(_xmppManagers.containsKey(rosterManager));
     assert(_xmppManagers.containsKey(discoManager));
 
-    String hostname = _connectionSettings.jid.domain;
-    int port = 5222;
-
+    // TODO: Remove once StartTLS is implemented
+    assert(_connectionSettings.useDirectTLS == true);
+    
     if (lastResource != null) {
       _resource = lastResource;
     }
@@ -568,26 +585,19 @@ class XmppConnection {
     if (_connectionSettings.useDirectTLS) {
       final query = await perform0368Lookup(_connectionSettings.jid.domain);
 
-      if (query != null) {
-        hostname = query.hostname;
-        port = query.port;
+      if (query.isNotEmpty) {
+        final connected = await _connectUsingList(query);
 
-        _log("Did XEP-0368 lookup. Using $hostname:${port.toString()} now.");
+        if (!connected) {
+          // TODO: Fall back to regular XMPP with StartTLS. Maybe...
+          _handleError(null);
+        } else {
+          _currentBackoffAttempt = 0; 
+          _setConnectionState(XmppConnectionState.connecting);
+          _routingState = RoutingState.unauthenticated;
+          _sendStreamHeader();
+        }
       }
     }
-
-    _log("Connecting to $hostname:$port");
-    try {
-      await _socket.connect(hostname, port);
-    } catch (ex) {
-      _log("Exception while connecting: " + ex.toString());
-      _handleError(ex);
-      return;
-    }
-
-    _currentBackoffAttempt = 0; 
-    _setConnectionState(XmppConnectionState.connecting);
-    _routingState = RoutingState.unauthenticated;
-    _sendStreamHeader();
   }
 }
