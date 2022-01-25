@@ -11,6 +11,7 @@ import "package:moxxyv2/ui/pages/sendfiles.dart";
 import "package:moxxyv2/ui/pages/settings/settings.dart";
 import "package:moxxyv2/ui/pages/settings/licenses.dart";
 import "package:moxxyv2/ui/pages/settings/about.dart";
+import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/redux/conversation/actions.dart";
 import "package:moxxyv2/redux/conversations/middlewares.dart";
@@ -192,23 +193,6 @@ void main() async {
   });
   
   runApp(MyApp(store: store));
-}
-
-// TODO: Move somewhere else
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({ Key? key }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Image.asset(
-          "assets/images/logo.png",
-          width: 200, height: 200
-        )
-      )
-    );
-  }
 }
 
 class MyApp extends StatefulWidget {
