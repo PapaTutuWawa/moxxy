@@ -4,7 +4,7 @@ import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/widgets/snackbar.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/profile/actions.dart";
 import "package:moxxyv2/ui/redux/account/actions.dart";

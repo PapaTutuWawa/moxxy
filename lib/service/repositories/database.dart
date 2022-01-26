@@ -5,9 +5,9 @@ import "package:moxxyv2/helpers.dart";
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/message.dart";
 import "package:moxxyv2/service/db/roster.dart";
-import "package:moxxyv2/models/conversation.dart";
-import "package:moxxyv2/models/message.dart";
-import "package:moxxyv2/models/roster.dart";
+import "package:moxxyv2/shared/models/conversation.dart";
+import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/shared/models/roster.dart";
 
 import "package:isar/isar.dart";
 

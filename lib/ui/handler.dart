@@ -1,6 +1,6 @@
-import "package:moxxyv2/models/conversation.dart";
-import "package:moxxyv2/models/message.dart";
-import "package:moxxyv2/models/roster.dart";
+import "package:moxxyv2/shared/models/conversation.dart";
+import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";

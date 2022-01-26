@@ -1,6 +1,6 @@
 import "dart:collection";
 
-import "package:moxxyv2/models/message.dart";
+import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/redux/conversation/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
 

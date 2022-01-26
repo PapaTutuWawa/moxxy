@@ -1,6 +1,6 @@
 import "dart:collection";
 
-import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
 
 HashMap<String, Conversation> conversationReducer(HashMap<String, Conversation> state, dynamic action) {

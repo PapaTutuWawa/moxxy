@@ -12,7 +12,7 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/service/repositories/roster.dart";
 import "package:moxxyv2/service/repositories/database.dart";
-import "package:moxxyv2/models/roster.dart";
+import "package:moxxyv2/shared/models/roster.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";

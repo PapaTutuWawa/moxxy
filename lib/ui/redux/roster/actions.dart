@@ -1,4 +1,4 @@
-import "package:moxxyv2/models/roster.dart";
+import "package:moxxyv2/shared/models/roster.dart";
 
 class AddRosterItemAction {
   final RosterItem item;

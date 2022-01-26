@@ -1,5 +1,5 @@
-import "package:moxxyv2/models/message.dart";
-import "package:moxxyv2/models/conversation.dart";
+import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 
 /// Triggered when the send button should either be shown or replaced by the add button

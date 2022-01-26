@@ -1,6 +1,6 @@
 import "dart:async";
 
-import "package:moxxyv2/models/message.dart";
+import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/helpers.dart";
 

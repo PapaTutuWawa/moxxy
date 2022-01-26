@@ -1,4 +1,4 @@
-import "package:moxxyv2/models/roster.dart";
+import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/ui/redux/roster/actions.dart";
 
 List<RosterItem> rosterReducer(List<RosterItem> roster, dynamic action) {

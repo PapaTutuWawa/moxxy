@@ -1,6 +1,6 @@
 import "dart:async";
 
-import "package:moxxyv2/models/roster.dart";
+import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/service/repositories/database.dart";

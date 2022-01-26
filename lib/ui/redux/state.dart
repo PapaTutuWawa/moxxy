@@ -17,9 +17,9 @@ import "package:moxxyv2/ui/redux/profile/state.dart";
 import "package:moxxyv2/ui/redux/account/state.dart";
 import "package:moxxyv2/ui/redux/global/state.dart";
 import "package:moxxyv2/ui/redux/addcontact/reducers.dart";
-import "package:moxxyv2/models/message.dart";
-import "package:moxxyv2/models/conversation.dart";
-import "package:moxxyv2/models/roster.dart";
+import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/shared/models/conversation.dart";
+import "package:moxxyv2/shared/models/roster.dart";
 
 MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
   return MoxxyState(
