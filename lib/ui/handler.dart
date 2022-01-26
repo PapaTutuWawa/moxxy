@@ -7,6 +7,8 @@ import "package:moxxyv2/ui/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/redux/login/actions.dart";
 import "package:moxxyv2/ui/redux/addcontact/actions.dart";
 import "package:moxxyv2/ui/redux/roster/actions.dart";
+import "package:moxxyv2/ui/redux/account/state.dart";
+import "package:moxxyv2/ui/redux/account/actions.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
@@ -28,11 +30,14 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
         FlutterBackgroundService().sendData({
             "type": "LoadConversationsAction"
         });
-        /* TODO: Move this into the XmppRepository
-        FlutterBackgroundService().sendData({
-          "type": "GetAccountStateAction"
-        });
-        */
+
+        store.dispatch(SetAccountAction(
+            state: AccountState(
+              jid: data["jid"],
+              displayName: data["displayName"],
+              avatarUrl: data["avatarUrl"]
+            )
+        ));
 
         store.dispatch(NavigateToAction.replace(conversationsRoute));
       } else {

@@ -31,12 +31,13 @@ Future<void> initializeServiceIfNeeded() async {
     // ignore: avoid_print
     print("Stopping background service");
     if (kDebugMode) {
-      service.stopBackgroundService();
+      //service.stopBackgroundService();
     } else {
       return;
     }
   }
-  
+
+  print("Initializing service");
   await initializeService();
 }
 
@@ -48,6 +49,29 @@ void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService 
 
     srv.sendData(data);
   };
+}
+
+Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) async {
+  final xmpp = GetIt.I.get<XmppRepository>();
+  final account = await xmpp.getAccountData();
+  final settings = await xmpp.loadConnectionSettings();
+
+  if (account!= null && settings != null) {
+    await GetIt.I.get<RosterRepository>().loadRosterFromDatabase();
+
+    middleware({
+        "type": "PreStartResult",
+        "state": "logged_in",
+        "jid": account.jid,
+        "displayName": account.displayName,
+        "avatarUrl": account.avatarUrl
+    });
+  } else {
+    middleware({
+        "type": "PreStartResult",
+        "state": "not_logged_in"
+    });
+  }
 }
 
 void onStart() {
@@ -112,23 +136,9 @@ void onStart() {
       final settings = await xmpp.loadConnectionSettings();
 
       if (account!= null && settings != null) {
-        await GetIt.I.get<RosterRepository>().loadRosterFromDatabase();
-
-        middleware({
-            "type": "__LOG__",
-            "log": "Connecting..."
-        });
         xmpp.connect(settings, false);
-        middleware({
-            "type": "PreStartResult",
-            "state": "logged_in"
-        });
-      } else {
-        middleware({
-            "type": "PreStartResult",
-            "state": "not_logged_in"
-        });
       }
+      await performPreStart(middleware);
   })();
 }
 
@@ -255,6 +265,11 @@ void handleEvent(Map<String, dynamic>? data) {
       } else {
         csi.setInactive();
       }
+    }
+    break;
+    case "PerformPrestartAction": {
+      // TODO: This assumes that we are ready if we receive this event
+      performPreStart(FlutterBackgroundService().sendData);
     }
     break;
     case "__STOP__": {

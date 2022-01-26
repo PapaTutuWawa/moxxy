@@ -182,6 +182,9 @@ class XmppConnection {
   RoutingState getRoutingState() {
     return _routingState;
   }
+
+  /// Returns the [ConnectionState] of the connection
+  XmppConnectionState getConnectionState() => _connectionState;
   
   /// Returns true if the stream supports the XMLNS @feature.
   bool isStreamFeatureSupported(String feature) {

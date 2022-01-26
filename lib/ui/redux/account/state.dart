@@ -2,17 +2,15 @@ class AccountState {
   final String jid;
   final String displayName;
   final String avatarUrl;
-  final String streamResumptionToken;
 
-  const AccountState({ required this.jid, required this.displayName, required this.avatarUrl, this.streamResumptionToken = "" });
-  const AccountState.initialState() : jid = "", avatarUrl = "", displayName = "", streamResumptionToken = "";
+  const AccountState({ required this.jid, required this.displayName, required this.avatarUrl });
+  const AccountState.initialState() : jid = "", avatarUrl = "", displayName = "";
   
   factory AccountState.fromJson(Map<String, dynamic> json) {
     return AccountState(
       jid: json["jid"],
       displayName: json["displayName"],
-      avatarUrl: json["avatarUrl"],
-      streamResumptionToken: json["streamResumptionToken"]
+      avatarUrl: json["avatarUrl"]
     );
   }
 
@@ -20,8 +18,7 @@ class AccountState {
     return {
       "jid": jid,
       "displayName": displayName,
-      "avatarUrl": avatarUrl,
-      "streamResumptionToken": streamResumptionToken
+      "avatarUrl": avatarUrl
     };
   }
   
