@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 
 import "./helpers/xml.dart";

@@ -8,7 +8,7 @@ import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/roster/actions.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
-import "package:moxxyv2/constants.dart";
+import "package:moxxyv2/shared/constants.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";

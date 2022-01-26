@@ -1,7 +1,7 @@
 import "dart:collection";
 import "dart:async";
 
-import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/message.dart";
 import "package:moxxyv2/service/db/roster.dart";

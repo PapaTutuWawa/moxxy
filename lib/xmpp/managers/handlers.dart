@@ -1,4 +1,4 @@
-import "package:moxxyv2/helpers.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";

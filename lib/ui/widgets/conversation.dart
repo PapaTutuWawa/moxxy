@@ -2,8 +2,8 @@ import "dart:async";
 
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/helpers.dart";
-import "package:moxxyv2/constants.dart";
+import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/shared/constants.dart";
 
 import "package:flutter/material.dart";
 import "package:badges/badges.dart";
