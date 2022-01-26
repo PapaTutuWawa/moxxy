@@ -2,9 +2,9 @@ import "dart:collection";
 import "dart:async";
 
 import "package:moxxyv2/helpers.dart";
-import "package:moxxyv2/db/conversation.dart";
-import "package:moxxyv2/db/message.dart";
-import "package:moxxyv2/db/roster.dart";
+import "package:moxxyv2/service/db/conversation.dart";
+import "package:moxxyv2/service/db/message.dart";
+import "package:moxxyv2/service/db/roster.dart";
 import "package:moxxyv2/models/conversation.dart";
 import "package:moxxyv2/models/message.dart";
 import "package:moxxyv2/models/roster.dart";
