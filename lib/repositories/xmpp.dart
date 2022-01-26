@@ -335,7 +335,7 @@ class XmppRepository {
                 );
               } else {
                 modelRosterItem = await db.addRosterItemFromData(
-                  "", // TODO
+                  "",
                   item.jid,
                   item.jid.split("@")[0]
                 );
@@ -352,10 +352,6 @@ class XmppRepository {
 
       // ignore: avoid_print
       print("Roster push version: " + (event.ver ?? "(null)"));
-      if (event.ver != null) {
-        // TODO: Remove
-        saveLastRosterVersion(event.ver!);
-      }
     } else if (event is RosterItemNotFoundEvent) {
       if (event.trigger == RosterItemNotFoundTrigger.remove) {
         sendData({

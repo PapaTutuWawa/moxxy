@@ -40,7 +40,6 @@ class RosterItemNotFoundEvent extends XmppEvent {
   RosterItemNotFoundEvent({ required this.jid, required this.trigger });
 }
 
-// TODO: Add override-able functions commitRoster and commitRosterVersion
 class RosterManager extends XmppManagerBase {
   String? _rosterVersion;
 
