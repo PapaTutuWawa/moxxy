@@ -57,7 +57,6 @@
       <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0368.html" />
 	<xmpp:status>partial</xmpp:status>
-	<xmpp:note xml:lang="en">Priorities ignored, XMPP connection algorithm ignored</xmpp:note>
 	<xmpp:version>1.1.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
