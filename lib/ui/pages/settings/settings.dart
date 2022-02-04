@@ -7,6 +7,7 @@ import "package:moxxyv2/ui/redux/account/actions.dart";
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
 import "package:flutter_redux/flutter_redux.dart";
+import "package:flutter/foundation.dart";
 
 class _SettingsPageViewModel {
   final void Function() performLogout;
@@ -59,7 +60,20 @@ class SettingsPage extends StatelessWidget {
                   onPressed: (context) => Navigator.pushNamed(context, licensesRoute)
                 )
               ]
-            )
+            ),
+            // TODO: Maybe also have a switch somewhere
+            ...(kDebugMode ? [
+                SettingsSection(
+                  title: "Debugging",
+                  tiles: [
+                    SettingsTile(
+                      title: "Debugging options",
+                      leading: const Icon(Icons.info),
+                      onPressed: (context) => Navigator.pushNamed(context, debuggingRoute)
+                    )
+                  ]
+                )
+              ] : []) 
           ]
         )
       )

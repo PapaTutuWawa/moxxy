@@ -12,6 +12,7 @@ import "package:moxxyv2/ui/pages/sendfiles.dart";
 import "package:moxxyv2/ui/pages/settings/settings.dart";
 import "package:moxxyv2/ui/pages/settings/licenses.dart";
 import "package:moxxyv2/ui/pages/settings/about.dart";
+import "package:moxxyv2/ui/pages/settings/debugging.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/conversations/middlewares.dart";
@@ -88,7 +89,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance!.addObserver(this);
 
     FlutterBackgroundService().sendData({
-        "type": "PerformPrestartAction"
+       "type": "PerformPrestartAction"
     });
   }
 
@@ -163,6 +164,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           settingsRoute: (context) => const SettingsPage(),
           licensesRoute: (context) => const SettingsLicensesPage(),
           aboutRoute: (context) => const SettingsAboutPage(),
+          debuggingRoute: (context) => DebuggingPage(),
         },
         home: const SplashScreen(),
       )
