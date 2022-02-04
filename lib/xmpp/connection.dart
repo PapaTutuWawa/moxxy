@@ -149,6 +149,11 @@ class XmppConnection {
 
     return getManagerById(presenceManager)!;
   }
+
+  /// Returns the registered [StreamManagementManager], if one is registered.
+  StreamManagementManager? getStreamManagementManager() {
+    return getManagerById(smManager);
+  }
   
   /// Set the connection settings of this connection.
   void setConnectionSettings(ConnectionSettings settings) {
@@ -420,12 +425,12 @@ class XmppConnection {
         }
 
         // TODO: Give the stream manager its own getter in this class
-        if (isStreamFeatureSupported(smXmlns) && _xmppManagers.containsKey(smManager)) {
-          final manager = _xmppManagers[smManager]! as StreamManagementManager;
-          await manager.loadStreamResumptionId();
-          await manager.loadState();
-          final srid = manager.getStreamResumptionId();
-          final h = manager.getS2CStanzaCount();
+        final streamManager = getStreamManagementManager();
+        if (isStreamFeatureSupported(smXmlns) && streamManager != null) {
+          await streamManager.loadStreamResumptionId();
+          await streamManager.loadState();
+          final srid = streamManager.getStreamResumptionId();
+          final h = streamManager.getS2CStanzaCount();
           
           // Try to work with SM first
           if (srid != null) {
@@ -474,7 +479,15 @@ class XmppConnection {
           final h = int.parse(node.attributes["h"]!);
           _sendEvent(StreamResumedEvent(h: h));
         } else if (node.tag == "failed") {
+          // NOTE: If we are here, we have it.
+          final manager = getStreamManagementManager()!;
           _log("Stream resumption failed. Proceeding with new stream...");
+
+          // We have to do this because we otherwise get a stanza stuck in the queue,
+          // thus spamming the server on every <a /> nonza we receive.
+          manager.setState(0, 0);
+          await manager.commitState();
+
           _routingState = RoutingState.bindResourcePreSM;
           _performResourceBinding();
         }
