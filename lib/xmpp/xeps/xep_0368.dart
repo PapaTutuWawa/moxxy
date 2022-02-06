@@ -5,10 +5,12 @@ import "package:moxxyv2/xmpp/rfcs/rfc_2782.dart";
 
 import "package:moxdns/moxdns.dart";
 
+typedef SrvQueryFunction = Future<List<SrvRecord>> Function(String, bool);
 
-Future<List<XmppConnectionAddress>> perform0368Lookup(String domain) async {
+Future<List<XmppConnectionAddress>> perform0368Lookup(String domain, { SrvQueryFunction? srvQuery }) async {
+  final query = srvQuery ?? Moxdns.srvQuery;
   // TODO: Maybe enable DNSSEC one day
-  final results = await Moxdns.srvQuery("_xmpps-client._tcp.$domain", false);
+  final results = await query("_xmpps-client._tcp.$domain", false);
   if (results.isEmpty) {
     return const [];
   }

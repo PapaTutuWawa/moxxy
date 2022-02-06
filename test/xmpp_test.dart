@@ -13,6 +13,7 @@ import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 
 import "helpers/xmpp.dart";
+import "helpers/moxdns.dart";
 
 import "package:test/test.dart";
 
@@ -191,7 +192,7 @@ void main() {
       conn.registerManager(DiscoManager());
       conn.registerManager(PresenceManager());
 
-      await conn.connect();
+      await conn.connect(srvQuery: srvQueryStub);
       await Future.delayed(const Duration(seconds: 3), () {
           expect(fakeSocket.getState(), 5);
       });
@@ -275,7 +276,7 @@ void main() {
           }
       });
 
-      await conn.connect();
+      await conn.connect(srvQuery: srvQueryStub);
       await Future.delayed(const Duration(seconds: 3), () {
           expect(receivedEvent, true);
       });
@@ -359,7 +360,7 @@ void main() {
           }
       });
 
-      await conn.connect();
+      await conn.connect(srvQuery: srvQueryStub);
       await Future.delayed(const Duration(seconds: 3), () {
           expect(receivedEvent, true);
       });
@@ -441,7 +442,7 @@ void main() {
       conn.registerManager(DiscoManager());
       conn.registerManager(PresenceManager());
 
-      await conn.connect();
+      await conn.connect(srvQuery: srvQueryStub);
       await Future.delayed(const Duration(seconds: 3), () {
           expect(fakeSocket.getState(), 2);
       });

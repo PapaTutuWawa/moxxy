@@ -581,7 +581,7 @@ class XmppConnection {
   }
   
   /// Start the connection process using the provided connection settings.
-  Future<void> connect({ String? lastResource }) async {
+  Future<void> connect({ String? lastResource, SrvQueryFunction? srvQuery }) async {
     assert(_xmppManagers.containsKey(presenceManager));
     assert(_xmppManagers.containsKey(rosterManager));
     assert(_xmppManagers.containsKey(discoManager));
@@ -599,7 +599,7 @@ class XmppConnection {
     }
     
     if (_connectionSettings.useDirectTLS) {
-      final query = await perform0368Lookup(_connectionSettings.jid.domain);
+      final query = await perform0368Lookup(_connectionSettings.jid.domain, srvQuery: srvQuery);
 
       if (query.isNotEmpty) {
         final connected = await _connectUsingList(query);
