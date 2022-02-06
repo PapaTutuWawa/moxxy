@@ -93,7 +93,6 @@ class XmppConnection {
 
     _socketStream = _socket.getDataStream();
     // TODO: Handle on done
-    _socketStream.listen(_incomingMiddleware);
     // TODO: Handle the stream buffer in the socket
     _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
     _socket.getErrorStream().listen(_handleError);
@@ -258,11 +257,6 @@ class XmppConnection {
     return _eventStreamController.stream.asBroadcastStream();
   }
   
-  // Just for logging
-  void _incomingMiddleware(String data) {
-    _log("<== " + data);
-  }
-
   /// Perform a resource bind with a server-generated resource.
   void _performResourceBinding() {
     sendStanza(Stanza.iq(
