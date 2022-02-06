@@ -93,7 +93,6 @@ class XmppConnection {
 
     _socketStream = _socket.getDataStream();
     // TODO: Handle on done
-    // TODO: Handle the stream buffer in the socket
     _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
     _socket.getErrorStream().listen(_handleError);
 
@@ -351,6 +350,11 @@ class XmppConnection {
   void handleXmlStream(XMLNode node) async {
     _log("(xml) <== " + node.toXml());
 
+    if (node.tag == "stream:stream" && node.children.isEmpty) {
+      _handleError(null);
+      return;
+    }
+    
     switch (_routingState) {
       case RoutingState.unauthenticated: {
         // We expect the stream header here
