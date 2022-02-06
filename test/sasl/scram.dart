@@ -1,6 +1,8 @@
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/scram.dart";
+import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 
 import "package:test/test.dart";
 import "package:hex/hex.dart";
@@ -66,5 +68,36 @@ void main() {
       );
 
       expect(await negotiator.calculateChallengeResponse("cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng=="), "c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=");
+  });
+
+  test("Test a positive server signature check", () async {
+      final negotiator = SaslScramNegotiator(
+        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+        clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
+        initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
+        sendRawXML: (data) {},
+        hashType: ScramHashType.sha1
+      );
+
+      await negotiator.next(null);
+      await negotiator.next(XMLNode.fromString("<challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng==</challenge>"));
+      final result = await negotiator.next(XMLNode.fromString("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj1ybUY5cHFWOFM3c3VBb1pXamE0ZEpSa0ZzS1E9</success>"));
+
+      expect(result.getState(), AuthenticationResult.success, reason: result.getValue());
+  });
+  test("Test a negative server signature check", () async {
+      final negotiator = SaslScramNegotiator(
+        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+        clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
+        initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
+        sendRawXML: (data) {},
+        hashType: ScramHashType.sha1
+      );
+
+      await negotiator.next(null);
+      await negotiator.next(XMLNode.fromString("<challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng==</challenge>"));
+      final result = await negotiator.next(XMLNode.fromString("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj1zbUY5cHFWOFM3c3VBb1pXamE0ZEpSa0ZzS1E9</success>"));
+
+      expect(result.getState(), AuthenticationResult.failure, reason: result.getValue());
   });
 }

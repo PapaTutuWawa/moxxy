@@ -61,6 +61,7 @@ class SaslScramResponseNonza extends XMLNode {
   );
 }
 
+// TODO: Replace with a parser for this kind of syntax
 class ServerChallenge {
   late final String nonce;
   late final String salt;
@@ -99,11 +100,12 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
   String initialMessageNoGS2;
   final ScramHashType hashType;
   final HashAlgorithm _hash;
+  String _serverSignature;
 
   void Function(XMLNode) sendRawXML;
 
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
-  SaslScramNegotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required this.sendRawXML, required this.hashType }) : _hash = hashFromType(hashType);
+  SaslScramNegotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required this.sendRawXML, required this.hashType }) : _hash = hashFromType(hashType), _serverSignature = "";
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
     final pbkdf2 = Pbkdf2(
@@ -165,9 +167,8 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
         final authMessage = initialMessageNoGS2 + "," + challenge.firstMessage + "," + clientFinalMessageBare;
         final clientSignature = await calculateClientSignature(authMessage, storedKey);
         final clientProof = calculateClientProof(clientKey, clientSignature);
-        // TODO: Check
-        //final serverKey = await calculateServerKey(saltedPassword);
-        //final serverSignature = await calculateServerSignature(authMessage, serverKey);
+        final serverKey = await calculateServerKey(saltedPassword);
+        _serverSignature = base64.encode(await calculateServerSignature(authMessage, serverKey));
 
         return clientFinalMessageBare + ",p=" + base64.encode(clientProof);
   }
@@ -200,7 +201,12 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
         final tag = nonza!.tag;
 
         if (tag == "success") {
-          // TODO: Check the response
+          // NOTE: This assumes that the string is always "v=..." and contains no other parameters
+          final signature = utf8.decode(base64.decode(nonza.innerText())).substring(2);
+          if (signature != _serverSignature) {
+            return Result(AuthenticationResult.failure, "Server signature mismatch");
+          }
+          
           return Result(AuthenticationResult.success, "");
         }
         
