@@ -1,6 +1,4 @@
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/widgets/textfield.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
@@ -40,6 +38,7 @@ class DebuggingPage extends StatelessWidget {
                         maxLines: 1,
                         minLines: 1,
                         obscureText: true,
+                        controller: _passphraseController
                       ),
                       actions: [
                         TextButton(
@@ -64,6 +63,7 @@ class DebuggingPage extends StatelessWidget {
                       content: TextField(
                         maxLines: 1,
                         minLines: 1,
+                        controller: _ipController
                       ),
                       actions: [
                         TextButton(

@@ -37,6 +37,8 @@ Future<void> initializeServiceIfNeeded() async {
     }
   }
 
+  // TODO: Use logging function
+  // ignore: avoid_print
   print("Initializing service");
   await initializeService();
 }

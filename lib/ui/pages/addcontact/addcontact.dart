@@ -73,12 +73,12 @@ class AddContactPage extends StatelessWidget {
                       )
                     )
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: const Text("You can add a contact either by typing in their XMPP address or by scanning their QR code")
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Text("You can add a contact either by typing in their XMPP address or by scanning their QR code")
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(EdgeInsets.only(top: 8.0)),
+                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
                     child:
                     ElevatedButton(
                       child: const Text("Add to contacts"),
