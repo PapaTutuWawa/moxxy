@@ -199,6 +199,14 @@ class XmppConnection {
     _socket.write(node.toXml());
   }
 
+  /// Returns true if we can send data through the socket.
+  bool _canSendData() {
+    return [
+      XmppConnectionState.connected,
+      XmppConnectionState.connecting
+    ].contains(_connectionState);
+  }
+  
   /// Sends a [stanza] to the server. If stream management is enabled, then keeping track
   /// of the stanza is taken care of. Returns a Future that resolves when we receive a
   /// response to the stanza.
@@ -220,9 +228,8 @@ class XmppConnection {
     
     _awaitingResponse[stanza.id!] = Completer();
 
-    // TODO: Restrict the connecteing condition s.t. routingState must be one of
     // This uses the StreamManager to behave like a send queue
-    if (_connectionState == XmppConnectionState.connected || _connectionState == XmppConnectionState.connecting) {
+    if (_canSendData()) {
       _socket.write(stanzaString);
 
       // Try to ack every stanza
@@ -327,7 +334,6 @@ class XmppConnection {
     if (id != null && _awaitingResponse.containsKey(id)) {
       _awaitingResponse[id]!.complete(stanza);
       _awaitingResponse.remove(id);
-      // TODO: Call it a day here?
       return;
     }
 
@@ -422,7 +428,6 @@ class XmppConnection {
           _streamFeatures.add(node.attributes["xmlns"]);
         }
 
-        // TODO: Give the stream manager its own getter in this class
         final streamManager = getStreamManagementManager();
         if (isStreamFeatureSupported(smXmlns) && streamManager != null) {
           await streamManager.loadStreamResumptionId();
