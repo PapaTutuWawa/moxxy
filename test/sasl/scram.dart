@@ -9,11 +9,6 @@ import "package:hex/hex.dart";
 
 void main() {
   test("Test SASL SCRAM-SHA-1", () async {
-      final challenge = ServerChallenge.fromBase64("cj02ZDQ0MmI1ZDllNTFhNzQwZjM2OWUzZGNlY2YzMTc4ZWMxMmIzOTg1YmJkNGE4ZTZmODE0YjQyMmFiNzY2NTczLHM9UVNYQ1IrUTZzZWs4YmY5MixpPTQwOTY=");
-      expect(challenge.nonce, "6d442b5d9e51a740f369e3dcecf3178ec12b3985bbd4a8e6f814b422ab766573");
-      expect(challenge.salt, "QSXCR+Q6sek8bf92");
-      expect(challenge.iterations, 4096);
-
       final negotiator = SaslScramNegotiator(
         settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",

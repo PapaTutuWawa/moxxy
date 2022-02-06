@@ -3,10 +3,11 @@ import "dart:math" show Random;
 
 import "package:moxxyv2/xmpp/types/result.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/sasl/authenticator.dart";
-import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/sasl/authenticator.dart";
+import "package:moxxyv2/xmpp/sasl/errors.dart";
+import "package:moxxyv2/xmpp/sasl/kv.dart";
 
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
@@ -59,29 +60,6 @@ class SaslScramResponseNonza extends XMLNode {
     },
     text: body
   );
-}
-
-// TODO: Replace with a parser for this kind of syntax
-class ServerChallenge {
-  late final String nonce;
-  late final String salt;
-  late final int iterations;
-  late final String firstMessage;
-
-  ServerChallenge({ required this.nonce, required this.salt, required this.iterations });
-  ServerChallenge.fromBase64(String challenge) {
-    final Map<String, String> parameters = {};
-
-    firstMessage = utf8.decode(base64.decode(challenge));
-    for (var parameter in firstMessage.split(",")) {
-      final parts = parameter.split("=");
-      parameters[parts[0]] = parts[1];
-    }
-    
-    nonce = parameters["r"]!;
-    salt = parameters["s"]!;
-    iterations = int.parse(parameters["i"]!);
-  }
 }
 
 enum ScramState {
@@ -158,19 +136,20 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
   }
   
   Future<String> calculateChallengeResponse(String base64Challenge) async {
-        final challenge = ServerChallenge.fromBase64(base64Challenge);
-        final clientFinalMessageBare = "c=biws,r=" + challenge.nonce;
-        
-        final saltedPassword = await calculateSaltedPassword(challenge.salt, challenge.iterations);
-        final clientKey = await calculateClientKey(saltedPassword);
-        final storedKey = (await _hash.hash(clientKey)).bytes;
-        final authMessage = initialMessageNoGS2 + "," + challenge.firstMessage + "," + clientFinalMessageBare;
-        final clientSignature = await calculateClientSignature(authMessage, storedKey);
-        final clientProof = calculateClientProof(clientKey, clientSignature);
-        final serverKey = await calculateServerKey(saltedPassword);
-        _serverSignature = base64.encode(await calculateServerSignature(authMessage, serverKey));
+    final challengeString = utf8.decode(base64.decode(base64Challenge));
+    final challenge = parseKeyValue(challengeString);
+    final clientFinalMessageBare = "c=biws,r=" + challenge["r"]!;
+    
+    final saltedPassword = await calculateSaltedPassword(challenge["s"]!, int.parse(challenge["i"]!));
+    final clientKey = await calculateClientKey(saltedPassword);
+    final storedKey = (await _hash.hash(clientKey)).bytes;
+    final authMessage = initialMessageNoGS2 + "," + challengeString + "," + clientFinalMessageBare;
+    final clientSignature = await calculateClientSignature(authMessage, storedKey);
+    final clientProof = calculateClientProof(clientKey, clientSignature);
+    final serverKey = await calculateServerKey(saltedPassword);
+    _serverSignature = base64.encode(await calculateServerSignature(authMessage, serverKey));
 
-        return clientFinalMessageBare + ",p=" + base64.encode(clientProof);
+    return clientFinalMessageBare + ",p=" + base64.encode(clientProof);
   }
 
   @override
@@ -202,8 +181,8 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
 
         if (tag == "success") {
           // NOTE: This assumes that the string is always "v=..." and contains no other parameters
-          final signature = utf8.decode(base64.decode(nonza.innerText())).substring(2);
-          if (signature != _serverSignature) {
+          final signature = parseKeyValue(utf8.decode(base64.decode(nonza.innerText())));
+          if (signature["v"]! != _serverSignature) {
             return Result(AuthenticationResult.failure, "Server signature mismatch");
           }
           
