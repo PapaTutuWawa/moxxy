@@ -19,6 +19,7 @@ import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
 
 import "package:uuid/uuid.dart";
@@ -151,6 +152,11 @@ class XmppConnection {
   /// Returns the registered [StreamManagementManager], if one is registered.
   StreamManagementManager? getStreamManagementManager() {
     return getManagerById(smManager);
+  }
+
+  /// Returns the registered [CSIManager], if one is registered.
+  CSIManager? getCSIManager() {
+    return getManagerById(csiManager);
   }
   
   /// Set the connection settings of this connection.
@@ -479,6 +485,12 @@ class XmppConnection {
           _routingState = RoutingState.handleStanzas;
           _setConnectionState(XmppConnectionState.connected);
 
+          // Restore the CSI state if we have a manager
+          final csiManager = getCSIManager();
+          if (csiManager != null) {
+            csiManager.restoreCSIState();
+          }
+          
           final h = int.parse(node.attributes["h"]!);
           _sendEvent(StreamResumedEvent(h: h));
         } else if (node.tag == "failed") {
