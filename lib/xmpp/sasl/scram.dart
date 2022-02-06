@@ -8,6 +8,7 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:moxxyv2/xmpp/sasl/kv.dart";
+import "package:moxxyv2/xmpp/sasl/nonza.dart";
 
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
@@ -41,14 +42,11 @@ String mechanismNameFromType(ScramHashType type) {
   }
 }
 
-class SaslScramAuthNonza extends XMLNode {
-  SaslScramAuthNonza({ required String body, required ScramHashType type }) : super(
-    tag: "auth",
-    attributes: {
-      "xmlns": saslXmlns,
-      "mechanism": mechanismNameFromType(type)
-    },
-    text: body
+class SaslScramAuthNonza extends SaslAuthNonza {
+  // This subclassing makes less sense here, but this is since the auth nonza here
+  // requires knowledge of the inner state of the Negotiator.
+  SaslScramAuthNonza({ required ScramHashType type, required String body }) : super(
+    mechanismNameFromType(type), body
   );
 }
 

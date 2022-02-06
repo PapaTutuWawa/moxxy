@@ -1,21 +1,15 @@
 import "dart:convert";
 
-import "package:moxxyv2/xmpp/types/result.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/settings.dart";
+import "package:moxxyv2/xmpp/types/result.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/errors.dart";
-import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/sasl/nonza.dart";
 
-// TODO: Factor out to share with SCRAM
-class SaslPlainAuthNonza extends XMLNode {
+class SaslPlainAuthNonza extends SaslAuthNonza {
   SaslPlainAuthNonza(String username, String password) : super(
-    tag: "auth",
-    attributes: {
-      "xmlns": saslXmlns,
-      "mechanism": "PLAIN" 
-    },
-    text: base64.encode(utf8.encode("\u0000$username\u0000$password"))
+    "PLAIN", base64.encode(utf8.encode("\u0000$username\u0000$password"))
   );
 }
 
