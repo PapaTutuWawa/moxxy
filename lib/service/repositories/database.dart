@@ -11,8 +11,6 @@ import "package:moxxyv2/shared/models/roster.dart";
 
 import "package:isar/isar.dart";
 
-import "package:moxxyv2/isar.g.dart";
-
 Conversation conversationDbToModel(DBConversation c) {
   return Conversation(
     id: c.id!,

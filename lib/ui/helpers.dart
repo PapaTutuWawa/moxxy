@@ -5,8 +5,9 @@ import "package:moxxyv2/xmpp/sasl/errors.dart";
 
 import "package:flutter/material.dart";
 import "package:file_picker/file_picker.dart";
-import "package:image_cropping/constant/enums.dart";
-import "package:image_cropping/image_cropping.dart";
+// TODO: image_cropping is broken and won't compile
+//import "package:image_cropping/constant/enums.dart";
+//import "package:image_cropping/image_cropping.dart";
 import "package:path_provider/path_provider.dart";
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
@@ -77,7 +78,8 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
     withData: true
   );
 
-  if (result != null) {
+  // TODO: image_cropping is broken and won't compile
+  /*if (result != null) {
     Completer completer = Completer();
     ImageCropping.cropImage(
       context: context,
@@ -86,7 +88,7 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
       selectedImageRatio: ImageRatio.RATIO_1_1
     );
     return completer.future;
-  }
+  }*/
 
   return null;
 }
@@ -94,6 +96,8 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
 /// Open the file picker to pick an image, open the cropping tool and then send it to
 /// the backend.
 Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAvatarUrl) async {
+  // TODO: image_cropping is broken and won't compile
+  /*
   final data = await pickAndCropImage(context);
 
   if (data != null) {
@@ -106,6 +110,7 @@ Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAva
     // TODO: If the path doesn't change then the UI won't be updated. Hash it and use that as the filename?
     setAvatarUrl(avatar.path);
   }
+  */
 }
 
 /// Turn the SASL error into a string that a regular user could understand.

@@ -1,5 +1,7 @@
 import "package:isar/isar.dart";
 
+part "message.g.dart";
+
 @Collection()
 @Name("Message")
 class DBMessage {

@@ -1,5 +1,7 @@
 import "package:isar/isar.dart";
 
+part "conversation.g.dart";
+
 @Collection()
 @Name("Conversation")
 class DBConversation {

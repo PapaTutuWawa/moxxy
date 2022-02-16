@@ -19,8 +19,12 @@ import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
 import "package:awesome_notifications/awesome_notifications.dart";
+import "package:isar/isar.dart";
+import "package:path_provider/path_provider.dart";
 
-import "package:moxxyv2/isar.g.dart";
+import "package:moxxyv2/service/db/conversation.dart";
+import "package:moxxyv2/service/db/roster.dart";
+import "package:moxxyv2/service/db/message.dart";
 
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +80,18 @@ Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) asy
   }
 }
 
+Future<Isar> openDatabase() async {
+  final dir = await getApplicationSupportDirectory();
+  return await Isar.open(
+    schemas: [
+      DBConversationSchema,
+      DBRosterItemSchema,
+      DBMessageSchema
+    ],
+    directory: dir.path
+  );
+}
+
 void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -104,7 +120,7 @@ void onStart() {
       final middleware = sendDataMiddleware(service);
 
       // Register singletons
-      final db = DatabaseRepository(isar: await openIsar(), sendData: middleware);
+      final db = DatabaseRepository(isar: await openDatabase(), sendData: middleware);
       GetIt.I.registerSingleton<DatabaseRepository>(db); 
 
       final xmpp = XmppRepository(sendData: (data) {

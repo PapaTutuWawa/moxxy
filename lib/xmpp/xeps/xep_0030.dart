@@ -286,7 +286,7 @@ class DiscoManager extends XmppManagerBase {
     return _caphashInfoCache[hash];
   }
   
-  Future<DiscoInfo?> getInfoByJid(String jid) {
+  Future<DiscoInfo?> getInfoByJid(String jid) async {
     if (knowsInfoByJid(jid)) {
       return _jidInfoCache[jid]!;
     }
@@ -294,7 +294,7 @@ class DiscoManager extends XmppManagerBase {
     final presence = getAttributes().getManagerById(presenceManager)! as PresenceManager;
     final hash = presence.getCapHashByJid(jid);
     if (hash != null) {
-      if (knowsInfoByCapHash(hash!)) {
+      if (knowsInfoByCapHash(hash)) {
         return _caphashInfoCache[hash]!;
       }
 
