@@ -7,7 +7,7 @@ import "package:cryptography/cryptography.dart";
 
 /// Calculates the Entitiy Capability hash according to XEP-0115 based on the
 /// disco information.
-Future<String> calculateCapabilityHash(DiscoInfo info) async {
+Future<String> calculateCapabilityHash(DiscoInfo info, HashAlgorithm algorithm) async {
   String s = "";
   final List<String> identitiesSorted = info.identities.toList().map((i) => i.category + "/" + i.type + "/" + (i.lang ?? "") + "/" + i.name).toList();
   identitiesSorted.sort(ioctetSortComparator);
@@ -31,5 +31,5 @@ Future<String> calculateCapabilityHash(DiscoInfo info) async {
     }
   }
   
-  return base64.encode((await Sha1().hash(utf8.encode(s))).bytes);
+  return base64.encode((await algorithm.hash(utf8.encode(s))).bytes);
 }

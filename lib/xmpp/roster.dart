@@ -83,7 +83,6 @@ class RosterManager extends XmppManagerBase {
 
     if (item == null) {
       attrs.log("Error: Received empty roster push");
-      // TODO: Error reply
       return true;
     }
 

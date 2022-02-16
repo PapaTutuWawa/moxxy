@@ -2,6 +2,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0115.dart";
 
 import "package:test/test.dart";
+import "package:cryptography/cryptography.dart";
 
 void main() {
   test("Test XEP example", () async {
@@ -21,7 +22,7 @@ void main() {
         ]
       );
 
-      final hash = await calculateCapabilityHash(data);
+      final hash = await calculateCapabilityHash(data, Sha1());
       expect(hash, "QgayPKawpkPSDYmwT/WM94uAlu0=");
   });
 
@@ -57,7 +58,7 @@ void main() {
         }
       );
 
-      final hash = await calculateCapabilityHash(data);
+      final hash = await calculateCapabilityHash(data, Sha1());
       expect(hash, "q07IKJEyjvHSyhy//CH0CxmKi8w=");
   });
   
@@ -115,7 +116,7 @@ void main() {
         ]
       );
 
-      final hash = await calculateCapabilityHash(data);
+      final hash = await calculateCapabilityHash(data, Sha1());
       expect(hash, "T7fOZrtBnV8sDA2fFTS59vyOyUs=");
       */
   });
@@ -163,7 +164,7 @@ void main() {
         ]
       );
 
-      final hash = await calculateCapabilityHash(data);
+      final hash = await calculateCapabilityHash(data, Sha1());
       expect(hash, "zcIke+Rk13ah4d1pwDG7bEZsVwA=");
   });
 }
