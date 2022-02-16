@@ -13,6 +13,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/service/managers/roster.dart";
 import "package:moxxyv2/service/managers/disco.dart";
 import "package:moxxyv2/service/managers/stream.dart";
+import "package:moxxyv2/shared/logging.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -54,6 +55,10 @@ void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService 
     print("[S2F] " + data.toString());
 
     srv.sendData(data);
+
+    if (data["type"] == "__LOG__") {
+      GetIt.I.get<UDPLogger>().sendLog(data.toString(), 0, "debug");
+    }
   };
 }
 
@@ -92,6 +97,23 @@ Future<Isar> openDatabase() async {
   );
 }
 
+Future<void> initUDPLogger() async {
+  final xmpp = GetIt.I.get<XmppRepository>();
+  if (await xmpp.getDebugEnabled() ?? false) {
+    FlutterBackgroundService().sendData({ "type": "__LOG__", "log": "UDPLogger created" });
+  
+    final port = await xmpp.getDebugPort();
+    final ip = await xmpp.getDebugIp();
+    final passphrase = await xmpp.getDebugPassphrase();
+
+    if (port != null && ip != null && passphrase != null) {
+      GetIt.I.get<UDPLogger>().init(passphrase, ip, port);
+    }
+  } else {
+    GetIt.I.get<UDPLogger>().setEnabled(false);
+  }
+}
+
 void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -120,6 +142,8 @@ void onStart() {
       final middleware = sendDataMiddleware(service);
 
       // Register singletons
+      GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
+
       final db = DatabaseRepository(isar: await openDatabase(), sendData: middleware);
       GetIt.I.registerSingleton<DatabaseRepository>(db); 
 
@@ -137,9 +161,14 @@ void onStart() {
           middleware(data);
       });
       GetIt.I.registerSingleton<XmppRepository>(xmpp);
+
+      // Init the UDPLogger
+      await initUDPLogger();
+
       GetIt.I.registerSingleton<RosterRepository>(RosterRepository(sendData: service.sendData));
 
       final connection = XmppConnection(log: (data) {
+          GetIt.I.get<UDPLogger>().sendLog(data, 0, "debug");
           service.sendData({ "type": "__LOG__", "log": data });
       });
       connection.registerManager(MoxxyStreamManagementManager());
@@ -288,6 +317,34 @@ void handleEvent(Map<String, dynamic>? data) {
     case "PerformPrestartAction": {
       // TODO: This assumes that we are ready if we receive this event
       performPreStart(FlutterBackgroundService().sendData);
+    }
+    break;
+    case "DebugSetEnabledAction": {
+      (() async {
+          await GetIt.I.get<XmppRepository>().saveDebugEnabled(data["enabled"] as bool);
+          initUDPLogger();
+      })();
+    }
+    break;
+    case "DebugSetIpAction": {
+      (() async {
+          await GetIt.I.get<XmppRepository>().saveDebugIp(data["ip"] as String);
+          initUDPLogger();
+      })();
+    }
+    break;
+    case "DebugSetPortAction": {
+      (() async {
+          await GetIt.I.get<XmppRepository>().saveDebugPort(data["port"] as int);
+          initUDPLogger();
+      })();
+    }
+    break;
+    case "DebugSetPassphraseAction": {
+      (() async {
+          await GetIt.I.get<XmppRepository>().saveDebugPassphrase(data["passphrase"] as String);
+          initUDPLogger();
+      })();
     }
     break;
     case "__STOP__": {

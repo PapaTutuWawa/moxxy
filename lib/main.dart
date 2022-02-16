@@ -25,6 +25,7 @@ import "package:moxxyv2/ui/redux/messages/middleware.dart";
 import "package:moxxyv2/ui/redux/conversation/middlewares.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/start/middlewares.dart";
+import "package:moxxyv2/ui/redux/debug/middlewares.dart";
 import "package:moxxyv2/service/xmpp.dart";
 
 import "package:flutter/material.dart";
@@ -45,6 +46,7 @@ void main() async {
     moxxyReducer,
     initialState: MoxxyState.initialState(),
     middleware: [
+      debugMiddleware,
       conversationsMiddleware,
       startMiddleware,
       accountMiddleware,

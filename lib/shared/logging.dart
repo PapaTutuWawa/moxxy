@@ -46,24 +46,32 @@ class UDPLogger {
   late UDP _sender;
   late Endpoint _target;
   late List<int> _derivedKey;
-  late int _counter;
+  int _counter;
+  bool _canSend;
+  bool _enabled;
 
-  UDPLogger(): _counter = 0;
+  UDPLogger(): _counter = 0, _canSend = false, _enabled = true;
   
   Future<void> init(String key, String ip, int port) async {
     _sender = await UDP.bind(Endpoint.any());
     _derivedKey = await deriveKey(key);
     _target = Endpoint.unicast(InternetAddress(ip), port: Port(port));
+    _canSend = true;
+    _enabled = true;
   }
 
-  Future<void> sendLog(String line, int timestamp, String loglevel, int counter, { String? filename }) async {
+  void setEnabled(bool enabled) => _enabled = enabled;
+  
+  Future<void> sendLog(String line, int timestamp, String loglevel, { String? filename }) async {
+    if (!_canSend || !_enabled) return;
+
     final rawPayload = logToPayload(line, timestamp, loglevel, _counter, filename: filename);
     final compressed = compressData(rawPayload);
     final encrypted = await encryptData(compressed, _derivedKey);
 
     try {
       await _sender.send(encrypted, _target);
-    } catch {
+    } catch (_) {
       // Nothing
     }
 

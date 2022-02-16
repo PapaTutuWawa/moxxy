@@ -36,10 +36,10 @@ dependencies:
   url_launcher: ^6.0.17
   qr_flutter: ^4.0.0
   file_picker: ^4.3.0
-  image_cropping: ^0.0.8
+  image_cropping: ^0.0.11
   path_provider: ^2.0.8
-  isar: ^0.4.0
-  isar_flutter_libs: ^0.4.0
+  isar: ^2.2.0
+  isar_flutter_libs: ^2.2.0
   flutter_secure_storage: ^5.0.2
   xml: ^5.3.1
   random_string: ^2.3.1
@@ -57,15 +57,17 @@ dependencies:
       ref: 35fc89584f05472e17846770603313bbd9cf31d9
   #qr_code_scanner: ^0.6.1
   #unifiedpush: ^3.0.1
+  udp: ^5.0.1
+  archive: ^3.2.0
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  #flutter_test:
+  #  sdk: flutter
   flutter_lints: ^1.0.0
   build_runner: ^2.1.2
-  test:
+  test: ^1.20.1
   flutter_launcher_icons: ^0.9.2
-  isar_generator: ^0.4.0
+  isar_generator: ^2.2.0
   redux_logging: ^0.5.0
   hex: ^0.2.0
 

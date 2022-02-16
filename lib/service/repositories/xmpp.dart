@@ -27,6 +27,10 @@ const String xmppAccountJIDKey = "jid";
 const String xmppAccountPasswordKey = "password";
 const String xmppLastRosterVersionKey = "rosterversion";
 const String xmppAccountDataKey = "account";
+const String debugPassphraseKey = "debug_passphrase";
+const String debugIpKey = "debug_ip";
+const String debugPortKey = "debug_port";
+const String debugEnabledKey = "debug_enabled";
 
 class XmppRepository {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
@@ -83,7 +87,42 @@ class XmppRepository {
   Future<void> saveLastResource(String resource) async {
     await _storage.write(key: xmppAccountResourceKey, value: resource);
   }
-  
+
+  Future<String?> getDebugPassphrase() async {
+    return await _readKeyOrNull(debugPassphraseKey);
+  }
+  Future<void> saveDebugPassphrase(String passphrase) async {
+    await _storage.write(key: debugPassphraseKey, value: passphrase);
+  }
+  Future<String?> getDebugIp() async {
+    return await _readKeyOrNull(debugIpKey);
+  }
+  Future<void> saveDebugIp(String ip) async {
+    await _storage.write(key: debugIpKey, value: ip);
+  }
+  Future<int?> getDebugPort() async {
+    final port = await _readKeyOrNull(debugPortKey);
+    if (port != null) {
+      return int.parse(port);
+    }
+
+    return null;
+  }
+  Future<void> saveDebugPort(int port) async {
+    await _storage.write(key: debugPortKey, value: port.toString());
+  }
+  Future<bool?> getDebugEnabled() async {
+    final enabled = await _readKeyOrNull(debugEnabledKey);
+    if (enabled != null) {
+      return enabled == "true" ? true : false;
+    }
+
+    return null;
+  }
+  Future<void> saveDebugEnabled(bool enabled) async {
+    await _storage.write(key: debugEnabledKey, value: enabled ? "true" : "false");
+  }
+
   Future<ConnectionSettings?> loadConnectionSettings() async {
     final jidString = await _readKeyOrNull(xmppAccountJIDKey);
     final password = await _readKeyOrNull(xmppAccountPasswordKey);
