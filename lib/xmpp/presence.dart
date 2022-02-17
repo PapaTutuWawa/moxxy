@@ -4,7 +4,8 @@ import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0115.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0414.dart";
 

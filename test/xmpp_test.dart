@@ -10,7 +10,7 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 
 import "helpers/xmpp.dart";
 import "helpers/moxdns.dart";

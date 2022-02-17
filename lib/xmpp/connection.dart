@@ -17,7 +17,7 @@ import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
