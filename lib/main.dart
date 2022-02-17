@@ -36,6 +36,7 @@ import "package:redux_logging/redux_logging.dart";
 import "package:redux/redux.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
+import "package:logging/logging.dart";
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
 //       Padding(padding: ..., child: Column(children: [ ... ]))
@@ -63,6 +64,13 @@ void main() async {
     ]
   );
   GetIt.I.registerSingleton<Store<MoxxyState>>(store);
+
+  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  Logger.root.onRecord.listen((record) {
+      // ignore: avoid_print
+      print("[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}");
+  });
+  GetIt.I.registerSingleton<Logger>(Logger("MoxxyMain"));
 
   await initializeServiceIfNeeded();
   FlutterBackgroundService().onDataReceived.listen(handleBackgroundServiceData);
@@ -160,7 +168,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           conversationsRoute: (context) => const ConversationsPage(),
           conversationRoute: (context) => const ConversationPage(),
           profileRoute: (context) => const ProfilePage(),
-          sendFilesRoute: (context) => const SendFilesPage(),
+          sendFilesRoute: (context) => SendFilesPage(),
           newConversationRoute: (context) => const NewConversationPage(),
           addContactRoute: (context) => AddContactPage(),
           settingsRoute: (context) => const SettingsPage(),

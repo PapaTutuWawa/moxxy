@@ -29,6 +29,9 @@ class CSIManager extends XmppManagerBase {
   @override
   String getId() => csiManager;
 
+  @override
+  String getName() => "CSIManager";
+  
   /// To be called after a stream has been resumed as CSI does not
   /// survive a stream resumption.
   void restoreCSIState() {

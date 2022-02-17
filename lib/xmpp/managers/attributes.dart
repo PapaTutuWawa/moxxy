@@ -8,9 +8,6 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 
 class XmppManagerAttributes {
-  /// Somehow display logging info.
-  final void Function(String) log;
-
   /// Send a stanza whose response can be awaited.
   final Future<XMLNode> Function(Stanza stanza, { bool addFrom, bool addId }) sendStanza;
 
@@ -35,5 +32,5 @@ class XmppManagerAttributes {
   /// Returns the full JID of the current account
   final FullJID Function() getFullJID;
   
-  XmppManagerAttributes({ required this.log, required this.sendStanza, required this.sendNonza, required this.getManagerById, required this.sendEvent, required this.sendRawXml, required this.getConnectionSettings, required this.isStreamFeatureSupported, required this.getFullJID });
+  XmppManagerAttributes({ required this.sendStanza, required this.sendNonza, required this.getManagerById, required this.sendEvent, required this.sendRawXml, required this.getConnectionSettings, required this.isStreamFeatureSupported, required this.getFullJID });
 }

@@ -49,6 +49,9 @@ class RosterManager extends XmppManagerBase {
   String getId() => rosterManager;
 
   @override
+  String getName() => "RosterManager";
+
+  @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "iq",
@@ -71,10 +74,10 @@ class RosterManager extends XmppManagerBase {
   Future<bool> _onRosterPush(Stanza stanza) async {
     final attrs = getAttributes();
 
-    attrs.log("Received roster push");
+    logger.fine("Received roster push");
 
     if (stanza.attributes["from"] != null || stanza.attributes["from"] != attrs.getConnectionSettings().jid) {
-      attrs.log("Roster push invalid! Unexpected from attribute");
+      logger.warning("Roster push invalid! Unexpected from attribute");
       return true;
     }
 
@@ -82,7 +85,7 @@ class RosterManager extends XmppManagerBase {
     final item = query.firstTag("item");
 
     if (item == null) {
-      attrs.log("Error: Received empty roster push");
+      logger.warning("Received empty roster push");
       return true;
     }
 
@@ -128,7 +131,7 @@ class RosterManager extends XmppManagerBase {
     );
 
     if (response.attributes["type"] != "result") {
-      attrs.log("Error requesting roster: " + response.toString());
+      logger.severe("Error requesting roster: " + response.toString());
       return null;
     }
 
@@ -177,7 +180,7 @@ class RosterManager extends XmppManagerBase {
     );
 
     if (response.attributes["type"] != "result") {
-      attrs.log("Error adding $jid to roster: " + response.toString());
+      logger.severe("Error adding $jid to roster: " + response.toString());
       return;
     }
   }
@@ -207,7 +210,7 @@ class RosterManager extends XmppManagerBase {
     );
 
     if (response.attributes["type"] != "result") {
-      attrs.log("Failed to remove roster item: " + response.toXml());
+      logger.severe("Failed to remove roster item: " + response.toXml());
 
       final error = response.firstTag("error")!;
       final notFound = error.firstTag("item-not-found") != null;

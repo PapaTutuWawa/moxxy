@@ -2,13 +2,15 @@ import "package:moxxyv2/ui/widgets/sharedimage.dart";
 import "package:moxxyv2/ui/constants.dart";
 
 import "package:flutter/material.dart";
+import "package:logging/logging.dart";
 
 class SendFilesPage extends StatelessWidget {
-  const SendFilesPage({ Key? key }) : super(key: key);
+  final Logger _log;
+
+  SendFilesPage({ Key? key }) : _log = Logger("SendFilesPage"), super(key: key);
 
   void _sendFiles(BuildContext context) {
-    // ignore: avoid_print
-    print("Sending files stubbed");
+    _log.info("Stub: Sending files");
 
     Navigator.pop(context);
   }
@@ -76,8 +78,7 @@ class SendFilesPage extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsetsDirectional.only(end: 8.0),
                         child: SharedMediaContainer(
-                          // ignore: avoid_print
-                          onTap: () => print("Adding image"),
+                          onTap: () => _log.info("Stub: Adding file"),
                           drawShadow: true,
                           child: Container(
                             decoration: BoxDecoration(

@@ -22,6 +22,7 @@ import "package:get_it/get_it.dart";
 import "package:awesome_notifications/awesome_notifications.dart";
 import "package:isar/isar.dart";
 import "package:path_provider/path_provider.dart";
+import "package:logging/logging.dart";
 
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/roster.dart";
@@ -32,9 +33,8 @@ Future<void> initializeServiceIfNeeded() async {
 
   final service = FlutterBackgroundService();
   if (await service.isServiceRunning()) {
-    // TODO: Use logging function
-    // ignore: avoid_print
-    print("Stopping background service");
+    GetIt.I.get<Logger>().info("Stopping background service");
+
     if (kDebugMode) {
       //service.stopBackgroundService();
     } else {
@@ -42,23 +42,16 @@ Future<void> initializeServiceIfNeeded() async {
     }
   }
 
-  // TODO: Use logging function
-  // ignore: avoid_print
-  print("Initializing service");
+  GetIt.I.get<Logger>().info("Initializing service");
   await initializeService();
 }
 
 void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService srv) {
   return (data) {
     // NOTE: *S*erver to *F*oreground
-    // ignore: avoid_print
-    print("[S2F] " + data.toString());
+    GetIt.I.get<Logger>().fine("S2F: " + data.toString());
 
     srv.sendData(data);
-
-    if (data["type"] == "__LOG__") {
-      GetIt.I.get<UDPLogger>().sendLog(data.toString(), 0, "debug");
-    }
   };
 }
 
@@ -97,10 +90,28 @@ Future<Isar> openDatabase() async {
   );
 }
 
+void setupLogging() {
+  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  Logger.root.onRecord.listen((record) { 
+      final logMessage = "[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}";
+      if (GetIt.I.isRegistered<UDPLogger>()) {
+        final udp = GetIt.I.get<UDPLogger>();
+        if (udp.isEnabled()) {
+          udp.sendLog(logMessage, record.time.millisecondsSinceEpoch, record.level.name);
+        }
+      }
+
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print(logMessage);
+      }
+  });
+}
+
 Future<void> initUDPLogger() async {
   final xmpp = GetIt.I.get<XmppRepository>();
   if (await xmpp.getDebugEnabled() ?? false) {
-    FlutterBackgroundService().sendData({ "type": "__LOG__", "log": "UDPLogger created" });
+    GetIt.I.get<Logger>().finest("UDPLogger created");
   
     final port = await xmpp.getDebugPort();
     final ip = await xmpp.getDebugIp();
@@ -117,6 +128,9 @@ Future<void> initUDPLogger() async {
 void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
 
+  setupLogging();
+  GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
+  
   AwesomeNotifications().initialize(
     // TODO: Add icon
     null,
@@ -136,7 +150,7 @@ void onStart() {
   service.onDataReceived.listen(handleEvent);
   service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
 
-  service.sendData({ "type": "__LOG__", "log": "Running" });
+  GetIt.I.get<Logger>().finest("Running...");
   
   (() async {
       final middleware = sendDataMiddleware(service);
@@ -167,10 +181,7 @@ void onStart() {
 
       GetIt.I.registerSingleton<RosterRepository>(RosterRepository(sendData: service.sendData));
 
-      final connection = XmppConnection(log: (data) {
-          GetIt.I.get<UDPLogger>().sendLog(data, 0, "debug");
-          service.sendData({ "type": "__LOG__", "log": data });
-      });
+      final connection = XmppConnection();
       connection.registerManager(MoxxyStreamManagementManager());
       connection.registerManager(MoxxyDiscoManager());
       connection.registerManager(MessageManager());
@@ -211,8 +222,7 @@ Future<FlutterBackgroundService> initializeService() async {
 
 void handleEvent(Map<String, dynamic>? data) {
   // NOTE: *F*oreground to *S*ervice
-  // ignore: avoid_print
-  print("[F2S] " + data.toString());
+  GetIt.I.get<Logger>().fine("F2S: " + data.toString());
 
   switch (data!["type"]) {
     case "LoadConversationsAction": {
@@ -224,7 +234,7 @@ void handleEvent(Map<String, dynamic>? data) {
     }
     break;
     case "PerformLoginAction": {
-      FlutterBackgroundService().sendData({ "type": "__LOG__", "log": "Performing login"});
+      GetIt.I.get<Logger>().fine("Performing login");
       GetIt.I.get<XmppRepository>().connect(ConnectionSettings(
           jid: BareJID.fromString(data["jid"]!),
           password: data["password"]!,

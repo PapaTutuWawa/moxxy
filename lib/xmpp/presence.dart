@@ -19,6 +19,9 @@ class PresenceManager extends XmppManagerBase {
   String getId() => presenceManager;
 
   @override
+  String getName() => "PresenceManager";
+
+  @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "presence",
@@ -34,17 +37,17 @@ class PresenceManager extends XmppManagerBase {
   Future<bool> _onPresence(Stanza presence) async {
     final attrs = getAttributes();
     if (presence.from != null) {
-      attrs.log("Received presence from '${presence.from}'");
+      logger.finest("Received presence from '${presence.from}'");
 
       final caphash = presence.firstTag("c", xmlns: capsXmlns);
       if (caphash != null) {
-        attrs.log("Got a capability hash");
+        logger.fine("Got a capability hash");
 
         final manager = _getDiscoManager();
         if (!manager.knowsInfoByCapHash(caphash.attributes["ver"]!)) {
           // TODO: Maybe have a hierarchy of first checking precomputed hashes and then
           //       querying
-          attrs.log("Unknown capability hash '${caphash.attributes['ver']!}'. Querying for info");
+          logger.info("Unknown capability hash '${caphash.attributes['ver']!}'. Querying for info");
           final info = await manager.queryCaphashInfoFromJid(
             presence.from!,
             caphash.attributes["node"]!,

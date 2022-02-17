@@ -92,6 +92,9 @@ class StreamManagementManager extends XmppManagerBase {
   String getId() => smManager;
 
   @override
+  String getName() => "StreamManagementManager";
+
+  @override
   List<NonzaHandler> getNonzaHandlers() => [
     NonzaHandler(
       nonzaTag: "r",
@@ -147,7 +150,7 @@ class StreamManagementManager extends XmppManagerBase {
   /// To be called when receiving a <a /> nonza.
   Future<bool> _handleAckRequest(XMLNode nonza) async {
     final attrs = getAttributes();
-    attrs.log("Sending ack response");
+    logger.finest("Sending ack response");
     attrs.sendNonza(StreamManagementAckNonza(_s2cStanzaCount));
 
     return true;
@@ -162,7 +165,7 @@ class StreamManagementManager extends XmppManagerBase {
     _c2sStanzaCount = h;
     
     if (_unackedStanzas.isNotEmpty) {
-      getAttributes().log("QUEUE NOT EMPTY. FLUSHING");
+      logger.fine("QUEUE NOT EMPTY. FLUSHING");
       _flushStanzaQueue();
     }
 
@@ -200,7 +203,7 @@ class StreamManagementManager extends XmppManagerBase {
     _incrementC2S();
     _unackedStanzas[_c2sStanzaCount] = stanza;
 
-    getAttributes().log("Queue after sending: " + _unackedStanzas.toString());
+    logger.fine("Queue after sending: " + _unackedStanzas.toString());
 
     if (isStreamManagementEnabled()) {
       getAttributes().sendNonza(StreamManagementRequestNonza());
@@ -213,7 +216,7 @@ class StreamManagementManager extends XmppManagerBase {
     _unackedStanzas.removeWhere(
       (key, _) => key <= h
     );
-    getAttributes().log("Queue after cleaning: " + _unackedStanzas.toString());
+    logger.fine("Queue after cleaning: " + _unackedStanzas.toString());
   }
 
   /// To be called when the stream has been resumed

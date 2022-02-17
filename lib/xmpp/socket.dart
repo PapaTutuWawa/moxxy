@@ -2,6 +2,8 @@ import "dart:io";
 import "dart:convert";
 import "dart:async";
 
+import "package:logging/logging.dart";
+
 /// This class is the base for a socket that [XmppConnection] can use.
 abstract class BaseSocketWrapper {
   /// This must return the unbuffered string stream that the socket receives.
@@ -28,10 +30,10 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   final StreamController<Object> _errorStream;
   late StreamSubscription<dynamic> _socketSubscription;
 
-  final void Function(String) _log;
+  final Logger _log;
 
-  TCPSocketWrapper({ void Function(String) log = print })
-  : _log = log,
+  TCPSocketWrapper()
+  : _log = Logger("TCPSocketWrapper"),
   _dataStream = StreamController.broadcast(),
   _errorStream = StreamController.broadcast();
 
@@ -44,7 +46,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
         _dataStream.add(utf8.decode(event));
       },
       onError: (Object error) {
-        _log(error.toString());
+        _log.severe(error.toString());
         _errorStream.add(error);
       }
     );
@@ -66,7 +68,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   @override
   void write(Object? data) {
     if (data != null && data is String) {
-      _log("==> " + data);
+      _log.finest("==> " + data);
     }
 
     try {

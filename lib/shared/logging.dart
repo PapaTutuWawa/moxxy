@@ -61,6 +61,7 @@ class UDPLogger {
   }
 
   void setEnabled(bool enabled) => _enabled = enabled;
+  bool isEnabled() => _enabled;
   
   Future<void> sendLog(String line, int timestamp, String loglevel, { String? filename }) async {
     if (!_canSend || !_enabled) return;

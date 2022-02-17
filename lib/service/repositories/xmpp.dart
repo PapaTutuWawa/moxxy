@@ -18,6 +18,7 @@ import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:awesome_notifications/awesome_notifications.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
+import "package:logging/logging.dart";
 
 const String xmppAccountSRIDKey = "srid";
 const String xmppAccountResourceKey = "resource";
@@ -36,12 +37,13 @@ class XmppRepository {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
+  final Logger _log;
   final void Function(Map<String, dynamic>) sendData;
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
 
-  XmppRepository({ required this.sendData }) : _currentlyOpenedChatJid = "", _networkStateSubscription = null;
+  XmppRepository({ required this.sendData }) : _currentlyOpenedChatJid = "", _networkStateSubscription = null, _log = Logger("XmppRepository");
   
   Future<String?> _readKeyOrNull(String key) async {
     if (await _storage.containsKey(key: key)) {
@@ -271,12 +273,7 @@ class XmppRepository {
     } else if (event is ResourceBindingSuccessEvent) {
       saveLastResource(event.resource);
     } else if (event is MessageEvent) {
-      // TODO: Use logging function
-      // ignore: avoid_print
-      print("'${event.body}' from ${event.fromJid} (${event.sid})");
-
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-
       final db = GetIt.I.get<DatabaseRepository>();
       final fromBare = event.fromJid.toBare().toString();
       final msg = await db.addMessageFromData(
@@ -389,8 +386,7 @@ class XmppRepository {
         break;
       }
 
-      // ignore: avoid_print
-      print("Roster push version: " + (event.ver ?? "(null)"));
+      _log.fine("Roster push version: " + (event.ver ?? "(null)"));
     } else if (event is RosterItemNotFoundEvent) {
       if (event.trigger == RosterItemNotFoundTrigger.remove) {
         sendData({

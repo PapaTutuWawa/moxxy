@@ -59,6 +59,7 @@ dependencies:
   #unifiedpush: ^3.0.1
   udp: ^5.0.1
   archive: ^3.2.0
+  logging: ^1.0.2
 
 dev_dependencies:
   #flutter_test:

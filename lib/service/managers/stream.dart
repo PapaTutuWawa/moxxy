@@ -28,7 +28,7 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
   Future<void> commitStreamResumptionId() async {
     final srid = getStreamResumptionId();
     if (srid !=  null) {
-      getAttributes().log("Saving resumption token: $srid");
+      logger.fine("Saving resumption token: $srid");
       await GetIt.I.get<XmppRepository>().saveStreamResumptionId(srid);
     }
   }
@@ -36,7 +36,7 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
   Future<void> loadStreamResumptionId() async {
     final id = await GetIt.I.get<XmppRepository>().getStreamResumptionId();
-    getAttributes().log("Setting resumption token: " + (id ?? ""));
+    logger.fine("Setting resumption token: " + (id ?? ""));
     if (id != null) {
       setStreamResumptionId(id);
     }

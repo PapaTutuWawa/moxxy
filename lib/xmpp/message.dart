@@ -12,6 +12,9 @@ class MessageManager extends XmppManagerBase {
   String getId() => messageManager;
 
   @override
+  String getName() => "MessageManager";
+
+  @override
   List<StanzaHandler> getStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "message",
@@ -26,7 +29,7 @@ class MessageManager extends XmppManagerBase {
     final attrs = getAttributes();
 
     if (!["received", "displayed", "acknowledged"].contains(marker.tag)) {
-      attrs.log("Unknown message marker '${marker.tag}' found.");
+      logger.warning("Unknown message marker '${marker.tag}' found.");
       return;
     }
 

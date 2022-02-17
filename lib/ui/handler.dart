@@ -14,14 +14,14 @@ import "package:get_it/get_it.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
+import "package:logging/logging.dart";
 
 /// Called whenever the background service sends data to the UI isolate.
 void handleBackgroundServiceData(Map<String, dynamic>? data) {
   final store = GetIt.I.get<Store<MoxxyState>>();
-  if (data!["type"]! != "__LOG__") {
-    // TODO: Use logging function and only print on when debugging
-    // ignore: avoid_print
-    print("GOT: " + data.toString());
+  if (data == null) {
+    GetIt.I.get<Logger>().warning("handleBackgroundServiceData: Received null");
+    return;
   }
 
   switch (data["type"]) {
@@ -128,12 +128,6 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           message: Message.fromJson(data["message"]!)
         )
       );
-    }
-    break;
-    case "__LOG__": {
-      // TODO: Use logging function and only print on when debugging
-      // ignore: avoid_print
-      print("[S] " + data["log"]!);
     }
     break;
   }

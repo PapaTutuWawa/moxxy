@@ -6,11 +6,13 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/service/repositories/database.dart";
 
 import "package:get_it/get_it.dart";
+import "package:logging/logging.dart";
 
 class RosterRepository {
+  final Logger _log;
   final void Function(Map<String, dynamic>) sendData;
   
-  RosterRepository({ required this.sendData });
+  RosterRepository({ required this.sendData }) : _log = Logger("RosterRepository");
 
   Future<bool> isInRoster(String jid) async {
     return await GetIt.I.get<DatabaseRepository>().isInRoster(jid);
@@ -48,14 +50,10 @@ class RosterRepository {
   Future<void> requestRoster() async {
     final result = await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.requestRoster();
 
-    // TODO: Use logging function
-    // ignore: avoid_print
-    print("requestRoster done");
+    _log.finest("requestRoster: Done");
     
     if (result == null || result.items.isEmpty) {
-      // TODO: Use logging function
-      // ignore: avoid_print
-      print("No roster items received");
+      _log.fine("requestRoster: No roster items received");
       return;
     }
 

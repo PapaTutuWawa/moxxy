@@ -127,6 +127,9 @@ class DiscoManager extends XmppManagerBase {
   String getId() => discoManager;
 
   @override
+  String getName() => "DiscoManager";
+
+  @override
   List<String> getDiscoFeatures() => [ discoInfoXmlns, discoItemsXmlns ];
 
   /// Adds a list of features to the possible disco info response.

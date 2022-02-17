@@ -4,12 +4,16 @@ import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 
+import "package:logging/logging.dart";
+
 abstract class XmppManagerBase {
   late final XmppManagerAttributes _managerAttributes;
+  late final Logger _log;
 
   /// Registers the callbacks from [XmppConnection] with the manager
   void register(XmppManagerAttributes attributes) {
     _managerAttributes = attributes;
+    _log = Logger(getName());
   }
 
   /// Returns the attributes that are registered with the manager.
@@ -24,12 +28,18 @@ abstract class XmppManagerBase {
   /// Return the [NonzaHandler]s associated with this manager.
   List<NonzaHandler> getNonzaHandlers() => [];
 
-  /// Return a list of features that should be included in a disco response
+  /// Return a list of features that should be included in a disco response.
   List<String> getDiscoFeatures() => [];
   
   /// Return the Id (akin to xmlns) of this manager.
   String getId();
 
+  /// Return a name that will be used for logging.
+  String getName();
+
+  /// Return the logger for this manager.
+  Logger get logger => _log;
+  
   /// Called when [XmppConnection] triggers an event
   void onXmppEvent(XmppEvent event) {}
 

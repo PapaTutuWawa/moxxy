@@ -10,6 +10,7 @@ import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 
 import "package:isar/isar.dart";
+import "package:logging/logging.dart";
 
 Conversation conversationDbToModel(DBConversation c) {
   return Conversation(
@@ -42,9 +43,10 @@ class DatabaseRepository {
   final HashMap<String, RosterItem> _rosterCache = HashMap();
   final List<String> loadedConversations = List.empty(growable: true);
 
+  final Logger _log;
   final void Function(Map<String, dynamic>) sendData;
   
-  DatabaseRepository({ required this.isar, required this.sendData });
+  DatabaseRepository({ required this.isar, required this.sendData }) : _log = Logger("DatabaseRepository");
 
   /// Returns the database ID of the conversation with jid [jid] or null if not found.
   Future<Conversation?> getConversationByJid(String jid) async {
@@ -212,9 +214,7 @@ class DatabaseRepository {
       });
       _rosterCache.remove(jid);
     } else if (!nullOkay) {
-      // TODO: Use logging function
-      // ignore: avoid_print
-      print("RosterRepository::removeFromRoster: Could not find $jid in roster state");
+      _log.severe("removeFromRoster: Could not find $jid in roster state");
     }
   }
   
