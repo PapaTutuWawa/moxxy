@@ -29,7 +29,8 @@
     pinnedJDK = pkgs.jdk11;
 
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [
-      requests pyyaml
+      requests pyyaml # For the build scripts
+      pycryptodome # For the Monal UDP Logger
     ]);
   in {
     devShell = pkgs.mkShell {
