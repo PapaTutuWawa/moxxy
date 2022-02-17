@@ -17,5 +17,5 @@ HashAlgorithm? getHashByName(String name) {
     //case "sha3-512": TODO;
   }
 
-  assert(name == "UNKNOWN");
+  throw "Unknown hash algorithm: $name";
 }

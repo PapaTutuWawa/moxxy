@@ -453,8 +453,6 @@ void main() {
           bool eventTriggered = false;
           final roster = RosterManager();
           roster.register(XmppManagerAttributes(
-              // ignore: avoid_print
-              log: (str) => print(str),
               sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {
                 eventTriggered = true;

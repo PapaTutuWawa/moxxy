@@ -20,8 +20,6 @@ void main() {
       Stanza lastSentStanza = Stanza(tag: "message");
 
       final attributes = XmppManagerAttributes(
-        // ignore: avoid_print
-        log: (msg) => print(msg),
         sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());
@@ -75,8 +73,6 @@ void main() {
       Stanza lastSentStanza = Stanza(tag: "message");
 
       final attributes = XmppManagerAttributes(
-        // ignore: avoid_print
-        log: (msg) => print(msg),
         sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());

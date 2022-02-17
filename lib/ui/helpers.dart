@@ -1,14 +1,14 @@
 import "dart:async";
-import "dart:io";
+//import "dart:io";
 
 import "package:moxxyv2/xmpp/sasl/errors.dart";
 
 import "package:flutter/material.dart";
-import "package:file_picker/file_picker.dart";
 // TODO: image_cropping is broken and won't compile
+//import "package:file_picker/file_picker.dart";
 //import "package:image_cropping/constant/enums.dart";
 //import "package:image_cropping/image_cropping.dart";
-import "package:path_provider/path_provider.dart";
+//import "package:path_provider/path_provider.dart";
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action.
@@ -72,14 +72,14 @@ void dismissSoftKeyboard(BuildContext context) {
 /// The Future either resolves to null if the user cancels the action or
 /// the actual image data.
 Future<dynamic> pickAndCropImage(BuildContext context) async {
-  FilePickerResult? result = await FilePicker.platform.pickFiles(
+  // TODO: image_cropping is broken and won't compile
+  /*FilePickerResult? result = await FilePicker.platform.pickFiles(
     allowMultiple: false,
     type: FileType.image,
     withData: true
   );
 
-  // TODO: image_cropping is broken and won't compile
-  /*if (result != null) {
+  if (result != null) {
     Completer completer = Completer();
     ImageCropping.cropImage(
       context: context,

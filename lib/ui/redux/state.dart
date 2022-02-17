@@ -83,7 +83,7 @@ class MoxxyState {
       profilePageState = ProfilePageState.initialState(),
       accountState = const AccountState.initialState(),
       globalState = GlobalState.initialState(),
-      debugState = DebugState.initialState(),
+      debugState = const DebugState.initialState(),
       openConversationJid = null,
       addContactErrorText = null;
 }

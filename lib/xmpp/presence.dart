@@ -35,7 +35,6 @@ class PresenceManager extends XmppManagerBase {
   DiscoManager _getDiscoManager() => getAttributes().getManagerById(discoManager)! as DiscoManager;
   
   Future<bool> _onPresence(Stanza presence) async {
-    final attrs = getAttributes();
     if (presence.from != null) {
       logger.finest("Received presence from '${presence.from}'");
 

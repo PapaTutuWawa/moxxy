@@ -13,8 +13,6 @@ void main() {
           bool nonzaSent = false;
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
-              // ignore: avoid_print
-              log: (str) => print(str),
               sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {},
               sendNonza: (nonza) {
@@ -40,8 +38,6 @@ void main() {
       test("Test setting the CSI state when CSI is supported", () {
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
-              // ignore: avoid_print
-              log: (str) => print(str),
               sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {},
               sendNonza: (nonza) {
