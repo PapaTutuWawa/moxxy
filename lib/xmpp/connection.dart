@@ -358,7 +358,7 @@ class XmppConnection {
 
   /// Called whenever we receive data that has been parsed as XML.
   void handleXmlStream(XMLNode node) async {
-    _log.finest("(xml) <== " + node.toXml());
+    _log.finest("<== " + node.toXml());
 
     if (node.tag == "stream:stream" && node.children.isEmpty) {
       _handleError(null);
