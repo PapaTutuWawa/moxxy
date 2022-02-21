@@ -8,12 +8,14 @@ import "package:get_it/get_it.dart";
 class MoxxyRosterManger extends RosterManager {
   @override
   Future<void> commitLastRosterVersion(String version) async {
-    await GetIt.I.get<XmppRepository>().saveLastRosterVersion(version);
+    await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
+        lastRosterVersion: version
+    ));
   }
 
   @override
   Future<void> loadLastRosterVersion() async {
-    final ver = await GetIt.I.get<XmppRepository>().getLastRosterVersion();
+    final ver = (await GetIt.I.get<XmppRepository>().getXmppState()).lastRosterVersion;
     if (ver != null) {
       setRosterVersion(ver);
     }

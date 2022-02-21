@@ -46,5 +46,5 @@ app.*.map.json
 /android/app/release
 
 # Generated data classes
-lib/data/generated/*
-lib/service/db/*.g.dart
+**/*.g.dart
+**/*.freezed.dart

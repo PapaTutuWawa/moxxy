@@ -60,6 +60,7 @@ dependencies:
   udp: ^5.0.1
   archive: ^3.2.0
   logging: ^1.0.2
+  freezed_annotation: ^1.1.0
 
 dev_dependencies:
   #flutter_test:
@@ -71,6 +72,8 @@ dev_dependencies:
   isar_generator: ^2.2.0
   redux_logging: ^0.5.0
   hex: ^0.2.0
+  json_serializable:
+  freezed: ^1.1.1
 
 extra_licenses:
   undraw.co:

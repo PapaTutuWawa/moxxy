@@ -8,20 +8,16 @@ import "package:get_it/get_it.dart";
 class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
   Future<void> commitState() async {
-    await Future.wait([
-        GetIt.I.get<XmppRepository>().saveStreamManagementC2SH(getC2SStanzaCount()),
-        GetIt.I.get<XmppRepository>().saveStreamManagementS2CH(getS2CStanzaCount())
-    ]);
+    await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
+        c2sh: getC2SStanzaCount(),
+        s2ch: getS2CStanzaCount()
+    ));
   }
 
   @override
   Future<void> loadState() async {
-    final result = await Future.wait<int?>([
-        GetIt.I.get<XmppRepository>().getStreamManagementC2SH(),
-        GetIt.I.get<XmppRepository>().getStreamManagementS2CH()
-    ]);
-
-    setState(result[0] ?? 0, result[1] ?? 0);
+    final state = await GetIt.I.get<XmppRepository>().getXmppState();
+    setState(state.c2sh, state.s2ch);
   }
 
   @override
@@ -29,13 +25,15 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
     final srid = getStreamResumptionId();
     if (srid !=  null) {
       logger.fine("Saving resumption token: $srid");
-      await GetIt.I.get<XmppRepository>().saveStreamResumptionId(srid);
+      await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
+          srid: srid
+      ));
     }
   }
 
   @override
   Future<void> loadStreamResumptionId() async {
-    final id = await GetIt.I.get<XmppRepository>().getStreamResumptionId();
+    final id = (await GetIt.I.get<XmppRepository>().getXmppState()).srid;
     logger.fine("Setting resumption token: " + (id ?? ""));
     if (id != null) {
       setStreamResumptionId(id);

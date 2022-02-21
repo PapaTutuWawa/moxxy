@@ -10,6 +10,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/repositories/roster.dart";
 import "package:moxxyv2/service/repositories/database.dart";
 import "package:moxxyv2/shared/models/roster.dart";
@@ -20,18 +21,8 @@ import "package:awesome_notifications/awesome_notifications.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
 import "package:logging/logging.dart";
 
-const String xmppAccountSRIDKey = "srid";
-const String xmppAccountResourceKey = "resource";
-const String xmppAccountC2SKey = "c2sh";
-const String xmppAccountS2CKey = "s2ch";
-const String xmppAccountJIDKey = "jid";
-const String xmppAccountPasswordKey = "password";
-const String xmppLastRosterVersionKey = "rosterversion";
-const String xmppAccountDataKey = "account";
-const String debugPassphraseKey = "debug_passphrase";
-const String debugIpKey = "debug_ip";
-const String debugPortKey = "debug_port";
-const String debugEnabledKey = "debug_enabled";
+const xmppStateKey = "xmppState";
+const xmppAccountDataKey = "xmppAccount";
 
 class XmppRepository {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
@@ -42,9 +33,10 @@ class XmppRepository {
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
+  XmppState? _state;
 
-  XmppRepository({ required this.sendData }) : _currentlyOpenedChatJid = "", _networkStateSubscription = null, _log = Logger("XmppRepository");
-  
+  XmppRepository({ required this.sendData }) : _currentlyOpenedChatJid = "", _networkStateSubscription = null, _log = Logger("XmppRepository"), _state = null;
+
   Future<String?> _readKeyOrNull(String key) async {
     if (await _storage.containsKey(key: key)) {
       return await _storage.read(key: key);
@@ -52,105 +44,58 @@ class XmppRepository {
       return null;
     }
   }
-
-  Future<String?> getStreamResumptionId() async {
-    return await _readKeyOrNull(xmppAccountSRIDKey);
-  }
-  Future<void> saveStreamResumptionId(String srid) async {
-    await _storage.write(key: xmppAccountSRIDKey, value: srid);
-  }
-
-  // TODO: Merge those two
-  Future<int?> getStreamManagementC2SH() async {
-    final value = await _readKeyOrNull(xmppAccountC2SKey);
-    return value != null ? int.parse(value) : null;
-  }
-  Future<void> saveStreamManagementC2SH(int h) async {
-    await _storage.write(key: xmppAccountC2SKey, value: h.toString());
-  }
-  Future<int?> getStreamManagementS2CH() async {
-    final value = await _readKeyOrNull(xmppAccountS2CKey);
-    return value != null ? int.parse(value) : null;
-  }
-  Future<void> saveStreamManagementS2CH(int h) async {
-    await _storage.write(key: xmppAccountS2CKey, value: h.toString());
-  }
   
-  Future<String?> getLastRosterVersion() async {
-    return await _readKeyOrNull(xmppLastRosterVersionKey);
-  }
-  Future<void> saveLastRosterVersion(String ver) async {
-    await _storage.write(key: xmppLastRosterVersionKey, value: ver);
-  }  
+  Future<XmppState> getXmppState() async {
+    if (_state != null) return _state!;
 
-  Future<String?> getLastResource() async {
-    return await _readKeyOrNull(xmppAccountResourceKey);
-  }
-  Future<void> saveLastResource(String resource) async {
-    await _storage.write(key: xmppAccountResourceKey, value: resource);
-  }
+    final data = await _readKeyOrNull(xmppStateKey);
+    // GetIt.I.get<Logger>().finest("data != null: " + (data != null).toString());
 
-  Future<String?> getDebugPassphrase() async {
-    return await _readKeyOrNull(debugPassphraseKey);
-  }
-  Future<void> saveDebugPassphrase(String passphrase) async {
-    await _storage.write(key: debugPassphraseKey, value: passphrase);
-  }
-  Future<String?> getDebugIp() async {
-    return await _readKeyOrNull(debugIpKey);
-  }
-  Future<void> saveDebugIp(String ip) async {
-    await _storage.write(key: debugIpKey, value: ip);
-  }
-  Future<int?> getDebugPort() async {
-    final port = await _readKeyOrNull(debugPortKey);
-    if (port != null) {
-      return int.parse(port);
-    }
-
-    return null;
-  }
-  Future<void> saveDebugPort(int port) async {
-    await _storage.write(key: debugPortKey, value: port.toString());
-  }
-  Future<bool?> getDebugEnabled() async {
-    final enabled = await _readKeyOrNull(debugEnabledKey);
-    if (enabled != null) {
-      return enabled == "true" ? true : false;
-    }
-
-    return null;
-  }
-  Future<void> saveDebugEnabled(bool enabled) async {
-    await _storage.write(key: debugEnabledKey, value: enabled ? "true" : "false");
-  }
-
-  Future<ConnectionSettings?> loadConnectionSettings() async {
-    final jidString = await _readKeyOrNull(xmppAccountJIDKey);
-    final password = await _readKeyOrNull(xmppAccountPasswordKey);
-
-    if (jidString == null || password == null) {
-      return null;
-    } else {
-      return ConnectionSettings(
-        jid: BareJID.fromString(jidString),
-        password: password,
-        useDirectTLS: true,
-        allowPlainAuth: false
+    if (data == null) {
+      _state = XmppState(
+        0,
+        0,
+        "",
+        "",
+        0,
+        false
       );
+
+      await _commitXmppState();
+
+      return _state!;
     }
+
+    _state = XmppState.fromJson(json.decode(data));
+    return _state!;
   }
 
-  // Save the JID and password to secure storage. Note that this does not save stream
-  // resumption metadata. For this use saveStreamResumptionSettings
-  Future<void> saveConnectionSettings(ConnectionSettings settings) async {
-    await _storage.write(key: xmppAccountJIDKey, value: settings.jid.toString());
-    await _storage.write(key: xmppAccountPasswordKey, value: settings.password);
+  Future<void> _commitXmppState() async {
+    // final logger = GetIt.I.get<Logger>();
+    // logger.finest("Commiting _xmppState to EncryptedSharedPrefs");
+    // logger.finest("=> ${json.encode(_state!.toJson())}");
+    await _storage.write(key: xmppStateKey, value: json.encode(_state!.toJson()));
   }
 
-  Future<void> saveStreamResumptionSettings(String srid, String resource) async {
-    await _storage.write(key: xmppAccountSRIDKey, value: srid);
-    await _storage.write(key: xmppAccountResourceKey, value: resource);
+  /// A wrapper to modify the [XmppState] and commit it.
+  Future<void> modifyXmppState(XmppState Function(XmppState) func) async {
+    _state = func(_state!);
+    await _commitXmppState();
+  }
+
+  Future<ConnectionSettings?> getConnectionSettings() async {
+    final state = await getXmppState();
+
+    if (state.jid == null || state.password == null) {
+      return null;
+    }
+
+    return ConnectionSettings(
+      jid: BareJID.fromString(state.jid!),
+      password: state.password!,
+      useDirectTLS: true,
+      allowPlainAuth: false
+    );
   }
 
   /// Marks the conversation with jid [jid] as open and resets its unread counter if it is
@@ -249,7 +194,14 @@ class XmppRepository {
       
       if (event.state == XmppConnectionState.connected) {
         final connection = GetIt.I.get<XmppConnection>();
-        saveConnectionSettings(connection.getConnectionSettings());
+
+        // TODO: Maybe have something better
+        final settings = connection.getConnectionSettings();
+        modifyXmppState((state) => state.copyWith(
+            jid: settings.jid.toString(),
+            password: settings.password.toString()
+        ));
+
         GetIt.I.get<RosterRepository>().requestRoster();
         
         if (loginTriggeredFromUI) {
@@ -269,9 +221,14 @@ class XmppRepository {
       }
     } else if (event is StreamManagementEnabledEvent) {
       // TODO: Remove
-      saveStreamResumptionSettings(event.id, event.resource);
+      modifyXmppState((state) => state.copyWith(
+          srid: event.id,
+          resource: event.resource
+      ));
     } else if (event is ResourceBindingSuccessEvent) {
-      saveLastResource(event.resource);
+      modifyXmppState((state) => state.copyWith(
+          resource: event.resource
+      ));
     } else if (event is MessageEvent) {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final db = GetIt.I.get<DatabaseRepository>();
@@ -408,7 +365,7 @@ class XmppRepository {
   }
 
   Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
-    final lastResource = await getLastResource();
+    final lastResource = (await getXmppState()).resource;
 
     loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);

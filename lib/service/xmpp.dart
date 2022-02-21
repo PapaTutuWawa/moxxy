@@ -58,7 +58,10 @@ void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService 
 Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) async {
   final xmpp = GetIt.I.get<XmppRepository>();
   final account = await xmpp.getAccountData();
-  final settings = await xmpp.loadConnectionSettings();
+  final settings = await xmpp.getConnectionSettings();
+
+  GetIt.I.get<Logger>().finest("account != null: " + (account != null).toString());
+  GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
 
   if (account!= null && settings != null) {
     await GetIt.I.get<RosterRepository>().loadRosterFromDatabase();
@@ -109,15 +112,16 @@ void setupLogging() {
 }
 
 Future<void> initUDPLogger() async {
-  final xmpp = GetIt.I.get<XmppRepository>();
-  if (await xmpp.getDebugEnabled() ?? false) {
-    GetIt.I.get<Logger>().finest("UDPLogger created");
-  
-    final port = await xmpp.getDebugPort();
-    final ip = await xmpp.getDebugIp();
-    final passphrase = await xmpp.getDebugPassphrase();
+  final state = await GetIt.I.get<XmppRepository>().getXmppState();
 
-    if (port != null && ip != null && passphrase != null) {
+  if (state.debugEnabled) {
+    GetIt.I.get<Logger>().finest("UDPLogger created");
+
+    final port = state.debugPort;
+    final ip = state.debugIp;
+    final passphrase = state.debugPassphrase;
+
+    if (port != 0 && ip.isNotEmpty && passphrase.isNotEmpty) {
       GetIt.I.get<UDPLogger>().init(passphrase, ip, port);
     }
   } else {
@@ -191,7 +195,7 @@ void onStart() {
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
       final account = await xmpp.getAccountData();
-      final settings = await xmpp.loadConnectionSettings();
+      final settings = await xmpp.getConnectionSettings();
 
       if (account!= null && settings != null) {
         xmpp.connect(settings, false);
@@ -331,28 +335,36 @@ void handleEvent(Map<String, dynamic>? data) {
     break;
     case "DebugSetEnabledAction": {
       (() async {
-          await GetIt.I.get<XmppRepository>().saveDebugEnabled(data["enabled"] as bool);
+          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
+              debugEnabled: data["enabled"] as bool
+          ));
           initUDPLogger();
       })();
     }
     break;
     case "DebugSetIpAction": {
       (() async {
-          await GetIt.I.get<XmppRepository>().saveDebugIp(data["ip"] as String);
+          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
+              debugIp: data["ip"] as String
+          ));
           initUDPLogger();
       })();
     }
     break;
     case "DebugSetPortAction": {
       (() async {
-          await GetIt.I.get<XmppRepository>().saveDebugPort(data["port"] as int);
+          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
+              debugPort: data["port"] as int
+          ));
           initUDPLogger();
       })();
     }
     break;
     case "DebugSetPassphraseAction": {
       (() async {
-          await GetIt.I.get<XmppRepository>().saveDebugPassphrase(data["passphrase"] as String);
+          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
+              debugPassphrase: data["passphrase"] as String
+          ));
           initUDPLogger();
       })();
     }
