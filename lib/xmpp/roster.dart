@@ -76,8 +76,8 @@ class RosterManager extends XmppManagerBase {
 
     logger.fine("Received roster push");
 
-    if (stanza.attributes["from"] != null || stanza.attributes["from"] != attrs.getConnectionSettings().jid) {
-      logger.warning("Roster push invalid! Unexpected from attribute");
+    if (stanza.attributes["from"] != null && stanza.attributes["from"] != attrs.getConnectionSettings().jid) {
+      logger.warning("Roster push invalid! Unexpected from attribute: ${stanza.toXml()}");
       return true;
     }
 
@@ -145,10 +145,15 @@ class RosterManager extends XmppManagerBase {
           subscription: item.attributes["subscription"]!,
           groups: item.findTags("group").map((groupNode) => groupNode.innerText()).toList()
       )).toList();
+
+      if (query.attributes["ver"] != null) {
+        commitLastRosterVersion(query.attributes["ver"]);
+        _rosterVersion = query.attributes["ver"];
+      }
     } else {
       items = List<XmppRosterItem>.empty();
     }
-
+    
     return RosterRequestResult(
       items: items,
       ver: query != null ? query.attributes["ver"] : _rosterVersion

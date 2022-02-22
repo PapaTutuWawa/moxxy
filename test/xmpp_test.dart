@@ -471,7 +471,8 @@ void main() {
           ));
 
           // NOTE: Based on https://gultsch.de/gajim_roster_push_and_message_interception.html
-          final maliciousStanza = Stanza.fromXMLNode(XMLNode.fromString("<iq type=\"set\" to=\"some.user@example.server/aaaaa\"><query xmlns='jabber:iq:roster'><item subscription=\"both\" jid=\"eve@siacs.eu\" name=\"Bob\" /></query></iq>"));
+          // NOTE: Added a from attribute as a server would add it itself.
+          final maliciousStanza = Stanza.fromXMLNode(XMLNode.fromString("<iq type=\"set\" from=\"eve@siacs.eu/bbbbb\" to=\"some.user@example.server/aaaaa\"><query xmlns='jabber:iq:roster'><item subscription=\"both\" jid=\"eve@siacs.eu\" name=\"Bob\" /></query></iq>"));
           await Future.forEach(
             roster.getStanzaHandlers(),
             (StanzaHandler handler) async {

@@ -261,6 +261,13 @@ class DatabaseRepository {
     return _rosterCache.containsKey(jid);
   }
 
+  /// Returns true if a roster item with jid [jid] exists
+  Future<List<RosterItem>> getRoster() async {
+    // TODO: Check if we already loaded it once
+    await loadRosterItems(notify: false);
+    return _rosterCache.values.toList();
+  }
+  
   /// Returns the roster item if it exists
   Future<RosterItem?> getRosterItemByJid(String jid) async {
     if (await isInRoster(jid)) {

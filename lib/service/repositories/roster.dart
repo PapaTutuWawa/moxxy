@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:moxxyv2/service/repositories/database.dart";
 import "package:moxxyv2/shared/models/roster.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/roster.dart";
@@ -64,16 +65,13 @@ class RosterRepository {
   Future<bool> removeFromRosterWrapper(String jid, { bool unsubscribe = true }) async {
     final roster = GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!;
     final result = await roster.removeFromRoster(jid);
-    if (!result) {
-      // TODO: What _do_ we do?
+    if (result) {
+      if (unsubscribe) {
+        await roster.sendUnsubscriptionRequest(jid);
+      }
     }
 
     await removeFromRosterDatabase(jid);
-
-    if (unsubscribe) {
-      await roster.sendUnsubscriptionRequest(jid);
-    }
-
     return true;
   }
 
@@ -87,15 +85,51 @@ class RosterRepository {
       return;
     }
 
-    // TODO: Update updated items
-    // NOTE: Removed items will be handled in connection.dart
-    /* TODO
-    final newItems = result.items.where((item) => firstWhereOrNull(store.state.roster, (RosterItem i) => i.jid == item.jid) == null);
+    // TODO: Figure out if an item was removed
+    final newItems = List<RosterItem>.empty(growable: true);
+    final removedItems = List<String>.empty(growable: true);
+    final db = GetIt.I.get<DatabaseRepository>();
+    final currentRoster = await db.getRoster();
 
+    // Handle modified and new items
+    for (final item in currentRoster) {
+      if (listContains(result, (RosterItem i) => i.jid == item.jid)) {
+        // TODO: Diff and update if needed
+      } else {
+        await db.removeRosterItemByJid(item.jid);
+        removedItems.add(item.jid);
+
+        newItems.add(await db.addRosterItemFromData(
+            "",
+            item.jid,
+            item.jid.split("@")[0]
+        ));
+      }
+    }
+
+    // Handle deleted items
+    for (final item in result) {
+      if (!listContains(currentRoster, (RosterItem i) => i.jid == item.jid)) {
+        newItems.add(await db.addRosterItemFromData(
+            "",
+            item.jid,
+            item.jid.split("@")[0]
+        ));
+      }
+    }
+
+    // TODO: REMOVE
+    final jids = (await db.getRoster()).map((item) => item.jid).toList();
+    _log.finest("Current roster: " + jids.toString());
     
-    final newAddedItems = await Future.wait(newItems.map((item) async => await addRosterItemFromData("", item.jid, item.name ?? item.jid.split("@")[0])));
-    newAddedItems.forEach((item) => _cache[item.jid] = item);
-    store.dispatch(AddMultipleRosterItemsAction(items: newAddedItems.toList()));
+    // TODO: Dispatch the new items
+    // TODO: Dispatch the removal as well
+    //store.dispatch(AddMultipleRosterItemsAction(items: newItems));
+    /*
+    sendData({
+        "type": "AddMultipleRosterItemsAction",
+        "items": 
+    });
     */
   }
 
