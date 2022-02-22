@@ -1,6 +1,6 @@
 import "dart:async";
 
-import "package:moxxyv2/service/repositories/database.dart";
+import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/connection.dart";
@@ -10,12 +10,12 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
-class RosterRepository {
+class RosterService {
   final Logger _log;
   final void Function(Map<String, dynamic>) sendData;
   final List<String> _pendingRequests;
   
-  RosterRepository({ required this.sendData }) : _pendingRequests = List.empty(growable: true), _log = Logger("RosterRepository");
+  RosterService({ required this.sendData }) : _pendingRequests = List.empty(growable: true), _log = Logger("RosterService");
 
   /// Returns true if we have a pending request for the jid.
   bool hasPendingRequest(String jid) => _pendingRequests.contains(jid);
@@ -24,11 +24,11 @@ class RosterRepository {
   void removePendingRequest(String jid) => _pendingRequests.remove(jid);
   
   Future<bool> isInRoster(String jid) async {
-    return await GetIt.I.get<DatabaseRepository>().isInRoster(jid);
+    return await GetIt.I.get<DatabaseService>().isInRoster(jid);
   }
 
   Future<void> loadRosterFromDatabase() async {
-    await GetIt.I.get<DatabaseRepository>().loadRosterItems(notify: true);
+    await GetIt.I.get<DatabaseService>().loadRosterItems(notify: true);
   }
 
   /// Attempts to add an item to the roster by first performing the roster set
@@ -44,7 +44,7 @@ class RosterRepository {
 
     await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.sendSubscriptionRequest(jid);
 
-    final item = await GetIt.I.get<DatabaseRepository>().addRosterItemFromData(avatarUrl, jid, title);
+    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
 
     sendData({
         "type": "RosterItemAddedEvent",
@@ -56,7 +56,7 @@ class RosterRepository {
 
   /// Removes the [RosterItem] with jid [jid] from the database.
   Future<void> removeFromRosterDatabase(String jid, { bool nullOkay = false }) async {
-    await GetIt.I.get<DatabaseRepository>().removeRosterItemByJid(jid, nullOkay: nullOkay);
+    await GetIt.I.get<DatabaseService>().removeRosterItemByJid(jid, nullOkay: nullOkay);
   }
 
   /// Removes the [RosterItem] with jid [jid] from the server-side roster and, if
@@ -88,7 +88,7 @@ class RosterRepository {
     // TODO: Figure out if an item was removed
     final newItems = List<RosterItem>.empty(growable: true);
     final removedItems = List<String>.empty(growable: true);
-    final db = GetIt.I.get<DatabaseRepository>();
+    final db = GetIt.I.get<DatabaseService>();
     final currentRoster = await db.getRoster();
 
     // Handle modified and new items
@@ -146,7 +146,7 @@ class RosterRepository {
       return;
     }
 
-    final db = GetIt.I.get<DatabaseRepository>();
+    final db = GetIt.I.get<DatabaseService>();
     final rosterItem = await db.getRosterItemByJid(item.jid);
     final RosterItem modelRosterItem;
 
@@ -188,7 +188,7 @@ class RosterRepository {
             "type": "RosterItemRemovedEvent",
             "jid": event.jid
         });
-        GetIt.I.get<RosterRepository>().removeFromRosterDatabase(event.jid);
+        await removeFromRosterDatabase(event.jid);
       }
       break;
     }

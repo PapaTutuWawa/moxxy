@@ -1,377 +1,328 @@
 import "dart:async";
+import "dart:convert";
 
-import "package:moxxyv2/service/repositories/database.dart";
-import "package:moxxyv2/service/repositories/xmpp.dart";
-import "package:moxxyv2/service/repositories/roster.dart";
-import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/ui/helpers.dart";
+// TODO: Maybe move this file somewhere else
+import "package:moxxyv2/ui/redux/account/state.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/presence.dart";
-import "package:moxxyv2/xmpp/message.dart";
+import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/roster.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
-import "package:moxxyv2/service/managers/roster.dart";
-import "package:moxxyv2/service/managers/disco.dart";
-import "package:moxxyv2/service/managers/stream.dart";
-import "package:moxxyv2/shared/logging.dart";
+import "package:moxxyv2/service/state.dart";
+import "package:moxxyv2/service/roster.dart";
+import "package:moxxyv2/service/database.dart";
 
-import "package:flutter/material.dart";
-import "package:flutter/foundation.dart";
-import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
+import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:awesome_notifications/awesome_notifications.dart";
-import "package:isar/isar.dart";
-import "package:path_provider/path_provider.dart";
+import "package:connectivity_plus/connectivity_plus.dart";
 import "package:logging/logging.dart";
 
-import "package:moxxyv2/service/db/conversation.dart";
-import "package:moxxyv2/service/db/roster.dart";
-import "package:moxxyv2/service/db/message.dart";
+const xmppStateKey = "xmppState";
+const xmppAccountDataKey = "xmppAccount";
 
-Future<void> initializeServiceIfNeeded() async {
-  WidgetsFlutterBinding.ensureInitialized();
+class XmppService {
+  final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true)
+  );
+  final Logger _log;
+  final void Function(Map<String, dynamic>) sendData;
+  bool loginTriggeredFromUI = false;
+  String _currentlyOpenedChatJid;
+  StreamSubscription<ConnectivityResult>? _networkStateSubscription;
+  XmppState? _state;
 
-  final service = FlutterBackgroundService();
-  if (await service.isServiceRunning()) {
-    GetIt.I.get<Logger>().info("Stopping background service");
+  XmppService({ required this.sendData }) : _currentlyOpenedChatJid = "", _networkStateSubscription = null, _log = Logger("XmppService"), _state = null;
 
-    if (kDebugMode) {
-      //service.stopBackgroundService();
+  Future<String?> _readKeyOrNull(String key) async {
+    if (await _storage.containsKey(key: key)) {
+      return await _storage.read(key: key);
     } else {
-      return;
+      return null;
+    }
+  }
+  
+  Future<XmppState> getXmppState() async {
+    if (_state != null) return _state!;
+
+    final data = await _readKeyOrNull(xmppStateKey);
+    // GetIt.I.get<Logger>().finest("data != null: " + (data != null).toString());
+
+    if (data == null) {
+      _state = XmppState(
+        0,
+        0,
+        "",
+        "",
+        0,
+        false
+      );
+
+      await _commitXmppState();
+
+      return _state!;
+    }
+
+    _state = XmppState.fromJson(json.decode(data));
+    return _state!;
+  }
+
+  Future<void> _commitXmppState() async {
+    // final logger = GetIt.I.get<Logger>();
+    // logger.finest("Commiting _xmppState to EncryptedSharedPrefs");
+    // logger.finest("=> ${json.encode(_state!.toJson())}");
+    await _storage.write(key: xmppStateKey, value: json.encode(_state!.toJson()));
+  }
+
+  /// A wrapper to modify the [XmppState] and commit it.
+  Future<void> modifyXmppState(XmppState Function(XmppState) func) async {
+    _state = func(_state!);
+    await _commitXmppState();
+  }
+
+  Future<ConnectionSettings?> getConnectionSettings() async {
+    final state = await getXmppState();
+
+    if (state.jid == null || state.password == null) {
+      return null;
+    }
+
+    return ConnectionSettings(
+      jid: JID.fromString(state.jid!),
+      password: state.password!,
+      useDirectTLS: true,
+      allowPlainAuth: false
+    );
+  }
+
+  /// Marks the conversation with jid [jid] as open and resets its unread counter if it is
+  /// greater than 0.
+  Future<void> setCurrentlyOpenedChatJid(String jid) async {
+    final db = GetIt.I.get<DatabaseService>();
+
+    _currentlyOpenedChatJid = jid;
+    final conversation = await db.getConversationByJid(jid);
+
+    if (conversation != null && conversation.unreadCounter > 0) {
+      final newConversation = await db.updateConversation(id: conversation.id, unreadCounter: 0);
+      sendData({
+          "type": "ConversationUpdatedEvent",
+          "conversation": newConversation.toJson()
+      });
     }
   }
 
-  GetIt.I.get<Logger>().info("Initializing service");
-  await initializeService();
-}
+  /// Load the [AccountState] from storage. Returns null if not found.
+  Future<AccountState?> getAccountData() async {
+    final data = await _readKeyOrNull(xmppAccountDataKey);
+    if (data == null) {
+      return null;
+    }
 
-void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService srv) {
-  return (data) {
-    // NOTE: *S*erver to *F*oreground
-    GetIt.I.get<Logger>().fine("S2F: " + data.toString());
+    return AccountState.fromJson(jsonDecode(data));
+  }
+  /// Save [state] to storage such that it can be loaded again by [getAccountData].
+  Future<void> setAccountData(AccountState state) async {
+    return await _storage.write(key: xmppAccountDataKey, value: jsonEncode(state.toJson()));
+  }
+  /// Removes the account data from storage.
+  Future<void> removeAccountData() async {
+    // TODO: This sometimes fails
+    await _storage.delete(key: xmppAccountDataKey);
+  }
 
-    srv.sendData(data);
-  };
-}
+  /// Sends a message to [jid] with the body of [body].
+  Future<void> sendMessage({ required String body, required String jid }) async {
+    final db = GetIt.I.get<DatabaseService>();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final message = await db.addMessageFromData(
+      body,
+      timestamp,
+      GetIt.I.get<XmppConnection>().getConnectionSettings().jid.toString(),
+      jid,
+      true
+    );
 
-Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) async {
-  final xmpp = GetIt.I.get<XmppRepository>();
-  final account = await xmpp.getAccountData();
-  final settings = await xmpp.getConnectionSettings();
-
-  GetIt.I.get<Logger>().finest("account != null: " + (account != null).toString());
-  GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
-
-  if (account!= null && settings != null) {
-    await GetIt.I.get<RosterRepository>().loadRosterFromDatabase();
-
-    middleware({
-        "type": "PreStartResult",
-        "state": "logged_in",
-        "jid": account.jid,
-        "displayName": account.displayName,
-        "avatarUrl": account.avatarUrl
+    sendData({
+        "type": "MessageSendResult",
+        "message": message.toJson()
     });
-  } else {
-    middleware({
-        "type": "PreStartResult",
-        "state": "not_logged_in"
+
+    GetIt.I.get<XmppConnection>().getManagerById(messageManager)!.sendMessage(body, jid);
+
+    final conversation = await db.getConversationByJid(jid);
+    final newConversation = await db.updateConversation(
+      id: conversation!.id,
+      lastMessageBody: body,
+      lastChangeTimestamp: timestamp
+    );
+    sendData({
+        "type": "ConversationUpdatedEvent",
+        "conversation": newConversation.toJson()
     });
   }
-}
+  
+  Future<void> _handleEvent(XmppEvent event) async {
+    if (event is ConnectionStateChangedEvent) {
+      sendData({
+          "type": "ConnectionStateEvent",
+          "state": event.state.toString().split(".")[1]
+      });
 
-Future<Isar> openDatabase() async {
-  final dir = await getApplicationSupportDirectory();
-  return await Isar.open(
-    schemas: [
-      DBConversationSchema,
-      DBRosterItemSchema,
-      DBMessageSchema
-    ],
-    directory: dir.path
-  );
-}
+      // TODO: This will fire as soon as we listen to the stream. So we either have to debounce it here or in [XmppConnection]
+      _networkStateSubscription ??= Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+          sendData({ "type": "__LOG__", "log": "Got ConnectivityResult: " + result.toString()});
 
-void setupLogging() {
-  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
-  Logger.root.onRecord.listen((record) { 
-      final logMessage = "[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}";
-      if (GetIt.I.isRegistered<UDPLogger>()) {
-        final udp = GetIt.I.get<UDPLogger>();
-        if (udp.isEnabled()) {
-          udp.sendLog(logMessage, record.time.millisecondsSinceEpoch, record.level.name);
+          switch (result) { 
+            case ConnectivityResult.none: {
+              GetIt.I.get<XmppConnection>().onNetworkConnectionLost();
+            }
+            break;
+            case ConnectivityResult.wifi:
+            case ConnectivityResult.mobile:
+            case ConnectivityResult.ethernet: {
+              // TODO: This will crash inside [XmppConnection] as soon as this happens
+              GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
+            }
+            break;
+            default: break;
+          }
+      });
+      
+      if (event.state == XmppConnectionState.connected) {
+        final connection = GetIt.I.get<XmppConnection>();
+
+        // TODO: Maybe have something better
+        final settings = connection.getConnectionSettings();
+        modifyXmppState((state) => state.copyWith(
+            jid: settings.jid.toString(),
+            password: settings.password.toString()
+        ));
+
+        GetIt.I.get<RosterService>().requestRoster();
+        
+        if (loginTriggeredFromUI) {
+          // TODO: Trigger another event so the UI can see this aswell
+          await setAccountData(AccountState(
+              jid: connection.getConnectionSettings().jid.toString(),
+              displayName: connection.getConnectionSettings().jid.local,
+              avatarUrl: ""
+          ));
+
+          sendData({
+              "type": "LoginSuccessfulEvent",
+              "jid": connection.getConnectionSettings().jid.toString(),
+              "displayName": connection.getConnectionSettings().jid.local
+          });
         }
       }
+    } else if (event is StreamManagementEnabledEvent) {
+      // TODO: Remove
+      modifyXmppState((state) => state.copyWith(
+          srid: event.id,
+          resource: event.resource
+      ));
+    } else if (event is ResourceBindingSuccessEvent) {
+      modifyXmppState((state) => state.copyWith(
+          resource: event.resource
+      ));
+    } else if (event is MessageEvent) {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final db = GetIt.I.get<DatabaseService>();
+      final fromBare = event.fromJid.toBare().toString();
+      final msg = await db.addMessageFromData(
+        event.body,
+        timestamp,
+        event.fromJid.toString(),
+        fromBare,
+        false
+      );
+      final isChatOpen = _currentlyOpenedChatJid == fromBare;
+      final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
+      
+      final conversation = await db.getConversationByJid(fromBare);
+      if (conversation != null) { 
+        final newConversation = await db.updateConversation(
+          id: conversation.id,
+          lastMessageBody: event.body,
+          lastChangeTimestamp: timestamp,
+          unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
+        );
+        sendData({
+            "type": "ConversationUpdatedEvent",
+            "conversation": newConversation.toJson()
+        });
 
-      if (kDebugMode) {
-        // ignore: avoid_print
-        print(logMessage);
-      }
-  });
-}
-
-Future<void> initUDPLogger() async {
-  final state = await GetIt.I.get<XmppRepository>().getXmppState();
-
-  if (state.debugEnabled) {
-    GetIt.I.get<Logger>().finest("UDPLogger created");
-
-    final port = state.debugPort;
-    final ip = state.debugIp;
-    final passphrase = state.debugPassphrase;
-
-    if (port != 0 && ip.isNotEmpty && passphrase.isNotEmpty) {
-      GetIt.I.get<UDPLogger>().init(passphrase, ip, port);
-    }
-  } else {
-    GetIt.I.get<UDPLogger>().setEnabled(false);
-  }
-}
-
-void onStart() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  setupLogging();
-  GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
-  
-  AwesomeNotifications().initialize(
-    // TODO: Add icon
-    null,
-    [
-      NotificationChannel(
-        channelGroupKey: "messages",
-        channelKey: "message_channel",
-        channelName: "Message notifications",
-        channelDescription: "Notifications for messages go here",
-        importance: NotificationImportance.High
-      )
-    ],
-    debug: true
-  );
-
-  final service = FlutterBackgroundService();
-  service.onDataReceived.listen(handleEvent);
-  service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
-
-  GetIt.I.get<Logger>().finest("Running...");
-  
-  (() async {
-      final middleware = sendDataMiddleware(service);
-
-      // Register singletons
-      GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
-
-      final db = DatabaseRepository(isar: await openDatabase(), sendData: middleware);
-      GetIt.I.registerSingleton<DatabaseRepository>(db); 
-
-      final xmpp = XmppRepository(sendData: (data) {
-          if (data["type"] == "ConnectionStateEvent") {
-            if (data["state"] == XmppConnectionState.connected.toString().split(".")[1]) {
-              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
-            } else if (data["state"] == XmppConnectionState.connecting.toString().split(".")[1]) {
-              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Connecting...");
-            } else {
-              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Disconnected");
-            }
-          }
-
-          middleware(data);
-      });
-      GetIt.I.registerSingleton<XmppRepository>(xmpp);
-
-      // Init the UDPLogger
-      await initUDPLogger();
-
-      GetIt.I.registerSingleton<RosterRepository>(RosterRepository(sendData: service.sendData));
-
-      final connection = XmppConnection();
-      connection.registerManager(MoxxyStreamManagementManager());
-      connection.registerManager(MoxxyDiscoManager());
-      connection.registerManager(MessageManager());
-      connection.registerManager(MoxxyRosterManger());
-      connection.registerManager(PresenceManager());
-      connection.registerManager(CSIManager());
-      GetIt.I.registerSingleton<XmppConnection>(connection);
-
-      final account = await xmpp.getAccountData();
-      final settings = await xmpp.getConnectionSettings();
-
-      if (account!= null && settings != null) {
-        xmpp.connect(settings, false);
-      }
-      await performPreStart(middleware);
-  })();
-}
-
-Future<FlutterBackgroundService> initializeService() async {
-  final service = FlutterBackgroundService();
-
-  await service.configure(
-    // TODO: iOS
-    iosConfiguration: IosConfiguration(
-      autoStart: true,
-      onBackground: () {},
-      onForeground: () {}
-    ),
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      autoStart: true,
-      isForegroundMode: true
-    )
-  );
-
-  return service;
-}
-
-void handleEvent(Map<String, dynamic>? data) {
-  // NOTE: *F*oreground to *S*ervice
-  GetIt.I.get<Logger>().fine("F2S: " + data.toString());
-
-  switch (data!["type"]) {
-    case "LoadConversationsAction": {
-      GetIt.I.get<DatabaseRepository>().loadConversations();
-    }
-    break;
-    case "LoadRosterAction": {
-      GetIt.I.get<DatabaseRepository>().loadRosterItems(notify: true);
-    }
-    break;
-    case "PerformLoginAction": {
-      GetIt.I.get<Logger>().fine("Performing login");
-      GetIt.I.get<XmppRepository>().connect(ConnectionSettings(
-          jid: JID.fromString(data["jid"]!),
-          password: data["password"]!,
-          useDirectTLS: data["useDirectTLS"]!,
-          allowPlainAuth: data["allowPlainAuth"]
-      ), true);
-    }
-    break;
-    case "LoadMessagesForJidAction": {
-      GetIt.I.get<DatabaseRepository>().loadMessagesForJid(data["jid"]);
-    }
-    break;
-    case "SetCurrentlyOpenChatAction": {
-      GetIt.I.get<XmppRepository>().setCurrentlyOpenedChatJid(data["jid"]);
-    }
-    break;
-    case "AddToRosterAction": {
-      final String jid = data["jid"];
-      (() async {
-          final roster = GetIt.I.get<RosterRepository>();
-          if (await roster.isInRoster(jid)) {
-            FlutterBackgroundService().sendData({
-                "type": "AddToRosterResult",
-                "result": "error",
-                "msg": "Already in contact list"
-            });
-            return;
-          }
-
-          final db = GetIt.I.get<DatabaseRepository>();
-          final conversation = await db.getConversationByJid(jid);
-          if (conversation != null) {
-            final c = await db.updateConversation(id: conversation.id, open: true);
-            FlutterBackgroundService().sendData({
-                "type": "ConversationUpdatedEvent",
-                "conversation": c.toJson()
-            });
-          } else {
-            final c = await db.addConversationFromData(
-              jid.split("@")[0],
-              "",
-              "",
-              jid,
-              0,
-              -1,
-              [],
-              true
-            );
-            FlutterBackgroundService().sendData({
-                "type": "ConversationCreatedEvent",
-                "conversation": c.toJson()
-            });
-          }
-
-          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
-          FlutterBackgroundService().sendData({
-              "type": "AddToRosterResult",
-              "result": "success",
-              "jid": jid
-          });
-      })();
-    }
-    break;
-    case "RemoveRosterItemAction": {
-      (() async {
-          final jid = data["jid"]!;
-          //await GetIt.I.get<DatabaseRepository>().removeRosterItemByJid(jid, nullOkay: true);
-          await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.removeFromRoster(jid);
-          await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.sendUnsubscriptionRequest(jid);
-      })();
-    }
-    break;
-    case "SendMessageAction": {
-      GetIt.I.get<XmppRepository>().sendMessage(body: data["body"]!, jid: data["jid"]!);
-    }
-    break;
-    case "SetCSIState": {
-      final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager);
-      if (csi == null) {
-        return;
-      }
-
-      if (data["state"] == "foreground") {
-        csi.setActive();
+        if (!isChatOpen) {
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: msg.id,
+              channelKey: "message_channel",
+              title: isInRoster ? conversation.title : fromBare,
+              body: event.body,
+              groupKey: fromBare
+            )
+          );
+        }
       } else {
-        csi.setInactive();
+        final conv = await db.addConversationFromData(
+          fromBare.split("@")[0], // TODO: Check with the roster first
+          event.body,
+          "", // TODO: avatarUrl
+          fromBare, // TODO: jid
+          1,
+          timestamp,
+          [],
+          true
+        );
+
+        sendData({
+            "type": "ConversationCreatedEvent",
+            "conversation": conv.toJson()
+        });
+
+        if (!isChatOpen) {
+          AwesomeNotifications().createNotification(
+            content: NotificationContent(
+              id: msg.id,
+              channelKey: "message_channel",
+              title: isInRoster ? conv.title : fromBare,
+              body: event.body,
+              groupKey: fromBare
+            )
+          );
+        }
       }
+      
+      sendData({
+          "type": "MessageReceivedEvent",
+          "message": msg.toJson()
+      });
+    } else if (event is RosterPushEvent) {
+      GetIt.I.get<RosterService>().handleRosterPushEvent(event);
+      _log.fine("Roster push version: " + (event.ver ?? "(null)"));
+    } else if (event is RosterItemNotFoundEvent) {
+      GetIt.I.get<RosterService>().handleRosterItemNotFoundEvent(event);
+    } else if (event is AuthenticationFailedEvent) {
+      sendData({
+          "type": "LoginFailedEvent",
+          "reason": saslErrorToHumanReadable(event.saslError)
+      });
     }
-    break;
-    case "PerformPrestartAction": {
-      // TODO: This assumes that we are ready if we receive this event
-      performPreStart(FlutterBackgroundService().sendData);
-    }
-    break;
-    case "DebugSetEnabledAction": {
-      (() async {
-          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
-              debugEnabled: data["enabled"] as bool
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case "DebugSetIpAction": {
-      (() async {
-          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
-              debugIp: data["ip"] as String
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case "DebugSetPortAction": {
-      (() async {
-          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
-              debugPort: data["port"] as int
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case "DebugSetPassphraseAction": {
-      (() async {
-          await GetIt.I.get<XmppRepository>().modifyXmppState((state) => state.copyWith(
-              debugPassphrase: data["passphrase"] as String
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case "__STOP__": {
-      FlutterBackgroundService().stopBackgroundService();
-    }
-    break;
+  }
+  
+  void installEventHandlers() {
+    GetIt.I.get<XmppConnection>().asBroadcastStream().listen(_handleEvent);
+  }
+
+  Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
+    final lastResource = (await getXmppState()).resource;
+
+    loginTriggeredFromUI = triggeredFromUI;
+    GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
+    GetIt.I.get<XmppConnection>().connect(lastResource: lastResource);
+    installEventHandlers();
   }
 }

@@ -35,7 +35,7 @@ RosterItem rosterDbToModel(DBRosterItem i) {
   );
 }
 
-class DatabaseRepository {
+class DatabaseService {
   final Isar isar;
 
   final HashMap<int, Conversation> _conversationCache = HashMap();
@@ -46,7 +46,7 @@ class DatabaseRepository {
   final Logger _log;
   final void Function(Map<String, dynamic>) sendData;
   
-  DatabaseRepository({ required this.isar, required this.sendData }) : _log = Logger("DatabaseRepository");
+  DatabaseService({ required this.isar, required this.sendData }) : _log = Logger("DatabaseService");
 
   /// Returns the database ID of the conversation with jid [jid] or null if not found.
   Future<Conversation?> getConversationByJid(String jid) async {

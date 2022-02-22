@@ -26,7 +26,7 @@ import "package:moxxyv2/ui/redux/conversation/middlewares.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/start/middlewares.dart";
 import "package:moxxyv2/ui/redux/debug/middlewares.dart";
-import "package:moxxyv2/service/xmpp.dart";
+import "package:moxxyv2/service/service.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
