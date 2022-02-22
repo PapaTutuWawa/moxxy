@@ -69,7 +69,7 @@ void main() {
       expect(compareXMLNodes(lastSentStanza, stanza), true, reason: "Unacknowledged C2S stanzas must be retransmitted");
   });
 
-  test("Test stream resumption", () async {
+  test("Resending stanzas after a stream resumption", () async {
       Stanza lastSentStanza = Stanza(tag: "message");
 
       final attributes = XmppManagerAttributes(
@@ -103,5 +103,34 @@ void main() {
       // Simulate a resumption
       manager.onXmppEvent(StreamResumedEvent(h: 2));
       expect(compareXMLNodes(lastSentStanza, stanza), true, reason: "Unacked stanzas should be retransmitted on stream resumption");
+  });
+
+  test("Test stream management essentials", () {
+      final attributes = XmppManagerAttributes(
+        sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async => stanza,
+        sendNonza: (nonza) {},
+        sendEvent: (event) {},
+        sendRawXml: (raw) {},
+        getManagerById: (id) => null,
+        getConnectionSettings: () => ConnectionSettings(
+          jid: JID.fromString("hallo@example.server"),
+          password: "password",
+          useDirectTLS: true,
+          allowPlainAuth: false,
+        ),
+        isStreamFeatureSupported: (feat) => false,
+        getFullJID: () => JID.fromString("hallo@example.server/uwu")
+      );
+      final manager = StreamManagementManager();
+      manager.register(attributes);
+
+      manager.setState(200, 149);
+
+      // [Connection lost, reconnecting]
+      // <== <resumed h='150' ... />
+      manager.onXmppEvent(StreamResumedEvent(h: 150));
+
+      expect(manager.getC2SStanzaCount(), 200);
+      expect(manager.getS2CStanzaCount(), 150);
   });
 }

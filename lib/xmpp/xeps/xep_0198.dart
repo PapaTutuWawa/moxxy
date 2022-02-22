@@ -133,9 +133,8 @@ class StreamManagementManager extends XmppManagerBase {
       commitStreamResumptionId();
       _enableStreamManagement();
 
-      // TODO: Can we handle this more elegantly?
-      // TODO: Should we even do that?
-      _onStreamResumed(0);
+      setState(0, 0);
+      commitState();
     }
   }
 
@@ -221,7 +220,7 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// To be called when the stream has been resumed
   void _onStreamResumed(int h) {
-    _c2sStanzaCount = h;
+    _s2cStanzaCount = h;
 
     commitState();
 
