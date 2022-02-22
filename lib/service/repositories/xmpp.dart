@@ -13,7 +13,6 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/repositories/roster.dart";
 import "package:moxxyv2/service/repositories/database.dart";
-import "package:moxxyv2/shared/models/roster.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
@@ -302,56 +301,10 @@ class XmppRepository {
           "message": msg.toJson()
       });
     } else if (event is RosterPushEvent) {
-      final item = event.item; 
-
-      switch (item.subscription) {
-        // TODO: Handle other cases
-        case "remove": {
-          GetIt.I.get<RosterRepository>().removeFromRoster(item.jid);
-
-          sendData({
-              "type": "RosterItemRemovedEvent",
-              "jid": item.jid
-          });
-        }
-        break;
-        default: {
-          (() async {
-              final db = GetIt.I.get<DatabaseRepository>();
-              final rosterItem = await db.getRosterItemByJid(item.jid);
-              final RosterItem modelRosterItem;
-              
-              if (rosterItem != null) {
-                // TODO: Update
-                modelRosterItem = await db.updateRosterItem(
-                  id: rosterItem.id,
-                );
-              } else {
-                modelRosterItem = await db.addRosterItemFromData(
-                  "",
-                  item.jid,
-                  item.jid.split("@")[0]
-                );
-              }
-
-              sendData({
-                  "type": "RosterItemModifiedEvent",
-                  "item": modelRosterItem.toJson()
-              });
-          })();
-        }
-        break;
-      }
-
+      GetIt.I.get<RosterRepository>().handleRosterPushEvent(event);
       _log.fine("Roster push version: " + (event.ver ?? "(null)"));
     } else if (event is RosterItemNotFoundEvent) {
-      if (event.trigger == RosterItemNotFoundTrigger.remove) {
-        sendData({
-            "type": "RosterItemRemovedEvent",
-            "jid": event.jid
-        });
-        GetIt.I.get<RosterRepository>().removeFromRoster(event.jid);
-      }
+      GetIt.I.get<RosterRepository>().handleRosterItemNotFoundEvent(event);
     } else if (event is AuthenticationFailedEvent) {
       sendData({
           "type": "LoginFailedEvent",

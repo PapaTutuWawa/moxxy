@@ -293,7 +293,7 @@ void handleEvent(Map<String, dynamic>? data) {
             });
           }
 
-          roster.addToRoster("", jid, jid.split("@")[0]);
+          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
           FlutterBackgroundService().sendData({
               "type": "AddToRosterResult",
               "result": "success",

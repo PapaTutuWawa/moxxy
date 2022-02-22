@@ -155,9 +155,9 @@ class RosterManager extends XmppManagerBase {
     );
   }
 
-  // TODO: The type makes no sense (how?)
-  /// Attempts to add [jid] with a title of [title] to the roster.
-  Future<void> addToRoster(String jid, String title) async {
+  /// Attempts to add [jid] with a title of [title] and groups [groups] to the roster.
+  /// Returns true if the process was successful, false otherwise.
+  Future<bool> addToRoster(String jid, String title, { List<String>? groups }) async {
     final attrs = getAttributes();
     final response = await attrs.sendStanza(
       Stanza.iq(
@@ -172,7 +172,9 @@ class RosterManager extends XmppManagerBase {
                 attributes: {
                   "jid": jid,
                   ...(title == jid.split("@")[0] ? {} : { "name": title })
-              })
+                },
+                children: (groups ?? []).map((group) => XMLNode(tag: "group", text: group)).toList()
+              )
             ]
           )
         ]
@@ -181,12 +183,15 @@ class RosterManager extends XmppManagerBase {
 
     if (response.attributes["type"] != "result") {
       logger.severe("Error adding $jid to roster: " + response.toString());
-      return;
+      return false;
     }
+
+    return true;
   }
 
-  /// Attempts to remove [jid] from the roster.
-  Future<void> removeFromRoster(String jid) async {
+  /// Attempts to remove [jid] from the roster. Returns true if the process was successful,
+  /// false otherwise.
+  Future<bool> removeFromRoster(String jid) async {
     final attrs = getAttributes();
     final response = await attrs.sendStanza(
       Stanza.iq(
@@ -216,9 +221,13 @@ class RosterManager extends XmppManagerBase {
       final notFound = error.firstTag("item-not-found") != null;
 
       if (notFound) {
-        attrs.sendEvent(RosterItemNotFoundEvent(jid: jid, trigger: RosterItemNotFoundTrigger.remove));
+        return true;
       }
+
+      return false;
     }
+
+    return true;
   }
 
   /// Sends a subscription request to [to].
