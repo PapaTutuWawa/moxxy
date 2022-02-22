@@ -45,7 +45,7 @@ class StreamResumedEvent extends XmppEvent {
 
 class MessageEvent extends XmppEvent {
   final String body;
-  final FullJID fromJid;
+  final JID fromJid;
   final String sid;
 
   MessageEvent({ required this.body, required this.fromJid, required this.sid });

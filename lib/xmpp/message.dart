@@ -53,7 +53,7 @@ class MessageManager extends XmppManagerBase {
 
     getAttributes().sendEvent(MessageEvent(
       body: body.innerText(),
-      fromJid: FullJID.fromString(message.attributes["from"]!),
+      fromJid: JID.fromString(message.attributes["from"]!),
       sid: message.attributes["id"]!
     ));
 

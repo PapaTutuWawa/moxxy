@@ -1,7 +1,7 @@
 import "package:moxxyv2/xmpp/jid.dart";
 
 class ConnectionSettings {
-  final BareJID jid;
+  final JID jid;
   final String password;
   final bool useDirectTLS;
   final bool allowPlainAuth;

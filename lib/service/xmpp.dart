@@ -240,7 +240,7 @@ void handleEvent(Map<String, dynamic>? data) {
     case "PerformLoginAction": {
       GetIt.I.get<Logger>().fine("Performing login");
       GetIt.I.get<XmppRepository>().connect(ConnectionSettings(
-          jid: BareJID.fromString(data["jid"]!),
+          jid: JID.fromString(data["jid"]!),
           password: data["password"]!,
           useDirectTLS: data["useDirectTLS"]!,
           allowPlainAuth: data["allowPlainAuth"]

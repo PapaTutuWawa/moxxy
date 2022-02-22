@@ -198,7 +198,7 @@ class DatabaseRepository {
 
     if (notify) {
       sendData({
-          "type": "LoadRosterItemsResult",
+          "type": "AddMultipleRosterItems",
           "items": items.map((i) => i.toJson()).toList()
       });
     }

@@ -22,6 +22,8 @@ List<RosterItem> rosterReducer(List<RosterItem> roster, dynamic action) {
     return roster;
   } else if (action is RemoveRosterItemUIAction) {
     return roster.where((item) => item.jid != action.jid).toList();
+  } else if (action is RemoveMultipleRosterItemsAction) {
+    return roster.where((item) => !action.items.contains(item.jid)).toList();
   }
 
   return roster;

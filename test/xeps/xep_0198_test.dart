@@ -31,13 +31,13 @@ void main() {
         sendRawXml: (raw) {},
         getManagerById: (id) => null,
         getConnectionSettings: () => ConnectionSettings(
-          jid: BareJID.fromString("hallo@example.server"),
+          jid: JID.fromString("hallo@example.server"),
           password: "password",
           useDirectTLS: true,
           allowPlainAuth: false,
         ),
         isStreamFeatureSupported: (feat) => false,
-        getFullJID: () => FullJID.fromString("hallo@example.server/uwu")
+        getFullJID: () => JID.fromString("hallo@example.server/uwu")
       );
       final manager = StreamManagementManager();
       manager.register(attributes);
@@ -84,13 +84,13 @@ void main() {
         sendRawXml: (raw) {},
         getManagerById: (id) => null,
         getConnectionSettings: () => ConnectionSettings(
-          jid: BareJID.fromString("hallo@example.server"),
+          jid: JID.fromString("hallo@example.server"),
           password: "password",
           useDirectTLS: true,
           allowPlainAuth: false,
         ),
         isStreamFeatureSupported: (feat) => false,
-        getFullJID: () => FullJID.fromString("hallo@example.server/uwu")
+        getFullJID: () => JID.fromString("hallo@example.server/uwu")
       );
       final manager = StreamManagementManager();
       manager.register(attributes);

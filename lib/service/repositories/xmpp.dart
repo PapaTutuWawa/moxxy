@@ -90,7 +90,7 @@ class XmppRepository {
     }
 
     return ConnectionSettings(
-      jid: BareJID.fromString(state.jid!),
+      jid: JID.fromString(state.jid!),
       password: state.password!,
       useDirectTLS: true,
       allowPlainAuth: false

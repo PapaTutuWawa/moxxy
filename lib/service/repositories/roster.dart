@@ -122,15 +122,14 @@ class RosterRepository {
     final jids = (await db.getRoster()).map((item) => item.jid).toList();
     _log.finest("Current roster: " + jids.toString());
     
-    // TODO: Dispatch the new items
-    // TODO: Dispatch the removal as well
-    //store.dispatch(AddMultipleRosterItemsAction(items: newItems));
-    /*
     sendData({
-        "type": "AddMultipleRosterItemsAction",
-        "items": 
+        "type": "AddMultipleRosterItems",
+        "items": newItems.map((i) => i.toJson()).toList()
     });
-    */
+    sendData({
+        "type": "RemoveMultipleRosterItems",
+        "items": removedItems
+    });
   }
 
   /// Handles a roster push.

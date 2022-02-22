@@ -30,7 +30,7 @@ class SendMessageAction {
 class ReceiveMessageAction {
   final String body;
   final int timestamp;
-  final FullJID from;
+  final JID from;
   final String jid;
 
   ReceiveMessageAction({ required this.from, required this.body, required this.timestamp, required this.jid });

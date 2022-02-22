@@ -20,14 +20,14 @@ void main() {
               },
               sendRawXml: (_) {},
               getConnectionSettings: () => ConnectionSettings(
-                jid: BareJID.fromString("some.user@example.server"),
+                jid: JID.fromString("some.user@example.server"),
                 password: "password",
                 useDirectTLS: true,
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
               isStreamFeatureSupported: (_) => false,
-              getFullJID: () => FullJID.fromString("some.user@example.server/aaaaa")
+              getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
           ));
 
           csi.setActive();
@@ -45,14 +45,14 @@ void main() {
               },
               sendRawXml: (_) {},
               getConnectionSettings: () => ConnectionSettings(
-                jid: BareJID.fromString("some.user@example.server"),
+                jid: JID.fromString("some.user@example.server"),
                 password: "password",
                 useDirectTLS: true,
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
               isStreamFeatureSupported: (xmlns) => xmlns == csiXmlns,
-              getFullJID: () => FullJID.fromString("some.user@example.server/aaaaa")
+              getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
           ));
 
           csi.setActive();

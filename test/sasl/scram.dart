@@ -10,7 +10,7 @@ import "package:hex/hex.dart";
 void main() {
   test("Test SASL SCRAM-SHA-1", () async {
       final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+        settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         sendRawXML: (data) {},
@@ -67,7 +67,7 @@ void main() {
 
   test("Test a positive server signature check", () async {
       final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+        settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         sendRawXML: (data) {},
@@ -82,7 +82,7 @@ void main() {
   });
   test("Test a negative server signature check", () async {
       final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: BareJID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+        settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
         sendRawXML: (data) {},

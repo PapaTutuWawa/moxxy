@@ -12,6 +12,12 @@ class AddMultipleRosterItemsAction {
   AddMultipleRosterItemsAction({ required this.items });
 }
 
+class RemoveMultipleRosterItemsAction {
+  final List<String> items;
+
+  RemoveMultipleRosterItemsAction({ required this.items });
+}
+
 class ModifyRosterItemAction {
   final RosterItem item;
 

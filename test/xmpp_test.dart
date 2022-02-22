@@ -17,6 +17,41 @@ import "helpers/moxdns.dart";
 
 import "package:test/test.dart";
 
+/// Returns true if the roster manager triggeres an event for a given stanza
+Future<bool> testRosterManager(String bareJid, String resource, String stanzaString) async {
+  bool eventTriggered = false;
+  final roster = RosterManager();
+  roster.register(XmppManagerAttributes(
+      sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
+      sendEvent: (event) {
+        eventTriggered = true;
+      },
+      sendNonza: (_) {},
+      sendRawXml: (_) {},
+      getConnectionSettings: () => ConnectionSettings(
+        jid: JID.fromString(bareJid),
+        password: "password",
+        useDirectTLS: true,
+        allowPlainAuth: false,
+      ),
+      getManagerById: (_) => null,
+      isStreamFeatureSupported: (_) => false,
+      getFullJID: () => JID.fromString("$bareJid/$resource")
+  ));
+
+  final stanza = Stanza.fromXMLNode(XMLNode.fromString(stanzaString));
+  await Future.forEach(
+    roster.getStanzaHandlers(),
+    (StanzaHandler handler) async {
+      if (handler.matches(stanza)) {
+        await handler.callback(stanza);
+      }
+    }
+  );
+
+  return eventTriggered;
+}
+
 void main() {
   test("Test a successful login attempt with no SM", () async {
       final fakeSocket = StubTCPSocket(
@@ -183,7 +218,7 @@ void main() {
       );
       final XmppConnection conn = XmppConnection(socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
-          jid: BareJID.fromString("polynomdivision@test.server"),
+          jid: JID.fromString("polynomdivision@test.server"),
           password: "aaaa",
           useDirectTLS: true,
           allowPlainAuth: true
@@ -261,7 +296,7 @@ void main() {
       bool receivedEvent = false;
       final XmppConnection conn = XmppConnection(socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
-          jid: BareJID.fromString("polynomdivision@test.server"),
+          jid: JID.fromString("polynomdivision@test.server"),
           password: "aaaa",
           useDirectTLS: true,
           allowPlainAuth: true
@@ -345,7 +380,7 @@ void main() {
       bool receivedEvent = false;
       final XmppConnection conn = XmppConnection(socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
-          jid: BareJID.fromString("polynomdivision@test.server"),
+          jid: JID.fromString("polynomdivision@test.server"),
           password: "aaaa",
           useDirectTLS: true,
           allowPlainAuth: true
@@ -433,7 +468,7 @@ void main() {
       );
       final XmppConnection conn = XmppConnection(socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
-          jid: BareJID.fromString("polynomdivision@test.server"),
+          jid: JID.fromString("polynomdivision@test.server"),
           password: "aaaa",
           useDirectTLS: true,
           allowPlainAuth: false
@@ -460,14 +495,14 @@ void main() {
               sendNonza: (_) {},
               sendRawXml: (_) {},
               getConnectionSettings: () => ConnectionSettings(
-                jid: BareJID.fromString("some.user@example.server"),
+                jid: JID.fromString("some.user@example.server"),
                 password: "password",
                 useDirectTLS: true,
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
               isStreamFeatureSupported: (_) => false,
-              getFullJID: () => FullJID.fromString("some.user@example.server/aaaaa")
+              getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
           ));
 
           // NOTE: Based on https://gultsch.de/gajim_roster_push_and_message_interception.html
@@ -484,12 +519,16 @@ void main() {
 
           expect(eventTriggered, false, reason: "Was able to inject a malicious roster push");
       });
-  });
-  
-  test("Test bare JIDs", () {
-      expect(BareJID.fromString("hallo@welt").toString(), "hallo@welt");
-      expect(BareJID.fromString("@welt").toString(), "@welt");
-      expect(BareJID.fromString("hallo@").toString(), "hallo@");
-      expect(BareJID.fromString("hallo@welt/whatever").toString(), "hallo@welt");
+      test("The manager should accept pushes from our bare jid", () async {
+          final result = await testRosterManager("test.user@server.example", "aaaaa", "<iq from='test.user@server.example' type='result' id='82c2aa1e-cac3-4f62-9e1f-bbe6b057daf3' to='test.user@server.example/aaaaa' xmlns='jabber:client'><query ver='64' xmlns='jabber:iq:roster'><item jid='some.other.user@server.example' subscription='to' /></query></iq>");
+          expect(result, true, reason: "Roster pushes from our bare JID should be accepted");
+      });
+      test("The manager should accept pushes from a jid that, if the resource is stripped, is our bare jid", () async {
+          final result1 = await testRosterManager("test.user@server.example", "aaaaa", "<iq from='test.user@server.example/aaaaa' type='result' id='82c2aa1e-cac3-4f62-9e1f-bbe6b057daf3' to='test.user@server.example/aaaaa' xmlns='jabber:client'><query ver='64' xmlns='jabber:iq:roster'><item jid='some.other.user@server.example' subscription='to' /></query></iq>");
+          expect(result1, true, reason: "Roster pushes should be accepted if the bare JIDs are the same");
+
+          final result2 = await testRosterManager("test.user@server.example", "aaaaa", "<iq from='test.user@server.example/bbbbb' type='result' id='82c2aa1e-cac3-4f62-9e1f-bbe6b057daf3' to='test.user@server.example/aaaaa' xmlns='jabber:client'><query ver='64' xmlns='jabber:iq:roster'><item jid='some.other.user@server.example' subscription='to' /></query></iq>");
+          expect(result2, true, reason: "Roster pushes should be accepted if the bare JIDs are the same");
+      });
   });
 }

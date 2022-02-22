@@ -77,11 +77,19 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
       );
     }
     break;
-    case "LoadRosterItemsResult": {
+    case "AddMultipleRosterItems": {
       final List<RosterItem> tmp = List<RosterItem>.from(data["items"]!.map((i) => RosterItem.fromJson(i)));
       store.dispatch(
         AddMultipleRosterItemsAction(
           items: tmp
+        )
+      );
+    }
+    break;
+    case "RemoveMultipleRosterItems": {
+      store.dispatch(
+        RemoveMultipleRosterItemsAction(
+          items: List<String>.from(data["items"]!)
         )
       );
     }

@@ -2,6 +2,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
@@ -73,10 +74,15 @@ class RosterManager extends XmppManagerBase {
  
   Future<bool> _onRosterPush(Stanza stanza) async {
     final attrs = getAttributes();
+    final from = stanza.attributes["from"];
+    final selfJid = attrs.getConnectionSettings().jid;
 
     logger.fine("Received roster push");
 
-    if (stanza.attributes["from"] != null && stanza.attributes["from"] != attrs.getConnectionSettings().jid) {
+    // Only allow the push if the from attribute is either
+    // - empty, i.e. not set
+    // - a full JID of our own
+    if (from != null && JID.fromString(stanza.attributes["from"]).toBare() != selfJid) {
       logger.warning("Roster push invalid! Unexpected from attribute: ${stanza.toXml()}");
       return true;
     }
