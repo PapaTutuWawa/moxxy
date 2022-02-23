@@ -8,8 +8,9 @@ abstract class XmppEvent {}
 /// changed.
 class ConnectionStateChangedEvent extends XmppEvent {
   final XmppConnectionState state;
+  final bool resumed;
 
-  ConnectionStateChangedEvent({ required this.state });
+  ConnectionStateChangedEvent({ required this.state, required this.resumed });
 }
 
 /// Triggered when we encounter a stream error.

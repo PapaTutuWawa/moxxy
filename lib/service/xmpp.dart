@@ -201,7 +201,11 @@ class XmppService {
             password: settings.password.toString()
         ));
 
-        GetIt.I.get<RosterService>().requestRoster();
+        // In section 5 of XEP-0198 it says that a client should not request the roster
+        // in case of a stream resumption.
+        if (!event.resumed) {
+          GetIt.I.get<RosterService>().requestRoster();
+        }
         
         if (loginTriggeredFromUI) {
           // TODO: Trigger another event so the UI can see this aswell

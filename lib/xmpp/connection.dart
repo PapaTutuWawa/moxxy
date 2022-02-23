@@ -68,6 +68,7 @@ class XmppConnection {
   late int _currentBackoffAttempt;
   Timer? _backoffTimer;
   late final Uuid _uuid;
+  bool _resuming; // For indicating in a [ConnectionStateChangedEvent] that the event occured because we did a reconnection
 
   // Negotiators
   late AuthenticationNegotiator _authenticator;
@@ -75,7 +76,7 @@ class XmppConnection {
   // Misc
   late final Logger _log;
   
-  XmppConnection({ BaseSocketWrapper? socket }) {
+  XmppConnection({ BaseSocketWrapper? socket }): _resuming = true {
     _connectionState = XmppConnectionState.notConnected;
     _routingState = RoutingState.unauthenticated;
 
@@ -250,7 +251,7 @@ class XmppConnection {
   /// [ConnectionStateChangedEvent].
   void _setConnectionState(XmppConnectionState state) {
     _connectionState = state;
-    _eventStreamController.add(ConnectionStateChangedEvent(state: state));
+    _eventStreamController.add(ConnectionStateChangedEvent(state: state, resumed: _resuming));
 
     if (state == XmppConnectionState.connected) {
       _connectionPingTimer = Timer.periodic(const Duration(minutes: 5), _pingConnectionOpen);
@@ -446,10 +447,12 @@ class XmppConnection {
             sendRawXML(StreamManagementResumeNonza(srid, h));
           } else {
             // Try to enable SM
+            _resuming = false;
             _routingState = RoutingState.bindResourcePreSM;
             _performResourceBinding();
           }
         } else {
+          _resuming = false;
           _routingState = RoutingState.bindResource;
           _performResourceBinding();
         }
@@ -501,6 +504,7 @@ class XmppConnection {
           manager.setState(0, 0);
           await manager.commitState();
 
+          _resuming = false;
           _routingState = RoutingState.bindResourcePreSM;
           _performResourceBinding();
         }
@@ -610,7 +614,9 @@ class XmppConnection {
       _backoffTimer!.cancel();
       _backoffTimer = null;
     }
-    
+
+    _resuming = true;
+
     if (_connectionSettings.useDirectTLS) {
       final query = await perform0368Lookup(_connectionSettings.jid.domain, srvQuery: srvQuery);
 
