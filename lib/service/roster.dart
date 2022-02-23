@@ -133,13 +133,13 @@ class RosterService {
           "type": "AddMultipleRosterItems",
           "items": newItems.map((i) => i.toJson()).toList()
       });
-    };
+    }
     if (removedItems.isNotEmpty) {
       sendData({
           "type": "RemoveMultipleRosterItems",
           "items": removedItems
       });
-    };
+    }
   }
 
   /// Handles a roster push.
