@@ -6,10 +6,12 @@ import "package:flutter_background_service/flutter_background_service.dart";
 
 void debugMiddleware(Store<MoxxyState> store, action, NextDispatcher next) {
   if (action is DebugSetEnabledAction) {
-    FlutterBackgroundService().sendData({
-        "type": "DebugSetEnabledAction",
-        "enabled": action.enabled
-    });
+    if (!action.preStart) {
+      FlutterBackgroundService().sendData({
+          "type": "DebugSetEnabledAction",
+          "enabled": action.enabled
+      });
+    }
   } else if (action is DebugSetIpAction) {
     FlutterBackgroundService().sendData({
         "type": "DebugSetIpAction",

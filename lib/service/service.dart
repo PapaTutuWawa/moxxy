@@ -60,6 +60,7 @@ Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) asy
   final xmpp = GetIt.I.get<XmppService>();
   final account = await xmpp.getAccountData();
   final settings = await xmpp.getConnectionSettings();
+  final state = await xmpp.getXmppState();
 
   GetIt.I.get<Logger>().finest("account != null: " + (account != null).toString());
   GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
@@ -72,12 +73,14 @@ Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) asy
         "state": "logged_in",
         "jid": account.jid,
         "displayName": account.displayName,
-        "avatarUrl": account.avatarUrl
+        "avatarUrl": account.avatarUrl,
+        "debugEnabled": state.debugEnabled
     });
   } else {
     middleware({
         "type": "PreStartResult",
-        "state": "not_logged_in"
+        "state": "not_logged_in",
+        "debugEnabled": state.debugEnabled
     });
   }
 }

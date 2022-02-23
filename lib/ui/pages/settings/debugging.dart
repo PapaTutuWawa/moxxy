@@ -30,7 +30,7 @@ class DebuggingPage extends StatelessWidget {
       body: StoreConnector<MoxxyState, _DebuggingPageViewModel>(
         converter: (store) => _DebuggingPageViewModel(
           enabled: store.state.debugState.enabled,
-          setEnabled: (enabled) => store.dispatch(DebugSetEnabledAction(enabled)),
+          setEnabled: (enabled) => store.dispatch(DebugSetEnabledAction(enabled, false)),
           setPort: (port) => store.dispatch(DebugSetPortAction(port)),
           setIp: (ip) => store.dispatch(DebugSetIpAction(ip)),
           setPassphrase: (passphrase) => store.dispatch(DebugSetPassphraseAction(passphrase))

@@ -1,7 +1,8 @@
 class DebugSetEnabledAction {
+  final bool preStart; // If the action was triggered by the preStart routine
   final bool enabled;
 
-  const DebugSetEnabledAction(this.enabled);
+  const DebugSetEnabledAction(this.enabled, this.preStart);
 }
 
 class DebugSetIpAction {
