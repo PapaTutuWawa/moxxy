@@ -235,10 +235,6 @@ void handleEvent(Map<String, dynamic>? data) {
       GetIt.I.get<DatabaseService>().loadConversations();
     }
     break;
-    case "LoadRosterAction": {
-      GetIt.I.get<DatabaseService>().loadRosterItems(notify: true);
-    }
-    break;
     case "PerformLoginAction": {
       GetIt.I.get<Logger>().fine("Performing login");
       GetIt.I.get<XmppService>().connect(ConnectionSettings(

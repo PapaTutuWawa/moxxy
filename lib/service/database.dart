@@ -43,10 +43,12 @@ class DatabaseService {
   final HashMap<String, RosterItem> _rosterCache = HashMap();
   final List<String> loadedConversations = List.empty(growable: true);
 
+  bool _rosterLoaded;
+  
   final Logger _log;
   final void Function(Map<String, dynamic>) sendData;
   
-  DatabaseService({ required this.isar, required this.sendData }) : _log = Logger("DatabaseService");
+  DatabaseService({ required this.isar, required this.sendData }) : _rosterLoaded = false, _log = Logger("DatabaseService");
 
   /// Returns the database ID of the conversation with jid [jid] or null if not found.
   Future<Conversation?> getConversationByJid(String jid) async {
@@ -202,6 +204,8 @@ class DatabaseService {
           "items": items.map((i) => i.toJson()).toList()
       });
     }
+
+    _rosterLoaded = true;
   }
 
   /// Removes a roster item from the database and cache
@@ -263,8 +267,10 @@ class DatabaseService {
 
   /// Returns true if a roster item with jid [jid] exists
   Future<List<RosterItem>> getRoster() async {
-    // TODO: Check if we already loaded it once
-    await loadRosterItems(notify: false);
+    if (!_rosterLoaded) {
+      await loadRosterItems(notify: false);
+    }
+
     return _rosterCache.values.toList();
   }
   
@@ -276,4 +282,6 @@ class DatabaseService {
 
     return null;
   }
+
+  bool isRosterLoaded() => _rosterLoaded;
 }

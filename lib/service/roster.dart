@@ -27,8 +27,13 @@ class RosterService {
     return await GetIt.I.get<DatabaseService>().isInRoster(jid);
   }
 
+  /// Load the roster from the database. This function is guarded against loading the
+  /// roster multiple times and thus creating too many "AddMultipleRosterItems" actions.
   Future<void> loadRosterFromDatabase() async {
-    await GetIt.I.get<DatabaseService>().loadRosterItems(notify: true);
+    final db = GetIt.I.get<DatabaseService>();
+    if (!db.isRosterLoaded()) {
+      await db.loadRosterItems(notify: true);
+    }
   }
 
   /// Attempts to add an item to the roster by first performing the roster set
@@ -121,15 +126,20 @@ class RosterService {
     // TODO: REMOVE
     final jids = (await db.getRoster()).map((item) => item.jid).toList();
     _log.finest("Current roster: " + jids.toString());
-    
-    sendData({
-        "type": "AddMultipleRosterItems",
-        "items": newItems.map((i) => i.toJson()).toList()
-    });
-    sendData({
-        "type": "RemoveMultipleRosterItems",
-        "items": removedItems
-    });
+    // TODO END
+
+    if (newItems.isNotEmpty) {
+      sendData({
+          "type": "AddMultipleRosterItems",
+          "items": newItems.map((i) => i.toJson()).toList()
+      });
+    };
+    if (removedItems.isNotEmpty) {
+      sendData({
+          "type": "RemoveMultipleRosterItems",
+          "items": removedItems
+      });
+    };
   }
 
   /// Handles a roster push.
