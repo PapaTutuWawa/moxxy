@@ -1,6 +1,8 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
+import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
@@ -11,10 +13,8 @@ import "package:moxxyv2/xmpp/xeps/xep_0414.dart";
 
 class PresenceManager extends XmppManagerBase {
   String? _capabilityHash;
-  /// A mapping of capability hashes a JID has
-  final Map<String, String> _caphashCache;
 
-  PresenceManager() : _capabilityHash = null, _caphashCache = {}, super();
+  PresenceManager() : _capabilityHash = null, super();
   
   @override
   String getId() => presenceManager;
@@ -32,40 +32,17 @@ class PresenceManager extends XmppManagerBase {
 
   @override
   List<String> getDiscoFeatures() => [ capsXmlns ];
-
-  DiscoManager _getDiscoManager() => getAttributes().getManagerById(discoManager)! as DiscoManager;
   
   Future<bool> _onPresence(Stanza presence) async {
     if (presence.from != null) {
       logger.finest("Received presence from '${presence.from}'");
 
-      final caphash = presence.firstTag("c", xmlns: capsXmlns);
-      if (caphash != null) {
-        logger.fine("Got a capability hash");
-
-        final manager = _getDiscoManager();
-        if (!manager.knowsInfoByCapHash(caphash.attributes["ver"]!)) {
-          // TODO: Maybe have a hierarchy of first checking precomputed hashes and then
-          //       querying
-          logger.info("Unknown capability hash '${caphash.attributes['ver']!}'. Querying for info");
-          final info = await manager.queryCaphashInfoFromJid(
-            presence.from!,
-            caphash.attributes["node"]!,
-            caphash.attributes["ver"]!
-          );
-
-          _caphashCache[presence.from!] = caphash.attributes["ver"]!;
-        }
-      }
+      getAttributes().sendEvent(PresenceReceivedEvent(JID.fromString(presence.from!), presence));
     } 
 
     return true;
   }
 
-  String? getCapHashByJid(String jid) {
-    return _caphashCache[jid];
-  }
-  
   /// Returns the capability hash.
   Future<String> getCapabilityHash() async {
     final manager = getAttributes().getManagerById(discoManager)! as DiscoManager;

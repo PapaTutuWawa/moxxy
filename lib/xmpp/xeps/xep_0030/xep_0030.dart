@@ -11,13 +11,8 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
 class DiscoManager extends XmppManagerBase {
   /// Our features
   final List<String> _features;
-  /// Mapping of CapHash -> Features. NOTE: We assume that hashes don't collide across
-  /// algorithms which is a terrible assumption.
-  final Map<String, DiscoInfo> _caphashInfoCache;
-  /// Mapping of Full JID to disco info. Only for when an entity does not support XEP-0115
-  final Map<String, DiscoInfo> _jidInfoCache;
  
-  DiscoManager() : _features = List.empty(growable: true), _caphashInfoCache = {}, _jidInfoCache = {}, super();
+  DiscoManager() : _features = List.empty(growable: true), super();
   
   @override
   List<StanzaHandler> getStanzaHandlers() => [
@@ -180,46 +175,8 @@ class DiscoManager extends XmppManagerBase {
     return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
   }
 
-  bool knowsInfoByCapHash(String hash) => _caphashInfoCache.containsKey(hash);
-  bool knowsInfoByJid(String jid) => _jidInfoCache.containsKey(jid);
-
-  /// Queries information about a jid based on its node and capability hash. Caches these
-  /// values.
-  Future<DiscoInfo?> queryCaphashInfoFromJid(String jid, String node, String hash) async {
-    // TODO: Handle error
-    final info = (await discoInfoQuery(jid, node: node + "#" + hash))!;
-
-    // TODO: Verify the hash
-    
-    _caphashInfoCache[hash] = info;
-    _jidInfoCache[jid] = info;
-    
-    return info;
-  }
-
-  DiscoInfo? getInfoByHash(String hash) {
-    return _caphashInfoCache[hash];
-  }
-  
-  Future<DiscoInfo?> getInfoByJid(String jid) async {
-    if (knowsInfoByJid(jid)) {
-      return _jidInfoCache[jid]!;
-    }
-
-    final presence = getAttributes().getManagerById(presenceManager)! as PresenceManager;
-    final hash = presence.getCapHashByJid(jid);
-    if (hash != null) {
-      if (knowsInfoByCapHash(hash)) {
-        return _caphashInfoCache[hash]!;
-      }
-
-      // TODO: Query jid and cache hash
-    }
-
-    // TODO: Error handling
-    final info = (await discoInfoQuery(jid))!;
-    _jidInfoCache[jid] = info;
-
-    return info;
+  /// Queries information about a jid based on its node and capability hash.
+  Future<DiscoInfo?> discoInfoCapHashQuery(String jid, String node, String ver) async {
+    return await discoInfoQuery(jid, node: "$node#$ver");
   }
 }

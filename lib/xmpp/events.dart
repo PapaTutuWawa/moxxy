@@ -73,3 +73,11 @@ class ResourceBindingSuccessEvent extends XmppEvent {
 
   ResourceBindingSuccessEvent({ required this.resource });
 }
+
+/// Triggered when we receive presence
+class PresenceReceivedEvent extends XmppEvent {
+  final JID jid;
+  final Stanza presence;
+
+  PresenceReceivedEvent(this.jid, this.presence);
+}

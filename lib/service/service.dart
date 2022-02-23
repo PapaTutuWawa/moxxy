@@ -8,6 +8,7 @@ import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/service/managers/roster.dart";
 import "package:moxxyv2/service/managers/disco.dart";
 import "package:moxxyv2/service/managers/stream.dart";
@@ -192,6 +193,7 @@ void onStart() {
       connection.registerManager(MoxxyRosterManger());
       connection.registerManager(PresenceManager());
       connection.registerManager(CSIManager());
+      connection.registerManager(DiscoCacheManager());
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
       final account = await xmpp.getAccountData();
