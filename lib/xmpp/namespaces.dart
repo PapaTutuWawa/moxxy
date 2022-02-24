@@ -21,6 +21,9 @@ const capsXmlns = "http://jabber.org/protocol/caps";
 // XEP-0198
 const smXmlns = "urn:xmpp:sm:3";
 
+// XEP-0297
+const forwardedXmlns = "urn:xmpp:forward:0";
+
 // XEP-0333
 const chatMarkersXmlns = "urn:xmpp:chat-markers:0";
 
