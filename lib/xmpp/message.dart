@@ -7,6 +7,7 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 
 class MessageManager extends XmppManagerBase {
@@ -25,7 +26,7 @@ class MessageManager extends XmppManagerBase {
   ];
 
   @override
-  List<String> getDiscoFeatures() => [ chatMarkersXmlns ];
+  List<String> getDiscoFeatures() => [ chatMarkersXmlns, oobDataXmlns ];
 
   /// Helper function to extract and verify the origin and stanza Id according to
   /// XEP-0359.
@@ -98,11 +99,23 @@ class MessageManager extends XmppManagerBase {
       return true;
     }
 
+    OOBData? oob;
+    final oobTag = message.firstTag("x", xmlns: oobDataXmlns);
+    if (oobTag != null) {
+      final url = oobTag.firstTag("url");
+      final desc = oobTag.firstTag("desc");
+      oob = OOBData(
+        url: url?.innerText(),
+        desc: desc?.innerText()
+      );
+    }
+    
     getAttributes().sendEvent(MessageEvent(
       body: body.innerText(),
       fromJid: JID.fromString(message.attributes["from"]!),
       sid: message.attributes["id"]!,
       stanzaId: await _getStanzaId(message),
+      oob: oob
     ));
 
     return true;

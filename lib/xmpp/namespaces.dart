@@ -12,6 +12,9 @@ const rosterXmlns = "jabber:iq:roster";
 const discoInfoXmlns = "http://jabber.org/protocol/disco#info";
 const discoItemsXmlns = "http://jabber.org/protocol/disco#items";
 
+// XEP-0066
+const oobDataXmlns = "jabber:x:oob";
+
 // XEP-0152
 const capsXmlns = "http://jabber.org/protocol/caps";
 
