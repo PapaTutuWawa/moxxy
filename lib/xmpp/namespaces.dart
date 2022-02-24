@@ -23,3 +23,6 @@ const chatMarkersXmlns = "urn:xmpp:chat-markers:0";
 
 // XEP-0352
 const csiXmlns = "urn:xmpp:csi:0";
+
+// XEP-0359
+const stableIdXmlns = "urn:xmpp:sid:0";

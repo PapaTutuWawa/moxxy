@@ -1,6 +1,7 @@
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 
 abstract class XmppEvent {}
 
@@ -48,15 +49,17 @@ class MessageEvent extends XmppEvent {
   final String body;
   final JID fromJid;
   final String sid;
+  final StableStanzaId stanzaId;
 
-  MessageEvent({ required this.body, required this.fromJid, required this.sid });
+  MessageEvent({ required this.body, required this.fromJid, required this.sid, required this.stanzaId });
 }
 
 class ChatMarkerEvent extends XmppEvent {
   final String type;
   final String sid;
+  final StableStanzaId stanzaId;
 
-  ChatMarkerEvent({ required this.type, required this.sid });
+  ChatMarkerEvent({ required this.type, required this.sid, required this.stanzaId });
 }
 
 // Triggered when we received a Stream resumption ID

@@ -233,6 +233,7 @@ class XmppService {
           resource: event.resource
       ));
     } else if (event is MessageEvent) {
+      _log.finest("Received message with origin-id: " + (event.stanzaId.originId ?? "null"));
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final db = GetIt.I.get<DatabaseService>();
       final fromBare = event.fromJid.toBare().toString();
