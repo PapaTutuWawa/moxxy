@@ -2,8 +2,10 @@ import "dart:async";
 import "dart:convert";
 
 import "package:moxxyv2/ui/helpers.dart";
+
 // TODO: Maybe move this file somewhere else
 import "package:moxxyv2/ui/redux/account/state.dart";
+
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -13,6 +15,7 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/download.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
@@ -142,7 +145,8 @@ class XmppService {
       timestamp,
       GetIt.I.get<XmppConnection>().getConnectionSettings().jid.toString(),
       jid,
-      true
+      true,
+      false
     );
 
     sendData({
@@ -237,15 +241,24 @@ class XmppService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final db = GetIt.I.get<DatabaseService>();
       final fromBare = event.fromJid.toBare().toString();
+      final isChatOpen = _currentlyOpenedChatJid == fromBare;
+      final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
+      final oobUrl = event.oob?.url;
+      final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https";
       final msg = await db.addMessageFromData(
         event.body,
         timestamp,
         event.fromJid.toString(),
         fromBare,
-        false
+        false,
+        isMedia,
+        oobUrl: oobUrl
       );
-      final isChatOpen = _currentlyOpenedChatJid == fromBare;
-      final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
+
+      if (isMedia && isInRoster) {
+        // TODO: Check the file size first
+        GetIt.I.get<DownloadService>().downloadFile(oobUrl, msg.id);
+      }
       
       final conversation = await db.getConversationByJid(fromBare);
       if (conversation != null) { 

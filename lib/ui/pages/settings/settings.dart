@@ -47,6 +47,17 @@ class SettingsPage extends StatelessWidget {
               ]
             ),
             SettingsSection(
+              title: "Conversations",
+              tiles: [
+                SettingsTile(
+                  title: "Storage",
+                  leading: const Icon(Icons.storage),
+                  // TODO
+                  onPressed: (context) {}
+                )
+              ]
+            ),
+            SettingsSection(
               title: "Miscellaneous",
               tiles: [
                 SettingsTile(

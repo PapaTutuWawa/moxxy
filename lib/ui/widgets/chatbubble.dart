@@ -1,9 +1,14 @@
 import "dart:async";
+import "dart:io";
 
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/shared/helpers.dart";
 
+// TODO: Fix positioning and padding issues
+//       - Images have to much padding everywhere
+// TODO: The timestamp may be too light
+// TODO: The timestamp is too small
 import "package:flutter/material.dart";
 
 class ChatBubble extends StatefulWidget {
@@ -92,6 +97,122 @@ class _ChatBubbleState extends State<ChatBubble> {
     super.dispose();
   }
 
+  BorderRadius _getBorderRadius() {
+    return BorderRadius.only(
+      topLeft: !sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
+      topRight: sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
+      bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
+      bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
+    );
+  }
+  BorderRadius _getBorderRadiusBottom() {
+    return BorderRadius.only(
+      bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
+      bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
+    );
+  }
+
+  
+  Widget _buildBody() {
+    if (message.isMedia) {
+      if (message.mediaUrl != null) {
+        return _renderImage();
+      } else {
+        // TODO: Put a spinner here
+        // TODO: PUt a button here if the user is not in our roster
+      }
+    }
+
+    return _renderText();
+  }
+
+  Widget _renderImage() {
+    return IntrinsicWidth(child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: _getBorderRadius(),
+            child: Image.file(
+              File(message.mediaUrl!)
+            )
+          ),
+          Positioned(
+            bottom: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              alignment: Alignment.bottomCenter,
+              decoration: BoxDecoration(
+                borderRadius: _getBorderRadiusBottom(),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withAlpha(0),
+                    Colors.black12,
+                    Colors.black54
+                  ]
+                )
+              )
+            )
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 3.0,
+                    right: 6.0
+                  ),
+                  child: Text(
+                    _timestampString,
+                    style: const TextStyle(
+                      fontSize: fontsizeSubbody,
+                      color: Color(0xffbdbdbd)
+                    )
+                  )
+                ) 
+              ]
+            )
+          ) 
+        ]
+    ));
+  }
+  
+  Widget _renderText() {
+    return IntrinsicWidth(child: Column(
+        children: [
+          Text(
+            message.body,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: fontsizeBody
+            )
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 3.0),
+                child: Text(
+                  _timestampString,
+                  style: const TextStyle(
+                    fontSize: fontsizeSubbody,
+                    color: Color(0xffbdbdbd)
+                  )
+                )
+              ) 
+            ]
+          )
+        ]
+      )
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -109,43 +230,12 @@ class _ChatBubbleState extends State<ChatBubble> {
               maxWidth: maxWidth
             ),
             decoration: BoxDecoration(
-              color: sentBySelf ? bubbleColorSent : bubbleColorReceived,
-              borderRadius: BorderRadius.only(
-                topLeft: !sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
-                topRight: sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
-                bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
-                bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
-              )
+              color: (message.isMedia && message.mediaUrl != null) ? null : (sentBySelf ? bubbleColorSent : bubbleColorReceived),
+              borderRadius: _getBorderRadius()
             ),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: IntrinsicWidth(child: Column(
-                  children: [
-                    Text(
-                      message.body,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: fontsizeBody
-                      )
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 3.0),
-                          child: Text(
-                            _timestampString,
-                            style: const TextStyle(
-                              fontSize: fontsizeSubbody,
-                              color: Color(0xffbdbdbd)
-                            )
-                          )
-                        ) 
-                      ]
-                    )
-                  ]
-                )
-              )
+              child: _buildBody()
             )
           )
         ]

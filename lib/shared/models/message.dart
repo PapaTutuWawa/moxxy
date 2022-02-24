@@ -1,46 +1,15 @@
-import "package:equatable/equatable.dart";
+import "package:freezed_annotation/freezed_annotation.dart";
 
-class Message extends Equatable {
-  final String body;
-  final int timestamp; // NOTE: Milliseconds since Epoch
-  final String from;
-  final String conversationJid;
-  final bool sent;
-  final int id; // Database ID
+part "message.freezed.dart";
+part "message.g.dart";
 
-  const Message({ required this.from, required this.body, required this.timestamp, required this.sent, required this.id, required this.conversationJid });
-
-  Message copyWith({ String? from, String? body, int? timestamp }) {
-    return Message(
-      from: from ?? this.from,
-      body: body ?? this.body,
-      timestamp: timestamp ?? this.timestamp,
-      sent: sent,
-      conversationJid: conversationJid,
-      id: id
-    );
-  }
-
-  Message.fromJson(Map<String, dynamic> json)
-  : from = json["from"],
-  body = json["body"],
-  timestamp = json["timestamp"],
-  sent = json["sent"],
-  conversationJid = json["conversationJid"],
-  id = json["id"];
+@freezed
+class Message with _$Message {
+  // NOTE: id is the database id of the message
+  // NOTE: isMedia is for telling the UI that this message contains the URL for media but the path is not yet available
   
-  Map<String, dynamic> toJson() => {
-    "from": from,
-    "body": body,
-    "timestamp": timestamp,
-    "sent": sent,
-    "conversationJid": conversationJid,
-    "id": id
-  };
+  factory Message(String from, String body, int timestamp, bool sent, int id, String conversationJid, bool isMedia, { String? mediaUrl }) = _Message;
 
-  @override
-  bool get stringify => true;
-
-  @override
-  List<Object> get props => [ from, body, timestamp, sent, conversationJid, id ];
+  // JSON
+  factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 }

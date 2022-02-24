@@ -80,6 +80,14 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
       );
     }
     break;
+    case "MessageUpdatedEvent": {
+      store.dispatch(
+        UpdateMessageAction(
+          message: Message.fromJson(data["message"]!)
+        )
+      );
+    }
+    break;
     case "AddMultipleRosterItems": {
       final List<RosterItem> tmp = List<RosterItem>.from(data["items"]!.map((i) => RosterItem.fromJson(i)));
       store.dispatch(

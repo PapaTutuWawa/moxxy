@@ -104,12 +104,14 @@ class DatabaseService {
         "jid": jid,
         "messages": messages.map((m) {
             final message = Message(
-              from: m.from,
-              conversationJid: m.conversationJid,
-              body: m.body,
-              timestamp: m.timestamp,
-              sent: m.sent,
-              id: m.id!
+              m.from,
+              m.body,
+              m.timestamp,
+              m.sent,
+              m.id!,
+              m.conversationJid,
+              m.isMedia,
+              mediaUrl: m.mediaUrl
             );
             _messageCache[jid]!.add(message);
             return message.toJson();
@@ -166,28 +168,66 @@ class DatabaseService {
   }
 
   /// Same as [addConversationFromData] but for a [Message].
-  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent) async {
+  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, { String? oobUrl, String? mediaUrl }) async {
     final m = DBMessage()
       ..from = from
       ..conversationJid = conversationJid
       ..timestamp = timestamp
       ..body = body
-      ..sent = sent;
+      ..sent = sent
+      ..isMedia = isMedia
+      ..oobUrl = oobUrl;
       
     await isar.writeTxn((isar) async {
         await isar.dBMessages.put(m);
     });
 
     return Message(
-      body: body,
-      from: from,
-      conversationJid: conversationJid,
-      timestamp: timestamp,
-      sent: sent,
-      id: m.id!
+      from,
+      body,
+      timestamp,
+      sent,
+      m.id!,
+      conversationJid,
+      isMedia,
+      mediaUrl: mediaUrl
     );
   }
 
+  /// Updates the message item with id [id] inside the database.
+  Future<Message> updateMessage({ required int id, String? mediaUrl }) async {
+    final i = (await isar.dBMessages.get(id))!;
+    if (mediaUrl != null) {
+      i.mediaUrl = mediaUrl;
+    }
+
+    await isar.writeTxn((isar) async {
+        await isar.dBMessages.put(i);
+    });
+
+    final msg = Message(
+      i.from,
+      i.body,
+      i.timestamp,
+      i.sent,
+      i.id!,
+      i.conversationJid,
+      i.isMedia,
+      mediaUrl: mediaUrl
+    );
+
+    // Update cache
+    if (_messageCache.containsKey(msg.conversationJid)) {
+      _messageCache[msg.conversationJid] = _messageCache[msg.conversationJid]!.map((m) {
+          if (m.id == msg.id) return msg;
+
+          return m;
+      }).toList();
+    }
+    
+    return msg;
+  }
+  
   /// Loads roster items from the database
   Future<void> loadRosterItems({ bool notify = true }) async {
     final roster = await isar.dBRosterItems.where().findAll();
@@ -257,8 +297,7 @@ class DatabaseService {
   
   /// Returns true if a roster item with jid [jid] exists
   Future<bool> isInRoster(String jid) async {
-    // TODO: Check if we already loaded it once
-    if (_rosterCache.isEmpty) {
+    if (!_rosterLoaded) {
       await loadRosterItems(notify: false);
     }
 

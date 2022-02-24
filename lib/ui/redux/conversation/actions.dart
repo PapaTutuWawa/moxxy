@@ -52,6 +52,13 @@ class AddMultipleMessagesAction {
   AddMultipleMessagesAction({ required this.messages, required this.conversationJid, this.replace = true });
 }
 
+/// Updates a single message
+class UpdateMessageAction {
+  final Message message;
+
+  UpdateMessageAction({ required this.message });
+}
+
 /// Triggered when a conversation should be marked as closed
 class CloseConversationAction {
   final String jid;

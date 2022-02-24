@@ -15,6 +15,7 @@ import "package:moxxyv2/service/managers/stream.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/roster.dart";
+import "package:moxxyv2/service/download.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -183,6 +184,7 @@ void onStart() {
           middleware(data);
       });
       GetIt.I.registerSingleton<XmppService>(xmpp);
+      GetIt.I.registerSingleton<DownloadService>(DownloadService(service.sendData));
 
       // Init the UDPLogger
       await initUDPLogger();

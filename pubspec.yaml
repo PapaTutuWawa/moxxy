@@ -61,6 +61,8 @@ dependencies:
   archive: ^3.2.0
   logging: ^1.0.2
   freezed_annotation: ^1.1.0
+  http: ^0.13.4
+  path: ^1.8.1
 
 dev_dependencies:
   #flutter_test:

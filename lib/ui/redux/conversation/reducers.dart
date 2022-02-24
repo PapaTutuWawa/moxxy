@@ -34,6 +34,16 @@ HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> sta
     if (!state.containsKey(action.conversation.jid)) {
       state[action.conversation.jid] = List.empty(growable: true);
     }
+  } else if (action is UpdateMessageAction) {
+    // If we haven't loaded the conversation yet, we don't need to edit it
+    if (state.containsKey(action.message.conversationJid)) {
+      final messages = state[action.message.conversationJid]!;
+      state[action.message.conversationJid] = messages.map((m) {
+          if (m.id == action.message.id) return action.message;
+
+          return m;
+      }).toList();
+    }
   }
 
   return state;
