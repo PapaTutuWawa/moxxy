@@ -16,10 +16,10 @@ import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/download.dart";
+import "package:moxxyv2/service/notifications.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
-import "package:awesome_notifications/awesome_notifications.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
 import "package:logging/logging.dart";
 
@@ -245,6 +245,7 @@ class XmppService {
       final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
       final oobUrl = event.oob?.url;
       final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https";
+      final shouldNotify = !(isMedia && isInRoster);
       final msg = await db.addMessageFromData(
         event.body,
         timestamp,
@@ -275,16 +276,8 @@ class XmppService {
             "conversation": newConversation.toJson()
         });
 
-        if (!isChatOpen) {
-          AwesomeNotifications().createNotification(
-            content: NotificationContent(
-              id: msg.id,
-              channelKey: "message_channel",
-              title: isInRoster ? conversation.title : fromBare,
-              body: body,
-              groupKey: fromBare
-            )
-          );
+        if (!isChatOpen && shouldNotify) {
+          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare);
         }
       } else {
         final conv = await db.addConversationFromData(
@@ -303,16 +296,8 @@ class XmppService {
             "conversation": conv.toJson()
         });
 
-        if (!isChatOpen) {
-          AwesomeNotifications().createNotification(
-            content: NotificationContent(
-              id: msg.id,
-              channelKey: "message_channel",
-              title: isInRoster ? conv.title : fromBare,
-              body: body,
-              groupKey: fromBare
-            )
-          );
+        if (!isChatOpen && shouldNotify) {
+          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare);
         }
       }
       

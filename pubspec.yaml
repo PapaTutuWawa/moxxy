@@ -48,7 +48,7 @@ dependencies:
   #scrollable_positioned_list: ^0.2.3
   equatable: ^2.0.3
   flutter_background_service: ^0.2.2
-  awesome_notifications: ^0.6.20
+  flutter_local_notifications: ^9.3.2
   connectivity_plus: ^2.2.0
   uuid: ^3.0.5
   moxdns:

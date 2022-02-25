@@ -16,12 +16,12 @@ import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/download.dart";
+import "package:moxxyv2/service/notifications.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
-import "package:awesome_notifications/awesome_notifications.dart";
 import "package:isar/isar.dart";
 import "package:path_provider/path_provider.dart";
 import "package:logging/logging.dart";
@@ -139,29 +139,18 @@ void onStart() {
 
   setupLogging();
   GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
-  
-  AwesomeNotifications().initialize(
-    // TODO: Add icon
-    null,
-    [
-      NotificationChannel(
-        channelGroupKey: "messages",
-        channelKey: "message_channel",
-        channelName: "Message notifications",
-        channelDescription: "Notifications for messages go here",
-        importance: NotificationImportance.High
-      )
-    ],
-    debug: true
-  );
 
   final service = FlutterBackgroundService();
   service.onDataReceived.listen(handleEvent);
   service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
 
   GetIt.I.get<Logger>().finest("Running...");
-  
+
+  GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
+
   (() async {
+      await GetIt.I.get<NotificationsService>().init();
+
       final middleware = sendDataMiddleware(service);
 
       // Register singletons

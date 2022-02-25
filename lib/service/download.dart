@@ -2,13 +2,13 @@ import "dart:async";
 import "dart:io";
 
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/notifications.dart";
 
 import "package:logging/logging.dart";
 import "package:http/http.dart" as http;
 import "package:path_provider/path_provider.dart";
 import "package:path/path.dart" as path;
 import "package:get_it/get_it.dart";
-//import "package:awesome_notifications/awesome_notifications.dart";
 
 // TODO: Make this more reliable:
 //       - Retry if a download failed, e.g. because we lost internet connection
@@ -52,16 +52,8 @@ class DownloadService {
     });
 
     // TODO: Update the notification
-    /*
-    AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: msg.id,
-        channelKey: "message_channel",
-        bigPicture: f.uri.toString(),
-        groupKey: msg.conversationJid
-      )
-    );
-    */
+    _log.finest("Creating notification with bigPicture ${f.uri.toString()}");
+    await GetIt.I.get<NotificationsService>().showNotification(msg, "");
       
     _tasks.remove(url);
   }
