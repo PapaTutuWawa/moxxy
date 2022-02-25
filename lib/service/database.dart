@@ -240,8 +240,10 @@ class DatabaseService {
 
     if (notify) {
       sendData({
-          "type": "AddMultipleRosterItems",
-          "items": items.map((i) => i.toJson()).toList()
+          "type": "RosterDiff",
+          "newItems": items.map((i) => i.toJson()).toList(),
+          "changedItems": [],
+          "removedItems": []
       });
     }
 

@@ -88,19 +88,14 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
       );
     }
     break;
-    case "AddMultipleRosterItems": {
-      final List<RosterItem> tmp = List<RosterItem>.from(data["items"]!.map((i) => RosterItem.fromJson(i)));
+    case "RosterDiff": {
       store.dispatch(
-        AddMultipleRosterItemsAction(
-          items: tmp
-        )
-      );
-    }
-    break;
-    case "RemoveMultipleRosterItems": {
-      store.dispatch(
-        RemoveMultipleRosterItemsAction(
-          items: List<String>.from(data["items"]!)
+        RosterDiffAction(
+          newItems: List<RosterItem>.from(data["newItems"]!.map((i) => RosterItem.fromJson(i))),
+          
+          changedItems: List<RosterItem>.from(data["changedItems"]!.map((i) => RosterItem.fromJson(i))),
+
+          removedItems: List<String>.from(data["removedItems"]!)
         )
       );
     }
@@ -129,14 +124,6 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           result: data["result"]!,
           msg: data["msg"],
           jid: data["jid"]
-        )
-      );
-    }
-    break;
-    case "RosterItemModifiedEvent": {
-      store.dispatch(
-        ModifyRosterItemAction(
-          item: RosterItem.fromJson(data["item"]!)
         )
       );
     }

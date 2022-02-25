@@ -28,7 +28,7 @@ class RosterService {
   }
 
   /// Load the roster from the database. This function is guarded against loading the
-  /// roster multiple times and thus creating too many "AddMultipleRosterItems" actions.
+  /// roster multiple times and thus creating too many "RosterDiff" actions.
   Future<void> loadRosterFromDatabase() async {
     final db = GetIt.I.get<DatabaseService>();
     if (!db.isRosterLoaded()) {
@@ -93,6 +93,7 @@ class RosterService {
     // TODO: Figure out if an item was removed
     final newItems = List<RosterItem>.empty(growable: true);
     final removedItems = List<String>.empty(growable: true);
+    final modifiedItems = List<RosterItem>.empty(growable: true);
     final db = GetIt.I.get<DatabaseService>();
     final currentRoster = await db.getRoster();
 
@@ -100,6 +101,7 @@ class RosterService {
     for (final item in currentRoster) {
       if (listContains(result, (RosterItem i) => i.jid == item.jid)) {
         // TODO: Diff and update if needed
+        modifiedItems.add(item);
       } else {
         await db.removeRosterItemByJid(item.jid);
         removedItems.add(item.jid);
@@ -128,18 +130,12 @@ class RosterService {
     _log.finest("Current roster: " + jids.toString());
     // TODO END
 
-    if (newItems.isNotEmpty) {
-      sendData({
-          "type": "AddMultipleRosterItems",
-          "items": newItems.map((i) => i.toJson()).toList()
-      });
-    }
-    if (removedItems.isNotEmpty) {
-      sendData({
-          "type": "RemoveMultipleRosterItems",
-          "items": removedItems
-      });
-    }
+    sendData({
+        "type": "RosterDiff",
+        "newItems": newItems.map((i) => i.toJson()).toList(),
+        "removedItems": removedItems,
+        "changedItems": modifiedItems.map((i) => i.toJson()).toList()
+    });
   }
 
   /// Handles a roster push.
@@ -164,8 +160,10 @@ class RosterService {
       await removeFromRosterWrapper(item.jid);
 
       sendData({
-          "type": "RosterItemRemovedEvent",
-          "jid": item.jid
+          "type": "RosterDiff",
+          "newItems": [],
+          "changedItems": [],
+          "removedItems": [item.jid]
       });
       return;
     }
@@ -185,8 +183,10 @@ class RosterService {
     }
 
     sendData({
-        "type": "RosterItemModifiedEvent",
-        "item": modelRosterItem.toJson()
+        "type": "RosterDiff",
+        "newItems": [],
+        "changedItems": [ modelRosterItem.toJson() ],
+        "removedItems": []
     });
   }
 
@@ -195,8 +195,10 @@ class RosterService {
     switch (event.trigger) {
       case RosterItemNotFoundTrigger.remove: {
         sendData({
-            "type": "RosterItemRemovedEvent",
-            "jid": event.jid
+            "type": "RosterDiff",
+            "newItems": [],
+            "changedItems": [],
+            "removedItems": [ event.jid ]
         });
         await removeFromRosterDatabase(event.jid);
       }

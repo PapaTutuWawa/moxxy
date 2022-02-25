@@ -196,7 +196,6 @@ void onStart() {
       if (account!= null && settings != null) {
         xmpp.connect(settings, false);
       }
-      await performPreStart(middleware);
   })();
 }
 
