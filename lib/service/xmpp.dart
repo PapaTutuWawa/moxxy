@@ -259,12 +259,14 @@ class XmppService {
         // TODO: Check the file size first
         GetIt.I.get<DownloadService>().downloadFile(oobUrl, msg.id);
       }
-      
+
+      // TODO: Somehow figure out if it was an image or a file
+      final body = isMedia ? "📷 Image" : event.body;
       final conversation = await db.getConversationByJid(fromBare);
       if (conversation != null) { 
         final newConversation = await db.updateConversation(
           id: conversation.id,
-          lastMessageBody: event.body,
+          lastMessageBody: body,
           lastChangeTimestamp: timestamp,
           unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
         );
@@ -279,7 +281,7 @@ class XmppService {
               id: msg.id,
               channelKey: "message_channel",
               title: isInRoster ? conversation.title : fromBare,
-              body: event.body,
+              body: body,
               groupKey: fromBare
             )
           );
@@ -287,7 +289,7 @@ class XmppService {
       } else {
         final conv = await db.addConversationFromData(
           fromBare.split("@")[0], // TODO: Check with the roster first
-          event.body,
+          body,
           "", // TODO: avatarUrl
           fromBare, // TODO: jid
           1,
@@ -307,7 +309,7 @@ class XmppService {
               id: msg.id,
               channelKey: "message_channel",
               title: isInRoster ? conv.title : fromBare,
-              body: event.body,
+              body: body,
               groupKey: fromBare
             )
           );
