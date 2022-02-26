@@ -46,6 +46,7 @@ class DownloadService {
     // TODO: Handle non-image and non-video files and files whose mime type cannot be determined
     // TODO: add_to_gallery currently doesn't allow us to save videos to the gallery
     //       https://github.com/flowmobile/add_to_gallery/issues/2#issuecomment-869477521
+    final notification = GetIt.I.get<NotificationsService>();
     final mime = lookupMimeType(f.path)!;
     if (mime.startsWith("image/")) {
       final galleryFile = await AddToGallery.addToGallery(
@@ -61,8 +62,10 @@ class DownloadService {
       
       sendData(MessageUpdatedEvent(message: msg));
 
-      _log.finest("Creating notification with bigPicture ${galleryFile.path}");
-      await GetIt.I.get<NotificationsService>().showNotification(msg, "");
+      if (notification.shouldShowNotification(msg.conversationJid)) {
+        _log.finest("Creating notification with bigPicture ${galleryFile.path}");
+        await notification.showNotification(msg, "");
+      }
       
       _tasks.remove(url);
     } else {
@@ -73,8 +76,10 @@ class DownloadService {
       
       sendData(MessageUpdatedEvent(message: msg));
 
-      _log.finest("Creating notification with bigPicture ${f.path}");
-      await GetIt.I.get<NotificationsService>().showNotification(msg, "");
+      if (notification.shouldShowNotification(msg.conversationJid)) {
+        _log.finest("Creating notification with bigPicture ${f.path}");
+        await notification.showNotification(msg, "");
+      }
       
       _tasks.remove(url);
     }    

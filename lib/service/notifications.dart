@@ -1,4 +1,5 @@
 import "package:moxxyv2/shared/models/message.dart" as model;
+import "package:moxxyv2/service/xmpp.dart";
 
 import "package:logging/logging.dart";
 import "package:flutter_local_notifications/flutter_local_notifications.dart";
@@ -24,6 +25,11 @@ class NotificationsService {
     GetIt.I.registerSingleton<FlutterLocalNotificationsPlugin>(flutterLocalNotificationsPlugin);
   }
 
+  /// Returns true if a notification should be shown. false otherwise.
+  bool shouldShowNotification(String jid) {
+    return GetIt.I.get<XmppService>().getCurrentlyOpenedChatJid() != jid;
+  }
+  
   /// Show a notification for a message [m] grouped by its [conversationJid]
   /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
   /// then Android's BigPicture will be used.

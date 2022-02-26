@@ -118,6 +118,9 @@ class XmppService {
     }
   }
 
+  /// Returns the JID of the chat that is currently opened. Null, if none is open.
+  String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
+  
   /// Load the [AccountState] from storage. Returns null if not found.
   Future<AccountState?> getAccountData() async {
     final data = await _readKeyOrNull(xmppAccountDataKey);
