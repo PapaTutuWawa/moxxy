@@ -32,3 +32,12 @@ const csiXmlns = "urn:xmpp:csi:0";
 
 // XEP-0359
 const stableIdXmlns = "urn:xmpp:sid:0";
+
+// XEP-0446
+const fileMetadataXmlns = "urn:xmpp:file:metadata:0";
+
+// XEP-0447
+const sfsXmlns = "urn:xmpp:sfs:0";
+
+// ???
+const urlDataXmlns = "http://jabber.org/protocol/url-data";
