@@ -1,4 +1,5 @@
 import "package:moxxyv2/shared/events.dart" as events;
+import "package:moxxyv2/shared/commands.dart" as commands;
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
@@ -29,9 +30,9 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
     case events.preStartResultType: {
       final event = events.PreStartResultEvent.fromJson(data);
       if (event.state == "logged_in") {
-        FlutterBackgroundService().sendData({
-            "type": "LoadConversationsAction"
-        });
+        FlutterBackgroundService().sendData(
+          commands.LoadConversationsAction().toJson()
+        );
 
         store.dispatch(SetAccountAction(
             state: AccountState(

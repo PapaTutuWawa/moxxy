@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:moxxyv2/shared/commands.dart" as commands;
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/redux/state.dart";
@@ -13,10 +14,9 @@ import "package:flutter_background_service/flutter_background_service.dart";
 
 Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
   if (action is AddContactAction) {
-    FlutterBackgroundService().sendData({
-        "type": "AddToRosterAction",
-        "jid": action.jid
-    });
+    FlutterBackgroundService().sendData(
+      commands.AddToRosterAction(jid: action.jid).toJson()
+    );
     store.dispatch(SetDoingWorkAction(state: true));
   } else if (action is AddToRosterDoneAction) {
     store.dispatch(SetDoingWorkAction(state: false));

@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:moxxyv2/shared/commands.dart" as commands;
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/login/actions.dart";
@@ -13,13 +14,14 @@ import "package:flutter_background_service/flutter_background_service.dart";
 Future<void> loginMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
   if (action is PerformLoginAction) {
     store.dispatch(SetDoingWorkAction(state: true));
-    FlutterBackgroundService().sendData({
-        "type": "PerformLoginAction",
-        "jid": action.jid,
-        "password": action.password,
-        "useDirectTLS": true,
-        "allowPlainAuth": false
-    });
+    FlutterBackgroundService().sendData(
+      commands.PerformLoginAction(
+        jid: action.jid,
+        password: action.password,
+        useDirectTLS: true,
+        allowPlainAuth: false
+      ).toJson()
+    );
   } else if (action is LoginSuccessfulAction) {
     store.dispatch(SetDoingWorkAction(state: false));
     store.dispatch(SetDisplayNameAction(displayName: action.displayName));

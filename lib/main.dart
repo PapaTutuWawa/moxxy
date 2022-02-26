@@ -27,6 +27,7 @@ import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/start/middlewares.dart";
 import "package:moxxyv2/ui/redux/debug/middlewares.dart";
 import "package:moxxyv2/service/service.dart";
+import "package:moxxyv2/shared/commands.dart" as commands;
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -98,9 +99,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
 
-    FlutterBackgroundService().sendData({
-       "type": "PerformPrestartAction"
-    });
+    FlutterBackgroundService().sendData(
+      commands.PerformPrestartAction().toJson()
+    );
   }
 
   @override
@@ -115,16 +116,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     switch (state) {
       case AppLifecycleState.paused:
-        FlutterBackgroundService().sendData({
-            "type": "SetCSIState",
-            "state": "background"
-        });
+        FlutterBackgroundService().sendData(
+          commands.SetCSIStateAction(state: "background").toJson()
+        );
         break;
       case AppLifecycleState.resumed:
-        FlutterBackgroundService().sendData({
-            "type": "SetCSIState",
-            "state": "foreground"
-        });
+        FlutterBackgroundService().sendData(
+          commands.SetCSIStateAction(state: "foreground").toJson()
+        );
         break;
       default: break;
     }

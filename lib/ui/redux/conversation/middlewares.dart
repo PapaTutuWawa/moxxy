@@ -1,3 +1,4 @@
+import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/redux/state.dart";
@@ -15,10 +16,9 @@ void conversationMiddleware(Store<MoxxyState> store, action, NextDispatcher next
         "jid": args.jid
     });
 
-    FlutterBackgroundService().sendData({
-        "type": "LoadMessagesForJidAction",
-        "jid": args.jid
-    });
+    FlutterBackgroundService().sendData(
+      LoadMessagesForJidAction(jid: args.jid).toJson()
+    );
   } else if (action is SetOpenConversationAction) {
     FlutterBackgroundService().sendData({
         "type": "SetCurrentlyOpenChatAction",

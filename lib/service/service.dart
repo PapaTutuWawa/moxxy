@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:moxxyv2/shared/logging.dart";
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -224,30 +225,34 @@ void handleEvent(Map<String, dynamic>? data) {
   GetIt.I.get<Logger>().fine("F2S: " + data.toString());
 
   switch (data!["type"]) {
-    case "LoadConversationsAction": {
+    case loadConversationsType: {
       GetIt.I.get<DatabaseService>().loadConversations();
     }
     break;
-    case "PerformLoginAction": {
+    case performLoginType: {
+      final command = PerformLoginAction.fromJson(data);
       GetIt.I.get<Logger>().fine("Performing login");
       GetIt.I.get<XmppService>().connect(ConnectionSettings(
-          jid: JID.fromString(data["jid"]!),
-          password: data["password"]!,
-          useDirectTLS: data["useDirectTLS"]!,
-          allowPlainAuth: data["allowPlainAuth"]
+          jid: JID.fromString(command.jid),
+          password: command.password,
+          useDirectTLS: command.useDirectTLS,
+          allowPlainAuth: command.allowPlainAuth
       ), true);
     }
     break;
-    case "LoadMessagesForJidAction": {
-      GetIt.I.get<DatabaseService>().loadMessagesForJid(data["jid"]);
+    case loadMessagesForJidActionType: {
+      final command = LoadMessagesForJidAction.fromJson(data);
+      GetIt.I.get<DatabaseService>().loadMessagesForJid(command.jid);
     }
     break;
-    case "SetCurrentlyOpenChatAction": {
-      GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(data["jid"]);
+    case setCurrentlyOpenChatType: {
+      final command = SetCurrentlyOpenChatAction.fromJson(data);
+      GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid);
     }
     break;
-    case "AddToRosterAction": {
-      final String jid = data["jid"];
+    case addToRosterType: {
+      final command = AddToRosterAction.fromJson(data);
+      final String jid = command.jid;
       (() async {
           final roster = GetIt.I.get<RosterService>();
           if (await roster.isInRoster(jid)) {
@@ -301,33 +306,36 @@ void handleEvent(Map<String, dynamic>? data) {
       })();
     }
     break;
-    case "RemoveRosterItemAction": {
+    case removeRosterItemActionType: {
+      final command = RemoveRosterItemAction.fromJson(data);
       (() async {
-          final jid = data["jid"]!;
+          final jid = command.jid;
           //await GetIt.I.get<DatabaseService>().removeRosterItemByJid(jid, nullOkay: true);
           await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.removeFromRoster(jid);
           await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.sendUnsubscriptionRequest(jid);
       })();
     }
     break;
-    case "SendMessageAction": {
-      GetIt.I.get<XmppService>().sendMessage(body: data["body"]!, jid: data["jid"]!);
+    case sendMessageActionType: {
+      final command = SendMessageAction.fromJson(data);
+      GetIt.I.get<XmppService>().sendMessage(body: command.body, jid: command.jid);
     }
     break;
-    case "SetCSIState": {
+    case setCSIStateType: {
+      final command = SetCSIStateAction.fromJson(data);
       final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager);
       if (csi == null) {
         return;
       }
 
-      if (data["state"] == "foreground") {
+      if (command.state == "foreground") {
         csi.setActive();
       } else {
         csi.setInactive();
       }
     }
     break;
-    case "PerformPrestartAction": {
+    case performPrestartActionType: {
       // TODO: This assumes that we are ready if we receive this event
       performPreStart((event) {
           // TODO: Maybe register the middleware via GetIt
@@ -338,43 +346,47 @@ void handleEvent(Map<String, dynamic>? data) {
       });
     }
     break;
-    case "DebugSetEnabledAction": {
+    case debugSetEnabledActionType: {
+      final command = DebugSetEnabledAction.fromJson(data);
       (() async {
           await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugEnabled: data["enabled"] as bool
+              debugEnabled: command.enabled
           ));
           initUDPLogger();
       })();
     }
     break;
-    case "DebugSetIpAction": {
+    case debugSetIpActionType: {
+      final command = DebugSetIpAction.fromJson(data);
       (() async {
           await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugIp: data["ip"] as String
+              debugIp: command.ip
           ));
           initUDPLogger();
       })();
     }
     break;
-    case "DebugSetPortAction": {
+    case debugSetPortActionType: {
+      final command = DebugSetPortAction.fromJson(data);
       (() async {
           await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugPort: data["port"] as int
+              debugPort: command.port
           ));
           initUDPLogger();
       })();
     }
     break;
-    case "DebugSetPassphraseAction": {
+    case debugSetPassphraseActionType: {
+      final command = DebugSetPassphraseAction.fromJson(data);
       (() async {
           await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugPassphrase: data["passphrase"] as String
+              debugPassphrase: command.passphrase
           ));
           initUDPLogger();
       })();
     }
     break;
-    case "__STOP__": {
+    case stopActionType: {
       FlutterBackgroundService().stopBackgroundService();
     }
     break;
