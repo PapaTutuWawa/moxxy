@@ -3,6 +3,7 @@ import "dart:async";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/roster.dart";
@@ -12,7 +13,7 @@ import "package:logging/logging.dart";
 
 class RosterService {
   final Logger _log;
-  final void Function(Map<String, dynamic>) sendData;
+  final void Function(BaseIsolateEvent) sendData;
   final List<String> _pendingRequests;
   
   RosterService({ required this.sendData }) : _pendingRequests = List.empty(growable: true), _log = Logger("RosterService");
@@ -51,11 +52,7 @@ class RosterService {
 
     final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
 
-    sendData({
-        "type": "RosterItemAddedEvent",
-        "item": item.toJson()
-    });
-
+    sendData(RosterItemAddedEvent(item: item));
     return item;
   }
 
@@ -130,12 +127,11 @@ class RosterService {
     _log.finest("Current roster: " + jids.toString());
     // TODO END
 
-    sendData({
-        "type": "RosterDiff",
-        "newItems": newItems.map((i) => i.toJson()).toList(),
-        "removedItems": removedItems,
-        "changedItems": modifiedItems.map((i) => i.toJson()).toList()
-    });
+    sendData(RosterDiffEvent(
+        newItems: newItems,
+        removedItems: removedItems,
+        changedItems: modifiedItems
+    ));
   }
 
   /// Handles a roster push.
@@ -159,12 +155,10 @@ class RosterService {
     if (item.subscription == "remove") {
       await removeFromRosterWrapper(item.jid);
 
-      sendData({
-          "type": "RosterDiff",
-          "newItems": [],
-          "changedItems": [],
-          "removedItems": [item.jid]
-      });
+      sendData(RosterDiffEvent(
+          removedItems: [ item.jid ]
+      ));
+
       return;
     }
 
@@ -182,24 +176,18 @@ class RosterService {
       );
     }
 
-    sendData({
-        "type": "RosterDiff",
-        "newItems": [],
-        "changedItems": [ modelRosterItem.toJson() ],
-        "removedItems": []
-    });
+    sendData(RosterDiffEvent(
+        changedItems: [ modelRosterItem ]
+    ));
   }
 
   // Handle a [RosterItemNotFoundEvent].
   Future<void> handleRosterItemNotFoundEvent(RosterItemNotFoundEvent event) async {
     switch (event.trigger) {
       case RosterItemNotFoundTrigger.remove: {
-        sendData({
-            "type": "RosterDiff",
-            "newItems": [],
-            "changedItems": [],
-            "removedItems": [ event.jid ]
-        });
+        sendData(RosterDiffEvent(
+            removedItems: [ event.jid ]
+        ));
         await removeFromRosterDatabase(event.jid);
       }
       break;

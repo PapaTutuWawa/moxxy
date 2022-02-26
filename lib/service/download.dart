@@ -1,6 +1,7 @@
 import "dart:async";
 import "dart:io";
 
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/notifications.dart";
 
@@ -15,7 +16,7 @@ import "package:get_it/get_it.dart";
 //       - hold a queue of files to download
 // TODO: Put the file in the gallery
 class DownloadService {
-  final void Function(Map<String, dynamic>) sendData;
+  final void Function(BaseIsolateEvent) sendData;
 
   final Logger _log;
   // Map the URL to download to the message id of the message we need to update
@@ -46,10 +47,7 @@ class DownloadService {
     );
     _log.finest("$url available under ${f.path}");
 
-    sendData({
-        "type": "MessageUpdatedEvent",
-        "message": msg.toJson()
-    });
+    sendData(MessageUpdatedEvent(message: msg));
 
     // TODO: Update the notification
     _log.finest("Creating notification with bigPicture ${f.uri.toString()}");

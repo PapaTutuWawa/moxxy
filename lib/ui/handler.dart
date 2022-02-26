@@ -1,6 +1,4 @@
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/models/conversation.dart";
-import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/shared/events.dart" as events;
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
@@ -17,6 +15,8 @@ import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:logging/logging.dart";
 
+// TODO: Handle [RosterItemAddedEvent]
+// TODO: Handle [LoginFailedEvent]
 /// Called whenever the background service sends data to the UI isolate.
 void handleBackgroundServiceData(Map<String, dynamic>? data) {
   final store = GetIt.I.get<Store<MoxxyState>>();
@@ -26,17 +26,18 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
   }
 
   switch (data["type"]) {
-    case "PreStartResult": {
-      if (data["state"] == "logged_in") {
+    case events.preStartResultType: {
+      final event = events.PreStartResultEvent.fromJson(data);
+      if (event.state == "logged_in") {
         FlutterBackgroundService().sendData({
             "type": "LoadConversationsAction"
         });
 
         store.dispatch(SetAccountAction(
             state: AccountState(
-              jid: data["jid"],
-              displayName: data["displayName"],
-              avatarUrl: data["avatarUrl"]
+              jid: event.jid!,
+              displayName: event.displayName!,
+              avatarUrl: event.avatarUrl!
             )
         ));
 
@@ -48,48 +49,53 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
       store.dispatch(DebugSetEnabledAction(data["debugEnabled"], true));
     }
     break;
-    case "LoginSuccessfulEvent": {
+    case events.loginSuccessfulType: {
+      final event = events.LoginSuccessfulEvent.fromJson(data);
       store.dispatch(
         LoginSuccessfulAction(
-          jid: data["jid"]!,
-          displayName: data["displayName"]!
+          jid: event.jid,
+          displayName: event.displayName
         )
       );
     }
     break;
-    case "ConversationCreatedEvent": {
+    case events.conversationCreatedType: {
+      final event = events.ConversationCreatedEvent.fromJson(data);
       store.dispatch(AddConversationAction(
-          conversation: Conversation.fromJson(data["conversation"]!)
+          conversation: event.conversation
         )
       );
     }
     break;
-    case "ConversationUpdatedEvent": {
+    case events.conversationUpdatedType: {
+      final event = events.ConversationUpdatedEvent.fromJson(data);
       store.dispatch(
         UpdateConversationAction(
-          conversation: Conversation.fromJson(data["conversation"]!)
+          conversation: event.conversation
         )
       );
     }
     break;
-    case "MessageReceivedEvent": {
+    case events.messageReceivedType: {
+      final event = events.MessageReceivedEvent.fromJson(data);
       store.dispatch(
         AddMessageAction(
-          message: Message.fromJson(data["message"]!)
+          message: event.message
         )
       );
     }
     break;
-    case "MessageUpdatedEvent": {
+    case events.messageUpdatedType: {
+      final event = events.MessageUpdatedEvent.fromJson(data);
       store.dispatch(
         UpdateMessageAction(
-          message: Message.fromJson(data["message"]!)
+          message: event.message
         )
       );
     }
     break;
-    case rosterDiffType: {
-      final event = RosterDiffEvent.fromJson(data);
+    case events.rosterDiffType: {
+      final event = events.RosterDiffEvent.fromJson(data);
       store.dispatch(
         RosterDiffAction(
           newItems: event.newItems,
@@ -99,15 +105,15 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
       );
     }
     break;
-    case loadConversationsResultType: {
-      final event = LoadConversationsResultEvent.fromJson(data);
+    case events.loadConversationsResultType: {
+      final event = events.LoadConversationsResultEvent.fromJson(data);
       store.dispatch(AddMultipleConversationsAction(
           conversations: event.conversations
       ));
     }
     break;
-    case loadMessagesForJidType: {
-      final event = LoadMessagesForJidEvent.fromJson(data);
+    case events.loadMessagesForJidType: {
+      final event = events.LoadMessagesForJidEvent.fromJson(data);
       store.dispatch(
         AddMultipleMessagesAction(
           conversationJid: event.jid,
@@ -117,20 +123,22 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
       );
     }
     break;
-    case "AddToRosterResult": {
+    case events.addToRosterResultType: {
+      final event = events.AddToRosterResultEvent.fromJson(data);
       store.dispatch(
         AddToRosterDoneAction(
-          result: data["result"]!,
-          msg: data["msg"],
-          jid: data["jid"]
+          result: event.result,
+          msg: event.msg,
+          jid: event.jid
         )
       );
     }
     break;
-    case "MessageSendResult": {
+    case events.messageSendType: {
+      final event = events.MessageSendResultEvent.fromJson(data);
       store.dispatch(
         AddMessageAction(
-          message: Message.fromJson(data["message"]!)
+          message: event.message
         )
       );
     }

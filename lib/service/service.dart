@@ -49,16 +49,7 @@ Future<void> initializeServiceIfNeeded() async {
   await initializeService();
 }
 
-void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService srv) {
-  return (data) {
-    // NOTE: *S*erver to *F*oreground
-    GetIt.I.get<Logger>().fine("S2F: " + data.toString());
-
-    srv.sendData(data);
-  };
-}
-
-void Function(BaseIsolateEvent) sendDataMiddlewareEvent(FlutterBackgroundService srv) {
+void Function(BaseIsolateEvent) sendDataMiddleware(FlutterBackgroundService srv) {
   return (data) {
     final json = data.toJson();
     // NOTE: *S*erver to *F*oreground
@@ -68,7 +59,7 @@ void Function(BaseIsolateEvent) sendDataMiddlewareEvent(FlutterBackgroundService
   };
 }
 
-Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) async {
+Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
   final xmpp = GetIt.I.get<XmppService>();
   final account = await xmpp.getAccountData();
   final settings = await xmpp.getConnectionSettings();
@@ -80,20 +71,18 @@ Future<void> performPreStart(void Function(Map<String, dynamic>) middleware) asy
   if (account!= null && settings != null) {
     await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
-    middleware({
-        "type": "PreStartResult",
-        "state": "logged_in",
-        "jid": account.jid,
-        "displayName": account.displayName,
-        "avatarUrl": account.avatarUrl,
-        "debugEnabled": state.debugEnabled
-    });
+    sendData(PreStartResultEvent(
+        state: "logged_in",
+        jid: account.jid,
+        displayName: account.displayName,
+        avatarUrl: account.avatarUrl,
+        debugEnabled: state.debugEnabled
+    ));
   } else {
-    middleware({
-        "type": "PreStartResult",
-        "state": "not_logged_in",
-        "debugEnabled": state.debugEnabled
-    });
+    sendData(PreStartResultEvent(
+        state: "not_logged_in",
+        debugEnabled: state.debugEnabled
+    ));
   }
 }
 
@@ -163,19 +152,18 @@ void onStart() {
       await GetIt.I.get<NotificationsService>().init();
 
       final middleware = sendDataMiddleware(service);
-      final middlewareEvent = sendDataMiddlewareEvent(service);
 
       // Register singletons
       GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
 
-      final db = DatabaseService(isar: await openDatabase(), sendData: middlewareEvent);
+      final db = DatabaseService(isar: await openDatabase(), sendData: middleware);
       GetIt.I.registerSingleton<DatabaseService>(db); 
 
       final xmpp = XmppService(sendData: (data) {
-          if (data["type"] == "ConnectionStateEvent") {
-            if (data["state"] == XmppConnectionState.connected.toString().split(".")[1]) {
+          if (data is ConnectionStateEvent) {
+            if (data.state == XmppConnectionState.connected.toString().split(".")[1]) {
               FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
-            } else if (data["state"] == XmppConnectionState.connecting.toString().split(".")[1]) {
+            } else if (data.state == XmppConnectionState.connecting.toString().split(".")[1]) {
               FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Connecting...");
             } else {
               FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Disconnected");
@@ -185,12 +173,12 @@ void onStart() {
           middleware(data);
       });
       GetIt.I.registerSingleton<XmppService>(xmpp);
-      GetIt.I.registerSingleton<DownloadService>(DownloadService(service.sendData));
+      GetIt.I.registerSingleton<DownloadService>(DownloadService(middleware));
 
       // Init the UDPLogger
       await initUDPLogger();
 
-      GetIt.I.registerSingleton<RosterService>(RosterService(sendData: service.sendData));
+      GetIt.I.registerSingleton<RosterService>(RosterService(sendData: middleware));
 
       final connection = XmppConnection();
       connection.registerManager(MoxxyStreamManagementManager());
@@ -263,11 +251,13 @@ void handleEvent(Map<String, dynamic>? data) {
       (() async {
           final roster = GetIt.I.get<RosterService>();
           if (await roster.isInRoster(jid)) {
-            FlutterBackgroundService().sendData({
-                "type": "AddToRosterResult",
-                "result": "error",
-                "msg": "Already in contact list"
-            });
+            // TODO: Use a global middleware
+            FlutterBackgroundService().sendData(
+              AddToRosterResultEvent(
+                result: "error",
+                msg: "Already in contact list"
+              ).toJson()
+            );
             return;
           }
 
@@ -275,10 +265,16 @@ void handleEvent(Map<String, dynamic>? data) {
           final conversation = await db.getConversationByJid(jid);
           if (conversation != null) {
             final c = await db.updateConversation(id: conversation.id, open: true);
-            FlutterBackgroundService().sendData({
-                "type": "ConversationUpdatedEvent",
-                "conversation": c.toJson()
-            });
+            FlutterBackgroundService().sendData(
+              AddToRosterResultEvent(
+                result: "error",
+                msg: "Already in contact list"
+              ).toJson()
+            );
+
+            FlutterBackgroundService().sendData(
+              ConversationUpdatedEvent(conversation: c).toJson()
+            );
           } else {
             final c = await db.addConversationFromData(
               jid.split("@")[0],
@@ -290,18 +286,18 @@ void handleEvent(Map<String, dynamic>? data) {
               [],
               true
             );
-            FlutterBackgroundService().sendData({
-                "type": "ConversationCreatedEvent",
-                "conversation": c.toJson()
-            });
+            FlutterBackgroundService().sendData(
+              ConversationCreatedEvent(conversation: c).toJson()
+            );
           }
 
           roster.addToRosterWrapper("", jid, jid.split("@")[0]);
-          FlutterBackgroundService().sendData({
-              "type": "AddToRosterResult",
-              "result": "success",
-              "jid": jid
-          });
+          FlutterBackgroundService().sendData(
+            AddToRosterResultEvent(
+              result: "success",
+              jid: jid
+            ).toJson()
+          );
       })();
     }
     break;
@@ -333,7 +329,13 @@ void handleEvent(Map<String, dynamic>? data) {
     break;
     case "PerformPrestartAction": {
       // TODO: This assumes that we are ready if we receive this event
-      performPreStart(FlutterBackgroundService().sendData);
+      performPreStart((event) {
+          // TODO: Maybe register the middleware via GetIt
+          final data = event.toJson();
+          GetIt.I.get<Logger>().fine("S2F: " + data.toString());
+
+          FlutterBackgroundService().sendData(data);
+      });
     }
     break;
     case "DebugSetEnabledAction": {

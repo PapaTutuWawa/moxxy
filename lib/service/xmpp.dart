@@ -6,6 +6,7 @@ import "package:moxxyv2/ui/helpers.dart";
 // TODO: Maybe move this file somewhere else
 import "package:moxxyv2/ui/redux/account/state.dart";
 
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -31,7 +32,7 @@ class XmppService {
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
   final Logger _log;
-  final void Function(Map<String, dynamic>) sendData;
+  final void Function(BaseIsolateEvent) sendData;
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
@@ -109,11 +110,11 @@ class XmppService {
     final conversation = await db.getConversationByJid(jid);
 
     if (conversation != null && conversation.unreadCounter > 0) {
-      final newConversation = await db.updateConversation(id: conversation.id, unreadCounter: 0);
-      sendData({
-          "type": "ConversationUpdatedEvent",
-          "conversation": newConversation.toJson()
-      });
+      final newConversation = await db.updateConversation(
+        id: conversation.id,
+        unreadCounter: 0
+      );
+      sendData(ConversationUpdatedEvent(conversation: newConversation));
     }
   }
 
@@ -149,10 +150,7 @@ class XmppService {
       false
     );
 
-    sendData({
-        "type": "MessageSendResult",
-        "message": message.toJson()
-    });
+    sendData(MessageSendResultEvent(message: message));
 
     GetIt.I.get<XmppConnection>().getManagerById(messageManager)!.sendMessage(body, jid);
 
@@ -162,22 +160,16 @@ class XmppService {
       lastMessageBody: body,
       lastChangeTimestamp: timestamp
     );
-    sendData({
-        "type": "ConversationUpdatedEvent",
-        "conversation": newConversation.toJson()
-    });
+    sendData(ConversationUpdatedEvent(conversation: newConversation));
   }
   
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
-      sendData({
-          "type": "ConnectionStateEvent",
-          "state": event.state.toString().split(".")[1]
-      });
+      sendData(ConnectionStateEvent(state: event.state.toString().split(".")[1]));
 
       // TODO: This will fire as soon as we listen to the stream. So we either have to debounce it here or in [XmppConnection]
       _networkStateSubscription ??= Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-          sendData({ "type": "__LOG__", "log": "Got ConnectivityResult: " + result.toString()});
+          _log.fine("Got ConnectivityResult: " + result.toString());
 
           switch (result) { 
             case ConnectivityResult.none: {
@@ -219,11 +211,10 @@ class XmppService {
               avatarUrl: ""
           ));
 
-          sendData({
-              "type": "LoginSuccessfulEvent",
-              "jid": connection.getConnectionSettings().jid.toString(),
-              "displayName": connection.getConnectionSettings().jid.local
-          });
+          sendData(LoginSuccessfulEvent(
+              jid: connection.getConnectionSettings().jid.toString(),
+              displayName: connection.getConnectionSettings().jid.local
+          ));
         }
       }
     } else if (event is StreamManagementEnabledEvent) {
@@ -271,10 +262,7 @@ class XmppService {
           lastChangeTimestamp: timestamp,
           unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
         );
-        sendData({
-            "type": "ConversationUpdatedEvent",
-            "conversation": newConversation.toJson()
-        });
+        sendData(ConversationUpdatedEvent(conversation: newConversation));
 
         if (!isChatOpen && shouldNotify) {
           await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare);
@@ -291,30 +279,21 @@ class XmppService {
           true
         );
 
-        sendData({
-            "type": "ConversationCreatedEvent",
-            "conversation": conv.toJson()
-        });
+        sendData(ConversationCreatedEvent(conversation: conv));
 
         if (!isChatOpen && shouldNotify) {
           await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare);
         }
       }
       
-      sendData({
-          "type": "MessageReceivedEvent",
-          "message": msg.toJson()
-      });
+      sendData(MessageReceivedEvent(message: msg));
     } else if (event is RosterPushEvent) {
       GetIt.I.get<RosterService>().handleRosterPushEvent(event);
       _log.fine("Roster push version: " + (event.ver ?? "(null)"));
     } else if (event is RosterItemNotFoundEvent) {
       GetIt.I.get<RosterService>().handleRosterItemNotFoundEvent(event);
     } else if (event is AuthenticationFailedEvent) {
-      sendData({
-          "type": "LoginFailedEvent",
-          "reason": saslErrorToHumanReadable(event.saslError)
-      });
+      sendData(LoginFailedEvent(reason: saslErrorToHumanReadable(event.saslError)));
     }
   }
   
