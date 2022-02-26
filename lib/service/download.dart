@@ -10,11 +10,12 @@ import "package:http/http.dart" as http;
 import "package:path_provider/path_provider.dart";
 import "package:path/path.dart" as path;
 import "package:get_it/get_it.dart";
+import "package:mime/mime.dart";
+import "package:add_to_gallery/add_to_gallery.dart";
 
 // TODO: Make this more reliable:
 //       - Retry if a download failed, e.g. because we lost internet connection
 //       - hold a queue of files to download
-// TODO: Put the file in the gallery
 class DownloadService {
   final void Function(BaseIsolateEvent) sendData;
 
@@ -41,19 +42,42 @@ class DownloadService {
     File f = File(path.join(tempDir.path, uri.pathSegments.last));
     await f.writeAsBytes(response.bodyBytes);
 
-    final msg = await GetIt.I.get<DatabaseService>().updateMessage(
-      id: _tasks[url]!,
-      mediaUrl: f.path
-    );
-    _log.finest("$url available under ${f.path}");
+    // Check the MIME type
+    // TODO: Handle non-image and non-video files and files whose mime type cannot be determined
+    // TODO: add_to_gallery currently doesn't allow us to save videos to the gallery
+    //       https://github.com/flowmobile/add_to_gallery/issues/2#issuecomment-869477521
+    final mime = lookupMimeType(f.path)!;
+    if (mime.startsWith("image/")) {
+      final galleryFile = await AddToGallery.addToGallery(
+        originalFile: f,
+        albumName: "Moxxy Images",
+        deleteOriginalFile: true
+      );
 
-    sendData(MessageUpdatedEvent(message: msg));
-
-    // TODO: Update the notification
-    _log.finest("Creating notification with bigPicture ${f.uri.toString()}");
-    await GetIt.I.get<NotificationsService>().showNotification(msg, "");
+      final msg = await GetIt.I.get<DatabaseService>().updateMessage(
+        id: _tasks[url]!,
+        mediaUrl: galleryFile.path
+      );
       
-    _tasks.remove(url);
+      sendData(MessageUpdatedEvent(message: msg));
+
+      _log.finest("Creating notification with bigPicture ${galleryFile.path}");
+      await GetIt.I.get<NotificationsService>().showNotification(msg, "");
+      
+      _tasks.remove(url);
+    } else {
+      final msg = await GetIt.I.get<DatabaseService>().updateMessage(
+        id: _tasks[url]!,
+        mediaUrl: f.path
+      );
+      
+      sendData(MessageUpdatedEvent(message: msg));
+
+      _log.finest("Creating notification with bigPicture ${galleryFile.path}");
+      await GetIt.I.get<NotificationsService>().showNotification(msg, "");
+      
+      _tasks.remove(url);
+    }    
   }
 
   /// Performs an HTTP HEAD request to figure out how large the file is we

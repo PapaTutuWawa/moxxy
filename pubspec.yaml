@@ -63,6 +63,8 @@ dependencies:
   freezed_annotation: ^1.1.0
   http: ^0.13.4
   path: ^1.8.1
+  add_to_gallery: ^0.2.0+3
+  mime: ^1.0.1
 
 dev_dependencies:
   #flutter_test:

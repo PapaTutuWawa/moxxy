@@ -8,6 +8,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "34.0.0"
+  add_to_gallery:
+    dependency: "direct main"
+    description:
+      name: add_to_gallery
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0+3"
   analyzer:
     dependency: transitive
     description:
@@ -588,7 +595,7 @@ packages:
     source: hosted
     version: "1.7.0"
   mime:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: mime
       url: "https://pub.dartlang.org"
