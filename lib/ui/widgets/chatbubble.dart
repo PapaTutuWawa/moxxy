@@ -105,13 +105,6 @@ class _ChatBubbleState extends State<ChatBubble> {
       bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
     );
   }
-  BorderRadius _getBorderRadiusBottom() {
-    return BorderRadius.only(
-      bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
-      bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
-    );
-  }
-
   
   Widget _buildBody() {
     if (message.isMedia) {
@@ -143,7 +136,7 @@ class _ChatBubbleState extends State<ChatBubble> {
             child: Container(
               alignment: Alignment.bottomCenter,
               decoration: BoxDecoration(
-                borderRadius: _getBorderRadiusBottom(),
+                borderRadius: _getBorderRadius(),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
