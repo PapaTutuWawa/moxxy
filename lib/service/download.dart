@@ -73,7 +73,7 @@ class DownloadService {
       
       sendData(MessageUpdatedEvent(message: msg));
 
-      _log.finest("Creating notification with bigPicture ${galleryFile.path}");
+      _log.finest("Creating notification with bigPicture ${f.path}");
       await GetIt.I.get<NotificationsService>().showNotification(msg, "");
       
       _tasks.remove(url);
