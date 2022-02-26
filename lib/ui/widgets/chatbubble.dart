@@ -5,8 +5,6 @@ import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/shared/helpers.dart";
 
-// TODO: Fix positioning and padding issues
-//       - Images have to much padding everywhere
 // TODO: The timestamp may be too light
 // TODO: The timestamp is too small
 import "package:flutter/material.dart";
@@ -227,7 +225,8 @@ class _ChatBubbleState extends State<ChatBubble> {
               borderRadius: _getBorderRadius()
             ),
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              // NOTE: Images don't work well with padding here
+              padding: message.isMedia ? EdgeInsets.all(0.0) : EdgeInsets.all(8.0),
               child: _buildBody()
             )
           )
