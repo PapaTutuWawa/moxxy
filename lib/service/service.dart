@@ -1,6 +1,7 @@
 import "dart:async";
 
 import "package:moxxyv2/shared/logging.dart";
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -54,6 +55,16 @@ void Function(Map<String, dynamic>) sendDataMiddleware(FlutterBackgroundService 
     GetIt.I.get<Logger>().fine("S2F: " + data.toString());
 
     srv.sendData(data);
+  };
+}
+
+void Function(BaseIsolateEvent) sendDataMiddlewareEvent(FlutterBackgroundService srv) {
+  return (data) {
+    final json = data.toJson();
+    // NOTE: *S*erver to *F*oreground
+    GetIt.I.get<Logger>().fine("S2F: " + json.toString());
+
+    srv.sendData(json);
   };
 }
 
@@ -152,11 +163,12 @@ void onStart() {
       await GetIt.I.get<NotificationsService>().init();
 
       final middleware = sendDataMiddleware(service);
+      final middlewareEvent = sendDataMiddlewareEvent(service);
 
       // Register singletons
       GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
 
-      final db = DatabaseService(isar: await openDatabase(), sendData: middleware);
+      final db = DatabaseService(isar: await openDatabase(), sendData: middlewareEvent);
       GetIt.I.registerSingleton<DatabaseService>(db); 
 
       final xmpp = XmppService(sendData: (data) {

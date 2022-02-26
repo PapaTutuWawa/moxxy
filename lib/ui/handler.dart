@@ -1,6 +1,6 @@
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
@@ -88,31 +88,30 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
       );
     }
     break;
-    case "RosterDiff": {
+    case rosterDiffType: {
+      final event = RosterDiffEvent.fromJson(data);
       store.dispatch(
         RosterDiffAction(
-          newItems: List<RosterItem>.from(data["newItems"]!.map((i) => RosterItem.fromJson(i))),
-          
-          changedItems: List<RosterItem>.from(data["changedItems"]!.map((i) => RosterItem.fromJson(i))),
-
-          removedItems: List<String>.from(data["removedItems"]!)
+          newItems: event.newItems,
+          changedItems: event.changedItems,
+          removedItems: event.removedItems
         )
       );
     }
     break;
-    case "LoadConversationsResult": {
-      final List<Conversation> tmp = List<Conversation>.from(data["conversations"]!.map((c) => Conversation.fromJson(c)));
+    case loadConversationsResultType: {
+      final event = LoadConversationsResultEvent.fromJson(data);
       store.dispatch(AddMultipleConversationsAction(
-          conversations: tmp
+          conversations: event.conversations
       ));
     }
     break;
-    case "LoadMessagesForJidResult": {
-      final List<Message> tmp = List<Message>.from(data["messages"]!.map((m) => Message.fromJson(m)));
+    case loadMessagesForJidType: {
+      final event = LoadMessagesForJidEvent.fromJson(data);
       store.dispatch(
         AddMultipleMessagesAction(
-          conversationJid: data["jid"]!,
-          messages: tmp,
+          conversationJid: event.jid,
+          messages: event.messages,
           replace: true
         )
       );

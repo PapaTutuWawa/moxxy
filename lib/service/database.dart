@@ -8,6 +8,7 @@ import "package:moxxyv2/service/db/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/roster.dart";
+import "package:moxxyv2/shared/events.dart";
 
 import "package:isar/isar.dart";
 import "package:logging/logging.dart";
@@ -46,7 +47,7 @@ class DatabaseService {
   bool _rosterLoaded;
   
   final Logger _log;
-  final void Function(Map<String, dynamic>) sendData;
+  final void Function(BaseIsolateEvent) sendData;
   
   DatabaseService({ required this.isar, required this.sendData }) : _rosterLoaded = false, _log = Logger("DatabaseService");
 
@@ -73,21 +74,19 @@ class DatabaseService {
     }
 
     if (notify) {
-      sendData({
-          "type": "LoadConversationsResult",
-          "conversations": conversations.map((c) => c.toJson()).toList()
-      });
+      sendData(LoadConversationsResultEvent(
+          conversations: conversations.toList()
+      ));
     }
   }
 
   /// Loads all messages for the conversation with jid [jid].
   Future<void> loadMessagesForJid(String jid) async {
     if (loadedConversations.contains(jid)) {
-      sendData({
-          "type": "LoadMessagesForJidResult",
-          "jid": jid,
-          "messages": _messageCache[jid]!.map((m) => m.toJson()).toList()
-      });
+      sendData(LoadMessagesForJidEvent(
+          jid: jid,
+          messages: _messageCache[jid]!
+      ));
      
       return;
     }
@@ -99,10 +98,9 @@ class DatabaseService {
       _messageCache[jid] = List.empty(growable: true);
     }
     
-    sendData({
-        "type": "LoadMessagesForJidResult",
-        "jid": jid,
-        "messages": messages.map((m) {
+    sendData(LoadMessagesForJidEvent(
+        jid: jid,
+        messages: messages.map((m) {
             final message = Message(
               m.from,
               m.body,
@@ -114,9 +112,10 @@ class DatabaseService {
               mediaUrl: m.mediaUrl
             );
             _messageCache[jid]!.add(message);
-            return message.toJson();
+
+            return message;
         }).toList()
-    });
+    ));
   }
 
   /// Updates the conversation with id [id] inside the database.
@@ -239,12 +238,9 @@ class DatabaseService {
     }
 
     if (notify) {
-      sendData({
-          "type": "RosterDiff",
-          "newItems": items.map((i) => i.toJson()).toList(),
-          "changedItems": [],
-          "removedItems": []
-      });
+      sendData(RosterDiffEvent(
+          newItems: items.toList()
+      ));
     }
 
     _rosterLoaded = true;
