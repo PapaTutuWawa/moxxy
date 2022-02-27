@@ -27,6 +27,10 @@ class DownloadService {
 
   DownloadService(this.sendData) : _tasks = {}, _rateLimits = {}, _log = Logger("DownloadService");
 
+  /// Returns true if the request was successful based on [statusCode].
+  /// Based on https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+  bool _isRequestOkay(int? statusCode) => statusCode != null && statusCode >= 200 && statusCode <= 399;
+  
   Future<void> downloadFile(String url, int mId) async {
     _log.finest("Downloading $url");
     _tasks[url] = mId;
@@ -56,9 +60,8 @@ class DownloadService {
     );
 
 
-    if (response.statusCode != 200) {
-      // TODO: I think there are more codes that are okay.
-      //       => Check and change the .warning to a .severe
+    if (!_isRequestOkay(response.statusCode)) {
+      // TODO: Error handling
       _log.warning("HTTP GET of $url returned ${response.statusCode}");
     }
 
@@ -95,5 +98,19 @@ class DownloadService {
     
     _tasks.remove(url);
     _rateLimits.remove(url);
+  }
+
+  /// Returns the size of the file at [url] in octets. If an error occurs or the server
+  /// does not specify the Content-Length header, null is returned.
+  /// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Length
+  Future<int?> peekFileSize(String url) async {
+    final response = await Dio().headUri(Uri.parse(url));
+
+    if (!_isRequestOkay(response.statusCode)) return null;
+
+    final contentLengthHeaders = response.headers["Content-Length"];
+    if (contentLengthHeaders == null || contentLengthHeaders.isEmpty) return null;
+
+    return int.parse(contentLengthHeaders.first);
   }
 }
