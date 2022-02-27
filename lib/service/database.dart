@@ -182,7 +182,7 @@ class DatabaseService {
         await isar.dBMessages.put(m);
     });
 
-    return Message(
+    final msg = Message(
       from,
       body,
       timestamp,
@@ -192,6 +192,12 @@ class DatabaseService {
       isMedia,
       mediaUrl: mediaUrl
     );
+    
+    if (_messageCache.containsKey(conversationJid)) {
+      _messageCache[conversationJid]!.add(msg);
+    }
+
+    return msg;
   }
 
   /// Updates the message item with id [id] inside the database.
