@@ -6,6 +6,7 @@ import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/ui/widgets/chat/image.dart";
 import "package:moxxyv2/ui/widgets/chat/file.dart";
+import "package:moxxyv2/ui/widgets/chat/text.dart";
 
 // TODO: The timestamp may be too light
 // TODO: The timestamp is too small
@@ -142,49 +143,23 @@ class _ChatBubbleState extends State<ChatBubble> {
         );
       } else {
         if (message.isDownloading) {
-          // TODO: Indicate progress
           // TODO: If we have a thumbnail, inline it like a regular image and place the
           //       spinner over it
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: CircularProgressIndicator(value: _downloadProgress)
           );
+        } else {
+          // TODO: Put a button here if the user is not in our roster
+          // TODO: If we have a thumbnail, inline it like a regular image and place the
+          //       button over it
         }
-        // TODO: Put a spinner here
-        // TODO: PUt a button here if the user is not in our roster
       }
     }
 
-    return _renderText();
-  }
-
-  Widget _renderText() {
-    return IntrinsicWidth(child: Column(
-        children: [
-          Text(
-            message.body,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: fontsizeBody
-            )
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 3.0),
-                child: Text(
-                  _timestampString,
-                  style: const TextStyle(
-                    fontSize: fontsizeSubbody,
-                    color: Color(0xffbdbdbd)
-                  )
-                )
-              ) 
-            ]
-          )
-        ]
-      )
+    return TextChatWidget(
+      body: message.body,
+      timestamp: _timestampString
     );
   }
 

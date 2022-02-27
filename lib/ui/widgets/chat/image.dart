@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 
 import "package:flutter/material.dart";
 
@@ -46,23 +46,9 @@ class ImageChatWidget extends StatelessWidget {
             bottom: 0,
             left: 0,
             right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 3.0,
-                    right: 6.0
-                  ),
-                  child: Text(
-                    timestamp,
-                    style: const TextStyle(
-                      fontSize: fontsizeSubbody,
-                      color: Color(0xffbdbdbd)
-                    )
-                  )
-                ) 
-              ]
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
+              child: MessageBubbleBottom(timestamp: timestamp)
             )
           ) 
         ]

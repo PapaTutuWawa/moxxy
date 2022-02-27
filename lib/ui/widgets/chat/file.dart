@@ -1,4 +1,4 @@
-import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 
 import "package:flutter/material.dart";
 
@@ -19,28 +19,17 @@ class FileChatWidget extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            const Icon(
-              Icons.file_present,
-              size: 128.0
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8.0),
+              child: Icon(
+                Icons.file_present,
+                size: 128.0
+              )
             ),
             Text(
               filename
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 3.0),
-                  child: Text(
-                    timestamp,
-                    style: const TextStyle(
-                      fontSize: fontsizeSubbody,
-                      color: Color(0xffbdbdbd)
-                    )
-                  )
-                ) 
-              ]
-            )
+            MessageBubbleBottom(timestamp: timestamp)
           ]
         )
       )
