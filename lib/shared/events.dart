@@ -275,3 +275,24 @@ class PreStartResultEvent extends BaseIsolateEvent {
   };
 }
 
+const downloadProgressType = "DownloadProgressEvent";
+class DownloadProgressEvent extends BaseIsolateEvent {
+  final int id;
+  final double progress;
+
+  DownloadProgressEvent({ required this.id, required this.progress });
+  DownloadProgressEvent.fromJson(Map<String, dynamic> json) :
+    id = json["id"]!,
+    // TODO: For some reason, this throws an exception if the progress is at 1.0
+    // type 'int' is not a subtype of type 'double'
+    progress = json["progress"]! {
+      assert(json["type"] == downloadProgressType);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": downloadProgressType,
+    "id": id,
+    "progress": progress
+  };
+}

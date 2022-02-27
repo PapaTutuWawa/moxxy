@@ -26,6 +26,7 @@ import "package:moxxyv2/ui/redux/conversation/middlewares.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/start/middlewares.dart";
 import "package:moxxyv2/ui/redux/debug/middlewares.dart";
+import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart" as commands;
 
@@ -65,6 +66,7 @@ void main() async {
     ]
   );
   GetIt.I.registerSingleton<Store<MoxxyState>>(store);
+  GetIt.I.registerSingleton<UIDownloadService>(UIDownloadService());
 
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.onRecord.listen((record) {

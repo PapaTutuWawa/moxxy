@@ -1,6 +1,7 @@
 import "dart:async";
 import "dart:convert";
 
+import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
 // TODO: Maybe move this file somewhere else
@@ -150,7 +151,8 @@ class XmppService {
       GetIt.I.get<XmppConnection>().getConnectionSettings().jid.toString(),
       jid,
       true,
-      false
+      false,
+      "" // TODO: Stanza ID
     );
 
     sendData(MessageSendResultEvent(message: message));
@@ -240,18 +242,20 @@ class XmppService {
       final oobUrl = event.oob?.url;
       final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https";
       final shouldNotify = !(isMedia && isInRoster);
-      final msg = await db.addMessageFromData(
+      Message msg = await db.addMessageFromData(
         event.body,
         timestamp,
         event.fromJid.toString(),
         fromBare,
         false,
         isMedia,
+        event.sid,
         oobUrl: oobUrl
       );
 
       if (isMedia && isInRoster) {
         // TODO: Check the file size first
+        msg = msg.copyWith(isDownloading: true);
         GetIt.I.get<DownloadService>().downloadFile(oobUrl, msg.id);
       }
 

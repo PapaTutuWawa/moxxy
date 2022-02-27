@@ -61,7 +61,7 @@ dependencies:
   archive: ^3.2.0
   logging: ^1.0.2
   freezed_annotation: ^1.1.0
-  http: ^0.13.4
+  dio: ^4.0.4
   path: ^1.8.1
   add_to_gallery: ^0.2.0+3
   mime: ^1.0.1

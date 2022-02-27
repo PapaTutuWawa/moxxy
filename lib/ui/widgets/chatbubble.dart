@@ -1,13 +1,15 @@
 import "dart:async";
 import "dart:io";
 
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/ui/service/download.dart";
 
 // TODO: The timestamp may be too light
 // TODO: The timestamp is too small
 import "package:flutter/material.dart";
+import "package:get_it/get_it.dart";
 
 class ChatBubble extends StatefulWidget {
   final Message message;
@@ -53,6 +55,7 @@ class _ChatBubbleState extends State<ChatBubble> {
   final bool end;
   final double maxWidth;
 
+  double _downloadProgress;
   late String _timestampString;
   late Timer? _updateTimer;
 
@@ -64,7 +67,7 @@ class _ChatBubbleState extends State<ChatBubble> {
       required this.start,
       required this.end,
       required this.maxWidth
-  }) {
+  }): _downloadProgress = 0.0 {
     // Different name for now to prevent possible shadowing issues
     final _now = DateTime.now().millisecondsSinceEpoch;
     _timestampString = formatMessageTimestamp(message.timestamp, _now);
@@ -84,14 +87,26 @@ class _ChatBubbleState extends State<ChatBubble> {
     } else {
       _updateTimer = null;
     }
+
+    if (message.isMedia && message.mediaUrl == null && message.isDownloading) {
+      GetIt.I.get<UIDownloadService>().registerCallback(message.id, _onProgressUpdate);
+    }
   }
 
+  void _onProgressUpdate(double progress) {
+    setState(() {
+        _downloadProgress = progress;
+    });
+  }
+  
   @override
   void dispose() {
     if (_updateTimer != null) {
       _updateTimer!.cancel();
     }
 
+    GetIt.I.get<UIDownloadService>().unregisterCallback(message.id);
+    
     super.dispose();
   }
 
@@ -109,6 +124,15 @@ class _ChatBubbleState extends State<ChatBubble> {
       if (message.mediaUrl != null) {
         return _renderImage();
       } else {
+        if (message.isDownloading) {
+          // TODO: Indicate progress
+          // TODO: If we have a thumbnail, inline it like a regular image and place the
+          //       spinner over it
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CircularProgressIndicator(value: _downloadProgress)
+          );
+        }
         // TODO: Put a spinner here
         // TODO: PUt a button here if the user is not in our roster
       }
@@ -203,6 +227,11 @@ class _ChatBubbleState extends State<ChatBubble> {
       )
     );
   }
+
+  /// Specified when the message bubble should have color
+  bool _shouldColorBubble() {
+    return message.isMedia && message.mediaUrl != null;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -221,7 +250,7 @@ class _ChatBubbleState extends State<ChatBubble> {
               maxWidth: maxWidth
             ),
             decoration: BoxDecoration(
-              color: (message.isMedia && message.mediaUrl != null) ? null : (sentBySelf ? bubbleColorSent : bubbleColorReceived),
+              color: _shouldColorBubble() ? null : (sentBySelf ? bubbleColorSent : bubbleColorReceived),
               borderRadius: _getBorderRadius()
             ),
             child: Padding(

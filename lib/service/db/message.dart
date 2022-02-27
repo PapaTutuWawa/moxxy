@@ -19,6 +19,9 @@ class DBMessage {
 
   late bool sent;
 
+  late String sid;
+  String? originId;
+  
   String? oobUrl;
   /// A file:// URL pointing to the file
   String? mediaUrl;

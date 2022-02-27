@@ -1,6 +1,7 @@
 import "package:moxxyv2/shared/events.dart" as events;
 import "package:moxxyv2/shared/commands.dart" as commands;
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/redux/login/actions.dart";
@@ -142,6 +143,11 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           message: event.message
         )
       );
+    }
+    break;
+    case events.downloadProgressType: {
+      final event = events.DownloadProgressEvent.fromJson(data);
+      GetIt.I.get<UIDownloadService>().onProgress(event.id, event.progress);
     }
     break;
   }

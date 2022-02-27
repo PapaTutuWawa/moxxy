@@ -167,7 +167,7 @@ class DatabaseService {
   }
 
   /// Same as [addConversationFromData] but for a [Message].
-  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, { String? oobUrl, String? mediaUrl }) async {
+  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, String sid, { String? oobUrl, String? mediaUrl }) async {
     final m = DBMessage()
       ..from = from
       ..conversationJid = conversationJid
@@ -175,7 +175,8 @@ class DatabaseService {
       ..body = body
       ..sent = sent
       ..isMedia = isMedia
-      ..oobUrl = oobUrl;
+      ..oobUrl = oobUrl
+      ..sid = sid;
       
     await isar.writeTxn((isar) async {
         await isar.dBMessages.put(m);

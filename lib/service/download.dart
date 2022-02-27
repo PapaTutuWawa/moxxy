@@ -6,7 +6,7 @@ import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/notifications.dart";
 
 import "package:logging/logging.dart";
-import "package:http/http.dart" as http;
+import "package:dio/dio.dart";
 import "package:path_provider/path_provider.dart";
 import "package:path/path.dart" as path;
 import "package:get_it/get_it.dart";
@@ -30,7 +30,22 @@ class DownloadService {
     _log.finest("Downloading $url");
     _tasks[url] = mId;
     final uri = Uri.parse(url);
-    final response = await http.get(uri);
+    final filename = uri.pathSegments.last;
+
+    Directory tempDir = await getTemporaryDirectory();
+    final downloadedPath = path.join(tempDir.path, filename);
+    final response = await Dio().downloadUri(
+      uri,
+      downloadedPath,
+      onReceiveProgress: (count, total) {
+        // TODO: Maybe limit this a bit
+        sendData(DownloadProgressEvent(
+            id: mId,
+            progress: count.toDouble() / total.toDouble()
+        ));
+      }
+    );
+
 
     if (response.statusCode != 200) {
       // TODO: I think there are more codes that are okay.
@@ -38,14 +53,11 @@ class DownloadService {
       _log.warning("HTTP GET of $url returned ${response.statusCode}");
     }
 
-    Directory tempDir = await getTemporaryDirectory();
-    File f = File(path.join(tempDir.path, uri.pathSegments.last));
-    await f.writeAsBytes(response.bodyBytes);
-
     // Check the MIME type
     // TODO: Handle non-image and non-video files and files whose mime type cannot be determined
     // TODO: add_to_gallery currently doesn't allow us to save videos to the gallery
     //       https://github.com/flowmobile/add_to_gallery/issues/2#issuecomment-869477521
+    final f = File(downloadedPath);
     final notification = GetIt.I.get<NotificationsService>();
     final mime = lookupMimeType(f.path)!;
     if (mime.startsWith("image/")) {
@@ -74,7 +86,7 @@ class DownloadService {
         mediaUrl: f.path
       );
       
-      sendData(MessageUpdatedEvent(message: msg));
+      sendData(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
 
       if (notification.shouldShowNotification(msg.conversationJid)) {
         _log.finest("Creating notification with bigPicture ${f.path}");
@@ -83,14 +95,5 @@ class DownloadService {
       
       _tasks.remove(url);
     }    
-  }
-
-  /// Performs an HTTP HEAD request to figure out how large the file is we
-  /// are about to download.
-  /// Returns the size in bytes or -1 if the server specified no Content-Length header.
-  Future<int> peekFileSize(String url) async {
-    final response = await http.head(Uri.parse(url));
-
-    return int.parse(response.headers["Content-Length"] ?? "-1");
   }
 }
