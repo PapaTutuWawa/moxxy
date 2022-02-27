@@ -109,7 +109,10 @@ class DatabaseService {
               m.id!,
               m.conversationJid,
               m.isMedia,
-              mediaUrl: m.mediaUrl
+              mediaUrl: m.mediaUrl,
+              mediaType: m.mediaType,
+              thumbnailData: m.thumbnailData,
+              thumbnailDimensions: m.thumbnailDimensions
             );
             _messageCache[jid]!.add(message);
 
@@ -167,7 +170,7 @@ class DatabaseService {
   }
 
   /// Same as [addConversationFromData] but for a [Message].
-  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, String sid, { String? oobUrl, String? mediaUrl }) async {
+  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, String sid, { String? oobUrl, String? mediaUrl, String? thumbnailData, String? thumbnailDimensions }) async {
     final m = DBMessage()
       ..from = from
       ..conversationJid = conversationJid
@@ -176,8 +179,10 @@ class DatabaseService {
       ..sent = sent
       ..isMedia = isMedia
       ..oobUrl = oobUrl
-      ..sid = sid;
-      
+      ..sid = sid
+      ..thumbnailData = thumbnailData
+      ..thumbnailDimensions = thumbnailDimensions;
+
     await isar.writeTxn((isar) async {
         await isar.dBMessages.put(m);
     });
@@ -190,7 +195,9 @@ class DatabaseService {
       m.id!,
       conversationJid,
       isMedia,
-      mediaUrl: mediaUrl
+      mediaUrl: mediaUrl,
+      thumbnailData: thumbnailData,
+      thumbnailDimensions: thumbnailDimensions
     );
     
     if (_messageCache.containsKey(conversationJid)) {

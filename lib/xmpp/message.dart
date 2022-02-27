@@ -9,6 +9,7 @@ import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
 
 class MessageManager extends XmppManagerBase {
   @override
@@ -86,10 +87,11 @@ class MessageManager extends XmppManagerBase {
         stanzaId: await _getStanzaId(message)
     ));
   }
-  
+
   Future<bool> _onMessage(Stanza message) async {
+    final sfs = message.firstTag("file-sharing", xmlns: sfsXmlns);
     final body = message.firstTag("body");
-    if (body == null) {
+    if (body == null && sfs == null) {
       final marker = message.firstTagByXmlns(chatMarkersXmlns);
       if (marker != null) {
         // Response to a marker
@@ -111,11 +113,12 @@ class MessageManager extends XmppManagerBase {
     }
     
     getAttributes().sendEvent(MessageEvent(
-      body: body.innerText(),
+      body: body != null ? body.innerText() : "",
       fromJid: JID.fromString(message.attributes["from"]!),
       sid: message.attributes["id"]!,
       stanzaId: await _getStanzaId(message),
-      oob: oob
+      oob: oob,
+      sfs: sfs != null ? parseSFSElement(sfs) : null
     ));
 
     return true;

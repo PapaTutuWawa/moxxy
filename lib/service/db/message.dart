@@ -29,4 +29,9 @@ class DBMessage {
   late bool isMedia;
   /// The mime type, if available
   String? mediaType;
+  // TODO: Add a flag to specify the thumbnail type
+  /// The data of the thumbnail base64-encoded if needed. Currently assumed to be blurhash
+  String? thumbnailData;
+  /// The dimensions of the thumbnail
+  String? thumbnailDimensions;
 }

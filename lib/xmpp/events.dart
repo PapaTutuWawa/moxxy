@@ -1,8 +1,9 @@
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
 
 abstract class XmppEvent {}
 
@@ -52,8 +53,9 @@ class MessageEvent extends XmppEvent {
   final String sid;
   final StableStanzaId stanzaId;
   final OOBData? oob;
+  final StatelessFileSharingData? sfs;
 
-  MessageEvent({ required this.body, required this.fromJid, required this.sid, required this.stanzaId, this.oob });
+  MessageEvent({ required this.body, required this.fromJid, required this.sid, required this.stanzaId, this.oob, this.sfs });
 }
 
 class ChatMarkerEvent extends XmppEvent {

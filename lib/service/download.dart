@@ -23,12 +23,14 @@ class DownloadService {
   // Map the URL to download to the message id of the message we need to update
   // NOTE: This will be useful when we implement a queue 
   final Map<String, int> _tasks;
+  final Map<String, int> _rateLimits; // URL -> When to send the next update
 
-  DownloadService(this.sendData) : _tasks = {}, _log = Logger("DownloadService");
+  DownloadService(this.sendData) : _tasks = {}, _rateLimits = {}, _log = Logger("DownloadService");
 
   Future<void> downloadFile(String url, int mId) async {
     _log.finest("Downloading $url");
     _tasks[url] = mId;
+    _rateLimits[url] = 0;
     final uri = Uri.parse(url);
     final filename = uri.pathSegments.last;
 
@@ -38,11 +40,18 @@ class DownloadService {
       uri,
       downloadedPath,
       onReceiveProgress: (count, total) {
-        // TODO: Maybe limit this a bit
-        sendData(DownloadProgressEvent(
-            id: mId,
-            progress: count.toDouble() / total.toDouble()
-        ));
+        final progress = count.toDouble() / total.toDouble();
+
+        // TODO: Maybe rate limit harder
+        if (progress * 100 >= _rateLimits[url]!) {
+          _log.finest("Limit: ${_rateLimits[url]!}");
+          sendData(DownloadProgressEvent(
+              id: mId,
+              progress: progress
+          ));
+
+          _rateLimits[url] = (progress * 10).round() * 10;
+        }
       }
     );
 
@@ -60,43 +69,31 @@ class DownloadService {
     final f = File(downloadedPath);
     final notification = GetIt.I.get<NotificationsService>();
     final mime = lookupMimeType(f.path)!;
+    File newFile;
     if (mime.startsWith("image/")) {
-      final galleryFile = await AddToGallery.addToGallery(
+      newFile = await AddToGallery.addToGallery(
         originalFile: f,
         albumName: "Moxxy Images",
         deleteOriginalFile: true
       );
-
-      final msg = await GetIt.I.get<DatabaseService>().updateMessage(
-        id: _tasks[url]!,
-        mediaUrl: galleryFile.path,
-        mediaType: mime
-      );
-      
-      sendData(MessageUpdatedEvent(message: msg));
-
-      if (notification.shouldShowNotification(msg.conversationJid)) {
-        _log.finest("Creating notification with bigPicture ${galleryFile.path}");
-        await notification.showNotification(msg, "");
-      }
-      
-      _tasks.remove(url);
     } else {
-      final msg = await GetIt.I.get<DatabaseService>().updateMessage(
-        id: _tasks[url]!,
-        mediaUrl: f.path,
-        mediaType: mime
-      );
-      
-      sendData(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+      newFile = f;
+    }
 
-      if (notification.shouldShowNotification(msg.conversationJid)) {
-        // TODO: This is most likely wrong
-        _log.finest("Creating notification with bigPicture ${f.path}");
-        await notification.showNotification(msg, "");
-      }
-      
-      _tasks.remove(url);
-    }    
+    final msg = await GetIt.I.get<DatabaseService>().updateMessage(
+      id: _tasks[url]!,
+      mediaUrl: newFile.path,
+      mediaType: mime
+    );
+    
+    sendData(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+
+    if (notification.shouldShowNotification(msg.conversationJid)) {
+      _log.finest("Creating notification with bigPicture ${newFile.path}");
+      await notification.showNotification(msg, "");
+    }
+    
+    _tasks.remove(url);
+    _rateLimits.remove(url);
   }
 }

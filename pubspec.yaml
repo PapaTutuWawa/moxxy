@@ -65,6 +65,7 @@ dependencies:
   path: ^1.8.1
   add_to_gallery: ^0.2.0+3
   mime: ^1.0.1
+  blurhash: ^1.0.0
 
 dev_dependencies:
   #flutter_test:

@@ -1,13 +1,14 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 
-// TODO: Thumbnail
 class FileMetadataData {
   final String? mediaType;
 
   // TODO: Maybe create a special type for this
   final String? dimensions;
 
+  final List<Thumbnail> thumbnails;
   final String? desc;
   final Map<String, String>? hashes;
   final int? length;
@@ -21,7 +22,8 @@ class FileMetadataData {
       this.hashes,
       this.length,
       this.name,
-      this.size
+      this.size,
+      required this.thumbnails
   });
 }
 
@@ -38,6 +40,15 @@ FileMetadataData parseFileMetadataElement(XMLNode node) {
   for (final e in node.findTags("hash")) {
     hashes[e.attributes["algo"]] = e.innerText();
   }
+
+  // Thumbnails
+  final thumbnails = List<Thumbnail>.empty(growable: true);
+  for (final i in node.findTags("file-thumbnail")) {
+    final thumbnail = parseFileThumbnailElement(i);
+    if (thumbnail != null) {
+      thumbnails.add(thumbnail);
+    }
+  }
   
   return FileMetadataData(
     mediaType: node.firstTag("media-type")?.innerText(),
@@ -46,6 +57,7 @@ FileMetadataData parseFileMetadataElement(XMLNode node) {
     hashes: hashes,
     length: length,
     name: node.firstTag("name")?.innerText(),
-    size: size
+    size: size,
+    thumbnails: thumbnails
   );
 }

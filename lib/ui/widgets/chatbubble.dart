@@ -1,9 +1,11 @@
 import "dart:async";
+import "dart:math";
 
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/service/download.dart";
+import "package:moxxyv2/ui/widgets/chat/download.dart";
+import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/image.dart";
 import "package:moxxyv2/ui/widgets/chat/file.dart";
 import "package:moxxyv2/ui/widgets/chat/text.dart";
@@ -11,7 +13,6 @@ import "package:moxxyv2/ui/widgets/chat/text.dart";
 // TODO: The timestamp may be too light
 // TODO: The timestamp is too small
 import "package:flutter/material.dart";
-import "package:get_it/get_it.dart";
 import "package:path/path.dart" as path;
 
 class ChatBubble extends StatefulWidget {
@@ -58,7 +59,6 @@ class _ChatBubbleState extends State<ChatBubble> {
   final bool end;
   final double maxWidth;
 
-  double _downloadProgress;
   late String _timestampString;
   late Timer? _updateTimer;
 
@@ -70,7 +70,7 @@ class _ChatBubbleState extends State<ChatBubble> {
       required this.start,
       required this.end,
       required this.maxWidth
-  }): _downloadProgress = 0.0 {
+  }) {
     // Different name for now to prevent possible shadowing issues
     final _now = DateTime.now().millisecondsSinceEpoch;
     _timestampString = formatMessageTimestamp(message.timestamp, _now);
@@ -90,25 +90,13 @@ class _ChatBubbleState extends State<ChatBubble> {
     } else {
       _updateTimer = null;
     }
-
-    if (message.isMedia && message.mediaUrl == null && message.isDownloading) {
-      GetIt.I.get<UIDownloadService>().registerCallback(message.id, _onProgressUpdate);
-    }
-  }
-
-  void _onProgressUpdate(double progress) {
-    setState(() {
-        _downloadProgress = progress;
-    });
-  }
+   }
   
   @override
   void dispose() {
     if (_updateTimer != null) {
       _updateTimer!.cancel();
     }
-
-    GetIt.I.get<UIDownloadService>().unregisterCallback(message.id);
     
     super.dispose();
   }
@@ -143,14 +131,33 @@ class _ChatBubbleState extends State<ChatBubble> {
         );
       } else {
         if (message.isDownloading) {
-          // TODO: If we have a thumbnail, inline it like a regular image and place the
-          //       spinner over it
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CircularProgressIndicator(value: _downloadProgress)
-          );
+          if (message.thumbnailData != null) {
+            final size = message.thumbnailDimensions?.split("x");
+            int width = maxWidth.toInt();
+            int height = maxWidth.toInt();
+            if (size != null) {
+              final dimWidth = int.parse(size[0]);
+              final dimHeight = int.parse(size[1]);
+              width = min(dimWidth, maxWidth).toInt();
+              height = ((width / dimWidth) * dimHeight).round().toInt();
+            }
+
+            return BlurhashChatWidget(
+              width: width,
+              height: height,
+              id: message.id,
+              borderRadius: _getBorderRadius(),
+              thumbnailData: message.thumbnailData!
+            );
+          } else {
+            return Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: DownloadProgress(id: message.id)
+            );
+          }
         } else {
-          // TODO: Put a button here if the user is not in our roster
+          // This means that the file is not yet downloaded
+          // TODO: Put a button here to download
           // TODO: If we have a thumbnail, inline it like a regular image and place the
           //       button over it
         }

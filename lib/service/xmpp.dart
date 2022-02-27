@@ -14,6 +14,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
@@ -239,9 +240,19 @@ class XmppService {
       final fromBare = event.fromJid.toBare().toString();
       final isChatOpen = _currentlyOpenedChatJid == fromBare;
       final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
-      final oobUrl = event.oob?.url;
-      final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https";
+      final oobUrl = event.sfs == null ? event.oob?.url : null;
+      final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https" || event.sfs != null;
       final shouldNotify = !(isMedia && isInRoster);
+      String? thumbnailData;
+      if (event.sfs != null) {
+        for (final i in event.sfs!.metadata.thumbnails) {
+          if (i is BlurhashThumbnail) {
+            thumbnailData = i.hash;
+            break;
+          }
+        }
+      }
+
       Message msg = await db.addMessageFromData(
         event.body,
         timestamp,
@@ -250,16 +261,27 @@ class XmppService {
         false,
         isMedia,
         event.sid,
-        oobUrl: oobUrl
+        oobUrl: oobUrl,
+        thumbnailData: thumbnailData,
+        thumbnailDimensions: event.sfs?.metadata.dimensions
       );
 
       if (isMedia && isInRoster) {
+        String url;
+        if (event.sfs != null) {
+          url = event.sfs!.url;
+        } else {
+          // NOTE: Either sfs or oobUrl must be != null
+          url = oobUrl!;
+        }
+
         // TODO: Check the file size first
         msg = msg.copyWith(isDownloading: true);
-        GetIt.I.get<DownloadService>().downloadFile(oobUrl, msg.id);
+        GetIt.I.get<DownloadService>().downloadFile(url, msg.id);
       }
 
       // TODO: Somehow figure out if it was an image or a file
+      // TODO: Maybe guess based on the file extension
       final body = isMedia ? "📷 Image" : event.body;
       final conversation = await db.getConversationByJid(fromBare);
       if (conversation != null) { 
