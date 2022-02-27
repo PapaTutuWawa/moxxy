@@ -69,7 +69,8 @@ class DownloadService {
 
       final msg = await GetIt.I.get<DatabaseService>().updateMessage(
         id: _tasks[url]!,
-        mediaUrl: galleryFile.path
+        mediaUrl: galleryFile.path,
+        mediaType: mime
       );
       
       sendData(MessageUpdatedEvent(message: msg));
@@ -83,12 +84,14 @@ class DownloadService {
     } else {
       final msg = await GetIt.I.get<DatabaseService>().updateMessage(
         id: _tasks[url]!,
-        mediaUrl: f.path
+        mediaUrl: f.path,
+        mediaType: mime
       );
       
       sendData(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
 
       if (notification.shouldShowNotification(msg.conversationJid)) {
+        // TODO: This is most likely wrong
         _log.finest("Creating notification with bigPicture ${f.path}");
         await notification.showNotification(msg, "");
       }

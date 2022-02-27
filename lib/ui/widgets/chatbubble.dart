@@ -1,15 +1,17 @@
 import "dart:async";
-import "dart:io";
 
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/service/download.dart";
+import "package:moxxyv2/ui/widgets/chat/image.dart";
+import "package:moxxyv2/ui/widgets/chat/file.dart";
 
 // TODO: The timestamp may be too light
 // TODO: The timestamp is too small
 import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
+import "package:path/path.dart" as path;
 
 class ChatBubble extends StatefulWidget {
   final Message message;
@@ -122,7 +124,22 @@ class _ChatBubbleState extends State<ChatBubble> {
   Widget _buildBody() {
     if (message.isMedia) {
       if (message.mediaUrl != null) {
-        return _renderImage();
+        final mime = message.mediaType;
+        if (mime == null) {
+          // Fall through
+        } else if (mime.startsWith("image/")) {
+          return ImageChatWidget(
+            path: message.mediaUrl!,
+            timestamp: _timestampString,
+            radius: _getBorderRadius()
+          );
+        }
+
+        return FileChatWidget(
+          path: message.mediaUrl!,
+          filename: path.basename(message.mediaUrl!),
+          timestamp: _timestampString
+        );
       } else {
         if (message.isDownloading) {
           // TODO: Indicate progress
@@ -141,63 +158,6 @@ class _ChatBubbleState extends State<ChatBubble> {
     return _renderText();
   }
 
-  Widget _renderImage() {
-    return IntrinsicWidth(child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: _getBorderRadius(),
-            child: Image.file(
-              File(message.mediaUrl!)
-            )
-          ),
-          Positioned(
-            bottom: 0,
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              decoration: BoxDecoration(
-                borderRadius: _getBorderRadius(),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withAlpha(0),
-                    Colors.black12,
-                    Colors.black54
-                  ]
-                )
-              )
-            )
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 3.0,
-                    right: 6.0
-                  ),
-                  child: Text(
-                    _timestampString,
-                    style: const TextStyle(
-                      fontSize: fontsizeSubbody,
-                      color: Color(0xffbdbdbd)
-                    )
-                  )
-                ) 
-              ]
-            )
-          ) 
-        ]
-    ));
-  }
-  
   Widget _renderText() {
     return IntrinsicWidth(child: Column(
         children: [
@@ -228,9 +188,19 @@ class _ChatBubbleState extends State<ChatBubble> {
     );
   }
 
-  /// Specified when the message bubble should have color
-  bool _shouldColorBubble() {
-    return message.isMedia && message.mediaUrl != null;
+  /// Returns true if the mime type has a special widget which replaces the bubble.
+  /// False otherwise.
+  bool _isInlinedWidget() {
+    if (message.mediaType != null) {
+      return message.mediaType!.startsWith("image/");
+    }
+
+    return false;
+  }
+  
+  /// Specified when the message bubble should not have color
+  bool _shouldNotColorBubble() {
+    return message.isMedia && message.mediaUrl != null && _isInlinedWidget();
   }
   
   @override
@@ -250,7 +220,7 @@ class _ChatBubbleState extends State<ChatBubble> {
               maxWidth: maxWidth
             ),
             decoration: BoxDecoration(
-              color: _shouldColorBubble() ? null : (sentBySelf ? bubbleColorSent : bubbleColorReceived),
+              color: _shouldNotColorBubble() ? null : (sentBySelf ? bubbleColorSent : bubbleColorReceived),
               borderRadius: _getBorderRadius()
             ),
             child: Padding(

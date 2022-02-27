@@ -27,4 +27,6 @@ class DBMessage {
   String? mediaUrl;
   /// If the message should be treated as a media message, e.g. an image
   late bool isMedia;
+  /// The mime type, if available
+  String? mediaType;
 }

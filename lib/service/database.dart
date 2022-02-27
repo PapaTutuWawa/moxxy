@@ -201,10 +201,13 @@ class DatabaseService {
   }
 
   /// Updates the message item with id [id] inside the database.
-  Future<Message> updateMessage({ required int id, String? mediaUrl }) async {
+  Future<Message> updateMessage({ required int id, String? mediaUrl, String? mediaType }) async {
     final i = (await isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
       i.mediaUrl = mediaUrl;
+    }
+    if (mediaType != null) {
+      i.mediaType = mediaType;
     }
 
     await isar.writeTxn((isar) async {
@@ -219,7 +222,8 @@ class DatabaseService {
       i.id!,
       i.conversationJid,
       i.isMedia,
-      mediaUrl: mediaUrl
+      mediaUrl: mediaUrl,
+      mediaType: mediaType
     );
 
     // Update cache
