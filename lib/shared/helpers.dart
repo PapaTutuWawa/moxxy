@@ -1,9 +1,7 @@
-/*
- * Add a leading zero, if required, to ensure that an integer is rendered
- * as a two "digit" string.
- *
- * NOTE: This function assumes that 0 <= i <= 99
- */
+/// Add a leading zero, if required, to ensure that an integer is rendered
+/// as a two "digit" string.
+///
+/// NOTE: This function assumes that 0 <= i <= 99
 String padInt(int i) {
   if (i <= 9) {
     return "0" + i.toString();
@@ -12,19 +10,15 @@ String padInt(int i) {
   return i.toString();
 }
 
-/*
- * A wrapper around List<T>.firstWhere that does not throw but instead just
- * returns true if test returns true for an element or false if test never
- * returned true.
- */
+/// A wrapper around List<T>.firstWhere that does not throw but instead just
+/// returns true if [test] returns true for an element or false if [test] never
+/// returned true.
 bool listContains<T>(List<T> list, bool Function(T element) test) {
   return firstWhereOrNull<T>(list, test) != null;
 }
 
-/*
- * A wrapper around List<T>.firstWhere that does not throw but instead just
- * return null if test never returned true
- */
+/// A wrapper around [List<T>.firstWhere] that does not throw but instead just
+/// return null if [test] never returned true
 T? firstWhereOrNull<T>(List<T> list, bool Function(T element) test) {
   try {
     return list.firstWhere(test);
@@ -33,11 +27,9 @@ T? firstWhereOrNull<T>(List<T> list, bool Function(T element) test) {
   }
 }
 
-/*
- * Format the timestamp of a conversation change into a nice string.
- * timestamp and now are both in millisecondsSinceEpoch.
- * Ensures that now >= timestamp
- */
+/// Format the timestamp of a conversation change into a nice string.
+/// timestamp and now are both in millisecondsSinceEpoch.
+/// Ensures that now >= timestamp
 String formatConversationTimestamp(int timestamp, int now) {
   int difference = now - timestamp;
 
@@ -60,9 +52,7 @@ String formatConversationTimestamp(int timestamp, int now) {
   return (difference / Duration.millisecondsPerMinute).floor().toString() + "min";
 }
 
-/*
- * Same as formatConversationTimestamp but for messages
- */
+/// Same as [formatConversationTimestamp] but for messages
 String formatMessageTimestamp(int timestamp, int now) {
   int difference = now - timestamp;
 
@@ -90,9 +80,7 @@ enum JidFormatError {
   noDomain
 }
 
-/*
- * Validate a JID and return why it is invalid
- */
+/// Validate a JID and return why it is invalid.
 JidFormatError validateJid(String jid) {
   if (jid.isEmpty) {
     return JidFormatError.empty;
