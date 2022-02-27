@@ -188,8 +188,8 @@ class _ConversationPageState extends State<ConversationPage> {
                         );
                       }
                       break;
-                      default: {
-                        showNotImplementedDialog("chat-closing", context);
+                      case ConversationOption.block: {
+                        showNotImplementedDialog("blocking", context);
                       }
                       break;
                     }
