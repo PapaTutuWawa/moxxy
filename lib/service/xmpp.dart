@@ -241,11 +241,20 @@ class XmppService {
       final isChatOpen = _currentlyOpenedChatJid == fromBare;
       final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
       final oobUrl = event.sfs == null ? event.oob?.url : null;
-      final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https" || event.sfs != null;
+      final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https" || event.sfs != null || event.sims != null;
       final shouldNotify = !(isMedia && isInRoster);
       String? thumbnailData;
+
+      // TODO: Join these together
       if (event.sfs != null) {
         for (final i in event.sfs!.metadata.thumbnails) {
+          if (i is BlurhashThumbnail) {
+            thumbnailData = i.hash;
+            break;
+          }
+        }
+      } else if (event.sims != null) {
+        for (final i in event.sims!.thumbnails) {
           if (i is BlurhashThumbnail) {
             thumbnailData = i.hash;
             break;
@@ -270,8 +279,10 @@ class XmppService {
         String url;
         if (event.sfs != null) {
           url = event.sfs!.url;
+        } else if (event.sims != null) {
+          url = event.sims!.url;
         } else {
-          // NOTE: Either sfs or oobUrl must be != null
+          // NOTE: Either sfs, sims or oobUrl must be != null
           url = oobUrl!;
         }
 

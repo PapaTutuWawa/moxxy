@@ -79,8 +79,11 @@ class XMLNode {
   }
   
   /// Returns all children whose tag is equal to [tag].
-  List<XMLNode> findTags(String tag) {
-    return children.where((element) => element.tag == tag).toList();
+  List<XMLNode> findTags(String tag, { String? xmlns }) {
+    return children.where((element) {
+        final xmlnsMatches = xmlns != null ? element.attributes["xmlns"] == xmlns : true;
+        return element.tag == tag && xmlnsMatches;
+    }).toList();
   }
   
   /// Returns the inner text of the node. If none is set, returns the "".

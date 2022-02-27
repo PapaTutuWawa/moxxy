@@ -9,6 +9,7 @@ import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
 
 class MessageManager extends XmppManagerBase {
@@ -88,10 +89,21 @@ class MessageManager extends XmppManagerBase {
     ));
   }
 
+  StatelessMediaSharingData? _getSIMS(Stanza message) {
+    final references = message.findTags("reference", xmlns: referenceXmlns);
+    for (final ref in references) {
+      final sims = ref.firstTag("media-sharing", xmlns: simsXmlns);
+      if (sims != null) return parseSIMSElement(sims);
+    }
+
+    return null;
+  }
+  
   Future<bool> _onMessage(Stanza message) async {
     final sfs = message.firstTag("file-sharing", xmlns: sfsXmlns);
+    final sims = _getSIMS(message);
     final body = message.firstTag("body");
-    if (body == null && sfs == null) {
+    if (body == null && sfs == null && sims == null) {
       final marker = message.firstTagByXmlns(chatMarkersXmlns);
       if (marker != null) {
         // Response to a marker
@@ -118,7 +130,8 @@ class MessageManager extends XmppManagerBase {
       sid: message.attributes["id"]!,
       stanzaId: await _getStanzaId(message),
       oob: oob,
-      sfs: sfs != null ? parseSFSElement(sfs) : null
+      sfs: sfs != null ? parseSFSElement(sfs) : null,
+      sims: sims
     ));
 
     return true;
