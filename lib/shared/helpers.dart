@@ -117,3 +117,13 @@ JidFormatError validateJid(String jid) {
 
   return JidFormatError.none;
 }
+
+/// Returns the first element in [items] which is non null.
+/// Returns null if they all are null.
+T? firstNotNull<T>(List<T?> items) {
+  for (final item in items) {
+    if (item != null) return item;
+  }
+
+  return null;
+}

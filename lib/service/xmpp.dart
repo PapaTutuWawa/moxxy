@@ -8,6 +8,7 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/redux/account/state.dart";
 
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -243,22 +244,13 @@ class XmppService {
       final oobUrl = event.sfs == null ? event.oob?.url : null;
       final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https" || event.sfs != null || event.sims != null;
       final shouldNotify = !(isMedia && isInRoster);
-      String? thumbnailData;
 
-      // TODO: Join these together
-      if (event.sfs != null) {
-        for (final i in event.sfs!.metadata.thumbnails) {
-          if (i is BlurhashThumbnail) {
-            thumbnailData = i.hash;
-            break;
-          }
-        }
-      } else if (event.sims != null) {
-        for (final i in event.sims!.thumbnails) {
-          if (i is BlurhashThumbnail) {
-            thumbnailData = i.hash;
-            break;
-          }
+      String? thumbnailData;
+      final thumbnails = firstNotNull([ event.sfs?.metadata.thumbnails, event.sims?.thumbnails ]) ?? [];
+      for (final i in thumbnails) {
+        if (i is BlurhashThumbnail) {
+          thumbnailData = i.hash;
+          break;
         }
       }
 

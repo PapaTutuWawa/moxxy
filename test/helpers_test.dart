@@ -203,4 +203,12 @@ void main() {
           );
       });
   });
+
+  group("firstNotNull", () {
+      test("Test simple lists", () {
+          expect(firstNotNull<int?>([null, null]), null);
+          expect(firstNotNull([1, null]), 1);
+          expect(firstNotNull([null, null, 2]), 2);
+      });
+  });
 }
