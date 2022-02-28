@@ -1,3 +1,5 @@
+import "package:moxxyv2/shared/models/message.dart";
+
 abstract class BaseIsolateCommand {
   Map<String, dynamic> toJson();
   //BaseIsolateEvent fromJson(Map<String, dynamic> json);
@@ -220,6 +222,23 @@ class DebugSetPassphraseAction extends BaseIsolateCommand {
   Map<String, dynamic> toJson() => {
     "type": debugSetPassphraseActionType,
     "passphrase": passphrase
+  };
+}
+
+const performDownloadActionType = "PerformDownloadAction";
+class PerformDownloadAction extends BaseIsolateCommand {
+  final Message message;
+
+  PerformDownloadAction({ required this.message });
+  PerformDownloadAction.fromJson(Map<String, dynamic> json) :
+    message = Message.fromJson(json["message"]!) {
+      assert(json["type"] == performDownloadActionType);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": performDownloadActionType,
+    "id": message.toJson(),
   };
 }
 

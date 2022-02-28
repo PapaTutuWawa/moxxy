@@ -11,10 +11,16 @@ import "package:moxxyv2/ui/widgets/chat/image.dart";
 import "package:moxxyv2/ui/widgets/chat/file.dart";
 import "package:moxxyv2/ui/widgets/chat/text.dart";
 
+// TODO: Maybe move this out of the UI code
+import "package:moxxyv2/shared/commands.dart";
+
 // TODO: The timestamp may be too light
 // TODO: The timestamp is too small
 import "package:flutter/material.dart";
 import "package:path/path.dart" as path;
+
+// TODO: Maybe move this out of the UI code
+import "package:flutter_background_service/flutter_background_service.dart";
 
 class ChatBubble extends StatefulWidget {
   final Message message;
@@ -124,6 +130,12 @@ class _ChatBubbleState extends State<ChatBubble> {
 
     return Size(width, height);
   }
+
+  void _requestDownload() {
+    FlutterBackgroundService().sendData(
+      PerformDownloadAction(message: message).toJson()
+    );
+  }
   
   Widget _buildBody() {
     if (message.isMedia) {
@@ -174,9 +186,7 @@ class _ChatBubbleState extends State<ChatBubble> {
               borderRadius: _getBorderRadius(),
               thumbnailData: message.thumbnailData!,
               child: DownloadButton(
-                onPressed: () {
-                  // TODO
-                }
+                onPressed: () => _requestDownload()
               )
             );
           } else {
@@ -190,9 +200,7 @@ class _ChatBubbleState extends State<ChatBubble> {
                 extra: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ElevatedButton(
-                    onPressed: () {
-                      // TODO
-                    },
+                    onPressed: () => _requestDownload(),
                     child: const Text("Download")
                   )
                 )

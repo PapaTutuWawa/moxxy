@@ -386,6 +386,14 @@ void handleEvent(Map<String, dynamic>? data) {
       })();
     }
     break;
+    case performDownloadActionType: {
+      final command = PerformDownloadAction.fromJson(data);
+      sendDataMiddleware(FlutterBackgroundService())(
+        MessageUpdatedEvent(message: command.message.copyWith(isDownloading: true))
+      );
+      GetIt.I.get<DownloadService>().downloadFile(command.message.srcUrl!, command.message.id);
+    }
+    break;
     case stopActionType: {
       FlutterBackgroundService().stopBackgroundService();
     }
