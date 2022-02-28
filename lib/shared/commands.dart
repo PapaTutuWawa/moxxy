@@ -238,7 +238,7 @@ class PerformDownloadAction extends BaseIsolateCommand {
   @override
   Map<String, dynamic> toJson() => {
     "type": performDownloadActionType,
-    "id": message.toJson(),
+    "message": message.toJson(),
   };
 }
 
