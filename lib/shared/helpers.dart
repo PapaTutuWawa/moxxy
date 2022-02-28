@@ -115,3 +115,8 @@ T? firstNotNull<T>(List<T?> items) {
 
   return null;
 }
+
+/// The mathematical a -> b
+bool implies(bool a, bool b) {
+  return !a || b;
+}

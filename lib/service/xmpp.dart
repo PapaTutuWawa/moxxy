@@ -1,7 +1,6 @@
 import "dart:async";
 import "dart:convert";
 
-import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/helpers.dart";
 
 // TODO: Maybe move this file somewhere else
@@ -9,6 +8,7 @@ import "package:moxxyv2/ui/redux/account/state.dart";
 
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -169,6 +169,18 @@ class XmppService {
     );
     sendData(ConversationUpdatedEvent(conversation: newConversation));
   }
+
+  String? _getMessageSrcUrl(MessageEvent event) {
+    if (event.sfs != null) {
+      return event.sfs!.url;
+    } else if (event.sims != null) {
+      return event.sims!.url;
+    } else if (event.oob != null) {
+      return event.oob!.url;
+    }
+
+    return null;
+  }
   
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
@@ -241,8 +253,8 @@ class XmppService {
       final fromBare = event.fromJid.toBare().toString();
       final isChatOpen = _currentlyOpenedChatJid == fromBare;
       final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
-      final oobUrl = event.sfs == null ? event.oob?.url : null;
-      final isMedia = event.body == oobUrl && Uri.parse(oobUrl!).scheme == "https" || event.sfs != null || event.sims != null;
+      final srcUrl = _getMessageSrcUrl(event);
+      final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
       final shouldNotify = !(isMedia && isInRoster);
 
       String? thumbnailData;
@@ -262,25 +274,16 @@ class XmppService {
         false,
         isMedia,
         event.sid,
-        oobUrl: oobUrl,
+        srcUrl: srcUrl,
         thumbnailData: thumbnailData,
         thumbnailDimensions: event.sfs?.metadata.dimensions
       );
 
       if (isMedia && isInRoster) {
-        String url;
-        if (event.sfs != null) {
-          url = event.sfs!.url;
-        } else if (event.sims != null) {
-          url = event.sims!.url;
-        } else {
-          // NOTE: Either sfs, sims or oobUrl must be != null
-          url = oobUrl!;
-        }
-
         // TODO: Check the file size first
         msg = msg.copyWith(isDownloading: true);
-        GetIt.I.get<DownloadService>().downloadFile(url, msg.id);
+        // NOTE: If we are here, then srcUrl must be non-null
+        GetIt.I.get<DownloadService>().downloadFile(srcUrl, msg.id);
       }
 
       // TODO: Somehow figure out if it was an image or a file

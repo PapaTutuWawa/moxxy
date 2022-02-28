@@ -5,6 +5,7 @@ import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/chat/download.dart";
+import "package:moxxyv2/ui/widgets/chat/downloadbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/image.dart";
 import "package:moxxyv2/ui/widgets/chat/file.dart";
@@ -109,6 +110,20 @@ class _ChatBubbleState extends State<ChatBubble> {
       bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
     );
   }
+
+  Size _getThumbnailSize() {
+    final size = message.thumbnailDimensions?.split("x");
+    double width = maxWidth;
+    double height = maxWidth;
+    if (size != null) {
+      final dimWidth = int.parse(size[0]).toDouble();
+      final dimHeight = int.parse(size[1]).toDouble();
+      width = min(dimWidth, maxWidth);
+      height = ((width / dimWidth) * dimHeight);
+    }
+
+    return Size(width, height);
+  }
   
   Widget _buildBody() {
     if (message.isMedia) {
@@ -132,22 +147,14 @@ class _ChatBubbleState extends State<ChatBubble> {
       } else {
         if (message.isDownloading) {
           if (message.thumbnailData != null) {
-            final size = message.thumbnailDimensions?.split("x");
-            int width = maxWidth.toInt();
-            int height = maxWidth.toInt();
-            if (size != null) {
-              final dimWidth = int.parse(size[0]);
-              final dimHeight = int.parse(size[1]);
-              width = min(dimWidth, maxWidth).toInt();
-              height = ((width / dimWidth) * dimHeight).round().toInt();
-            }
+            final size = _getThumbnailSize();
 
             return BlurhashChatWidget(
-              width: width,
-              height: height,
-              id: message.id,
+              width: size.width.toInt(),
+              height: size.height.toInt(),
               borderRadius: _getBorderRadius(),
-              thumbnailData: message.thumbnailData!
+              thumbnailData: message.thumbnailData!,
+              child: DownloadProgress(id: message.id)
             );
           } else {
             return Padding(
@@ -157,9 +164,41 @@ class _ChatBubbleState extends State<ChatBubble> {
           }
         } else {
           // This means that the file is not yet downloaded
-          // TODO: Put a button here to download
-          // TODO: If we have a thumbnail, inline it like a regular image and place the
-          //       button over it
+
+          if (message.thumbnailData != null) {
+            final size = _getThumbnailSize();
+
+            return BlurhashChatWidget(
+              width: size.width.toInt(),
+              height: size.height.toInt(),
+              borderRadius: _getBorderRadius(),
+              thumbnailData: message.thumbnailData!,
+              child: DownloadButton(
+                onPressed: () {
+                  // TODO
+                }
+              )
+            );
+          } else {
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: FileChatWidget(
+                // NOTE: This may crash if run with a database from before srcUrl was implemented, but no need to guard against it
+                filename: path.basename(message.srcUrl!),
+                path: "",
+                timestamp: _timestampString,
+                extra: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // TODO
+                    },
+                    child: const Text("Download")
+                  )
+                )
+              )
+            );
+          }
         }
       }
     }

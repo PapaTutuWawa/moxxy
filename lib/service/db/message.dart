@@ -21,8 +21,9 @@ class DBMessage {
 
   late String sid;
   String? originId;
-  
-  String? oobUrl;
+
+  /// Url a file can be accessed from
+  String? srcUrl;
   /// A file:// URL pointing to the file
   String? mediaUrl;
   /// If the message should be treated as a media message, e.g. an image

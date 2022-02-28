@@ -1,18 +1,16 @@
 import "dart:typed_data";
 
-import "package:moxxyv2/ui/widgets/chat/download.dart";
-
 import "package:flutter/material.dart";
 import "package:blurhash/blurhash.dart";
 
 class BlurhashChatWidget extends StatelessWidget {
   final BorderRadius borderRadius;
-  final int id;
   final int width;
   final int height;
   final String thumbnailData;
+  final Widget? child;
 
-  const BlurhashChatWidget({ required this.borderRadius, required this.id, required this.width, required this.height, required this.thumbnailData, Key? key }) : super(key: key);
+  const BlurhashChatWidget({ required this.borderRadius, this.child, required this.width, required this.height, required this.thumbnailData, Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +35,7 @@ class BlurhashChatWidget extends StatelessWidget {
                   borderRadius: borderRadius,
                   child: Image.memory(snapshot.data!)
                 ),
-                DownloadProgress(id: id)
+                ...(child != null ? [child!] : [])
               ]
             )
           );
@@ -45,7 +43,7 @@ class BlurhashChatWidget extends StatelessWidget {
 
         return Padding(
           padding: const EdgeInsets.all(8.0),
-          child: DownloadProgress(id: id)
+          child: child
         );
       }
     );
