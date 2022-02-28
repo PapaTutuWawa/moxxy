@@ -13,6 +13,13 @@ import "package:get_it/get_it.dart";
 import "package:mime/mime.dart";
 import "package:add_to_gallery/add_to_gallery.dart";
 
+class FileMetadata {
+  final String? mime;
+  final int? size;
+
+  const FileMetadata({ this.mime, this.size });
+}
+
 // TODO: Make this more reliable:
 //       - Retry if a download failed, e.g. because we lost internet connection
 //       - hold a queue of files to download
@@ -103,14 +110,17 @@ class DownloadService {
   /// Returns the size of the file at [url] in octets. If an error occurs or the server
   /// does not specify the Content-Length header, null is returned.
   /// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Length
-  Future<int?> peekFileSize(String url) async {
+  Future<FileMetadata> peekFile(String url) async {
     final response = await Dio().headUri(Uri.parse(url));
 
-    if (!_isRequestOkay(response.statusCode)) return null;
+    if (!_isRequestOkay(response.statusCode)) return FileMetadata();
 
     final contentLengthHeaders = response.headers["Content-Length"];
-    if (contentLengthHeaders == null || contentLengthHeaders.isEmpty) return null;
+    final contentTypeHeaders = response.headers["Content-Type"];
 
-    return int.parse(contentLengthHeaders.first);
+    return FileMetadata(
+      mime: contentTypeHeaders?.first,
+      size: contentLengthHeaders != null && contentLengthHeaders.isNotEmpty ? int.parse(contentLengthHeaders.first) : null
+    );
   }
 }
