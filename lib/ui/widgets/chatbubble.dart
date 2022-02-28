@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:io";
 import "dart:math";
 
 import "package:moxxyv2/shared/helpers.dart";
@@ -7,7 +6,6 @@ import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/chat/download.dart";
 import "package:moxxyv2/ui/widgets/chat/downloadbutton.dart";
-import "package:moxxyv2/ui/widgets/chat/filenotfound.dart";
 import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/image.dart";
 import "package:moxxyv2/ui/widgets/chat/file.dart";
@@ -142,29 +140,6 @@ class _ChatBubbleState extends State<ChatBubble> {
   Widget _buildBody() {
     if (message.isMedia) {
       if (message.mediaUrl != null) {
-        // TODO: Maybe use a Future Builder?
-        // TODO: Maybe allow the user to try and re-download the file?
-        if (!File(message.mediaUrl!).existsSync()) {
-          if (message.thumbnailData != null) {
-            final size = _getThumbnailSize();
-
-            return BlurhashChatWidget(
-              width: size.width.toInt(),
-              height: size.height.toInt(),
-              borderRadius: _getBorderRadius(),
-              thumbnailData: message.thumbnailData!,
-              child: const FileNotFound()
-            );
-          } else {
-            return FileChatWidget(
-              path: message.mediaUrl!,
-              filename: path.basename(message.mediaUrl!),
-              timestamp: _timestampString,
-              extra: const FileNotFound()
-            );
-          }
-        }
-
         final mime = message.mediaType;
         if (mime == null) {
           // Fall through
@@ -172,7 +147,9 @@ class _ChatBubbleState extends State<ChatBubble> {
           return ImageChatWidget(
             path: message.mediaUrl!,
             timestamp: _timestampString,
-            radius: _getBorderRadius()
+            radius: _getBorderRadius(),
+            thumbnailData: message.thumbnailData,
+            thumbnailSize: _getThumbnailSize()
           );
         }
 

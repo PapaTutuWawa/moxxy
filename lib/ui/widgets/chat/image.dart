@@ -1,15 +1,21 @@
 import "dart:io";
 
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
+import "package:moxxyv2/ui/widgets/chat/filenotfound.dart";
+import "package:moxxyv2/ui/widgets/chat/file.dart";
+import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 
 import "package:flutter/material.dart";
+import "package:path/path.dart" as pathlib;
 
 class ImageChatWidget extends StatelessWidget {
   final String path;
   final String timestamp;
   final BorderRadius radius;
+  final String? thumbnailData;
+  final Size thumbnailSize;
 
-  const ImageChatWidget({ required this.path, required this.timestamp, required this.radius, Key? key }) : super(key: key);
+  const ImageChatWidget({ required this.path, required this.timestamp, required this.radius, this.thumbnailData, required this.thumbnailSize, Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +24,25 @@ class ImageChatWidget extends StatelessWidget {
           ClipRRect(
             borderRadius: radius,
             child: Image.file(
-              File(path)
+              File(path),
+              errorBuilder: (context, error, trace) {
+                if (thumbnailData != null) {
+                  return BlurhashChatWidget(
+                    width: thumbnailSize.width.toInt(),
+                    height: thumbnailSize.height.toInt(),
+                    borderRadius: radius,
+                    thumbnailData: thumbnailData!,
+                    child: const FileNotFound()
+                  );
+                } else {
+                  return FileChatWidget(
+                    path: path,
+                    filename: pathlib.basename(path),
+                    timestamp: timestamp,
+                    extra: const FileNotFound()
+                  );
+                }
+              }
             )
           ),
           Positioned(
