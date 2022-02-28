@@ -283,9 +283,7 @@ class DownloadProgressEvent extends BaseIsolateEvent {
   DownloadProgressEvent({ required this.id, required this.progress });
   DownloadProgressEvent.fromJson(Map<String, dynamic> json) :
     id = json["id"]!,
-    // TODO: For some reason, this throws an exception if the progress is at 1.0
-    // type 'int' is not a subtype of type 'double'
-    progress = json["progress"]! {
+    progress = json["progress"]!.toDouble() {
       assert(json["type"] == downloadProgressType);
     }
 
