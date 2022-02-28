@@ -36,10 +36,13 @@ class NotificationsService {
   Future<void> showNotification(model.Message m, String title) async {
     // TODO: Keep track of notifications to create a summary notification
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
+    // TODO: Also allow this with a generated video thumbnail
+    final isImage = m.mediaType?.startsWith("image/") == true;
+
     final androidDetails = AndroidNotificationDetails(
       "message_channel", "Message channel",
       channelDescription: "The notification channel for received messages",
-      styleInformation: (m.isMedia && m.mediaUrl != null) ? BigPictureStyleInformation(
+      styleInformation: (m.isMedia && m.mediaUrl != null && isImage) ? BigPictureStyleInformation(
         FilePathAndroidBitmap(m.mediaUrl!)
       ) : null,
       groupKey: m.conversationJid

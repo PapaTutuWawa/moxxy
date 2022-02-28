@@ -113,7 +113,7 @@ class DownloadService {
   Future<FileMetadata> peekFile(String url) async {
     final response = await Dio().headUri(Uri.parse(url));
 
-    if (!_isRequestOkay(response.statusCode)) return FileMetadata();
+    if (!_isRequestOkay(response.statusCode)) return const FileMetadata();
 
     final contentLengthHeaders = response.headers["Content-Length"];
     final contentTypeHeaders = response.headers["Content-Type"];
