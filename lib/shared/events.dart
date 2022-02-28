@@ -250,17 +250,19 @@ const preStartResultType = "PreStartResult";
 class PreStartResultEvent extends BaseIsolateEvent {
   final String state;
   final bool debugEnabled;
+  final List<int> permissionsToRequest;
   final String? jid;
   final String? displayName;
   final String? avatarUrl;
 
-  PreStartResultEvent({ required this.state, required this.debugEnabled, this.jid, this.displayName, this.avatarUrl });
+  PreStartResultEvent({ required this.state, required this.debugEnabled, this.jid, this.displayName, this.avatarUrl, required this.permissionsToRequest });
   PreStartResultEvent.fromJson(Map<String, dynamic> json) :
     state = json["state"]!,
     debugEnabled = json["debugEnabled"]!,
     jid = json["jid"],
     displayName = json["displayName"],
-    avatarUrl = json["avatarUrl"] {
+    avatarUrl = json["avatarUrl"],
+    permissionsToRequest = List<int>.from(json["permissionsToRequest"]!) {
       assert(json["type"] == preStartResultType);
     }
 
@@ -271,7 +273,8 @@ class PreStartResultEvent extends BaseIsolateEvent {
     "debugEnabled": debugEnabled,
     "jid": jid,
     "displayName": displayName,
-    "avatarUrl": avatarUrl
+    "avatarUrl": avatarUrl,
+    "permissionsToRequest": permissionsToRequest
   };
 }
 

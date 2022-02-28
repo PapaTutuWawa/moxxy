@@ -16,6 +16,7 @@ import "package:flutter_background_service/flutter_background_service.dart";
 import "package:redux/redux.dart";
 import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:logging/logging.dart";
+import "package:permission_handler/permission_handler.dart";
 
 // TODO: Handle [RosterItemAddedEvent]
 // TODO: Handle [LoginFailedEvent]
@@ -44,6 +45,16 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
         ));
 
         store.dispatch(NavigateToAction.replace(conversationsRoute));
+
+        // TODO: Move somewhere else
+        // TODO: Handle this when we go into the foreground
+        if (event.permissionsToRequest.isNotEmpty) {
+          (() async {
+              for (final perm in event.permissionsToRequest) {
+                await Permission.byValue(perm).request();
+              }
+          })();
+        }
       } else {
         store.dispatch(NavigateToAction.replace(loginRoute));
       }

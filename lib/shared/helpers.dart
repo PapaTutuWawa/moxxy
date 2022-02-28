@@ -120,3 +120,30 @@ T? firstNotNull<T>(List<T?> items) {
 bool implies(bool a, bool b) {
   return !a || b;
 }
+
+/// Attempt to guess a mimetype from its file extension
+String? guessMimeTypeFromExtension(String ext) {
+  switch (ext) {
+    case "png": return "image/png";
+    case "jpg":
+    case "jpeg": return "image/jpeg";
+    case "webp": return "image/webp";
+  }
+
+  return null;
+}
+
+/// Show a combinatio of an emoji and its file type
+String mimeTypeToConversationBody(String? mime) {
+  if (mime != null) {
+    if (mime.startsWith("image/")) {
+      return "📷 Image";
+    } else if (mime.startsWith("video/")) {
+      return "🎞️ Video";
+    } else if (mime.startsWith("audio/")) {
+      return "🎵 Audio";
+    }
+  }
+
+  return "📁 File";
+}

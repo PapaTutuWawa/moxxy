@@ -26,6 +26,7 @@ import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
 import "package:logging/logging.dart";
+import "package:permission_handler/permission_handler.dart";
 
 const xmppStateKey = "xmppState";
 const xmppAccountDataKey = "xmppAccount";
@@ -255,7 +256,6 @@ class XmppService {
       final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
       final srcUrl = _getMessageSrcUrl(event);
       final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
-      final shouldNotify = !(isMedia && isInRoster);
 
       String? thumbnailData;
       final thumbnails = firstNotNull([ event.sfs?.metadata.thumbnails, event.sims?.thumbnails ]) ?? [];
@@ -279,16 +279,25 @@ class XmppService {
         thumbnailDimensions: event.sfs?.metadata.dimensions
       );
 
-      if (isMedia && isInRoster) {
-        // TODO: Check the file size first
+      final canDownload = (await Permission.storage.status).isGranted;
+      final shouldNotify = !(isMedia && isInRoster && canDownload);
+      String? mimeGuess;
+      if (isMedia && isInRoster && canDownload) {
+        final download = GetIt.I.get<DownloadService>();
+        final metadata = await download.peekFile(srcUrl);
+
+        // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
+        //       for ".../aaaaaaaaa", in which case we would've failed anyways.
+        final ext = srcUrl.split(".").last;
+        mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
+
         msg = msg.copyWith(isDownloading: true);
+        // TODO: Check the file size first
         // NOTE: If we are here, then srcUrl must be non-null
-        GetIt.I.get<DownloadService>().downloadFile(srcUrl, msg.id);
+        download.downloadFile(srcUrl, msg.id, fromBare, mimeGuess);
       }
 
-      // TODO: Somehow figure out if it was an image or a file
-      // TODO: Maybe guess based on the file extension
-      final body = isMedia ? "📷 Image" : event.body;
+      final body = isMedia ? mimeTypeToConversationBody(mimeGuess) : event.body;
       final conversation = await db.getConversationByJid(fromBare);
       if (conversation != null) { 
         final newConversation = await db.updateConversation(

@@ -3,6 +3,7 @@ import "dart:async";
 import "package:moxxyv2/shared/logging.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -27,6 +28,7 @@ import "package:get_it/get_it.dart";
 import "package:isar/isar.dart";
 import "package:path_provider/path_provider.dart";
 import "package:logging/logging.dart";
+import "package:permission_handler/permission_handler.dart";
 
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/roster.dart";
@@ -72,17 +74,30 @@ Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
   if (account!= null && settings != null) {
     await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
+    // Check some permissions
+    final storagePerm = await Permission.storage.status;
+    final List<int> permissions = List.empty(growable: true);
+    if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
+      permissions.add(Permission.storage.value);
+
+      await xmpp.modifyXmppState((state) => state.copyWith(
+          askedStoragePermission: true
+      ));
+    }
+
     sendData(PreStartResultEvent(
         state: "logged_in",
         jid: account.jid,
         displayName: account.displayName,
         avatarUrl: account.avatarUrl,
-        debugEnabled: state.debugEnabled
+        debugEnabled: state.debugEnabled,
+        permissionsToRequest: permissions
     ));
   } else {
     sendData(PreStartResultEvent(
         state: "not_logged_in",
-        debugEnabled: state.debugEnabled
+        debugEnabled: state.debugEnabled,
+        permissionsToRequest: List<int>.empty()
     ));
   }
 }
@@ -391,7 +406,19 @@ void handleEvent(Map<String, dynamic>? data) {
       sendDataMiddleware(FlutterBackgroundService())(
         MessageUpdatedEvent(message: command.message.copyWith(isDownloading: true))
       );
-      GetIt.I.get<DownloadService>().downloadFile(command.message.srcUrl!, command.message.id);
+
+      (() async {
+          final download = GetIt.I.get<DownloadService>();
+          final metadata = await download.peekFile(command.message.srcUrl!);
+
+          // TODO: Maybe deduplicate with the code in the xmpp service
+          // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
+          //       for ".../aaaaaaaaa", in which case we would've failed anyways.
+          final ext = command.message.srcUrl!.split(".").last;
+          final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
+          
+          await download.downloadFile(command.message.srcUrl!, command.message.id, command.message.conversationJid, mimeGuess);
+      })();
     }
     break;
     case stopActionType: {
