@@ -9,6 +9,7 @@ import "package:flutter/material.dart";
 import "package:path/path.dart" as pathlib;
 import "package:external_path/external_path.dart";
 import "package:video_compress/video_compress.dart";
+import "package:open_file/open_file.dart";
 
 class VideoChatWidget extends StatefulWidget {
   final String path;
@@ -122,43 +123,50 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
       _init();
     }
 
-    return IntrinsicWidth(child: Stack(
-        children: [
-          ClipRRect(
-            borderRadius: radius,
-            child: _showThumbnail()
-          ),
-          Positioned(
-            bottom: 0,
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withAlpha(0),
-                    Colors.black12,
-                    Colors.black54
-                  ]
+    return IntrinsicWidth(
+      child: InkWell(
+        onTap: () {
+          OpenFile.open(path);
+        },
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: radius,
+              child: _showThumbnail()
+            ),
+            Positioned(
+              bottom: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withAlpha(0),
+                      Colors.black12,
+                      Colors.black54
+                    ]
+                  )
                 )
               )
-            )
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-              child: MessageBubbleBottom(timestamp: timestamp)
-            )
-          ) 
-        ]
-    ));
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
+                child: MessageBubbleBottom(timestamp: timestamp)
+              )
+            ) 
+          ]
+        )
+      )
+    );
   }
 }

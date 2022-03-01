@@ -7,6 +7,7 @@ import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 
 import "package:flutter/material.dart";
 import "package:path/path.dart" as pathlib;
+import "package:open_file/open_file.dart";
 
 class ImageChatWidget extends StatelessWidget {
   final String path;
@@ -20,65 +21,72 @@ class ImageChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicWidth(child: Stack(
-        alignment: Alignment.center,
-        children: [
-          ClipRRect(
-            borderRadius: radius,
-            child: Image.file(
-              File(path),
-              errorBuilder: (context, error, trace) {
-                if (thumbnailData != null) {
-                  return BlurhashChatWidget(
-                    width: thumbnailSize.width.toInt(),
-                    height: thumbnailSize.height.toInt(),
-                    borderRadius: radius,
-                    thumbnailData: thumbnailData!,
-                    child: const FileNotFound()
-                  );
-                } else {
-                  return FileChatWidget(
-                    path: path,
-                    filename: pathlib.basename(path),
-                    timestamp: timestamp,
-                    extra: const FileNotFound()
-                  );
+    return IntrinsicWidth(
+      child: InkResponse(
+        onTap: () {
+          OpenFile.open(path);
+        },
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: radius,
+              child: Image.file(
+                File(path),
+                errorBuilder: (context, error, trace) {
+                  if (thumbnailData != null) {
+                    return BlurhashChatWidget(
+                      width: thumbnailSize.width.toInt(),
+                      height: thumbnailSize.height.toInt(),
+                      borderRadius: radius,
+                      thumbnailData: thumbnailData!,
+                      child: const FileNotFound()
+                    );
+                  } else {
+                    return FileChatWidget(
+                      path: path,
+                      filename: pathlib.basename(path),
+                      timestamp: timestamp,
+                      extra: const FileNotFound()
+                    );
+                  }
                 }
-              }
-            )
-          ),
-          Positioned(
-            bottom: 0,
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withAlpha(0),
-                    Colors.black12,
-                    Colors.black54
-                  ]
+              )
+            ),
+            Positioned(
+              bottom: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withAlpha(0),
+                      Colors.black12,
+                      Colors.black54
+                    ]
+                  )
                 )
               )
-            )
-          ),
-          ...(extra != null ? [ extra! ] : []),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-              child: MessageBubbleBottom(timestamp: timestamp)
-            )
-          ) 
-        ]
-    ));
+            ),
+            ...(extra != null ? [ extra! ] : []),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
+                child: MessageBubbleBottom(timestamp: timestamp)
+              )
+            ) 
+          ]
+        )
+      )
+    );
   }
 }
