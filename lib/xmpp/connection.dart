@@ -616,6 +616,7 @@ class XmppConnection {
     }
 
     _resuming = true;
+    _sendEvent(ConnectingEvent());
 
     if (_connectionSettings.useDirectTLS) {
       final query = await perform0368Lookup(_connectionSettings.jid.domain, srvQuery: srvQuery);

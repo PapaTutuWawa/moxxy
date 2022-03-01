@@ -135,9 +135,18 @@ class StreamManagementManager extends XmppManagerBase {
 
       setState(0, 0);
       commitState();
+    } else if (event is ConnectingEvent) {
+      _disableStreamManagement();
     }
   }
 
+  /// Resets the enablement of stream management, but __NOT__ the internal state.
+  /// This is to prevent ack requests being sent before we resume or re-enable
+  /// stream management.
+  void _disableStreamManagement() {
+    _streamManagementEnabled = false;
+  }
+  
   /// Enables support for XEP-0198 stream management
   void _enableStreamManagement() {
     _streamManagementEnabled = true;

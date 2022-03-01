@@ -123,12 +123,16 @@ void main() {
       );
       final manager = StreamManagementManager();
       manager.register(attributes);
+      manager.onXmppEvent(StreamManagementEnabledEvent(id: "abc123", resource: "aaaa"));
 
       manager.setState(200, 149);
 
       // [Connection lost, reconnecting]
       // <== <resumed h='150' ... />
+      manager.onXmppEvent(ConnectingEvent());
+      expect(manager.isStreamManagementEnabled(), false);
       manager.onXmppEvent(StreamResumedEvent(h: 150));
+      expect(manager.isStreamManagementEnabled(), true);
 
       expect(manager.getC2SStanzaCount(), 200);
       expect(manager.getS2CStanzaCount(), 150);

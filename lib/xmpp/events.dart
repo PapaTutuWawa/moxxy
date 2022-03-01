@@ -91,3 +91,6 @@ class PresenceReceivedEvent extends XmppEvent {
 
   PresenceReceivedEvent(this.jid, this.presence);
 }
+
+/// Triggered when we are starting an connection attempt
+class ConnectingEvent extends XmppEvent {}
