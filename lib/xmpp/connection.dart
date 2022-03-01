@@ -18,6 +18,7 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
@@ -59,8 +60,7 @@ class XmppConnection {
   //
   // Stream feature XMLNS
   final List<String> _streamFeatures = List.empty(growable: true);
-  // TODO
-  // final List<String> _serverFeatures = List.empty(growable: true);
+  final List<String> _serverFeatures = List.empty(growable: true);
   late RoutingState _routingState;
   late String _resource;
   late XmlStreamBuffer _streamBuffer;
@@ -113,6 +113,7 @@ class XmppConnection {
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
         isStreamFeatureSupported: isStreamFeatureSupported,
+        isFeatureSupported: (feature) => _serverFeatures.contains(feature),
         getFullJID: () => _connectionSettings.jid.withResource(_resource)
     ));
 
@@ -148,6 +149,22 @@ class XmppConnection {
     return getManagerById(presenceManager)!;
   }
 
+  /// A [DiscoManager] is required so have a wrapper for getting it.
+  /// Returns the registered [DiscoManager].
+  DiscoManager getDiscoManager() {
+    assert(_xmppManagers.containsKey(discoManager));
+
+    return getManagerById(discoManager)!;
+  }
+
+  /// A [DiscoCacheManager] is required so have a wrapper for getting it.
+  /// Returns the registered [DiscoCacheManager].
+  DiscoCacheManager getDiscoCacheManager() {
+    assert(_xmppManagers.containsKey(discoCacheManager));
+
+    return getManagerById(discoCacheManager)!;
+  }
+  
   /// Returns the registered [StreamManagementManager], if one is registered.
   StreamManagementManager? getStreamManagementManager() {
     return getManagerById(smManager);
@@ -314,6 +331,18 @@ class XmppConnection {
     }
   }
 
+  Future<void> _discoverServerFeatures() async {
+    _serverFeatures.clear();
+    final serverInfo = await getDiscoCacheManager().getInfoByJid(_connectionSettings.jid.domain);
+    if (serverInfo != null) {
+      _log.finest("Discovered supported server features: ${serverInfo.features}");
+      _serverFeatures.addAll(serverInfo.features);
+      _sendEvent(ServerDiscoDoneEvent());
+    } else {
+      _log.warning("Failed to discover server features using XEP-0030");
+    }
+  }
+  
   /// Called whenever we receive a stanza after resource binding or stream resumption.
   Future<void> _handleStanza(XMLNode nonza) async {
     // Process nonzas separately
@@ -468,6 +497,8 @@ class XmppConnection {
           _routingState = RoutingState.error;
           _setConnectionState(XmppConnectionState.error);
         }
+
+        _discoverServerFeatures();
       }
       break;
       case RoutingState.bindResourcePreSM: {
@@ -494,6 +525,8 @@ class XmppConnection {
           
           final h = int.parse(node.attributes["h"]!);
           _sendEvent(StreamResumedEvent(h: h));
+
+          if (_serverFeatures.isEmpty) _discoverServerFeatures();
         } else if (node.tag == "failed") {
           // NOTE: If we are here, we have it.
           final manager = getStreamManagementManager()!;
@@ -504,6 +537,7 @@ class XmppConnection {
           manager.setState(0, 0);
           await manager.commitState();
 
+          _serverFeatures.clear();
           _resuming = false;
           _routingState = RoutingState.bindResourcePreSM;
           _performResourceBinding();
@@ -529,6 +563,8 @@ class XmppConnection {
           getPresenceManager().sendInitialPresence();
           _setConnectionState(XmppConnectionState.connected);
         }
+
+        _discoverServerFeatures();
       }
       break;
       case RoutingState.handleStanzas: {

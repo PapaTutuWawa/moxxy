@@ -8,6 +8,8 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0297.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
@@ -100,6 +102,22 @@ class MessageManager extends XmppManagerBase {
   }
   
   Future<bool> _onMessage(Stanza message) async {
+    // First check if it's a carbon
+    final from = JID.fromString(message.attributes["from"]!);
+    final received = message.firstTag("received", xmlns: carbonsXmlns);
+    final attrs = getAttributes();
+    bool isCarbon = false;
+    if (received != null) {
+      final cm = attrs.getManagerById(carbonsManager) as CarbonsManager?;
+
+      // Ignore invalid carbons
+      if (cm == null || !cm.isCarbonValid(from)) return true;
+
+      final forwarded = received.firstTag("forwarded", xmlns: forwardedXmlns)!;
+      message = unpackForwarded(forwarded);
+      isCarbon = true;
+    }
+
     final sfs = message.firstTag("file-sharing", xmlns: sfsXmlns);
     final sims = _getSIMS(message);
     final body = message.firstTag("body");
@@ -126,9 +144,10 @@ class MessageManager extends XmppManagerBase {
     
     getAttributes().sendEvent(MessageEvent(
       body: body != null ? body.innerText() : "",
-      fromJid: JID.fromString(message.attributes["from"]!),
+      fromJid: from,
       sid: message.attributes["id"]!,
       stanzaId: await _getStanzaId(message),
+      isCarbon: isCarbon,
       oob: oob,
       sfs: sfs != null ? parseSFSElement(sfs) : null,
       sims: sims

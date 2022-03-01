@@ -24,6 +24,9 @@ const smXmlns = "urn:xmpp:sm:3";
 // XEP-0234
 const jingleFileTransferXmlns = "urn:xmpp:jingle:apps:file-transfer:5";
 
+// XEP-0280
+const carbonsXmlns = "urn:xmpp:carbons:2";
+
 // XEP-0297
 const forwardedXmlns = "urn:xmpp:forward:0";
 

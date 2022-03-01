@@ -53,11 +53,21 @@ class MessageEvent extends XmppEvent {
   final JID fromJid;
   final String sid;
   final StableStanzaId stanzaId;
+  final bool isCarbon;
   final OOBData? oob;
   final StatelessFileSharingData? sfs;
   final StatelessMediaSharingData? sims;
 
-  MessageEvent({ required this.body, required this.fromJid, required this.sid, required this.stanzaId, this.oob, this.sfs, this.sims });
+  MessageEvent({
+      required this.body,
+      required this.fromJid,
+      required this.sid,
+      required this.stanzaId,
+      required this.isCarbon,
+      this.oob,
+      this.sfs,
+      this.sims
+  });
 }
 
 class ChatMarkerEvent extends XmppEvent {
@@ -94,3 +104,6 @@ class PresenceReceivedEvent extends XmppEvent {
 
 /// Triggered when we are starting an connection attempt
 class ConnectingEvent extends XmppEvent {}
+
+/// Triggered when we found out what the server supports
+class ServerDiscoDoneEvent extends XmppEvent {}

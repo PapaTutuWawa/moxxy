@@ -8,8 +8,22 @@ class XMLNode {
   String? text;
   bool isDeclaration;
 
-  XMLNode({ required this.tag, this.attributes = const {}, this.children = const [], this.closeTag = true, this.text, this.isDeclaration = false });
-  XMLNode.xmlns({ required this.tag, required String xmlns, Map<String, String> attributes = const {}, this.children = const [], this.closeTag = true, this.text }) : attributes = { "xmlns": xmlns, ...attributes }, isDeclaration = false;
+  XMLNode({
+      required this.tag,
+      this.attributes = const {},
+      this.children = const [],
+      this.closeTag = true,
+      this.text,
+      this.isDeclaration = false
+  });
+  XMLNode.xmlns({
+      required this.tag,
+      required String xmlns,
+      Map<String, String> attributes = const {},
+      this.children = const [],
+      this.closeTag = true,
+      this.text
+  }) : attributes = { "xmlns": xmlns, ...attributes }, isDeclaration = false;
 
   /// Adds a child to this node.
   void addChild(XMLNode child) {

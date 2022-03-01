@@ -27,6 +27,7 @@ void main() {
               ),
               getManagerById: (_) => null,
               isStreamFeatureSupported: (_) => false,
+              isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
           ));
 
@@ -52,6 +53,7 @@ void main() {
               ),
               getManagerById: (_) => null,
               isStreamFeatureSupported: (xmlns) => xmlns == csiXmlns,
+              isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
           ));
 

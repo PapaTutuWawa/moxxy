@@ -5,3 +5,4 @@ const messageManager = "im.moxxy.messagemanager";
 const rosterManager = "im.moxxy.rostermanager";
 const presenceManager = "im.moxxy.presencemanager";
 const csiManager = "im.moxxy.csimanager";
+const carbonsManager = "im.moxxy.carbonsmanager";

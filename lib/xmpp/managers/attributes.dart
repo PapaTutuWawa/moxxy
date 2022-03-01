@@ -29,8 +29,21 @@ class XmppManagerAttributes {
   /// Returns true if a stream feature is supported
   final bool Function(String) isStreamFeatureSupported;
 
+  /// Returns true if a server feature is supported
+  final bool Function(String) isFeatureSupported;
+  
   /// Returns the full JID of the current account
   final JID Function() getFullJID;
   
-  XmppManagerAttributes({ required this.sendStanza, required this.sendNonza, required this.getManagerById, required this.sendEvent, required this.sendRawXml, required this.getConnectionSettings, required this.isStreamFeatureSupported, required this.getFullJID });
+  XmppManagerAttributes({
+      required this.sendStanza,
+      required this.sendNonza,
+      required this.getManagerById,
+      required this.sendEvent,
+      required this.sendRawXml,
+      required this.getConnectionSettings,
+      required this.isStreamFeatureSupported,
+      required this.isFeatureSupported,
+      required this.getFullJID
+  });
 }

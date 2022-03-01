@@ -36,6 +36,7 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
       ),
       getManagerById: (_) => null,
       isStreamFeatureSupported: (_) => false,
+      isFeatureSupported: (_) => false,
       getFullJID: () => JID.fromString("$bareJid/$resource")
   ));
 
@@ -502,6 +503,7 @@ void main() {
               ),
               getManagerById: (_) => null,
               isStreamFeatureSupported: (_) => false,
+              isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
           ));
 

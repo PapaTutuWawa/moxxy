@@ -37,6 +37,7 @@ void main() {
           allowPlainAuth: false,
         ),
         isStreamFeatureSupported: (feat) => false,
+        isFeatureSupported: (_) => false,
         getFullJID: () => JID.fromString("hallo@example.server/uwu")
       );
       final manager = StreamManagementManager();
@@ -90,6 +91,7 @@ void main() {
           allowPlainAuth: false,
         ),
         isStreamFeatureSupported: (feat) => false,
+        isFeatureSupported: (_) => false,
         getFullJID: () => JID.fromString("hallo@example.server/uwu")
       );
       final manager = StreamManagementManager();
@@ -119,6 +121,7 @@ void main() {
           allowPlainAuth: false,
         ),
         isStreamFeatureSupported: (feat) => false,
+        isFeatureSupported: (_) => false,
         getFullJID: () => JID.fromString("hallo@example.server/uwu")
       );
       final manager = StreamManagementManager();
