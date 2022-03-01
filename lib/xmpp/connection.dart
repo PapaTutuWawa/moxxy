@@ -179,7 +179,6 @@ class XmppConnection {
   void setConnectionSettings(ConnectionSettings settings) {
     _connectionSettings = settings;
   }
-
   /// Returns the connection settings of this connection.
   ConnectionSettings getConnectionSettings() {
     return _connectionSettings;
@@ -621,7 +620,7 @@ class XmppConnection {
   Future<bool> _connectUsingList(List<XmppConnectionAddress> results) async {
     for (var result in results) {
       try {
-        await _socket.connect(result.hostname, result.port);
+        await _socket.connect(result.hostname, result.port, _connectionSettings.jid.domain);
         _log.info("Did XEP-0368 lookup. Using ${result.hostname}:${result.port.toString()} now.");
         return true;
       } catch (ex) {

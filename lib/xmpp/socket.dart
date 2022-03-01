@@ -20,7 +20,9 @@ abstract class BaseSocketWrapper {
   void write(String data);
   
   /// This must connect to [host]:[port] and initialize the streams accordingly.
-  Future<void> connect(String host, int port);
+  /// [domain] is the domain that TLS should be validated against, in case the Socket
+  /// provides TLS encryption.
+  Future<void> connect(String host, int port, String domain);
 }
 
 /// TCP socket implementation for [XmppConnection]
@@ -38,8 +40,22 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   _errorStream = StreamController.broadcast();
 
   @override
-  Future<void> connect(String host, int port) async {
-    _socket = await SecureSocket.connect(host, port, supportedProtocols: [ "xmpp-client" ], timeout: const Duration(seconds: 15));
+  Future<void> connect(String host, int port, String domain) async {
+    _socket = await SecureSocket.connect(
+      host,
+      port,
+      supportedProtocols: [ "xmpp-client" ],
+      timeout: const Duration(seconds: 15),
+      onBadCertificate: (certificate) {
+        // TODO
+        //final isExpired = certificate.endValidity.isAfter(DateTime.now());
+        //return !isExpired /*&& certificate.domain == domain */;
+
+        _log.fine("Bad certificate: ${certificate.toString()}");
+        
+        return false;
+      }
+    );
 
     _socketSubscription = _socket.listen(
       (List<int> event) {
