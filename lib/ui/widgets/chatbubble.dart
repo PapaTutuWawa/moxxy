@@ -8,6 +8,7 @@ import "package:moxxyv2/ui/widgets/chat/download.dart";
 import "package:moxxyv2/ui/widgets/chat/downloadbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/image.dart";
+import "package:moxxyv2/ui/widgets/chat/video.dart";
 import "package:moxxyv2/ui/widgets/chat/file.dart";
 import "package:moxxyv2/ui/widgets/chat/text.dart";
 
@@ -150,6 +151,15 @@ class _ChatBubbleState extends State<ChatBubble> {
             radius: _getBorderRadius(),
             thumbnailData: message.thumbnailData,
             thumbnailSize: _getThumbnailSize()
+          );
+        } else if (mime.startsWith("video/")) {
+          return VideoChatWidget(
+            path: message.mediaUrl!,
+            timestamp: _timestampString,
+            radius: _getBorderRadius(),
+            thumbnailData: message.thumbnailData,
+            thumbnailSize: _getThumbnailSize(),
+            conversationJid: message.conversationJid
           );
         }
 

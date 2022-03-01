@@ -14,12 +14,14 @@ class ImageChatWidget extends StatelessWidget {
   final BorderRadius radius;
   final String? thumbnailData;
   final Size thumbnailSize;
+  final Widget? extra;
 
-  const ImageChatWidget({ required this.path, required this.timestamp, required this.radius, this.thumbnailData, required this.thumbnailSize, Key? key }) : super(key: key);
+  const ImageChatWidget({ required this.path, required this.timestamp, required this.radius, this.thumbnailData, required this.thumbnailSize, this.extra, Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return IntrinsicWidth(child: Stack(
+        alignment: Alignment.center,
         children: [
           ClipRRect(
             borderRadius: radius,
@@ -66,6 +68,7 @@ class ImageChatWidget extends StatelessWidget {
               )
             )
           ),
+          ...(extra != null ? [ extra! ] : []),
           Positioned(
             bottom: 0,
             left: 0,
