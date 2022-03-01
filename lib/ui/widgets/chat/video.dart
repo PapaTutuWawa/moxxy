@@ -19,9 +19,18 @@ class VideoChatWidget extends StatefulWidget {
   final String? thumbnailData;
   final Size thumbnailSize;
 
-  const VideoChatWidget({ required this.path, required this.timestamp, required this.radius, this.thumbnailData, required this.thumbnailSize, required this.conversationJid });
+  const VideoChatWidget({
+      required this.path,
+      required this.timestamp,
+      required this.radius,
+      this.thumbnailData,
+      required this.thumbnailSize,
+      required this.conversationJid,
+      Key? key
+  }) : super(key: key);
 
   @override
+  // ignore: no_logic_in_create_state
   _VideoChatWidgetState createState() => _VideoChatWidgetState(
     path: path,
     timestamp: timestamp,
@@ -43,7 +52,14 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   String _thumbnailPath;
   bool _hasThumbnail;
 
-  _VideoChatWidgetState({ required this.path, required this.timestamp, required this.radius, this.thumbnailData, required this.thumbnailSize, required this.conversationJid }) : _thumbnailPath = "", _hasThumbnail = true;
+  _VideoChatWidgetState({
+      required this.path,
+      required this.timestamp,
+      required this.radius,
+      this.thumbnailData,
+      required this.thumbnailSize,
+      required this.conversationJid
+  }) : _thumbnailPath = "", _hasThumbnail = true;
 
   Future<String> _getThumbnailPath() async {
     final base = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_PICTURES);
@@ -59,7 +75,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
         radius: radius,
         thumbnailData: thumbnailData,
         thumbnailSize: thumbnailSize,
-        extra: PlayButton()
+        extra: const PlayButton()
       );
     } else {
       if (!_hasThumbnail) {
@@ -70,7 +86,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
             height: thumbnailSize.height.toInt(),
             thumbnailData: thumbnailData!,
             // TODO: Show download button
-            child: PlayButton()
+            child: const PlayButton()
           );
         } else {
           // TODO: Show download button
