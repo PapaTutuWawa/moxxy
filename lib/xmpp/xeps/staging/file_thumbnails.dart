@@ -26,3 +26,29 @@ Thumbnail? parseFileThumbnailElement(XMLNode node) {
 
   return null;
 }
+
+XMLNode? _fromThumbnail(Thumbnail thumbnail) {
+  if (thumbnail is BlurhashThumbnail) {
+    return XMLNode(
+      tag: "blurhash",
+      text: thumbnail.hash
+    );
+  }
+
+  return null;
+}
+
+XMLNode constructFileThumbnailElement(Thumbnail thumbnail) {
+  XMLNode node = _fromThumbnail(thumbnail)!;
+  String type = "";
+  if (thumbnail is BlurhashThumbnail) {
+    type = "blurhash";
+  }
+
+  return XMLNode.xmlns(
+    tag: "file-thumbnail",
+    xmlns: fileThumbnailsXmlns,
+    attributes: { "type": type },
+    children: [ node ]
+  );
+}

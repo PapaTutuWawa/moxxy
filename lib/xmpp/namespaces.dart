@@ -57,5 +57,5 @@ const fileMetadataXmlns = "urn:xmpp:file:metadata:0";
 // XEP-0447
 const sfsXmlns = "urn:xmpp:sfs:0";
 
-// Proto
+// ???
 const urlDataXmlns = "http://jabber.org/protocol/url-data";

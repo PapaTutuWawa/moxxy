@@ -122,5 +122,13 @@
 	<xmpp:note xml:lang="en">Read-only implementation</xmpp:note>
       </xmpp:SupportedXep>
     </implements>
+    <implements>
+      <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://github.com/PapaTutuWawa/custom-xeps/blob/master/xep-xxxx-file-upload-notification.md" />
+	<xmpp:status>complete</xmpp:status>
+	<xmpp:version>0.0.4</xmpp:version>
+	<xmpp:note xml:lang="en">Not-connected read-only implementation</xmpp:note>
+      </xmpp:SupportedXep>
+    </implements>
   </Project>
 </rdf:RDF>

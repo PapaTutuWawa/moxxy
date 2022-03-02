@@ -1,5 +1,6 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0300.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 
 class FileMetadataData {
@@ -10,7 +11,7 @@ class FileMetadataData {
 
   final List<Thumbnail> thumbnails;
   final String? desc;
-  final Map<String, String>? hashes;
+  final Map<String, String> hashes;
   final int? length;
   final String? name;
   final int? size;
@@ -19,12 +20,12 @@ class FileMetadataData {
       this.mediaType,
       this.dimensions,
       this.desc,
-      this.hashes,
       this.length,
       this.name,
       this.size,
-      required this.thumbnails
-  });
+      required this.thumbnails,
+      Map<String, String>? hashes
+  }) : hashes = hashes ?? const {};
 }
 
 FileMetadataData parseFileMetadataElement(XMLNode node) {
@@ -60,4 +61,34 @@ FileMetadataData parseFileMetadataElement(XMLNode node) {
     size: size,
     thumbnails: thumbnails
   );
+}
+
+XMLNode constructFileMetadataElement(FileMetadataData data) {
+  final node = XMLNode.xmlns(
+    tag: "file",
+    xmlns: fileMetadataXmlns
+  );
+
+  if (data.mediaType != null) node.addChild(XMLNode(tag: "media-type", text: data.mediaType));
+  if (data.dimensions != null) node.addChild(XMLNode(tag: "dimensions", text: data.dimensions));
+  if (data.desc != null) node.addChild(XMLNode(tag: "desc", text: data.desc));
+  if (data.length != null) node.addChild(XMLNode(tag: "length", text: data.length.toString()));
+  if (data.name != null) node.addChild(XMLNode(tag: "name", text: data.name));
+  if (data.size != null) node.addChild(XMLNode(tag: "size", text: data.size.toString()));
+  if (data.hashes.isNotEmpty) {
+    for (final hash in data.hashes.entries) {
+      node.addChild(
+        constructHashElement(hash.key, hash.value)
+      );
+    }
+  }
+  if (data.thumbnails.isNotEmpty) {
+    for (final thumbnail in data.thumbnails) {
+      node.addChild(
+        constructFileThumbnailElement(thumbnail)
+      );
+    }
+  }
+  
+  return node;
 }
