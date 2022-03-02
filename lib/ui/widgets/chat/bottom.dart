@@ -41,8 +41,8 @@ class MessageBubbleBottom extends StatelessWidget {
           ] : []),
         */
         ...(received && !displayed ? [
-            Padding(
-              padding: const EdgeInsets.only(left: 3.0),
+            const Padding(
+              padding: EdgeInsets.only(left: 3.0),
               child: Icon(
                 Icons.done_all,
                 size: fontsizeSubbody * 2
