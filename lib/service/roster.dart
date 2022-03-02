@@ -42,13 +42,13 @@ class RosterService {
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(String avatarUrl, String jid, String title) async {
     _pendingRequests.add(jid);
-    final result = await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.addToRoster(jid, title);
+    final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
     if (!result) {
       _pendingRequests.remove(jid);
       // TODO: Signal error?
     }
 
-    await GetIt.I.get<XmppConnection>().getManagerById(presenceManager)!.sendSubscriptionRequest(jid);
+    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequest(jid);
 
     final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
 
