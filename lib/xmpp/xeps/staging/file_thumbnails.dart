@@ -3,7 +3,7 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 /// NOTE: Specified by https://github.com/PapaTutuWawa/custom-xeps/blob/master/xep-xxxx-file-thumbnails.md
 
 const fileThumbnailsXmlns = "proto:urn:xmpp:file-thumbnails:0";
-const blurhashThumbnailType = "$fileThumbnailsXmlns:blurhash";
+const blurhashThumbnailType = "blurhash";
 
 abstract class Thumbnail {}
 

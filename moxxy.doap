@@ -118,7 +118,7 @@
       <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://github.com/PapaTutuWawa/custom-xeps/blob/master/xep-xxxx-file-thumbnails.md" />
 	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.0.2</xmpp:version>
+	<xmpp:version>0.0.3</xmpp:version>
 	<xmpp:note xml:lang="en">Read-only implementation</xmpp:note>
       </xmpp:SupportedXep>
     </implements>
