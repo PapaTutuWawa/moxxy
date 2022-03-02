@@ -12,6 +12,7 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/presence.dart";
+import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
@@ -146,7 +147,7 @@ class XmppConnection {
     return null;
   }
 
-  /// A [PresenceManager] is required so have a wrapper for getting it.
+  /// A [PresenceManager] is required, so have a wrapper for getting it.
   /// Returns the registered [PresenceManager].
   PresenceManager getPresenceManager() {
     assert(_xmppManagers.containsKey(presenceManager));
@@ -154,7 +155,7 @@ class XmppConnection {
     return getManagerById(presenceManager)!;
   }
 
-  /// A [DiscoManager] is required so have a wrapper for getting it.
+  /// A [DiscoManager] is required so, have a wrapper for getting it.
   /// Returns the registered [DiscoManager].
   DiscoManager getDiscoManager() {
     assert(_xmppManagers.containsKey(discoManager));
@@ -162,12 +163,20 @@ class XmppConnection {
     return getManagerById(discoManager)!;
   }
 
-  /// A [DiscoCacheManager] is required so have a wrapper for getting it.
+  /// A [DiscoCacheManager] is required, so have a wrapper for getting it.
   /// Returns the registered [DiscoCacheManager].
   DiscoCacheManager getDiscoCacheManager() {
     assert(_xmppManagers.containsKey(discoCacheManager));
 
     return getManagerById(discoCacheManager)!;
+  }
+
+  /// A [RosterManager] is required, so have a wrapper for getting it.
+  /// Returns the registered [DiscoCacheManager].
+  RosterManager getRosterManager() {
+    assert(_xmppManagers.containsKey(rosterManager));
+
+    return getManagerById(rosterManager)!;
   }
   
   /// Returns the registered [StreamManagementManager], if one is registered.

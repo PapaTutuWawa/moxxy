@@ -48,7 +48,7 @@ class RosterService {
       // TODO: Signal error?
     }
 
-    await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.sendSubscriptionRequest(jid);
+    await GetIt.I.get<XmppConnection>().getManagerById(presenceManager)!.sendSubscriptionRequest(jid);
 
     final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
 
@@ -65,16 +65,20 @@ class RosterService {
   /// successful, from the database. If [unsubscribe] is true, then [jid] won't receive
   /// our presence anymore.
   Future<bool> removeFromRosterWrapper(String jid, { bool unsubscribe = true }) async {
-    final roster = GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!;
+    final roster = GetIt.I.get<XmppConnection>().getRosterManager();
+    final presence = GetIt.I.get<XmppConnection>().getPresenceManager();
     final result = await roster.removeFromRoster(jid);
-    if (result) {
+    if (result == RosterRemovalResult.okay || result == RosterRemovalResult.itemNotFound) {
       if (unsubscribe) {
-        await roster.sendUnsubscriptionRequest(jid);
+        presence.sendUnsubscriptionRequest(jid);
       }
+
+      _log.finest("Removing from roster maybe worked. Removing from database");
+      await removeFromRosterDatabase(jid, nullOkay: false);
+      return true;
     }
 
-    await removeFromRosterDatabase(jid);
-    return true;
+    return false;
   }
 
   Future<void> requestRoster() async {
@@ -179,18 +183,5 @@ class RosterService {
     sendData(RosterDiffEvent(
         changedItems: [ modelRosterItem ]
     ));
-  }
-
-  // Handle a [RosterItemNotFoundEvent].
-  Future<void> handleRosterItemNotFoundEvent(RosterItemNotFoundEvent event) async {
-    switch (event.trigger) {
-      case RosterItemNotFoundTrigger.remove: {
-        sendData(RosterDiffEvent(
-            removedItems: [ event.jid ]
-        ));
-        await removeFromRosterDatabase(event.jid);
-      }
-      break;
-    }
   }
 }

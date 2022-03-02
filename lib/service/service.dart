@@ -325,12 +325,7 @@ void handleEvent(Map<String, dynamic>? data) {
     break;
     case removeRosterItemActionType: {
       final command = RemoveRosterItemAction.fromJson(data);
-      (() async {
-          final jid = command.jid;
-          //await GetIt.I.get<DatabaseService>().removeRosterItemByJid(jid, nullOkay: true);
-          await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.removeFromRoster(jid);
-          await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.sendUnsubscriptionRequest(jid);
-      })();
+      GetIt.I.get<RosterService>().removeFromRosterWrapper(command.jid);
     }
     break;
     case sendMessageActionType: {

@@ -121,3 +121,10 @@ class ConnectingEvent extends XmppEvent {}
 
 /// Triggered when we found out what the server supports
 class ServerDiscoDoneEvent extends XmppEvent {}
+
+/// Triggered when we receive a subscription request
+class SubscriptionRequestReceivedEvent extends XmppEvent {
+  final JID from;
+
+  SubscriptionRequestReceivedEvent({ required this.from });
+}

@@ -16,6 +16,12 @@ class XmppRosterItem {
   XmppRosterItem({ required this.jid, required this.subscription, this.name, this.groups = const [] });
 }
 
+enum RosterRemovalResult {
+  okay,
+  error,
+  itemNotFound
+}
+
 class RosterRequestResult {
   List<XmppRosterItem> items;
   String? ver;
@@ -28,17 +34,6 @@ class RosterPushEvent extends XmppEvent {
   final String? ver;
 
   RosterPushEvent({ required this.item, this.ver });
-}
-
-enum RosterItemNotFoundTrigger {
-  remove
-}
-
-class RosterItemNotFoundEvent extends XmppEvent {
-  final String jid;
-  final RosterItemNotFoundTrigger trigger;
-
-  RosterItemNotFoundEvent({ required this.jid, required this.trigger });
 }
 
 class RosterManager extends XmppManagerBase {
@@ -202,7 +197,7 @@ class RosterManager extends XmppManagerBase {
 
   /// Attempts to remove [jid] from the roster. Returns true if the process was successful,
   /// false otherwise.
-  Future<bool> removeFromRoster(String jid) async {
+  Future<RosterRemovalResult> removeFromRoster(String jid) async {
     final attrs = getAttributes();
     final response = await attrs.sendStanza(
       Stanza.iq(
@@ -232,32 +227,13 @@ class RosterManager extends XmppManagerBase {
       final notFound = error.firstTag("item-not-found") != null;
 
       if (notFound) {
-        return true;
+        logger.warning("Item was not found");
+        return RosterRemovalResult.itemNotFound;
       }
 
-      return false;
+      return RosterRemovalResult.error;
     }
 
-    return true;
-  }
-
-  /// Sends a subscription request to [to].
-  Future<void> sendSubscriptionRequest(String to) async {
-    await getAttributes().sendStanza(
-      Stanza.presence(
-        type: "subscribe",
-        to: to
-      )
-    );
-  }
-
-  /// Sends an unsubscription request to [to].
-  Future<void> sendUnsubscriptionRequest(String to) async {
-    await getAttributes().sendStanza(
-      Stanza.presence(
-        type: "unsubscribe",
-        to: to
-      )
-    );
+    return RosterRemovalResult.okay;
   }
 }

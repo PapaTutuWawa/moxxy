@@ -257,6 +257,8 @@ class DatabaseService {
       _rosterCache[item.jid] = item;
     }
 
+    _log.finest("Roster loaded: $items");
+    
     if (notify) {
       sendData(RosterDiffEvent(
           newItems: items.toList()

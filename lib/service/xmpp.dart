@@ -259,6 +259,33 @@ class XmppService {
       modifyXmppState((state) => state.copyWith(
           resource: event.resource
       ));
+    } else if (event is SubscriptionRequestReceivedEvent) {
+      final db = GetIt.I.get<DatabaseService>();
+      final conversation = await db.getConversationByJid(event.from.toBare().toString());
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      if (conversation != null) { 
+        final newConversation = await db.updateConversation(
+          id: conversation.id,
+          open: true,
+          lastChangeTimestamp: timestamp
+        );
+        sendData(ConversationUpdatedEvent(conversation: newConversation));
+      } else {
+        // TODO: Make it configurable if this should happen
+        final bare = event.from.toBare();
+        final conv = await db.addConversationFromData(
+          bare.toString().split("@")[0],
+          "",
+          "", // TODO: avatarUrl
+          bare.toString(),
+          0,
+          timestamp,
+          [],
+          true
+        );
+
+        sendData(ConversationCreatedEvent(conversation: conv));
+      }
     } else if (event is DeliveryReceiptReceivedEvent) {
       _log.finest("Received delivery receipt from ${event.from.toString()}");
       final db = GetIt.I.get<DatabaseService>();
@@ -395,8 +422,6 @@ class XmppService {
     } else if (event is RosterPushEvent) {
       GetIt.I.get<RosterService>().handleRosterPushEvent(event);
       _log.fine("Roster push version: " + (event.ver ?? "(null)"));
-    } else if (event is RosterItemNotFoundEvent) {
-      GetIt.I.get<RosterService>().handleRosterItemNotFoundEvent(event);
     } else if (event is AuthenticationFailedEvent) {
       sendData(LoginFailedEvent(reason: saslErrorToHumanReadable(event.saslError)));
     }

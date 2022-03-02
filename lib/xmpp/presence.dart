@@ -34,6 +34,15 @@ class PresenceManager extends XmppManagerBase {
   List<String> getDiscoFeatures() => [ capsXmlns ];
   
   Future<bool> _onPresence(Stanza presence) async {
+    final attrs = getAttributes();
+    switch (presence.type) {
+      case "subscribed": {
+        attrs.sendEvent(SubscriptionRequestReceivedEvent(from: JID.fromString(presence.from!)));
+        return true;
+      }
+      default: break;
+    }
+
     if (presence.from != null) {
       logger.finest("Received presence from '${presence.from}'");
 
@@ -78,5 +87,25 @@ class PresenceManager extends XmppManagerBase {
           )
         ]
     ));
+  }
+
+  /// Sends a subscription request to [to].
+  void sendSubscriptionRequest(String to) {
+    getAttributes().sendStanza(
+      Stanza.presence(
+        type: "subscribe",
+        to: to
+      )
+    );
+  }
+
+  /// Sends an unsubscription request to [to].
+  void sendUnsubscriptionRequest(String to) {
+    getAttributes().sendStanza(
+      Stanza.presence(
+        type: "unsubscribe",
+        to: to
+      )
+    );
   }
 }
