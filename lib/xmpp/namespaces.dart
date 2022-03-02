@@ -18,6 +18,9 @@ const oobDataXmlns = "jabber:x:oob";
 // XEP-0152
 const capsXmlns = "http://jabber.org/protocol/caps";
 
+// XEP-0184
+const deliveryXmlns = "urn:xmpp:receipts";
+
 // XEP-0198
 const smXmlns = "urn:xmpp:sm:3";
 

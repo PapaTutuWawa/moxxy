@@ -14,7 +14,9 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
@@ -147,20 +149,30 @@ class XmppService {
   /// Sends a message to [jid] with the body of [body].
   Future<void> sendMessage({ required String body, required String jid }) async {
     final db = GetIt.I.get<DatabaseService>();
+    final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final sid = conn.generateId();
+    final originId = conn.generateId();
     final message = await db.addMessageFromData(
       body,
       timestamp,
-      GetIt.I.get<XmppConnection>().getConnectionSettings().jid.toString(),
+      conn.getConnectionSettings().jid.toString(),
       jid,
       true,
       false,
-      "" // TODO: Stanza ID
+      sid,
+      originId: originId
     );
 
     sendData(MessageSendResultEvent(message: message));
 
-    GetIt.I.get<XmppConnection>().getManagerById(messageManager)!.sendMessage(body, jid);
+    conn.getManagerById(messageManager)!.sendMessage(
+      body,
+      jid,
+      deliveryRequest: true,
+      id: sid,
+      originId: originId
+    );
 
     final conversation = await db.getConversationByJid(jid);
     final newConversation = await db.updateConversation(
@@ -247,8 +259,43 @@ class XmppService {
       modifyXmppState((state) => state.copyWith(
           resource: event.resource
       ));
+    } else if (event is DeliveryReceiptReceivedEvent) {
+      _log.finest("Received delivery receipt from ${event.from.toString()}");
+      final db = GetIt.I.get<DatabaseService>();
+      final dbMsg = await db.getMessageByXmppId(event.id);
+      if (dbMsg == null) {
+        _log.warning("Did not find the message in the database!");
+        return;
+      }
+      
+      final msg = await db.updateMessage(
+        id: dbMsg.id!,
+        received: true
+      );
+
+      sendData(MessageUpdatedEvent(message: msg));
+    } else if (event is ChatMarkerEvent) {
+      _log.finest("Chat marker from ${event.from.toString()}");
+      if (event.type == "acknowledged") return;
+
+      final db = GetIt.I.get<DatabaseService>();
+      final dbMsg = await db.getMessageByXmppId(event.id);
+      if (dbMsg == null) {
+        _log.warning("Did not find the message in the database!");
+        return;
+      }
+      
+      final msg = await db.updateMessage(
+        id: dbMsg.id!,
+        received: dbMsg.received || event.type == "received" || event.type == "displayed",
+        displayed: dbMsg.displayed || event.type == "displayed"
+      );
+
+      sendData(MessageUpdatedEvent(message: msg));
     } else if (event is MessageEvent) {
       _log.finest("Received message with origin-id: " + (event.stanzaId.originId ?? "null"));
+      _log.finest("Delivery receipt requested? " + event.deliveryReceiptRequested.toString());
+
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final db = GetIt.I.get<DatabaseService>();
       final fromBare = event.fromJid.toBare().toString();
@@ -257,6 +304,20 @@ class XmppService {
       final srcUrl = _getMessageSrcUrl(event);
       final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
 
+      // Respond to the message delivery request
+      // TODO
+      if (event.deliveryReceiptRequested && isInRoster /* && shouldSendDeliveryResponse*/) {
+        GetIt.I.get<XmppConnection>().sendStanza(
+          Stanza.message(
+            to: event.fromJid.toBare().toString(),
+            type: "normal",
+            children: [
+              makeMessageDeliveryResponse(event.stanzaId.originId ?? event.sid)
+            ]
+          )
+        );
+      }
+      
       String? thumbnailData;
       final thumbnails = firstNotNull([ event.sfs?.metadata.thumbnails, event.sims?.thumbnails ]) ?? [];
       for (final i in thumbnails) {

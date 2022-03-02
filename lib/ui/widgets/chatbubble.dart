@@ -150,7 +150,9 @@ class _ChatBubbleState extends State<ChatBubble> {
             timestamp: _timestampString,
             radius: _getBorderRadius(),
             thumbnailData: message.thumbnailData,
-            thumbnailSize: _getThumbnailSize()
+            thumbnailSize: _getThumbnailSize(),
+            received: message.received,
+            displayed: message.displayed
           );
         } else if (mime.startsWith("video/")) {
           return VideoChatWidget(
@@ -159,14 +161,18 @@ class _ChatBubbleState extends State<ChatBubble> {
             radius: _getBorderRadius(),
             thumbnailData: message.thumbnailData,
             thumbnailSize: _getThumbnailSize(),
-            conversationJid: message.conversationJid
+            conversationJid: message.conversationJid,
+            received: message.received,
+            displayed: message.displayed
           );
         }
 
         return FileChatWidget(
           path: message.mediaUrl!,
           filename: path.basename(message.mediaUrl!),
-          timestamp: _timestampString
+          timestamp: _timestampString,
+          received: message.received,
+          displayed: message.displayed
         );
       } else {
         if (message.isDownloading) {
@@ -209,6 +215,8 @@ class _ChatBubbleState extends State<ChatBubble> {
                 filename: path.basename(message.srcUrl!),
                 path: "",
                 timestamp: _timestampString,
+                received: message.received,
+                displayed: message.displayed,
                 extra: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ElevatedButton(
@@ -225,7 +233,9 @@ class _ChatBubbleState extends State<ChatBubble> {
 
     return TextChatWidget(
       body: message.body,
-      timestamp: _timestampString
+      timestamp: _timestampString,
+      received: message.received,
+      displayed: message.displayed,
     );
   }
 

@@ -8,8 +8,10 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0297.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
@@ -30,7 +32,7 @@ class MessageManager extends XmppManagerBase {
   ];
 
   @override
-  List<String> getDiscoFeatures() => [ chatMarkersXmlns, oobDataXmlns ];
+  List<String> getDiscoFeatures() => [ chatMarkersXmlns, oobDataXmlns, deliveryXmlns, stableIdXmlns ];
 
   /// Helper function to extract and verify the origin and stanza Id according to
   /// XEP-0359.
@@ -85,9 +87,9 @@ class MessageManager extends XmppManagerBase {
     }
 
     attrs.sendEvent(ChatMarkerEvent(
+        from: JID.fromString(message.from!),
         type: marker.tag,
-        sid: message.id!,
-        stanzaId: await _getStanzaId(message)
+        id: marker.attributes["id"]!,
     ));
   }
 
@@ -99,6 +101,21 @@ class MessageManager extends XmppManagerBase {
     }
 
     return null;
+  }
+
+  String? _isDeliveryReceiptResponse(Stanza message) {
+    final received = message.firstTag("received", xmlns: deliveryXmlns);
+    if (received == null) return null;
+
+    for (final item in message.children) {
+      if (!["origin-id", "stanza-id", "delay"].contains(item.tag)) {
+        logger.info("Won't handle stanza as delivery receipt because we found an '${item.tag}' element");
+
+        return null;
+      }
+    }
+
+    return received.attributes["id"]!;
   }
   
   Future<bool> _onMessage(Stanza message) async {
@@ -118,6 +135,12 @@ class MessageManager extends XmppManagerBase {
       isCarbon = true;
     }
 
+    final did = _isDeliveryReceiptResponse(message);
+    if (did != null) {
+      attrs.sendEvent(DeliveryReceiptReceivedEvent(from: from, id: did));
+      return true;
+    }
+    
     final sfs = message.firstTag("file-sharing", xmlns: sfsXmlns);
     final sims = _getSIMS(message);
     final body = message.firstTag("body");
@@ -148,6 +171,7 @@ class MessageManager extends XmppManagerBase {
       sid: message.attributes["id"]!,
       stanzaId: await _getStanzaId(message),
       isCarbon: isCarbon,
+      deliveryReceiptRequested: message.firstTag("request", xmlns: deliveryXmlns) != null,
       oob: oob,
       sfs: sfs != null ? parseSFSElement(sfs) : null,
       sims: sims
@@ -156,13 +180,21 @@ class MessageManager extends XmppManagerBase {
     return true;
   }
 
-  /// Send a message to [to] with the content [body].
-  void sendMessage(String body, String to) {
+  /// Send a message to [to] with the content [body]. If [deliveryRequest] is true, then
+  /// the message will also request a delivery receipt from the receiver.
+  /// If [id] is non-null, then it will be the id of the message stanza.
+  /// element to this id. If [originId] is non-null, then it will create an "origin-id"
+  /// child in the message stanza and set its id to [originId].
+  void sendMessage(String body, String to, { bool deliveryRequest = false, String? id, String? originId, bool enableChatMarkers = true }) {
     getAttributes().sendStanza(Stanza.message(
         to: to,
         type: "normal",
+        id: id,
         children: [
-          XMLNode(tag: "body", text: body)
+          XMLNode(tag: "body", text: body),
+          ...(deliveryRequest ? [makeMessageDeliveryRequest()] : []),
+          ...(originId != null ? [makeOriginIdElement(originId)] : []),
+          ...(enableChatMarkers ? [makeChatMarkerMarkable()] : [])
         ]
     ));
   }

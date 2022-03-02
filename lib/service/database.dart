@@ -45,6 +45,9 @@ Message messageDbToModel(DBMessage m) {
     m.id!,
     m.conversationJid,
     m.isMedia,
+    originId: m.originId,
+    received: m.received,
+    displayed: m.displayed,
     mediaUrl: m.mediaUrl,
     mediaType: m.mediaType,
     thumbnailData: m.thumbnailData,
@@ -175,7 +178,7 @@ class DatabaseService {
   }
 
   /// Same as [addConversationFromData] but for a [Message].
-  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, String sid, { String? srcUrl, String? mediaUrl, String? thumbnailData, String? thumbnailDimensions }) async {
+  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, String sid, { String? srcUrl, String? mediaUrl, String? thumbnailData, String? thumbnailDimensions, String? originId }) async {
     final m = DBMessage()
       ..from = from
       ..conversationJid = conversationJid
@@ -186,7 +189,10 @@ class DatabaseService {
       ..srcUrl = srcUrl
       ..sid = sid
       ..thumbnailData = thumbnailData
-      ..thumbnailDimensions = thumbnailDimensions;
+      ..thumbnailDimensions = thumbnailDimensions
+      ..received = false
+      ..displayed = false
+      ..originId = originId;
 
     await isar.writeTxn((isar) async {
         await isar.dBMessages.put(m);
@@ -200,14 +206,27 @@ class DatabaseService {
     return msg;
   }
 
+  Future<DBMessage?> getMessageByXmppId(String id) async {
+    final i = await isar.dBMessages.filter().sidEqualTo(id).or().originIdEqualTo(id).findAll();
+    if (i.isEmpty) return null;
+
+    return i.first;
+  }
+  
   /// Updates the message item with id [id] inside the database.
-  Future<Message> updateMessage({ required int id, String? mediaUrl, String? mediaType }) async {
+  Future<Message> updateMessage({ required int id, String? mediaUrl, String? mediaType, bool? received, bool? displayed }) async {
     final i = (await isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
       i.mediaUrl = mediaUrl;
     }
     if (mediaType != null) {
       i.mediaType = mediaType;
+    }
+    if (received != null) {
+      i.received = received;
+    }
+    if (displayed != null) {
+      i.displayed = displayed;
     }
 
     await isar.writeTxn((isar) async {

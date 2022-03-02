@@ -131,6 +131,11 @@ class XmppConnection {
     }
   }
 
+  /// Generate an Id suitable for an origin-id or stanza id
+  String generateId() {
+    return _uuid.v4();
+  }
+  
   /// Returns the Manager with id [id] or null if such a manager is not registered.
   T? getManagerById<T>(String id) {
     final manager = _xmppManagers[id];
@@ -239,7 +244,7 @@ class XmppConnection {
   Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
-      stanza = stanza.copyWith(id: _uuid.v4());
+      stanza = stanza.copyWith(id: generateId());
     }
     if (addFrom && (stanza.from == null || stanza.from == "")) {
       stanza = stanza.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());

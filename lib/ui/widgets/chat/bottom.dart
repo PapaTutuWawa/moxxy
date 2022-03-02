@@ -4,8 +4,15 @@ import "package:flutter/material.dart";
 
 class MessageBubbleBottom extends StatelessWidget {
   final String timestamp;
+  final bool received;
+  final bool displayed;
 
-  const MessageBubbleBottom({ required this.timestamp, Key? key }) : super(key: key);
+  const MessageBubbleBottom({
+      required this.timestamp,
+      required this.received,
+      required this.displayed,
+      Key? key
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,26 @@ class MessageBubbleBottom extends StatelessWidget {
               color: Color(0xffbdbdbd)
             )
           )
-        ) 
+        ),
+        ...(received && !displayed ? [
+            Padding(
+              padding: const EdgeInsets.only(left: 3.0),
+              child: Icon(
+                Icons.done,
+                size: fontsizeSubbody * 2
+              )
+            )
+          ] : []),
+        ...(displayed ? [
+            Padding(
+              padding: const EdgeInsets.only(left: 3.0),
+              child: Icon(
+                Icons.done_all,
+                size: fontsizeSubbody * 2,
+                color: Colors.blue.shade700
+              )
+            )
+          ] : [])
       ]
     );
   }

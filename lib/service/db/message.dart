@@ -17,11 +17,17 @@ class DBMessage {
 
   late String body;
 
+  // TODO: Remove
+  /// Indicate if the message was sent by the user (true) or received by the user (false)
   late bool sent;
 
   late String sid;
   String? originId;
 
+  /// Indicate if the message was received by the client (via Chat Markers or Delivery Receipts)
+  late bool received;
+  late bool displayed;
+  
   /// Url a file can be accessed from
   String? srcUrl;
   /// A file:// URL pointing to the file

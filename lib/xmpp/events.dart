@@ -54,6 +54,7 @@ class MessageEvent extends XmppEvent {
   final String sid;
   final StableStanzaId stanzaId;
   final bool isCarbon;
+  final bool deliveryReceiptRequested;
   final OOBData? oob;
   final StatelessFileSharingData? sfs;
   final StatelessMediaSharingData? sims;
@@ -64,18 +65,31 @@ class MessageEvent extends XmppEvent {
       required this.sid,
       required this.stanzaId,
       required this.isCarbon,
+      required this.deliveryReceiptRequested,
       this.oob,
       this.sfs,
       this.sims
   });
 }
 
-class ChatMarkerEvent extends XmppEvent {
-  final String type;
-  final String sid;
-  final StableStanzaId stanzaId;
+/// Triggered when a client responds to our delivery receipt request
+class DeliveryReceiptReceivedEvent extends XmppEvent {
+  final JID from;
+  final String id;
 
-  ChatMarkerEvent({ required this.type, required this.sid, required this.stanzaId });
+  DeliveryReceiptReceivedEvent({ required this.from, required this.id });
+}
+
+class ChatMarkerEvent extends XmppEvent {
+  final JID from;
+  final String type;
+  final String id;
+
+  ChatMarkerEvent({
+      required this.type,
+      required this.from,
+      required this.id,
+  });
 }
 
 // Triggered when we received a Stream resumption ID

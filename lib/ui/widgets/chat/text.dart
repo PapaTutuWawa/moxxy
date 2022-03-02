@@ -8,8 +8,16 @@ import "package:flutter/material.dart";
 class TextChatWidget extends StatelessWidget {
   final String timestamp;
   final String body;
+  final bool received;
+  final bool displayed;
 
-  const TextChatWidget({ required this.body, required this.timestamp, Key? key }) : super(key: key);
+  const TextChatWidget({
+      required this.body,
+      required this.timestamp,
+      required this.received,
+      required this.displayed,
+      Key? key
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +30,7 @@ class TextChatWidget extends StatelessWidget {
               fontSize: fontsizeBody
             )
           ),
-          MessageBubbleBottom(timestamp: timestamp)
+          MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
         ]
       )
     );

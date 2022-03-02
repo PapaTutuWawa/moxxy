@@ -18,14 +18,18 @@ class VideoChatWidget extends StatefulWidget {
   final BorderRadius radius;
   final String? thumbnailData;
   final Size thumbnailSize;
+  final bool received;
+  final bool displayed;
 
   const VideoChatWidget({
       required this.path,
       required this.timestamp,
       required this.radius,
-      this.thumbnailData,
       required this.thumbnailSize,
       required this.conversationJid,
+      required this.received,
+      required this.displayed,
+      this.thumbnailData,
       Key? key
   }) : super(key: key);
 
@@ -37,7 +41,9 @@ class VideoChatWidget extends StatefulWidget {
     conversationJid: conversationJid,
     radius: radius,
     thumbnailData: thumbnailData,
-    thumbnailSize: thumbnailSize
+    thumbnailSize: thumbnailSize,
+    received: received,
+    displayed: displayed
   );
 }
 
@@ -48,6 +54,8 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   final BorderRadius radius;
   final String? thumbnailData;
   final Size thumbnailSize;
+  final bool received;
+  final bool displayed;
 
   String _thumbnailPath;
   bool _hasThumbnail;
@@ -56,9 +64,11 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
       required this.path,
       required this.timestamp,
       required this.radius,
-      this.thumbnailData,
       required this.thumbnailSize,
-      required this.conversationJid
+      required this.conversationJid,
+      required this.received,
+      required this.displayed,
+      this.thumbnailData
   }) : _thumbnailPath = "", _hasThumbnail = true;
 
   Future<String> _getThumbnailPath() async {
@@ -75,6 +85,8 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
         radius: radius,
         thumbnailData: thumbnailData,
         thumbnailSize: thumbnailSize,
+        received: received,
+        displayed: displayed,
         extra: const PlayButton()
       );
     } else {
@@ -177,7 +189,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: MessageBubbleBottom(timestamp: timestamp)
+                child: MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
               )
             ) 
           ]

@@ -15,9 +15,21 @@ class ImageChatWidget extends StatelessWidget {
   final BorderRadius radius;
   final String? thumbnailData;
   final Size thumbnailSize;
+  final bool received;
+  final bool displayed;
   final Widget? extra;
 
-  const ImageChatWidget({ required this.path, required this.timestamp, required this.radius, this.thumbnailData, required this.thumbnailSize, this.extra, Key? key }) : super(key: key);
+  const ImageChatWidget({
+      required this.path,
+      required this.timestamp,
+      required this.radius,
+      required this.thumbnailSize,
+      required this.received,
+      required this.displayed,
+      this.extra,
+      this.thumbnailData,
+      Key? key
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +59,8 @@ class ImageChatWidget extends StatelessWidget {
                       path: path,
                       filename: pathlib.basename(path),
                       timestamp: timestamp,
+                      received: received,
+                      displayed: displayed,
                       extra: const FileNotFound()
                     );
                   }
@@ -81,7 +95,7 @@ class ImageChatWidget extends StatelessWidget {
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: MessageBubbleBottom(timestamp: timestamp)
+                child: MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
               )
             ) 
           ]

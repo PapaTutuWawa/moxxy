@@ -8,9 +8,19 @@ class FileChatWidget extends StatelessWidget {
   final String filename;
   final String path;
   final String timestamp;
+  final bool received;
+  final bool displayed;
   final Widget? extra;
 
-  const FileChatWidget({ required this.filename, required this.path, required this.timestamp, this.extra, Key? key }) : super(key: key);
+  const FileChatWidget({
+      required this.filename,
+      required this.path,
+      required this.timestamp,
+      required this.received,
+      required this.displayed,
+      this.extra,
+      Key? key
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +43,7 @@ class FileChatWidget extends StatelessWidget {
 
             ...(extra != null ? [ extra! ] : []),
 
-            MessageBubbleBottom(timestamp: timestamp)
+            MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
           ]
         )
       )
