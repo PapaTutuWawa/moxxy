@@ -37,7 +37,9 @@ class PresenceManager extends XmppManagerBase {
     final attrs = getAttributes();
     switch (presence.type) {
       case "subscribed": {
-        attrs.sendEvent(SubscriptionRequestReceivedEvent(from: JID.fromString(presence.from!)));
+        attrs.sendEvent(
+          SubscriptionRequestReceivedEvent(from: JID.fromString(presence.from!))
+        );
         return true;
       }
       default: break;
@@ -104,6 +106,16 @@ class PresenceManager extends XmppManagerBase {
     getAttributes().sendStanza(
       Stanza.presence(
         type: "unsubscribe",
+        to: to
+      )
+    );
+  }
+
+  /// Accept a presence subscription request for [to]
+  void sendSubscriptionRequestApproval(String to) {
+    getAttributes().sendStanza(
+      Stanza.presence(
+        type: "subscribed",
         to: to
       )
     );
