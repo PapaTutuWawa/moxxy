@@ -42,6 +42,13 @@
     </implements>
     <implements>
       <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0184.html" />
+	<xmpp:status>complete</xmpp:status>
+	<xmpp:version>1.4.0</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0198.html" />
 	<xmpp:status>complete</xmpp:status>
 	<xmpp:version>1.6</xmpp:version>
