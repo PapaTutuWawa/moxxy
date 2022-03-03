@@ -184,7 +184,10 @@ class _ConversationPageState extends State<ConversationPage> {
                           "Close Chat",
                           "Are you sure you want to close this chat?",
                           context,
-                          viewModel.closeChat
+                          () {
+                            viewModel.closeChat();
+                            Navigator.of(context).pop();
+                          }
                         );
                       }
                       break;
