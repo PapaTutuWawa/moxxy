@@ -33,8 +33,6 @@ import "package:isar/isar.dart";
 import "package:path_provider/path_provider.dart";
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
-import "package:hex/hex.dart";
-import "package:cryptography/cryptography.dart";
 
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/roster.dart";
@@ -320,32 +318,16 @@ void handleEvent(Map<String, dynamic>? data) {
             );
           }
 
-          // Try to figure out an avatar
-          String avatarUrl = "";
-          final vm = GetIt.I.get<XmppConnection>().getManagerById(vcardManager)! as vCardManager;
-          final vcard = await vm.requestVCard(jid.toString());
-          if (vcard != null) {
-            final binval = vcard.photo?.binval;
-            if (binval != null) {
-              final hash = await Sha1().hash(base64Decode(binval));
-              final hexHash = HEX.encode(hash.bytes);
-
-              vm.setLastHash(jid.toString(), hexHash);
-              avatarUrl = await GetIt.I.get<AvatarService>().saveAvatar(
-                jid.toString(),
-                hexHash,
-                binval
-              );
-            }
-          }
-          
-          roster.addToRosterWrapper(avatarUrl, jid, jid.split("@")[0]);
+          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
           FlutterBackgroundService().sendData(
             AddToRosterResultEvent(
               result: "success",
               jid: jid
             ).toJson()
           );
+
+          // Try to figure out an avatar
+          GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid);
       })();
     }
     break;

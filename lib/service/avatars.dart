@@ -3,11 +3,16 @@ import "dart:convert";
 
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 
 import "package:logging/logging.dart";
 import "package:path_provider/path_provider.dart";
 import "package:path/path.dart" as path;
 import "package:get_it/get_it.dart";
+import "package:hex/hex.dart";
+import "package:cryptography/cryptography.dart";
 
 class AvatarService {
   final Logger _log;
@@ -61,6 +66,21 @@ class AvatarService {
       );
 
       sendData(RosterDiffEvent(changedItems: [roster]));
+    }
+  }
+
+  Future<void> fetchAndUpdateAvatarForJid(String jid) async {
+    final vm = GetIt.I.get<XmppConnection>().getManagerById(vcardManager)! as vCardManager;
+    final vcard = await vm.requestVCard(jid.toString());
+    if (vcard != null) {
+      final binval = vcard.photo?.binval;
+      if (binval != null) {
+        final hash = await Sha1().hash(base64Decode(binval));
+        final hexHash = HEX.encode(hash.bytes);
+
+        vm.setLastHash(jid.toString(), hexHash);
+        await updateAvatarForJid(jid, hexHash, binval);
+      }
     }
   }
 }
