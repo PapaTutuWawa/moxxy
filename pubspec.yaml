@@ -70,6 +70,7 @@ dependencies:
   external_path: ^1.0.1
   video_compress: ^3.1.0
   open_file: ^3.2.1
+  hex: ^0.2.0
 
 dev_dependencies:
   #flutter_test:
@@ -80,7 +81,6 @@ dev_dependencies:
   flutter_launcher_icons: ^0.9.2
   isar_generator: ^2.2.0
   redux_logging: ^0.5.0
-  hex: ^0.2.0
   json_serializable:
   freezed: ^1.1.1
 

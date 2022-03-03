@@ -497,7 +497,7 @@ packages:
     source: hosted
     version: "2.1.0"
   hex:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: hex
       url: "https://pub.dartlang.org"

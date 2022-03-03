@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:io";
 import "dart:convert";
 
 import "package:moxxyv2/ui/helpers.dart";
@@ -18,21 +17,19 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/service/notifications.dart";
+import "package:moxxyv2/service/avatars.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
-import "package:path_provider/path_provider.dart";
-import "package:path/path.dart" as path;
 
 const xmppStateKey = "xmppState";
 const xmppAccountDataKey = "xmppAccount";
@@ -429,28 +426,11 @@ class XmppService {
     } else if (event is AuthenticationFailedEvent) {
       sendData(LoginFailedEvent(reason: saslErrorToHumanReadable(event.saslError)));
     } else if (event is AvatarUpdatedEvent) {
-      // TODO: Maybe create a service for this
-      final cacheDir = path.join((await getTemporaryDirectory()).path, "avatar");
-      final dir = Directory(cacheDir);
-      if (!(await dir.exists())) await dir.create(recursive: true);
-      
-      final avatarPath = path.join(cacheDir, "avatar", event.jid + "_" + event.hash);
-      final f = File(avatarPath);
-      if (!(await f.exists())) await f.create(recursive: true);
-
-      await f.writeAsBytes(base64Decode(event.base64));
-      final db = GetIt.I.get<DatabaseService>();
-      final originalConv = await db.getConversationByJid(event.jid);
-      if (originalConv != null) {
-        final conv = await db.updateConversation(id: originalConv.id, avatarUrl: f.path);
-
-        // Remove the old avatar
-        File(originalConv.avatarUrl).delete();
-        
-        sendData(ConversationUpdatedEvent(conversation: conv));
-      } else {
-        _log.warning("Failed to get conversation");
-      }
+      await GetIt.I.get<AvatarService>().updateAvatarForJid(
+        event.jid,
+        event.hash,
+        event.base64
+      );
     }
   }
   

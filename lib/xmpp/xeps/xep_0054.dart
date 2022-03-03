@@ -37,6 +37,11 @@ class vCardManager extends XmppManagerBase {
     StanzaHandler(stanzaTag: "presence", tagName: "x", tagXmlns: vCardTempUpdate, callback: _onPresence)
   ];
 
+  /// In case we get the avatar hash some other way.
+  void setLastHash(String jid, String hash) {
+    _lastHash[jid] = hash;
+  }
+  
   Future<bool> _onPresence(Stanza presence) async {
     final x = presence.firstTag("x", xmlns: vCardTempUpdate)!;
     final hash = x.firstTag("photo")!.innerText();
