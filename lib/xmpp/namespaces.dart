@@ -12,6 +12,10 @@ const rosterXmlns = "jabber:iq:roster";
 const discoInfoXmlns = "http://jabber.org/protocol/disco#info";
 const discoItemsXmlns = "http://jabber.org/protocol/disco#items";
 
+// XEP-0054
+const vCardTempXmlns = "vcard-temp";
+const vCardTempUpdate = "vcard-temp:x:update";
+
 // XEP-0066
 const oobDataXmlns = "jabber:x:oob";
 

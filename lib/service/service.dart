@@ -10,6 +10,7 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
@@ -206,6 +207,7 @@ void onStart() {
       connection.registerManager(CSIManager());
       connection.registerManager(DiscoCacheManager());
       connection.registerManager(CarbonsManager());
+      connection.registerManager(vCardManager());
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
       final account = await xmpp.getAccountData();

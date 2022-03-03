@@ -128,3 +128,12 @@ class SubscriptionRequestReceivedEvent extends XmppEvent {
 
   SubscriptionRequestReceivedEvent({ required this.from });
 }
+
+/// Triggered when we receive a new or updated avatar
+class AvatarUpdatedEvent extends XmppEvent {
+  final String jid;
+  final String base64;
+  final String hash;
+
+  AvatarUpdatedEvent({ required this.jid, required this.base64, required this.hash });
+}

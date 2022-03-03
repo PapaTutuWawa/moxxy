@@ -130,7 +130,7 @@ class DatabaseService {
   }
 
   /// Updates the conversation with id [id] inside the database.
-  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter }) async {
+  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl }) async {
     final c = (await isar.dBConversations.get(id))!;
     if (lastMessageBody != null) {
       c.lastMessageBody = lastMessageBody;
@@ -143,6 +143,9 @@ class DatabaseService {
     }
     if (unreadCounter != null) {
       c.unreadCounter = unreadCounter;
+    }
+    if (avatarUrl != null) {
+      c.avatarUrl = avatarUrl;
     }
 
     await isar.writeTxn((isar) async {

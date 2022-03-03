@@ -51,7 +51,7 @@ class PresenceManager extends XmppManagerBase {
       getAttributes().sendEvent(PresenceReceivedEvent(JID.fromString(presence.from!), presence));
     } 
 
-    return true;
+    return false;
   }
 
   /// Returns the capability hash.
