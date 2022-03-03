@@ -100,7 +100,7 @@ class RosterService {
 
     // Handle modified and new items
     for (final item in currentRoster) {
-      if (listContains(result, (RosterItem i) => i.jid == item.jid)) {
+      if (listContains(result.items, (RosterItem i) => i.jid == item.jid)) {
         // TODO: Diff and update if needed
         modifiedItems.add(item);
       } else {
@@ -116,7 +116,7 @@ class RosterService {
     }
 
     // Handle deleted items
-    for (final item in result) {
+    for (final item in result.items) {
       if (!listContains(currentRoster, (RosterItem i) => i.jid == item.jid)) {
         newItems.add(await db.addRosterItemFromData(
             "",
@@ -125,11 +125,6 @@ class RosterService {
         ));
       }
     }
-
-    // TODO: REMOVE
-    final jids = (await db.getRoster()).map((item) => item.jid).toList();
-    _log.finest("Current roster: " + jids.toString());
-    // TODO END
 
     sendData(RosterDiffEvent(
         newItems: newItems,
