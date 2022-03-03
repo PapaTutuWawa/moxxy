@@ -7,3 +7,5 @@ const presenceManager = "im.moxxy.presencemanager";
 const csiManager = "im.moxxy.csimanager";
 const carbonsManager = "im.moxxy.carbonsmanager";
 const vcardManager = "im.moxxy.vcardmanager";
+const pubsubManager = "im.moxxy.pubsubmanager";
+const userAvatarManager = "im.moxxy.useravatarmanager";

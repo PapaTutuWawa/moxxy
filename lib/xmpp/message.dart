@@ -149,9 +149,10 @@ class MessageManager extends XmppManagerBase {
       if (marker != null) {
         // Response to a marker
         await _handleChatMarker(message, marker);
+        return true;
       }
 
-      return true;
+      return false;
     }
 
     OOBData? oob;

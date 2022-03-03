@@ -16,8 +16,15 @@ const discoItemsXmlns = "http://jabber.org/protocol/disco#items";
 const vCardTempXmlns = "vcard-temp";
 const vCardTempUpdate = "vcard-temp:x:update";
 
+// XEP-0060
+const pubsubXmlns = "http://jabber.org/protocol/pubsub";
+const pubsubEventXmlns = "http://jabber.org/protocol/pubsub#event";
+
 // XEP-0066
 const oobDataXmlns = "jabber:x:oob";
+
+// XEP-0084
+const userAvatarDataXmlns = "urn:xmpp:avatar:data";
 
 // XEP-0152
 const capsXmlns = "http://jabber.org/protocol/caps";

@@ -34,10 +34,25 @@
     </implements>
     <implements>
       <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0060.html" />
+	<xmpp:status>partial</xmpp:status>
+	<xmpp:version>1.24.1</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0066.html" />
 	<xmpp:status>partial</xmpp:status>
 	<xmpp:note xml:lang="en">Only jabber:x:oob</xmpp:note>
 	<xmpp:version>1.5</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0084.html" />
+	<xmpp:status>partial</xmpp:status>
+	<xmpp:note xml:lang="en">Receiving data</xmpp:note>
+	<xmpp:version>1.1.4</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>

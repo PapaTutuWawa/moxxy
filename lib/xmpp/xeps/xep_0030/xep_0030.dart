@@ -1,7 +1,6 @@
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
@@ -170,7 +169,7 @@ class DiscoManager extends XmppManagerBase {
   }
 
   /// Sends a disco items query to the (full) jid [entity], optionally with node=[node].
-  Future<List<DiscoItem>?> discoItemsQuery(XmppConnection conn, String entity, { String? node }) async {
+  Future<List<DiscoItem>?> discoItemsQuery(String entity, { String? node }) async {
     final stanza = await getAttributes().sendStanza(buildDiscoItemsQueryStanza(entity, node: node));
     return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
   }

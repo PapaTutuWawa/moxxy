@@ -2,10 +2,15 @@ import "dart:io";
 import "dart:convert";
 
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0084.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
 
 import "package:logging/logging.dart";
 import "package:path_provider/path_provider.dart";
@@ -20,6 +25,10 @@ class AvatarService {
   
   AvatarService(this.sendData) : _log = Logger("AvatarService");
 
+  UserAvatarManager _getUserAvatarManager() => GetIt.I.get<XmppConnection>().getManagerById(userAvatarManager)! as UserAvatarManager;
+
+  DiscoManager _getDiscoManager() => GetIt.I.get<XmppConnection>().getManagerById(discoManager)! as DiscoManager;
+  
   Future<String> _getAvatarCacheDir() async {
     return path.join((await getTemporaryDirectory()).path, "avatar");
   }
@@ -70,17 +79,45 @@ class AvatarService {
   }
 
   Future<void> fetchAndUpdateAvatarForJid(String jid) async {
-    final vm = GetIt.I.get<XmppConnection>().getManagerById(vcardManager)! as vCardManager;
-    final vcard = await vm.requestVCard(jid.toString());
-    if (vcard != null) {
-      final binval = vcard.photo?.binval;
-      if (binval != null) {
-        final hash = await Sha1().hash(base64Decode(binval));
-        final hexHash = HEX.encode(hash.bytes);
+    final items = (await _getDiscoManager().discoItemsQuery(jid)) ?? [];
 
-        vm.setLastHash(jid.toString(), hexHash);
-        await updateAvatarForJid(jid, hexHash, binval);
+    String base64 = "";
+    String hash = "";
+    if (listContains<DiscoItem>(items, (item) => item.node == userAvatarDataXmlns)) {
+      // Query via PubSub
+      final data = await _getUserAvatarManager().getUserAvatar(jid);
+      if (data == null) return;
+      
+      base64 = data.base64;
+      hash = data.hash;
+    } else {
+      // Query the vCard
+      final vm = GetIt.I.get<XmppConnection>().getManagerById(vcardManager)! as vCardManager;
+      final vcard = await vm.requestVCard(jid.toString());
+      if (vcard != null) {
+        final binval = vcard.photo?.binval;
+        if (binval != null) {
+          base64 = binval;
+          final rawHash = await Sha1().hash(base64Decode(binval));
+          hash = HEX.encode(rawHash.bytes);
+
+          vm.setLastHash(jid.toString(), hash);
+        } else {
+          return;
+        }
+      } else {
+        return;
       }
     }
+
+    await updateAvatarForJid(jid, hash, base64);
+  }
+  
+  Future<bool> subscribeJid(String jid) async {
+    return await _getUserAvatarManager().subscribe(jid);
+  }
+
+  Future<bool> unsubscribeJid(String jid) async {
+    return await _getUserAvatarManager().unsubscribe(jid);
   }
 }

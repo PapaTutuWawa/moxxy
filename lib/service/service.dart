@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:convert";
 
 import "package:moxxyv2/shared/logging.dart";
 import "package:moxxyv2/shared/events.dart";
@@ -14,6 +13,8 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0084.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/service/managers/roster.dart";
 import "package:moxxyv2/service/managers/disco.dart";
@@ -210,7 +211,9 @@ void onStart() {
       connection.registerManager(CSIManager());
       connection.registerManager(DiscoCacheManager());
       connection.registerManager(CarbonsManager());
+      connection.registerManager(PubSubManager());
       connection.registerManager(vCardManager());
+      connection.registerManager(UserAvatarManager());
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
       final account = await xmpp.getAccountData();
@@ -327,6 +330,7 @@ void handleEvent(Map<String, dynamic>? data) {
           );
 
           // Try to figure out an avatar
+          await GetIt.I.get<AvatarService>().subscribeJid(jid);
           GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid);
       })();
     }
@@ -334,6 +338,7 @@ void handleEvent(Map<String, dynamic>? data) {
     case removeRosterItemActionType: {
       final command = RemoveRosterItemAction.fromJson(data);
       GetIt.I.get<RosterService>().removeFromRosterWrapper(command.jid);
+      GetIt.I.get<AvatarService>().unsubscribeJid(command.jid.toString());
     }
     break;
     case sendMessageActionType: {

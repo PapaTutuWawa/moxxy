@@ -1,6 +1,7 @@
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
@@ -136,4 +137,12 @@ class AvatarUpdatedEvent extends XmppEvent {
   final String hash;
 
   AvatarUpdatedEvent({ required this.jid, required this.base64, required this.hash });
+}
+
+/// Triggered when a PubSub notification has been received
+class PubSubNotificationEvent extends XmppEvent {
+  final PubSubItem item;
+  final String from;
+
+  PubSubNotificationEvent({ required this.item, required this.from });
 }

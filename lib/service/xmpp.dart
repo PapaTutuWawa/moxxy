@@ -17,6 +17,8 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
+import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
@@ -234,8 +236,9 @@ class XmppService {
         // in case of a stream resumption.
         if (!event.resumed) {
           GetIt.I.get<RosterService>().requestRoster();
+          // Request our own avatar and maybe those of our contacts
         }
-
+        
         if (loginTriggeredFromUI) {
           // TODO: Trigger another event so the UI can see this aswell
           await setAccountData(AccountState(
