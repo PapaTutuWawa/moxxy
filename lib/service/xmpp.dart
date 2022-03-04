@@ -15,8 +15,10 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
+import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
@@ -196,6 +198,33 @@ class XmppService {
 
     return null;
   }
+
+  Future<void> _acknowledgeMessage(MessageEvent event) async {
+    final info = await GetIt.I.get<XmppConnection>().getDiscoCacheManager().getInfoByJid(event.fromJid.toString());
+    if (info == null) return;
+
+    if (event.isMarkable && info.features.contains(chatMarkersXmlns)) {
+      GetIt.I.get<XmppConnection>().sendStanza(
+        Stanza.message(
+          to: event.fromJid.toBare().toString(),
+          type: event.type,
+          children: [
+            makeChatMarker("received", event.stanzaId.originId ?? event.sid)
+          ]
+        )
+      );
+    } else if (event.deliveryReceiptRequested && info.features.contains(deliveryXmlns)) {
+      GetIt.I.get<XmppConnection>().sendStanza(
+        Stanza.message(
+          to: event.fromJid.toBare().toString(),
+          type: event.type,
+          children: [
+            makeMessageDeliveryResponse(event.stanzaId.originId ?? event.sid)
+          ]
+        )
+      );
+    }
+  }
   
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
@@ -340,15 +369,8 @@ class XmppService {
       
       // Respond to the message delivery request
       if (event.deliveryReceiptRequested && isInRoster && prefs.sendChatMarkers) {
-        GetIt.I.get<XmppConnection>().sendStanza(
-          Stanza.message(
-            to: event.fromJid.toBare().toString(),
-            type: "normal",
-            children: [
-              makeMessageDeliveryResponse(event.stanzaId.originId ?? event.sid)
-            ]
-          )
-        );
+        // NOTE: We do not await it to prevent us being blocked if the IQ response id delayed
+        _acknowledgeMessage(event);
       }
       
       String? thumbnailData;

@@ -53,9 +53,11 @@ class MessageEvent extends XmppEvent {
   final String body;
   final JID fromJid;
   final String sid;
+  final String? type;
   final StableStanzaId stanzaId;
   final bool isCarbon;
   final bool deliveryReceiptRequested;
+  final bool isMarkable;
   final OOBData? oob;
   final StatelessFileSharingData? sfs;
   final StatelessMediaSharingData? sims;
@@ -67,6 +69,8 @@ class MessageEvent extends XmppEvent {
       required this.stanzaId,
       required this.isCarbon,
       required this.deliveryReceiptRequested,
+      required this.isMarkable,
+      this.type,
       this.oob,
       this.sfs,
       this.sims
