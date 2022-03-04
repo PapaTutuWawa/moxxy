@@ -19,9 +19,11 @@ import "package:moxxyv2/ui/redux/global/state.dart";
 import "package:moxxyv2/ui/redux/addcontact/reducers.dart";
 import "package:moxxyv2/ui/redux/debug/state.dart";
 import "package:moxxyv2/ui/redux/debug/reducers.dart";
+import "package:moxxyv2/ui/redux/preferences/reducers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/roster.dart";
+import "package:moxxyv2/shared/preferences.dart";
 
 MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
   return MoxxyState(
@@ -36,8 +38,9 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
     accountState: accountReducer(state.accountState, action),
     globalState: globalReducer(state.globalState, action),
     debugState: debugReducer(state.debugState, action),
+    preferencesState: preferencesReducer(state.preferencesState, action),
     openConversationJid: openConversationJidReducer(state.openConversationJid, action),
-    addContactErrorText: addContactErrorTextReducer(state.addContactErrorText, action)
+    addContactErrorText: addContactErrorTextReducer(state.addContactErrorText, action),
   );
 }
 
@@ -53,6 +56,7 @@ class MoxxyState {
   final AccountState accountState;
   final GlobalState globalState;
   final DebugState debugState;
+  final PreferencesState preferencesState;
 
   final String? openConversationJid;
   final String? addContactErrorText;
@@ -69,6 +73,7 @@ class MoxxyState {
       required this.accountState,
       required this.globalState,
       required this.debugState,
+      required this.preferencesState,
       this.openConversationJid,
       this.addContactErrorText
   });
@@ -84,6 +89,7 @@ class MoxxyState {
       accountState = const AccountState.initialState(),
       globalState = GlobalState.initialState(),
       debugState = const DebugState.initialState(),
+      preferencesState = PreferencesState(),
       openConversationJid = null,
       addContactErrorText = null;
 }

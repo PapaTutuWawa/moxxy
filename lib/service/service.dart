@@ -25,6 +25,7 @@ import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
+import "package:moxxyv2/service/preferences.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -72,6 +73,8 @@ Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
   final account = await xmpp.getAccountData();
   final settings = await xmpp.getConnectionSettings();
   final state = await xmpp.getXmppState();
+  final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+
 
   GetIt.I.get<Logger>().finest("account != null: " + (account != null).toString());
   GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
@@ -96,13 +99,15 @@ Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
         displayName: account.displayName,
         avatarUrl: account.avatarUrl,
         debugEnabled: state.debugEnabled,
-        permissionsToRequest: permissions
+        permissionsToRequest: permissions,
+        preferences: preferences
     ));
   } else {
     sendData(PreStartResultEvent(
         state: "not_logged_in",
         debugEnabled: state.debugEnabled,
-        permissionsToRequest: List<int>.empty()
+        permissionsToRequest: List<int>.empty(),
+        preferences: preferences
     ));
   }
 }
@@ -167,6 +172,7 @@ void onStart() {
 
   GetIt.I.get<Logger>().finest("Running...");
 
+  GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
   GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
 
   (() async {
@@ -429,6 +435,12 @@ void handleEvent(Map<String, dynamic>? data) {
           
           await download.downloadFile(command.message.srcUrl!, command.message.id, command.message.conversationJid, mimeGuess);
       })();
+    }
+    break;
+    case setPreferencesCommandType: {
+      final command = SetPreferencesCommand.fromJson(data);
+
+      GetIt.I.get<PreferencesService>().modifyPreferences((prefs) => command.preferences);
     }
     break;
     case stopActionType: {

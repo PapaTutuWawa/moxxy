@@ -50,10 +50,16 @@ class SettingsPage extends StatelessWidget {
               title: "Conversations",
               tiles: [
                 SettingsTile(
-                  title: "Storage",
-                  leading: const Icon(Icons.storage),
+                  title: "Network",
+                  leading: const Icon(Icons.network_wifi),
                   // TODO
                   onPressed: (context) {}
+                ),
+                SettingsTile(
+                  title: "Privacy",
+                  leading: const Icon(Icons.shield),
+                  // TODO
+                  onPressed: (context) => Navigator.pushNamed(context, privacyRoute)
                 )
               ]
             ),

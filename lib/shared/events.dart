@@ -1,3 +1,4 @@
+import "package:moxxyv2/shared/preferences.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
@@ -251,14 +252,24 @@ class PreStartResultEvent extends BaseIsolateEvent {
   final String state;
   final bool debugEnabled;
   final List<int> permissionsToRequest;
+  final PreferencesState preferences;
   final String? jid;
   final String? displayName;
   final String? avatarUrl;
 
-  PreStartResultEvent({ required this.state, required this.debugEnabled, this.jid, this.displayName, this.avatarUrl, required this.permissionsToRequest });
+  PreStartResultEvent({
+      required this.state,
+      required this.debugEnabled,
+      required this.permissionsToRequest,
+      required this.preferences,
+      this.jid,
+      this.displayName,
+      this.avatarUrl, 
+  });
   PreStartResultEvent.fromJson(Map<String, dynamic> json) :
     state = json["state"]!,
     debugEnabled = json["debugEnabled"]!,
+    preferences = PreferencesState.fromJson(json["preferences"]!),
     jid = json["jid"],
     displayName = json["displayName"],
     avatarUrl = json["avatarUrl"],
@@ -274,7 +285,8 @@ class PreStartResultEvent extends BaseIsolateEvent {
     "jid": jid,
     "displayName": displayName,
     "avatarUrl": avatarUrl,
-    "permissionsToRequest": permissionsToRequest
+    "permissionsToRequest": permissionsToRequest,
+    "preferences": preferences.toJson()
   };
 }
 

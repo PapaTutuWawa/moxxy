@@ -10,6 +10,7 @@ import "package:moxxyv2/ui/redux/roster/actions.dart";
 import "package:moxxyv2/ui/redux/account/state.dart";
 import "package:moxxyv2/ui/redux/account/actions.dart";
 import "package:moxxyv2/ui/redux/debug/actions.dart";
+import "package:moxxyv2/ui/redux/preferences/actions.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
@@ -59,6 +60,7 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
         store.dispatch(NavigateToAction.replace(loginRoute));
       }
 
+      store.dispatch(SetPreferencesAction(event.preferences));
       store.dispatch(DebugSetEnabledAction(data["debugEnabled"], true));
     }
     break;

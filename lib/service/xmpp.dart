@@ -17,8 +17,6 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
-import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
@@ -26,6 +24,7 @@ import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
+import "package:moxxyv2/service/preferences.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
@@ -81,7 +80,7 @@ class XmppService {
     _state = XmppState.fromJson(json.decode(data));
     return _state!;
   }
-
+  
   Future<void> _commitXmppState() async {
     // final logger = GetIt.I.get<Logger>();
     // logger.finest("Commiting _xmppState to EncryptedSharedPrefs");
@@ -264,6 +263,9 @@ class XmppService {
           resource: event.resource
       ));
     } else if (event is SubscriptionRequestReceivedEvent) {
+      final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+      if (!prefs.showSubscriptionRequests) return;
+      
       final db = GetIt.I.get<DatabaseService>();
       final conversation = await db.getConversationByJid(event.from.toBare().toString());
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -334,10 +336,10 @@ class XmppService {
       final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
       final srcUrl = _getMessageSrcUrl(event);
       final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
-
+      final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+      
       // Respond to the message delivery request
-      // TODO
-      if (event.deliveryReceiptRequested && isInRoster /* && shouldSendDeliveryResponse*/) {
+      if (event.deliveryReceiptRequested && isInRoster && prefs.sendChatMarkers) {
         GetIt.I.get<XmppConnection>().sendStanza(
           Stanza.message(
             to: event.fromJid.toBare().toString(),

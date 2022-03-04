@@ -13,6 +13,7 @@ import "package:moxxyv2/ui/pages/settings/settings.dart";
 import "package:moxxyv2/ui/pages/settings/licenses.dart";
 import "package:moxxyv2/ui/pages/settings/about.dart";
 import "package:moxxyv2/ui/pages/settings/debugging.dart";
+import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/conversations/middlewares.dart";
@@ -26,6 +27,7 @@ import "package:moxxyv2/ui/redux/conversation/middlewares.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/start/middlewares.dart";
 import "package:moxxyv2/ui/redux/debug/middlewares.dart";
+import "package:moxxyv2/ui/redux/preferences/middlewares.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart" as commands;
@@ -59,6 +61,7 @@ void main() async {
       rosterMiddleware,
       messageMiddleware,
       conversationMiddleware,
+      preferencesMiddleware,
       const NavigationMiddleware(),
 
       // We only need this while debugging
@@ -176,6 +179,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           licensesRoute: (context) => const SettingsLicensesPage(),
           aboutRoute: (context) => const SettingsAboutPage(),
           debuggingRoute: (context) => DebuggingPage(),
+          privacyRoute: (context) => const PrivacyPage(),
         },
         home: const SplashScreen(),
       )

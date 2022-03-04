@@ -1,3 +1,4 @@
+import "package:moxxyv2/shared/preferences.dart";
 import "package:moxxyv2/shared/models/message.dart";
 
 abstract class BaseIsolateCommand {
@@ -239,6 +240,23 @@ class PerformDownloadAction extends BaseIsolateCommand {
   Map<String, dynamic> toJson() => {
     "type": performDownloadActionType,
     "message": message.toJson(),
+  };
+}
+
+const setPreferencesCommandType = "SetPreferencesCommand";
+class SetPreferencesCommand extends BaseIsolateCommand {
+  final PreferencesState preferences;
+
+  SetPreferencesCommand({ required this.preferences });
+  SetPreferencesCommand.fromJson(Map<String, dynamic> json) :
+    preferences = PreferencesState.fromJson(json["preferences"]!) {
+      assert(json["type"] == setPreferencesCommandType);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": setPreferencesCommandType,
+    "preferences": preferences.toJson(),
   };
 }
 
