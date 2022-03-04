@@ -60,7 +60,8 @@ class PresenceManager extends XmppManagerBase {
     _capabilityHash ??= await calculateCapabilityHash(
       DiscoInfo(
         features: manager.getRegisteredDiscoFeatures(),
-        identities: manager.getIdentities()
+        identities: manager.getIdentities(),
+        extendedInfo: []
       ),
       getHashByName("sha-1")!
     );

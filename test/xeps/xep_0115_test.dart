@@ -1,5 +1,7 @@
-import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0004.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0115.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
 
 import "package:test/test.dart";
 import "package:cryptography/cryptography.dart";
@@ -19,7 +21,8 @@ void main() {
             type: "pc",
             name: "Exodus 0.9.1"
           )
-        ]
+        ],
+        extendedInfo: []
       );
 
       final hash = await calculateCapabilityHash(data, Sha1());
@@ -27,15 +30,16 @@ void main() {
   });
 
   test("Test complex generation example", () async {
-      const data = DiscoInfo(
+      const extDiscoDataString = "<x xmlns='jabber:x:data' type='result'><field var='FORM_TYPE' type='hidden'><value>urn:xmpp:dataforms:softwareinfo</value></field><field var='ip_version' type='text-multi' ><value>ipv4</value><value>ipv6</value></field><field var='os'><value>Mac</value></field><field var='os_version'><value>10.5.1</value></field><field var='software'><value>Psi</value></field><field var='software_version'><value>0.11</value></field></x>";
+      final data = DiscoInfo(
         identities: [
-          Identity(
+          const Identity(
             category: "client",
             type: "pc",
             name: "Psi 0.11",
             lang: "en"
           ),
-          Identity(
+          const Identity(
             category: "client",
             type: "pc",
             name: "Ψ 0.11",
@@ -48,14 +52,7 @@ void main() {
           "http://jabber.org/protocol/disco#items",
           "http://jabber.org/protocol/muc"
         ],
-        extendedInfo: {
-          "FORM_TYPE": [ "urn:xmpp:dataforms:softwareinfo" ],
-          "ip_version": [ "ipv4", "ipv6" ],
-          "os": [ "Mac" ],
-          "os_version": [ "10.5.1" ],
-          "software": [ "Psi" ],
-          "software_version": [ "0.11" ]
-        }
+        extendedInfo: [ parseDataForm(XMLNode.fromString(extDiscoDataString)) ]
       );
 
       final hash = await calculateCapabilityHash(data, Sha1());
@@ -161,7 +158,8 @@ void main() {
             type: "phone",
             name: "Conversations"
           )
-        ]
+        ],
+        extendedInfo: []
       );
 
       final hash = await calculateCapabilityHash(data, Sha1());

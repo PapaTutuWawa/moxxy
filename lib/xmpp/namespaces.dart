@@ -8,6 +8,9 @@ const fullStanzaXmlns = "urn:ietf:params:xml:ns:xmpp-stanzas";
 // RFC 6121
 const rosterXmlns = "jabber:iq:roster";
 
+// XEP-0004
+const dataFormsXmlns = "jabber:x:data";
+
 // XEP-0030
 const discoInfoXmlns = "http://jabber.org/protocol/disco#info";
 const discoItemsXmlns = "http://jabber.org/protocol/disco#items";

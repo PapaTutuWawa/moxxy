@@ -17,17 +17,31 @@ Future<String> calculateCapabilityHash(DiscoInfo info, HashAlgorithm algorithm) 
   featuresSorted.sort(ioctetSortComparator);
   s += featuresSorted.join("<") + "<";
 
-  if (info.extendedInfo != null) {
-    s += info.extendedInfo!["FORM_TYPE"]![0] + "<";
-    final sortedVars = info.extendedInfo!.keys.where((k) => k != "FORM_TYPE").toList()..sort(ioctetSortComparator);
+  if (info.extendedInfo.isNotEmpty) {
+    final sortedExt = info.extendedInfo..sort((a, b) => ioctetSortComparator(
+        a.getFieldByVar("FORM_TYPE")!.values.first,
+        b.getFieldByVar("FORM_TYPE")!.values.first
+      )
+    );
 
-    for (var key in sortedVars) {
-      s += key + "<";
+    for (final ext in sortedExt) {
+      s += ext.getFieldByVar("FORM_TYPE")!.values.first + "<";
 
-      final sortedValues = info.extendedInfo![key]!.toList();
-      sortedValues.sort(ioctetSortComparator);
+      final sortedFields = ext.fields..sort((a, b) => ioctetSortComparator(
+          a.varAttr!,
+          b.varAttr!
+        )
+      );
 
-      s += sortedValues.join("<") + "<";
+      for (final field in sortedFields) {
+        if (field.varAttr == "FORM_TYPE") continue;
+
+        s += field.varAttr! + "<";
+        final sortedValues = field.values..sort(ioctetSortComparator);
+        for (final value in sortedValues) {
+          s += value + "<";
+        }
+      }
     }
   }
   

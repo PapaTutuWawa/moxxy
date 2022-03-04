@@ -1,6 +1,7 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0004.dart";
 
 class Identity {
   final String category;
@@ -26,9 +27,9 @@ class Identity {
 class DiscoInfo {
   final List<String> features;
   final List<Identity> identities;
-  final Map<String, List<String>>? extendedInfo;
+  final List<DataForm> extendedInfo;
 
-  const DiscoInfo({ required this.features, required this.identities, this.extendedInfo });
+  const DiscoInfo({ required this.features, required this.identities, required this.extendedInfo });
 }
 
 class DiscoItem {
@@ -66,10 +67,10 @@ DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
     }
   }
 
-  // TODO: Include extendedInfo
   return DiscoInfo(
     features: features,
-    identities: identities
+    identities: identities,
+    extendedInfo: query.findTags("x", xmlns: dataFormsXmlns).map((x) => parseDataForm(x)).toList()
   );
 }
 
@@ -83,7 +84,6 @@ List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
     return null;
   }
 
-  // TODO: Include extendedInfo; depends on support for XEP-0004
   return query.findTags("item").map((node) => DiscoItem(
       jid: node.attributes["jid"]!,
       node: node.attributes["node"]!,
