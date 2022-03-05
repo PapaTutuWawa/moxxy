@@ -422,20 +422,27 @@ class XmppService {
       );
 
       final canDownload = (await Permission.storage.status).isGranted && await _canDownloadFile();
-      final shouldNotify = !(isMedia && isInRoster && canDownload);
 
       // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
       //       for ".../aaaaaaaaa", in which case we would've failed anyways.
       final ext = srcUrl?.split(".").last;
       String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
+      bool shouldNotify = !(isMedia && isInRoster && canDownload);
       if (isMedia && isInRoster && canDownload) {
         final download = GetIt.I.get<DownloadService>();
         final metadata = await download.peekFile(srcUrl);
 
-        msg = msg.copyWith(isDownloading: true);
-        // TODO: Check the file size first
-        // NOTE: If we are here, then srcUrl must be non-null
-        download.downloadFile(srcUrl, msg.id, fromBare, mimeGuess);
+        if (metadata.mime != null) {
+          mimeGuess = metadata.mime!;
+        }
+
+        if (prefs.maximumAutoDownloadSize == -1 || (metadata.size != null && metadata.size! <= prefs.maximumAutoDownloadSize * 1000000)) {
+          msg = msg.copyWith(isDownloading: true);
+          // NOTE: If we are here, then srcUrl must be non-null
+          download.downloadFile(srcUrl, msg.id, fromBare, mimeGuess);
+        } else {
+          shouldNotify = true;
+        }
       }
 
       final body = isMedia ? mimeTypeToConversationBody(mimeGuess) : event.body;

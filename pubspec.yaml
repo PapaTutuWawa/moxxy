@@ -71,6 +71,7 @@ dependencies:
   video_compress: ^3.1.0
   open_file: ^3.2.1
   hex: ^0.2.0
+  drop_down_list: ^0.0.2
 
 dev_dependencies:
   #flutter_test:

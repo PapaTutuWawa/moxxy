@@ -163,8 +163,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           )
         ),
         navigatorKey: NavigatorHolder.navigatorKey,
-        //themeMode: ThemeMode.system,
-        themeMode: ThemeMode.dark,
+        themeMode: ThemeMode.system,
         routes: {
           introRoute: (context) => const IntroPage(),
           loginRoute: (context) => LoginPage(),

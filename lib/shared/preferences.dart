@@ -10,7 +10,8 @@ class PreferencesState with _$PreferencesState {
       @Default(true) bool sendChatStates,
       @Default(true) bool showSubscriptionRequests,
       @Default(true) bool autoDownloadWifi,
-      @Default(false) bool autoDownloadMobile
+      @Default(false) bool autoDownloadMobile,
+      @Default(15) int maximumAutoDownloadSize
   }) = _PreferencesState;
   
   // JSON serialization
