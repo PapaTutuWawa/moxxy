@@ -52,13 +52,11 @@ class SettingsPage extends StatelessWidget {
                 SettingsTile(
                   title: "Network",
                   leading: const Icon(Icons.network_wifi),
-                  // TODO
-                  onPressed: (context) {}
+                  onPressed: (context) => Navigator.pushNamed(context, networkRoute)
                 ),
                 SettingsTile(
                   title: "Privacy",
                   leading: const Icon(Icons.shield),
-                  // TODO
                   onPressed: (context) => Navigator.pushNamed(context, privacyRoute)
                 )
               ]

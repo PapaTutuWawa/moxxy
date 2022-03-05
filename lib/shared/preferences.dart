@@ -8,7 +8,9 @@ class PreferencesState with _$PreferencesState {
   factory PreferencesState({
       @Default(true) bool sendChatMarkers,
       @Default(true) bool sendChatStates,
-      @Default(true) bool showSubscriptionRequests
+      @Default(true) bool showSubscriptionRequests,
+      @Default(true) bool autoDownloadWifi,
+      @Default(false) bool autoDownloadMobile
   }) = _PreferencesState;
   
   // JSON serialization

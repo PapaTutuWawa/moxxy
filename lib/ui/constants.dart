@@ -38,3 +38,4 @@ const String licensesRoute = settingsRoute + "/licenses";
 const String aboutRoute = settingsRoute + "/about";
 const String debuggingRoute = settingsRoute + "/debugging";
 const String privacyRoute = settingsRoute + "/privacy";
+const String networkRoute = settingsRoute + "/network";

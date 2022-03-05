@@ -33,7 +33,7 @@ class NotificationsService {
   /// Show a notification for a message [m] grouped by its [conversationJid]
   /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
   /// then Android's BigPicture will be used.
-  Future<void> showNotification(model.Message m, String title) async {
+  Future<void> showNotification(model.Message m, String title, { String? body }) async {
     // TODO: Keep track of notifications to create a summary notification
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
     // TODO: Also allow this with a generated video thumbnail
@@ -47,10 +47,15 @@ class NotificationsService {
       ) : null,
       groupKey: m.conversationJid
     );
-    final body = (m.isMedia && m.mediaUrl != null) ? "📷 Image" : m.body;
+    String bodyToShow;
+    if (body != null) {
+      bodyToShow = body;
+    } else {
+      bodyToShow = (m.isMedia && m.mediaUrl != null) ? "📷 Image" : m.body;
+    }
     final details = NotificationDetails(android: androidDetails);
     await GetIt.I.get<FlutterLocalNotificationsPlugin>().show(
-      m.id, title, body, details
+      m.id, title, bodyToShow, details
     );
   }
 }

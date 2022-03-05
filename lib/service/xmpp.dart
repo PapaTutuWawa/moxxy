@@ -47,8 +47,15 @@ class XmppService {
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
   XmppState? _state;
-
-  XmppService({ required this.sendData }) : _currentlyOpenedChatJid = "", _networkStateSubscription = null, _log = Logger("XmppService"), _state = null;
+  
+  ConnectivityResult _currentConnectionType;
+  
+  XmppService({ required this.sendData }) :
+    _currentlyOpenedChatJid = "",
+    _networkStateSubscription = null,
+    _state = null,
+    _currentConnectionType = ConnectivityResult.none,
+    _log = Logger("XmppService");
 
   Future<String?> _readKeyOrNull(String key) async {
     if (await _storage.containsKey(key: key)) {
@@ -225,6 +232,13 @@ class XmppService {
       );
     }
   }
+
+  /// Returns true if we are allowed to automatically download a file
+  Future<bool> _canDownloadFile() async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+
+    return prefs.autoDownloadWifi && _currentConnectionType == ConnectivityResult.wifi || prefs.autoDownloadMobile && _currentConnectionType == ConnectivityResult.mobile;
+  }
   
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
@@ -239,9 +253,21 @@ class XmppService {
               GetIt.I.get<XmppConnection>().onNetworkConnectionLost();
             }
             break;
-            case ConnectivityResult.wifi:
-            case ConnectivityResult.mobile:
+            case ConnectivityResult.wifi: {
+              _currentConnectionType = ConnectivityResult.wifi;
+              // TODO: This will crash inside [XmppConnection] as soon as this happens
+              GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
+            }
+            break;
+            case ConnectivityResult.mobile: {
+              _currentConnectionType = ConnectivityResult.mobile;
+              // TODO: This will crash inside [XmppConnection] as soon as this happens
+              GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
+            }
+            break;
             case ConnectivityResult.ethernet: {
+              // NOTE: A hack, but should be fine
+              _currentConnectionType = ConnectivityResult.wifi;
               // TODO: This will crash inside [XmppConnection] as soon as this happens
               GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
             }
@@ -395,17 +421,16 @@ class XmppService {
         thumbnailDimensions: event.sfs?.metadata.dimensions
       );
 
-      final canDownload = (await Permission.storage.status).isGranted;
+      final canDownload = (await Permission.storage.status).isGranted && await _canDownloadFile();
       final shouldNotify = !(isMedia && isInRoster && canDownload);
-      String? mimeGuess;
+
+      // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
+      //       for ".../aaaaaaaaa", in which case we would've failed anyways.
+      final ext = srcUrl?.split(".").last;
+      String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
       if (isMedia && isInRoster && canDownload) {
         final download = GetIt.I.get<DownloadService>();
         final metadata = await download.peekFile(srcUrl);
-
-        // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
-        //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-        final ext = srcUrl.split(".").last;
-        mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
 
         msg = msg.copyWith(isDownloading: true);
         // TODO: Check the file size first
@@ -425,7 +450,7 @@ class XmppService {
         sendData(ConversationUpdatedEvent(conversation: newConversation));
 
         if (!isChatOpen && shouldNotify) {
-          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare);
+          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare, body: body);
         }
       } else {
         final conv = await db.addConversationFromData(
@@ -442,7 +467,7 @@ class XmppService {
         sendData(ConversationCreatedEvent(conversation: conv));
 
         if (!isChatOpen && shouldNotify) {
-          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare);
+          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare, body: body);
         }
       }
       

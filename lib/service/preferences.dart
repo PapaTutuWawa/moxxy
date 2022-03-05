@@ -5,7 +5,7 @@ import "package:moxxyv2/shared/preferences.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:logging/logging.dart";
 
-const currentVersion = 1;
+const currentVersion = 2;
 const preferencesVersionKey = "prefs_version";
 const preferencesDataKey = "prefs_data";
 
@@ -37,9 +37,22 @@ class PreferencesService {
     final version = int.parse((await _readKeyOrNull(preferencesVersionKey)) ?? "-1");
     final dataRaw = await _readKeyOrNull(preferencesDataKey);
 
-    if (version < 0 || dataRaw == null) {
+    if (version < 1 || dataRaw == null) {
       _log.finest("Creating preferences...");
       _preferences = PreferencesState();
+      _version = currentVersion;
+      await _commitPreferences();
+    } else if(version < 2) {
+      final data = json.decode(dataRaw);
+
+      _log.finest("Upgrading from a 0 < version < 2 to version 2");
+      _preferences = PreferencesState(
+        sendChatMarkers: data["sendChatMarkers"]!,
+        sendChatStates: data["sendChatStates"]!,
+        showSubscriptionRequests: data["showSubscriptionRequests"]!,
+        autoDownloadWifi: true,
+        autoDownloadMobile: false
+      );
       _version = currentVersion;
       await _commitPreferences();
     } else {
