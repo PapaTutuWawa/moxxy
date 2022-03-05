@@ -34,10 +34,10 @@ class DiscoInfo {
 
 class DiscoItem {
   final String jid;
-  final String node;
+  final String? node;
   final String? name;
 
-  const DiscoItem({ required this.jid, required this.node, required this.name });
+  const DiscoItem({ required this.jid, this.node, this.name });
 }
 
 DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
@@ -86,7 +86,7 @@ List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
 
   return query.findTags("item").map((node) => DiscoItem(
       jid: node.attributes["jid"]!,
-      node: node.attributes["node"]!,
+      node: node.attributes["node"],
       name: node.attributes["name"]
   )).toList();
 }

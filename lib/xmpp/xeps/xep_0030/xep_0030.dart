@@ -55,6 +55,8 @@ class DiscoManager extends XmppManagerBase {
   List<Identity> getIdentities() => const [ Identity(category: "client", type: "pc", name: "moxxmpp", lang: "en") ];
   
   Future<bool> _onDiscoInfoRequest(Stanza stanza) async {
+    if (stanza.type != "get") return false;
+
     final presence = getAttributes().getManagerById(presenceManager)! as PresenceManager;
     final query = stanza.firstTag("query")!;
     final node = query.attributes["node"];
@@ -116,6 +118,8 @@ class DiscoManager extends XmppManagerBase {
   }
 
   Future<bool> _onDiscoItemsRequest(Stanza stanza) async {
+    if (stanza.type != "get") return false;
+
     final query = stanza.firstTag("query")!;
     if (query.attributes["node"] != null) {
       // TODO: Handle the node we specified for XEP-0115
