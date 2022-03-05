@@ -346,13 +346,31 @@ class XmppConnection {
 
   Future<void> _discoverServerFeatures() async {
     _serverFeatures.clear();
-    final serverInfo = await getDiscoCacheManager().getInfoByJid(_connectionSettings.jid.domain);
+    final serverJid = _connectionSettings.jid.domain;
+    final serverInfo = await getDiscoCacheManager().getInfoByJid(serverJid);
     if (serverInfo != null) {
       _log.finest("Discovered supported server features: ${serverInfo.features}");
       _serverFeatures.addAll(serverInfo.features);
       _sendEvent(ServerDiscoDoneEvent());
     } else {
       _log.warning("Failed to discover server features using XEP-0030");
+    }
+
+    final serverItems = await getDiscoManager().discoItemsQuery(serverJid);
+    if (serverItems != null) {
+      _log.finest("Received disco items for $serverJid");
+      for (final item in serverItems) {
+        _log.finest("Querying info for ${item.jid}");
+        final info = await getDiscoCacheManager().getInfoByJid(item.jid);
+        if (info != null) {
+          _log.finest("Received info for ${item.jid}");
+          _sendEvent(ServerItemDiscoEvent(info: info, jid: item.jid));
+        } else {
+          _log.warning("Failed to discover disco info for ${item.jid}");
+        }
+      }
+    } else {
+      _log.warning("Failed to discover server items using XEP-0030");
     }
   }
   
@@ -375,7 +393,7 @@ class XmppConnection {
       }
       return;
     }
-    
+
     final stanza = Stanza.fromXMLNode(nonza);
     final id = stanza.attributes["id"];
     if (id != null && _awaitingResponse.containsKey(id)) {
@@ -383,7 +401,7 @@ class XmppConnection {
       _awaitingResponse.remove(id);
       return;
     }
-
+    
     bool stanzaHandled = false;
     await Future.forEach(
       _xmppManagers.values,
@@ -576,7 +594,7 @@ class XmppConnection {
           getPresenceManager().sendInitialPresence();
           _setConnectionState(XmppConnectionState.connected);
         }
-
+ 
         _discoverServerFeatures();
       }
       break;
