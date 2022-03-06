@@ -15,7 +15,7 @@ abstract class XmppManagerBase {
     _managerAttributes = attributes;
     _log = Logger(getName());
   }
-
+  
   /// Returns the attributes that are registered with the manager.
   /// Must only be called after register has been called on it.
   XmppManagerAttributes getAttributes() {

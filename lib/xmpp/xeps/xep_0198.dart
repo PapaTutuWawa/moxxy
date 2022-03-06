@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -48,21 +50,91 @@ class StreamManagementRequestNonza extends XMLNode {
   );
 }
 
+class _UnackedStanza {
+  final Stanza stanza;
+  final int timestamp;
+
+  const _UnackedStanza(this.stanza, this.timestamp);
+}
+
 class StreamManagementManager extends XmppManagerBase {
   // Amount of stanzas we have sent or handled
   int _c2sStanzaCount;
   int _s2cStanzaCount;
-  final Map<int, Stanza> _unackedStanzas;
+  final Map<int, _UnackedStanza> _unackedStanzas;
   String? _streamResumptionId;
   bool _streamManagementEnabled;
+  Timer? _ackTimer;
+  final Duration ackDuration;
+  final bool enableTimer;
 
-  StreamManagementManager() : _s2cStanzaCount = 0, _c2sStanzaCount = 0, _unackedStanzas = {}, _streamResumptionId = null, _streamManagementEnabled = false;
-
+  /// Creates an XmppManager that implements XEP-0198.
+  /// [ackDuration] is the time which is given the server to ack every stanza. If
+  /// a stanza is older than [ackDuration], it will be resent.
+  /// [enableTimer] is an option that is only used for testing. It will disable the
+  /// timer.
+  StreamManagementManager({
+      this.ackDuration = const Duration(seconds: 10),
+      this.enableTimer = true
+  }) :
+    _s2cStanzaCount = 0,
+    _c2sStanzaCount = 0,
+    _unackedStanzas = {},
+    _streamResumptionId = null,
+    _streamManagementEnabled = false;
+    
   /// Functions for testing
   int getC2SStanzaCount() => _c2sStanzaCount;
   int getS2CStanzaCount() => _s2cStanzaCount;
-  Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
+  Map<int, _UnackedStanza> getUnackedStanzas() => _unackedStanzas;
 
+  /// Called whenever the timer elapses. If [timer] is null, then the function
+  /// will log that is has been called outside of the timer.
+  /// [ignoreTimestamp] will ignore the timestamps and mercylessly retransmit every
+  /// stanza in the queue. Usefull for testing and stream resumption.
+  void onTimerElapsed(Timer? timer, { bool ignoreTimestamps = false }) {
+    if (timer != null) {
+      logger.finest("SM Timer elapsed");
+    } else {
+      logger.finest("onTimerElapsed called outside of the timer");
+    }
+
+    final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
+    final attrs = getAttributes();
+    bool hasRetransmittedStanza = false;
+    for (final i in _unackedStanzas.keys) {
+      final item = _unackedStanzas[i]!;
+      if (ignoreTimestamps || currentTimestamp - item.timestamp > ackDuration.inMilliseconds) {
+        logger.finest("Retransmitting stanza");
+        attrs.sendStanza(item.stanza);
+        _unackedStanzas[i] = _UnackedStanza(
+          item.stanza,
+          currentTimestamp
+        );
+        hasRetransmittedStanza = true;
+      }
+    }
+
+    if (hasRetransmittedStanza) {
+      _sendAckRequestPing();
+    }
+  }
+
+  void _stopTimer() {
+    if (_ackTimer != null) {
+      logger.finest("Stopping SM timer");
+      _ackTimer!.cancel();
+      _ackTimer = null;
+    }
+  }
+
+  void _startTimer() {
+    if (_ackTimer == null && enableTimer) {
+      logger.finest("Starting SM timer");
+      _ackTimer = Timer.periodic(ackDuration, onTimerElapsed);
+    }
+  }
+  
   /// May be overwritten by a subclass. Should save [_c2sStanzaCount] and [_s2cStanzaCount]
   /// so that they can be loaded again with [this.loadState].
   Future<void> commitState() async {}
@@ -171,10 +243,9 @@ class StreamManagementManager extends XmppManagerBase {
     
     _removeHandledStanzas(h);
     _c2sStanzaCount = h;
-    
-    if (_unackedStanzas.isNotEmpty) {
-      logger.fine("QUEUE NOT EMPTY. FLUSHING");
-      _flushStanzaQueue();
+
+    if (_unackedStanzas.isEmpty) {
+      _stopTimer();
     }
 
     return true;
@@ -208,8 +279,10 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// Called whenever we send a stanza.
   void _onClientStanzaSent(Stanza stanza) {
+    _startTimer();
+
     _incrementC2S();
-    _unackedStanzas[_c2sStanzaCount] = stanza;
+    _unackedStanzas[_c2sStanzaCount] = _UnackedStanza(stanza, DateTime.now().millisecondsSinceEpoch);
 
     logger.fine("Queue after sending: " + _unackedStanzas.toString());
 
@@ -234,17 +307,7 @@ class StreamManagementManager extends XmppManagerBase {
     commitState();
 
     _removeHandledStanzas(h);
-    _flushStanzaQueue();
-  }
-
-  /// This empties the unacked queue by sending the items out again.
-  void _flushStanzaQueue() {
-    List<Stanza> stanzas = _unackedStanzas.values.toList();
-
-    final attrs = getAttributes();
-    for (var stanza in stanzas) {
-      attrs.sendStanza(stanza);
-    }
+    onTimerElapsed(null, ignoreTimestamps: true);
   }
 
   /// Pings the connection open by send an ack request
