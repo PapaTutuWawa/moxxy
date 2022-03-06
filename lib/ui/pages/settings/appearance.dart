@@ -16,6 +16,7 @@ import "package:path/path.dart" as path;
 class AppearancePage extends StatelessWidget {
   const AppearancePage({ Key? key }): super(key: key);
 
+  // TODO: Move this somewhere else to not mix UI and application logic
   Future<String?> _pickBackgroundImage() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image
@@ -30,7 +31,18 @@ class AppearancePage extends StatelessWidget {
     return backgroundPath;
   }
 
-  void _setBackgroundImage(Store store, String backgroundPath) {
+  Future<void> _setBackgroundImage(Store store, String backgroundPath) async {
+    // TODO: Move this somewhere else to not mix UI and application logic
+    final oldBackgroundImage = store.state.preferencesState.backgroundImage;
+    if (oldBackgroundImage.isNotEmpty) {
+      final file = File(oldBackgroundImage);
+
+      if (await file.exists()) {
+        await file.delete();
+      }
+    }
+    // TODO END
+
     store.dispatch(
       SetPreferencesAction(
         store.state.preferencesState.copyWith(
@@ -41,8 +53,16 @@ class AppearancePage extends StatelessWidget {
   }
 
   Future<void> _removeBackgroundImage(Store store) async {
-    await File(store.state.preferencesState.backgroundPath).delete();
+    final backgroundPath = store.state.preferencesState.backgroundPath;
+    if (backgroundPath.isEmpty) return;
 
+    // TODO: Move this somewhere else to not mix UI and application logic
+    final file = File(backgroundPath);
+    if (await file.exists()) {
+      await file.delete();
+    }
+    // TODO END
+    
     store.dispatch(
       SetPreferencesAction(
         store.state.preferencesState.copyWith(
@@ -72,7 +92,7 @@ class AppearancePage extends StatelessWidget {
                     final backgroundPath = await _pickBackgroundImage();
 
                     if (backgroundPath != null) {
-                      _setBackgroundImage(store, backgroundPath);
+                      await _setBackgroundImage(store, backgroundPath);
                     }
                   }
                 ),
