@@ -70,14 +70,21 @@ class XmppConnection {
   Timer? _backoffTimer;
   late final Uuid _uuid;
   bool _resuming; // For indicating in a [ConnectionStateChangedEvent] that the event occured because we did a reconnection
+  final Duration connectionPingDuration;
 
   // Negotiators
   late AuthenticationNegotiator _authenticator;
 
   // Misc
   late final Logger _log;
-  
-  XmppConnection({ BaseSocketWrapper? socket }): _resuming = true {
+
+  /// [socket] is for debugging purposes.
+  /// [connectionPingDuration] is the duration after which a ping will be sent to keep
+  /// the connection open. Defaults to 15 minutes.
+  XmppConnection({
+      BaseSocketWrapper? socket,
+      this.connectionPingDuration = const Duration(minutes: 15)
+  }): _resuming = true {
     _connectionState = XmppConnectionState.notConnected;
     _routingState = RoutingState.unauthenticated;
 
@@ -284,7 +291,7 @@ class XmppConnection {
     _eventStreamController.add(ConnectionStateChangedEvent(state: state, resumed: _resuming));
 
     if (state == XmppConnectionState.connected) {
-      _connectionPingTimer = Timer.periodic(const Duration(minutes: 5), _pingConnectionOpen);
+      _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
     } else {
       if (_connectionPingTimer != null) {
         _connectionPingTimer!.cancel();
