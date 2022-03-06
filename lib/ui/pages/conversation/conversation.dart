@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/chatbubble.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
@@ -55,8 +57,9 @@ class _MessageListViewModel {
   final bool showScrollToEndButton;
   final void Function() closeChat;
   final void Function() resetCurrentConversation;
+  final String backgroundPath;
   
-  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages, required this.resetCurrentConversation });
+  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages, required this.resetCurrentConversation, required this.backgroundPath });
 }
 
 class ConversationPage extends StatefulWidget {
@@ -144,7 +147,8 @@ class _ConversationPageState extends State<ConversationPage> {
               jid: jid,
             )
           ),
-          resetCurrentConversation: () => store.dispatch(SetOpenConversationAction(jid: null))
+          resetCurrentConversation: () => store.dispatch(SetOpenConversationAction(jid: null)),
+          backgroundPath: store.state.preferencesState.backgroundPath
         );
       },
       builder: (context, viewModel) {
@@ -210,10 +214,18 @@ class _ConversationPageState extends State<ConversationPage> {
                 Expanded(
                   child: Stack(
                     children: [
-                      ListView.builder(
-                        reverse: true,
-                        itemCount: viewModel.messages.length,
-                        itemBuilder: (context, index) => _renderBubble(viewModel.messages, index, maxWidth)
+                      Container(
+                        decoration: viewModel.backgroundPath.isNotEmpty ? BoxDecoration(
+                          image: DecorationImage(
+                            fit: BoxFit.fitWidth,
+                            image: FileImage(File(viewModel.backgroundPath))
+                          )
+                        ) : null,
+                        child: ListView.builder(
+                          reverse: true,
+                          itemCount: viewModel.messages.length,
+                          itemBuilder: (context, index) => _renderBubble(viewModel.messages, index, maxWidth)
+                        )
                       ),
                       Positioned(
                         bottom: 64.0,

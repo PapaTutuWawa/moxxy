@@ -15,6 +15,7 @@ import "package:moxxyv2/ui/pages/settings/about.dart";
 import "package:moxxyv2/ui/pages/settings/debugging.dart";
 import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
+import "package:moxxyv2/ui/pages/settings/appearance.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/conversations/middlewares.dart";
@@ -180,7 +181,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           aboutRoute: (context) => const SettingsAboutPage(),
           debuggingRoute: (context) => DebuggingPage(),
           privacyRoute: (context) => const PrivacyPage(),
-          networkRoute: (context) => const NetworkPage()
+          networkRoute: (context) => const NetworkPage(),
+          appearanceRoute: (context) => const AppearancePage()
         },
         home: const SplashScreen(),
       )

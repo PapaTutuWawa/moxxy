@@ -11,7 +11,8 @@ class PreferencesState with _$PreferencesState {
       @Default(true) bool showSubscriptionRequests,
       @Default(true) bool autoDownloadWifi,
       @Default(false) bool autoDownloadMobile,
-      @Default(15) int maximumAutoDownloadSize
+      @Default(15) int maximumAutoDownloadSize,
+      @Default("") String backgroundPath
   }) = _PreferencesState;
   
   // JSON serialization

@@ -5,7 +5,7 @@ import "package:moxxyv2/shared/preferences.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:logging/logging.dart";
 
-const currentVersion = 3;
+const currentVersion = 4;
 const preferencesVersionKey = "prefs_version";
 const preferencesDataKey = "prefs_data";
 
@@ -45,28 +45,45 @@ class PreferencesService {
     } else if(version < 2) {
       final data = json.decode(dataRaw);
 
-      _log.finest("Upgrading from a 0 < version < 2 to version 2");
+      _log.finest("Upgrading from a 0 < version < 2 to current version");
       _preferences = PreferencesState(
         sendChatMarkers: data["sendChatMarkers"]!,
         sendChatStates: data["sendChatStates"]!,
         showSubscriptionRequests: data["showSubscriptionRequests"]!,
         autoDownloadWifi: true,
         autoDownloadMobile: false,
-        maximumAutoDownloadSize: 15
+        maximumAutoDownloadSize: 15,
+        backgroundPath: ""
       );
       _version = currentVersion;
       await _commitPreferences();
     } else if (version < 3) {
       final data = json.decode(dataRaw);
 
-      _log.finest("Upgrading from a 0 < version < 2 to version 2");
+      _log.finest("Upgrading from a 1 < version < 3 to current version");
       _preferences = PreferencesState(
         sendChatMarkers: data["sendChatMarkers"]!,
         sendChatStates: data["sendChatStates"]!,
         showSubscriptionRequests: data["showSubscriptionRequests"]!,
         autoDownloadWifi: data["autoDownloadWifi"]!,
         autoDownloadMobile: data["autoDownloadMobile"]!,
-        maximumAutoDownloadSize: 15
+        maximumAutoDownloadSize: 15,
+        backgroundPath: ""
+      );
+      _version = currentVersion;
+      await _commitPreferences();
+    } else if (version < 4) {
+      final data = json.decode(dataRaw);
+
+      _log.finest("Upgrading from a 2 < version < 4 to current version");
+      _preferences = PreferencesState(
+        sendChatMarkers: data["sendChatMarkers"]!,
+        sendChatStates: data["sendChatStates"]!,
+        showSubscriptionRequests: data["showSubscriptionRequests"]!,
+        autoDownloadWifi: data["autoDownloadWifi"]!,
+        autoDownloadMobile: data["autoDownloadMobile"]!,
+        maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
+        backgroundPath: ""
       );
       _version = currentVersion;
       await _commitPreferences();
