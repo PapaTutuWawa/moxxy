@@ -217,7 +217,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       Container(
                         decoration: viewModel.backgroundPath.isNotEmpty ? BoxDecoration(
                           image: DecorationImage(
-                            fit: BoxFit.fitWidth,
+                            fit: BoxFit.cover,
                             image: FileImage(File(viewModel.backgroundPath))
                           )
                         ) : null,
