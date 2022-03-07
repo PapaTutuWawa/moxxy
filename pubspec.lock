@@ -456,6 +456,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.0.0+1"
+  flutter_vibrate:
+    dependency: "direct main"
+    description:
+      name: flutter_vibrate
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.3.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -958,6 +965,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
+  swipeable_tile:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: bfab5e28f1f1ea624232002f0d05481cb2bd9997
+      resolved-ref: bfab5e28f1f1ea624232002f0d05481cb2bd9997
+      url: "https://github.com/PapaTutuWawa/swipeable_tile.git"
+    source: git
+    version: "1.0.0+6"
   term_glyph:
     dependency: transitive
     description:

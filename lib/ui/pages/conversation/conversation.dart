@@ -4,6 +4,7 @@ import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/chatbubble.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
+import "package:moxxyv2/ui/widgets/quotedmessage.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/constants.dart";
@@ -16,6 +17,8 @@ import "package:moxxyv2/ui/redux/conversation/actions.dart";
 import "package:flutter/material.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_redux/flutter_redux.dart";
+import "package:swipeable_tile/swipeable_tile.dart";
+import "package:flutter_vibrate/flutter_vibrate.dart";
 
 typedef SendMessageFunction = void Function(String body);
 
@@ -58,8 +61,23 @@ class _MessageListViewModel {
   final void Function() closeChat;
   final void Function() resetCurrentConversation;
   final String backgroundPath;
+  final Message? quotedMessage;
+  final void Function(Message?) setQuotedMessage;
   
-  _MessageListViewModel({ required this.conversation, required this.showSendButton, required this.sendMessage, required this.setShowSendButton, required this.showScrollToEndButton, required this.setShowScrollToEndButton, required this.closeChat, required this.messages, required this.resetCurrentConversation, required this.backgroundPath });
+  _MessageListViewModel({
+      required this.conversation,
+      required this.showSendButton,
+      required this.sendMessage,
+      required this.setShowSendButton,
+      required this.showScrollToEndButton,
+      required this.setShowScrollToEndButton,
+      required this.closeChat,
+      required this.messages,
+      required this.resetCurrentConversation,
+      required this.backgroundPath,
+      required this.setQuotedMessage,
+      required this.quotedMessage
+  });
 }
 
 class ConversationPage extends StatefulWidget {
@@ -100,23 +118,82 @@ class _ConversationPageState extends State<ConversationPage> {
     }
   }
 
-  Widget _renderBubble(List<Message> messages, int _index, double maxWidth) {
+  Widget _renderBubble(_MessageListViewModel viewModel, int _index, double maxWidth) {
     // TODO: Since we reverse the list: Fix start, end and between
-    final index = messages.length - 1 - _index;
-    Message item = messages[index];
-    bool start = index - 1 < 0 ? true : messages[index - 1].sent != item.sent;
-    bool end = index + 1 >= messages.length ? true : messages[index + 1].sent != item.sent;
+    final index = viewModel.messages.length - 1 - _index;
+    Message item = viewModel.messages[index];
+    bool start = index - 1 < 0 ? true : viewModel.messages[index - 1].sent != item.sent;
+    bool end = index + 1 >= viewModel.messages.length ? true : viewModel.messages[index + 1].sent != item.sent;
     bool between = !start && !end;
 
-    return ChatBubble(
-      message: item,
-      sentBySelf: item.sent,
-      start: start,
-      end: end,
-      between: between,
-      closerTogether: !end,
-      maxWidth: maxWidth,
-      key: ValueKey("message;" + item.toString())
+    return SwipeableTile.swipeToTrigger(
+      direction: SwipeDirection.horizontal,
+      swipeThreshold: 0.2,
+      onSwiped: (_) => viewModel.setQuotedMessage(item),
+      backgroundBuilder: (_, direction, progress) {
+        // NOTE: Taken from https://github.com/watery-desert/swipeable_tile/blob/main/example/lib/main.dart#L240
+        //       and modified.
+        bool vibrated = false;
+        return AnimatedBuilder(
+          animation: progress,
+          builder: (_, __) {
+            if (progress.value > 0.9999 && !vibrated) {
+              Vibrate.feedback(FeedbackType.light);
+              vibrated = true;
+            } else if (progress.value < 0.9999) {
+              vibrated = false;
+            }
+
+            return Container(
+              alignment: direction == SwipeDirection.endToStart ? Alignment.centerRight : Alignment.centerLeft,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: direction == SwipeDirection.endToStart ? 24.0 : 0.0,
+                  left: direction == SwipeDirection.startToEnd ? 24.0 : 0.0
+                ),
+                child: Transform.scale(
+                  scale: Tween<double>(
+                    begin: 0.0,
+                    end: 1.2,
+                  )
+                  .animate(
+                    CurvedAnimation(
+                      parent: progress,
+                      curve: const Interval(0.5, 1.0,
+                        curve: Curves.linear),
+                    ),
+                  )
+                  .value,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.3),
+                      shape: BoxShape.circle
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.reply,
+                        color: Colors.white,
+                      )
+                    )
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+      isEelevated: false,
+      key: ValueKey("message;" + item.toString()),
+      child: ChatBubble(
+        message: item,
+        sentBySelf: item.sent,
+        start: start,
+        end: end,
+        between: between,
+        closerTogether: !end,
+        maxWidth: maxWidth,
+      )
     );
   }
   
@@ -148,7 +225,9 @@ class _ConversationPageState extends State<ConversationPage> {
             )
           ),
           resetCurrentConversation: () => store.dispatch(SetOpenConversationAction(jid: null)),
-          backgroundPath: store.state.preferencesState.backgroundPath
+          backgroundPath: store.state.preferencesState.backgroundPath,
+          setQuotedMessage: (msg) => store.dispatch(QuoteMessageUIAction(msg)),
+          quotedMessage: store.state.conversationPageState.quotedMessage
         );
       },
       builder: (context, viewModel) {
@@ -224,7 +303,7 @@ class _ConversationPageState extends State<ConversationPage> {
                         child: ListView.builder(
                           reverse: true,
                           itemCount: viewModel.messages.length,
-                          itemBuilder: (context, index) => _renderBubble(viewModel.messages, index, maxWidth)
+                          itemBuilder: (context, index) => _renderBubble(viewModel, index, maxWidth)
                         )
                       ),
                       Positioned(
@@ -261,6 +340,10 @@ class _ConversationPageState extends State<ConversationPage> {
                           onChanged: (value) => _onMessageTextChanged(value, viewModel),
                           contentPadding: textfieldPaddingConversation,
                           cornerRadius: textfieldRadiusConversation,
+                          topWidget: viewModel.quotedMessage != null ? QuotedMessageWidget(
+                            message: viewModel.quotedMessage!,
+                            resetQuotedMessage: () => viewModel.setQuotedMessage(null)
+                          ) : null
                         )
                       ),
                       Padding(

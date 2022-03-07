@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffix;
   final String? suffixText;
   final Widget? suffixIcon;
+  final Widget? topWidget;
   final EdgeInsetsGeometry contentPadding;
   final bool enabled;
   final bool obscureText;
@@ -28,6 +29,7 @@ class CustomTextField extends StatelessWidget {
       this.suffix,
       this.suffixText,
       this.suffixIcon,
+      this.topWidget,
       this.enabled = true,
       this.obscureText = false,
       this.maxLines = 1,
@@ -42,6 +44,8 @@ class CustomTextField extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    const quoteLeftBorderWidth = 7.0;
+
     return Column(
       children: [
         Container(
@@ -52,25 +56,31 @@ class CustomTextField extends StatelessWidget {
               color: Colors.purple
             )
           ),
-          child: TextField(
-            maxLines: maxLines,
-            minLines: minLines,
-            obscureText: obscureText,
-            enabled: enabled,
-            controller: controller,
-            onChanged: onChanged,
-            enableSuggestions: enableIMEFeatures,
-            autocorrect: enableIMEFeatures,
-            decoration: InputDecoration(
-              labelText: labelText,
-              hintText: hintText,
-              border: InputBorder.none,
-              contentPadding: contentPadding,
-              suffixIcon: suffixIcon,
-              suffix: suffix,
-              suffixText: suffixText,
-              isDense: isDense
-            )
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ...(topWidget != null ? [ topWidget! ] : []),
+              TextField(
+                maxLines: maxLines,
+                minLines: minLines,
+                obscureText: obscureText,
+                enabled: enabled,
+                controller: controller,
+                onChanged: onChanged,
+                enableSuggestions: enableIMEFeatures,
+                autocorrect: enableIMEFeatures,
+                decoration: InputDecoration(
+                  labelText: labelText,
+                  hintText: hintText,
+                  border: InputBorder.none,
+                  contentPadding: contentPadding,
+                  suffixIcon: suffixIcon,
+                  suffix: suffix,
+                  suffixText: suffixText,
+                  isDense: isDense
+                )
+              )
+            ]
           )
         ),
         Visibility(

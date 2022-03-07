@@ -51,9 +51,13 @@ HashMap<String, List<Message>> messageReducer(HashMap<String, List<Message>> sta
 
 ConversationPageState conversationPageReducer(ConversationPageState state, dynamic action) {
   if (action is SetShowSendButtonAction) {
-    return state.copyWith(showSendButton: action.show);
+    return state.copyWith(state.quotedMessage, showSendButton: action.show);
   } else if (action is SetShowScrollToEndButtonAction) {
-    return state.copyWith(showScrollToEndButton: action.show);
+    return state.copyWith(state.quotedMessage, showScrollToEndButton: action.show);
+  } else if (action is QuoteMessageUIAction) {
+    return state.copyWith(action.message);
+  } else if (action is SendMessageAction) {
+    return state.copyWith(null);
   }
 
   return state;

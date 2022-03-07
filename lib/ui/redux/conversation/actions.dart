@@ -106,3 +106,10 @@ class UpdateConversationAction {
 
   UpdateConversationAction({ required this.conversation });
 }
+
+/// Triggered when a message is to be quoted
+class QuoteMessageUIAction {
+  final Message? message;
+
+  QuoteMessageUIAction(this.message);
+}
