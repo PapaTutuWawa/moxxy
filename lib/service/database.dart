@@ -42,6 +42,7 @@ Message messageDbToModel(DBMessage m) {
     m.body,
     m.timestamp,
     m.sent,
+    m.sid,
     m.id!,
     m.conversationJid,
     m.isMedia,
@@ -52,7 +53,8 @@ Message messageDbToModel(DBMessage m) {
     mediaType: m.mediaType,
     thumbnailData: m.thumbnailData,
     thumbnailDimensions: m.thumbnailDimensions,
-    srcUrl: m.srcUrl
+    srcUrl: m.srcUrl,
+    quotes: m.quotes.value != null ? messageDbToModel(m.quotes.value!) : null
   );
 }
 
@@ -117,15 +119,19 @@ class DatabaseService {
     if (!_messageCache.containsKey(jid)) {
       _messageCache[jid] = List.empty(growable: true);
     }
+
+    final List<Message> tmp = List.empty(growable: true);
+    for (final m in messages) {
+      await m.quotes.load();
+
+      final msg = messageDbToModel(m);
+      _messageCache[jid]!.add(msg);
+      tmp.add(msg);
+    }
     
     sendData(LoadMessagesForJidEvent(
         jid: jid,
-        messages: messages.map((m) {
-            final message = messageDbToModel(m);
-            _messageCache[jid]!.add(message);
-
-            return message;
-        }).toList()
+        messages: tmp
     ));
   }
 
@@ -181,7 +187,23 @@ class DatabaseService {
   }
 
   /// Same as [addConversationFromData] but for a [Message].
-  Future<Message> addMessageFromData(String body, int timestamp, String from, String conversationJid, bool sent, bool isMedia, String sid, { String? srcUrl, String? mediaUrl, String? thumbnailData, String? thumbnailDimensions, String? originId }) async {
+  Future<Message> addMessageFromData(
+    String body,
+    int timestamp,
+    String from,
+    String conversationJid,
+    bool sent,
+    bool isMedia,
+    String sid,
+    {
+      String? srcUrl,
+      String? mediaUrl,
+      String? thumbnailData,
+      String? thumbnailDimensions,
+      String? originId,
+      String? quoteId
+    }
+  ) async {
     final m = DBMessage()
       ..from = from
       ..conversationJid = conversationJid
@@ -195,7 +217,15 @@ class DatabaseService {
       ..thumbnailDimensions = thumbnailDimensions
       ..received = false
       ..displayed = false
+      ..acked = false
       ..originId = originId;
+
+    if (quoteId != null) {
+      final quotes = await getMessageByXmppId(quoteId);
+      if (quotes != null) {
+        m.quotes.value = quotes;
+      }
+    }
 
     await isar.writeTxn((isar) async {
         await isar.dBMessages.put(m);

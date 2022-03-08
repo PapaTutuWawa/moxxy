@@ -24,9 +24,13 @@ class DBMessage {
   late String sid;
   String? originId;
 
-  /// Indicate if the message was received by the client (via Chat Markers or Delivery Receipts)
+  /// Indicate if the message was received by the client (via Chat Markers or Delivery Receipts) or acked by the server
+  late bool acked;
   late bool received;
   late bool displayed;
+
+  /// The message that this one quotes
+  final quotes = IsarLink<DBMessage>();
   
   /// Url a file can be accessed from
   String? srcUrl;

@@ -44,8 +44,6 @@ class CustomTextField extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    const quoteLeftBorderWidth = 7.0;
-
     return Column(
       children: [
         Container(

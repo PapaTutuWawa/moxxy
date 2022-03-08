@@ -340,6 +340,7 @@ class _ConversationPageState extends State<ConversationPage> {
                           onChanged: (value) => _onMessageTextChanged(value, viewModel),
                           contentPadding: textfieldPaddingConversation,
                           cornerRadius: textfieldRadiusConversation,
+                          // TODO: Handle media messages being quoted
                           topWidget: viewModel.quotedMessage != null ? QuotedMessageWidget(
                             message: viewModel.quotedMessage!,
                             resetQuotedMessage: () => viewModel.setQuotedMessage(null)

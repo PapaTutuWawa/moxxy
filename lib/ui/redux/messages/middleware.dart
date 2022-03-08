@@ -10,7 +10,8 @@ void messageMiddleware(Store<MoxxyState> store, action, NextDispatcher next) asy
     FlutterBackgroundService().sendData(
       commands.SendMessageAction(
         body: action.body,
-        jid: action.jid
+        jid: action.jid,
+        quotedMessage: store.state.conversationPageState.quotedMessage
       ).toJson()
     );
   }

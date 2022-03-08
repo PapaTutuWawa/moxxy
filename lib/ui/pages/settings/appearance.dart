@@ -33,7 +33,7 @@ class AppearancePage extends StatelessWidget {
 
   Future<void> _setBackgroundImage(Store store, String backgroundPath) async {
     // TODO: Move this somewhere else to not mix UI and application logic
-    final oldBackgroundImage = store.state.preferencesState.backgroundImage;
+    final oldBackgroundImage = store.state.preferencesState.backgroundPath;
     if (oldBackgroundImage.isNotEmpty) {
       final file = File(oldBackgroundImage);
 

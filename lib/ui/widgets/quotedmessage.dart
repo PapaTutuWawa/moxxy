@@ -6,13 +6,13 @@ import "package:flutter/material.dart";
 /// This Widget is used to show that a message has been quoted.
 class QuotedMessageWidget extends StatelessWidget {
   final Message message;
-  final void Function() resetQuotedMessage;
+  final void Function()? resetQuotedMessage;
 
   /// [message]: The message used to quote
   /// [resetQuotedMessage]: Function to reset the quoted message
   const QuotedMessageWidget({
       required this.message,
-      required this.resetQuotedMessage,
+      this.resetQuotedMessage,
       Key? key
   }) : super(key: key);
 
@@ -39,16 +39,18 @@ class QuotedMessageWidget extends StatelessWidget {
                 width: quoteLeftBorderWidth,
               )
             ),
-            Positioned(
-              right: 3.0,
-              top: 3.0,
-              child: InkWell(
-                onTap: resetQuotedMessage,
-                child: Icon(
-                  Icons.close,
-                  size: 24.0
+            ...(
+              resetQuotedMessage != null ? [Positioned(
+                right: 3.0,
+                top: 3.0,
+                child: InkWell(
+                  onTap: resetQuotedMessage,
+                  child: const Icon(
+                    Icons.close,
+                    size: 24.0
+                  )
                 )
-              )
+              )] : []
             ),
             Padding(
               padding: const EdgeInsets.all(8.0).add(const EdgeInsets.only(left: quoteLeftBorderWidth, right: 26.0)),

@@ -16,6 +16,30 @@ import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
 
+class MessageDetails {
+  final String to;
+  final String body;
+  final bool requestDeliveryReceipt;
+  final bool requestChatMarkers;
+  final String? id;
+  final String? originId;
+  final String? quoteBody;
+  final String? quoteId;
+  final String? quoteFrom;
+
+  const MessageDetails({
+      required this.to,
+      required this.body,
+      this.requestDeliveryReceipt = false,
+      this.requestChatMarkers = true,
+      this.id,
+      this.originId,
+      this.quoteBody,
+      this.quoteId,
+      this.quoteFrom
+  });
+}
+
 class MessageManager extends XmppManagerBase {
   @override
   String getId() => messageManager;
@@ -92,7 +116,6 @@ class MessageManager extends XmppManagerBase {
         id: marker.attributes["id"]!,
     ));
   }
-
   StatelessMediaSharingData? _getSIMS(Stanza message) {
     final references = message.findTags("reference", xmlns: referenceXmlns);
     for (final ref in references) {
@@ -188,17 +211,63 @@ class MessageManager extends XmppManagerBase {
   /// If [id] is non-null, then it will be the id of the message stanza.
   /// element to this id. If [originId] is non-null, then it will create an "origin-id"
   /// child in the message stanza and set its id to [originId].
-  void sendMessage(String body, String to, { bool deliveryRequest = false, String? id, String? originId, bool enableChatMarkers = true }) {
-    getAttributes().sendStanza(Stanza.message(
-        to: to,
-        type: "normal",
-        id: id,
-        children: [
-          XMLNode(tag: "body", text: body),
-          ...(deliveryRequest ? [makeMessageDeliveryRequest()] : []),
-          ...(originId != null ? [makeOriginIdElement(originId)] : []),
-          ...(enableChatMarkers ? [makeChatMarkerMarkable()] : [])
-        ]
-    ));
+  void sendMessage(MessageDetails details) {
+    final stanza = Stanza.message(
+      to: details.to,
+      type: "normal",
+      children: []
+    );
+
+    if (details.quoteBody != null) {
+      final fallback = "&gt; ${details.quoteBody!}";
+
+      stanza.addChild(
+        XMLNode(tag: "body", text: fallback + "\n${details.body}")
+      );
+      stanza.addChild(
+        XMLNode.xmlns(
+          tag: "reply",
+          xmlns: replyXmlns,
+          attributes: {
+            "to": details.quoteFrom!,
+            "id": details.quoteId!
+          }
+        )
+      );
+      stanza.addChild(
+        XMLNode.xmlns(
+          tag: "fallback",
+          xmlns: fallbackXmlns,
+          attributes: {
+            "for": replyXmlns
+          },
+          children: [
+            XMLNode(
+              tag: "body",
+              attributes: {
+                "start": "0",
+                "end": "${fallback.length}"
+              }
+            )
+          ]
+        )
+      );
+    } else {
+      stanza.addChild(
+        XMLNode(tag: "body", text: details.body)
+      );
+    }
+
+    if (details.requestDeliveryReceipt) {
+      stanza.addChild(makeMessageDeliveryRequest());
+    }
+    if (details.requestChatMarkers) {
+      stanza.addChild(makeChatMarkerMarkable());
+    }
+    if (details.originId != null) {
+      stanza.addChild(makeOriginIdElement(details.originId!));
+    }
+
+    getAttributes().sendStanza(stanza);
   }
 }

@@ -4,6 +4,7 @@ import "dart:math";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/widgets/quotedmessage.dart";
 import "package:moxxyv2/ui/widgets/chat/download.dart";
 import "package:moxxyv2/ui/widgets/chat/downloadbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
@@ -139,6 +140,18 @@ class _ChatBubbleState extends State<ChatBubble> {
   }
   
   Widget _buildBody() {
+    if (message.quotes != null) {
+      // TODO: Handle media messages being quoted
+      return TextChatWidget(
+        body: message.body,
+        timestamp: _timestampString,
+        received: message.received,
+        displayed: message.displayed,
+        enablePadding: true,
+        topWidget: QuotedMessageWidget(message: message.quotes!)
+      );
+    }
+
     if (message.isMedia) {
       if (message.mediaUrl != null) {
         final mime = message.mediaType;
@@ -236,6 +249,7 @@ class _ChatBubbleState extends State<ChatBubble> {
       timestamp: _timestampString,
       received: message.received,
       displayed: message.displayed,
+      enablePadding: false
     );
   }
 
@@ -276,7 +290,7 @@ class _ChatBubbleState extends State<ChatBubble> {
             ),
             child: Padding(
               // NOTE: Images don't work well with padding here
-              padding: message.isMedia ? const EdgeInsets.all(0.0) : const EdgeInsets.all(8.0),
+              padding: message.isMedia || message.quotes != null ? const EdgeInsets.all(0.0) : const EdgeInsets.all(8.0),
               child: _buildBody()
             )
           )

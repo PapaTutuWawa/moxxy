@@ -349,7 +349,11 @@ void handleEvent(Map<String, dynamic>? data) {
     break;
     case sendMessageActionType: {
       final command = SendMessageAction.fromJson(data);
-      GetIt.I.get<XmppService>().sendMessage(body: command.body, jid: command.jid);
+      GetIt.I.get<XmppService>().sendMessage(
+        body: command.body,
+        jid: command.jid,
+        quotedMessage: command.quotedMessage
+      );
     }
     break;
     case setCSIStateType: {

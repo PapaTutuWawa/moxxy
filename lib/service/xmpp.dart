@@ -16,6 +16,7 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
@@ -158,7 +159,7 @@ class XmppService {
   }
 
   /// Sends a message to [jid] with the body of [body].
-  Future<void> sendMessage({ required String body, required String jid }) async {
+  Future<void> sendMessage({ required String body, required String jid, Message? quotedMessage }) async {
     final db = GetIt.I.get<DatabaseService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -172,17 +173,23 @@ class XmppService {
       true,
       false,
       sid,
-      originId: originId
+      originId: originId,
+      quoteId: quotedMessage?.originId ?? quotedMessage?.sid
     );
 
     sendData(MessageSendResultEvent(message: message));
-
+    
     conn.getManagerById(messageManager)!.sendMessage(
-      body,
-      jid,
-      deliveryRequest: true,
-      id: sid,
-      originId: originId
+      MessageDetails(
+        to: jid,
+        body: body,
+        requestDeliveryReceipt: true,
+        id: sid,
+        originId: originId,
+        quoteBody: quotedMessage?.body,
+        quoteFrom: quotedMessage?.from,
+        quoteId: quotedMessage?.originId ?? quotedMessage?.sid
+      )
     );
 
     final conversation = await db.getConversationByJid(jid);

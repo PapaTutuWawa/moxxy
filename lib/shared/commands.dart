@@ -112,11 +112,17 @@ const sendMessageActionType = "SendMessageAction";
 class SendMessageAction extends BaseIsolateCommand {
   final String jid;
   final String body;
+  final Message? quotedMessage;
 
-  SendMessageAction({ required this.jid, required this.body });
+  SendMessageAction({
+      required this.jid,
+      required this.body,
+      this.quotedMessage
+  });
   SendMessageAction.fromJson(Map<String, dynamic> json) :
     jid = json["jid"]!,
-    body = json["body"]! {
+    body = json["body"]!,
+    quotedMessage = json.containsKey("quotedMessage") ? Message.fromJson(json["quotedMessage"]!) : null {
       assert(json["type"] == sendMessageActionType);
     }
 
@@ -124,7 +130,8 @@ class SendMessageAction extends BaseIsolateCommand {
   Map<String, dynamic> toJson() => {
     "type": sendMessageActionType,
     "jid": jid,
-    "body": body
+    "body": body,
+    ...(quotedMessage != null ? { "quotedMessage": quotedMessage!.toJson() } : {})
   };
 }
 
