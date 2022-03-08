@@ -158,3 +158,10 @@ class PubSubNotificationEvent extends XmppEvent {
 
   PubSubNotificationEvent({ required this.item, required this.from });
 }
+
+/// Triggered by the StreamManagementManager if a message stanza has been acked
+class MessageAckedEvent extends XmppEvent {
+  final String id;
+
+  MessageAckedEvent({ required this.id });
+}

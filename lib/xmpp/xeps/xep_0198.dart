@@ -294,10 +294,23 @@ class StreamManagementManager extends XmppManagerBase {
   /// Removes all stanzas in the unacked queue that have a sequence number less-than or
   /// equal to [h].
   void _removeHandledStanzas(int h) {
+    // NOTE: Dart does not allow for a cleaner way that does both in the same iteration
+    // TODO: But what if... :flushed:
+    final attrs = getAttributes();
+    _unackedStanzas.forEach(
+      (key, value) {
+        if (key <= h && value.stanza.tag == "message") {
+          attrs.sendEvent(MessageAckedEvent(id: value.stanza.id!));
+        }
+      }
+    );
+    
     _unackedStanzas.removeWhere(
       (key, _) => key <= h
     );
     logger.fine("Queue after cleaning: " + _unackedStanzas.toString());
+
+
   }
 
   /// To be called when the stream has been resumed
