@@ -3,6 +3,7 @@ const saslXmlns = "urn:ietf:params:xml:ns:xmpp-sasl";
 const stanzaXmlns = "jabber:client";
 const streamXmlns = "http://etherx.jabber.org/streams";
 const bindXmlns = "urn:ietf:params:xml:ns:xmpp-bind";
+const startTlsXmlns = "urn:ietf:params:xml:ns:xmpp-tls";
 const fullStanzaXmlns = "urn:ietf:params:xml:ns:xmpp-stanzas";
 
 // RFC 6121

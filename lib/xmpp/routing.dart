@@ -1,6 +1,7 @@
 enum RoutingState {
   error,
   unauthenticated,
+  performStartTLS,
   performSaslAuth,
   checkStreamManagement,
   performStreamResumption,

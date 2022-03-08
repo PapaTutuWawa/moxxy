@@ -6,7 +6,6 @@ import "package:moxxyv2/xmpp/buffer.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/routing.dart";
-import "package:moxxyv2/xmpp/address.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -22,7 +21,6 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0368.dart";
 
 import "package:uuid/uuid.dart";
 import "package:logging/logging.dart";
@@ -46,6 +44,13 @@ class StreamHeaderNonza extends XMLNode {
       },
       closeTag: false
     );
+}
+
+class StartTLSNonza extends XMLNode {
+  StartTLSNonza() : super.xmlns(
+    tag: "starttls",
+    xmlns: startTlsXmlns
+  );
 }
 
 class XmppConnection {
@@ -443,6 +448,22 @@ class XmppConnection {
         }
 
         final streamFeatures = node.firstTag("stream:features")!;
+
+        // First check for StartTLS
+        final startTLS = streamFeatures.firstTag("starttls", xmlns: startTlsXmlns);
+        if (startTLS != null) {
+          _routingState = RoutingState.performStartTLS;
+          sendRawXML(StartTLSNonza());
+          return;
+        }
+
+        if (!_socket.isSecure()) {
+          _log.severe("Refusing to go any further on an insecure connection");
+          _routingState = RoutingState.error;
+          _setConnectionState(XmppConnectionState.error);
+          return;
+        }
+        
         final mechanismNodes = streamFeatures.firstTag("mechanisms")!;
         final mechanisms = mechanismNodes.children.map((node) => node.innerText()).toList();
         final authenticator = getAuthenticator(
@@ -469,6 +490,28 @@ class XmppConnection {
           _setConnectionState(XmppConnectionState.error);
           _routingState = RoutingState.error;
         }
+      }
+      break;
+      case RoutingState.performStartTLS: {
+        if (node.tag != "proceed" || node.attributes["xmlns"] != startTlsXmlns) {
+          _log.severe("Failed to proceed with StartTLS negotiation");
+          _routingState = RoutingState.error;
+          _setConnectionState(XmppConnectionState.error);
+          return;
+        }
+
+        _log.finest("Securing socket...");
+        final result = await _socket.secure();
+        if (!result) {
+          _log.severe("Failed to secure the socket");
+          _routingState = RoutingState.error;
+          _setConnectionState(XmppConnectionState.error);
+          return;
+        }
+        _log.finest("Done!");
+
+        _routingState = RoutingState.unauthenticated;
+        _sendStreamHeader();
       }
       break;
       case RoutingState.performSaslAuth: {
@@ -654,25 +697,9 @@ class XmppConnection {
       connect();
     }
   }
-
-  /// Attempts to connect using the results of a SRV lookup.
-  Future<bool> _connectUsingList(List<XmppConnectionAddress> results) async {
-    for (var result in results) {
-      try {
-        await _socket.connect(result.hostname, result.port, _connectionSettings.jid.domain);
-        _log.info("Did XEP-0368 lookup. Using ${result.hostname}:${result.port.toString()} now.");
-        return true;
-      } catch (ex) {
-        continue;
-      }
-    }
-
-    _log.severe("Did XEP-0368 lookup. But no record was working...");
-    return false;
-  }
   
   /// Start the connection process using the provided connection settings.
-  Future<void> connect({ String? lastResource, SrvQueryFunction? srvQuery }) async {
+  Future<void> connect({ String? lastResource }) async {
     assert(_xmppManagers.containsKey(presenceManager));
     assert(_xmppManagers.containsKey(rosterManager));
     assert(_xmppManagers.containsKey(discoManager));
@@ -692,22 +719,14 @@ class XmppConnection {
     _resuming = true;
     _sendEvent(ConnectingEvent());
 
-    if (_connectionSettings.useDirectTLS) {
-      final query = await perform0368Lookup(_connectionSettings.jid.domain, srvQuery: srvQuery);
-
-      if (query.isNotEmpty) {
-        final connected = await _connectUsingList(query);
-
-        if (!connected) {
-          // TODO: Fall back to regular XMPP with StartTLS. Maybe...
-          _handleError(null);
-        } else {
-          _currentBackoffAttempt = 0; 
-          _setConnectionState(XmppConnectionState.connecting);
-          _routingState = RoutingState.unauthenticated;
-          _sendStreamHeader();
-        }
-      }
+    final result = await _socket.connect(_connectionSettings.jid.domain);
+    if (!result) {
+      _handleError(null);
+    } else {
+      _currentBackoffAttempt = 0; 
+      _setConnectionState(XmppConnectionState.connecting);
+      _routingState = RoutingState.unauthenticated;
+      _sendStreamHeader();
     }
   }
 }

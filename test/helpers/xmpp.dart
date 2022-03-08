@@ -30,7 +30,13 @@ class StubTCPSocket extends BaseSocketWrapper {
   _errorStream = StreamController<Object>.broadcast();
 
   @override
-  Future<void> connect(String host, int port, String domain) async {}
+  bool isSecure() => true;
+
+  @override
+  Future<bool> secure() async => true;
+  
+  @override
+  Future<bool> connect(String domain, { String? host, int? port }) async => true;
 
   @override
   Stream<String> getDataStream() => _dataStream.stream.asBroadcastStream();
