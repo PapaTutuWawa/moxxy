@@ -15,16 +15,16 @@ import "package:logging/logging.dart";
 
 Conversation conversationDbToModel(DBConversation c, bool inRoster) {
   return Conversation(
-    id: c.id!,
-    title: c.title,
-    jid: c.jid,
-    avatarUrl: c.avatarUrl,
-    lastMessageBody: c.lastMessageBody,
-    unreadCounter: c.unreadCounter,
-    lastChangeTimestamp: c.lastChangeTimestamp,
-    sharedMediaPaths: const [],
-    open: c.open,
-    inRoster: inRoster
+    c.title,
+    c.lastMessageBody,
+    c.avatarUrl,
+    c.jid,
+    c.unreadCounter,
+    c.lastChangeTimestamp,
+    const [], // TODO,
+    c.id!,
+    c.open,
+    inRoster
   );
 }
 
