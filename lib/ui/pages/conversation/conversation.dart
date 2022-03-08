@@ -213,17 +213,20 @@ class _ConversationPageState extends State<ConversationPage> {
             Expanded(
               child: TextButton(
                 child: const Text("Add to contacts"),
-                onPressed: () => showConfirmationDialog(
-                  "Add [jid] to your contacts?",
-                  "Are you sure you want to add [jid] to your conacts?",
-                  context,
-                  () {
-                    // TODO: Maybe show a progress indicator
-                    // TODO: Have the page update its state once the addition is done
-                    viewModel.addToRoster(viewModel.conversation.jid);
-                    Navigator.of(context).pop();
-                  }
-                ),
+                onPressed: () {
+                  final jid = viewModel.conversation.jid;
+                  showConfirmationDialog(
+                    "Add $jid to your contacts?",
+                    "Are you sure you want to add $jid to your conacts?",
+                    context,
+                    () {
+                      // TODO: Maybe show a progress indicator
+                      // TODO: Have the page update its state once the addition is done
+                      viewModel.addToRoster(viewModel.conversation.jid);
+                      Navigator.of(context).pop();
+                    }
+                  );
+                }
               )
             ),
             Expanded(
