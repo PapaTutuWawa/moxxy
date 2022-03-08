@@ -52,7 +52,7 @@ class RosterService {
 
     final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
 
-    sendData(RosterItemAddedEvent(item: item));
+    sendData(RosterDiffEvent(newItems: [ item ]));
     return item;
   }
 

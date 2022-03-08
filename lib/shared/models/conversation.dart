@@ -1,5 +1,6 @@
 import "package:equatable/equatable.dart";
 
+// TODO: Generate using freezed
 class Conversation extends Equatable {
   final String title;
   final String lastMessageBody;
@@ -12,10 +13,24 @@ class Conversation extends Equatable {
   final List<String> sharedMediaPaths;
   final bool open;
 
-  const Conversation({ required this.title, required this.lastMessageBody, required this.avatarUrl, required this.jid, required this.unreadCounter, required this.lastChangeTimestamp, required this.sharedMediaPaths, required this.id, required this.open });
+  // Indicates, if [jid] is a regular user, if the user is in the roster.
+  final bool inRoster;
+
+  const Conversation({
+      required this.title,
+      required this.lastMessageBody,
+      required this.avatarUrl,
+      required this.jid,
+      required this.unreadCounter,
+      required this.lastChangeTimestamp,
+      required this.sharedMediaPaths,
+      required this.id,
+      required this.open,
+      required this.inRoster
+  });
 
   // TODO: The title and avatarUrl can also change
-  Conversation copyWith({ String? lastMessageBody, int? unreadCounter, int unreadDelta = 0, List<String>? sharedMediaPaths, int? lastChangeTimestamp, bool? open }) {
+  Conversation copyWith({ String? lastMessageBody, int? unreadCounter, int unreadDelta = 0, List<String>? sharedMediaPaths, int? lastChangeTimestamp, bool? open, bool? inRoster }) {
     return Conversation(
       title: title,
       lastMessageBody: lastMessageBody ?? this.lastMessageBody,
@@ -25,7 +40,8 @@ class Conversation extends Equatable {
       sharedMediaPaths: sharedMediaPaths ?? this.sharedMediaPaths,
       lastChangeTimestamp: lastChangeTimestamp ?? this.lastChangeTimestamp,
       open: open ?? this.open,
-      id: id
+      id: id,
+      inRoster: inRoster ?? this.inRoster
     );
   }
 
@@ -38,7 +54,8 @@ class Conversation extends Equatable {
   sharedMediaPaths = List<String>.from(json["sharedMediaPaths"]),
   lastChangeTimestamp = json["lastChangeTimestamp"],
   open = json["open"],
-  id = json["id"];
+  id = json["id"],
+  inRoster = json["inRoster"];
 
   Map<String, dynamic> toJson() => {
     "title": title,
@@ -49,12 +66,13 @@ class Conversation extends Equatable {
     "sharedMediaPaths": sharedMediaPaths,
     "lastChangeTimestamp": lastChangeTimestamp,
     "open": open,
-    "id": id
+    "id": id,
+    "inRoster": inRoster
   };
   
   @override
   bool get stringify => true;
   
   @override
-  List<Object> get props => [ title, lastMessageBody, avatarUrl, id, jid, unreadCounter, lastChangeTimestamp, open ];
+  List<Object> get props => [ title, lastMessageBody, avatarUrl, id, jid, unreadCounter, lastChangeTimestamp, open, inRoster ];
 }

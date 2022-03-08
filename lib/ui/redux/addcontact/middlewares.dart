@@ -15,7 +15,7 @@ import "package:flutter_background_service/flutter_background_service.dart";
 Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatcher next) async {
   if (action is AddContactAction) {
     FlutterBackgroundService().sendData(
-      commands.AddToRosterAction(jid: action.jid).toJson()
+      commands.AddToRosterAction(jid: action.jid,).toJson()
     );
     store.dispatch(SetDoingWorkAction(state: true));
   } else if (action is AddToRosterDoneAction) {

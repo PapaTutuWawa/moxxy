@@ -2,7 +2,9 @@
 class AddContactAction {
   final String jid;
 
-  AddContactAction({ required this.jid });
+  AddContactAction({
+      required this.jid
+  });
 }
 
 /// Triggered when the AddContactAction is done

@@ -13,7 +13,7 @@ import "package:moxxyv2/shared/events.dart";
 import "package:isar/isar.dart";
 import "package:logging/logging.dart";
 
-Conversation conversationDbToModel(DBConversation c) {
+Conversation conversationDbToModel(DBConversation c, bool inRoster) {
   return Conversation(
     id: c.id!,
     title: c.title,
@@ -23,7 +23,8 @@ Conversation conversationDbToModel(DBConversation c) {
     unreadCounter: c.unreadCounter,
     lastChangeTimestamp: c.lastChangeTimestamp,
     sharedMediaPaths: const [],
-    open: c.open
+    open: c.open,
+    inRoster: inRoster
   );
 }
 
@@ -90,14 +91,20 @@ class DatabaseService {
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<void> loadConversations({ bool notify = true }) async {
     final conversationsRaw = await isar.dBConversations.where().findAll();
-    final conversations = conversationsRaw.map((c) => conversationDbToModel(c));
-    for (var c in conversations) {
-      _conversationCache[c.id] = c;
+
+    final tmp = List<Conversation>.empty(growable: true);
+    for (final c in conversationsRaw) {
+      final conv = conversationDbToModel(
+        c,
+        await isInRoster(c.jid)
+      );
+      tmp.add(conv);
+       _conversationCache[conv.id] = conv;
     }
 
     if (notify) {
       sendData(LoadConversationsResultEvent(
-          conversations: conversations.toList()
+          conversations: tmp
       ));
     }
   }
@@ -158,7 +165,7 @@ class DatabaseService {
         await isar.dBConversations.put(c);
     });
 
-    final conversation = conversationDbToModel(c);
+    final conversation = conversationDbToModel(c, await isInRoster(c.jid));
     _conversationCache[c.id!] = conversation;
     return conversation;
   }
@@ -180,7 +187,7 @@ class DatabaseService {
         await isar.dBConversations.put(c);
     }); 
 
-    final conversation = conversationDbToModel(c); 
+    final conversation = conversationDbToModel(c, await isInRoster(c.jid)); 
     _conversationCache[c.id!] = conversation;
 
     return conversation;

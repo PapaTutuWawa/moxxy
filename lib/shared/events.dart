@@ -91,23 +91,6 @@ class LoadMessagesForJidEvent extends BaseIsolateEvent {
   };
 }
 
-const rosterItemAddedType = "RosterItemAddedEvent";
-class RosterItemAddedEvent extends BaseIsolateEvent {
-  final RosterItem item;
-
-  RosterItemAddedEvent({ required this.item });
-  RosterItemAddedEvent.fromJson(Map<String, dynamic> json) :
-    item = RosterItem.fromJson(json["item"]!) {
-      assert(json["type"] == rosterItemAddedType);
-    }
-
-  @override
-  Map<String, dynamic> toJson() => {
-    "type": rosterItemAddedType,
-    "item": item.toJson()
-  };
-}
-
 const conversationUpdatedType = "ConversationUpdatedEvent";
 class ConversationUpdatedEvent extends BaseIsolateEvent {
   final Conversation conversation;

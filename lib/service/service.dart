@@ -297,16 +297,18 @@ void handleEvent(Map<String, dynamic>? data) {
             return;
           }
 
+          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
+          FlutterBackgroundService().sendData(
+            AddToRosterResultEvent(
+              result: "success",
+              jid: jid
+            ).toJson()
+          );
+
           final db = GetIt.I.get<DatabaseService>();
           final conversation = await db.getConversationByJid(jid);
           if (conversation != null) {
             final c = await db.updateConversation(id: conversation.id, open: true);
-            FlutterBackgroundService().sendData(
-              AddToRosterResultEvent(
-                result: "error",
-                msg: "Already in contact list"
-              ).toJson()
-            );
 
             FlutterBackgroundService().sendData(
               ConversationUpdatedEvent(conversation: c).toJson()
@@ -326,15 +328,7 @@ void handleEvent(Map<String, dynamic>? data) {
               ConversationCreatedEvent(conversation: c).toJson()
             );
           }
-
-          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
-          FlutterBackgroundService().sendData(
-            AddToRosterResultEvent(
-              result: "success",
-              jid: jid
-            ).toJson()
-          );
-
+          
           // Try to figure out an avatar
           await GetIt.I.get<AvatarService>().subscribeJid(jid);
           GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid);

@@ -13,6 +13,7 @@ import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
+import "package:moxxyv2/ui/redux/addcontact/actions.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
@@ -63,6 +64,7 @@ class _MessageListViewModel {
   final String backgroundPath;
   final Message? quotedMessage;
   final void Function(Message?) setQuotedMessage;
+  final void Function(String) addToRoster;
   
   _MessageListViewModel({
       required this.conversation,
@@ -76,7 +78,8 @@ class _MessageListViewModel {
       required this.resetCurrentConversation,
       required this.backgroundPath,
       required this.setQuotedMessage,
-      required this.quotedMessage
+      required this.quotedMessage,
+      required this.addToRoster
   });
 }
 
@@ -196,6 +199,44 @@ class _ConversationPageState extends State<ConversationPage> {
       )
     );
   }
+
+  /// Render a widget that allows the user to either block the user or add them to their
+  /// roster
+  Widget _renderNotInRosterWidget(_MessageListViewModel viewModel, BuildContext context) {
+    return Container(
+      color: Colors.black38,
+      child: SizedBox(
+        height: 64,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: TextButton(
+                child: const Text("Add to contacts"),
+                onPressed: () => showConfirmationDialog(
+                  "Add [jid] to your contacts?",
+                  "Are you sure you want to add [jid] to your conacts?",
+                  context,
+                  () {
+                    // TODO: Maybe show a progress indicator
+                    // TODO: Have the page update its state once the addition is done
+                    viewModel.addToRoster(viewModel.conversation.jid);
+                    Navigator.of(context).pop();
+                  }
+                ),
+              )
+            ),
+            Expanded(
+              child: TextButton(
+                child: const Text("Block"),
+                onPressed: () => showNotImplementedDialog("blocking", context)
+              )
+            )
+          ]
+        )
+      )
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -227,7 +268,8 @@ class _ConversationPageState extends State<ConversationPage> {
           resetCurrentConversation: () => store.dispatch(SetOpenConversationAction(jid: null)),
           backgroundPath: store.state.preferencesState.backgroundPath,
           setQuotedMessage: (msg) => store.dispatch(QuoteMessageUIAction(msg)),
-          quotedMessage: store.state.conversationPageState.quotedMessage
+          quotedMessage: store.state.conversationPageState.quotedMessage,
+          addToRoster: (jid) => store.dispatch(AddContactAction(jid: jid))
         );
       },
       builder: (context, viewModel) {
@@ -288,129 +330,115 @@ class _ConversationPageState extends State<ConversationPage> {
                 )
               ]
             ),
-            body: Column(
-              children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Container(
-                        decoration: viewModel.backgroundPath.isNotEmpty ? BoxDecoration(
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: FileImage(File(viewModel.backgroundPath))
-                          )
-                        ) : null,
-                        child: ListView.builder(
-                          reverse: true,
-                          itemCount: viewModel.messages.length,
-                          itemBuilder: (context, index) => _renderBubble(viewModel, index, maxWidth)
-                        )
-                      ),
-                      Positioned(
-                        bottom: 64.0,
-                        right: 16.0,
-                        child: Visibility(
-                          // TODO: Show if we're not scrolled to the end
-                          visible: viewModel.showScrollToEndButton,
-                          child: SizedBox(
-                            height: 30.0,
-                            width: 30.0,
-                            child: FloatingActionButton(
-                              child: const Icon(Icons.arrow_downward, color: Colors.white),
-                              // TODO
-                              onPressed: () {}
-                            )
-                          )
-                        )
-                      )
-                    ]
-                  )
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: CustomTextField(
-                          maxLines: 5,
-                          minLines: 1,
-                          hintText: "Send a message...",
-                          isDense: true,
-                          controller: controller,
-                          onChanged: (value) => _onMessageTextChanged(value, viewModel),
-                          contentPadding: textfieldPaddingConversation,
-                          cornerRadius: textfieldRadiusConversation,
-                          // TODO: Handle media messages being quoted
-                          topWidget: viewModel.quotedMessage != null ? QuotedMessageWidget(
-                            message: viewModel.quotedMessage!,
-                            resetQuotedMessage: () => viewModel.setQuotedMessage(null)
-                          ) : null
-                        )
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        // NOTE: https://stackoverflow.com/a/52786741
-                        //       Thank you kind sir
-                        child: SizedBox(
-                          height: 45.0,
-                          width: 45.0,
-                          child: FittedBox(
-                            child: SpeedDial(
-                              icon: viewModel.showSendButton ? Icons.send : Icons.add,
-                              visible: true,
-                              curve: Curves.bounceInOut,
-                              backgroundColor: primaryColor,
-                              // TODO: Theme dependent?
-                              foregroundColor: Colors.white,
-                              openCloseDial: _isSpeedDialOpen,
-                              onPress: () {
-                                if (viewModel.showSendButton) {
-                                  _onSendButtonPressed(viewModel);
-                                } else {
-                                  _isSpeedDialOpen.value = true;
-                                }
-                              },
-                              children: [
-                                SpeedDialChild(
-                                  child: const Icon(Icons.image),
-                                  onTap: () {
-                                    showNotImplementedDialog("sending files", context);
-                                    //Navigator.pushNamed(context, sendFilesRoute);
-                                  },
-                                  backgroundColor: primaryColor,
-                                  // TODO: Theme dependent?
-                                  foregroundColor: Colors.white,
-                                  label: "Send Image"
-                                ),
-                                SpeedDialChild(
-                                  child: const Icon(Icons.photo_camera),
-                                  onTap: () {
-                                    showNotImplementedDialog("sending files", context);
-                                  },
-                                  backgroundColor: primaryColor,
-                                  // TODO: Theme dependent?
-                                  foregroundColor: Colors.white,
-                                  label: "Take photo"
-                                ),
-                                SpeedDialChild(
-                                  child: const Icon(Icons.attach_file),
-                                  onTap: () {
-                                    showNotImplementedDialog("sending files", context);
-                                  },
-                                  backgroundColor: primaryColor,
-                                  // TODO: Theme dependent?
-                                  foregroundColor: Colors.white,
-                                  label: "Add file"
-                                ),
-                              ]
-                            )
-                          )
-                        )
-                      ) 
-                    ]
-                  )
+            body: Container(
+              decoration: viewModel.backgroundPath.isNotEmpty ? BoxDecoration(
+                image: DecorationImage(
+                  fit: BoxFit.cover,
+                  image: FileImage(File(viewModel.backgroundPath))
                 )
-              ]
+              ) : null,
+              child: Column(
+                children: [
+                  ...(!viewModel.conversation.inRoster ? [ _renderNotInRosterWidget(viewModel, context) ] : []),
+
+                  Expanded(
+                    child: ListView.builder(
+                      reverse: true,
+                      itemCount: viewModel.messages.length,
+                      itemBuilder: (context, index) => _renderBubble(viewModel, index, maxWidth),
+                      shrinkWrap: true
+                    )
+                  ),
+
+                  Container(
+                    color: Theme.of(context).backgroundColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomTextField(
+                              maxLines: 5,
+                              minLines: 1,
+                              hintText: "Send a message...",
+                              isDense: true,
+                              controller: controller,
+                              onChanged: (value) => _onMessageTextChanged(value, viewModel),
+                              contentPadding: textfieldPaddingConversation,
+                              cornerRadius: textfieldRadiusConversation,
+                              // TODO: Handle media messages being quoted
+                              topWidget: viewModel.quotedMessage != null ? QuotedMessageWidget(
+                                message: viewModel.quotedMessage!,
+                                resetQuotedMessage: () => viewModel.setQuotedMessage(null)
+                              ) : null
+                            )
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            // NOTE: https://stackoverflow.com/a/52786741
+                            //       Thank you kind sir
+                            child: SizedBox(
+                              height: 45.0,
+                              width: 45.0,
+                              child: FittedBox(
+                                child: SpeedDial(
+                                  icon: viewModel.showSendButton ? Icons.send : Icons.add,
+                                  visible: true,
+                                  curve: Curves.bounceInOut,
+                                  backgroundColor: primaryColor,
+                                  // TODO: Theme dependent?
+                                  foregroundColor: Colors.white,
+                                  openCloseDial: _isSpeedDialOpen,
+                                  onPress: () {
+                                    if (viewModel.showSendButton) {
+                                      _onSendButtonPressed(viewModel);
+                                    } else {
+                                      _isSpeedDialOpen.value = true;
+                                    }
+                                  },
+                                  children: [
+                                    SpeedDialChild(
+                                      child: const Icon(Icons.image),
+                                      onTap: () {
+                                        showNotImplementedDialog("sending files", context);
+                                        //Navigator.pushNamed(context, sendFilesRoute);
+                                      },
+                                      backgroundColor: primaryColor,
+                                      // TODO: Theme dependent?
+                                      foregroundColor: Colors.white,
+                                      label: "Send Image"
+                                    ),
+                                    SpeedDialChild(
+                                      child: const Icon(Icons.photo_camera),
+                                      onTap: () {
+                                        showNotImplementedDialog("sending files", context);
+                                      },
+                                      backgroundColor: primaryColor,
+                                      // TODO: Theme dependent?
+                                      foregroundColor: Colors.white,
+                                      label: "Take photo"
+                                    ),
+                                    SpeedDialChild(
+                                      child: const Icon(Icons.attach_file),
+                                      onTap: () {
+                                        showNotImplementedDialog("sending files", context);
+                                      },
+                                      backgroundColor: primaryColor,
+                                      // TODO: Theme dependent?
+                                      foregroundColor: Colors.white,
+                                      label: "Add file"
+                                    ),
+                                  ]
+                                )
+                              )
+                            )
+                          )
+                        ]
+                      )
+                    )
+                  )
+                ]
+              )
             )
           )
         );

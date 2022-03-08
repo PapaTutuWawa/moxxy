@@ -161,7 +161,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           // NOTE: Mainly for the SettingsSection
           colorScheme: const ColorScheme.dark(
             secondary: primaryColor
-          )
+          ),
+
+          backgroundColor: const Color(0xff303030)
         ),
         navigatorKey: NavigatorHolder.navigatorKey,
         themeMode: ThemeMode.system,

@@ -19,7 +19,6 @@ import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
 
-// TODO: Handle [RosterItemAddedEvent]
 // TODO: Handle [LoginFailedEvent]
 /// Called whenever the background service sends data to the UI isolate.
 void handleBackgroundServiceData(Map<String, dynamic>? data) {
