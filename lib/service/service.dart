@@ -297,14 +297,6 @@ void handleEvent(Map<String, dynamic>? data) {
             return;
           }
 
-          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
-          FlutterBackgroundService().sendData(
-            AddToRosterResultEvent(
-              result: "success",
-              jid: jid
-            ).toJson()
-          );
-
           final db = GetIt.I.get<DatabaseService>();
           final conversation = await db.getConversationByJid(jid);
           if (conversation != null) {
@@ -328,6 +320,14 @@ void handleEvent(Map<String, dynamic>? data) {
               ConversationCreatedEvent(conversation: c).toJson()
             );
           }
+
+          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
+          FlutterBackgroundService().sendData(
+            AddToRosterResultEvent(
+              result: "success",
+              jid: jid
+            ).toJson()
+          );
           
           // Try to figure out an avatar
           await GetIt.I.get<AvatarService>().subscribeJid(jid);

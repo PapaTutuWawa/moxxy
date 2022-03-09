@@ -22,6 +22,10 @@ Future<void> addcontactMiddleware(Store<MoxxyState> store, action, NextDispatche
     store.dispatch(SetDoingWorkAction(state: false));
 
     if (action.result == "success") {
+      FlutterBackgroundService().sendData(
+        commands.LoadMessagesForJidAction(jid: action.jid!).toJson()
+      );
+
       store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
           conversationRoute,
           ModalRoute.withName(conversationsRoute),
