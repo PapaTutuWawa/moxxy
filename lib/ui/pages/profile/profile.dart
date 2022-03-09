@@ -225,38 +225,19 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (context, viewModel) => Stack(
             alignment: Alignment.center,
             children: [
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: Visibility(
-                  visible: viewModel.showSnackbar,
-                  child: SizedBox(
-                    height: 60,
-                    width: MediaQuery.of(context).size.width,
-                    child: PermanentSnackBar(
-                      text: "Display name not applied",
-                      actionText: "Apply",
-                      onPressed: () => _applyDisplayName(context, viewModel)
+              ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: args.isSelfProfile ? SelfProfileHeader(viewModel: viewModel, controller: _getController(viewModel)) : ProfileHeader(conversation: args.conversation!)
+                  ),
+                  Visibility(
+                    visible: !args.isSelfProfile && args.conversation!.sharedMediaPaths.isNotEmpty,
+                    child: args.isSelfProfile ? const SizedBox() : SharedMediaDisplay(
+                      sharedMediaPaths: args.conversation!.sharedMediaPaths
                     )
                   )
-                )
-              ),
-              Positioned(
-                child: Column(
-                  children: [
-                    args.isSelfProfile ? SelfProfileHeader(viewModel: viewModel, controller: _getController(viewModel)) : ProfileHeader(conversation: args.conversation!),
-                    Visibility(
-                      visible: !args.isSelfProfile && args.conversation!.sharedMediaPaths.isEmpty,
-                      child: args.isSelfProfile ? const SizedBox() : SharedMediaDisplay(
-                        sharedMediaPaths: args.conversation!.sharedMediaPaths
-                      )
-                    ) 
-                  ]
-                ),
-                top: 8.0,
-                bottom: null,
-                left: null,
-                right: null
+                ]
               ),
               const Positioned(
                 top: 8.0,

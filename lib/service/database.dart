@@ -21,7 +21,7 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster) {
     c.jid,
     c.unreadCounter,
     c.lastChangeTimestamp,
-    const [], // TODO,
+    c.sharedMediaPaths,
     c.id!,
     c.open,
     inRoster
@@ -143,7 +143,7 @@ class DatabaseService {
   }
 
   /// Updates the conversation with id [id] inside the database.
-  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl }) async {
+  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl, List<String>? sharedMediaPaths }) async {
     final c = (await isar.dBConversations.get(id))!;
     if (lastMessageBody != null) {
       c.lastMessageBody = lastMessageBody;
@@ -159,6 +159,9 @@ class DatabaseService {
     }
     if (avatarUrl != null) {
       c.avatarUrl = avatarUrl;
+    }
+    if (sharedMediaPaths != null) {
+      c.sharedMediaPaths = sharedMediaPaths;
     }
 
     await isar.writeTxn((isar) async {

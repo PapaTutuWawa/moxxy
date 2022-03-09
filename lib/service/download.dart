@@ -115,6 +115,15 @@ class DownloadService {
     
     _tasks.remove(url);
     _rateLimits.remove(url);
+
+    final conv = (await GetIt.I.get<DatabaseService>().getConversationByJid(conversationJid))!;
+    final sharedMediaPaths = List<String>.from(conv.sharedMediaPaths, growable: true);
+    sharedMediaPaths.add(downloadedPath);
+    final newConv = await GetIt.I.get<DatabaseService>().updateConversation(
+      id: conv.id,
+      sharedMediaPaths: sharedMediaPaths
+    );
+    sendData(ConversationUpdatedEvent(conversation: newConv));
   }
 
   /// Returns the size of the file at [url] in octets. If an error occurs or the server
