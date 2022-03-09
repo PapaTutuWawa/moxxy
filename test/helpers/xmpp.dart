@@ -33,7 +33,7 @@ class StubTCPSocket extends BaseSocketWrapper {
   bool isSecure() => true;
 
   @override
-  Future<bool> secure() async => true;
+  Future<bool> secure(String domain) async => true;
   
   @override
   Future<bool> connect(String domain, { String? host, int? port }) async => true;

@@ -7,6 +7,9 @@ import "package:moxxyv2/xmpp/rfcs/rfc_2782.dart";
 import "package:logging/logging.dart";
 import "package:moxdns/moxdns.dart";
 
+// TODO: Remove once kDebugMode is no longer needed
+import "package:flutter/foundation.dart";
+
 // NOTE: https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids
 const xmppClientALPNId = "xmpp-client";
 
@@ -37,7 +40,7 @@ abstract class BaseSocketWrapper {
   /// Upgrades the connection into a secure version, e.g. by performing a TLS upgrade.
   /// May do nothing if the connection is always secure.
   /// Returns true if the socket has been successfully upgraded. False otherwise.
-  Future<bool> secure();
+  Future<bool> secure(String domain);
 }
 
 /// TCP socket implementation for [XmppConnection]
@@ -59,6 +62,16 @@ class TCPSocketWrapper extends BaseSocketWrapper {
 
   @override
   bool isSecure() => _secure;
+
+  bool _onBadCertificate(certificate, String domain) {
+    final isExpired = certificate.endValidity.isAfter(DateTime.now());
+    // TODO: Remove the kDebugMode once I am sure this works as it should
+    return !isExpired && certificate.domain == domain && kDebugMode;
+
+    _log.fine("Bad certificate: ${certificate.toString()}");
+    
+    return false;
+  }
   
   Future<bool> _xep368Connect(String domain) async {
     // TODO: Maybe do DNSSEC one day
@@ -76,15 +89,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
           srv.port,
           timeout: const Duration(seconds: 5),
           supportedProtocols: const [ xmppClientALPNId ],
-          onBadCertificate: (certificate) {
-            // TODO
-            //final isExpired = certificate.endValidity.isAfter(DateTime.now());
-            //return !isExpired /*&& certificate.domain == domain */;
-
-            _log.fine("Bad certificate: ${certificate.toString()}");
-            
-            return false;
-          }
+          onBadCertificate: (cert) => _onBadCertificate(cert, domain)
         );
 
         _secure = true;
@@ -147,7 +152,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   }
 
   @override
-  Future<bool> secure() async {
+  Future<bool> secure(String domain) async {
     if (_secure) {
       _log.warning("Connection is already marked as secure. Doing nothing");
       return true;
@@ -156,7 +161,8 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     try {
       _socket = await SecureSocket.secure(
         _socket,
-        supportedProtocols: const [ xmppClientALPNId ]
+        supportedProtocols: const [ xmppClientALPNId ],
+        onBadCertificate: (cert) => _onBadCertificate(cert, domain)
       );
 
       _secure = true;

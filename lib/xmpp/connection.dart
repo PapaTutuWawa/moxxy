@@ -503,7 +503,7 @@ class XmppConnection {
         }
 
         _log.finest("Securing socket...");
-        final result = await _socket.secure();
+        final result = await _socket.secure(_connectionSettings.jid.domain);
         if (!result) {
           _log.severe("Failed to secure the socket");
           _routingState = RoutingState.error;
