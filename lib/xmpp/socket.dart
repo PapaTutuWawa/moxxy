@@ -89,7 +89,6 @@ class TCPSocketWrapper extends BaseSocketWrapper {
 
         _secure = true;
         _log.finest("Success!");
-        _setupStreams();
         return true;
       } on SocketException {
         return false;
