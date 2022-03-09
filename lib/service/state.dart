@@ -5,6 +5,16 @@ import "package:freezed_annotation/freezed_annotation.dart";
 part "state.freezed.dart";
 part "state.g.dart";
 
+class StreamManagementStateConverter implements JsonConverter<StreamManagementState, Map<String, dynamic>> {
+  const StreamManagementStateConverter();
+
+  @override
+  StreamManagementState fromJson(Map<String, dynamic> json) => StreamManagementState.fromJson(json);
+  
+  @override
+  Map<String, dynamic> toJson(StreamManagementState state) => state.toJson();
+}
+
 @freezed
 class XmppState with _$XmppState {
   factory XmppState(
@@ -13,7 +23,7 @@ class XmppState with _$XmppState {
     int debugPort,
     bool debugEnabled,
     {
-      StreamManagementState? smState,
+      @StreamManagementStateConverter() StreamManagementState? smState,
       String? srid,
       String? resource,
       String? jid,
