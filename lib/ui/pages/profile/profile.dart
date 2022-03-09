@@ -1,8 +1,5 @@
 import "package:moxxyv2/ui/widgets/sharedmedia.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/ui/widgets/textfield.dart";
-import "package:moxxyv2/ui/widgets/snackbar.dart";
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/redux/state.dart";
@@ -41,7 +38,13 @@ class SelfProfileHeader extends StatelessWidget {
   final _ProfilePageViewModel viewModel;
   final TextEditingController _controller;
   
-  const SelfProfileHeader({ required this.viewModel, required TextEditingController controller, Key? key }) : _controller = controller, super(key: key);
+  const SelfProfileHeader({
+      required this.viewModel,
+      required TextEditingController controller,
+      Key? key
+  }) :
+    _controller = controller,
+    super(key: key);
 
   Future<void> _showJidQRCode(BuildContext context, String jid) async {
     await showDialog(
@@ -70,10 +73,11 @@ class SelfProfileHeader extends StatelessWidget {
       )
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         AvatarWrapper(
           radius: 110.0,
@@ -84,35 +88,22 @@ class SelfProfileHeader extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
-          child: Container(
-            constraints: const BoxConstraints(
-              maxWidth: 220
-            ),
-            child: CustomTextField(
-              maxLines: 1,
-              controller: _controller,
-              onChanged: (value) {
-                // NOTE: Since hitting the (software) back button triggers this function, "debounce" it
-                //       by only showing the snackbar if the value differs from the state
-                if (value == viewModel.displayName) {
-                  if (viewModel.showSnackbar) {
-                    viewModel.setShowSnackbar(false);
-                  }
-                } else {
-                  if (!viewModel.showSnackbar) {
-                    viewModel.setShowSnackbar(true);
-                  }
-                }
-              },
-              labelText: "Display name",
-              isDense: true,
-              cornerRadius: textfieldRadiusRegular
-            )
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                viewModel.displayName,
+                style: const TextStyle(
+                  fontSize: 20
+                )
+              )
+            ]
           )
         ),
         Padding(
           padding: const EdgeInsets.only(top: 3.0),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 viewModel.jid,
