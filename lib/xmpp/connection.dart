@@ -19,8 +19,10 @@ import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 
 import "package:uuid/uuid.dart";
 import "package:logging/logging.dart";
@@ -545,10 +547,9 @@ class XmppConnection {
 
         final streamManager = getStreamManagementManager();
         if (isStreamFeatureSupported(smXmlns) && streamManager != null) {
-          await streamManager.loadStreamResumptionId();
           await streamManager.loadState();
-          final srid = streamManager.getStreamResumptionId();
-          final h = streamManager.getS2CStanzaCount();
+          final srid = streamManager.state.streamResumptionId;
+          final h = streamManager.state.s2c;
           
           // Try to work with SM first
           if (srid != null) {
@@ -615,7 +616,7 @@ class XmppConnection {
 
           // We have to do this because we otherwise get a stanza stuck in the queue,
           // thus spamming the server on every <a /> nonza we receive.
-          manager.setState(0, 0);
+          manager.setState(StreamManagementState(0, 0));
           await manager.commitState();
 
           _serverFeatures.clear();
@@ -637,8 +638,15 @@ class XmppConnection {
           final id = node.attributes["id"];
           if (id != null && [ "true", "1" ].contains(node.attributes["resume"])) {
             _log.finest("Stream resumption possible!");
-            _sendEvent(StreamManagementEnabledEvent(id: id, resource: _resource));
           }
+
+          _sendEvent(
+            StreamManagementEnabledEvent(
+              resource: _resource,
+              id: node.attributes["id"],
+              location: node.attributes["location"]
+            )
+          );
 
           _routingState = RoutingState.handleStanzas;
           getPresenceManager().sendInitialPresence();
@@ -719,7 +727,21 @@ class XmppConnection {
     _resuming = true;
     _sendEvent(ConnectingEvent());
 
-    final result = await _socket.connect(_connectionSettings.jid.domain);
+    final smManager = getStreamManagementManager();
+    String? host;
+    int? port;
+    if (smManager?.state.streamResumptionLocation != null) {
+      // TODO: Maybe wrap this in a try catch?
+      final parsed = Uri.parse(smManager!.state.streamResumptionLocation!);
+      host = parsed.host;
+      port = parsed.port;
+    }
+    
+    final result = await _socket.connect(
+      _connectionSettings.jid.domain,
+      host: host,
+      port: port
+    );
     if (!result) {
       _handleError(null);
     } else {

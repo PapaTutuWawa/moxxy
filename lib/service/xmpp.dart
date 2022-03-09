@@ -74,8 +74,6 @@ class XmppService {
 
     if (data == null) {
       _state = XmppState(
-        0,
-        0,
         "",
         "",
         0,

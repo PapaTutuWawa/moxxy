@@ -1,54 +1,16 @@
 import "dart:async";
 
-import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
 
 const xmlUintMax = 4294967296; // 2**32
-
-class StreamManagementEnableNonza extends XMLNode {
-  StreamManagementEnableNonza() : super(
-    tag: "enable",
-    attributes: {
-      "xmlns": smXmlns,
-      "resume": "true"
-    }
-  );
-}
-
-class StreamManagementResumeNonza extends XMLNode {
-  StreamManagementResumeNonza(String id, int h) : super(
-    tag: "resume",
-    attributes: {
-      "xmlns": smXmlns,
-      "previd": id,
-      "h": h.toString()
-    }
-  );
-}
-
-class StreamManagementAckNonza extends XMLNode {
-  StreamManagementAckNonza(int h) : super(
-    tag: "a",
-    attributes: {
-      "xmlns": smXmlns,
-      "h": h.toString()
-    }
-  );
-}
-
-class StreamManagementRequestNonza extends XMLNode {
-  StreamManagementRequestNonza() : super(
-    tag: "r",
-    attributes: {
-      "xmlns": smXmlns,
-    }
-  );
-}
 
 class _UnackedStanza {
   final Stanza stanza;
@@ -58,11 +20,10 @@ class _UnackedStanza {
 }
 
 class StreamManagementManager extends XmppManagerBase {
-  // Amount of stanzas we have sent or handled
-  int _c2sStanzaCount;
-  int _s2cStanzaCount;
+  /// Commitable state of the StreamManagementManager
+  StreamManagementState _state;
+  
   final Map<int, _UnackedStanza> _unackedStanzas;
-  String? _streamResumptionId;
   bool _streamManagementEnabled;
   Timer? _ackTimer;
   final Duration ackDuration;
@@ -77,15 +38,11 @@ class StreamManagementManager extends XmppManagerBase {
       this.ackDuration = const Duration(seconds: 10),
       this.enableTimer = true
   }) :
-    _s2cStanzaCount = 0,
-    _c2sStanzaCount = 0,
+  _state = StreamManagementState(0, 0),
     _unackedStanzas = {},
-    _streamResumptionId = null,
     _streamManagementEnabled = false;
     
   /// Functions for testing
-  int getC2SStanzaCount() => _c2sStanzaCount;
-  int getS2CStanzaCount() => _s2cStanzaCount;
   Map<int, _UnackedStanza> getUnackedStanzas() => _unackedStanzas;
 
   /// Called whenever the timer elapses. If [timer] is null, then the function
@@ -135,31 +92,16 @@ class StreamManagementManager extends XmppManagerBase {
     }
   }
   
-  /// May be overwritten by a subclass. Should save [_c2sStanzaCount] and [_s2cStanzaCount]
-  /// so that they can be loaded again with [this.loadState].
+  /// May be overwritten by a subclass. Should save [state] so that it can be loaded again
+  /// with [this.loadState].
   Future<void> commitState() async {}
   Future<void> loadState() async {}
 
-  void setState(int? c2s, int? s2c) {
-    // Prevent this being called multiple times
-    //assert(_c2sStanzaCount == 0);
-    //assert(_s2cStanzaCount == 0);
-
-    _c2sStanzaCount = c2s ?? _c2sStanzaCount;
-    _s2cStanzaCount = s2c ?? _c2sStanzaCount;
+  void setState(StreamManagementState state) {
+    _state = state;
   }
-
-  /// May be overwritten by a subclass. Should save and load [_streamResumptionId].
-  Future<void> commitStreamResumptionId() async {}
-  Future<void> loadStreamResumptionId() async {}
-
-  void setStreamResumptionId(String id) {
-    // Prevent this being called multiple times
-    //assert(_streamResumptionId == null);
-
-    _streamResumptionId = id;
-  }
-
+  StreamManagementState get state => _state;
+  
   @override
   String getId() => smManager;
 
@@ -201,11 +143,14 @@ class StreamManagementManager extends XmppManagerBase {
       _enableStreamManagement();
       _onStreamResumed(event.h);
     } else if (event is StreamManagementEnabledEvent) {
-      _streamResumptionId = event.id;
-      commitStreamResumptionId();
       _enableStreamManagement();
 
-      setState(0, 0);
+      setState(StreamManagementState(
+          0,
+          0,
+          streamResumptionId: event.id,
+          streamResumptionLocation: event.location
+      ));
       commitState();
     } else if (event is ConnectingEvent) {
       _disableStreamManagement();
@@ -231,7 +176,7 @@ class StreamManagementManager extends XmppManagerBase {
   Future<bool> _handleAckRequest(XMLNode nonza) async {
     final attrs = getAttributes();
     logger.finest("Sending ack response");
-    attrs.sendNonza(StreamManagementAckNonza(_s2cStanzaCount));
+    attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
 
     return true;
   }
@@ -242,7 +187,8 @@ class StreamManagementManager extends XmppManagerBase {
     final h = int.parse(nonza.attributes["h"]!);
     
     _removeHandledStanzas(h);
-    _c2sStanzaCount = h;
+    _state = _state.copyWith(c2s: h);
+    await commitState();
 
     if (_unackedStanzas.isEmpty) {
       _stopTimer();
@@ -253,19 +199,21 @@ class StreamManagementManager extends XmppManagerBase {
 
   // Just a helper function to not increment the counters above xmlUintMax
   void _incrementC2S() {
-     if (_c2sStanzaCount + 1 == xmlUintMax) {
-      _c2sStanzaCount = 0;
+    final c2s = _state.c2s;
+    if (c2s + 1 == xmlUintMax) {
+      _state = _state.copyWith(c2s: 0);
     } else {
-      _c2sStanzaCount++;
+      _state = _state.copyWith(c2s: c2s + 1);
     }
 
     commitState();
   }
   void _incrementS2C() {
-    if (_s2cStanzaCount + 1 == xmlUintMax) {
-      _s2cStanzaCount = 0;
+    final s2c = _state.s2c;
+    if (s2c + 1 == xmlUintMax) {
+      _state = _state.copyWith(s2c: 0);
     } else {
-      _s2cStanzaCount++;
+      _state = _state.copyWith(s2c: s2c + 1);
     }
 
     commitState();
@@ -282,7 +230,7 @@ class StreamManagementManager extends XmppManagerBase {
     _startTimer();
 
     _incrementC2S();
-    _unackedStanzas[_c2sStanzaCount] = _UnackedStanza(stanza, DateTime.now().millisecondsSinceEpoch);
+    _unackedStanzas[_state.c2s] = _UnackedStanza(stanza, DateTime.now().millisecondsSinceEpoch);
 
     logger.fine("Queue after sending: " + _unackedStanzas.toString());
 
@@ -299,7 +247,7 @@ class StreamManagementManager extends XmppManagerBase {
     final attrs = getAttributes();
     _unackedStanzas.forEach(
       (key, value) {
-        if (key <= h && value.stanza.tag == "message") {
+        if (key <= h && value.stanza.tag == "message" && value.stanza.id != null) {
           attrs.sendEvent(MessageAckedEvent(id: value.stanza.id!));
         }
       }
@@ -315,8 +263,7 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// To be called when the stream has been resumed
   void _onStreamResumed(int h) {
-    _s2cStanzaCount = h;
-
+    _state = _state.copyWith(s2c: h);
     commitState();
 
     _removeHandledStanzas(h);
@@ -326,10 +273,5 @@ class StreamManagementManager extends XmppManagerBase {
   /// Pings the connection open by send an ack request
   void _sendAckRequestPing() {
     getAttributes().sendNonza(StreamManagementRequestNonza());
-  }
-
-  /// Returns the stream resumption id we have
-  String? getStreamResumptionId() {
-    return _streamResumptionId;
   }
 }
