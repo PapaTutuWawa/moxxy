@@ -7,7 +7,7 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/registration/actions.dart";
 import "package:moxxyv2/ui/redux/account/actions.dart";
-import "package:moxxyv2/ui/data/generated/providers.dart";
+import "package:moxxyv2/ui/data/generated/providers.g.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";

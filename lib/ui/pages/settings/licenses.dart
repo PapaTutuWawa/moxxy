@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/data/libraries.dart";
-import "package:moxxyv2/ui/data/generated/licenses.dart";
+import "package:moxxyv2/ui/data/generated/licenses.g.dart";
 
 import "package:url_launcher/url_launcher.dart";
 

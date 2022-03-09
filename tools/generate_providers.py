@@ -25,7 +25,7 @@ const List<XMPPProvider> xmppProviderList = [
     renderServer(obj) for obj in providers
 ]));
 
-    with open("lib/ui/data/generated/providers.dart", "w") as f:
+    with open("lib/ui/data/generated/providers.g.dart", "w") as f:
         f.write(generated)
 
 if __name__ == '__main__':

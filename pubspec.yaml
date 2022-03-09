@@ -98,6 +98,12 @@ extra_licenses:
     # TODO: Dangerous
     license: "unknown license"
     url: "https://invent.kde.org/melvo/xmpp-providers"
+  moxdns:
+    license: "GPL-3.0"
+    url: "https://github.com/PapaTutuWawa/moxdns"
+  swipeable_tile:
+    license: "BSD-3-Clause"
+    url: "https://github.com/PapaTutuWawa/swipeable_tile"
  
 flutter:
   uses-material-design: true
