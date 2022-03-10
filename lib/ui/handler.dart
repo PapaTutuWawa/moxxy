@@ -11,7 +11,9 @@ import "package:moxxyv2/ui/redux/account/state.dart";
 import "package:moxxyv2/ui/redux/account/actions.dart";
 import "package:moxxyv2/ui/redux/debug/actions.dart";
 import "package:moxxyv2/ui/redux/preferences/actions.dart";
+import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 
+import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:redux/redux.dart";
@@ -51,6 +53,7 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
         if (event.permissionsToRequest.isNotEmpty) {
           (() async {
               for (final perm in event.permissionsToRequest) {
+                // TODO: Use the function that requests multiple permissions at once
                 await Permission.byValue(perm).request();
               }
           })();
@@ -160,6 +163,21 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
     case events.downloadProgressType: {
       final event = events.DownloadProgressEvent.fromJson(data);
       GetIt.I.get<UIDownloadService>().onProgress(event.id, event.progress);
+    }
+    break;
+    case events.newConversationDoneEventType: {
+      final event = events.NewConversationDoneEvent.fromJson(data);
+
+      FlutterBackgroundService().sendData(
+        commands.LoadMessagesForJidAction(jid: event.jid).toJson()
+      );
+
+      store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
+          conversationRoute,
+          ModalRoute.withName(conversationsRoute),
+          arguments: ConversationPageArguments(jid: event.jid)
+        )
+      );
     }
     break;
   }

@@ -292,3 +292,20 @@ class DownloadProgressEvent extends BaseIsolateEvent {
     "progress": progress
   };
 }
+
+const newConversationDoneEventType = "NewConversationDoneEvent";
+class NewConversationDoneEvent extends BaseIsolateEvent {
+  final String jid;
+
+  NewConversationDoneEvent({ required this.jid });
+  NewConversationDoneEvent.fromJson(Map<String, dynamic> json) :
+    jid = json["jid"]! {
+      assert(json["type"] == newConversationDoneEventType);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": newConversationDoneEventType,
+    "jid": jid
+  };
+}

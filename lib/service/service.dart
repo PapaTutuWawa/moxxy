@@ -441,6 +441,50 @@ void handleEvent(Map<String, dynamic>? data) {
       GetIt.I.get<PreferencesService>().modifyPreferences((prefs) => command.preferences);
     }
     break;
+    case addConversationActionType: {
+      final command = AddConversationAction.fromJson(data);
+      final database = GetIt.I.get<DatabaseService>();
+
+      (() async {
+          final conversation = await database.getConversationByJid(command.jid);
+          if (conversation != null) {
+            if (!conversation.open) {
+              final newConv = await database.updateConversation(
+                id: conversation.id,
+                open: true
+              );
+              final event = ConversationCreatedEvent(conversation: newConv);
+
+              GetIt.I.get<Logger>().fine("S2F: " + event.toString());
+              FlutterBackgroundService().sendData(event.toJson());
+            }
+
+            final doneEvent = NewConversationDoneEvent(jid: command.jid);
+            GetIt.I.get<Logger>().fine("S2F: " + doneEvent.toString());
+            FlutterBackgroundService().sendData(doneEvent.toJson());
+          } else {
+            final conversation = await database.addConversationFromData(
+              command.title,
+              command.lastMessageBody,
+              command.avatarUrl,
+              command.jid,
+              0,
+              -1,
+              const [],
+              true
+            );
+
+            final createEvent = ConversationCreatedEvent(conversation: conversation);
+            GetIt.I.get<Logger>().fine("S2F: " + createEvent.toString());
+            FlutterBackgroundService().sendData(createEvent.toJson());
+            
+            final event = NewConversationDoneEvent(jid: command.jid);
+            GetIt.I.get<Logger>().fine("S2F: " + event.toString());
+            FlutterBackgroundService().sendData(event.toJson());
+          }
+      })();
+    }
+    break;
     case stopActionType: {
       FlutterBackgroundService().stopBackgroundService();
     }

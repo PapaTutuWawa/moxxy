@@ -108,6 +108,37 @@ class RemoveRosterItemAction extends BaseIsolateCommand {
   };
 }
 
+const addConversationActionType = "AddConversationAction";
+class AddConversationAction extends BaseIsolateCommand {
+  final String jid;
+  final String title;
+  final String avatarUrl;
+  final String lastMessageBody;
+
+  AddConversationAction({
+      required this.jid,
+      required this.title,
+      required this.avatarUrl,
+      required this.lastMessageBody
+  });
+  AddConversationAction.fromJson(Map<String, dynamic> json) :
+    jid = json["jid"]!,
+    title = json["title"]!,
+    avatarUrl = json["avatarUrl"]!,
+    lastMessageBody = json["lastMessageBody"]! {
+      assert(json["type"] == addToRosterType);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": addConversationActionType,
+    "jid": jid,
+    "title": title,
+    "avatarUrl": avatarUrl,
+    "lastMessageBody": lastMessageBody
+  };
+}
+
 const sendMessageActionType = "SendMessageAction";
 class SendMessageAction extends BaseIsolateCommand {
   final String jid;
