@@ -34,15 +34,13 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(String avatarUrl, String jid, String title) async {
+    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
     final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
     if (!result) {
       // TODO: Signal error?
     }
 
     GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequest(jid);
-
-    // TODO: Maybe guard against adding an item multiple times
-    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
 
     sendData(RosterDiffEvent(newItems: [ item ]));
     return item;
@@ -83,7 +81,6 @@ class RosterService {
       return;
     }
 
-    // TODO: Figure out if an item was removed
     final newItems = List<RosterItem>.empty(growable: true);
     final removedItems = List<String>.empty(growable: true);
     final modifiedItems = List<RosterItem>.empty(growable: true);
@@ -99,6 +96,7 @@ class RosterService {
         await db.removeRosterItemByJid(item.jid);
         removedItems.add(item.jid);
 
+        if (await isInRoster(item.jid)) continue;
         newItems.add(await db.addRosterItemFromData(
             "",
             item.jid,
@@ -110,6 +108,7 @@ class RosterService {
     // Handle deleted items
     for (final item in result.items) {
       if (!listContains(currentRoster, (RosterItem i) => i.jid == item.jid)) {
+        if (await isInRoster(item.jid)) continue;
         newItems.add(await db.addRosterItemFromData(
             "",
             item.jid,
@@ -153,17 +152,26 @@ class RosterService {
         title: item.name,
         groups: item.groups
       );
+
+      sendData(RosterDiffEvent(
+          changedItems: [ modelRosterItem ]
+      ));
     } else {
+      if (await isInRoster(item.jid)) {
+        _log.info("Received roster push for ${item.jid} but this JID is already in the roster database. Ignoring...");
+        return;
+      }
+
       modelRosterItem = await db.addRosterItemFromData(
         "",
         item.jid,
         item.jid.split("@")[0],
         groups: item.groups
       );
-    }
 
-    sendData(RosterDiffEvent(
-        changedItems: [ modelRosterItem ]
-    ));
+      sendData(RosterDiffEvent(
+          newItems: [ modelRosterItem ]
+      ));
+    }
   }
 }
