@@ -264,7 +264,7 @@ class XmppConnection {
   /// [stanza] has none.
   /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
   /// none.
-  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true }) {
+  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true, bool awaitable = true }) {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
       stanza = stanza.copyWith(id: generateId());
@@ -274,8 +274,10 @@ class XmppConnection {
     }
 
     final stanzaString = stanza.toXml();
-    
-    _awaitingResponse[stanza.id!] = Completer();
+
+    if (awaitable) {
+      _awaitingResponse[stanza.id!] = Completer();
+    }
 
     // This uses the StreamManager to behave like a send queue
     if (_canSendData()) {
@@ -287,8 +289,12 @@ class XmppConnection {
 
     // Tell the SM manager that we're about to send a stanza
     _sendEvent(StanzaSentEvent(stanza: stanza));
-    
-    return _awaitingResponse[stanza.id!]!.future;
+
+    if (awaitable) {
+      return _awaitingResponse[stanza.id!]!.future;
+    } else {
+      return Future.value(XMLNode(tag: "not-used"));
+    }
   }
 
   /// Sets the connection state to [state] and triggers an event of type
@@ -669,6 +675,8 @@ class XmppConnection {
   
   /// Sends an event to the connection's event stream.
   void _sendEvent(XmppEvent event) {
+    _log.finest("Event: ${event.toString()}");
+
     for (var manager in _xmppManagers.values) {
       manager.onXmppEvent(event);
     }

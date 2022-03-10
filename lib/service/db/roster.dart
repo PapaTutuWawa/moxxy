@@ -12,4 +12,6 @@ class DBRosterItem {
   late String title;
 
   late String avatarUrl;
+
+  late List<String> groups;
 }

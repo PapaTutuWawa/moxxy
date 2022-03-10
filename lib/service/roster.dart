@@ -14,15 +14,8 @@ import "package:logging/logging.dart";
 class RosterService {
   final Logger _log;
   final void Function(BaseIsolateEvent) sendData;
-  final List<String> _pendingRequests;
   
-  RosterService({ required this.sendData }) : _pendingRequests = List.empty(growable: true), _log = Logger("RosterService");
-
-  /// Returns true if we have a pending request for the jid.
-  bool hasPendingRequest(String jid) => _pendingRequests.contains(jid);
-
-  /// Removes a pending request for a jid.
-  void removePendingRequest(String jid) => _pendingRequests.remove(jid);
+  RosterService({ required this.sendData }) : _log = Logger("RosterService");
   
   Future<bool> isInRoster(String jid) async {
     return await GetIt.I.get<DatabaseService>().isInRoster(jid);
@@ -41,15 +34,14 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(String avatarUrl, String jid, String title) async {
-    _pendingRequests.add(jid);
     final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
     if (!result) {
-      _pendingRequests.remove(jid);
       // TODO: Signal error?
     }
 
     GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequest(jid);
 
+    // TODO: Maybe guard against adding an item multiple times
     final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
 
     sendData(RosterDiffEvent(newItems: [ item ]));
@@ -137,22 +129,15 @@ class RosterService {
   Future<void> handleRosterPushEvent(RosterPushEvent event) async {
     final item = event.item;
 
-    if (hasPendingRequest(item.jid)) {
-      // TODO: This may cause a race condition if we receive another roster push before the one we triggered.
-      //       => Check the version of the roster push and ignore the younger one
-      // We already know about this item.
-      removePendingRequest(item.jid);
-
-      // TODO: Notify the UI
-      return;
-    }
 
     final db = GetIt.I.get<DatabaseService>();
     final rosterItem = await db.getRosterItemByJid(item.jid);
     final RosterItem modelRosterItem;
 
     if (item.subscription == "remove") {
-      await removeFromRosterWrapper(item.jid);
+      // NOTE: It could be that we triggered this roster push and thus have it already
+      //       removed.
+      await removeFromRosterDatabase(item.jid, nullOkay: true);
 
       sendData(RosterDiffEvent(
           removedItems: [ item.jid ]
@@ -163,15 +148,17 @@ class RosterService {
 
     // Handle all other cases the same
     if (rosterItem != null) {
-      // TODO: Update
       modelRosterItem = await db.updateRosterItem(
         id: rosterItem.id,
+        title: item.name,
+        groups: item.groups
       );
     } else {
       modelRosterItem = await db.addRosterItemFromData(
         "",
         item.jid,
-        item.jid.split("@")[0]
+        item.jid.split("@")[0],
+        groups: item.groups
       );
     }
 

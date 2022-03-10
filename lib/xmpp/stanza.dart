@@ -94,7 +94,7 @@ class Stanza extends XMLNode {
       from: attributes["to"],
       to: attributes["from"],
       type: tag == "iq" ? "result" : attributes["type"],
-      children: children
+      children: const []
     );
   }
 

@@ -326,11 +326,12 @@ class DatabaseService {
   }
   
   /// Create a roster item from data
-  Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title) async {
+  Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title, { List<String>? groups }) async {
     final rosterItem = DBRosterItem()
       ..jid = jid
       ..title = title
-      ..avatarUrl = avatarUrl;
+      ..avatarUrl = avatarUrl
+      ..groups = groups ?? const [];
 
     await isar.writeTxn((isar) async {
         await isar.dBRosterItems.put(rosterItem);
@@ -343,10 +344,16 @@ class DatabaseService {
   }
 
   /// Updates the roster item with id [id] inside the database.
-  Future<RosterItem> updateRosterItem({ required int id, String? avatarUrl }) async {
+  Future<RosterItem> updateRosterItem({ required int id, String? avatarUrl, String? title, List<String>? groups }) async {
     final i = (await isar.dBRosterItems.get(id))!;
     if (avatarUrl != null) {
       i.avatarUrl = avatarUrl;
+    }
+    if (title != null) {
+      i.title = title;
+    }
+    if (groups != null) {
+      i.groups = groups;
     }
 
     await isar.writeTxn((isar) async {
