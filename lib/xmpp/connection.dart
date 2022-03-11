@@ -57,10 +57,10 @@ class StartTLSNonza extends XMLNode {
 
 class XmppConnection {
   late ConnectionSettings _connectionSettings;
-  late final BaseSocketWrapper _socket;
-  late XmppConnectionState _connectionState;
+  final BaseSocketWrapper _socket;
+  XmppConnectionState _connectionState;
   late final Stream<String> _socketStream;
-  late final StreamController<XmppEvent> _eventStreamController;
+  final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse = {};
   final Map<String, XmppManagerBase> _xmppManagers = {};
   
@@ -69,13 +69,13 @@ class XmppConnection {
   // Stream feature XMLNS
   final List<String> _streamFeatures = List.empty(growable: true);
   final List<String> _serverFeatures = List.empty(growable: true);
-  late RoutingState _routingState;
-  late String _resource;
-  late XmlStreamBuffer _streamBuffer;
+  RoutingState _routingState;
+  String _resource;
+  final XmlStreamBuffer _streamBuffer;
   Timer? _connectionPingTimer;
-  late int _currentBackoffAttempt;
+  int _currentBackoffAttempt;
   Timer? _backoffTimer;
-  late final Uuid _uuid;
+  final Uuid _uuid;
   bool _resuming; // For indicating in a [ConnectionStateChangedEvent] that the event occured because we did a reconnection
   final Duration connectionPingDuration;
 
@@ -83,7 +83,7 @@ class XmppConnection {
   late AuthenticationNegotiator _authenticator;
 
   // Misc
-  late final Logger _log;
+  final Logger _log;
 
   /// [socket] is for debugging purposes.
   /// [connectionPingDuration] is the duration after which a ping will be sent to keep
@@ -91,30 +91,22 @@ class XmppConnection {
   XmppConnection({
       BaseSocketWrapper? socket,
       this.connectionPingDuration = const Duration(minutes: 15)
-  }): _resuming = true {
-    _connectionState = XmppConnectionState.notConnected;
-    _routingState = RoutingState.unauthenticated;
-
+  }) :
+    _connectionState = XmppConnectionState.notConnected,
+    _routingState = RoutingState.unauthenticated,
+    _eventStreamController = StreamController(),
+    _resource = "",
+    _streamBuffer = XmlStreamBuffer(),
+    _currentBackoffAttempt = 0,
+    _resuming = true,
+    _uuid = const Uuid(),
     // NOTE: For testing 
-    if (socket != null) {
-      _socket = socket;
-    } else {
-      _socket = TCPSocketWrapper();
-    }
-
-    _eventStreamController = StreamController();
-    _resource = "";
-    _streamBuffer = XmlStreamBuffer();
-    _currentBackoffAttempt = 0;
-    _connectionState = XmppConnectionState.notConnected;
-    _log = Logger("XmppConnection");
-
+    _socket = socket ?? TCPSocketWrapper(),
+    _log = Logger("XmppConnection") {
     _socketStream = _socket.getDataStream();
     // TODO: Handle on done
     _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
     _socket.getErrorStream().listen(_handleError);
-
-    _uuid = const Uuid();
   }
 
   /// Registers an [XmppManagerBase] subclass as a manager on this connection
