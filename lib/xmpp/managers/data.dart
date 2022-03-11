@@ -5,6 +5,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0461.dart";
 
 part "data.freezed.dart";
 
@@ -21,6 +22,7 @@ class StanzaHandlerData with _$StanzaHandlerData {
       StatelessFileSharingData? sfs,
       OOBData? oob,
       StableStanzaId? stableId,
+      ReplyData? reply,
       @Default(false) bool isCarbon,
       @Default(false) bool deliveryReceiptRequested,
       @Default(false) bool isMarkable

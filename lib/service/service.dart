@@ -21,6 +21,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0461.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/service/managers/roster.dart";
 import "package:moxxyv2/service/managers/disco.dart";
@@ -232,7 +233,8 @@ void onStart() {
           MessageDeliveryReceiptManager(),
           ChatMarkerManager(),
           OOBManager(),
-          SFSManager()
+          SFSManager(),
+          MessageRepliesManager()
       ]);
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
