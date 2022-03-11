@@ -5,7 +5,7 @@ import "package:moxxyv2/xmpp/roster.dart";
 
 import "package:get_it/get_it.dart";
 
-class MoxxyRosterManger extends RosterManager {
+class MoxxyRosterManager extends RosterManager {
   @override
   Future<void> commitLastRosterVersion(String version) async {
     await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(

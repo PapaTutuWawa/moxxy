@@ -6,6 +6,7 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
@@ -123,17 +124,22 @@ class StreamManagementManager extends XmppManagerBase {
   ];
 
   @override
-  List<StanzaHandler> getStanzaHandlers() => [
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
-      callback: _serverStanzaReceived
+      callback: _onServerStanzaReceived
     )
   ];
 
   @override
+  List<StanzaHandler> getOutgoingStanzaHandlers() => [
+    StanzaHandler(
+      callback: _onClientStanzaSent
+    )
+  ];
+  
+  @override
   void onXmppEvent(XmppEvent event) {
-    if (event is StanzaSentEvent) {
-      _onClientStanzaSent(event.stanza);
-    } else if (event is SendPingEvent) {
+    if (event is SendPingEvent) {
       if (isStreamManagementEnabled()) {
         _sendAckRequestPing();
       } else {
@@ -220,13 +226,13 @@ class StreamManagementManager extends XmppManagerBase {
   }
   
   /// Called whenever we receive a stanza from the server.
-  Future<bool> _serverStanzaReceived(stanza) async {
+  Future<StanzaHandlerData> _onServerStanzaReceived(Stanza stanza, StanzaHandlerData state) async {
     _incrementS2C();
-    return false;
+    return state;
   }
 
   /// Called whenever we send a stanza.
-  void _onClientStanzaSent(Stanza stanza) {
+  Future<StanzaHandlerData> _onClientStanzaSent(Stanza stanza, StanzaHandlerData state) async {
     _startTimer();
 
     _incrementC2S();
@@ -237,6 +243,8 @@ class StreamManagementManager extends XmppManagerBase {
     if (isStreamManagementEnabled()) {
       getAttributes().sendNonza(StreamManagementRequestNonza());
     }
+
+    return state;
   }
 
   /// Removes all stanzas in the unacked queue that have a sequence number less-than or

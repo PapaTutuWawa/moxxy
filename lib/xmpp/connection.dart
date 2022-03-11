@@ -15,7 +15,9 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
@@ -56,33 +58,46 @@ class StartTLSNonza extends XMLNode {
 }
 
 class XmppConnection {
-  late ConnectionSettings _connectionSettings;
+  final StreamController<XmppEvent> _eventStreamController;
+  final Map<String, Completer<XMLNode>> _awaitingResponse;
+  final Map<String, XmppManagerBase> _xmppManagers;
+  final List<StanzaHandler> _incomingStanzaHandlers;
+  final List<StanzaHandler> _outgoingStanzaHandlers;
   final BaseSocketWrapper _socket;
   XmppConnectionState _connectionState;
   late final Stream<String> _socketStream;
-  final StreamController<XmppEvent> _eventStreamController;
-  final Map<String, Completer<XMLNode>> _awaitingResponse = {};
-  final Map<String, XmppManagerBase> _xmppManagers = {};
+  late ConnectionSettings _connectionSettings;
   
-  // Stream properties
-  //
-  // Stream feature XMLNS
+  /// Stream properties
+  ///
+  /// Features we got after SASL auth (xmlns)
   final List<String> _streamFeatures = List.empty(growable: true);
+  /// Disco info we got after binding a resource (xmlns)
   final List<String> _serverFeatures = List.empty(growable: true);
-  RoutingState _routingState;
-  String _resource;
+  /// The buffer object to keep split up stanzas together
   final XmlStreamBuffer _streamBuffer;
-  Timer? _connectionPingTimer;
-  int _currentBackoffAttempt;
-  Timer? _backoffTimer;
+  /// UUID object to generate stanza and origin IDs
   final Uuid _uuid;
-  bool _resuming; // For indicating in a [ConnectionStateChangedEvent] that the event occured because we did a reconnection
+  /// The time between sending a ping to keep the connection open
+  // TODO: Only start the timer if we did not send a stanza after n seconds
   final Duration connectionPingDuration;
+  /// The current state of the connection handling state machine.
+  RoutingState _routingState;
+  /// The currently bound resource or "" if none has been bound yet.
+  String _resource;
+  /// Counter for how manyy we have tried to reconnect.
+  int _currentBackoffAttempt;
+  /// For indicating in a [ConnectionStateChangedEvent] that the event occured because we
+  /// did a reconnection.
+  bool _resuming;
+  /// Timers for the keep-alive ping and the backoff connection process.
+  Timer? _connectionPingTimer;
+  Timer? _backoffTimer;
 
-  // Negotiators
+  /// Negotiators
   late AuthenticationNegotiator _authenticator;
 
-  // Misc
+  /// Misc
   final Logger _log;
 
   /// [socket] is for debugging purposes.
@@ -102,6 +117,10 @@ class XmppConnection {
     _uuid = const Uuid(),
     // NOTE: For testing 
     _socket = socket ?? TCPSocketWrapper(),
+    _awaitingResponse = {},
+    _xmppManagers = {},
+    _incomingStanzaHandlers = List.empty(growable: true),
+    _outgoingStanzaHandlers = List.empty(growable: true),
     _log = Logger("XmppConnection") {
     _socketStream = _socket.getDataStream();
     // TODO: Handle on done
@@ -109,8 +128,11 @@ class XmppConnection {
     _socket.getErrorStream().listen(_handleError);
   }
 
-  /// Registers an [XmppManagerBase] subclass as a manager on this connection
-  void registerManager(XmppManagerBase manager) {
+  /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
+  /// [sortHandlers] should NOT be touched. It specified if the handler priorities
+  /// should be set up. The only time this should be false is when called via
+  /// [registerManagers].
+  void registerManager(XmppManagerBase manager, { bool sortHandlers = true }) {
     _log.finest("Registering ${manager.getId()}");
     manager.register(XmppManagerAttributes(
         sendStanza: sendStanza,
@@ -136,8 +158,27 @@ class XmppConnection {
     } else if (_xmppManagers.containsKey(discoManager)) {
       (_xmppManagers[discoManager] as DiscoManager).addDiscoFeatures(manager.getDiscoFeatures());
     }
+
+    _incomingStanzaHandlers.addAll(manager.getIncomingStanzaHandlers());
+    _outgoingStanzaHandlers.addAll(manager.getOutgoingStanzaHandlers());
+    
+    if (sortHandlers) {
+      _incomingStanzaHandlers.sort(stanzaHandlerSortComparator);
+      _outgoingStanzaHandlers.sort(stanzaHandlerSortComparator);
+    }
   }
 
+  /// Like [registerManager], but for a list of managers.
+  void registerManagers(List<XmppManagerBase> managers) {
+    for (final manager in managers) {
+      registerManager(manager, sortHandlers: false);
+    }
+
+    // Sort them
+    _incomingStanzaHandlers.sort(stanzaHandlerSortComparator);
+    _outgoingStanzaHandlers.sort(stanzaHandlerSortComparator);
+  }
+  
   /// Generate an Id suitable for an origin-id or stanza id
   String generateId() {
     return _uuid.v4();
@@ -256,7 +297,7 @@ class XmppConnection {
   /// [stanza] has none.
   /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
   /// none.
-  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true, bool awaitable = true }) {
+  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true, bool awaitable = true }) async {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
       stanza = stanza.copyWith(id: generateId());
@@ -271,6 +312,9 @@ class XmppConnection {
       _awaitingResponse[stanza.id!] = Completer();
     }
 
+    // Tell the SM manager that we're about to send a stanza
+    await _runOutoingStanzaHandlers(stanza);
+    
     // This uses the StreamManager to behave like a send queue
     if (_canSendData()) {
       _socket.write(stanzaString);
@@ -278,9 +322,6 @@ class XmppConnection {
       // Try to ack every stanza
       // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
     }
-
-    // Tell the SM manager that we're about to send a stanza
-    _sendEvent(StanzaSentEvent(stanza: stanza));
 
     if (awaitable) {
       return _awaitingResponse[stanza.id!]!.future;
@@ -385,6 +426,34 @@ class XmppConnection {
       _log.warning("Failed to discover server items using XEP-0030");
     }
   }
+
+  /// Iterate over [handlers] and check if the handler matches [stanza]. If it does,
+  /// call its callback and end the processing if the callback returned true; continue
+  /// if it returned false.
+  Future<bool> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza) async {
+    StanzaHandlerData state = StanzaHandlerData(false, stanza);
+    for (final handler in handlers) {
+      if (handler.matches(stanza)) {
+        state = await handler.callback(stanza, state);
+        if (state.done) return true;
+      }
+    }
+
+    return false;
+  }
+
+  Future<bool> _runIncomingStanzaHandlers(Stanza stanza) async {
+    return await _runStanzaHandlers(
+      _incomingStanzaHandlers,
+      stanza
+    );
+  }
+  Future<bool> _runOutoingStanzaHandlers(Stanza stanza) async {
+    return await _runStanzaHandlers(
+      _outgoingStanzaHandlers,
+      stanza
+    );
+  }
   
   /// Called whenever we receive a stanza after resource binding or stream resumption.
   Future<void> _handleStanza(XMLNode nonza) async {
@@ -413,16 +482,8 @@ class XmppConnection {
       _awaitingResponse.remove(id);
       return;
     }
-    
-    bool stanzaHandled = false;
-    await Future.forEach(
-      _xmppManagers.values,
-      (XmppManagerBase manager) async {
-        final handled = await manager.runStanzaHandlers(stanza);
 
-        if (!stanzaHandled && handled) stanzaHandled = true;
-      }
-    );
+    final stanzaHandled = await _runIncomingStanzaHandlers(stanza);
 
     if (!stanzaHandled) {
       handleUnhandledStanza(this, stanza);

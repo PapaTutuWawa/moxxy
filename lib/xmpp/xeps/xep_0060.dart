@@ -1,10 +1,11 @@
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 
 class PubSubItem {
   final String id;
@@ -25,11 +26,16 @@ class PubSubManager extends XmppManagerBase {
   String getName() => "pubsubManager";
 
   @override
-  List<StanzaHandler> getStanzaHandlers() => [
-    StanzaHandler(stanzaTag: "message", tagName: "event", tagXmlns: pubsubEventXmlns, callback: _onPubsubMessage)
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
+    StanzaHandler(
+      stanzaTag: "message",
+      tagName: "event",
+      tagXmlns: pubsubEventXmlns,
+      callback: _onPubsubMessage
+    )
   ];
 
-  Future<bool> _onPubsubMessage(Stanza message) async {
+  Future<StanzaHandlerData> _onPubsubMessage(Stanza message, StanzaHandlerData state) async {
     logger.finest("Received PubSub event");
     final event = message.firstTag("event", xmlns: pubsubEventXmlns)!;
     final items = event.firstTag("items")!;
@@ -44,7 +50,7 @@ class PubSubManager extends XmppManagerBase {
         from: message.attributes["from"]!
     ));
     
-    return true;
+    return state.copyWith(done: true);
   }
   
   Future<bool> subscribe(String jid, String node) async {

@@ -1,5 +1,10 @@
+import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
 
 class StatelessMediaSharingData {
@@ -52,4 +57,37 @@ StatelessMediaSharingData parseSIMSElement(XMLNode node) {
     hashes: hashes,
     thumbnails: thumbnails
   );
+}
+
+class SIMSManager extends XmppManagerBase {
+  @override
+  String getName() => "SIMSManager";
+
+  @override
+  String getId() => simsManager;
+
+  @override
+  List<String> getDiscoFeatures() => [ simsXmlns ];
+  
+  @override
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
+    StanzaHandler(
+      stanzaTag: "message",
+      callback: _onMessage,
+      tagName: "reference",
+      tagXmlns: referenceXmlns,
+      // Before the message handler
+      priority: -99
+    )
+  ];
+
+  Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
+    final references = message.findTags("reference", xmlns: referenceXmlns);
+    for (final ref in references) {
+      final sims = ref.firstTag("media-sharing", xmlns: simsXmlns);
+      if (sims != null) return state.copyWith(sims: parseSIMSElement(sims));
+    }
+
+    return state;
+  }
 }

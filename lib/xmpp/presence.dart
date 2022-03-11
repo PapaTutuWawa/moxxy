@@ -5,6 +5,7 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
@@ -23,7 +24,7 @@ class PresenceManager extends XmppManagerBase {
   String getName() => "PresenceManager";
 
   @override
-  List<StanzaHandler> getStanzaHandlers() => [
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "presence",
       callback: _onPresence
@@ -33,14 +34,14 @@ class PresenceManager extends XmppManagerBase {
   @override
   List<String> getDiscoFeatures() => [ capsXmlns ];
   
-  Future<bool> _onPresence(Stanza presence) async {
+  Future<StanzaHandlerData> _onPresence(Stanza presence, StanzaHandlerData state) async {
     final attrs = getAttributes();
     switch (presence.type) {
       case "subscribed": {
         attrs.sendEvent(
           SubscriptionRequestReceivedEvent(from: JID.fromString(presence.from!))
         );
-        return true;
+        return state.copyWith(done: true);
       }
       default: break;
     }
@@ -51,7 +52,7 @@ class PresenceManager extends XmppManagerBase {
       getAttributes().sendEvent(PresenceReceivedEvent(JID.fromString(presence.from!), presence));
     } 
 
-    return false;
+    return state.copyWith(done: false);
   }
 
   /// Returns the capability hash.

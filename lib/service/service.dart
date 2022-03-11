@@ -11,10 +11,16 @@ import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0084.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/service/managers/roster.dart";
 import "package:moxxyv2/service/managers/disco.dart";
@@ -209,17 +215,25 @@ void onStart() {
       GetIt.I.registerSingleton<RosterService>(RosterService(sendData: middleware));
 
       final connection = XmppConnection();
-      connection.registerManager(MoxxyStreamManagementManager());
-      connection.registerManager(MoxxyDiscoManager());
-      connection.registerManager(MessageManager());
-      connection.registerManager(MoxxyRosterManger());
-      connection.registerManager(PresenceManager());
-      connection.registerManager(CSIManager());
-      connection.registerManager(DiscoCacheManager());
-      connection.registerManager(CarbonsManager());
-      connection.registerManager(PubSubManager());
-      connection.registerManager(vCardManager());
-      connection.registerManager(UserAvatarManager());
+      connection.registerManagers([
+          MoxxyStreamManagementManager(),
+          MoxxyDiscoManager(),
+          MoxxyRosterManager(),
+          MessageManager(),
+          PresenceManager(),
+          CSIManager(),
+          DiscoCacheManager(),
+          CarbonsManager(),
+          PubSubManager(),
+          vCardManager(),
+          UserAvatarManager(),
+          StableIdManager(),
+          SIMSManager(),
+          MessageDeliveryReceiptManager(),
+          ChatMarkerManager(),
+          OOBManager(),
+          SFSManager()
+      ]);
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
       final account = await xmpp.getAccountData();

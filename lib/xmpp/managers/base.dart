@@ -1,6 +1,5 @@
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 
@@ -22,9 +21,14 @@ abstract class XmppManagerBase {
     return _managerAttributes;
   }
 
-  /// Return the [StanzaHandler]s associated with this manager.
-  List<StanzaHandler> getStanzaHandlers() => [];
+  /// Return the [StanzaHandler]s associated with this manager that deal with stanzas we
+  /// send.
+  List<StanzaHandler> getOutgoingStanzaHandlers() => [];
 
+  /// Return the [StanzaHandler]s associated with this manager that deal with stanzas we
+  /// receive.
+  List<StanzaHandler> getIncomingStanzaHandlers() => [];
+  
   /// Return the [NonzaHandler]s associated with this manager.
   List<NonzaHandler> getNonzaHandlers() => [];
 
@@ -53,23 +57,6 @@ abstract class XmppManagerBase {
         if (handler.matches(nonza)) {
           handled = true;
           await handler.callback(nonza);
-        }
-      }
-    );
-
-    return handled;
-  }
-
-  /// Runs all [StanzaHandlers] of this Manager which match the nonza. Resolves to true if
-  /// the nonza has been handled by one of the handlers. Resolves to false otherwise.
-  Future<bool> runStanzaHandlers(Stanza stanza) async {
-    bool handled = false;
-    await Future.forEach(
-      getStanzaHandlers(),
-      (StanzaHandler handler) async {
-        if (handler.matches(stanza)) {
-          handled = true;
-          await handler.callback(stanza);
         }
       }
     );

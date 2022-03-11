@@ -5,6 +5,7 @@ import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
 
 class DiscoManager extends XmppManagerBase {
@@ -14,7 +15,7 @@ class DiscoManager extends XmppManagerBase {
   DiscoManager() : _features = List.empty(growable: true), super();
   
   @override
-  List<StanzaHandler> getStanzaHandlers() => [
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
       tagName: "query",
       tagXmlns: discoInfoXmlns,
@@ -54,8 +55,8 @@ class DiscoManager extends XmppManagerBase {
   /// May be overriden. Specifies the identities which will be returned in a disco info response.
   List<Identity> getIdentities() => const [ Identity(category: "client", type: "pc", name: "moxxmpp", lang: "en") ];
   
-  Future<bool> _onDiscoInfoRequest(Stanza stanza) async {
-    if (stanza.type != "get") return false;
+  Future<StanzaHandlerData> _onDiscoInfoRequest(Stanza stanza, StanzaHandlerData state) async {
+    if (stanza.type != "get") return state;
 
     final presence = getAttributes().getManagerById(presenceManager)! as PresenceManager;
     final query = stanza.firstTag("query")!;
@@ -93,7 +94,7 @@ class DiscoManager extends XmppManagerBase {
           )
       ));
 
-      return true;
+      return state.copyWith(done: true);
     }
 
     getAttributes().sendStanza(stanza.reply(
@@ -114,11 +115,11 @@ class DiscoManager extends XmppManagerBase {
         ]
     ));
 
-    return true;
+    return state.copyWith(done: true);
   }
 
-  Future<bool> _onDiscoItemsRequest(Stanza stanza) async {
-    if (stanza.type != "get") return false;
+  Future<StanzaHandlerData> _onDiscoItemsRequest(Stanza stanza, StanzaHandlerData state) async {
+    if (stanza.type != "get") return state;
 
     final query = stanza.firstTag("query")!;
     if (query.attributes["node"] != null) {
@@ -152,7 +153,7 @@ class DiscoManager extends XmppManagerBase {
           )
       ));
 
-      return true;
+      return state.copyWith(done: true);
     }
 
     getAttributes().sendStanza(stanza.reply(
@@ -163,7 +164,7 @@ class DiscoManager extends XmppManagerBase {
           )
         ]
     ));
-    return true;
+    return state.copyWith(done: true);
   }
 
   /// Sends a disco info query to the (full) jid [entity], optionally with node=[node].

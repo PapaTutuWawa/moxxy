@@ -1,15 +1,28 @@
-import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/managers/attributes.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 
 import "../helpers/xml.dart";
 
 import "package:test/test.dart";
+
+Future<void> runIncomingStanzaHandlers(StreamManagementManager man, Stanza stanza) async {
+  for (final handler in man.getIncomingStanzaHandlers()) {
+    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, stanza));
+  }
+}
+
+Future<void> runOutgoingStanzaHandlers(StreamManagementManager man, Stanza stanza) async {
+  for (final handler in man.getOutgoingStanzaHandlers()) {
+    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, stanza));
+  }
+}
 
 void main() {
   final stanza = Stanza(
@@ -46,14 +59,14 @@ void main() {
       manager.onXmppEvent(StreamManagementEnabledEvent(id: "0", resource: "h"));
       
       // Receive a fake stanza
-      await manager.runStanzaHandlers(stanza);
-      await manager.runStanzaHandlers(stanza);
+      await runIncomingStanzaHandlers(manager, stanza);
+      await runIncomingStanzaHandlers(manager, stanza);
       expect(manager.state.s2c, 2, reason: "The S2C counter must count correctly");
 
       // Send some fake stanzas
-      manager.onXmppEvent(StanzaSentEvent(stanza: stanza));
-      manager.onXmppEvent(StanzaSentEvent(stanza: stanza));
-      manager.onXmppEvent(StanzaSentEvent(stanza: stanza));
+      runOutgoingStanzaHandlers(manager, stanza);
+      runOutgoingStanzaHandlers(manager, stanza);
+      runOutgoingStanzaHandlers(manager, stanza);
       expect(manager.state.c2s, 3, reason: "The C2S counter must count correctly");
 
       final ack = XMLNode.xmlns(tag: "a", xmlns: "urn:xmpp:sm:3", attributes: { "h": "3" });
@@ -63,7 +76,7 @@ void main() {
       expect(manager.state.s2c, 2, reason: "Sending stanzas must not change the S2C counter");
 
       // Send a stanza which we will not acknowledge
-      manager.onXmppEvent(StanzaSentEvent(stanza: stanza));
+      runOutgoingStanzaHandlers(manager, stanza);
       expect(manager.state.c2s, 4, reason: "Sending a stanza must increment the C2S counter");
       await manager.runNonzaHandlers(ack);
       manager.onTimerElapsed(null, ignoreTimestamps: true);
@@ -101,9 +114,9 @@ void main() {
       manager.register(attributes);
 
       // Send some stanzas
-      manager.onXmppEvent(StanzaSentEvent(stanza: stanza));
-      manager.onXmppEvent(StanzaSentEvent(stanza: stanza));
-      manager.onXmppEvent(StanzaSentEvent(stanza: stanza));
+      runOutgoingStanzaHandlers(manager, stanza);
+      runOutgoingStanzaHandlers(manager, stanza);
+      runOutgoingStanzaHandlers(manager, stanza);
 
       // Simulate a resumption
       manager.onXmppEvent(StreamResumedEvent(h: 2));

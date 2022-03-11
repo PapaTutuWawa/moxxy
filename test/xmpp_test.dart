@@ -9,8 +9,9 @@ import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 
 import "helpers/xmpp.dart";
 
@@ -40,14 +41,9 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
   ));
 
   final stanza = Stanza.fromXMLNode(XMLNode.fromString(stanzaString));
-  await Future.forEach(
-    roster.getStanzaHandlers(),
-    (StanzaHandler handler) async {
-      if (handler.matches(stanza)) {
-        await handler.callback(stanza);
-      }
-    }
-  );
+  for (final handler in roster.getIncomingStanzaHandlers()) {
+    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, stanza));
+  }
 
   return eventTriggered;
 }
@@ -216,6 +212,7 @@ void main() {
           ),
         ]
       );
+      // TODO: This test is broken since we query the server and enable carbons
       final XmppConnection conn = XmppConnection(socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
           jid: JID.fromString("polynomdivision@test.server"),
@@ -225,6 +222,7 @@ void main() {
       ));
       conn.registerManager(RosterManager());
       conn.registerManager(DiscoManager());
+      conn.registerManager(DiscoCacheManager());
       conn.registerManager(PresenceManager());
 
       await conn.connect();
@@ -509,14 +507,10 @@ void main() {
           // NOTE: Based on https://gultsch.de/gajim_roster_push_and_message_interception.html
           // NOTE: Added a from attribute as a server would add it itself.
           final maliciousStanza = Stanza.fromXMLNode(XMLNode.fromString("<iq type=\"set\" from=\"eve@siacs.eu/bbbbb\" to=\"some.user@example.server/aaaaa\"><query xmlns='jabber:iq:roster'><item subscription=\"both\" jid=\"eve@siacs.eu\" name=\"Bob\" /></query></iq>"));
-          await Future.forEach(
-            roster.getStanzaHandlers(),
-            (StanzaHandler handler) async {
-              if (handler.matches(maliciousStanza)) {
-                await handler.callback(maliciousStanza);
-              }
-            }
-          );
+
+          for (final handler in roster.getIncomingStanzaHandlers()) {
+            if (handler.matches(maliciousStanza)) await handler.callback(maliciousStanza, StanzaHandlerData(false, maliciousStanza));
+          }
 
           expect(eventTriggered, false, reason: "Was able to inject a malicious roster push");
       });

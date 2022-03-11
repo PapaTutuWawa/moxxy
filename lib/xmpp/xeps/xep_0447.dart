@@ -1,5 +1,10 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0446.dart";
 
 class StatelessFileSharingData {
@@ -22,4 +27,32 @@ StatelessFileSharingData parseSFSElement(XMLNode node) {
     metadata: metadata,
     url: url
   );
+}
+
+class SFSManager extends XmppManagerBase {
+  @override
+  String getName() => "SFSManager";
+
+  @override
+  String getId() => sfsManager;
+
+  @override
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
+    StanzaHandler(
+      stanzaTag: "message",
+      tagName: "file-sharing",
+      tagXmlns: sfsXmlns,
+      callback: _onMessage,
+      // Before the message handler
+      priority: -99,
+    )
+  ];
+
+  Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
+    final sfs = message.firstTag("file-sharing", xmlns: sfsXmlns)!;
+
+    return state.copyWith(
+      sfs: parseSFSElement(sfs)
+    );
+  }
 }

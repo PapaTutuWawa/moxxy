@@ -33,13 +33,6 @@ class AuthenticationFailedEvent extends XmppEvent {
   AuthenticationFailedEvent({ required this.saslError });
 }
 
-/// Triggered when we send a stanza to the socket
-class StanzaSentEvent extends XmppEvent {
-  final Stanza stanza;
-
-  StanzaSentEvent({ required this.stanza });
-}
-
 /// Triggered when we want to ping the connection open
 class SendPingEvent extends XmppEvent {}
 

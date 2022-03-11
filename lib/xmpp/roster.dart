@@ -5,6 +5,7 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 
 class XmppRosterItem {
@@ -48,7 +49,7 @@ class RosterManager extends XmppManagerBase {
   String getName() => "RosterManager";
 
   @override
-  List<StanzaHandler> getStanzaHandlers() => [
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: "iq",
       tagName: "query",
@@ -67,7 +68,7 @@ class RosterManager extends XmppManagerBase {
     _rosterVersion = ver;
   }
  
-  Future<bool> _onRosterPush(Stanza stanza) async {
+  Future<StanzaHandlerData> _onRosterPush(Stanza stanza, StanzaHandlerData state) async {
     final attrs = getAttributes();
     final from = stanza.attributes["from"];
     final selfJid = attrs.getConnectionSettings().jid;
@@ -79,7 +80,7 @@ class RosterManager extends XmppManagerBase {
     // - a full JID of our own
     if (from != null && JID.fromString(stanza.attributes["from"]).toBare() != selfJid) {
       logger.warning("Roster push invalid! Unexpected from attribute: ${stanza.toXml()}");
-      return true;
+      return state.copyWith(done: true);
     }
 
     final query = stanza.firstTag("query", xmlns: rosterXmlns)!;
@@ -87,7 +88,7 @@ class RosterManager extends XmppManagerBase {
 
     if (item == null) {
       logger.warning("Received empty roster push");
-      return true;
+      return state.copyWith(done: true);
     }
 
     if (query.attributes["ver"] != null) {
@@ -105,7 +106,7 @@ class RosterManager extends XmppManagerBase {
     ));
     attrs.sendStanza(stanza.reply());
 
-    return true;
+    return state.copyWith(done: true);
   }
 
   /// Requests the roster from the server. [lastVersion] refers to the last version

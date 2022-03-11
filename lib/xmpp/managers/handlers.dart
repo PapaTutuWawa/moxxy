@@ -2,16 +2,16 @@ import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 
-class NonzaHandler {
+abstract class Handler {
   final String? nonzaTag;
   final String? nonzaXmlns;
   final bool matchStanzas;
-  final Future<bool> Function(XMLNode) callback;
 
-  NonzaHandler({ this.nonzaTag, this.nonzaXmlns, required this.callback, this.matchStanzas = false });
+  const Handler(this.matchStanzas, { this.nonzaTag, this.nonzaXmlns });
 
-  /// Returns true if the node matches the description provided by this NonzaHandler
+  /// Returns true if the node matches the description provided by this [Handler].
   bool matches(XMLNode node) {
     bool matches = false;
 
@@ -31,17 +31,38 @@ class NonzaHandler {
   }
 }
 
-class StanzaHandler extends NonzaHandler {
-  final String? tagXmlns;
+class NonzaHandler extends Handler {
+  final Future<bool> Function(XMLNode) callback;
+
+  NonzaHandler({
+      required this.callback,
+      String? nonzaTag,
+      String? nonzaXmlns
+  }) : super(
+    false,
+    nonzaTag: nonzaTag,
+    nonzaXmlns: nonzaXmlns
+  );
+}
+
+class StanzaHandler extends Handler {
   final String? tagName;
+  final String? tagXmlns;
+  final int priority;
+  final Future<StanzaHandlerData> Function(Stanza, StanzaHandlerData) callback;
 
-  StanzaHandler({ this.tagXmlns, this.tagName, String? stanzaTag, required Future<bool> Function(Stanza) callback }) : super(
-      matchStanzas: true,
+  StanzaHandler({
+      required this.callback,
+      this.tagXmlns,
+      this.tagName,     
+      this.priority = 0,
+      String? stanzaTag,
+  }) : super(
+      true,
       nonzaTag: stanzaTag,
-      nonzaXmlns: stanzaXmlns,
-      callback: (XMLNode node) async => await callback(Stanza.fromXMLNode(node))
+      nonzaXmlns: stanzaXmlns
     );
-
+    
   @override
   bool matches(XMLNode node) {
     bool matches = super.matches(node);
@@ -68,3 +89,5 @@ class StanzaHandler extends NonzaHandler {
     return matches;
   }
 }
+
+int stanzaHandlerSortComparator(StanzaHandler a, StanzaHandler b) => b.priority.compareTo(a.priority);

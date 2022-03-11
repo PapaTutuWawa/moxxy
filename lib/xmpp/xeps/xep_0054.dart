@@ -5,6 +5,7 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 
 class vCardPhoto {
@@ -33,8 +34,13 @@ class vCardManager extends XmppManagerBase {
   String getName() => "vCardManager";
 
   @override
-  List<StanzaHandler> getStanzaHandlers() => [
-    StanzaHandler(stanzaTag: "presence", tagName: "x", tagXmlns: vCardTempUpdate, callback: _onPresence)
+  List<StanzaHandler> getIncomingStanzaHandlers() => [
+    StanzaHandler(
+      stanzaTag: "presence",
+      tagName: "x",
+      tagXmlns: vCardTempUpdate,
+      callback: _onPresence,
+    )
   ];
 
   /// In case we get the avatar hash some other way.
@@ -42,7 +48,7 @@ class vCardManager extends XmppManagerBase {
     _lastHash[jid] = hash;
   }
   
-  Future<bool> _onPresence(Stanza presence) async {
+  Future<StanzaHandlerData> _onPresence(Stanza presence, StanzaHandlerData state) async {
     final x = presence.firstTag("x", xmlns: vCardTempUpdate)!;
     final hash = x.firstTag("photo")!.innerText();
 
@@ -64,7 +70,7 @@ class vCardManager extends XmppManagerBase {
       }
     }
     
-    return true;
+    return state.copyWith(done: true);
   }
   
   vCardPhoto? _parseVCardPhoto(XMLNode? node) {
