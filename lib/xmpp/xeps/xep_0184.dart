@@ -60,10 +60,10 @@ class MessageDeliveryReceiptManager extends XmppManagerBase {
   Future<StanzaHandlerData> _onDeliveryReceiptReceived(Stanza message, StanzaHandlerData state) async {
     final received = message.firstTag("received", xmlns: deliveryXmlns)!;
     for (final item in message.children) {
-      if (!["origin-id", "stanza-id", "delay"].contains(item.tag)) {
+      if (!["origin-id", "stanza-id", "delay", "store", "received"].contains(item.tag)) {
         logger.info("Won't handle stanza as delivery receipt because we found an '${item.tag}' element");
 
-        return state;
+        return state.copyWith(done: true);
       }
     }
 
