@@ -88,8 +88,9 @@ class RosterService {
     final currentRoster = await db.getRoster();
 
     // Handle modified and new items
+    // TODO: I messed the types up
     for (final item in currentRoster) {
-      if (listContains(result.items, (RosterItem i) => i.jid == item.jid)) {
+      if (listContains(result.items, (XmppRosterItem i) => i.jid == item.jid)) {
         // TODO: Diff and update if needed
         modifiedItems.add(item);
       } else {
