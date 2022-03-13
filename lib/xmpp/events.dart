@@ -166,3 +166,22 @@ class MessageAckedEvent extends XmppEvent {
 
   MessageAckedEvent({ required this.id, required this.to });
 }
+
+/// Triggered when receiving a push of the blocklist
+class BlocklistBlockPushEvent extends XmppEvent {
+  final List<String> items;
+
+  BlocklistBlockPushEvent({ required this.items });
+}
+
+/// Triggered when receiving a push of the blocklist
+class BlocklistUnblockPushEvent extends XmppEvent {
+  final List<String> items;
+
+  BlocklistUnblockPushEvent({ required this.items });
+}
+
+/// Triggered when receiving a push of the blocklist
+class BlocklistUnblockAllPushEvent extends XmppEvent {
+  BlocklistUnblockAllPushEvent();
+}
