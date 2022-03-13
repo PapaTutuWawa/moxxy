@@ -7,6 +7,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0461.dart";
 
 abstract class XmppEvent {}
 
@@ -55,6 +56,7 @@ class MessageEvent extends XmppEvent {
   final OOBData? oob;
   final StatelessFileSharingData? sfs;
   final StatelessMediaSharingData? sims;
+  final ReplyData? reply;
 
   MessageEvent({
       required this.body,
@@ -67,7 +69,8 @@ class MessageEvent extends XmppEvent {
       this.type,
       this.oob,
       this.sfs,
-      this.sims
+      this.sims,
+      this.reply
   });
 }
 

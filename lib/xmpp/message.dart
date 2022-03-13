@@ -67,7 +67,8 @@ class MessageManager extends XmppManagerBase {
       type: message.attributes["type"],
       oob: state.oob,
       sfs: state.sfs,
-      sims: state.sims
+      sims: state.sims,
+      reply: state.reply
     ));
 
     return state.copyWith(done: true);

@@ -397,6 +397,8 @@ class XmppService {
       final srcUrl = _getMessageSrcUrl(event);
       final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
       final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+      String dbBody = event.body;
+      String? replyId;
       
       // Respond to the message delivery request
       if (event.deliveryReceiptRequested && isInRoster && prefs.sendChatMarkers) {
@@ -413,8 +415,17 @@ class XmppService {
         }
       }
 
+      // TODO
+      if (event.reply != null /* && check if event.reply.to is okay */) {
+        replyId = event.reply!.id;
+        if (event.reply!.start != null && event.reply!.end != null) {
+          dbBody = dbBody.replaceRange(event.reply!.start!, event.reply!.end!, "");
+          _log.finest("Removed message reply compatibility fallback from message");
+        }
+      }
+
       Message msg = await db.addMessageFromData(
-        event.body,
+        dbBody,
         timestamp,
         event.fromJid.toString(),
         fromBare,
@@ -423,7 +434,8 @@ class XmppService {
         event.sid,
         srcUrl: srcUrl,
         thumbnailData: thumbnailData,
-        thumbnailDimensions: event.sfs?.metadata.dimensions
+        thumbnailDimensions: event.sfs?.metadata.dimensions,
+        quoteId: replyId
       );
 
       final canDownload = (await Permission.storage.status).isGranted && await _canDownloadFile();

@@ -234,6 +234,8 @@ class DatabaseService {
       final quotes = await getMessageByXmppId(quoteId, conversationJid);
       if (quotes != null) {
         m.quotes.value = quotes;
+      } else {
+        _log.warning("Failed to add quote for message with id $quoteId");
       }
     }
 
