@@ -60,7 +60,7 @@ class MessageManager extends XmppManagerBase {
       body: body != null ? body.innerText() : "",
       fromJid: from,
       sid: message.attributes["id"]!,
-      stanzaId: state.stableId ?? StableStanzaId(),
+      stanzaId: state.stableId ?? const StableStanzaId(),
       isCarbon: state.isCarbon,
       deliveryReceiptRequested: state.deliveryReceiptRequested,
       isMarkable: state.isMarkable,

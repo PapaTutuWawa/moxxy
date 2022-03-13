@@ -505,6 +505,15 @@ class XmppService {
         event.hash,
         event.base64
       );
+    } else if (event is MessageAckedEvent) {
+      final jid = JID.fromString(event.to).toBare().toString();
+      final db = GetIt.I.get<DatabaseService>();
+      final msg = await db.getMessageByXmppId(event.id, jid);
+      if (msg != null) {
+        await db.updateMessage(id: msg.id!, acked: true);
+      } else {
+        _log.finest("Wanted to mark message as acked but did not find the message to ack");
+      }
     }
   }
   

@@ -17,6 +17,7 @@ class ImageChatWidget extends StatelessWidget {
   final Size thumbnailSize;
   final bool received;
   final bool displayed;
+  final bool acked;
   final Widget? extra;
 
   const ImageChatWidget({
@@ -26,6 +27,7 @@ class ImageChatWidget extends StatelessWidget {
       required this.thumbnailSize,
       required this.received,
       required this.displayed,
+      required this.acked,
       this.extra,
       this.thumbnailData,
       Key? key
@@ -61,6 +63,7 @@ class ImageChatWidget extends StatelessWidget {
                       timestamp: timestamp,
                       received: received,
                       displayed: displayed,
+                      acked: acked,
                       extra: const FileNotFound()
                     );
                   }
@@ -95,7 +98,12 @@ class ImageChatWidget extends StatelessWidget {
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
+                child: MessageBubbleBottom(
+                  timestamp: timestamp,
+                  received: received,
+                  displayed: displayed,
+                  acked: acked
+                )
               )
             ) 
           ]

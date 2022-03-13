@@ -256,7 +256,12 @@ class StreamManagementManager extends XmppManagerBase {
     _unackedStanzas.forEach(
       (key, value) {
         if (key <= h && value.stanza.tag == "message" && value.stanza.id != null) {
-          attrs.sendEvent(MessageAckedEvent(id: value.stanza.id!));
+          attrs.sendEvent(
+            MessageAckedEvent(
+              id: value.stanza.id!,
+              to: value.stanza.to!
+            )
+          );
         }
       }
     );

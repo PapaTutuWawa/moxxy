@@ -20,6 +20,7 @@ class VideoChatWidget extends StatefulWidget {
   final Size thumbnailSize;
   final bool received;
   final bool displayed;
+  final bool acked;
 
   const VideoChatWidget({
       required this.path,
@@ -29,6 +30,7 @@ class VideoChatWidget extends StatefulWidget {
       required this.conversationJid,
       required this.received,
       required this.displayed,
+      required this.acked,
       this.thumbnailData,
       Key? key
   }) : super(key: key);
@@ -43,7 +45,8 @@ class VideoChatWidget extends StatefulWidget {
     thumbnailData: thumbnailData,
     thumbnailSize: thumbnailSize,
     received: received,
-    displayed: displayed
+    displayed: displayed,
+    acked: acked
   );
 }
 
@@ -56,6 +59,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   final Size thumbnailSize;
   final bool received;
   final bool displayed;
+  final bool acked;
 
   String _thumbnailPath;
   bool _hasThumbnail;
@@ -68,6 +72,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
       required this.conversationJid,
       required this.received,
       required this.displayed,
+      required this.acked,
       this.thumbnailData
   }) : _thumbnailPath = "", _hasThumbnail = true;
 
@@ -87,6 +92,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
         thumbnailSize: thumbnailSize,
         received: received,
         displayed: displayed,
+        acked: acked,
         extra: const PlayButton()
       );
     } else {
@@ -189,7 +195,12 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
+                child: MessageBubbleBottom(
+                  timestamp: timestamp,
+                  received: received,
+                  displayed: displayed,
+                  acked: acked
+                )
               )
             ) 
           ]

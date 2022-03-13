@@ -147,6 +147,7 @@ class _ChatBubbleState extends State<ChatBubble> {
         timestamp: _timestampString,
         received: message.received,
         displayed: message.displayed,
+        acked: message.acked,
         enablePadding: true,
         topWidget: QuotedMessageWidget(message: message.quotes!)
       );
@@ -165,7 +166,8 @@ class _ChatBubbleState extends State<ChatBubble> {
             thumbnailData: message.thumbnailData,
             thumbnailSize: _getThumbnailSize(),
             received: message.received,
-            displayed: message.displayed
+            displayed: message.displayed,
+            acked: message.acked
           );
         } else if (mime.startsWith("video/")) {
           return VideoChatWidget(
@@ -176,7 +178,8 @@ class _ChatBubbleState extends State<ChatBubble> {
             thumbnailSize: _getThumbnailSize(),
             conversationJid: message.conversationJid,
             received: message.received,
-            displayed: message.displayed
+            displayed: message.displayed,
+            acked: message.acked
           );
         }
 
@@ -185,7 +188,8 @@ class _ChatBubbleState extends State<ChatBubble> {
           filename: path.basename(message.mediaUrl!),
           timestamp: _timestampString,
           received: message.received,
-          displayed: message.displayed
+          displayed: message.displayed,
+          acked: message.acked
         );
       } else {
         if (message.isDownloading) {
@@ -230,6 +234,7 @@ class _ChatBubbleState extends State<ChatBubble> {
                 timestamp: _timestampString,
                 received: message.received,
                 displayed: message.displayed,
+                acked: message.acked,
                 extra: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ElevatedButton(
@@ -249,6 +254,7 @@ class _ChatBubbleState extends State<ChatBubble> {
       timestamp: _timestampString,
       received: message.received,
       displayed: message.displayed,
+      acked: message.acked,
       enablePadding: false
     );
   }

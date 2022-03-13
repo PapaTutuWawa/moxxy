@@ -50,6 +50,7 @@ Message messageDbToModel(DBMessage m) {
     originId: m.originId,
     received: m.received,
     displayed: m.displayed,
+    acked: m.acked,
     mediaUrl: m.mediaUrl,
     mediaType: m.mediaType,
     thumbnailData: m.thumbnailData,
@@ -263,7 +264,7 @@ class DatabaseService {
   }
   
   /// Updates the message item with id [id] inside the database.
-  Future<Message> updateMessage({ required int id, String? mediaUrl, String? mediaType, bool? received, bool? displayed }) async {
+  Future<Message> updateMessage({ required int id, String? mediaUrl, String? mediaType, bool? received, bool? displayed, bool? acked }) async {
     final i = (await isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
       i.mediaUrl = mediaUrl;
@@ -276,6 +277,9 @@ class DatabaseService {
     }
     if (displayed != null) {
       i.displayed = displayed;
+    }
+    if (acked != null) {
+      i.acked = acked;
     }
 
     await isar.writeTxn((isar) async {

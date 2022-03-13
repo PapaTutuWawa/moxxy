@@ -6,11 +6,13 @@ class MessageBubbleBottom extends StatelessWidget {
   final String timestamp;
   final bool received;
   final bool displayed;
+  final bool acked;
 
   const MessageBubbleBottom({
       required this.timestamp,
       required this.received,
       required this.displayed,
+      required this.acked,
       Key? key
   }) : super(key: key);
 
@@ -29,9 +31,8 @@ class MessageBubbleBottom extends StatelessWidget {
             )
           )
         ),
-        /*
-        ...(sent && !received && !displayed ? [
-            Padding(
+        ...(acked && !received && !displayed ? [
+            const Padding(
               padding: const EdgeInsets.only(left: 3.0),
               child: Icon(
                 Icons.done,
@@ -39,7 +40,6 @@ class MessageBubbleBottom extends StatelessWidget {
               )
             )
           ] : []),
-        */
         ...(received && !displayed ? [
             const Padding(
               padding: EdgeInsets.only(left: 3.0),

@@ -27,6 +27,7 @@ class Message with _$Message {
       String? srcUrl,
       @Default(false) received,
       @Default(false) displayed,
+      @Default(false) acked,
       String? originId,
       Message? quotes
     }

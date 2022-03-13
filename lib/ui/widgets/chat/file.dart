@@ -10,6 +10,7 @@ class FileChatWidget extends StatelessWidget {
   final String timestamp;
   final bool received;
   final bool displayed;
+  final bool acked;
   final Widget? extra;
 
   const FileChatWidget({
@@ -18,6 +19,7 @@ class FileChatWidget extends StatelessWidget {
       required this.timestamp,
       required this.received,
       required this.displayed,
+      required this.acked,
       this.extra,
       Key? key
   }) : super(key: key);
@@ -43,7 +45,12 @@ class FileChatWidget extends StatelessWidget {
 
             ...(extra != null ? [ extra! ] : []),
 
-            MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
+            MessageBubbleBottom(
+              timestamp: timestamp,
+              received: received,
+              displayed: displayed,
+              acked: acked
+            )
           ]
         )
       )

@@ -10,6 +10,7 @@ class TextChatWidget extends StatelessWidget {
   final String body;
   final bool received;
   final bool displayed;
+  final bool acked;
   final Widget? topWidget;
   final bool enablePadding;
 
@@ -18,6 +19,7 @@ class TextChatWidget extends StatelessWidget {
       required this.timestamp,
       required this.received,
       required this.displayed,
+      required this.acked,
       this.enablePadding = true,
       this.topWidget,
       Key? key
@@ -41,7 +43,12 @@ class TextChatWidget extends StatelessWidget {
           ),
           Padding(
             padding: enablePadding ? const EdgeInsets.all(8.0) : const EdgeInsets.all(0.0),
-            child: MessageBubbleBottom(timestamp: timestamp, received: received, displayed: displayed)
+            child: MessageBubbleBottom(
+              timestamp: timestamp,
+              received: received,
+              displayed: displayed,
+              acked: acked
+            )
           )
         ]
       )
