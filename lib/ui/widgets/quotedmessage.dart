@@ -16,6 +16,14 @@ class QuotedMessageWidget extends StatelessWidget {
       Key? key
   }) : super(key: key);
 
+  Color _getColor() {
+    if (message.sent) {
+      return bubbleColorSentQuoted;
+    } else {
+      return bubbleColorReceivedQuoted;
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     const quoteLeftBorderWidth = 7.0;
@@ -23,9 +31,9 @@ class QuotedMessageWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
-        decoration: const BoxDecoration(
-          color: bubbleColorReceived,
-          borderRadius: BorderRadius.all(radiusLarge)
+        decoration: BoxDecoration(
+          color: _getColor(),
+          borderRadius: const BorderRadius.all(radiusLarge)
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(

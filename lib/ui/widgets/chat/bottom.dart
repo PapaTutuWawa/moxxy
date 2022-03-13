@@ -27,7 +27,7 @@ class MessageBubbleBottom extends StatelessWidget {
             timestamp,
             style: const TextStyle(
               fontSize: fontsizeSubbody,
-              color: Color(0xffbdbdbd)
+              color: Color(0xffddfdfd)
             )
           )
         ),

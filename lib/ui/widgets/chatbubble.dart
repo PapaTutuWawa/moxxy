@@ -273,6 +273,16 @@ class _ChatBubbleState extends State<ChatBubble> {
   bool _shouldNotColorBubble() {
     return message.isMedia && message.mediaUrl != null && _isInlinedWidget();
   }
+
+  Color? _getBubbleColor() {
+    if (_shouldNotColorBubble()) return null;
+
+    if (sentBySelf) {
+      return bubbleColorSent;
+    } else {
+      return bubbleColorReceived;
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -291,7 +301,7 @@ class _ChatBubbleState extends State<ChatBubble> {
               maxWidth: maxWidth
             ),
             decoration: BoxDecoration(
-              color: _shouldNotColorBubble() ? null : (sentBySelf ? bubbleColorSent : bubbleColorReceived),
+              color: _getBubbleColor(),
               borderRadius: _getBorderRadius()
             ),
             child: Padding(
