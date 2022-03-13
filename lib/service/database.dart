@@ -231,7 +231,7 @@ class DatabaseService {
       ..originId = originId;
 
     if (quoteId != null) {
-      final quotes = await getMessageByXmppId(quoteId);
+      final quotes = await getMessageByXmppId(quoteId, conversationJid);
       if (quotes != null) {
         m.quotes.value = quotes;
       }
@@ -249,11 +249,15 @@ class DatabaseService {
     return msg;
   }
 
-  Future<DBMessage?> getMessageByXmppId(String id) async {
-    final i = await isar.dBMessages.filter().sidEqualTo(id).or().originIdEqualTo(id).findAll();
-    if (i.isEmpty) return null;
-
-    return i.first;
+  Future<DBMessage?> getMessageByXmppId(String id, String conversationJid) async {
+    return await isar.dBMessages.filter()
+      .conversationJidEqualTo(conversationJid)
+      .and()
+      .group((q) => q
+        .sidEqualTo(id)
+        .or()
+        .originIdEqualTo(id)
+      ).findFirst();
   }
   
   /// Updates the message item with id [id] inside the database.

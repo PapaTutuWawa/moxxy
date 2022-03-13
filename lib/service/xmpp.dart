@@ -355,9 +355,9 @@ class XmppService {
     } else if (event is DeliveryReceiptReceivedEvent) {
       _log.finest("Received delivery receipt from ${event.from.toString()}");
       final db = GetIt.I.get<DatabaseService>();
-      final dbMsg = await db.getMessageByXmppId(event.id);
+      final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
       if (dbMsg == null) {
-        _log.warning("Did not find the message in the database!");
+        _log.warning("Did not find the message with id ${event.id} in the database!");
         return;
       }
       
@@ -372,7 +372,7 @@ class XmppService {
       if (event.type == "acknowledged") return;
 
       final db = GetIt.I.get<DatabaseService>();
-      final dbMsg = await db.getMessageByXmppId(event.id);
+      final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
       if (dbMsg == null) {
         _log.warning("Did not find the message in the database!");
         return;

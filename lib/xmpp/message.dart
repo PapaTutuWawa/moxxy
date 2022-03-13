@@ -82,6 +82,7 @@ class MessageManager extends XmppManagerBase {
     final stanza = Stanza.message(
       to: details.to,
       type: "normal",
+      id: details.id,
       children: []
     );
 
