@@ -1,5 +1,6 @@
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
+import "package:moxxyv2/ui/widgets/button.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/login/actions.dart";
@@ -30,6 +31,8 @@ class LoginPage extends StatelessWidget {
   LoginPage({ Key? key }) : _jidController = TextEditingController(), _passwordController = TextEditingController(), super(key: key);
   
   void _performLogin(BuildContext context, _LoginPageViewModel viewModel) {
+    if (viewModel.doingWork) return;
+
     viewModel.resetErrors();
 
     String jid = _jidController.text;
@@ -156,12 +159,11 @@ class LoginPage extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
-                      child: ElevatedButton(
-                        child: const Text("Login"),
-                        onPressed: viewModel.doingWork ? null : () => _performLogin(context, viewModel)
-                      )
+                    child: RoundedButton(
+                      color: Colors.purple,
+                      cornerRadius: 32.0,
+                      child: const Text("Login"),
+                      onTap: () => _performLogin(context, viewModel)
                     )
                   )
                 ]
