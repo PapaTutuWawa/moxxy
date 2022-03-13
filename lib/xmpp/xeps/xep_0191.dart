@@ -61,7 +61,7 @@ class BlockingManager extends XmppManagerBase {
     return state.copyWith(done: true);
   }
   
-  Future<bool> block(String item) async {
+  Future<bool> block(List<String> items) async {
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: "set",
@@ -69,12 +69,10 @@ class BlockingManager extends XmppManagerBase {
           XMLNode.xmlns(
             tag: "unblock",
             xmlns: blockingXmlns,
-            children: [
-              XMLNode(
+            children: items.map((item) => XMLNode(
                 tag: "item",
                 attributes: { "jid": item }
-              )
-            ]
+            )).toList()
           )
         ]
       )
@@ -99,20 +97,20 @@ class BlockingManager extends XmppManagerBase {
     return result.attributes["type"] == "result";
   }
   
-  Future<bool> unblock(String item) async {
+  Future<bool> unblock(List<String> items) async {
+    assert(items.isNotEmpty);
+
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: "set",
         children: [
           XMLNode.xmlns(
-            tag: "block",
+            tag: "unblock",
             xmlns: blockingXmlns,
-            children: [
-              XMLNode(
+            children: items.map((item) => XMLNode(
                 tag: "item",
                 attributes: { "jid": item }
-              )
-            ]
+            )).toList()
           )
         ]
       )
