@@ -1,5 +1,6 @@
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/ui/widgets/button.dart";
 
 import "package:flutter/material.dart";
 
@@ -41,12 +42,11 @@ class IntroPage extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
-                    child: ElevatedButton(
-                      child: const Text("Login"),
-                      onPressed: () => Navigator.pushNamed(context, loginRoute)
-                    )
+                  child: RoundedButton(
+                    color: Colors.purple,
+                    child: const Text("Login"),
+                    cornerRadius: 32.0,
+                    onTap: () => Navigator.pushNamed(context, loginRoute)
                   )
                 )
               ]

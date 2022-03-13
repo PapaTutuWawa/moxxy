@@ -1,5 +1,6 @@
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
+import "package:moxxyv2/ui/widgets/button.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/redux/state.dart";
@@ -24,6 +25,8 @@ class AddContactPage extends StatelessWidget {
   AddContactPage({ Key? key }) : _controller = TextEditingController(), super(key: key);
   
   void _addToRoster(BuildContext context, _AddContactPageViewModel viewModel) {
+    if (_controller.text.isEmpty) return;
+
     viewModel.resetErrors();
     viewModel.addContact(_controller.text);
   }
@@ -48,41 +51,39 @@ class AddContactPage extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
-              child: Column(
+              child: CustomTextField(
+                maxLines: 1,
+                controller: _controller,
+                labelText: "XMPP-Address",
+                cornerRadius: textfieldRadiusRegular,
+                contentPadding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
+                errorText: viewModel.errorText,
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.qr_code),
+                  onPressed: () {
+                    showNotImplementedDialog("QR-code scanning", context);
+                  }
+                )
+              )
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
+              child: const Text(
+                "You can add a contact either by typing in their XMPP address or by scanning their QR code"
+              )
+            ),
+            
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 32.0)),
+              child: Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        width: 1,
-                        color: Colors.purple
-                      )
-                    ),
-                    child: CustomTextField(
-                      maxLines: 1,
-                      controller: _controller,
-                      labelText: "XMPP-Address",
-                      cornerRadius: textfieldRadiusRegular,
-                      contentPadding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
-                      errorText: viewModel.errorText,
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.qr_code),
-                        onPressed: () {
-                          showNotImplementedDialog("QR-code scanning", context);
-                        }
-                      )
-                    )
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: Text("You can add a contact either by typing in their XMPP address or by scanning their QR code")
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
-                    child:
-                    ElevatedButton(
+                  Expanded(
+                    child: RoundedButton(
+                      color: Colors.purple,
                       child: const Text("Add to contacts"),
-                      onPressed: viewModel.doingWork ? null : () => _addToRoster(context, viewModel)
+                      cornerRadius: 32.0,
+                      onTap: () => _addToRoster(context, viewModel)
                     )
                   )
                 ]
