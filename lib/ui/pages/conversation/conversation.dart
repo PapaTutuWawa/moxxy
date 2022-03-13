@@ -1,4 +1,5 @@
 import "dart:io";
+import "dart:math";
 
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/chatbubble.dart";
@@ -46,6 +47,11 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
       ]
     )
   );
+}
+
+class WiggleCurve extends Curve {
+  @override
+  double transform(double t) => sin(t * 2*pi);
 }
 
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
@@ -341,6 +347,7 @@ class _ConversationPageState extends State<ConversationPage> {
                 )
               ) : null,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ...(!viewModel.conversation.inRoster ? [ _renderNotInRosterWidget(viewModel, context) ] : []),
 
@@ -353,6 +360,61 @@ class _ConversationPageState extends State<ConversationPage> {
                     )
                   ),
 
+                  // TODO: Typing indicator
+                  /*
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container( 
+                      decoration: BoxDecoration(
+                        color: bubbleColorReceived,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      width: 80,
+                      height: 45,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white
+                              )
+                            ),
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white
+                              )
+                            ),
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white
+                              )
+                            ),
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white
+                              )
+                            )
+                          ]
+                        )
+                      )
+                    )
+                  ),
+                  */
+                  
                   Container(
                     color: Theme.of(context).backgroundColor,
                     child: Padding(
