@@ -386,9 +386,7 @@ class XmppService {
 
       sendData(MessageUpdatedEvent(message: msg));
     } else if (event is MessageEvent) {
-      _log.finest("Received message with origin-id: " + (event.stanzaId.originId ?? "null"));
-      _log.finest("Delivery receipt requested? " + event.deliveryReceiptRequested.toString());
-
+      // TODO: Clean this huge mess up
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final db = GetIt.I.get<DatabaseService>();
       final fromBare = event.fromJid.toBare().toString();

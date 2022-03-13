@@ -15,7 +15,8 @@ class StanzaHandlerData with _$StanzaHandlerData {
     // Indicates to the runner that processing is now done. This means that all
     // pre-processing is done and no other handlers should be consulted.
     bool done,
-    // The stanza that is being dealt with
+    // The stanza that is being dealt with. SHOULD NOT be overwritten, unless when
+    // we implement OMEMO.
     Stanza stanza,
     {
       StatelessMediaSharingData? sims,
@@ -25,7 +26,10 @@ class StanzaHandlerData with _$StanzaHandlerData {
       ReplyData? reply,
       @Default(false) bool isCarbon,
       @Default(false) bool deliveryReceiptRequested,
-      @Default(false) bool isMarkable
+      @Default(false) bool isMarkable,
+      // This is for stanza handlers that are not part of the XMPP library but still need
+      // pass data around.
+      @Default({}) Map<String, dynamic> other
     }
   ) = _StanzaHandlerData;
 }
