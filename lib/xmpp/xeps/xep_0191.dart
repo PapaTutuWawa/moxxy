@@ -29,6 +29,8 @@ class BlockingManager extends XmppManagerBase {
       callback: _blockPush
     )
   ];
+
+  bool _supportsBlocking() => getAttributes().isFeatureSupported(blockingXmlns);
   
   Future<StanzaHandlerData> _blockPush(Stanza iq, StanzaHandlerData state) async {
     final block = iq.firstTag("block", xmlns: blockingXmlns)!;
@@ -62,12 +64,17 @@ class BlockingManager extends XmppManagerBase {
   }
   
   Future<bool> block(List<String> items) async {
+    if (!_supportsBlocking()) {
+      logger.warning("Attempted to block a JID but the server does not advertise $blockingXmlns");
+      return false;
+    }
+
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: "set",
         children: [
           XMLNode.xmlns(
-            tag: "unblock",
+            tag: "block",
             xmlns: blockingXmlns,
             children: items.map((item) => XMLNode(
                 tag: "item",
@@ -82,6 +89,11 @@ class BlockingManager extends XmppManagerBase {
   }
 
   Future<bool> unblockAll() async {
+    if (!_supportsBlocking()) {
+      logger.warning("Attempted to unblock all JIDs but the server does not advertise $blockingXmlns");
+      return false;
+    }
+
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: "set",
@@ -98,6 +110,11 @@ class BlockingManager extends XmppManagerBase {
   }
   
   Future<bool> unblock(List<String> items) async {
+    if (!_supportsBlocking()) {
+      logger.warning("Attempted to unblock a JID but the server does not advertise $blockingXmlns");
+      return false;
+    }
+
     assert(items.isNotEmpty);
 
     final result = await getAttributes().sendStanza(
@@ -119,7 +136,12 @@ class BlockingManager extends XmppManagerBase {
     return result.attributes["type"] == "result";
   }
 
-  Future<List<String>> getBlocklist(String item) async {
+  Future<List<String>> getBlocklist() async {
+    if (!_supportsBlocking()) {
+      logger.warning("Attempted to request the blocklist but the server does not advertise $blockingXmlns");
+      return [];
+    }
+
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: "get",

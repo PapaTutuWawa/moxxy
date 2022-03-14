@@ -34,6 +34,7 @@ import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/preferences.dart";
+import "package:moxxyv2/service/blocking.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -180,13 +181,14 @@ void onStart() {
 
   GetIt.I.get<Logger>().finest("Running...");
 
+  final middleware = sendDataMiddleware(service);
+  
   GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
+  GetIt.I.registerSingleton<BlocklistService>(BlocklistService(middleware));
   GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
 
   (() async {
       await GetIt.I.get<NotificationsService>().init();
-
-      final middleware = sendDataMiddleware(service);
 
       // Register singletons
       GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
@@ -501,6 +503,20 @@ void handleEvent(Map<String, dynamic>? data) {
             FlutterBackgroundService().sendData(event.toJson());
           }
       })();
+    }
+    break;
+    case blockCommand: {
+      final command = BlockCommand.fromJson(data);
+      GetIt.I.get<BlocklistService>().blockJid(command.jid);
+    }
+    break;
+    case unblockCommand: {
+      final command = UnblockCommand.fromJson(data);
+      GetIt.I.get<BlocklistService>().unblockJid(command.jid);
+    }
+    break;
+    case unblockAllCommandType: {
+      GetIt.I.get<BlocklistService>().unblockAll();
     }
     break;
     case stopActionType: {

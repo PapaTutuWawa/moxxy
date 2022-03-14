@@ -35,6 +35,11 @@ class SettingsPage extends StatelessWidget {
               title: "Account",
               tiles: [
                 SettingsTile(
+                  title: "Blocklist",
+                  leading: const Icon(Icons.block),
+                  onPressed: (context) => Navigator.pushNamed(context, blocklistRoute)
+                ),
+                SettingsTile(
                   title: "Sign out",
                   leading: const Icon(Icons.logout),
                   onPressed: (context) => showConfirmationDialog(

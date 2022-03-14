@@ -1,5 +1,4 @@
 import "dart:io";
-import "dart:math";
 
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/chatbubble.dart";
@@ -15,6 +14,7 @@ import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/conversation/actions.dart";
 import "package:moxxyv2/ui/redux/addcontact/actions.dart";
+import "package:moxxyv2/ui/redux/blocklist/actions.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
@@ -49,11 +49,6 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
   );
 }
 
-class WiggleCurve extends Curve {
-  @override
-  double transform(double t) => sin(t * 2*pi);
-}
-
 // TODO: Maybe use a PageView to combine ConversationsPage and ConversationPage
 // TODO: Have a list header that appears when the conversation partner is not in the user's
 //       roster. It should allow adding the contact to the user's roster or block them.
@@ -71,6 +66,7 @@ class _MessageListViewModel {
   final Message? quotedMessage;
   final void Function(Message?) setQuotedMessage;
   final void Function(String) addToRoster;
+  final void Function(String) blockJid;
   
   _MessageListViewModel({
       required this.conversation,
@@ -85,7 +81,8 @@ class _MessageListViewModel {
       required this.backgroundPath,
       required this.setQuotedMessage,
       required this.quotedMessage,
-      required this.addToRoster
+      required this.addToRoster,
+      required this.blockJid
   });
 }
 
@@ -200,12 +197,25 @@ class _ConversationPageState extends State<ConversationPage> {
         start: start,
         end: end,
         between: between,
-        closerTogether: !end,
         maxWidth: maxWidth,
       )
     );
   }
 
+  void _block(_MessageListViewModel viewModel) {
+    final jid = viewModel.conversation.jid;
+
+    showConfirmationDialog(
+      "Block $jid?",
+      "Are you sure you want to block $jid? You won't receive messages from them until you unblock them.",
+      context,
+      () {
+        viewModel.blockJid(jid);
+        Navigator.of(context).pop();
+      }
+    );
+  }
+  
   /// Render a widget that allows the user to either block the user or add them to their
   /// roster
   Widget _renderNotInRosterWidget(_MessageListViewModel viewModel, BuildContext context) {
@@ -238,7 +248,7 @@ class _ConversationPageState extends State<ConversationPage> {
             Expanded(
               child: TextButton(
                 child: const Text("Block"),
-                onPressed: () => showNotImplementedDialog("blocking", context)
+                onPressed: () => _block(viewModel)
               )
             )
           ]
@@ -278,7 +288,8 @@ class _ConversationPageState extends State<ConversationPage> {
           backgroundPath: store.state.preferencesState.backgroundPath,
           setQuotedMessage: (msg) => store.dispatch(QuoteMessageUIAction(msg)),
           quotedMessage: store.state.conversationPageState.quotedMessage,
-          addToRoster: (jid) => store.dispatch(AddContactAction(jid: jid))
+          addToRoster: (jid) => store.dispatch(AddContactAction(jid: jid)),
+          blockJid: (jid) => store.dispatch(BlockJidUIAction(jid: jid))
         );
       },
       builder: (context, viewModel) {
@@ -326,7 +337,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       }
                       break;
                       case ConversationOption.block: {
-                        showNotImplementedDialog("blocking", context);
+                        _block(viewModel);
                       }
                       break;
                     }

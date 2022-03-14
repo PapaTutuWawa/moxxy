@@ -20,6 +20,7 @@ import "package:moxxyv2/ui/redux/addcontact/reducers.dart";
 import "package:moxxyv2/ui/redux/debug/state.dart";
 import "package:moxxyv2/ui/redux/debug/reducers.dart";
 import "package:moxxyv2/ui/redux/preferences/reducers.dart";
+import "package:moxxyv2/ui/redux/blocklist/reducers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/roster.dart";
@@ -30,6 +31,7 @@ MoxxyState moxxyReducer(MoxxyState state, dynamic action) {
     messages: messageReducer(state.messages, action),
     conversations: conversationReducer(state.conversations, action),
     roster: rosterReducer(state.roster, action),
+    blocklist: blocklistReducer(state.blocklist, action),
     loginPageState: loginReducer(state.loginPageState, action),
     conversationPageState: conversationPageReducer(state.conversationPageState, action),
     registerPageState: registerReducer(state.registerPageState, action),
@@ -48,6 +50,7 @@ class MoxxyState {
   final HashMap<String, List<Message>> messages;
   final HashMap<String, Conversation> conversations;
   final List<RosterItem> roster;
+  final List<String> blocklist;
   final LoginPageState loginPageState;
   final ConversationPageState conversationPageState;
   final RegisterPageState registerPageState;
@@ -65,6 +68,7 @@ class MoxxyState {
       required this.messages,
       required this.conversations,
       required this.roster,
+      required this.blocklist,
       required this.loginPageState,
       required this.conversationPageState,
       required this.registerPageState,
@@ -81,6 +85,7 @@ class MoxxyState {
     : messages = HashMap(),
       conversations = HashMap(),
       roster = List.empty(growable: true),
+      blocklist = [],
       loginPageState = LoginPageState.initialState(),
       conversationPageState = ConversationPageState.initialState(),
       registerPageState = RegisterPageState.initialState(),

@@ -2,13 +2,13 @@ import "dart:collection";
 import "dart:async";
 
 import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/service/db/conversation.dart";
-import "package:moxxyv2/service/db/message.dart";
-import "package:moxxyv2/service/db/roster.dart";
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/roster.dart";
-import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/service/db/conversation.dart";
+import "package:moxxyv2/service/db/message.dart";
+import "package:moxxyv2/service/db/roster.dart";
 
 import "package:isar/isar.dart";
 import "package:logging/logging.dart";
@@ -114,8 +114,7 @@ class DatabaseService {
   Future<void> loadMessagesForJid(String jid) async {
     if (loadedConversations.contains(jid)) {
       sendData(LoadMessagesForJidEvent(
-          jid: jid,
-          messages: _messageCache[jid]!
+          jid: jid, messages: _messageCache[jid]!
       ));
      
       return;
@@ -334,7 +333,7 @@ class DatabaseService {
       _log.severe("removeFromRoster: Could not find $jid in roster state");
     }
   }
-  
+
   /// Create a roster item from data
   Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title, { List<String>? groups }) async {
     final rosterItem = DBRosterItem()

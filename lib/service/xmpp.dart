@@ -28,6 +28,7 @@ import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/preferences.dart";
+import "package:moxxyv2/service/blocking.dart";
 
 import "package:get_it/get_it.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
@@ -297,6 +298,9 @@ class XmppService {
           GetIt.I.get<RosterService>().requestRoster();
           // Request our own avatar and maybe those of our contacts
         }
+
+        // Either we get the cached version or we retrieve it for the first time
+        GetIt.I.get<BlocklistService>().getBlocklist();
         
         if (loginTriggeredFromUI) {
           // TODO: Trigger another event so the UI can see this aswell
@@ -514,6 +518,12 @@ class XmppService {
       } else {
         _log.finest("Wanted to mark message as acked but did not find the message to ack");
       }
+    } else if (event is BlocklistBlockPushEvent) {
+      await GetIt.I.get<BlocklistService>().onBlocklistPush(BlockPushType.block, event.items);
+    } else if (event is BlocklistUnblockPushEvent) {
+      await GetIt.I.get<BlocklistService>().onBlocklistPush(BlockPushType.unblock, event.items);
+    } else if (event is BlocklistUnblockAllPushEvent) {
+      GetIt.I.get<BlocklistService>().onUnblockAllPush();
     }
   }
   

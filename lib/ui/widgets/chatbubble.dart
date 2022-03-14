@@ -28,7 +28,6 @@ class ChatBubble extends StatefulWidget {
   final Message message;
   final bool sentBySelf;
   // 
-  final bool closerTogether;
   final bool between;
   final bool start;
   final bool end;
@@ -37,7 +36,6 @@ class ChatBubble extends StatefulWidget {
   const ChatBubble({
       required this.message,
       required this.sentBySelf,
-      required this.closerTogether,
       required this.between,
       required this.start,
       required this.end,
@@ -50,7 +48,6 @@ class ChatBubble extends StatefulWidget {
   _ChatBubbleState createState() => _ChatBubbleState(
       message: message,
       sentBySelf: sentBySelf,
-      closerTogether: closerTogether,
       between: between,
       start: start,
       end: end,
@@ -62,7 +59,6 @@ class _ChatBubbleState extends State<ChatBubble> {
   final Message message;
   final bool sentBySelf;
   // 
-  final bool closerTogether;
   final bool between;
   final bool start;
   final bool end;
@@ -74,7 +70,6 @@ class _ChatBubbleState extends State<ChatBubble> {
   _ChatBubbleState({
       required this.message,
       required this.sentBySelf,
-      required this.closerTogether,
       required this.between,
       required this.start,
       required this.end,
@@ -274,7 +269,7 @@ class _ChatBubbleState extends State<ChatBubble> {
     return message.isMedia && message.mediaUrl != null && _isInlinedWidget();
   }
 
-  Color? _getBubbleColor() {
+  Color? _getBubbleColor(BuildContext context) {
     if (_shouldNotColorBubble()) return null;
 
     if (sentBySelf) {
@@ -288,10 +283,8 @@ class _ChatBubbleState extends State<ChatBubble> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-        left: !sentBySelf ? 8.0 : 0.0, // Conditional
-        right: sentBySelf ? 8.0 : 0.0,
-        top: 1.0,
-        bottom: closerTogether ? 1.0 : 8.0
+        left: !sentBySelf ? 8.0 : 0.0,
+        right: sentBySelf ? 8.0 : 0.0
       ),
       child: Row(
         mainAxisAlignment: sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -301,7 +294,7 @@ class _ChatBubbleState extends State<ChatBubble> {
               maxWidth: maxWidth
             ),
             decoration: BoxDecoration(
-              color: _getBubbleColor(),
+              color: _getBubbleColor(context),
               borderRadius: _getBorderRadius()
             ),
             child: Padding(

@@ -9,6 +9,7 @@ import "package:moxxyv2/ui/pages/intro.dart";
 import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 import "package:moxxyv2/ui/pages/sendfiles.dart";
+import "package:moxxyv2/ui/pages/blocklist/blocklist.dart";
 import "package:moxxyv2/ui/pages/settings/settings.dart";
 import "package:moxxyv2/ui/pages/settings/licenses.dart";
 import "package:moxxyv2/ui/pages/settings/about.dart";
@@ -30,6 +31,7 @@ import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/start/middlewares.dart";
 import "package:moxxyv2/ui/redux/debug/middlewares.dart";
 import "package:moxxyv2/ui/redux/preferences/middlewares.dart";
+import "package:moxxyv2/ui/redux/blocklist/middlewares.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart" as commands;
@@ -64,6 +66,7 @@ void main() async {
       messageMiddleware,
       conversationMiddleware,
       preferencesMiddleware,
+      blocklistMiddleware,
       const NavigationMiddleware(),
 
       // We only need this while debugging
@@ -184,7 +187,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           debuggingRoute: (context) => DebuggingPage(),
           privacyRoute: (context) => const PrivacyPage(),
           networkRoute: (context) => const NetworkPage(),
-          appearanceRoute: (context) => const AppearancePage()
+          appearanceRoute: (context) => const AppearancePage(),
+          blocklistRoute: (context) => BlocklistPage()
         },
         home: const SplashScreen(),
       )

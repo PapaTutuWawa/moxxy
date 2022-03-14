@@ -11,9 +11,9 @@ const EdgeInsetsGeometry textfieldPaddingConversation = EdgeInsets.all(10);
 const int primaryColorHexRGBO = 0xffcf4aff;
 const Color primaryColor = Color(primaryColorHexRGBO);
 
-const Color bubbleColorSent = Color(0xffbb01ff);
-const Color bubbleColorSentQuoted = Color(0xff9f00de);
-const Color bubbleColorReceived = Color(0xff2c3e50);
+const Color bubbleColorSent = Color(0xffac70ca);
+const Color bubbleColorSentQuoted = Color(0xff964db3);
+const Color bubbleColorReceived = Color(0xff222222);
 const Color bubbleColorReceivedQuoted = Color(0xff2c3e50);
 
 const double paddingVeryLarge = 64.0;
@@ -42,3 +42,4 @@ const String debuggingRoute = settingsRoute + "/debugging";
 const String privacyRoute = settingsRoute + "/privacy";
 const String networkRoute = settingsRoute + "/network";
 const String appearanceRoute = settingsRoute + "/appearance";
+const String blocklistRoute = "/blocklist";

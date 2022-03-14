@@ -11,6 +11,7 @@ import "package:moxxyv2/ui/redux/account/state.dart";
 import "package:moxxyv2/ui/redux/account/actions.dart";
 import "package:moxxyv2/ui/redux/debug/actions.dart";
 import "package:moxxyv2/ui/redux/preferences/actions.dart";
+import "package:moxxyv2/ui/redux/blocklist/actions.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 
 import "package:flutter/material.dart";
@@ -176,6 +177,17 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           conversationRoute,
           ModalRoute.withName(conversationsRoute),
           arguments: ConversationPageArguments(jid: event.jid)
+        )
+      );
+    }
+    break;
+    case events.blocklistDiffEventType: {
+      final event = events.BlocklistDiffEvent.fromJson(data);
+
+      store.dispatch(
+        BlocklistDiffAction(
+          newItems: event.newBlockedItems,
+          removedItems: event.removedBlockedItems
         )
       );
     }

@@ -309,3 +309,26 @@ class NewConversationDoneEvent extends BaseIsolateEvent {
     "jid": jid
   };
 }
+
+const blocklistDiffEventType = "BlocklistDiffEvent";
+class BlocklistDiffEvent extends BaseIsolateEvent {
+  final List<String> newBlockedItems;
+  final List<String> removedBlockedItems;
+
+  BlocklistDiffEvent({
+      this.newBlockedItems = const [],
+      this.removedBlockedItems = const []
+  });
+  BlocklistDiffEvent.fromJson(Map<String, dynamic> json) :
+    newBlockedItems = List<String>.from(json["newBlockedItems"]!),
+    removedBlockedItems = List<String>.from(json["removedBlockedItems"]!) {
+      assert(json["type"] == blocklistDiffEventType);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": blocklistDiffEventType,
+    "newBlockedItems": newBlockedItems,
+    "removedBlockedItems": removedBlockedItems
+  };
+}

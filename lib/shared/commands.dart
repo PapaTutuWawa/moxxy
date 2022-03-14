@@ -298,6 +298,53 @@ class SetPreferencesCommand extends BaseIsolateCommand {
   };
 }
 
+const blockCommand = "BlockCommand";
+class BlockCommand extends BaseIsolateCommand {
+  final String jid;
+
+  BlockCommand({ required this.jid });
+  BlockCommand.fromJson(Map<String, dynamic> json) :
+    jid = json["jid"]! {
+      assert(json["type"] == blockCommand);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": blockCommand,
+    "jid": jid,
+  };
+}
+
+const unblockCommand = "UnblockCommand";
+class UnblockCommand extends BaseIsolateCommand {
+  final String jid;
+
+  UnblockCommand({ required this.jid });
+  UnblockCommand.fromJson(Map<String, dynamic> json) :
+    jid = json["jid"]! {
+      assert(json["type"] == unblockCommand);
+    }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": blockCommand,
+    "jid": jid,
+  };
+}
+
+const unblockAllCommandType = "UnblockAllCommand";
+class UnblockAllCommand extends BaseIsolateCommand {
+  UnblockAllCommand();
+  UnblockAllCommand.fromJson(Map<String, dynamic> json) {
+    assert(json["type"] == unblockAllCommandType);
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": unblockAllCommandType,
+  };
+}
+
 const stopActionType = "__STOP__";
 class StopAction extends BaseIsolateCommand {
   StopAction();

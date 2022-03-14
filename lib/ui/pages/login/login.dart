@@ -155,18 +155,21 @@ class LoginPage extends StatelessWidget {
                     )
                   ]
                 )
-              ), 
-              Row(
-                children: [
-                  Expanded(
-                    child: RoundedButton(
-                      color: Colors.purple,
-                      cornerRadius: 32.0,
-                      child: const Text("Login"),
-                      onTap: () => _performLogin(context, viewModel)
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: RoundedButton(
+                        color: Colors.purple,
+                        cornerRadius: 32.0,
+                        child: const Text("Login"),
+                        onTap: () => _performLogin(context, viewModel)
+                      )
                     )
-                  )
-                ]
+                  ]
+                )
               )
             ]
           )
