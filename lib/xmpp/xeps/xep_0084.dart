@@ -53,7 +53,7 @@ class UserAvatarManager extends XmppManagerBase {
   /// Publish the avatar data, [base64], on the pubsub node using [hash] as
   /// the item id. [hash] must be the SHA-1 hash of the image data, while
   /// [base64] must be the base64-encoded version of the image data.
-  Future<bool> publishUserAvatar(String base64, String hash) async {
+  Future<bool> publishUserAvatar(String base64, String hash, bool public) async {
     final pubsub = _getPubSubManager();
     return await pubsub.publish(
       getAttributes().getFullJID().toBare().toString(),
@@ -63,7 +63,10 @@ class UserAvatarManager extends XmppManagerBase {
         xmlns: userAvatarDataXmlns,
         text: base64
       ),
-      id: hash
+      id: hash,
+      options: PubSubPublishOptions(
+        accessModel: public ? "open" : "roster"
+      )
     );
   }
 

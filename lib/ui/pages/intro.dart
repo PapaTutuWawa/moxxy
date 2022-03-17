@@ -39,17 +39,20 @@ class IntroPage extends StatelessWidget {
                 )
               )
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: RoundedButton(
-                    color: Colors.purple,
-                    child: const Text("Login"),
-                    cornerRadius: 32.0,
-                    onTap: () => Navigator.pushNamed(context, loginRoute)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: RoundedButton(
+                      color: Colors.purple,
+                      child: const Text("Login"),
+                      cornerRadius: 32.0,
+                      onTap: () => Navigator.pushNamed(context, loginRoute)
+                    )
                   )
-                )
-              ]
+                ]
+              )
             ),
             const Spacer(),
             const Padding(

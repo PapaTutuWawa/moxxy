@@ -12,7 +12,9 @@ class PreferencesState with _$PreferencesState {
       @Default(true) bool autoDownloadWifi,
       @Default(false) bool autoDownloadMobile,
       @Default(15) int maximumAutoDownloadSize,
-      @Default("") String backgroundPath
+      @Default("") String backgroundPath,
+      @Default(true) bool isAvatarPublic,
+      @Default(true) bool autoAcceptSubscriptionRequests
   }) = _PreferencesState;
   
   // JSON serialization

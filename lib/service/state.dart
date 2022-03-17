@@ -29,6 +29,7 @@ class XmppState with _$XmppState {
       String? jid,
       String? password,
       String? lastRosterVersion,
+      @Default("") avatarUrl,
       @Default(false) bool askedStoragePermission
   }) = _XmppState;
 

@@ -35,6 +35,32 @@ class PrivacyPage extends StatelessWidget {
                       )
                     )
                   )
+                ),
+                SettingsTile.switchTile(
+                  title: "Make profile picture public",
+                  subtitle: "If enabled, everyone can see your profile picture. If disabled, only users on your contact list can see your profile picture.",
+                  subtitleMaxLines: 3,
+                  switchValue: store.state.preferencesState.isAvatarPublic,
+                  onToggle: (value) => store.dispatch(
+                    SetPreferencesAction(
+                      store.state.preferencesState.copyWith(
+                        isAvatarPublic: value
+                      )
+                    )
+                  )
+                ),
+                SettingsTile.switchTile(
+                  title: "Auto-accept subscription requests",
+                  subtitle: "If enabled, subscription requests will be automatically accepted if the user is in the contact list.",
+                  subtitleMaxLines: 3,
+                  switchValue: store.state.preferencesState.autoAcceptSubscriptionRequests,
+                  onToggle: (value) => store.dispatch(
+                    SetPreferencesAction(
+                      store.state.preferencesState.copyWith(
+                        autoAcceptSubscriptionRequests: value
+                      )
+                    )
+                  )
                 )
               ]
             ),

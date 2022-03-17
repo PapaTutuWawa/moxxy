@@ -84,7 +84,7 @@ class SelfProfileHeader extends StatelessWidget {
           avatarUrl: viewModel.avatarUrl,
           altIcon: Icons.person,
           showEditButton: false,
-          onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl)
+          onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl, viewModel.avatarUrl)
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),

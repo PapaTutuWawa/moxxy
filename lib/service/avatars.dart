@@ -4,6 +4,7 @@ import "dart:convert";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
@@ -119,5 +120,20 @@ class AvatarService {
 
   Future<bool> unsubscribeJid(String jid) async {
     return await _getUserAvatarManager().unsubscribe(jid);
+  }
+
+  Future<bool> publish(String path) async {
+    final file = File(path);
+    final bytes = await file.readAsBytes();
+    final base64 = base64Encode(bytes);
+    final hash = HEX.encode((await Sha1().hash(bytes)).bytes);
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    final public = prefs.isAvatarPublic;
+
+    return await _getUserAvatarManager().publishUserAvatar(
+      base64,
+      hash,
+      public
+    );
   }
 }

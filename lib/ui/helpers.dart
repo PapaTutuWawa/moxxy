@@ -1,14 +1,12 @@
 import "dart:async";
-//import "dart:io";
+import "dart:io";
 
 import "package:moxxyv2/xmpp/sasl/errors.dart";
 
 import "package:flutter/material.dart";
-// TODO: image_cropping is broken and won't compile
-//import "package:file_picker/file_picker.dart";
-//import "package:image_cropping/constant/enums.dart";
-//import "package:image_cropping/image_cropping.dart";
-//import "package:path_provider/path_provider.dart";
+import "package:file_picker/file_picker.dart";
+import "package:image_cropping/image_cropping.dart";
+import "package:path_provider/path_provider.dart";
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action.
@@ -72,8 +70,7 @@ void dismissSoftKeyboard(BuildContext context) {
 /// The Future either resolves to null if the user cancels the action or
 /// the actual image data.
 Future<dynamic> pickAndCropImage(BuildContext context) async {
-  // TODO: image_cropping is broken and won't compile
-  /*FilePickerResult? result = await FilePicker.platform.pickFiles(
+  FilePickerResult? result = await FilePicker.platform.pickFiles(
     allowMultiple: false,
     type: FileType.image,
     withData: true
@@ -88,29 +85,31 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
       selectedImageRatio: ImageRatio.RATIO_1_1
     );
     return completer.future;
-  }*/
+  }
 
   return null;
 }
 
 /// Open the file picker to pick an image, open the cropping tool and then send it to
-/// the backend.
-Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAvatarUrl) async {
-  // TODO: image_cropping is broken and won't compile
-  /*
+/// the backend. [setAvatarUrl] is the function to mutate the state and set the avatar.
+/// [avatarUrl] is the path of the old avatar or "" if none has been set.
+Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAvatarUrl, String avatarUrl) async {
   final data = await pickAndCropImage(context);
 
   if (data != null) {
-    String cacheDir = (await getTemporaryDirectory()).path;
+    String cacheDir = (await getApplicationDocumentsDirectory()).path;
     Directory accountDir = Directory(cacheDir + "/account");
     await accountDir.create();
+
+    File oldAvatar = File(avatarUrl);
+    if (await oldAvatar.exists()) await oldAvatar.delete();
+    
     File avatar = File(accountDir.path + "/avatar.png");
     await avatar.writeAsBytes(data);
 
     // TODO: If the path doesn't change then the UI won't be updated. Hash it and use that as the filename?
     setAvatarUrl(avatar.path);
   }
-  */
 }
 
 /// Turn the SASL error into a string that a regular user could understand.

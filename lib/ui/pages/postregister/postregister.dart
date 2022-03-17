@@ -110,7 +110,7 @@ class _PostRegistrationPageState extends State<PostRegistrationPage> {
                           avatarUrl: viewModel.avatarUrl,
                           altIcon: Icons.person,
                           showEditButton: false,
-                          onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl)
+                          onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl, viewModel.avatarUrl)
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),

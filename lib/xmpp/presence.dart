@@ -37,6 +37,7 @@ class PresenceManager extends XmppManagerBase {
   Future<StanzaHandlerData> _onPresence(Stanza presence, StanzaHandlerData state) async {
     final attrs = getAttributes();
     switch (presence.type) {
+      case "subscribe":
       case "subscribed": {
         attrs.sendEvent(
           SubscriptionRequestReceivedEvent(from: JID.fromString(presence.from!))

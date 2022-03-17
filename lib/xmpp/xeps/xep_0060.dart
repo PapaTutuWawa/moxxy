@@ -2,10 +2,45 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0004.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
+
+class PubSubPublishOptions {
+  final String? accessModel;
+
+  const PubSubPublishOptions({
+      this.accessModel
+  });
+  
+  XMLNode toXml() {
+    return DataForm(
+      type: "submit",
+      instructions: [],
+      reported: [],
+      items: [],
+      fields: [
+        const DataFormField(
+          options: [],
+          isRequired: false,
+          values: [ pubsubPublishOptionsXmlns ],
+          varAttr: "FORM_TYPE",
+          type: "hidden"
+        ),
+        ...(accessModel != null ? [
+            DataFormField(
+              options: [],
+              isRequired: false,
+              values: [ accessModel! ],
+              varAttr: "pubsub#access_model",
+            )
+          ] : [])
+      ]
+    ).toXml();
+  }
+}
 
 class PubSubItem {
   final String id;
@@ -125,7 +160,7 @@ class PubSubManager extends XmppManagerBase {
 
   /// Publish [payload] to the PubSub node [node] on JID [jid]. Returns true if it
   /// was successful. False otherwise.
-  Future<bool> publish(String jid, String node, XMLNode payload, { String? id }) async {
+  Future<bool> publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: "set",
@@ -145,7 +180,8 @@ class PubSubManager extends XmppManagerBase {
                     children: [ payload ]
                   )
                 ]
-              )
+              ),
+              ...(options != null ? [ options.toXml() ] : [])
             ]
           )
         ]

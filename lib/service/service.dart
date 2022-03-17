@@ -106,7 +106,7 @@ Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
         state: "logged_in",
         jid: account.jid,
         displayName: account.displayName,
-        avatarUrl: account.avatarUrl,
+        avatarUrl: state.avatarUrl,
         debugEnabled: state.debugEnabled,
         permissionsToRequest: permissions,
         preferences: preferences
@@ -517,6 +517,14 @@ void handleEvent(Map<String, dynamic>? data) {
     break;
     case unblockAllCommandType: {
       GetIt.I.get<BlocklistService>().unblockAll();
+    }
+    break;
+    case setAvatarCommandType: {
+      final command = SetAvatarCommand.fromJson(data);
+      GetIt.I.get<AvatarService>().publish(command.path);
+      GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
+          avatarUrl: command.path
+      ));
     }
     break;
     case stopActionType: {

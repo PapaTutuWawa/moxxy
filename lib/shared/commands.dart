@@ -345,6 +345,23 @@ class UnblockAllCommand extends BaseIsolateCommand {
   };
 }
 
+const setAvatarCommandType = "SetAvatarCommand";
+class SetAvatarCommand extends BaseIsolateCommand {
+  final String path;
+
+  SetAvatarCommand({ required this.path });
+  SetAvatarCommand.fromJson(Map<String, dynamic> json) :
+    path = json["path"]! {
+    assert(json["type"] == setAvatarCommandType);
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "type": setAvatarCommandType,
+    "path": path
+  };
+}
+
 const stopActionType = "__STOP__";
 class StopAction extends BaseIsolateCommand {
   StopAction();

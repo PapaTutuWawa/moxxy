@@ -328,6 +328,13 @@ class XmppService {
       ));
     } else if (event is SubscriptionRequestReceivedEvent) {
       final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+
+      if (prefs.autoAcceptSubscriptionRequests) {
+        GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(
+          event.from.toBare().toString()
+        );
+      }
+
       if (!prefs.showSubscriptionRequests) return;
       
       final db = GetIt.I.get<DatabaseService>();
