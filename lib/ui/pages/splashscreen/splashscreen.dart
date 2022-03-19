@@ -1,8 +1,14 @@
 import "package:flutter/material.dart";
 
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({ Key? key }) : super(key: key);
+class Splashscreen extends StatelessWidget {
+  const Splashscreen({ Key? key }) : super(key: key);
 
+  static Page page() {
+    return MaterialPage<void>(
+      child: const Splashscreen()
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

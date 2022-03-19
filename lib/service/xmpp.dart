@@ -2,12 +2,9 @@ import "dart:async";
 import "dart:convert";
 
 import "package:moxxyv2/ui/helpers.dart";
-
-// TODO: Maybe move this file somewhere else
-import "package:moxxyv2/ui/redux/account/state.dart";
-
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/shared/account.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";

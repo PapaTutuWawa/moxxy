@@ -1,3 +1,4 @@
+/*
 import "package:moxxyv2/ui/widgets/sharedmedia.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/helpers.dart";
@@ -242,3 +243,4 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+*/

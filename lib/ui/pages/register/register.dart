@@ -1,3 +1,4 @@
+/*
 import "dart:math";
 
 import "package:moxxyv2/ui/widgets/topbar.dart";
@@ -150,3 +151,4 @@ class RegistrationPage extends StatelessWidget {
     );
   }
 }
+*/
