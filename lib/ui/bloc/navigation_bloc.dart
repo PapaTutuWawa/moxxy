@@ -1,16 +1,31 @@
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:flutter/material.dart";
 
 part "navigation_state.dart";
 part "navigation_event.dart";
 part "navigation_bloc.freezed.dart";
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
-  NavigationBloc() : super(NavigationState()) {
-    on<NavigatedToEvent>(_onNavigatedTo);
+  final GlobalKey<NavigatorState> navigationKey;
+
+  NavigationBloc({ required this.navigationKey }) : super(NavigationState()) {
+    on<PushedNamedEvent>(_onPushedNamed);
+    on<PushedNamedAndRemoveUntilEvent>(_onPushededNamedAndRemoveUntil);
   }
 
-  Future<void> _onNavigatedTo(NavigatedToEvent event, Emitter<NavigationState> emit) async {
-    return emit(state.copyWith(status: event.status));
+  Future<void> _onPushedNamed(PushedNamedEvent event, Emitter<NavigationState> emit) async {
+    navigationKey.currentState!.pushNamed(
+      event.destination.path,
+      arguments: event.destination.arguments
+    );
+  }
+
+  Future<void> _onPushededNamedAndRemoveUntil(PushedNamedAndRemoveUntilEvent event, Emitter<NavigationState> emit) async {
+    navigationKey.currentState!.pushNamedAndRemoveUntil(
+      event.destination.path,
+      event.predicate,
+      arguments: event.destination.arguments
+    );
   }
 }

@@ -42,7 +42,6 @@ import "package:moxxyv2/shared/commands.dart" as commands;
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
-import "package:flow_builder/flow_builder.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 /*
 import "package:flutter_redux/flutter_redux.dart";
@@ -68,6 +67,9 @@ void main() async {
   });
   GetIt.I.registerSingleton<Logger>(Logger("MoxxyMain"));
 
+  final navKey = GlobalKey<NavigatorState>();
+  GetIt.I.registerSingleton<GlobalKey<NavigatorState>>(navKey);
+  
   // TODO: Uncomment all FlutterBackgroundService things
   //await initializeServiceIfNeeded();
   //FlutterBackgroundService().onDataReceived.listen(handleBackgroundServiceData);
@@ -76,7 +78,7 @@ void main() async {
     MultiBlocProvider(
       providers: [
         BlocProvider<NavigationBloc>(
-          create: (_) => NavigationBloc() 
+          create: (_) => NavigationBloc(navigationKey: navKey) 
         ),
         BlocProvider<LoginBloc>(
           create: (_) => LoginBloc()
@@ -131,23 +133,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  List<Page> _onGeneratePages(NavigationStatus status, List<Page> pages) {
-    switch (status) {
-      case NavigationStatus.splashscreen: return [
-        Splashscreen.page()
-      ];
-      case NavigationStatus.intro: return [
-        Intro.page()
-      ];
-      case NavigationStatus.login: return [
-        Intro.page(),
-        Login.page()
-      ];
-    }
-
-    return [];
-  }
-  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -175,12 +160,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         backgroundColor: const Color(0xff303030)
       ),
-      //navigatorKey: NavigatorHolder.navigatorKey,
+      navigatorKey: GetIt.I.get<GlobalKey<NavigatorState>>(),
       themeMode: ThemeMode.system,
-      /*
       routes: {
-        introRoute: (context) => const IntroPage(),
-        loginRoute: (context) => LoginPage(),
+        introRoute: (context) => const Intro(),
+        loginRoute: (context) => Login(),
+        /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
         conversationsRoute: (context) => const ConversationsPage(),
@@ -197,13 +182,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         networkRoute: (context) => const NetworkPage(),
         appearanceRoute: (context) => const AppearancePage(),
         blocklistRoute: (context) => BlocklistPage()
+        */
       },
-      home: const SplashScreen(),
-      */
-      home: FlowBuilder<NavigationStatus>(
-        state: context.watch<NavigationBloc>().state.status,
-        onGeneratePages: _onGeneratePages
-      )
+      // TODO: Change back to const Splashscreen()
+      home: Intro()
     );
   }
 }

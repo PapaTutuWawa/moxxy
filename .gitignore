@@ -45,6 +45,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Emacs temporary data
+**/*.~undo-tree~
+
 # Generated data classes
 **/*.g.dart
 **/*.freezed.dart

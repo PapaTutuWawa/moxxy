@@ -1,9 +1,29 @@
 part of "navigation_bloc.dart";
 
+class NavigationDestination {
+  final String path;
+  final Object? arguments;
+
+  const NavigationDestination(
+    this.path,
+    {
+      this.arguments
+    }
+  );
+}
+
 abstract class NavigationEvent {}
 
-class NavigatedToEvent extends NavigationEvent {
-  final NavigationStatus status;
+class PushedNamedEvent extends NavigationEvent {
+  final NavigationDestination destination;
 
-  NavigatedToEvent(this.status);
+  PushedNamedEvent(this.destination);
 }
+
+class PushedNamedAndRemoveUntilEvent extends NavigationEvent {
+  final NavigationDestination destination;
+  final RoutePredicate predicate;
+
+  PushedNamedAndRemoveUntilEvent(this.destination, this.predicate);
+}
+

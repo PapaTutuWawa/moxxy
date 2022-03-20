@@ -10,48 +10,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 
 class Login extends StatelessWidget {
   const Login({ Key? key }) : super(key: key);
-
-  static Page page() {
-    return MaterialPage<void>(child: const Login());
-  }
-  
-  /*
-  void _performLogin(BuildContext context, _LoginPageViewModel viewModel) {
-    if (viewModel.doingWork) return;
-
-    viewModel.resetErrors();
-
-    String jid = _jidController.text;
-    String password = _passwordController.text;
-    
-    // Validate first
-    switch (validateJid(jid)) {
-      case JidFormatError.empty:
-        viewModel.setJidError("XMPP-Address cannot be empty");
-        return;
-      case JidFormatError.noSeparator:
-      case JidFormatError.tooManySeparators:
-        viewModel.setJidError("XMPP-Address must contain exactly one @");
-        return;
-      case JidFormatError.noDomain:
-        // TODO: Find a better text
-        viewModel.setJidError("A domain must follow the @");
-        return;
-      case JidFormatError.noLocalpart:
-        viewModel.setJidError("Your username must preceed the @");
-        return;
-      case JidFormatError.none: break;
-    }
-
-    if (password.isEmpty) {
-      viewModel.setPasswordError("Password cannot be empty");
-      return;
-    }
-    
-    viewModel.performLogin(jid, password);
-  }
-  */
-  
+ 
   @override Widget build(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) => WillPopScope(
@@ -75,7 +34,8 @@ class Login extends StatelessWidget {
                   enabled: !state.working,
                   maxLines: 1,
                   cornerRadius: textfieldRadiusRegular,
-                  enableIMEFeatures: false
+                  enableIMEFeatures: false,
+                  onChanged: (value) => context.read<LoginBloc>().add(LoginJidChangedEvent(value))
                 )
               ),
               Padding(
@@ -86,8 +46,7 @@ class Login extends StatelessWidget {
                   suffixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(end: 8.0),
                     child: InkWell(
-                      //onTap: () => viewModel.togglePasswordVisibility(),
-                      onTap: () {},
+                      onTap: () => context.read<LoginBloc>().add(LoginPasswordVisibilityToggledEvent()),
                       child: Icon(
                         state.passwordVisible ? Icons.visibility : Icons.visibility_off
                       )
@@ -97,23 +56,10 @@ class Login extends StatelessWidget {
                   obscureText: !state.passwordVisible,
                   maxLines: 1,
                   cornerRadius: textfieldRadiusRegular,
-                  enableIMEFeatures: false
+                  enableIMEFeatures: false,
+                  onChanged: (value) => context.read<LoginBloc>().add(LoginPasswordChangedEvent(value))
                 )
               ),
-              /*
-              Visibility(
-                visible: viewModel.loginError != null,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 3.0)),
-                  child: Text(
-                    viewModel.loginError ?? "",
-                    style: const TextStyle(
-                      color: Colors.red
-                    )
-                  )
-                )
-              ),
-              */
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
                 child: ExpansionTile(
@@ -141,8 +87,7 @@ class Login extends StatelessWidget {
                         color: Colors.purple,
                         cornerRadius: 32.0,
                         child: const Text("Login"),
-                        onTap: () {}
-                        //onTap: () => _performLogin(context, viewModel)
+                        onTap: state.working ? null : () => context.read<LoginBloc>().add(LoginSubmittedEvent())
                       )
                     )
                   ]

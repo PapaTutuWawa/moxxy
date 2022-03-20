@@ -4,16 +4,17 @@ class RoundedButton extends StatelessWidget {
   final Color color;
   final Widget child;
   final double cornerRadius;
-  final void Function() onTap;
+  final void Function()? onTap;
 
   const RoundedButton({
       required this.color,
       required this.child,
       required this.cornerRadius,
-      required this.onTap,
+      this.onTap,
       Key? key
   }) : super(key: key);
 
+  // TODO: Make the colors gray if onTap == null
   @override
   Widget build(BuildContext context) {
     return Material(
