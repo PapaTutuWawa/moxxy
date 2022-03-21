@@ -2,6 +2,9 @@ import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
+import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 
 import "package:get_it/get_it.dart";
 import "package:bloc/bloc.dart";
@@ -84,8 +87,19 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     if (result is LoginSuccessfulEvent) {
       emit(state.copyWith(working: false));
 
-      // TODO: Redirect
-      // TODO: Maybe tell other Blocs about the data we got
+      GetIt.I.get<ConversationsBloc>().add(
+        ConversationsInitEvent(
+          result.displayName
+        )
+      );
+      GetIt.I.get<NavigationBloc>().add(
+        PushedNamedAndRemoveUntilEvent(
+          NavigationDestination(
+            conversationsRoute
+          ),
+          (_) => false
+        )
+      );
     } else if (result is LoginFailureEvent) {
       return emit(
         state.copyWith(

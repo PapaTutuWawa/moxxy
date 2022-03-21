@@ -27,3 +27,8 @@ class PushedNamedAndRemoveUntilEvent extends NavigationEvent {
   PushedNamedAndRemoveUntilEvent(this.destination, this.predicate);
 }
 
+class PushedNamedReplaceEvent extends NavigationEvent {
+  final NavigationDestination destination;
+
+  PushedNamedReplaceEvent(this.destination);
+}

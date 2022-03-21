@@ -3,6 +3,7 @@ import "package:moxxyv2/ui/widgets/sharedmedia.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
+import "package:moxxyv2/ui/pages/profile/arguments.dart";
 import "package:moxxyv2/ui/redux/state.dart";
 import "package:moxxyv2/ui/redux/profile/actions.dart";
 import "package:moxxyv2/ui/redux/account/actions.dart";
@@ -10,16 +11,6 @@ import "package:moxxyv2/ui/redux/account/actions.dart";
 import "package:flutter/material.dart";
 import "package:flutter_redux/flutter_redux.dart";
 import "package:qr_flutter/qr_flutter.dart";
-
-// TODO: Move to separate file
-class ProfilePageArguments {
-  final Conversation? conversation;
-  final bool isSelfProfile;
-
-  ProfilePageArguments({ this.conversation, required this.isSelfProfile }) {
-    assert(isSelfProfile ? true : conversation != null);
-  }
-}
 
 class _ProfilePageViewModel {
   final bool showSnackbar;

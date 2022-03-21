@@ -11,7 +11,8 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
 
   NavigationBloc({ required this.navigationKey }) : super(NavigationState()) {
     on<PushedNamedEvent>(_onPushedNamed);
-    on<PushedNamedAndRemoveUntilEvent>(_onPushededNamedAndRemoveUntil);
+    on<PushedNamedAndRemoveUntilEvent>(_onPushedNamedAndRemoveUntil);
+    on<PushedNamedReplaceEvent>(_onPushedNamedReplaceEvent);
   }
 
   Future<void> _onPushedNamed(PushedNamedEvent event, Emitter<NavigationState> emit) async {
@@ -21,10 +22,17 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     );
   }
 
-  Future<void> _onPushededNamedAndRemoveUntil(PushedNamedAndRemoveUntilEvent event, Emitter<NavigationState> emit) async {
+  Future<void> _onPushedNamedAndRemoveUntil(PushedNamedAndRemoveUntilEvent event, Emitter<NavigationState> emit) async {
     navigationKey.currentState!.pushNamedAndRemoveUntil(
       event.destination.path,
       event.predicate,
+      arguments: event.destination.arguments
+    );
+  }
+
+  Future<void> _onPushedNamedReplaceEvent(PushedNamedReplaceEvent event, Emitter<NavigationState> emit) async {
+    navigationKey.currentState!.pushReplacementNamed(
+      event.destination.path,
       arguments: event.destination.arguments
     );
   }

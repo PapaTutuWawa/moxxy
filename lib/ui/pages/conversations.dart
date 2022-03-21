@@ -1,29 +1,16 @@
-/*
+import "package:moxxyv2/shared/models/conversation.dart";
+import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/pages/conversation/arguments.dart";
-import "package:moxxyv2/ui/pages/profile/profile.dart";
-import "package:moxxyv2/shared/models/conversation.dart";
-import "package:moxxyv2/ui/redux/state.dart";
-import "package:moxxyv2/ui/redux/conversation/actions.dart";
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/helpers.dart";
+import "package:moxxyv2/ui/pages/profile/arguments.dart";
+import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
-import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
-import "package:flutter_redux/flutter_redux.dart";
-
-class _ConversationsListViewModel {
-  final List<Conversation> conversations;
-  final String displayName;
-  final String avatarUrl;
-  final void Function(String) goToConversation;
-  final void Function(Conversation) closeConversation;
-
-  const _ConversationsListViewModel({ required this.conversations, required this.displayName, required this.avatarUrl, required this.goToConversation, required this.closeConversation });
-}
+import "package:flutter_bloc/flutter_bloc.dart";
 
 enum ConversationsOptions {
   settings
@@ -32,17 +19,19 @@ enum ConversationsOptions {
 class ConversationsPage extends StatelessWidget {
   const ConversationsPage({ Key? key }) : super(key: key);
 
-  Widget _listWrapper(BuildContext context, _ConversationsListViewModel viewModel) {
+  Widget _listWrapper(BuildContext context, ConversationsState state) {
     double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
 
-    if (viewModel.conversations.isNotEmpty) {
+    if (state.conversations.isNotEmpty) {
       return ListView.builder(
-        itemCount: viewModel.conversations.length,
+        itemCount: state.conversations.length,
         itemBuilder: (_context, index) {
-          Conversation item = viewModel.conversations[index];
+          Conversation item = state.conversations[index];
           return Dismissible(
             key: ValueKey("conversation;" + item.toString()),
-            onDismissed: (direction) => viewModel.closeConversation(item),
+            //onDismissed: (direction) => viewModel.closeConversation(item),
+            // TODO
+            onDismissed: (direction) {},
             background: Container(
               color: Colors.red,
               child: Padding(
@@ -57,7 +46,9 @@ class ConversationsPage extends StatelessWidget {
               )
             ),
             child: InkWell(
-              onTap: () => viewModel.goToConversation(item.jid),
+              // TODO
+              //onTap: () => viewModel.goToConversation(item.jid),
+              onTap: () {},
               child: ConversationsListRow(
                 item.avatarUrl,
                 item.title,
@@ -99,25 +90,15 @@ class ConversationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<MoxxyState, _ConversationsListViewModel>(
-      converter: (store) => _ConversationsListViewModel(
-        conversations: store.state.conversations.values.where((c) => c.open).toList(),
-        displayName: store.state.accountState.displayName,
-        avatarUrl: store.state.accountState.avatarUrl,
-        goToConversation: (jid) => store.dispatch(NavigateToAction.push(
-            conversationRoute,
-            arguments: ConversationPageArguments(jid: jid)
-        )),
-        closeConversation: (c) => store.dispatch(CloseConversationAction(jid: c.jid, id: c.id, redirect: false))
-      ),
-      builder: (context, viewModel) => Scaffold(
+    return BlocBuilder<ConversationsBloc, ConversationsState>(
+      builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(
           avatar: AvatarWrapper(
             radius: 20.0,
-            avatarUrl: viewModel.avatarUrl,
+            avatarUrl: state.avatarUrl,
             altIcon: Icons.person
           ),
-          title: viewModel.displayName,
+          title: state.displayName,
           onTapFunction: () => Navigator.pushNamed(context, profileRoute, arguments: ProfilePageArguments(isSelfProfile: true)),
           showBackButton: false,
           extra: [
@@ -138,7 +119,7 @@ class ConversationsPage extends StatelessWidget {
             )
           ]
         ),
-        body: _listWrapper(context, viewModel),
+        body: _listWrapper(context, state),
         floatingActionButton: SpeedDial(
           icon: Icons.chat,
           visible: true,
@@ -165,9 +146,7 @@ class ConversationsPage extends StatelessWidget {
             )
           ]
         )
-
       )
     );
   }
 }
-*/

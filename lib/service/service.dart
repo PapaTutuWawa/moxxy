@@ -304,8 +304,10 @@ void handleEvent(Map<String, dynamic>? data) {
     FlutterBackgroundService().sendData(
       DataWrapper(
         id,
-        LoginFailureEvent(
-          reason: "No particular reason"
+        // TODO
+        LoginSuccessfulEvent(
+          jid: "test@example.com",
+          displayName: "test"
         )
       ).toJson()
     );

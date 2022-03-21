@@ -2,7 +2,6 @@ import "package:moxxyv2/ui/eventhandler.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
 import "package:moxxyv2/ui/pages/conversation/conversation.dart";
-import "package:moxxyv2/ui/pages/conversations.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/newconversation.dart";
 import "package:moxxyv2/ui/pages/register/register.dart";
@@ -17,25 +16,14 @@ import "package:moxxyv2/ui/pages/settings/debugging.dart";
 import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
 import "package:moxxyv2/ui/pages/settings/appearance.dart";
-import "package:moxxyv2/ui/redux/conversations/middlewares.dart";
-import "package:moxxyv2/ui/redux/account/middlewares.dart";
-import "package:moxxyv2/ui/redux/login/middlewares.dart";
-import "package:moxxyv2/ui/redux/registration/middlewares.dart";
-import "package:moxxyv2/ui/redux/addcontact/middlewares.dart";
-import "package:moxxyv2/ui/redux/roster/middlewares.dart";
-import "package:moxxyv2/ui/redux/messages/middleware.dart";
-import "package:moxxyv2/ui/redux/conversation/middlewares.dart";
-import "package:moxxyv2/ui/redux/state.dart";
-import "package:moxxyv2/ui/redux/start/middlewares.dart";
-import "package:moxxyv2/ui/redux/debug/middlewares.dart";
-import "package:moxxyv2/ui/redux/preferences/middlewares.dart";
-import "package:moxxyv2/ui/redux/blocklist/middlewares.dart";
 */
+import "package:moxxyv2/ui/pages/conversations.dart";
 import "package:moxxyv2/ui/pages/login/login.dart";
 import "package:moxxyv2/ui/pages/intro.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/login_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart" as commands;
@@ -62,6 +50,11 @@ void setupUIServices() {
   GetIt.I.registerSingleton<UIDownloadService>(UIDownloadService());
 }
 
+void setupBlocs(GlobalKey<NavigatorState> navKey) {
+  GetIt.I.registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
+  GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
+}
+
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
 //       Padding(padding: ..., child: Column(children: [ ... ]))
 // TODO: Theme the switches
@@ -73,16 +66,21 @@ void main() async {
   await initializeServiceIfNeeded();
   setupEventHandler();
   GetIt.I.registerSingleton<BackgroundServiceDataSender>(BackgroundServiceDataSender());
-
-  final navKey = GlobalKey<NavigatorState>(); 
+  
+  final navKey = GlobalKey<NavigatorState>();
+  setupBlocs(navKey);
+  
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider<NavigationBloc>(
-          create: (_) => NavigationBloc(navigationKey: navKey) 
+          create: (_) => GetIt.I.get<NavigationBloc>()
         ),
         BlocProvider<LoginBloc>(
           create: (_) => LoginBloc()
+        ),
+        BlocProvider<ConversationsBloc>(
+          create: (_) => GetIt.I.get<ConversationsBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -170,10 +168,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       routes: {
         introRoute: (context) => const Intro(),
         loginRoute: (context) => Login(),
+        conversationsRoute: (context) => const ConversationsPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
-        conversationsRoute: (context) => const ConversationsPage(),
         conversationRoute: (context) => const ConversationPage(),
         profileRoute: (context) => const ProfilePage(),
         sendFilesRoute: (context) => SendFilesPage(),
