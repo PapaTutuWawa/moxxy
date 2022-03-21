@@ -1,4 +1,4 @@
-import "package:moxxyv2/ui/eventhandler.dart";
+import "package:moxxyv2/shared/awaitabledatasender.dart";
 
 import "package:test/test.dart";
 
