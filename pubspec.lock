@@ -337,13 +337,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
-  flow_builder:
-    dependency: "direct main"
-    description:
-      name: flow_builder
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.0.6"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -405,15 +398,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
-  flutter_redux_navigation:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: master
-      resolved-ref: c59b87491a0b0fc65c034da83f4051c97234e207
-      url: "https://github.com/flutterings/flutter_redux_navigation.git"
-    source: git
-    version: "0.7.1"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -644,7 +628,7 @@ packages:
     source: hosted
     version: "2.0.0"
   meta:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: meta
       url: "https://pub.dartlang.org"
@@ -666,6 +650,13 @@ packages:
       url: "https://github.com/PapaTutuWawa/moxdns.git"
     source: git
     version: "0.0.1"
+  mutex:
+    dependency: "direct main"
+    description:
+      name: mutex
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
   nested:
     dependency: transitive
     description:
@@ -876,20 +867,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.3.1"
-  redux:
-    dependency: transitive
-    description:
-      name: redux
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "5.0.0"
-  redux_logging:
-    dependency: "direct dev"
-    description:
-      name: redux_logging
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.5.0"
   saslprep:
     dependency: "direct main"
     description:
