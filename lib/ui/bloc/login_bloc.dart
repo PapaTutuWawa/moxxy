@@ -73,18 +73,26 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       )
     );
 
-    // TODO: Actually perform the login
-    // TODO: Maybe let [LoginSuccessfulEvent] and [LoginFailureEvent] have a common
-    //       super-class such that we can imediately cast it up to that and then see
-    //       if it was successful and cast accordingly.
     final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
       LoginCommand(
         jid: state.jid,
         password: state.password,
         useDirectTLS: true
       )
-    ) as LoginSuccessfulEvent;
+    );
 
-    print(result.displayName);
+    if (result is LoginSuccessfulEvent) {
+      emit(state.copyWith(working: false));
+
+      // TODO: Redirect
+      // TODO: Maybe tell other Blocs about the data we got
+    } else if (result is LoginFailureEvent) {
+      return emit(
+        state.copyWith(
+          working: false,
+          passwordState: LoginFormState(false, error: result.reason)
+        )
+      );
+    }
   }
 }

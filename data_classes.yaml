@@ -9,6 +9,13 @@ files:
         attributes:
           jid: String
           displayName: String
+      - name: LoginFailureEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          reason: String
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

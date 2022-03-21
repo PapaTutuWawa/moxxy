@@ -301,13 +301,11 @@ void handleEvent(Map<String, dynamic>? data) {
   }
 
   if (command is LoginCommand) {
-    log.info("OK");
     FlutterBackgroundService().sendData(
       DataWrapper(
         id,
-        LoginSuccessfulEvent(
-          jid: "test",
-          displayName: "test"
+        LoginFailureEvent(
+          reason: "No particular reason"
         )
       ).toJson()
     );
