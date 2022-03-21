@@ -129,9 +129,11 @@ class _ChatBubbleState extends State<ChatBubble> {
   }
 
   void _requestDownload() {
+    // TODO
+    /*
     FlutterBackgroundService().sendData(
       PerformDownloadAction(message: message).toJson()
-    );
+    );*/
   }
   
   Widget _buildBody() {

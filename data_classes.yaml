@@ -1,0 +1,31 @@
+files:
+  - path: lib/shared/events.g.dart
+    classes:
+      - name: LoginSuccessfulEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          displayName: String
+    generate_builder: true
+    builder_name: "Event"
+    builder_baseclass: "BackgroundEvent"
+    partof: events.dart
+  - path: lib/shared/commands.g.dart
+    classes:
+      - name: LoginCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          password: String
+          useDirectTLS: bool
+    generate_builder: true
+    # get${builder_Name}FromJson
+    builder_name: "Command"
+    builder_baseclass: "BackgroundCommand"
+    partof: commands.dart

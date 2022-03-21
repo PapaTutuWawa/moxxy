@@ -41,7 +41,7 @@ class XmppService {
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
   final Logger _log;
-  final void Function(BaseIsolateEvent) sendData;
+  final void Function(BackgroundEvent) sendData;
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
@@ -128,7 +128,8 @@ class XmppService {
         id: conversation.id,
         unreadCounter: 0
       );
-      sendData(ConversationUpdatedEvent(conversation: newConversation));
+      // TODO
+      //sendData(ConversationUpdatedEvent(conversation: newConversation));
     }
   }
 
@@ -173,7 +174,8 @@ class XmppService {
       quoteId: quotedMessage?.originId ?? quotedMessage?.sid
     );
 
-    sendData(MessageSendResultEvent(message: message));
+    // TODO
+    //sendData(MessageSendResultEvent(message: message));
     
     conn.getManagerById(messageManager)!.sendMessage(
       MessageDetails(
@@ -194,7 +196,8 @@ class XmppService {
       lastMessageBody: body,
       lastChangeTimestamp: timestamp
     );
-    sendData(ConversationUpdatedEvent(conversation: newConversation));
+    // TODO
+    //sendData(ConversationUpdatedEvent(conversation: newConversation));
   }
 
   String? _getMessageSrcUrl(MessageEvent event) {
@@ -245,7 +248,8 @@ class XmppService {
   
   Future<void> _handleEvent(XmppEvent event) async {
     if (event is ConnectionStateChangedEvent) {
-      sendData(ConnectionStateEvent(state: event.state.toString().split(".")[1]));
+      // TODO
+      //sendData(ConnectionStateEvent(state: event.state.toString().split(".")[1]));
 
       // TODO: This will fire as soon as we listen to the stream. So we either have to debounce it here or in [XmppConnection]
       _networkStateSubscription ??= Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
@@ -307,10 +311,12 @@ class XmppService {
               avatarUrl: ""
           ));
 
+          // TODO
+          /*
           sendData(LoginSuccessfulEvent(
               jid: connection.getConnectionSettings().jid.toString(),
               displayName: connection.getConnectionSettings().jid.local
-          ));
+          ));*/
         }
       }
     } else if (event is StreamManagementEnabledEvent) {
@@ -343,7 +349,9 @@ class XmppService {
           open: true,
           lastChangeTimestamp: timestamp
         );
-        sendData(ConversationUpdatedEvent(conversation: newConversation));
+
+        // TODO
+        //sendData(ConversationUpdatedEvent(conversation: newConversation));
       } else {
         // TODO: Make it configurable if this should happen
         final bare = event.from.toBare();
@@ -358,7 +366,8 @@ class XmppService {
           true
         );
 
-        sendData(ConversationCreatedEvent(conversation: conv));
+        // TODO
+        //sendData(ConversationCreatedEvent(conversation: conv));
       }
     } else if (event is DeliveryReceiptReceivedEvent) {
       _log.finest("Received delivery receipt from ${event.from.toString()}");
@@ -374,7 +383,8 @@ class XmppService {
         received: true
       );
 
-      sendData(MessageUpdatedEvent(message: msg));
+      // TODO
+      //sendData(MessageUpdatedEvent(message: msg));
     } else if (event is ChatMarkerEvent) {
       _log.finest("Chat marker from ${event.from.toString()}");
       if (event.type == "acknowledged") return;
@@ -392,7 +402,8 @@ class XmppService {
         displayed: dbMsg.displayed || event.type == "displayed"
       );
 
-      sendData(MessageUpdatedEvent(message: msg));
+      // TODO
+      //sendData(MessageUpdatedEvent(message: msg));
     } else if (event is MessageEvent) {
       // TODO: Clean this huge mess up
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -477,7 +488,9 @@ class XmppService {
           lastChangeTimestamp: timestamp,
           unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
         );
-        sendData(ConversationUpdatedEvent(conversation: newConversation));
+
+        // TODO
+        //sendData(ConversationUpdatedEvent(conversation: newConversation));
 
         if (!isChatOpen && shouldNotify) {
           await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare, body: body);
@@ -494,19 +507,22 @@ class XmppService {
           true
         );
 
-        sendData(ConversationCreatedEvent(conversation: conv));
+        // TODO
+        //sendData(ConversationCreatedEvent(conversation: conv));
 
         if (!isChatOpen && shouldNotify) {
           await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare, body: body);
         }
       }
-      
-      sendData(MessageReceivedEvent(message: msg));
+
+      // TODO
+      //sendData(MessageReceivedEvent(message: msg));
     } else if (event is RosterPushEvent) {
       GetIt.I.get<RosterService>().handleRosterPushEvent(event);
       _log.fine("Roster push version: " + (event.ver ?? "(null)"));
     } else if (event is AuthenticationFailedEvent) {
-      sendData(LoginFailedEvent(reason: saslErrorToHumanReadable(event.saslError)));
+      // TODO
+      //sendData(LoginFailedEvent(reason: saslErrorToHumanReadable(event.saslError)));
     } else if (event is AvatarUpdatedEvent) {
       await GetIt.I.get<AvatarService>().updateAvatarForJid(
         event.jid,

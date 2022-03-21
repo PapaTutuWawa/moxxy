@@ -15,7 +15,7 @@ class BlocklistService {
   final List<String> _blocklistCache;
   bool _requestedBlocklist;
 
-  final void Function(BaseIsolateEvent) sendData;
+  final void Function(BackgroundEvent) sendData;
   
   final Logger _log;
   
@@ -28,11 +28,14 @@ class BlocklistService {
     final manager = GetIt.I.get<XmppConnection>().getManagerById(blockingManager)! as BlockingManager;
     _blocklistCache.clear();
     _blocklistCache.addAll(await manager.getBlocklist());
+    // TODO
+    /*
     sendData(
       BlocklistDiffEvent(
         newBlockedItems: _blocklistCache
       )
     );
+    */
     _requestedBlocklist = true;
     return _blocklistCache;
   }
@@ -48,11 +51,14 @@ class BlocklistService {
   }
 
   void onUnblockAllPush() {
-     sendData(
+    // TODO
+    /*
+    sendData(
       BlocklistDiffEvent(
         removedBlockedItems: _blocklistCache
       )
     );
+    */
 
     _blocklistCache.clear();
   }
@@ -79,12 +85,15 @@ class BlocklistService {
       }
     }
 
+    // TODO
+    /*
     sendData(
       BlocklistDiffEvent(
         newBlockedItems: newBlocks,
         removedBlockedItems: removedBlocks
       )
     );
+    */
   }
 
   Future<bool> blockJid(String jid) async {

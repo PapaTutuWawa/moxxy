@@ -24,7 +24,7 @@ class FileMetadata {
 //       - Retry if a download failed, e.g. because we lost internet connection
 //       - hold a queue of files to download
 class DownloadService {
-  final void Function(BaseIsolateEvent) sendData;
+  final void Function(BackgroundEvent) sendData;
 
   final Logger _log;
   // Map the URL to download to the message id of the message we need to update
@@ -76,10 +76,13 @@ class DownloadService {
         // TODO: Maybe rate limit harder
         if (progress * 100 >= _rateLimits[url]!) {
           _log.finest("Limit: ${_rateLimits[url]!}");
+          // TODO
+          /*
           sendData(DownloadProgressEvent(
               id: mId,
               progress: progress
           ));
+          */
 
           _rateLimits[url] = (progress * 10).round() * 10;
         }
@@ -105,8 +108,9 @@ class DownloadService {
       mediaUrl: downloadedPath,
       mediaType: mime
     );
-    
-    sendData(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+
+    // TODO
+    //sendData(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
 
     if (notification.shouldShowNotification(msg.conversationJid)) {
       _log.finest("Creating notification with bigPicture $downloadedPath");
@@ -123,7 +127,8 @@ class DownloadService {
       id: conv.id,
       sharedMediaPaths: sharedMediaPaths
     );
-    sendData(ConversationUpdatedEvent(conversation: newConv));
+    // TODO
+    //sendData(ConversationUpdatedEvent(conversation: newConv));
   }
 
   /// Returns the size of the file at [url] in octets. If an error occurs or the server

@@ -3,6 +3,7 @@ import "dart:async";
 import "package:moxxyv2/shared/logging.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
@@ -67,7 +68,7 @@ Future<void> initializeServiceIfNeeded() async {
   await initializeService();
 }
 
-void Function(BaseIsolateEvent) sendDataMiddleware(FlutterBackgroundService srv) {
+void Function(BackgroundEvent) sendDataMiddleware(FlutterBackgroundService srv) {
   return (data) {
     final json = data.toJson();
     // NOTE: *S*erver to *F*oreground
@@ -77,7 +78,7 @@ void Function(BaseIsolateEvent) sendDataMiddleware(FlutterBackgroundService srv)
   };
 }
 
-Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
+Future<void> performPreStart(void Function(BackgroundEvent) sendData) async {
   final xmpp = GetIt.I.get<XmppService>();
   final account = await xmpp.getAccountData();
   final settings = await xmpp.getConnectionSettings();
@@ -102,6 +103,8 @@ Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
       ));
     }
 
+    // TODO
+    /*
     sendData(PreStartResultEvent(
         state: "logged_in",
         jid: account.jid,
@@ -111,13 +114,16 @@ Future<void> performPreStart(void Function(BaseIsolateEvent) sendData) async {
         permissionsToRequest: permissions,
         preferences: preferences
     ));
+    */
   } else {
+    /*
     sendData(PreStartResultEvent(
         state: "not_logged_in",
         debugEnabled: state.debugEnabled,
         permissionsToRequest: List<int>.empty(),
         preferences: preferences
     ));
+    */
   }
 }
 
@@ -180,10 +186,11 @@ void onStart() {
   service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
 
   GetIt.I.get<Logger>().finest("Running...");
+  // TODO
+  return;
 
   final middleware = sendDataMiddleware(service);
-  
-  GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
+GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
   GetIt.I.registerSingleton<BlocklistService>(BlocklistService(middleware));
   GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
 
@@ -197,6 +204,8 @@ void onStart() {
       GetIt.I.registerSingleton<DatabaseService>(db); 
 
       final xmpp = XmppService(sendData: (data) {
+          // TODO
+          /*
           if (data is ConnectionStateEvent) {
             if (data.state == XmppConnectionState.connected.toString().split(".")[1]) {
               FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
@@ -206,6 +215,7 @@ void onStart() {
               FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Disconnected");
             }
           }
+          */
 
           middleware(data);
       });
@@ -273,8 +283,37 @@ Future<FlutterBackgroundService> initializeService() async {
 
 void handleEvent(Map<String, dynamic>? data) {
   // NOTE: *F*oreground to *S*ervice
-  GetIt.I.get<Logger>().fine("F2S: " + data.toString());
+  final log = GetIt.I.get<Logger>();
 
+  if (data == null) {
+    log.warning("Received null from the UI isolate. Ignoring...");
+    return;
+  }
+
+  log.fine("F2S: " + data.toString());
+  
+  final String id = data["id"]!;
+  final command = getCommandFromJson(data["data"]!);
+
+  if (command == null) {
+    log.severe("Unknown command type ${data['type']}");
+    return;
+  }
+
+  if (command is LoginCommand) {
+    log.info("OK");
+    FlutterBackgroundService().sendData(
+      DataWrapper(
+        id,
+        LoginSuccessfulEvent(
+          jid: "test",
+          displayName: "test"
+        )
+      ).toJson()
+    );
+  }
+  
+  /*
   switch (data!["type"]) {
     case loadConversationsType: {
       GetIt.I.get<DatabaseService>().loadConversations();
@@ -532,4 +571,5 @@ void handleEvent(Map<String, dynamic>? data) {
     }
     break;
   }
+  */
 }

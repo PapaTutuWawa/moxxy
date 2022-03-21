@@ -22,7 +22,7 @@ import "package:cryptography/cryptography.dart";
 
 class AvatarService {
   final Logger _log;
-  final void Function(BaseIsolateEvent) sendData;
+  final void Function(BackgroundEvent) sendData;
   
   AvatarService(this.sendData) : _log = Logger("AvatarService");
 
@@ -62,8 +62,9 @@ class AvatarService {
       // Remove the old avatar$
       final oldAvatar = File(originalConversation.avatarUrl);
       if (await oldAvatar.exists()) await oldAvatar.delete();
-      
-      sendData(ConversationUpdatedEvent(conversation: conv));
+
+      // TODO
+      //sendData(ConversationUpdatedEvent(conversation: conv));
     } else {
       _log.warning("Failed to get conversation");
     }
@@ -75,7 +76,8 @@ class AvatarService {
         avatarUrl: path
       );
 
-      sendData(RosterDiffEvent(changedItems: [roster]));
+      // TODO
+      // sendData(RosterDiffEvent(changedItems: [roster]));
     }
   }
 

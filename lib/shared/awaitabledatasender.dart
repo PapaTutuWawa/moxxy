@@ -30,6 +30,11 @@ class DataWrapper<T extends JsonImplementation> {
     "data": data.toJson()
   };
 
+  static DataWrapper fromJson<T extends JsonImplementation>(Map<String, dynamic> json) => DataWrapper<T>(
+    json["id"]! as String,
+    json["data"]! as T
+  );
+  
   DataWrapper reply(T newData) => DataWrapper(id, newData);
 }
 
@@ -47,14 +52,15 @@ abstract class AwaitableDataSender<
   final Map<String, Completer<R>> _awaitables;
   final Uuid _uuid;
 
+  @mustCallSuper
   AwaitableDataSender() : _awaitables = {}, _uuid = const Uuid(), _lock = Mutex();
 
   @visibleForTesting
   Map<String, Completer> getAwaitables() => _awaitables;
 
-  @visibleForTesting
   /// Called after an awaitable has been added.
-  void onAdd();
+  @visibleForTesting
+  void onAdd() {}
 
   /// NOTE: Must be overwritten by the actual implementation
   @visibleForOverriding

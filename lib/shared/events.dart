@@ -1,13 +1,18 @@
 import "package:moxxyv2/shared/preferences.dart";
+import "package:moxxyv2/shared/eventhandler.dart";
+import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
 
-abstract class BaseIsolateEvent {
-  Map<String, dynamic> toJson();
-  //BaseIsolateEvent fromJson(Map<String, dynamic> json);
+part "events.g.dart";
+
+class BackgroundEvent extends BaseEvent implements JsonImplementation {
+  // NOTE: This is just to make the type system happy
+  Map<String, dynamic> toJson() => {};
 }
 
+/*
 const rosterDiffType = "RosterDiff";
 class RosterDiffEvent extends BaseIsolateEvent {
   final List<RosterItem> newItems;
@@ -332,3 +337,4 @@ class BlocklistDiffEvent extends BaseIsolateEvent {
     "removedBlockedItems": removedBlockedItems
   };
 }
+*/

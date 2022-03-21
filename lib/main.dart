@@ -1,4 +1,4 @@
-import "package:moxxyv2/ui/handler.dart";
+import "package:moxxyv2/ui/eventhandler.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
 import "package:moxxyv2/ui/pages/conversation/conversation.dart";
@@ -39,41 +39,42 @@ import "package:moxxyv2/ui/bloc/login_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart" as commands;
+import "package:moxxyv2/shared/backgroundsender.dart";
+import "package:moxxyv2/shared/eventhandler.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-/*
-import "package:flutter_redux/flutter_redux.dart";
-import "package:flutter_redux_navigation/flutter_redux_navigation.dart";
-import "package:redux_logging/redux_logging.dart";
-import "package:redux/redux.dart";
-*/
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
-// TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
-//       Padding(padding: ..., child: Column(children: [ ... ]))
-// TODO: Theme the switches
-// TODO: Find a better way to do this
-void main() async {
-  GetIt.I.registerSingleton<UIDownloadService>(UIDownloadService());
-
+void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.onRecord.listen((record) {
       // ignore: avoid_print
       print("[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}");
   });
   GetIt.I.registerSingleton<Logger>(Logger("MoxxyMain"));
+}
 
-  final navKey = GlobalKey<NavigatorState>();
-  GetIt.I.registerSingleton<GlobalKey<NavigatorState>>(navKey);
+void setupUIServices() {
+  GetIt.I.registerSingleton<UIDownloadService>(UIDownloadService());
+}
+
+// TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
+//       Padding(padding: ..., child: Column(children: [ ... ]))
+// TODO: Theme the switches
+// TODO: Find a better way to do this
+void main() async {
+  setupLogging();
+  setupUIServices();
   
-  // TODO: Uncomment all FlutterBackgroundService things
-  //await initializeServiceIfNeeded();
-  //FlutterBackgroundService().onDataReceived.listen(handleBackgroundServiceData);
-  
+  await initializeServiceIfNeeded();
+  setupEventHandler();
+  GetIt.I.registerSingleton<BackgroundServiceDataSender>(BackgroundServiceDataSender());
+
+  final navKey = GlobalKey<NavigatorState>(); 
   runApp(
     MultiBlocProvider(
       providers: [
@@ -84,20 +85,24 @@ void main() async {
           create: (_) => LoginBloc()
         )
       ],
-      child: MyApp()
+      child: MyApp(navKey)
     )
   );
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({ Key? key }) : super(key: key);
+  final GlobalKey<NavigatorState> navigationKey;
+
+  const MyApp(this.navigationKey, { Key? key }) : super(key: key);
 
   @override
-  _MyAppState createState() => _MyAppState();
+  _MyAppState createState() => _MyAppState(navigationKey);
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  _MyAppState();
+  final GlobalKey<NavigatorState> navigationKey;
+
+  _MyAppState(this.navigationKey);
 
   @override
   void initState() {
@@ -160,7 +165,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         backgroundColor: const Color(0xff303030)
       ),
-      navigatorKey: GetIt.I.get<GlobalKey<NavigatorState>>(),
+      navigatorKey: navigationKey,
       themeMode: ThemeMode.system,
       routes: {
         introRoute: (context) => const Intro(),

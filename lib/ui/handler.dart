@@ -20,6 +20,7 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
     return;
   }
 
+  /*
   switch (data["type"]) {
     case events.preStartResultType: {
       final event = events.PreStartResultEvent.fromJson(data);
@@ -28,7 +29,6 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           commands.LoadConversationsAction().toJson()
         );
 
-        /*
         store.dispatch(SetAccountAction(
             state: AccountState(
               jid: event.jid!,
@@ -38,7 +38,6 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
         ));
 
         store.dispatch(NavigateToAction.replace(conversationsRoute));
-        */
 
         // TODO: Move somewhere else
         // TODO: Handle this when we go into the foreground
@@ -60,62 +59,51 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
     break;
     case events.loginSuccessfulType: {
       final event = events.LoginSuccessfulEvent.fromJson(data);
-      /*
       store.dispatch(
         LoginSuccessfulAction(
           jid: event.jid,
           displayName: event.displayName
         )
       );
-      */
     }
     break;
     case events.conversationCreatedType: {
       final event = events.ConversationCreatedEvent.fromJson(data);
-      /*
       store.dispatch(AddConversationAction(
           conversation: event.conversation
         )
       );
-      */
     }
     break;
     case events.conversationUpdatedType: {
       final event = events.ConversationUpdatedEvent.fromJson(data);
-      /*
       store.dispatch(
         UpdateConversationAction(
           conversation: event.conversation
         )
       );
-      */
     }
     break;
     case events.messageReceivedType: {
       final event = events.MessageReceivedEvent.fromJson(data);
-      /*
       store.dispatch(
         AddMessageAction(
           message: event.message
         )
       );
-      */
     }
     break;
     case events.messageUpdatedType: {
       final event = events.MessageUpdatedEvent.fromJson(data);
-      /*
       store.dispatch(
         UpdateMessageAction(
           message: event.message
         )
       );
-      */
     }
     break;
     case events.rosterDiffType: {
       final event = events.RosterDiffEvent.fromJson(data);
-      /*
       store.dispatch(
         RosterDiffAction(
           newItems: event.newItems,
@@ -123,21 +111,17 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           removedItems: event.removedItems
         )
       );
-      */
     }
     break;
     case events.loadConversationsResultType: {
       final event = events.LoadConversationsResultEvent.fromJson(data);
-      /*
       store.dispatch(AddMultipleConversationsAction(
           conversations: event.conversations
       ));
-      */
     }
     break;
     case events.loadMessagesForJidType: {
       final event = events.LoadMessagesForJidEvent.fromJson(data);
-      /*
       store.dispatch(
         AddMultipleMessagesAction(
           conversationJid: event.jid,
@@ -145,12 +129,10 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           replace: true
         )
       );
-      */
     }
     break;
     case events.addToRosterResultType: {
       final event = events.AddToRosterResultEvent.fromJson(data);
-      /*
       store.dispatch(
         AddToRosterDoneAction(
           result: event.result,
@@ -158,18 +140,15 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
           jid: event.jid
         )
       );
-      */
     }
     break;
     case events.messageSendType: {
       final event = events.MessageSendResultEvent.fromJson(data);
-      /*
       store.dispatch(
         AddMessageAction(
           message: event.message
         )
       );
-      */
     }
     break;
     case events.downloadProgressType: {
@@ -184,28 +163,25 @@ void handleBackgroundServiceData(Map<String, dynamic>? data) {
         commands.LoadMessagesForJidAction(jid: event.jid).toJson()
       );
 
-      /*
       store.dispatch(NavigateToAction.pushNamedAndRemoveUntil(
           conversationRoute,
           ModalRoute.withName(conversationsRoute),
           arguments: ConversationPageArguments(jid: event.jid)
         )
       );
-      */
     }
     break;
     case events.blocklistDiffEventType: {
       final event = events.BlocklistDiffEvent.fromJson(data);
 
-      /*
       store.dispatch(
         BlocklistDiffAction(
           newItems: event.newBlockedItems,
           removedItems: event.removedBlockedItems
         )
       );
-      */
     }
     break;
   }
+  */
 }

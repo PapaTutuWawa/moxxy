@@ -71,7 +71,7 @@ class DatabaseService {
   bool _rosterLoaded;
   
   final Logger _log;
-  final void Function(BaseIsolateEvent) sendData;
+  final void Function(BackgroundEvent) sendData;
   
   DatabaseService({ required this.isar, required this.sendData }) : _rosterLoaded = false, _log = Logger("DatabaseService");
 
@@ -104,18 +104,24 @@ class DatabaseService {
     }
 
     if (notify) {
+      // TODO
+      /*
       sendData(LoadConversationsResultEvent(
           conversations: tmp
       ));
+      */
     }
   }
 
   /// Loads all messages for the conversation with jid [jid].
   Future<void> loadMessagesForJid(String jid) async {
     if (loadedConversations.contains(jid)) {
+      // TODO
+      /*
       sendData(LoadMessagesForJidEvent(
           jid: jid, messages: _messageCache[jid]!
       ));
+      */
      
       return;
     }
@@ -135,11 +141,14 @@ class DatabaseService {
       _messageCache[jid]!.add(msg);
       tmp.add(msg);
     }
-    
+
+    // TODO
+    /*
     sendData(LoadMessagesForJidEvent(
         jid: jid,
         messages: tmp
     ));
+    */
   }
 
   /// Updates the conversation with id [id] inside the database.
@@ -312,9 +321,12 @@ class DatabaseService {
     _log.finest("Roster loaded: $items");
     
     if (notify) {
+      // TODO
+      /*
       sendData(RosterDiffEvent(
           newItems: items.toList()
       ));
+      */
     }
 
     _rosterLoaded = true;

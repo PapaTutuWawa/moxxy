@@ -1,5 +1,9 @@
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/backgroundsender.dart";
 
+import "package:get_it/get_it.dart";
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 
@@ -56,7 +60,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return emit(
         state.copyWith(
           jidState: LoginFormState(true),
-          passwordState: LoginFormState("Password cannot be empty");
+          passwordState: LoginFormState(false, error: "Password cannot be empty")
         )
       );
     }
@@ -70,5 +74,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
 
     // TODO: Actually perform the login
+    // TODO: Maybe let [LoginSuccessfulEvent] and [LoginFailureEvent] have a common
+    //       super-class such that we can imediately cast it up to that and then see
+    //       if it was successful and cast accordingly.
+    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      LoginCommand(
+        jid: state.jid,
+        password: state.password,
+        useDirectTLS: true
+      )
+    ) as LoginSuccessfulEvent;
+
+    print(result.displayName);
   }
 }
