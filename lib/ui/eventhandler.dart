@@ -30,7 +30,7 @@ class DataWrapper<T extends JsonImplementation> {
     "data": data.toJson()
   };
 
-  DataWrapper reply(T newData) => const DataWrapper(id, newData);
+  DataWrapper reply(T newData) => DataWrapper(id, newData);
 }
 
 /// This class is useful in contexts where data is sent between two parties, e.g. the
