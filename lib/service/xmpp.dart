@@ -41,7 +41,6 @@ class XmppService {
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
   final Logger _log;
-  final void Function(BackgroundEvent) sendData;
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
@@ -49,7 +48,7 @@ class XmppService {
   
   ConnectivityResult _currentConnectionType;
   
-  XmppService({ required this.sendData }) :
+  XmppService() :
     _currentlyOpenedChatJid = "",
     _networkStateSubscription = null,
     _state = null,

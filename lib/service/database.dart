@@ -6,6 +6,7 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/roster.dart";
+import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/message.dart";
 import "package:moxxyv2/service/db/roster.dart";
@@ -71,9 +72,8 @@ class DatabaseService {
   bool _rosterLoaded;
   
   final Logger _log;
-  final void Function(BackgroundEvent) sendData;
   
-  DatabaseService({ required this.isar, required this.sendData }) : _rosterLoaded = false, _log = Logger("DatabaseService");
+  DatabaseService(this.isar) : _rosterLoaded = false, _log = Logger("DatabaseService");
 
   /// Returns the database ID of the conversation with jid [jid] or null if not found.
   Future<Conversation?> getConversationByJid(String jid) async {

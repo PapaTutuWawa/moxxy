@@ -22,9 +22,8 @@ import "package:cryptography/cryptography.dart";
 
 class AvatarService {
   final Logger _log;
-  final void Function(BackgroundEvent) sendData;
   
-  AvatarService(this.sendData) : _log = Logger("AvatarService");
+  AvatarService() : _log = Logger("AvatarService");
 
   UserAvatarManager _getUserAvatarManager() => GetIt.I.get<XmppConnection>().getManagerById(userAvatarManager)! as UserAvatarManager;
 

@@ -9,7 +9,9 @@ void main() {
   test("Test simple callbacks", () {
       int handled = 0;
       final handler = EventHandler();
-      handler.addMatcher(EventTypeMatcher<FooEvent>((event) => handled++));
+      handler.addMatcher(EventTypeMatcher<FooEvent>((event, { extra }) async {
+            handled++;
+      }));
       handler.run(FooEvent());
       handler.run(BarEvent());
 

@@ -24,15 +24,13 @@ class FileMetadata {
 //       - Retry if a download failed, e.g. because we lost internet connection
 //       - hold a queue of files to download
 class DownloadService {
-  final void Function(BackgroundEvent) sendData;
-
   final Logger _log;
   // Map the URL to download to the message id of the message we need to update
   // NOTE: This will be useful when we implement a queue 
   final Map<String, int> _tasks;
   final Map<String, int> _rateLimits; // URL -> When to send the next update
 
-  DownloadService(this.sendData) : _tasks = {}, _rateLimits = {}, _log = Logger("DownloadService");
+  DownloadService() : _tasks = {}, _rateLimits = {}, _log = Logger("DownloadService");
 
   /// Calculates the path for a given file to be saved to and, if neccessary, create it.
   Future<String> _getDownloadPath(String filename, String conversationJid, String? mime) async {

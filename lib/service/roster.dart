@@ -13,9 +13,8 @@ import "package:logging/logging.dart";
 
 class RosterService {
   final Logger _log;
-  final void Function(BackgroundEvent) sendData;
   
-  RosterService({ required this.sendData }) : _log = Logger("RosterService");
+  RosterService() : _log = Logger("RosterService");
   
   Future<bool> isInRoster(String jid) async {
     return await GetIt.I.get<DatabaseService>().isInRoster(jid);

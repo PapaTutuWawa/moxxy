@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:moxxyv2/shared/logging.dart";
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/helpers.dart";
@@ -36,6 +37,7 @@ import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/blocking.dart";
+import "package:moxxyv2/service/events.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
@@ -45,6 +47,7 @@ import "package:isar/isar.dart";
 import "package:path_provider/path_provider.dart";
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
+import "package:uuid/uuid.dart";
 
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/roster.dart";
@@ -68,65 +71,23 @@ Future<void> initializeServiceIfNeeded() async {
   await initializeService();
 }
 
-void Function(BackgroundEvent) sendDataMiddleware(FlutterBackgroundService srv) {
-  return (data) {
-    final json = data.toJson();
-    // NOTE: *S*erver to *F*oreground
-    GetIt.I.get<Logger>().fine("S2F: " + json.toString());
+typedef EventMiddlewareType = void Function(BackgroundEvent, { String id });
 
-    srv.sendData(json);
-  };
+/// A middleware for packing an event into a [DataWrapper] and also
+/// logging what we send.
+void sendEvent(BackgroundEvent event, { String? id }) {
+  final json = event.toJson();
+  final data = DataWrapper(
+    id ?? Uuid().v4(),
+    event
+  );
+  // NOTE: *S*erver to *F*oreground
+  GetIt.I.get<Logger>().fine("S2F: " + data.toString());
+  
+  GetIt.I.get<FlutterBackgroundService>().sendData(data.toJson());
 }
 
-Future<void> performPreStart(void Function(BackgroundEvent) sendData) async {
-  final xmpp = GetIt.I.get<XmppService>();
-  final account = await xmpp.getAccountData();
-  final settings = await xmpp.getConnectionSettings();
-  final state = await xmpp.getXmppState();
-  final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
-
-
-  GetIt.I.get<Logger>().finest("account != null: " + (account != null).toString());
-  GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
-
-  if (account!= null && settings != null) {
-    await GetIt.I.get<RosterService>().loadRosterFromDatabase();
-
-    // Check some permissions
-    final storagePerm = await Permission.storage.status;
-    final List<int> permissions = List.empty(growable: true);
-    if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
-      permissions.add(Permission.storage.value);
-
-      await xmpp.modifyXmppState((state) => state.copyWith(
-          askedStoragePermission: true
-      ));
-    }
-
-    // TODO
-    /*
-    sendData(PreStartResultEvent(
-        state: "logged_in",
-        jid: account.jid,
-        displayName: account.displayName,
-        avatarUrl: state.avatarUrl,
-        debugEnabled: state.debugEnabled,
-        permissionsToRequest: permissions,
-        preferences: preferences
-    ));
-    */
-  } else {
-    /*
-    sendData(PreStartResultEvent(
-        state: "not_logged_in",
-        debugEnabled: state.debugEnabled,
-        permissionsToRequest: List<int>.empty(),
-        preferences: preferences
-    ));
-    */
-  }
-}
-
+// TODO: Move into the database service
 Future<Isar> openDatabase() async {
   final dir = await getApplicationSupportDirectory();
   return await Isar.open(
@@ -175,13 +136,16 @@ Future<void> initUDPLogger() async {
   }
 }
 
+/// Entrypoint for the background service
 void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
 
   setupLogging();
-  GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
+  setupBackgroundEventHandler();
 
   final service = FlutterBackgroundService();
+  GetIt.I.registerSingleton<FlutterBackgroundService>(service);
+  GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
   service.onDataReceived.listen(handleEvent);
   service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
 
@@ -189,44 +153,23 @@ void onStart() {
   // TODO
   return;
 
-  final middleware = sendDataMiddleware(service);
-GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
-  GetIt.I.registerSingleton<BlocklistService>(BlocklistService(middleware));
-  GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
-
   (() async {
       await GetIt.I.get<NotificationsService>().init();
 
       // Register singletons
       GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
-
-      final db = DatabaseService(isar: await openDatabase(), sendData: middleware);
-      GetIt.I.registerSingleton<DatabaseService>(db); 
-
-      final xmpp = XmppService(sendData: (data) {
-          // TODO
-          /*
-          if (data is ConnectionStateEvent) {
-            if (data.state == XmppConnectionState.connected.toString().split(".")[1]) {
-              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
-            } else if (data.state == XmppConnectionState.connecting.toString().split(".")[1]) {
-              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Connecting...");
-            } else {
-              FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Disconnected");
-            }
-          }
-          */
-
-          middleware(data);
-      });
+      GetIt.I.registerSingleton<DatabaseService>(DatabaseService(await openDatabase()));
+      GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
+      GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
+      GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
+      GetIt.I.registerSingleton<DownloadService>(DownloadService());
+      GetIt.I.registerSingleton<AvatarService>(AvatarService());
+      GetIt.I.registerSingleton<RosterService>(RosterService());
+      final xmpp = XmppService();
       GetIt.I.registerSingleton<XmppService>(xmpp);
-      GetIt.I.registerSingleton<DownloadService>(DownloadService(middleware));
-      GetIt.I.registerSingleton<AvatarService>(AvatarService(middleware));
 
       // Init the UDPLogger
       await initUDPLogger();
-
-      GetIt.I.registerSingleton<RosterService>(RosterService(sendData: middleware));
 
       final connection = XmppConnection();
       connection.registerManagers([
@@ -281,6 +224,15 @@ Future<FlutterBackgroundService> initializeService() async {
   return service;
 }
 
+void setupBackgroundEventHandler() {
+  final handler = EventHandler();
+  handler.addMatchers([
+      EventTypeMatcher<LoginCommand>(performLoginHandler)
+  ]);
+
+  GetIt.I.registerSingleton<EventHandler>(handler);
+}
+
 void handleEvent(Map<String, dynamic>? data) {
   // NOTE: *F*oreground to *S*ervice
   final log = GetIt.I.get<Logger>();
@@ -300,276 +252,5 @@ void handleEvent(Map<String, dynamic>? data) {
     return;
   }
 
-  if (command is LoginCommand) {
-    FlutterBackgroundService().sendData(
-      DataWrapper(
-        id,
-        // TODO
-        LoginSuccessfulEvent(
-          jid: "test@example.com",
-          displayName: "test"
-        )
-      ).toJson()
-    );
-  }
-  
-  /*
-  switch (data!["type"]) {
-    case loadConversationsType: {
-      GetIt.I.get<DatabaseService>().loadConversations();
-    }
-    break;
-    case performLoginType: {
-      final command = PerformLoginAction.fromJson(data);
-      GetIt.I.get<Logger>().fine("Performing login");
-      GetIt.I.get<XmppService>().connect(ConnectionSettings(
-          jid: JID.fromString(command.jid),
-          password: command.password,
-          useDirectTLS: command.useDirectTLS,
-          allowPlainAuth: command.allowPlainAuth
-      ), true);
-    }
-    break;
-    case loadMessagesForJidActionType: {
-      final command = LoadMessagesForJidAction.fromJson(data);
-      GetIt.I.get<DatabaseService>().loadMessagesForJid(command.jid);
-    }
-    break;
-    case setCurrentlyOpenChatType: {
-      final command = SetCurrentlyOpenChatAction.fromJson(data);
-      GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid);
-    }
-    break;
-    case addToRosterType: {
-      final command = AddToRosterAction.fromJson(data);
-      final String jid = command.jid;
-      (() async {
-          final roster = GetIt.I.get<RosterService>();
-          if (await roster.isInRoster(jid)) {
-            // TODO: Use a global middleware
-            FlutterBackgroundService().sendData(
-              AddToRosterResultEvent(
-                result: "error",
-                msg: "Already in contact list"
-              ).toJson()
-            );
-            return;
-          }
-
-          final db = GetIt.I.get<DatabaseService>();
-          final conversation = await db.getConversationByJid(jid);
-          if (conversation != null) {
-            final c = await db.updateConversation(id: conversation.id, open: true);
-
-            FlutterBackgroundService().sendData(
-              ConversationUpdatedEvent(conversation: c).toJson()
-            );
-          } else {            
-            final c = await db.addConversationFromData(
-              jid.split("@")[0],
-              "",
-              "",
-              jid,
-              0,
-              -1,
-              [],
-              true
-            );
-            FlutterBackgroundService().sendData(
-              ConversationCreatedEvent(conversation: c).toJson()
-            );
-          }
-
-          roster.addToRosterWrapper("", jid, jid.split("@")[0]);
-          FlutterBackgroundService().sendData(
-            AddToRosterResultEvent(
-              result: "success",
-              jid: jid
-            ).toJson()
-          );
-          
-          // Try to figure out an avatar
-          await GetIt.I.get<AvatarService>().subscribeJid(jid);
-          GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid);
-      })();
-    }
-    break;
-    case removeRosterItemActionType: {
-      final command = RemoveRosterItemAction.fromJson(data);
-      GetIt.I.get<RosterService>().removeFromRosterWrapper(command.jid);
-      GetIt.I.get<AvatarService>().unsubscribeJid(command.jid.toString());
-    }
-    break;
-    case sendMessageActionType: {
-      final command = SendMessageAction.fromJson(data);
-      GetIt.I.get<XmppService>().sendMessage(
-        body: command.body,
-        jid: command.jid,
-        quotedMessage: command.quotedMessage
-      );
-    }
-    break;
-    case setCSIStateType: {
-      final command = SetCSIStateAction.fromJson(data);
-      final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager);
-      if (csi == null) {
-        return;
-      }
-
-      if (command.state == "foreground") {
-        csi.setActive();
-      } else {
-        csi.setInactive();
-      }
-    }
-    break;
-    case performPrestartActionType: {
-      // TODO: This assumes that we are ready if we receive this event
-      performPreStart((event) {
-          // TODO: Maybe register the middleware via GetIt
-          final data = event.toJson();
-          GetIt.I.get<Logger>().fine("S2F: " + data.toString());
-
-          FlutterBackgroundService().sendData(data);
-      });
-    }
-    break;
-    case debugSetEnabledActionType: {
-      final command = DebugSetEnabledAction.fromJson(data);
-      (() async {
-          await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugEnabled: command.enabled
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case debugSetIpActionType: {
-      final command = DebugSetIpAction.fromJson(data);
-      (() async {
-          await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugIp: command.ip
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case debugSetPortActionType: {
-      final command = DebugSetPortAction.fromJson(data);
-      (() async {
-          await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugPort: command.port
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case debugSetPassphraseActionType: {
-      final command = DebugSetPassphraseAction.fromJson(data);
-      (() async {
-          await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-              debugPassphrase: command.passphrase
-          ));
-          initUDPLogger();
-      })();
-    }
-    break;
-    case performDownloadActionType: {
-      final command = PerformDownloadAction.fromJson(data);
-      sendDataMiddleware(FlutterBackgroundService())(
-        MessageUpdatedEvent(message: command.message.copyWith(isDownloading: true))
-      );
-
-      (() async {
-          final download = GetIt.I.get<DownloadService>();
-          final metadata = await download.peekFile(command.message.srcUrl!);
-
-          // TODO: Maybe deduplicate with the code in the xmpp service
-          // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
-          //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-          final ext = command.message.srcUrl!.split(".").last;
-          final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
-          
-          await download.downloadFile(command.message.srcUrl!, command.message.id, command.message.conversationJid, mimeGuess);
-      })();
-    }
-    break;
-    case setPreferencesCommandType: {
-      final command = SetPreferencesCommand.fromJson(data);
-
-      GetIt.I.get<PreferencesService>().modifyPreferences((prefs) => command.preferences);
-    }
-    break;
-    case addConversationActionType: {
-      final command = AddConversationAction.fromJson(data);
-      final database = GetIt.I.get<DatabaseService>();
-
-      (() async {
-          final conversation = await database.getConversationByJid(command.jid);
-          if (conversation != null) {
-            if (!conversation.open) {
-              final newConv = await database.updateConversation(
-                id: conversation.id,
-                open: true
-              );
-              final event = ConversationCreatedEvent(conversation: newConv);
-
-              GetIt.I.get<Logger>().fine("S2F: " + event.toString());
-              FlutterBackgroundService().sendData(event.toJson());
-            }
-
-            final doneEvent = NewConversationDoneEvent(jid: command.jid);
-            GetIt.I.get<Logger>().fine("S2F: " + doneEvent.toString());
-            FlutterBackgroundService().sendData(doneEvent.toJson());
-          } else {
-            final conversation = await database.addConversationFromData(
-              command.title,
-              command.lastMessageBody,
-              command.avatarUrl,
-              command.jid,
-              0,
-              -1,
-              const [],
-              true
-            );
-
-            final createEvent = ConversationCreatedEvent(conversation: conversation);
-            GetIt.I.get<Logger>().fine("S2F: " + createEvent.toString());
-            FlutterBackgroundService().sendData(createEvent.toJson());
-            
-            final event = NewConversationDoneEvent(jid: command.jid);
-            GetIt.I.get<Logger>().fine("S2F: " + event.toString());
-            FlutterBackgroundService().sendData(event.toJson());
-          }
-      })();
-    }
-    break;
-    case blockCommand: {
-      final command = BlockCommand.fromJson(data);
-      GetIt.I.get<BlocklistService>().blockJid(command.jid);
-    }
-    break;
-    case unblockCommand: {
-      final command = UnblockCommand.fromJson(data);
-      GetIt.I.get<BlocklistService>().unblockJid(command.jid);
-    }
-    break;
-    case unblockAllCommandType: {
-      GetIt.I.get<BlocklistService>().unblockAll();
-    }
-    break;
-    case setAvatarCommandType: {
-      final command = SetAvatarCommand.fromJson(data);
-      GetIt.I.get<AvatarService>().publish(command.path);
-      GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-          avatarUrl: command.path
-      ));
-    }
-    break;
-    case stopActionType: {
-      FlutterBackgroundService().stopBackgroundService();
-    }
-    break;
-  }
-  */
+  GetIt.I.get<EventHandler>().run(command, extra: id);
 }

@@ -15,11 +15,9 @@ class BlocklistService {
   final List<String> _blocklistCache;
   bool _requestedBlocklist;
 
-  final void Function(BackgroundEvent) sendData;
-  
   final Logger _log;
   
-  BlocklistService(this.sendData) :
+  BlocklistService() :
     _blocklistCache = List.empty(growable: true),
     _requestedBlocklist = false,
     _log = Logger("BlocklistService");
