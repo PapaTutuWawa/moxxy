@@ -20,7 +20,8 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   Future<void> _onLoggedIn(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
     return emit(
       state.copyWith(
-        displayName: event.displayName
+        displayName: event.displayName,
+        conversations: event.conversations
       )
     );
   }

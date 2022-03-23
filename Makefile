@@ -4,7 +4,7 @@ lib/ui/data/generated/providers.g.dart: thirdparty/xmpp-providers/providers-A.js
 lib/ui/data/generated/licenses.g.dart: pubspec.yaml
 	python tools/generate_licenses.py
 
-lib/shared/events.g.dart lib/shared/commands.g.dart: data_classes.yaml
+lib/shared/events.g.dart lib/shared/commands.g.dart: data_classes.yaml tools/generate_data_classes.py
 	python tools/generate_data_classes.py
 
 thirdparty/xmpp-providers/providers-A.json:

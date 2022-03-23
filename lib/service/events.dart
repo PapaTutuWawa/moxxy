@@ -3,12 +3,16 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/xmpp.dart";
+import "package:moxxyv2/service/preferences.dart";
+import "package:moxxyv2/service/roster.dart";
+import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
+import "package:permission_handler/permission_handler.dart";
 
 Future<void> performLoginHandler(BaseEvent c, { dynamic extra }) async {
   final command = c as LoginCommand;
@@ -21,8 +25,7 @@ Future<void> performLoginHandler(BaseEvent c, { dynamic extra }) async {
       password: command.password,
       useDirectTLS: command.useDirectTLS,
       allowPlainAuth: false
-    ),
-    true
+    ), true
   );
 
   if (result.success) {
@@ -38,6 +41,60 @@ Future<void> performLoginHandler(BaseEvent c, { dynamic extra }) async {
     sendEvent(
       LoginFailureEvent(
         reason: result.reason!
+      ),
+      id: id
+    );
+  }
+}
+
+Future<void> performPreStart(BaseEvent c, { dynamic extra }) async {
+  final command = c as PerformPreStartCommand;
+  final id = extra as String;
+  
+  final xmpp = GetIt.I.get<XmppService>();
+  final account = await xmpp.getAccountData();
+  final settings = await xmpp.getConnectionSettings();
+  final state = await xmpp.getXmppState();
+  final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+
+
+  GetIt.I.get<Logger>().finest("account != null: " + (account != null).toString());
+  GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
+
+  if (account!= null && settings != null) {
+    await GetIt.I.get<RosterService>().loadRosterFromDatabase();
+
+    // Check some permissions
+    final storagePerm = await Permission.storage.status;
+    final List<int> permissions = List.empty(growable: true);
+    if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
+      permissions.add(Permission.storage.value);
+
+      await xmpp.modifyXmppState((state) => state.copyWith(
+          askedStoragePermission: true
+      ));
+    }
+    
+    sendEvent(
+      PreStartDoneEvent(
+        state: "logged_in",
+        jid: account.jid,
+        displayName: account.displayName,
+        avatarUrl: state.avatarUrl,
+        debugEnabled: state.debugEnabled,
+        permissionsToRequest: permissions,
+        preferences: preferences,
+        conversations: await GetIt.I.get<DatabaseService>().loadConversations()
+      ),
+      id: id
+    );
+  } else {
+    sendEvent(
+      PreStartDoneEvent(
+        state: "not_logged_in",
+        debugEnabled: state.debugEnabled,
+        permissionsToRequest: List<int>.empty(),
+        preferences: preferences
       ),
       id: id
     );

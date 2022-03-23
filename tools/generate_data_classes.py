@@ -1,3 +1,5 @@
+import re
+
 import yaml
 
 def generateToJson(name, attributes):
@@ -10,11 +12,29 @@ def generateToJson(name, attributes):
     json += "\t};\n"
     return json
 
+def generateFromJsonListBuilder(attrName, attrType, deserialise=False):
+    if "List<" in attrType:
+        listType = re.match("List\<(.*?)\>", attrType).groups()[0]
+        suffix = " ?? []" if "?" in attrType else "!"
+        data = "(json[\"" + attrName + "\"]" + suffix + ")"
+        if deserialise:
+            data += ".map((item) => {}.fromJson(item))".format(listType)
+        return "\t\t" + attrName + ": List<" + listType + ">.from(" + data + "),\n";
+
+    if deserialise:
+        return "\t\t" + attrName + ": " + attrType + ".fromJson(json[\"" + attrName + "\"]" + ("" if attrType.endswith("?") else "!") + "),\n"
+
+    return "\t\t" + attrName + ": json[\"" + attrName + "\"]" + ("" if attrType.endswith("?") else "!") + ",\n"
+
 def generateFromJson(name, attributes):
     json = "\tstatic " + name + " fromJson(Map<String, dynamic> json) => " + name + "(\n"
 
     for attr in attributes:
-        json += "\t\t" + attr + ": json[\"" + attr + "\"]" + ("" if attributes[attr].endswith("?") else "!") + ",\n" 
+        json += generateFromJsonListBuilder(
+            attr,
+            getType(attributes[attr]),
+            getSerialise(attributes[attr])
+        )
     
     json += "\t);\n"
     
@@ -31,6 +51,16 @@ def generateBuilder(builderName, builderBaseClass, classes):
     func += "\t}\n"
     func += "}\n"
     return func
+
+def getType(val):
+    if type(val) is dict:
+        return val["type"]
+    return val
+
+def getSerialise(val):
+    if type(val) is dict:
+        return val["deserialise"]
+    return False
 
 def handleRequired(type_):
     return "required " if not type_.endswith("?") else ""
@@ -55,12 +85,15 @@ def main():
             content += f"class {c['name']} extends {extends} implements {implements}" + " {\n"
             attributes = c.get("attributes", [])
             for attr in attributes:
-                content += "\tfinal {} {};\n".format(c["attributes"][attr], attr)
+                content += "\tfinal {} {};\n".format(getType(c["attributes"][attr]), attr)
             content += "\n"
 
-            content += "\t" + c["name"] + "({ " + ", ".join([
-                handleRequired(c["attributes"][name]) + "this." + name for name in attributes
-            ]) + " });\n\n"
+            if attributes:
+                content += "\t" + c["name"] + "({ " + ", ".join([
+                    handleRequired(getType(c["attributes"][name])) + "this." + name for name in attributes
+                ]) + " });\n\n"
+            else:
+                content += "\t" + c["name"] + "();\n\n";
 
             content += "\t// JSON stuff\n"
             content += generateToJson(c["name"], attributes)

@@ -89,7 +89,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
-          result.displayName
+          result.displayName,
+          // TODO
+          []
         )
       );
       GetIt.I.get<NavigationBloc>().add(

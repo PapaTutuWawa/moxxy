@@ -90,7 +90,7 @@ class DatabaseService {
   }
   
   /// Loads all conversations from the database and adds them to the state and cache.
-  Future<void> loadConversations({ bool notify = true }) async {
+  Future<List<Conversation>> loadConversations({ bool notify = true }) async {
     final conversationsRaw = await isar.dBConversations.where().findAll();
 
     final tmp = List<Conversation>.empty(growable: true);
@@ -103,6 +103,8 @@ class DatabaseService {
        _conversationCache[conv.id] = conv;
     }
 
+    return tmp;
+    
     if (notify) {
       // TODO
       /*

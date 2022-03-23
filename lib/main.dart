@@ -26,7 +26,8 @@ import "package:moxxyv2/ui/bloc/login_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
-import "package:moxxyv2/shared/commands.dart" as commands;
+import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
 
@@ -36,6 +37,8 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
+
+// TODO: Merge debug settings into the preferences
 
 void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
@@ -106,11 +109,36 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
-    /*FlutterBackgroundService().sendData(
-      commands.PerformPrestartAction().toJson()
-    );*/
+    _performPreStart();
   }
 
+  Future<void> _performPreStart() async {
+    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      PerformPreStartCommand()
+    ) as PreStartDoneEvent;
+
+    // TODO: Set preferences and debug stuff.
+
+    if (result.state == preStartLoggedInState) {
+      GetIt.I.get<ConversationsBloc>().add(
+        ConversationsInitEvent(
+          result.displayName!,
+          result.conversations!
+        )
+      );
+
+      navigationKey.currentState!.pushNamedAndRemoveUntil(
+        conversationsRoute,
+        (_) => false
+      );
+    } else if (result.state == preStartNotLoggedInState) {
+      navigationKey.currentState!.pushNamedAndRemoveUntil(
+        introRoute,
+        (_) => false
+      );
+    }
+  }
+  
   @override
   void dispose() {
     WidgetsBinding.instance!.removeObserver(this);
@@ -187,8 +215,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         blocklistRoute: (context) => BlocklistPage()
         */
       },
-      // TODO: Change back to const Splashscreen()
-      home: Intro()
+      home: Splashscreen()
     );
   }
 }

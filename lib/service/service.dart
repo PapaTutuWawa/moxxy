@@ -46,7 +46,6 @@ import "package:get_it/get_it.dart";
 import "package:isar/isar.dart";
 import "package:path_provider/path_provider.dart";
 import "package:logging/logging.dart";
-import "package:permission_handler/permission_handler.dart";
 import "package:uuid/uuid.dart";
 
 import "package:moxxyv2/service/db/conversation.dart";
@@ -225,7 +224,8 @@ Future<FlutterBackgroundService> initializeService() async {
 void setupBackgroundEventHandler() {
   final handler = EventHandler();
   handler.addMatchers([
-      EventTypeMatcher<LoginCommand>(performLoginHandler)
+      EventTypeMatcher<LoginCommand>(performLoginHandler),
+      EventTypeMatcher<PerformPreStartCommand>(performPreStart)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

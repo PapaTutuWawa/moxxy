@@ -16,6 +16,24 @@ files:
           - JsonImplementation
         attributes:
           reason: String
+      - name: PreStartDoneEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          state: String
+          debugEnabled: bool
+          permissionsToRequest: List<int>
+          preferences:
+            type: PreferencesState
+            deserialise: true
+          jid: String?
+          displayName: String?
+          avatarUrl: String?
+          conversations:
+            type: List<Conversation>?
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -31,6 +49,11 @@ files:
           jid: String
           password: String
           useDirectTLS: bool
+      - name: PerformPreStartCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
