@@ -14,14 +14,37 @@ part "conversations_bloc.freezed.dart";
 
 class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   ConversationsBloc() : super(ConversationsState()) {
-    on<ConversationsInitEvent>(_onLoggedIn);
+    on<ConversationsInitEvent>(_onInit);
+    on<ConversationsAddedEvent>(_onConversationsAdded);
+    on<ConversationsUpdatedEvent>(_onConversationsUpdated);
   }
 
-  Future<void> _onLoggedIn(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
+  Future<void> _onInit(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
     return emit(
       state.copyWith(
         displayName: event.displayName,
         conversations: event.conversations
+      )
+    );
+  }
+
+  Future<void> _onConversationsAdded(ConversationsAddedEvent event, Emitter<ConversationsState> emit) async {
+    // TODO: Should we guard against adding the same conversation multiple times?
+    return emit(
+      state.copyWith(
+        conversations: state.conversations..add(event.conversation)
+      )
+    );
+  }
+
+  Future<void> _onConversationsUpdated(ConversationsUpdatedEvent event, Emitter<ConversationsState> emit) async {
+    return emit(
+      state.copyWith(
+        conversations: state.conversations.map((c) {
+            if (c.jid == event.conversation.jid) return event.conversation;
+
+            return c;
+        }).toList()
       )
     );
   }

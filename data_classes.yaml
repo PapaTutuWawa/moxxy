@@ -37,6 +37,35 @@ files:
           roster:
             type: List<RosterItem>?
             deserialise: true
+      # Triggered if a conversation has been added.
+      # Also returned by [AddConversationCommand]
+      - name: ConversationAddedEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          conversation:
+            type: Conversation
+            deserialise: true
+      # Triggered if a conversation has been updated.
+      # Also returned by [AddConversationCommand]
+      - name: ConversationUpdatedEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          conversation:
+            type: Conversation
+            deserialise: true
+      # Returned by [AddConversationCommand] if no conversation was added or
+      # updated.
+      - name: NoConversationModifiedEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -57,6 +86,16 @@ files:
           - BackgroundCommand
         implements:
           - JsonImplementation
+      - name: AddConversationCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          title: String
+          lastMessageBody: String
+          avatarUrl: String
+          jid: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

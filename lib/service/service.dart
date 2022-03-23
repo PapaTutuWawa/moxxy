@@ -225,7 +225,8 @@ void setupBackgroundEventHandler() {
   final handler = EventHandler();
   handler.addMatchers([
       EventTypeMatcher<LoginCommand>(performLoginHandler),
-      EventTypeMatcher<PerformPreStartCommand>(performPreStart)
+      EventTypeMatcher<PerformPreStartCommand>(performPreStart),
+      EventTypeMatcher<AddConversationCommand>(performAddConversation)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

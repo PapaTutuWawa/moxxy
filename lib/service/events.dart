@@ -101,3 +101,52 @@ Future<void> performPreStart(BaseEvent c, { dynamic extra }) async {
     );
   }
 }
+
+Future<void> performAddConversation(BaseEvent c, { dynamic extra }) async {
+  final command = c as AddConversationCommand;
+  final id = extra as String;
+
+  final db = GetIt.I.get<DatabaseService>();
+  final conversation = await db.getConversationByJid(command.jid);
+  if (conversation != null) {
+    if (!conversation.open) {
+      // Re-open the conversation
+      final updatedConversation = await db.updateConversation(
+        id: conversation.id,
+        open: true
+      );
+
+      sendEvent(
+        ConversationAddedEvent(
+          conversation: updatedConversation
+        ),
+        id: id
+      );
+      return;
+    }
+
+    sendEvent(
+      NoConversationModifiedEvent(),
+      id: id
+    );
+    return;
+  } else {
+    final conversation = await db.addConversationFromData(
+      command.title,
+      command.lastMessageBody,
+      command.avatarUrl,
+      command.jid,
+      0,
+      -1,
+      const [],
+      true
+    );
+
+    sendEvent(
+      ConversationAddedEvent(
+        conversation: conversation
+      ),
+      id: id
+    );
+  }
+}
