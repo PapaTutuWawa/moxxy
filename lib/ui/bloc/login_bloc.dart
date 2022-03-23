@@ -54,7 +54,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return emit(
         state.copyWith(
           jidState: LoginFormState(false, error: jidValidity),
-          passwordState: LoginFormState(true)
+          passwordState: const LoginFormState(true)
         )
       );
     }
@@ -62,8 +62,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     if (state.password.isEmpty) {
       return emit(
         state.copyWith(
-          jidState: LoginFormState(true),
-          passwordState: LoginFormState(false, error: "Password cannot be empty")
+          jidState: const LoginFormState(true),
+          passwordState: const LoginFormState(false, error: "Password cannot be empty")
         )
       );
     }
@@ -71,8 +71,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(
       state.copyWith(
         working: true,
-        jidState: LoginFormState(true),
-        passwordState: LoginFormState(true)
+        jidState: const LoginFormState(true),
+        passwordState: const LoginFormState(true)
       )
     );
 
@@ -96,7 +96,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
       GetIt.I.get<NavigationBloc>().add(
         PushedNamedAndRemoveUntilEvent(
-          NavigationDestination(
+          const NavigationDestination(
             conversationsRoute
           ),
           (_) => false

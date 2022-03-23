@@ -6,7 +6,7 @@ import "package:flutter_background_service/flutter_background_service.dart";
 
 /// An [AwaitableDataSender] that uses flutter_background_service.
 class BackgroundServiceDataSender extends AwaitableDataSender<BackgroundCommand, BackgroundEvent> {
-  FlutterBackgroundService _srv;
+  final FlutterBackgroundService _srv;
 
   BackgroundServiceDataSender() : _srv = FlutterBackgroundService(), super();
 

@@ -38,10 +38,10 @@ class NewConversationPage extends StatelessWidget {
             )
           ),
           Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 19,
                 fontWeight: FontWeight.bold
               )
@@ -63,12 +63,12 @@ class NewConversationPage extends StatelessWidget {
           itemBuilder: (context, index) {
             switch(index) {
               case 0: return _renderIconEntry(
-                Icon(Icons.person_add),
+                const Icon(Icons.person_add),
                 "Add contact",
                 () => Navigator.pushNamed(context, addContactRoute)
               );
               case 1: return _renderIconEntry(
-                Icon(Icons.group_add),
+                const Icon(Icons.group_add),
                 "Create groupchat",
                 () => showNotImplementedDialog("groupchat", context)
               );
