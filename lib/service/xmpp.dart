@@ -558,4 +558,13 @@ class XmppService {
     GetIt.I.get<XmppConnection>().connect(lastResource: lastResource);
     installEventHandlers();
   }
+
+  Future<XmppConnectionResult> connectAwaitable(ConnectionSettings settings, bool triggeredFromUI) async {
+    final lastResource = (await getXmppState()).resource;
+
+    loginTriggeredFromUI = triggeredFromUI;
+    GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
+    installEventHandlers();
+    return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
+  }
 }

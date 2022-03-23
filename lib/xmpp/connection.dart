@@ -57,6 +57,20 @@ class StartTLSNonza extends XMLNode {
   );
 }
 
+class XmppConnectionResult {
+  final bool success;
+  // NOTE: [reason] is not human-readable, but the type of SASL error.
+  //       See sasl/errors.dart
+  final String? reason;
+
+  const XmppConnectionResult(
+    this.success,
+    {
+      this.reason
+    }
+  );
+}
+
 class XmppConnection {
   final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse;
@@ -93,6 +107,8 @@ class XmppConnection {
   /// Timers for the keep-alive ping and the backoff connection process.
   Timer? _connectionPingTimer;
   Timer? _backoffTimer;
+  /// Completers for certain actions
+  Completer<XmppConnectionResult>? _connectionCompleter;
 
   /// Negotiators
   late AuthenticationNegotiator _authenticator;
@@ -550,6 +566,16 @@ class XmppConnection {
           _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(XmppConnectionState.error);
           _routingState = RoutingState.error;
+
+          if (_connectionCompleter != null) {
+            _connectionCompleter!.complete(
+              XmppConnectionResult(
+                false,
+                reason: result.getValue()
+              )
+            );
+            _connectionCompleter = null;
+          }
         }
       }
       break;
@@ -633,10 +659,17 @@ class XmppConnection {
         if (proceed) {
           _routingState = RoutingState.handleStanzas;
           getPresenceManager().sendInitialPresence();
+          if (_connectionCompleter != null) {
+            _connectionCompleter!.complete(
+              const XmppConnectionResult(true)
+            );
+            _connectionCompleter = null;
+          }
         } else {
           _log.severe("Resource binding failed!");
           _routingState = RoutingState.error;
           _setConnectionState(XmppConnectionState.error);
+          return;
         }
 
         _discoverServerFeatures();
@@ -645,6 +678,13 @@ class XmppConnection {
       case RoutingState.bindResourcePreSM: {
         final proceed = _handleResourceBindingResult(node);
         if (proceed) {
+          if (_connectionCompleter != null) {
+            _connectionCompleter!.complete(
+              const XmppConnectionResult(true)
+            );
+            _connectionCompleter = null;
+          }
+
           _routingState = RoutingState.enableSM;
           sendRawXML(StreamManagementEnableNonza());
         }
@@ -765,6 +805,14 @@ class XmppConnection {
     if (_connectionState == XmppConnectionState.notConnected) {
       connect();
     }
+  }
+
+  /// Like [connect] but the Future resolves when the resource binding is either done or
+  /// SASL has failed.
+  Future<XmppConnectionResult> connectAwaitable({ String? lastResource }) {
+    _connectionCompleter = Completer();
+    connect(lastResource: lastResource);
+    return _connectionCompleter!.future;
   }
   
   /// Start the connection process using the provided connection settings.
