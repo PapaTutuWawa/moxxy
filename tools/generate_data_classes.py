@@ -14,7 +14,7 @@ def generateFromJson(name, attributes):
     json = "\tstatic " + name + " fromJson(Map<String, dynamic> json) => " + name + "(\n"
 
     for attr in attributes:
-        json += "\t\t" + attr + ": json[\"" + attr + "\"]!,\n" 
+        json += "\t\t" + attr + ": json[\"" + attr + "\"]" + ("" if attributes[attr].endswith("?") else "!") + ",\n" 
     
     json += "\t);\n"
     
@@ -31,6 +31,9 @@ def generateBuilder(builderName, builderBaseClass, classes):
     func += "\t}\n"
     func += "}\n"
     return func
+
+def handleRequired(type_):
+    return "required " if not type_.endswith("?") else ""
 
 def main():
     with open("data_classes.yaml", "r") as f:
@@ -50,15 +53,18 @@ def main():
             extends = ", ".join(c["extends"])
             implements = ", ".join(c["implements"])
             content += f"class {c['name']} extends {extends} implements {implements}" + " {\n"
-            for attr in c["attributes"]:
+            attributes = c.get("attributes", [])
+            for attr in attributes:
                 content += "\tfinal {} {};\n".format(c["attributes"][attr], attr)
             content += "\n"
 
-            content += "\t" + c["name"] + "({ " + ", ".join([ "required this." + name for name in c["attributes"]]) + " });\n\n"
+            content += "\t" + c["name"] + "({ " + ", ".join([
+                handleRequired(c["attributes"][name]) + "this." + name for name in attributes
+            ]) + " });\n\n"
 
             content += "\t// JSON stuff\n"
-            content += generateToJson(c["name"], c["attributes"])
-            content += generateFromJson(c["name"], c["attributes"])
+            content += generateToJson(c["name"], attributes)
+            content += generateFromJson(c["name"], attributes)
             
             content += "}\n\n"
 
