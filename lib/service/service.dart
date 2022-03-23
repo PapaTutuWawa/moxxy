@@ -150,12 +150,8 @@ void onStart() {
   service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
 
   GetIt.I.get<Logger>().finest("Running...");
-  // TODO
-  return;
 
   (() async {
-      await GetIt.I.get<NotificationsService>().init();
-
       // Register singletons
       GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
       GetIt.I.registerSingleton<DatabaseService>(DatabaseService(await openDatabase()));
@@ -168,6 +164,8 @@ void onStart() {
       final xmpp = XmppService();
       GetIt.I.registerSingleton<XmppService>(xmpp);
 
+      await GetIt.I.get<NotificationsService>().init();
+      
       // Init the UDPLogger
       await initUDPLogger();
 
