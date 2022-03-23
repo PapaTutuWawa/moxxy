@@ -79,7 +79,7 @@ class DatabaseService {
   Future<Conversation?> getConversationByJid(String jid) async {
     // TODO: Check if we already tried to load once
     if (_conversationCache.isEmpty) {
-      await loadConversations(notify: false);
+      await loadConversations();
     }
 
     return firstWhereOrNull(
@@ -90,7 +90,7 @@ class DatabaseService {
   }
   
   /// Loads all conversations from the database and adds them to the state and cache.
-  Future<List<Conversation>> loadConversations({ bool notify = true }) async {
+  Future<List<Conversation>> loadConversations() async {
     final conversationsRaw = await isar.dBConversations.where().findAll();
 
     final tmp = List<Conversation>.empty(growable: true);
@@ -104,15 +104,6 @@ class DatabaseService {
     }
 
     return tmp;
-    
-    if (notify) {
-      // TODO
-      /*
-      sendData(LoadConversationsResultEvent(
-          conversations: tmp
-      ));
-      */
-    }
   }
 
   /// Loads all messages for the conversation with jid [jid].
@@ -311,7 +302,7 @@ class DatabaseService {
   }
   
   /// Loads roster items from the database
-  Future<void> loadRosterItems({ bool notify = true }) async {
+  Future<List<RosterItem>> loadRosterItems() async {
     final roster = await isar.dBRosterItems.where().findAll();
     final items = roster.map((item) => rosterDbToModel(item));
 
@@ -321,17 +312,8 @@ class DatabaseService {
     }
 
     _log.finest("Roster loaded: $items");
-    
-    if (notify) {
-      // TODO
-      /*
-      sendData(RosterDiffEvent(
-          newItems: items.toList()
-      ));
-      */
-    }
-
     _rosterLoaded = true;
+    return items.toList();
   }
 
   /// Removes a roster item from the database and cache
@@ -391,7 +373,7 @@ class DatabaseService {
   /// Returns true if a roster item with jid [jid] exists
   Future<bool> isInRoster(String jid) async {
     if (!_rosterLoaded) {
-      await loadRosterItems(notify: false);
+      await loadRosterItems();
     }
 
     return _rosterCache.containsKey(jid);
@@ -400,7 +382,7 @@ class DatabaseService {
   /// Returns true if a roster item with jid [jid] exists
   Future<List<RosterItem>> getRoster() async {
     if (!_rosterLoaded) {
-      await loadRosterItems(notify: false);
+      await loadRosterItems();
     }
 
     return _rosterCache.values.toList();

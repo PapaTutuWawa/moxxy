@@ -84,7 +84,8 @@ Future<void> performPreStart(BaseEvent c, { dynamic extra }) async {
         debugEnabled: state.debugEnabled,
         permissionsToRequest: permissions,
         preferences: preferences,
-        conversations: await GetIt.I.get<DatabaseService>().loadConversations()
+        conversations: await GetIt.I.get<DatabaseService>().loadConversations(),
+        roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase()
       ),
       id: id
     );

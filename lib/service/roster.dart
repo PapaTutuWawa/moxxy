@@ -22,11 +22,8 @@ class RosterService {
 
   /// Load the roster from the database. This function is guarded against loading the
   /// roster multiple times and thus creating too many "RosterDiff" actions.
-  Future<void> loadRosterFromDatabase() async {
-    final db = GetIt.I.get<DatabaseService>();
-    if (!db.isRosterLoaded()) {
-      await db.loadRosterItems(notify: true);
-    }
+  Future<List<RosterItem>> loadRosterFromDatabase() async {
+    return await GetIt.I.get<DatabaseService>().loadRosterItems();
   }
 
   /// Attempts to add an item to the roster by first performing the roster set

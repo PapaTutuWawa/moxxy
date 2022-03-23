@@ -34,6 +34,9 @@ files:
           conversations:
             type: List<Conversation>?
             deserialise: true
+          roster:
+            type: List<RosterItem>?
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
