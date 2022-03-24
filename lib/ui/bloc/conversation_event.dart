@@ -31,3 +31,30 @@ class RequestedConversationEvent extends ConversationEvent {
 
   RequestedConversationEvent(this.jid, this.title, this.avatarUrl);
 }
+
+/// Triggered by the UI when a message is quoted
+class MessageQuotedEvent extends ConversationEvent {
+  final Message message;
+
+  MessageQuotedEvent(this.message);
+}
+
+/// Triggered by the UI when the quote should be removed
+class QuoteRemovedEvent extends ConversationEvent {}
+
+/// Triggered by the UI when a user should be blocked
+class JidBlockedEvent extends ConversationEvent {
+  final String jid;
+
+  JidBlockedEvent(this.jid);
+}
+
+/// Triggered by the UI when a user should be added to the roster
+class JidAddedEvent extends ConversationEvent {
+  final String jid;
+
+  JidAddedEvent(this.jid);
+}
+
+/// Triggered by the UI when we leave the conversation
+class CurrentConversationResetEvent extends ConversationEvent {}

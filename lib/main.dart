@@ -15,7 +15,7 @@ import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
 import "package:moxxyv2/ui/pages/settings/appearance.dart";
 */
-import "package:moxxyv2/ui/pages/conversation/conversation.dart";
+import "package:moxxyv2/ui/pages/conversation.dart";
 import "package:moxxyv2/ui/pages/newconversation.dart";
 import "package:moxxyv2/ui/pages/conversations.dart";
 import "package:moxxyv2/ui/pages/login/login.dart";

@@ -5,7 +5,6 @@ import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 
@@ -43,7 +42,7 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
         PushedNamedAndRemoveUntilEvent(
           NavigationDestination(
             conversationRoute,
-            arguments: ConversationPageArguments(event.jid)
+            //arguments: ConversationPageArguments(event.jid)
           ),
           ModalRoute.withName(conversationsRoute)
         )
@@ -68,11 +67,12 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
       conversations.add(ConversationsAddedEvent(result.conversation));
     }
 
+    // TODO: Use the [ConversationBloc]
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedAndRemoveUntilEvent(
         NavigationDestination(
           conversationRoute,
-          arguments: ConversationPageArguments(event.jid)
+          //arguments: ConversationPageArguments(event.jid)
         ),
         ModalRoute.withName(conversationsRoute)
       )

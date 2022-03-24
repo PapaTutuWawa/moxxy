@@ -67,7 +67,7 @@ class _ConversationPageState extends State<ConversationPage> {
     super.dispose();
   }
 
-  Widget _renderBubble(ConversationState state, int _index, double maxWidth) {
+  Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth) {
     // TODO: Since we reverse the list: Fix start, end and between
     final index = state.messages.length - 1 - _index;
     Message item = state.messages[index];
@@ -78,9 +78,7 @@ class _ConversationPageState extends State<ConversationPage> {
     return SwipeableTile.swipeToTrigger(
       direction: SwipeDirection.horizontal,
       swipeThreshold: 0.2,
-      // TODO
-      //onSwiped: (_) => viewModel.setQuotedMessage(item),
-      onSwiped: (_) {},
+      onSwiped: (_) => context.read<ConversationBloc>().add(MessageQuotedEvent(item)),
       backgroundBuilder: (_, direction, progress) {
         // NOTE: Taken from https://github.com/watery-desert/swipeable_tile/blob/main/example/lib/main.dart#L240
         //       and modified.
@@ -147,25 +145,23 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  /*
-  void _block(_MessageListViewModel viewModel) {
-    final jid = viewModel.conversation.jid;
+  void _block(ConversationState state, BuildContext context) {
+    final jid = state.conversation!.jid;
 
     showConfirmationDialog(
       "Block $jid?",
       "Are you sure you want to block $jid? You won't receive messages from them until you unblock them.",
       context,
       () {
-        viewModel.blockJid(jid);
+        context.read<ConversationBloc>().add(JidBlockedEvent(jid));
         Navigator.of(context).pop();
       }
     );
-  }*/
+  }
   
   /// Render a widget that allows the user to either block the user or add them to their
   /// roster
-  /*
-  Widget _renderNotInRosterWidget(_MessageListViewModel viewModel, BuildContext context) {
+  Widget _renderNotInRosterWidget(ConversationState state, BuildContext context) {
     return Container(
       color: Colors.black38,
       child: SizedBox(
@@ -177,7 +173,7 @@ class _ConversationPageState extends State<ConversationPage> {
               child: TextButton(
                 child: const Text("Add to contacts"),
                 onPressed: () {
-                  final jid = viewModel.conversation.jid;
+                  final jid = state.conversation!.jid;
                   showConfirmationDialog(
                     "Add $jid to your contacts?",
                     "Are you sure you want to add $jid to your conacts?",
@@ -185,7 +181,9 @@ class _ConversationPageState extends State<ConversationPage> {
                     () {
                       // TODO: Maybe show a progress indicator
                       // TODO: Have the page update its state once the addition is done
-                      viewModel.addToRoster(viewModel.conversation.jid);
+                      context.read<ConversationBloc>().add(
+                        JidAddedEvent(jid)
+                      );
                       Navigator.of(context).pop();
                     }
                   );
@@ -195,7 +193,7 @@ class _ConversationPageState extends State<ConversationPage> {
             Expanded(
               child: TextButton(
                 child: const Text("Block"),
-                onPressed: () => _block(viewModel)
+                onPressed: () => _block(state, context)
               )
             )
           ]
@@ -203,18 +201,19 @@ class _ConversationPageState extends State<ConversationPage> {
       )
     );
   }
-  */
   
   @override
   Widget build(BuildContext context) {
     double maxWidth = MediaQuery.of(context).size.width * 0.6;
     
     return BlocBuilder<ConversationBloc, ConversationState>(
+      // TODO: Check this
+      buildWhen: (prev, next) => prev.conversation == next.conversation,
+
       builder: (context, state) {
         return WillPopScope(
           onWillPop: () async {
-            // TODO
-            //viewModel.resetCurrentConversation();
+            context.read<ConversationBloc>().add(CurrentConversationResetEvent());
             return true;
           },
           child: Scaffold(
@@ -259,8 +258,7 @@ class _ConversationPageState extends State<ConversationPage> {
                       }
                       break;
                       case ConversationOption.block: {
-                        // TODO
-                        //_block(viewModel);
+                        _block(state, context);
                       }
                       break;
                     }
@@ -283,14 +281,13 @@ class _ConversationPageState extends State<ConversationPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // TODO
-                  //...(!viewModel.conversation.inRoster ? [ _renderNotInRosterWidget(viewModel, context) ] : []),
+                  ...(!state.conversation!.inRoster ? [ _renderNotInRosterWidget(state, context) ] : []),
 
                   Expanded(
                     child: ListView.builder(
                       reverse: true,
                       itemCount: state.messages.length,
-                      itemBuilder: (context, index) => _renderBubble(state, index, maxWidth),
+                      itemBuilder: (context, index) => _renderBubble(state, context, index, maxWidth),
                       shrinkWrap: true
                     )
                   ),
@@ -371,11 +368,10 @@ class _ConversationPageState extends State<ConversationPage> {
                               cornerRadius: textfieldRadiusConversation,
                               controller: _controller,
                               // TODO: Handle media messages being quoted
-                              // TODO
-                              /*topWidget: viewModel.quotedMessage != null ? QuotedMessageWidget(
-                                message: viewModel.quotedMessage!,
-                                resetQuotedMessage: () => viewModel.setQuotedMessage(null)
-                              ) : null*/
+                              topWidget: state.quotedMessage != null ? QuotedMessageWidget(
+                                message: state.quotedMessage!,
+                                resetQuotedMessage: () => context.read<ConversationBloc>().add(QuoteRemovedEvent())
+                              ) : null
                             )
                           ),
                           Padding(

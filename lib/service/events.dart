@@ -162,3 +162,15 @@ Future<void> performGetMessagesForJid(BaseEvent c, { dynamic extra }) async {
     id: id
   );
 }
+
+Future<void> performResetUnreadCounter(BaseEvent c, { dynamic extra }) async {
+  final command = c as ResetUnreadCounterCommand;
+  final id = extra as String;
+
+  sendEvent(
+    MessagesResultEvent(
+      messages: await GetIt.I.get<DatabaseService>().getMessagesForJid(command.jid)
+    ),
+    id: id
+  );
+}

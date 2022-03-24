@@ -22,6 +22,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<MessageTextChangedEvent>(_onMessageTextChanged);
     on<InitConversationEvent>(_onInit);
     on<MessageSentEvent>(_onMessageSent);
+    on<MessageQuotedEvent>(_onMessageQuoted);
+    on<QuoteRemovedEvent>(_onQuoteRemoved);
+    on<JidBlockedEvent>(_onJidBlocked);
+    on<JidAddedEvent>(_onJidAdded);
+    on<CurrentConversationResetEvent>(_onCurrentConversationReset);
   }
 
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
@@ -53,7 +58,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     ) as MessagesResultEvent;
     emit(state.copyWith(messages: result.messages));
 
-    // TODO: Check if we have unread messages and reset them
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      ResetUnreadCounterCommand(jid: event.jid),
+      awaitable: false
+    );
   }
 
   Future<void> _onMessageTextChanged(MessageTextChangedEvent event, Emitter<ConversationState> emit) async {
@@ -73,5 +81,33 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         showSendButton: false
       )
     );
+  }
+
+  Future<void> _onMessageQuoted(MessageQuotedEvent event, Emitter<ConversationState> emit) async {
+    return emit(
+      state.copyWith(
+        quotedMessage: event.message
+      )
+    );
+  }
+
+  Future<void> _onQuoteRemoved(QuoteRemovedEvent event, Emitter<ConversationState> emit) async {
+    return emit(
+      state.copyWith(
+        quotedMessage: null
+      )
+    );
+  }
+
+  Future<void> _onJidBlocked(JidBlockedEvent event, Emitter<ConversationState> emit) async {
+    // TODO
+  }
+
+  Future<void> _onJidAdded(JidAddedEvent event, Emitter<ConversationState> emit) async {
+    // TODO
+  }
+
+  Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
+    // TODO
   }
 }
