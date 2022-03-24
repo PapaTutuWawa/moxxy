@@ -4,6 +4,7 @@ import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/roster.dart";
+import "package:moxxyv2/shared/models/message.dart";
 
 part "events.g.dart";
 

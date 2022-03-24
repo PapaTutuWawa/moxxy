@@ -1,7 +1,6 @@
 import "package:moxxyv2/ui/eventhandler.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
-import "package:moxxyv2/ui/pages/conversation/conversation.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
@@ -16,6 +15,7 @@ import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
 import "package:moxxyv2/ui/pages/settings/appearance.dart";
 */
+import "package:moxxyv2/ui/pages/conversation/conversation.dart";
 import "package:moxxyv2/ui/pages/newconversation.dart";
 import "package:moxxyv2/ui/pages/conversations.dart";
 import "package:moxxyv2/ui/pages/login/login.dart";
@@ -25,6 +25,7 @@ import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/login_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/newconversation_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
@@ -58,6 +59,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
   GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
   GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
+  GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
 }
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -89,6 +91,9 @@ void main() async {
         ),
         BlocProvider<NewConversationBloc>(
           create: (_) => GetIt.I.get<NewConversationBloc>()
+        ),
+        BlocProvider<ConversationBloc>(
+          create: (_) => GetIt.I.get<ConversationBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -208,10 +213,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         loginRoute: (context) => Login(),
         conversationsRoute: (context) => const ConversationsPage(),
         newConversationRoute: (context) => const NewConversationPage(),
+        conversationRoute: (context) => const ConversationPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
-        conversationRoute: (context) => const ConversationPage(),
         profileRoute: (context) => const ProfilePage(),
         sendFilesRoute: (context) => SendFilesPage(),
         addContactRoute: (context) => AddContactPage(),

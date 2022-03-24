@@ -37,6 +37,16 @@ files:
           roster:
             type: List<RosterItem>?
             deserialise: true
+      # Returned by [GetMessagesForJidCommand]
+      - name: MessagesResultEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          messages:
+            type: List<Message>
+            deserialise: true
       # Triggered if a conversation has been added.
       # Also returned by [AddConversationCommand]
       - name: ConversationAddedEvent
@@ -95,6 +105,13 @@ files:
           title: String
           lastMessageBody: String
           avatarUrl: String
+          jid: String
+      - name: GetMessagesForJidCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
           jid: String
     generate_builder: true
     # get${builder_Name}FromJson

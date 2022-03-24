@@ -4,11 +4,12 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/ui/pages/conversation/arguments.dart";
 import "package:moxxyv2/ui/pages/profile/arguments.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 
 import "package:flutter/material.dart";
+import "package:get_it/get_it.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 
@@ -46,9 +47,9 @@ class ConversationsPage extends StatelessWidget {
               )
             ),
             child: InkWell(
-              // TODO
-              //onTap: () => viewModel.goToConversation(item.jid),
-              onTap: () {},
+              onTap: () => GetIt.I.get<ConversationBloc>().add(
+                RequestedConversationEvent(item.jid, item.title, item.avatarUrl)
+              ),
               child: ConversationsListRow(
                 item.avatarUrl,
                 item.title,

@@ -38,6 +38,7 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
 
     // Guard against an unneccessary roundtrip
     if (listContains(conversations.state.conversations, (Conversation c) => c.jid == event.jid)) {
+      // TODO: Use the [ConversationBloc]
       GetIt.I.get<NavigationBloc>().add(
         PushedNamedAndRemoveUntilEvent(
           NavigationDestination(

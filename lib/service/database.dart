@@ -107,16 +107,10 @@ class DatabaseService {
   }
 
   /// Loads all messages for the conversation with jid [jid].
-  Future<void> loadMessagesForJid(String jid) async {
+  Future<List<Message>> getMessagesForJid(String jid) async {
+    // TODO: Maybe just check if _messageCache.contains(jid)
     if (loadedConversations.contains(jid)) {
-      // TODO
-      /*
-      sendData(LoadMessagesForJidEvent(
-          jid: jid, messages: _messageCache[jid]!
-      ));
-      */
-     
-      return;
+      return _messageCache[jid]!;
     }
 
     final messages = await isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
@@ -135,13 +129,7 @@ class DatabaseService {
       tmp.add(msg);
     }
 
-    // TODO
-    /*
-    sendData(LoadMessagesForJidEvent(
-        jid: jid,
-        messages: tmp
-    ));
-    */
+    return tmp;
   }
 
   /// Updates the conversation with id [id] inside the database.
