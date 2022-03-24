@@ -119,7 +119,14 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          jid: String
+          jid: String 
+      - name: SetOpenConversationCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String?
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

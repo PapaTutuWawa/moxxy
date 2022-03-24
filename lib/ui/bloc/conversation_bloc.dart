@@ -59,6 +59,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     emit(state.copyWith(messages: result.messages));
 
     GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      SetOpenConversationCommand(jid: event.jid),
+      awaitable: false
+    );
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
       ResetUnreadCounterCommand(jid: event.jid),
       awaitable: false
     );
@@ -108,6 +112,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
-    // TODO
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      SetOpenConversationCommand(jid: null),
+      awaitable: false
+    );
   }
 }

@@ -174,3 +174,8 @@ Future<void> performResetUnreadCounter(BaseEvent c, { dynamic extra }) async {
     id: id
   );
 }
+
+Future<void> performSetOpenConversation(BaseEvent c, { dynamic extra }) async {
+  final command = c as SetOpenConversationCommand;
+  GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? "");
+}
