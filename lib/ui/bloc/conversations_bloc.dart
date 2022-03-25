@@ -29,7 +29,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     // TODO: Should we guard against adding the same conversation multiple times?
     return emit(
       state.copyWith(
-        conversations: state.conversations..add(event.conversation)
+        conversations: List.from([ ...state.conversations, event.conversation ])
       )
     );
   }
@@ -37,11 +37,11 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   Future<void> _onConversationsUpdated(ConversationsUpdatedEvent event, Emitter<ConversationsState> emit) async {
     return emit(
       state.copyWith(
-        conversations: state.conversations.map((c) {
+        conversations: List.from(state.conversations.map((c) {
             if (c.jid == event.conversation.jid) return event.conversation;
 
             return c;
-        }).toList()
+        }).toList())
       )
     );
   }

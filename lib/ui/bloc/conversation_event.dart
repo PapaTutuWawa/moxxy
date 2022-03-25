@@ -58,3 +58,11 @@ class JidAddedEvent extends ConversationEvent {
 
 /// Triggered by the UI when we leave the conversation
 class CurrentConversationResetEvent extends ConversationEvent {}
+
+/// Triggered when we receive a message
+class MessageAddedEvent extends ConversationEvent {
+  final Message message;
+  final String bareJid;
+
+  MessageAddedEvent(this.message, this.bareJid);
+}

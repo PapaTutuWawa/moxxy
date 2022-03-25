@@ -181,7 +181,7 @@ class XmppService {
 
     if (commandId != null) {
       sendEvent(
-        MessageAddedEvent(message: message),
+        MessageAddedEvent(message: message, bareJid: jid),
         id: commandId
       );
     }
@@ -321,13 +321,6 @@ class XmppService {
               displayName: connection.getConnectionSettings().jid.local,
               avatarUrl: ""
           ));
-
-          // TODO
-          /*
-          sendData(LoginSuccessfulEvent(
-              jid: connection.getConnectionSettings().jid.toString(),
-              displayName: connection.getConnectionSettings().jid.local
-          ));*/
         }
       }
     } else if (event is StreamManagementEnabledEvent) {
@@ -361,8 +354,7 @@ class XmppService {
           lastChangeTimestamp: timestamp
         );
 
-        // TODO
-        //sendData(ConversationUpdatedEvent(conversation: newConversation));
+        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
       } else {
         // TODO: Make it configurable if this should happen
         final bare = event.from.toBare();
@@ -377,8 +369,7 @@ class XmppService {
           true
         );
 
-        // TODO
-        //sendData(ConversationCreatedEvent(conversation: conv));
+        sendEvent(ConversationAddedEvent(conversation: conv));
       }
     } else if (event is DeliveryReceiptReceivedEvent) {
       _log.finest("Received delivery receipt from ${event.from.toString()}");
@@ -500,8 +491,7 @@ class XmppService {
           unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
         );
 
-        // TODO
-        //sendData(ConversationUpdatedEvent(conversation: newConversation));
+        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
 
         if (!isChatOpen && shouldNotify) {
           await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare, body: body);
@@ -518,16 +508,23 @@ class XmppService {
           true
         );
 
-        // TODO
-        //sendData(ConversationCreatedEvent(conversation: conv));
+        sendEvent(
+          ConversationAddedEvent(
+            conversation: conv
+          )
+        );
 
         if (!isChatOpen && shouldNotify) {
           await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare, body: body);
         }
       }
 
-      // TODO
-      //sendData(MessageReceivedEvent(message: msg));
+      sendEvent(
+        MessageAddedEvent(
+          message: msg,
+          bareJid: fromBare
+        )
+      );
     } else if (event is RosterPushEvent) {
       GetIt.I.get<RosterService>().handleRosterPushEvent(event);
       _log.fine("Roster push version: " + (event.ver ?? "(null)"));

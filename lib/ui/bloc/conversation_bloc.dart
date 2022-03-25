@@ -1,6 +1,6 @@
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/events.dart" as events;
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
@@ -27,6 +27,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<JidBlockedEvent>(_onJidBlocked);
     on<JidAddedEvent>(_onJidAdded);
     on<CurrentConversationResetEvent>(_onCurrentConversationReset);
+    on<MessageAddedEvent>(_onMessageAddedEvent);
   }
 
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
@@ -55,7 +56,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       GetMessagesForJidCommand(
         jid: event.jid,
       )
-    ) as MessagesResultEvent;
+    ) as events.MessagesResultEvent;
     emit(state.copyWith(messages: result.messages));
 
     GetIt.I.get<BackgroundServiceDataSender>().sendData(
@@ -84,17 +85,15 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         body: state.messageText,
         quotedMessage: state.quotedMessage
       )
-    ) as MessageAddedEvent;
+    ) as events.MessageAddedEvent;
 
     emit(
       state.copyWith(
-        messages: state.messages..add(result.message),
+        messages: List.from([ ...state.messages, result.message ]),
         messageText: "",
         showSendButton: false
       )
     );
-
-    print(state.messages);
   }
 
   Future<void> _onMessageQuoted(MessageQuotedEvent event, Emitter<ConversationState> emit) async {
@@ -131,6 +130,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     GetIt.I.get<BackgroundServiceDataSender>().sendData(
       SetOpenConversationCommand(jid: null),
       awaitable: false
+    );
+  }
+
+  Future<void> _onMessageAddedEvent(MessageAddedEvent event, Emitter<ConversationState> emit) async {
+    if (event.bareJid != state.conversation?.jid) return;
+
+    emit(
+      state.copyWith(
+        messages: List.from([ ...state.messages, event.message ]),
+      )
     );
   }
 }

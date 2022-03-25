@@ -87,6 +87,7 @@ files:
           message:
             type: Message
             deserialise: true
+          bareJid: String
       # Send by the service if the blocklist has been modified by a blocklist push or
       # if [BlockJidCommand] or [UnblockJidCommand] have been invoked.
       - name: BlocklistPushEvent

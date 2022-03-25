@@ -3,6 +3,8 @@ import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
+import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
+import "package:moxxyv2/ui/bloc/conversations_bloc.dart" as conversations;
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
@@ -13,6 +15,7 @@ void setupEventHandler() {
   handler.addMatchers([
       EventTypeMatcher<MessageAddedEvent>(onMessageAdded),
       EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),
+      EventTypeMatcher<ConversationAddedEvent>(onConversationAdded),
       EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed)
   ]);
 
@@ -48,14 +51,31 @@ void setupEventHandler() {
   });
 }
 
-Future<void> onConversationUpdated(BaseEvent c, { dynamic extra }) async {
-  // TODO
-  GetIt.I.get<Logger>().finest("events::onConversationUpdated: Stub");
+Future<void> onConversationAdded(BaseEvent e, { dynamic extra }) async {
+  final event = e as ConversationAddedEvent;
+
+  GetIt.I.get<conversations.ConversationsBloc>().add(
+    conversations.ConversationsAddedEvent(event.conversation)
+  );
 }
 
-Future<void> onMessageAdded(BaseEvent c, { dynamic extra }) async {
-  // TODO
-  GetIt.I.get<Logger>().finest("events::onMessageAdded: Stub");
+Future<void> onConversationUpdated(BaseEvent e, { dynamic extra }) async {
+  final event = e as ConversationUpdatedEvent;
+
+  GetIt.I.get<conversations.ConversationsBloc>().add(
+    conversations.ConversationsUpdatedEvent(event.conversation)
+  );
+}
+
+Future<void> onMessageAdded(BaseEvent e, { dynamic extra }) async {
+  final event = e as MessageAddedEvent;
+
+  GetIt.I.get<conversation.ConversationBloc>().add(
+    conversation.MessageAddedEvent(
+      event.message,
+      event.bareJid
+    )
+  );
 }
 
 Future<void> onBlocklistPushed(BaseEvent e, { dynamic extra }) async {
