@@ -9,7 +9,10 @@ import "package:flutter_background_service/flutter_background_service.dart";
 
 void setupEventHandler() {
   final handler = EventHandler();
-  handler.addMatchers([]);
+  handler.addMatchers([
+      EventTypeMatcher<MessageAddedEvent>(onMessageAdded),
+      EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),
+  ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
 
@@ -41,4 +44,14 @@ void setupEventHandler() {
 
       log.warning("Failed to match event");
   });
+}
+
+Future<void> onConversationUpdated(BaseEvent c, { dynamic extra }) async {
+  // TODO
+  GetIt.I.get<Logger>().finest("events::onConversationUpdated: Stub");
+}
+
+Future<void> onMessageAdded(BaseEvent c, { dynamic extra }) async {
+  // TODO
+  GetIt.I.get<Logger>().finest("events::onMessageAdded: Stub");
 }

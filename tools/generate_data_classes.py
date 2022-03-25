@@ -22,6 +22,11 @@ def generateFromJsonListBuilder(attrName, attrType, deserialise=False):
         return "\t\t" + attrName + ": List<" + listType + ">.from(" + data + "),\n";
 
     if deserialise:
+        if "?" in attrType:
+            json = "json[\"" + attrName + "\"]"
+            attrType = attrType[:-1]
+            return "\t\t" + attrName + ": " + json + " != null ? " + attrType + ".fromJson(" + json + ") : null,\n"
+            
         return "\t\t" + attrName + ": " + attrType + ".fromJson(json[\"" + attrName + "\"]" + ("" if attrType.endswith("?") else "!") + "),\n"
 
     return "\t\t" + attrName + ": json[\"" + attrName + "\"]" + ("" if attrType.endswith("?") else "!") + ",\n"

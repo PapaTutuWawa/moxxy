@@ -78,13 +78,23 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onMessageSent(MessageSentEvent event, Emitter<ConversationState> emit) async {
-    // TODO
-    return emit(
+    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      SendMessageCommand(
+        jid: state.conversation!.jid,
+        body: state.messageText,
+        quotedMessage: state.quotedMessage
+      )
+    ) as MessageAddedEvent;
+
+    emit(
       state.copyWith(
+        messages: state.messages..add(result.message),
         messageText: "",
         showSendButton: false
       )
     );
+
+    print(state.messages);
   }
 
   Future<void> _onMessageQuoted(MessageQuotedEvent event, Emitter<ConversationState> emit) async {

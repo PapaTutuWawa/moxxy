@@ -179,3 +179,13 @@ Future<void> performSetOpenConversation(BaseEvent c, { dynamic extra }) async {
   final command = c as SetOpenConversationCommand;
   GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? "");
 }
+
+Future<void> performSendMessage(BaseEvent c, { dynamic extra }) async {
+  final command = c as SendMessageCommand;
+  GetIt.I.get<XmppService>().sendMessage(
+    body: command.body,
+    jid: command.jid,
+    quotedMessage: command.quotedMessage,
+    commandId: extra as String
+  );
+}

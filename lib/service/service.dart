@@ -228,7 +228,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<PerformPreStartCommand>(performPreStart),
       EventTypeMatcher<AddConversationCommand>(performAddConversation),
       EventTypeMatcher<GetMessagesForJidCommand>(performGetMessagesForJid),
-      EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation)
+      EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation),
+      EventTypeMatcher<SendMessageCommand>(performSendMessage)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

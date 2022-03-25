@@ -76,6 +76,17 @@ files:
           - BackgroundEvent
         implements:
           - JsonImplementation
+      # Send by the service if a message has been received or returned by
+      # [SendMessageCommand].
+      - name: MessageAddedEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          message:
+            type: Message
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -127,6 +138,17 @@ files:
           - JsonImplementation
         attributes:
           jid: String?
+      - name: SendMessageCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          body: String
+          quotedMessage:
+            type: Message?
+            deserialise: true
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

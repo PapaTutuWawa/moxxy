@@ -18,6 +18,7 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
+import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
@@ -155,7 +156,12 @@ class XmppService {
   }
 
   /// Sends a message to [jid] with the body of [body].
-  Future<void> sendMessage({ required String body, required String jid, Message? quotedMessage }) async {
+  Future<void> sendMessage({
+      required String body,
+      required String jid,
+      Message? quotedMessage,
+      String? commandId
+  }) async {
     final db = GetIt.I.get<DatabaseService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -173,8 +179,12 @@ class XmppService {
       quoteId: quotedMessage?.originId ?? quotedMessage?.sid
     );
 
-    // TODO
-    //sendData(MessageSendResultEvent(message: message));
+    if (commandId != null) {
+      sendEvent(
+        MessageAddedEvent(message: message),
+        id: commandId
+      );
+    }
     
     conn.getManagerById(messageManager)!.sendMessage(
       MessageDetails(
@@ -195,8 +205,10 @@ class XmppService {
       lastMessageBody: body,
       lastChangeTimestamp: timestamp
     );
-    // TODO
-    //sendData(ConversationUpdatedEvent(conversation: newConversation));
+
+    sendEvent(
+      ConversationUpdatedEvent(conversation: newConversation)
+    );
   }
 
   String? _getMessageSrcUrl(MessageEvent event) {
