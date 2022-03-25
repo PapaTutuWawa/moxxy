@@ -25,3 +25,8 @@ class Conversation with _$Conversation {
   // JSON
   factory Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
 }
+
+/// Sorts conversations in descending order by their last change timestamp.
+int compareConversation(Conversation a, Conversation b) {
+  return -1 * Comparable.compare(a.lastChangeTimestamp, b.lastChangeTimestamp);
+}

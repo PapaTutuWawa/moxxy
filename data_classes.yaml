@@ -141,13 +141,6 @@ files:
           - JsonImplementation
         attributes:
           jid: String
-      - name: ResetUnreadCounterCommand
-        extends:
-          - BackgroundCommand
-        implements:
-          - JsonImplementation
-        attributes:
-          jid: String 
       - name: SetOpenConversationCommand
         extends:
           - BackgroundCommand

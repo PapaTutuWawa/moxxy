@@ -128,8 +128,10 @@ class XmppService {
         id: conversation.id,
         unreadCounter: 0
       );
-      // TODO
-      //sendData(ConversationUpdatedEvent(conversation: newConversation));
+
+      sendEvent(
+        ConversationUpdatedEvent(conversation: newConversation)
+      );
     }
   }
 

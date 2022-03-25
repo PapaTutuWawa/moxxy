@@ -20,7 +20,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     return emit(
       state.copyWith(
         displayName: event.displayName,
-        conversations: event.conversations
+        conversations: event.conversations..sort(compareConversation)
       )
     );
   }
@@ -29,7 +29,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     // TODO: Should we guard against adding the same conversation multiple times?
     return emit(
       state.copyWith(
-        conversations: List.from([ ...state.conversations, event.conversation ])
+        conversations: List.from([ ...state.conversations, event.conversation ])..sort(compareConversation)
       )
     );
   }
@@ -41,7 +41,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
             if (c.jid == event.conversation.jid) return event.conversation;
 
             return c;
-        }).toList())
+        }).toList()..sort(compareConversation))
       )
     );
   }

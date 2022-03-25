@@ -63,10 +63,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       SetOpenConversationCommand(jid: event.jid),
       awaitable: false
     );
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
-      ResetUnreadCounterCommand(jid: event.jid),
-      awaitable: false
-    );
   }
 
   Future<void> _onMessageTextChanged(MessageTextChangedEvent event, Emitter<ConversationState> emit) async {
