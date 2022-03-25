@@ -6,14 +6,14 @@ import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 import "package:moxxyv2/ui/pages/sendfiles.dart";
-import "package:moxxyv2/ui/pages/settings/settings.dart";
-import "package:moxxyv2/ui/pages/settings/licenses.dart";
-import "package:moxxyv2/ui/pages/settings/about.dart";
 import "package:moxxyv2/ui/pages/settings/debugging.dart";
 import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
 import "package:moxxyv2/ui/pages/settings/appearance.dart";
 */
+import "package:moxxyv2/ui/pages/settings/settings.dart";
+import "package:moxxyv2/ui/pages/settings/licenses.dart";
+import "package:moxxyv2/ui/pages/settings/about.dart";
 import "package:moxxyv2/ui/pages/blocklist.dart";
 import "package:moxxyv2/ui/pages/conversation.dart";
 import "package:moxxyv2/ui/pages/newconversation.dart";
@@ -220,15 +220,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         newConversationRoute: (context) => const NewConversationPage(),
         conversationRoute: (context) => const ConversationPage(),
         blocklistRoute: (context) => BlocklistPage(),
+        settingsRoute: (context) => const SettingsPage(),
+        aboutRoute: (context) => const SettingsAboutPage(),
+        licensesRoute: (context) => const SettingsLicensesPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
         profileRoute: (context) => const ProfilePage(),
         sendFilesRoute: (context) => SendFilesPage(),
         addContactRoute: (context) => AddContactPage(),
-        settingsRoute: (context) => const SettingsPage(),
-        licensesRoute: (context) => const SettingsLicensesPage(),
-        aboutRoute: (context) => const SettingsAboutPage(),
         debuggingRoute: (context) => DebuggingPage(),
         privacyRoute: (context) => const PrivacyPage(),
         networkRoute: (context) => const NetworkPage(),
