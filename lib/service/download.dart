@@ -2,6 +2,7 @@ import "dart:async";
 import "dart:io";
 
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/notifications.dart";
 
@@ -74,13 +75,12 @@ class DownloadService {
         // TODO: Maybe rate limit harder
         if (progress * 100 >= _rateLimits[url]!) {
           _log.finest("Limit: ${_rateLimits[url]!}");
-          // TODO
-          /*
-          sendData(DownloadProgressEvent(
+          sendEvent(
+            DownloadProgressEvent(
               id: mId,
               progress: progress
-          ));
-          */
+            )
+          );
 
           _rateLimits[url] = (progress * 10).round() * 10;
         }
@@ -107,8 +107,7 @@ class DownloadService {
       mediaType: mime
     );
 
-    // TODO
-    //sendData(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+    sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
 
     if (notification.shouldShowNotification(msg.conversationJid)) {
       _log.finest("Creating notification with bigPicture $downloadedPath");
@@ -125,8 +124,7 @@ class DownloadService {
       id: conv.id,
       sharedMediaPaths: sharedMediaPaths
     );
-    // TODO
-    //sendData(ConversationUpdatedEvent(conversation: newConv));
+    sendEvent(ConversationUpdatedEvent(conversation: newConv));
   }
 
   /// Returns the size of the file at [url] in octets. If an error occurs or the server

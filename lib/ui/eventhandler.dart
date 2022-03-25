@@ -10,10 +10,13 @@ import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 
+// TODO: Rename to events.dart
+
 void setupEventHandler() {
   final handler = EventHandler();
   handler.addMatchers([
       EventTypeMatcher<MessageAddedEvent>(onMessageAdded),
+      EventTypeMatcher<MessageUpdatedEvent>(onMessageUpdated),
       EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),
       EventTypeMatcher<ConversationAddedEvent>(onConversationAdded),
       EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed)
@@ -71,10 +74,15 @@ Future<void> onMessageAdded(BaseEvent e, { dynamic extra }) async {
   final event = e as MessageAddedEvent;
 
   GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.MessageAddedEvent(
-      event.message,
-      event.bareJid
-    )
+    conversation.MessageAddedEvent(event.message)
+  );
+}
+
+Future<void> onMessageUpdated(BaseEvent e, { dynamic extra }) async {
+  final event = e as MessageUpdatedEvent;
+
+  GetIt.I.get<conversation.ConversationBloc>().add(
+    conversation.MessageUpdatedEvent(event.message)
   );
 }
 

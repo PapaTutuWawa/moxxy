@@ -183,7 +183,7 @@ class XmppService {
 
     if (commandId != null) {
       sendEvent(
-        MessageAddedEvent(message: message, bareJid: jid),
+        MessageAddedEvent(message: message),
         id: commandId
       );
     }
@@ -387,8 +387,7 @@ class XmppService {
         received: true
       );
 
-      // TODO
-      //sendData(MessageUpdatedEvent(message: msg));
+      sendEvent(MessageUpdatedEvent(message: msg));
     } else if (event is ChatMarkerEvent) {
       _log.finest("Chat marker from ${event.from.toString()}");
       if (event.type == "acknowledged") return;
@@ -406,8 +405,7 @@ class XmppService {
         displayed: dbMsg.displayed || event.type == "displayed"
       );
 
-      // TODO
-      //sendData(MessageUpdatedEvent(message: msg));
+      sendEvent(MessageUpdatedEvent(message: msg));
     } else if (event is MessageEvent) {
       // TODO: Clean this huge mess up
       final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -521,12 +519,7 @@ class XmppService {
         }
       }
 
-      sendEvent(
-        MessageAddedEvent(
-          message: msg,
-          bareJid: fromBare
-        )
-      );
+      sendEvent(MessageAddedEvent(message: msg));
     } else if (event is RosterPushEvent) {
       GetIt.I.get<RosterService>().handleRosterPushEvent(event);
       _log.fine("Roster push version: " + (event.ver ?? "(null)"));

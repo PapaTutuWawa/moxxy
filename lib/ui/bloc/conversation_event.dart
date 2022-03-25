@@ -62,7 +62,13 @@ class CurrentConversationResetEvent extends ConversationEvent {}
 /// Triggered when we receive a message
 class MessageAddedEvent extends ConversationEvent {
   final Message message;
-  final String bareJid;
 
-  MessageAddedEvent(this.message, this.bareJid);
+  MessageAddedEvent(this.message);
+}
+
+/// Triggered when we updated a message
+class MessageUpdatedEvent extends ConversationEvent {
+  final Message message;
+
+  MessageUpdatedEvent(this.message);
 }

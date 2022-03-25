@@ -87,7 +87,16 @@ files:
           message:
             type: Message
             deserialise: true
-          bareJid: String
+      # Send by the service if a message has been updated.
+      - name: MessageUpdatedEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          message:
+            type: Message
+            deserialise: true
       # Send by the service if the blocklist has been modified by a blocklist push or
       # if [BlockJidCommand] or [UnblockJidCommand] have been invoked.
       - name: BlocklistPushEvent
@@ -104,6 +113,15 @@ files:
           - BackgroundEvent
         implements:
           - JsonImplementation
+      # Triggered by [DownloadService].
+      - name: DownloadProgressEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          id: int
+          progress: double
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

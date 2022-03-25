@@ -27,7 +27,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<JidBlockedEvent>(_onJidBlocked);
     on<JidAddedEvent>(_onJidAdded);
     on<CurrentConversationResetEvent>(_onCurrentConversationReset);
-    on<MessageAddedEvent>(_onMessageAddedEvent);
+    on<MessageAddedEvent>(_onMessageAdded);
+    on<MessageUpdatedEvent>(_onMessageUpdated);
   }
 
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
@@ -129,12 +130,34 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onMessageAddedEvent(MessageAddedEvent event, Emitter<ConversationState> emit) async {
-    if (event.bareJid != state.conversation?.jid) return;
+  Future<void> _onMessageAdded(MessageAddedEvent event, Emitter<ConversationState> emit) async {
+    if (event.message.conversationJid != state.conversation?.jid) return;
 
     emit(
       state.copyWith(
         messages: List.from([ ...state.messages, event.message ]),
+      )
+    );
+  }
+
+  Future<void> _onMessageUpdated(MessageUpdatedEvent event, Emitter<ConversationState> emit) async {
+    if (event.message.conversationJid != state.conversation?.jid) return;
+
+    // TODO: Check if we are iterating the correct wa
+    // Small trick: The newer messages are much more likely to be updated than
+    // older messages.
+    final messages = state.messages;
+    for (int i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].id == event.message.id) {
+        messages[i] = event.message;
+        break;
+      }
+    }
+    
+    // We don't have to re-sort the list here as timestamps never change
+    emit(
+      state.copyWith(
+        messages: List.from(messages),
       )
     );
   }
