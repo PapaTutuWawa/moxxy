@@ -114,11 +114,17 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onJidBlocked(JidBlockedEvent event, Emitter<ConversationState> emit) async {
-    // TODO
+    // TODO: Maybe have some state here
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      BlockJidCommand(jid: state.conversation!.jid)
+    );
   }
 
   Future<void> _onJidAdded(JidAddedEvent event, Emitter<ConversationState> emit) async {
-    // TODO
+    // TODO: Maybe have some state here
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      UnblockJidCommand(jid: state.conversation!.jid)
+    );
   }
 
   Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {

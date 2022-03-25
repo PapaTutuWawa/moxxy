@@ -1,4 +1,5 @@
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0191.dart";
@@ -26,14 +27,6 @@ class BlocklistService {
     final manager = GetIt.I.get<XmppConnection>().getManagerById(blockingManager)! as BlockingManager;
     _blocklistCache.clear();
     _blocklistCache.addAll(await manager.getBlocklist());
-    // TODO
-    /*
-    sendData(
-      BlocklistDiffEvent(
-        newBlockedItems: _blocklistCache
-      )
-    );
-    */
     _requestedBlocklist = true;
     return _blocklistCache;
   }
@@ -49,16 +42,10 @@ class BlocklistService {
   }
 
   void onUnblockAllPush() {
-    // TODO
-    /*
-    sendData(
-      BlocklistDiffEvent(
-        removedBlockedItems: _blocklistCache
-      )
-    );
-    */
-
     _blocklistCache.clear();
+    sendEvent(
+      BlocklistUnblockAllEvent()
+    );
   }
   
   Future<void> onBlocklistPush(BlockPushType type, List<String> items) async {
@@ -83,15 +70,12 @@ class BlocklistService {
       }
     }
 
-    // TODO
-    /*
-    sendData(
-      BlocklistDiffEvent(
-        newBlockedItems: newBlocks,
-        removedBlockedItems: removedBlocks
+    sendEvent(
+      BlocklistPushEvent(
+        added: newBlocks,
+        removed: removedBlocks
       )
     );
-    */
   }
 
   Future<bool> blockJid(String jid) async {

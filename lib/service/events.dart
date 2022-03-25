@@ -6,6 +6,7 @@ import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -188,4 +189,14 @@ Future<void> performSendMessage(BaseEvent c, { dynamic extra }) async {
     quotedMessage: command.quotedMessage,
     commandId: extra as String
   );
+}
+
+Future<void> performBlockJid(BaseEvent c, { dynamic extra }) async {
+  final command = c as BlockJidCommand;
+  GetIt.I.get<BlocklistService>().blockJid(c.jid);
+}
+
+Future<void> performUnblockJid(BaseEvent c, { dynamic extra }) async {
+  final command = c as UnblockJidCommand;
+  GetIt.I.get<BlocklistService>().unblockJid(c.jid);
 }

@@ -207,13 +207,6 @@ class _ConversationPageState extends State<ConversationPage> {
     double maxWidth = MediaQuery.of(context).size.width * 0.6;
     
     return BlocBuilder<ConversationBloc, ConversationState>(
-      buildWhen: (prev, next) {
-        print("============== BUILD WHEN ==============");
-        print(prev.toString());
-        print(next.toString());
-
-        return prev != next;
-      },
       builder: (context, state) {
         return WillPopScope(
           onWillPop: () async {
