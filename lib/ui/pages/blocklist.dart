@@ -1,32 +1,18 @@
-/*
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/ui/redux/state.dart";
-import "package:moxxyv2/ui/redux/blocklist/actions.dart";
+import "package:moxxyv2/ui/bloc/blocklist_bloc.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 
 import "package:flutter/material.dart";
-import "package:flutter_redux/flutter_redux.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 
 enum BlocklistOptions {
   unblockAll
 }
 
-class _BlocklistPageViewModel {
-  final List<String> blocklist;
-  final void Function() unblockAll;
-  final void Function(String) unblockJid;
-
-  const _BlocklistPageViewModel({
-      required this.blocklist,
-      required this.unblockAll,
-      required this.unblockJid
-  });
-}
-
 class BlocklistPage extends StatelessWidget {
-  Widget _buildListView(_BlocklistPageViewModel viewModel) {
-    if (viewModel.blocklist.isEmpty) {
+  Widget _buildListView(BlocklistState state) {
+    if (state.blocklist.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(
@@ -45,9 +31,9 @@ class BlocklistPage extends StatelessWidget {
     }
 
     return ListView.builder(
-      itemCount: viewModel.blocklist.length,
+      itemCount: state.blocklist.length,
       itemBuilder: (context, index) {
-        final jid = viewModel.blocklist[index];
+        final jid = state.blocklist[index];
 
         return Padding(
           padding: const EdgeInsets.symmetric(
@@ -67,7 +53,7 @@ class BlocklistPage extends StatelessWidget {
                   "Are you sure you want to unblock $jid? You will receive messages from this user again.",
                   context,
                   () {
-                    viewModel.unblockJid(jid);
+                    context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
                     Navigator.of(context).pop();
                   }
                 )
@@ -81,14 +67,8 @@ class BlocklistPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 
-    return StoreConnector<MoxxyState, _BlocklistPageViewModel>(
-      converter: (store) => _BlocklistPageViewModel(
-        blocklist: store.state.blocklist,
-        unblockAll: () => store.dispatch(UnblockAllUIAction()),
-        unblockJid: (jid) => store.dispatch(UnblockJidUIAction(jid: jid))
-      ),
-      builder: (context, viewModel) => Scaffold(
+    return BlocBuilder<BlocklistBloc, BlocklistState>(
+      builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
           title: "Blocklist",
           extra: [
@@ -101,7 +81,7 @@ class BlocklistPage extends StatelessWidget {
                     "Are you sure you want to unblock all users?",
                     context,
                     () {
-                      viewModel.unblockAll();
+                      context.read<BlocklistBloc>().add(UnblockedAllEvent());
                       Navigator.of(context).pop();
                     }
                   );
@@ -117,9 +97,8 @@ class BlocklistPage extends StatelessWidget {
             )
           ]
         ),
-        body: _buildListView(viewModel)
+        body: _buildListView(state)
       )
     );
   }
 }
-*/

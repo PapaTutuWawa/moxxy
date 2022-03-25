@@ -200,3 +200,7 @@ Future<void> performUnblockJid(BaseEvent c, { dynamic extra }) async {
   final command = c as UnblockJidCommand;
   GetIt.I.get<BlocklistService>().unblockJid(c.jid);
 }
+
+Future<void> performUnblockAll(BaseEvent c, { dynamic extra }) async {
+  GetIt.I.get<BlocklistService>().unblockAll();
+}

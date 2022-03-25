@@ -6,7 +6,6 @@ import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 import "package:moxxyv2/ui/pages/sendfiles.dart";
-import "package:moxxyv2/ui/pages/blocklist/blocklist.dart";
 import "package:moxxyv2/ui/pages/settings/settings.dart";
 import "package:moxxyv2/ui/pages/settings/licenses.dart";
 import "package:moxxyv2/ui/pages/settings/about.dart";
@@ -15,6 +14,7 @@ import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
 import "package:moxxyv2/ui/pages/settings/appearance.dart";
 */
+import "package:moxxyv2/ui/pages/blocklist.dart";
 import "package:moxxyv2/ui/pages/conversation.dart";
 import "package:moxxyv2/ui/pages/newconversation.dart";
 import "package:moxxyv2/ui/pages/conversations.dart";
@@ -26,6 +26,7 @@ import "package:moxxyv2/ui/bloc/login_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/newconversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
+import "package:moxxyv2/ui/bloc/blocklist_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
@@ -60,6 +61,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
   GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
+  GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
 }
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -94,6 +96,9 @@ void main() async {
         ),
         BlocProvider<ConversationBloc>(
           create: (_) => GetIt.I.get<ConversationBloc>()
+        ),
+        BlocProvider<BlocklistBloc>(
+          create: (_) => GetIt.I.get<BlocklistBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -214,6 +219,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         conversationsRoute: (context) => const ConversationsPage(),
         newConversationRoute: (context) => const NewConversationPage(),
         conversationRoute: (context) => const ConversationPage(),
+        blocklistRoute: (context) => BlocklistPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
@@ -227,7 +233,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         privacyRoute: (context) => const PrivacyPage(),
         networkRoute: (context) => const NetworkPage(),
         appearanceRoute: (context) => const AppearancePage(),
-        blocklistRoute: (context) => BlocklistPage()
         */
       },
       home: Splashscreen()

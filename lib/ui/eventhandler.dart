@@ -2,6 +2,7 @@ import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
@@ -12,6 +13,7 @@ void setupEventHandler() {
   handler.addMatchers([
       EventTypeMatcher<MessageAddedEvent>(onMessageAdded),
       EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),
+      EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -54,4 +56,15 @@ Future<void> onConversationUpdated(BaseEvent c, { dynamic extra }) async {
 Future<void> onMessageAdded(BaseEvent c, { dynamic extra }) async {
   // TODO
   GetIt.I.get<Logger>().finest("events::onMessageAdded: Stub");
+}
+
+Future<void> onBlocklistPushed(BaseEvent e, { dynamic extra }) async {
+  final event = e as BlocklistPushEvent;
+
+  GetIt.I.get<blocklist.BlocklistBloc>().add(
+    blocklist.BlocklistPushedEvent(
+      e.added,
+      e.removed
+    )
+  );
 }

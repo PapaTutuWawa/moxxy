@@ -179,6 +179,11 @@ files:
           - JsonImplementation
         attributes:
           jid: String
+      - name: UnblockAllCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
