@@ -22,6 +22,7 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
     on<NewConversationInitEvent>(_onInit);
     on<NewConversationAddedEvent>(_onAdded);
     on<NewConversationRosterItemRemovedEvent>(_onRosterItemRemoved);
+    on<RosterPushedEvent>(_onRosterPushed);
   }
 
   Future<void> _onInit(NewConversationInitEvent event, Emitter<NewConversationState> emit) async {
@@ -88,5 +89,21 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
         ).toList()
       )
     );
+  }
+
+  Future<void> _onRosterPushed(RosterPushedEvent event, Emitter<NewConversationState> emit) async {
+    // TODO: Should we guard against adding the same entries multiple times?
+    final roster = List<RosterItem>.from(event.added, growable: true);
+
+    for (final item in state.roster) {
+      final modified = firstWhereOrNull(event.modified, (RosterItem i) => i.id == item.id);
+      if (modified != null) {
+        roster.add(modified);
+      } else {
+        roster.add(item);
+      }
+    }
+
+    emit(state.copyWith(roster: roster));
   }
 }

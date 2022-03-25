@@ -64,11 +64,22 @@ def getType(val):
 
 def getSerialise(val):
     if type(val) is dict:
-        return val["deserialise"]
+        return val.get("deserialise", False)
     return False
 
-def handleRequired(type_):
-    return "required " if not type_.endswith("?") else ""
+def getDefault(val):
+    if type(val) is dict:
+        return val.get("default", None)
+    return None
+
+def handleRequired(type_, default):
+    return "required " if not type_.endswith("?") and default == None else ""
+
+def handleDefault(default):
+    if default != None:
+        return " = " + default
+    
+    return ""
 
 def main():
     with open("data_classes.yaml", "r") as f:
@@ -95,7 +106,7 @@ def main():
 
             if attributes:
                 content += "\t" + c["name"] + "({ " + ", ".join([
-                    handleRequired(getType(c["attributes"][name])) + "this." + name for name in attributes
+                    handleRequired(getType(c["attributes"][name]), getDefault(c["attributes"][name])) + "this." + name + handleDefault(getDefault(c["attributes"][name])) for name in attributes
                 ]) + " });\n\n"
             else:
                 content += "\t" + c["name"] + "();\n\n";

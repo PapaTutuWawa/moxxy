@@ -25,3 +25,12 @@ class NewConversationRosterItemRemovedEvent extends NewConversationEvent {
 
   NewConversationRosterItemRemovedEvent(this.jid);
 }
+
+/// Triggered when a roster push has been received
+class RosterPushedEvent extends NewConversationEvent {
+  final List<RosterItem> added;
+  final List<RosterItem> modified;
+  final List<String> removed;
+
+  RosterPushedEvent(this.added, this.modified, this.removed);
+}

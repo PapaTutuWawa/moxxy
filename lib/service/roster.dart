@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/helpers.dart";
@@ -38,8 +39,7 @@ class RosterService {
 
     GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequest(jid);
 
-    // TODO
-    //sendData(RosterDiffEvent(newItems: [ item ]));
+    sendEvent(RosterDiffEvent(added: [ item ]));
     return item;
   }
 
@@ -115,14 +115,13 @@ class RosterService {
       }
     }
 
-    // TODO
-    /*
-    sendData(RosterDiffEvent(
-        newItems: newItems,
-        removedItems: removedItems,
-        changedItems: modifiedItems
-    ));
-    */
+    sendEvent(
+      RosterDiffEvent(
+        added: newItems,
+        modified: modifiedItems,
+        removed: removedItems
+      )
+    );
   }
 
   /// Handles a roster push.
@@ -139,12 +138,11 @@ class RosterService {
       //       removed.
       await removeFromRosterDatabase(item.jid, nullOkay: true);
 
-      // TODO
-      /*
-      sendData(RosterDiffEvent(
-          removedItems: [ item.jid ]
-      ));
-      */
+      sendEvent(
+        RosterDiffEvent(
+          removed: [ item.jid ]
+        )
+      );
 
       return;
     }
@@ -157,12 +155,11 @@ class RosterService {
         groups: item.groups
       );
 
-      // TODO
-      /*
-      sendData(RosterDiffEvent(
-          changedItems: [ modelRosterItem ]
-      ));
-      */
+      sendEvent(
+        RosterDiffEvent(
+          modified: [ modelRosterItem ]
+        )
+      );
     } else {
       if (await isInRoster(item.jid)) {
         _log.info("Received roster push for ${item.jid} but this JID is already in the roster database. Ignoring...");
@@ -176,12 +173,11 @@ class RosterService {
         groups: item.groups
       );
 
-      // TODO
-      /*
-      sendData(RosterDiffEvent(
-          newItems: [ modelRosterItem ]
-      ));
-      */
+      sendEvent(
+        RosterDiffEvent(
+          added: [ modelRosterItem ]
+        )
+      );
     }
   }
 }

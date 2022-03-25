@@ -5,6 +5,7 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart" as conversations;
+import "package:moxxyv2/ui/bloc/newconversation_bloc.dart" as newConversation;
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
@@ -19,7 +20,8 @@ void setupEventHandler() {
       EventTypeMatcher<MessageUpdatedEvent>(onMessageUpdated),
       EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),
       EventTypeMatcher<ConversationAddedEvent>(onConversationAdded),
-      EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed)
+      EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed),
+      EventTypeMatcher<RosterDiffEvent>(onRosterPush)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -93,6 +95,17 @@ Future<void> onBlocklistPushed(BaseEvent e, { dynamic extra }) async {
     blocklist.BlocklistPushedEvent(
       e.added,
       e.removed
+    )
+  );
+}
+
+Future<void> onRosterPush(BaseEvent e, { dynamic extra }) async {
+  final event = e as RosterDiffEvent;
+  GetIt.I.get<newConversation.NewConversationBloc>().add(
+    newConversation.RosterPushedEvent(
+      event.added,
+      event.modified,
+      event.removed
     )
   );
 }

@@ -122,6 +122,24 @@ files:
         attributes:
           id: int
           progress: double
+      # Triggered by [RosterService] if we receive a roster push.
+      - name: RosterDiffEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          added:
+            type: List<RosterItem>
+            deserialise: true
+            default: "[]"
+          modified:
+            type: List<RosterItem>
+            deserialise: true
+            default: "[]"
+          removed:
+            type: List<String>
+            default: "[]"
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
