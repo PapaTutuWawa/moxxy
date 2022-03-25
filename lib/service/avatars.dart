@@ -3,6 +3,7 @@ import "dart:convert";
 
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -62,8 +63,7 @@ class AvatarService {
       final oldAvatar = File(originalConversation.avatarUrl);
       if (await oldAvatar.exists()) await oldAvatar.delete();
 
-      // TODO
-      //sendData(ConversationUpdatedEvent(conversation: conv));
+      sendEvent(ConversationUpdatedEvent(conversation: conv));
     } else {
       _log.warning("Failed to get conversation");
     }
@@ -75,8 +75,7 @@ class AvatarService {
         avatarUrl: path
       );
 
-      // TODO
-      // sendData(RosterDiffEvent(changedItems: [roster]));
+      sendEvent(RosterDiffEvent(modified: [roster]));
     }
   }
 
