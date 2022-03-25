@@ -274,7 +274,8 @@ class DatabaseService {
     await isar.writeTxn((isar) async {
         await isar.dBMessages.put(i);
     });
-
+    await i.quotes.load();
+    
     final msg = messageDbToModel(i);
 
     // Update cache
