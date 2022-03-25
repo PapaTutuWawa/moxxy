@@ -67,7 +67,6 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
 //       Padding(padding: ..., child: Column(children: [ ... ]))
 // TODO: Theme the switches
-// TODO: Find a better way to do this
 void main() async {
   setupLogging();
   setupUIServices();
@@ -169,16 +168,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
+    final sender = GetIt.I.get<BackgroundServiceDataSender>();
     switch (state) {
-      case AppLifecycleState.paused:
-        /*FlutterBackgroundService().sendData(
-          commands.SetCSIStateAction(state: "background").toJson()
-        );*/
+      case AppLifecycleState.paused: sender.sendData(
+          SetCSIStateCommand(active: false)
+        );
         break;
-      case AppLifecycleState.resumed:
-        /*FlutterBackgroundService().sendData(
-          commands.SetCSIStateAction(state: "foreground").toJson()
-        );*/
+      case AppLifecycleState.resumed: sender.sendData(
+          SetCSIStateCommand(active: true)
+        );
         break;
       default: break;
     }

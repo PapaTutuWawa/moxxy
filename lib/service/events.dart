@@ -10,6 +10,7 @@ import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
@@ -191,4 +192,15 @@ Future<void> performUnblockJid(BaseEvent c, { dynamic extra }) async {
 
 Future<void> performUnblockAll(BaseEvent c, { dynamic extra }) async {
   GetIt.I.get<BlocklistService>().unblockAll();
+}
+
+Future<void> performSetCSIState(BaseEvent c, { dynamic extra }) async {
+  final command = c as SetCSIStateCommand;
+
+  final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager)!;
+  if (command.active) {
+    csi.setActive();
+  } else {
+    csi.setInactive();
+  }
 }

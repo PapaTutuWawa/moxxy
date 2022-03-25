@@ -232,7 +232,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SendMessageCommand>(performSendMessage),
       EventTypeMatcher<BlockJidCommand>(performBlockJid),
       EventTypeMatcher<UnblockJidCommand>(performUnblockJid),
-      EventTypeMatcher<UnblockAllCommand>(performUnblockAll)
+      EventTypeMatcher<UnblockAllCommand>(performUnblockAll),
+      EventTypeMatcher<SetCSIStateCommand>(performSetCSIState)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

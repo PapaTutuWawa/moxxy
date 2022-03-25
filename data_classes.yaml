@@ -178,6 +178,13 @@ files:
           - BackgroundCommand
         implements:
           - JsonImplementation
+      - name: SetCSIStateCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          active: bool
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
