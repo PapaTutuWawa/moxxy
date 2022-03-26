@@ -8,6 +8,7 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/pages/profile/arguments.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
+import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 
 import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
@@ -101,7 +102,14 @@ class ConversationsPage extends StatelessWidget {
             altIcon: Icons.person
           ),
           title: state.displayName,
-          onTapFunction: () => Navigator.pushNamed(context, profileRoute, arguments: ProfilePageArguments(isSelfProfile: true)),
+          onTapFunction: () => GetIt.I.get<ProfileBloc>().add(
+            ProfilePageRequestedEvent(
+              true,
+              jid: state.jid,
+              avatarUrl: state.avatarUrl,
+              displayName: state.displayName
+            )
+          ),
           showBackButton: false,
           extra: [
             PopupMenuButton(

@@ -5,6 +5,7 @@ class ConversationsState with _$ConversationsState {
   factory ConversationsState({
       @Default([]) List<Conversation> conversations,
       @Default("") displayName,
-      @Default("") avatarUrl
+      @Default("") avatarUrl,
+      @Default("") jid
   }) = _ConversationsState;
 }

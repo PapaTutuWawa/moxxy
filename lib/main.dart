@@ -1,7 +1,6 @@
 import "package:moxxyv2/ui/eventhandler.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
-import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
@@ -11,6 +10,7 @@ import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
 import "package:moxxyv2/ui/pages/settings/appearance.dart";
 */
+import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/settings/settings.dart";
 import "package:moxxyv2/ui/pages/settings/licenses.dart";
 import "package:moxxyv2/ui/pages/settings/about.dart";
@@ -27,17 +27,16 @@ import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/newconversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart";
+import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
-import "package:moxxyv2/shared/eventhandler.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
@@ -62,6 +61,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
   GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
+  GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
 }
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -98,6 +98,9 @@ void main() async {
         ),
         BlocProvider<BlocklistBloc>(
           create: (_) => GetIt.I.get<BlocklistBloc>()
+        ),
+        BlocProvider<ProfileBloc>(
+          create: (_) => GetIt.I.get<ProfileBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -137,6 +140,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
           result.displayName!,
+          result.jid!,
           result.conversations!
         )
       );
@@ -213,18 +217,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       themeMode: ThemeMode.system,
       routes: {
         introRoute: (context) => const Intro(),
-        loginRoute: (context) => Login(),
+        loginRoute: (context) => const Login(),
         conversationsRoute: (context) => const ConversationsPage(),
         newConversationRoute: (context) => const NewConversationPage(),
         conversationRoute: (context) => const ConversationPage(),
         blocklistRoute: (context) => BlocklistPage(),
+        profileRoute: (context) => const ProfilePage(),
         settingsRoute: (context) => const SettingsPage(),
         aboutRoute: (context) => const SettingsAboutPage(),
         licensesRoute: (context) => const SettingsLicensesPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
-        profileRoute: (context) => const ProfilePage(),
         sendFilesRoute: (context) => SendFilesPage(),
         addContactRoute: (context) => AddContactPage(),
         debuggingRoute: (context) => DebuggingPage(),

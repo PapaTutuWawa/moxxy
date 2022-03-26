@@ -20,6 +20,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     return emit(
       state.copyWith(
         displayName: event.displayName,
+        jid: event.jid,
         conversations: event.conversations..sort(compareConversation)
       )
     );

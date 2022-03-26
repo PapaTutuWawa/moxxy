@@ -77,7 +77,7 @@ def handleRequired(type_, default):
 
 def handleDefault(default):
     if default != None:
-        return " = " + default
+        return " = const " + default
     
     return ""
 

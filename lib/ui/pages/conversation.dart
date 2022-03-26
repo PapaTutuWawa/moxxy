@@ -8,6 +8,7 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/widgets/quotedmessage.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
+import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/shared/models/message.dart";
 
@@ -16,8 +17,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_speed_dial/flutter_speed_dial.dart";
 import "package:swipeable_tile/swipeable_tile.dart";
 import "package:flutter_vibrate/flutter_vibrate.dart";
-
-typedef SendMessageFunction = void Function(String body);
+import "package:get_it/get_it.dart";
 
 enum ConversationOption {
   close,
@@ -221,9 +221,12 @@ class _ConversationPageState extends State<ConversationPage> {
                 alt: Text(state.conversation!.title[0])
               ),
               title: state.conversation!.title,
-              // TODO
-              //onTapFunction: () => Navigator.pushNamed(context, profileRoute, arguments: ProfilePageArguments(conversation: viewModel.conversation, isSelfProfile: false)),
-              onTapFunction: () {},
+              onTapFunction: () => GetIt.I.get<ProfileBloc>().add(
+                ProfilePageRequestedEvent(
+                  false,
+                  conversation: state.conversation!
+                )
+              ),
               showBackButton: true,
               extra: [
                 PopupMenuButton(

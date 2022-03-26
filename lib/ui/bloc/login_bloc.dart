@@ -90,6 +90,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
           result.displayName,
+          state.jid,
           // TODO
           []
         )
