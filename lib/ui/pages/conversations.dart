@@ -5,7 +5,6 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/ui/pages/profile/arguments.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
