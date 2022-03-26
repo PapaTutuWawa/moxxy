@@ -11,6 +11,7 @@ import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:get_it/get_it.dart";
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:flutter/widgets.dart";
 
 part "conversation_state.dart";
 part "conversation_event.dart";
@@ -47,11 +48,18 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       )
     );
 
-    GetIt.I.get<NavigationBloc>().add(
+    final navEvent = event.removeUntilConversations ? (
+      PushedNamedAndRemoveUntilEvent(
+        const NavigationDestination(conversationRoute),
+        ModalRoute.withName(conversationsRoute)
+      )
+    ) : (
       PushedNamedEvent(
         const NavigationDestination(conversationRoute)
       )
     );
+    
+    GetIt.I.get<NavigationBloc>().add(navEvent);
 
     final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
       GetMessagesForJidCommand(

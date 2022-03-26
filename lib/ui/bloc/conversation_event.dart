@@ -28,8 +28,16 @@ class RequestedConversationEvent extends ConversationEvent {
   final String jid;
   final String title;
   final String avatarUrl;
+  final bool removeUntilConversations;
 
-  RequestedConversationEvent(this.jid, this.title, this.avatarUrl);
+  RequestedConversationEvent(
+    this.jid,
+    this.title,
+    this.avatarUrl,
+    {
+      this.removeUntilConversations = false
+    }
+  );
 }
 
 /// Triggered by the UI when a message is quoted

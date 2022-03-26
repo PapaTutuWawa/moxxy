@@ -7,6 +7,7 @@ import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/blocking.dart";
+import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -206,4 +207,48 @@ Future<void> performSetCSIState(BaseEvent c, { dynamic extra }) async {
 Future<void> performSetPreferences(BaseEvent c, { dynamic extra }) async {
   final command = c as SetPreferencesCommand;
   GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
+}
+
+Future<void> performAddContact(BaseEvent c, { dynamic extra }) async {
+  final command = c as AddContactCommand;
+  final id = extra as String;
+
+  final jid = command.jid;
+  final roster = GetIt.I.get<RosterService>();
+  if (await roster.isInRoster(jid)) {
+    sendEvent(AddContactResultEvent(conversation: null, added: false), id: id);
+    return;
+  }
+
+  final db = GetIt.I.get<DatabaseService>();
+  final conversation = await db.getConversationByJid(jid);
+  if (conversation != null) {
+    final c = await db.updateConversation(id: conversation.id, open: true);
+
+    sendEvent(
+      AddContactResultEvent(conversation: c, added: false),
+      id: id
+    );
+  } else {            
+    final c = await db.addConversationFromData(
+      jid.split("@")[0],
+      "",
+      "",
+      jid,
+      0,
+      -1,
+      [],
+      true
+    );
+    sendEvent(
+      AddContactResultEvent(conversation: c, added: true),
+      id: id
+    );
+  }
+
+  roster.addToRosterWrapper("", jid, jid.split("@")[0]);
+  
+  // Try to figure out an avatar
+  await GetIt.I.get<AvatarService>().subscribeJid(jid);
+  GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid);
 }

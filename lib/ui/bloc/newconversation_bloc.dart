@@ -4,14 +4,12 @@ import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
-import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:get_it/get_it.dart";
-import "package:flutter/widgets.dart";
 
 part "newconversation_state.dart";
 part "newconversation_event.dart";
@@ -38,14 +36,12 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
 
     // Guard against an unneccessary roundtrip
     if (listContains(conversations.state.conversations, (Conversation c) => c.jid == event.jid)) {
-      // TODO: Use the [ConversationBloc]
-      GetIt.I.get<NavigationBloc>().add(
-        PushedNamedAndRemoveUntilEvent(
-          NavigationDestination(
-            conversationRoute,
-            //arguments: ConversationPageArguments(event.jid)
-          ),
-          ModalRoute.withName(conversationsRoute)
+      GetIt.I.get<ConversationBloc>().add(
+        RequestedConversationEvent(
+          event.jid,
+          event.title,
+          event.avatarUrl,
+          removeUntilConversations: true
         )
       );
       return;
@@ -68,20 +64,17 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
       conversations.add(ConversationsAddedEvent(result.conversation));
     }
 
-    // TODO: Use the [ConversationBloc]
-    GetIt.I.get<NavigationBloc>().add(
-      PushedNamedAndRemoveUntilEvent(
-        NavigationDestination(
-          conversationRoute,
-          //arguments: ConversationPageArguments(event.jid)
-        ),
-        ModalRoute.withName(conversationsRoute)
+    GetIt.I.get<ConversationBloc>().add(
+      RequestedConversationEvent(
+        event.jid,
+        event.title,
+        event.avatarUrl,
+        removeUntilConversations: true
       )
     );
   }
 
   Future<void> _onRosterItemRemoved(NewConversationRosterItemRemovedEvent event, Emitter<NewConversationState> emit) async {
-    // TODO
     return emit(
       state.copyWith(
         roster: state.roster.where(

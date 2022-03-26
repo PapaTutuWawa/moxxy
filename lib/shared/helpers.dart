@@ -106,6 +106,20 @@ JidFormatError validateJid(String jid) {
   return JidFormatError.none;
 }
 
+/// Returns an error string if [jid] is not a valid JID. Returns null if everything
+/// appears okay.
+String? validateJidString(String jid) {
+  switch (validateJid(jid)) {
+    case JidFormatError.empty: return "XMPP-Address cannot be empty";
+    case JidFormatError.noSeparator:
+    case JidFormatError.tooManySeparators: return "XMPP-Address must contain exactly one @";
+    // TODO: Find a better text
+    case JidFormatError.noDomain: return "A domain must follow the @";
+    case JidFormatError.noLocalpart: return "Your username must preceed the @";
+    case JidFormatError.none: return null;
+  }
+}
+
 /// Returns the first element in [items] which is non null.
 /// Returns null if they all are null.
 T? firstNotNull<T>(List<T?> items) {

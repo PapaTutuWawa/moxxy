@@ -1,5 +1,3 @@
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 
 import "package:bloc/bloc.dart";

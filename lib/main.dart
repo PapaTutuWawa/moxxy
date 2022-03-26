@@ -4,8 +4,8 @@ import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 import "package:moxxyv2/ui/pages/sendfiles.dart";
-import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 */
+import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 import "package:moxxyv2/ui/pages/settings/debugging.dart";
 import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
@@ -29,6 +29,7 @@ import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
+import "package:moxxyv2/ui/bloc/addcontact_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
@@ -62,6 +63,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
   GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
   GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
+  GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
 }
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -104,6 +106,9 @@ void main() async {
         ),
         BlocProvider<PreferencesBloc>(
           create: (_) => GetIt.I.get<PreferencesBloc>()
+        ),
+        BlocProvider<AddContactBloc>(
+          create: (_) => GetIt.I.get<AddContactBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -235,11 +240,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         networkRoute: (context) => const NetworkPage(),
         privacyRoute: (context) => const PrivacyPage(),
         debuggingRoute: (context) => DebuggingPage(),
+        addContactRoute: (context) => AddContactPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
         sendFilesRoute: (context) => SendFilesPage(),
-        addContactRoute: (context) => AddContactPage(),
         */
       },
       home: Splashscreen()

@@ -14,20 +14,6 @@ part "login_state.dart";
 part "login_event.dart";
 part "login_bloc.freezed.dart";
 
-/// Returns an error string if [jid] is not a valid JID. Returns null if everything
-/// appears okay.
-String? _validateJid(String jid) {
-  switch (validateJid(jid)) {
-    case JidFormatError.empty: return "XMPP-Address cannot be empty";
-    case JidFormatError.noSeparator:
-    case JidFormatError.tooManySeparators: return "XMPP-Address must contain exactly one @";
-    // TODO: Find a better text
-    case JidFormatError.noDomain: return "A domain must follow the @";
-    case JidFormatError.noLocalpart: return "Your username must preceed the @";
-    case JidFormatError.none: return null;
-  }
-}
-
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(LoginState()) {
     on<LoginJidChangedEvent>(_onJidChanged);
@@ -49,7 +35,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
   
   Future<void> _onSubmitted(LoginSubmittedEvent event, Emitter<LoginState> emit) async {
-    final jidValidity = _validateJid(state.jid);
+    final jidValidity = validateJidString(state.jid);
     if (jidValidity != null) {
       return emit(
         state.copyWith(
