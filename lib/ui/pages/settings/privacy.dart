@@ -1,11 +1,10 @@
-/*import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/redux/state.dart";
-import "package:moxxyv2/ui/redux/preferences/actions.dart";
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
+import "package:moxxyv2/shared/preferences.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
-import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 
 class PrivacyPage extends StatelessWidget {
   const PrivacyPage({ Key? key }): super(key: key);
@@ -14,9 +13,8 @@ class PrivacyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BorderlessTopbar.simple(title: "Privacy"),
-      body: StoreConnector<MoxxyState, Store>(
-        converter: (store) => store,
-        builder: (context, store) => SettingsList(
+      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+        builder: (context, state) => SettingsList(
           darkBackgroundColor: const Color(0xff303030),
           contentPadding: const EdgeInsets.all(16.0),
           sections: [
@@ -27,12 +25,10 @@ class PrivacyPage extends StatelessWidget {
                   title: "Show contact requests",
                   subtitle: "This will show people who added you to their contact list but sent no message yet",
                   subtitleMaxLines: 2,
-                  switchValue: store.state.preferencesState.showSubscriptionRequests,
-                  onToggle: (value) => store.dispatch(
-                    SetPreferencesAction(
-                      store.state.preferencesState.copyWith(
-                        showSubscriptionRequests: value
-                      )
+                  switchValue: state.showSubscriptionRequests,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(showSubscriptionRequests: value)
                     )
                   )
                 ),
@@ -40,12 +36,10 @@ class PrivacyPage extends StatelessWidget {
                   title: "Make profile picture public",
                   subtitle: "If enabled, everyone can see your profile picture. If disabled, only users on your contact list can see your profile picture.",
                   subtitleMaxLines: 3,
-                  switchValue: store.state.preferencesState.isAvatarPublic,
-                  onToggle: (value) => store.dispatch(
-                    SetPreferencesAction(
-                      store.state.preferencesState.copyWith(
-                        isAvatarPublic: value
-                      )
+                  switchValue: state.isAvatarPublic,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(isAvatarPublic: value)
                     )
                   )
                 ),
@@ -53,12 +47,10 @@ class PrivacyPage extends StatelessWidget {
                   title: "Auto-accept subscription requests",
                   subtitle: "If enabled, subscription requests will be automatically accepted if the user is in the contact list.",
                   subtitleMaxLines: 3,
-                  switchValue: store.state.preferencesState.autoAcceptSubscriptionRequests,
-                  onToggle: (value) => store.dispatch(
-                    SetPreferencesAction(
-                      store.state.preferencesState.copyWith(
-                        autoAcceptSubscriptionRequests: value
-                      )
+                  switchValue: state.autoAcceptSubscriptionRequests,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(autoAcceptSubscriptionRequests: value)
                     )
                   )
                 )
@@ -71,12 +63,10 @@ class PrivacyPage extends StatelessWidget {
                   title: "Send chat markers",
                   subtitle: "This will tell your conversation partner if you received or read a message",
                   subtitleMaxLines: 2,
-                  switchValue: store.state.preferencesState.sendChatMarkers,
-                  onToggle: (value) => store.dispatch(
-                    SetPreferencesAction(
-                      store.state.preferencesState.copyWith(
-                        sendChatMarkers: value
-                      )
+                  switchValue: state.sendChatMarkers,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(sendChatMarkers: value)
                     )
                   )
                 ),
@@ -84,12 +74,10 @@ class PrivacyPage extends StatelessWidget {
                   title: "Send chat states",
                   subtitle: "This will show your conversation partner if you are typing or looking at the chat",
                   subtitleMaxLines: 2,
-                  switchValue: store.state.preferencesState.sendChatStates,
-                  onToggle: (value) => store.dispatch(
-                    SetPreferencesAction(
-                      store.state.preferencesState.copyWith(
-                        sendChatStates: value
-                      )
+                  switchValue: state.sendChatStates,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(sendChatStates: value)
                     )
                   )
                 )
@@ -101,4 +89,3 @@ class PrivacyPage extends StatelessWidget {
     );
   }
 }
-*/

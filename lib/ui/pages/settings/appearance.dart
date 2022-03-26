@@ -1,14 +1,13 @@
-/*import "dart:io";
+import "dart:io";
 
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/redux/state.dart";
-import "package:moxxyv2/ui/redux/preferences/actions.dart";
+import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
+import "package:moxxyv2/shared/preferences.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
-import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:file_picker/file_picker.dart";
 import "package:path_provider/path_provider.dart";
 import "package:path/path.dart" as path;
@@ -31,9 +30,9 @@ class AppearancePage extends StatelessWidget {
     return backgroundPath;
   }
 
-  Future<void> _setBackgroundImage(Store store, String backgroundPath) async {
-    // TODO: Move this somewhere else to not mix UI and application logic
-    final oldBackgroundImage = store.state.preferencesState.backgroundPath;
+  Future<void> _setBackgroundImage(BuildContext context, PreferencesState state, String backgroundPath) async {
+    // TODO: Handle this in the [PreferencesBloc]
+    final oldBackgroundImage = state.backgroundPath;
     if (oldBackgroundImage.isNotEmpty) {
       final file = File(oldBackgroundImage);
 
@@ -43,31 +42,27 @@ class AppearancePage extends StatelessWidget {
     }
     // TODO END
 
-    store.dispatch(
-      SetPreferencesAction(
-        store.state.preferencesState.copyWith(
-          backgroundPath: backgroundPath
-        )
+    context.read<PreferencesBloc>().add(
+      PreferencesChangedEvent(
+        state.copyWith(backgroundPath: backgroundPath)
       )
     );
   }
 
-  Future<void> _removeBackgroundImage(Store store) async {
-    final backgroundPath = store.state.preferencesState.backgroundPath;
+  Future<void> _removeBackgroundImage(BuildContext context, PreferencesState state) async {
+    final backgroundPath = state.backgroundPath;
     if (backgroundPath.isEmpty) return;
 
-    // TODO: Move this somewhere else to not mix UI and application logic
+    // TODO: Move this into the [PreferencesBloc]
     final file = File(backgroundPath);
     if (await file.exists()) {
       await file.delete();
     }
     // TODO END
-    
-    store.dispatch(
-      SetPreferencesAction(
-        store.state.preferencesState.copyWith(
-          backgroundPath: ""
-        )
+
+    context.read<PreferencesBloc>().add(
+      PreferencesChangedEvent(
+        state.copyWith(backgroundPath: "")
       )
     );
   }
@@ -76,9 +71,8 @@ class AppearancePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BorderlessTopbar.simple(title: "Appearance"),
-      body: StoreConnector<MoxxyState, Store>(
-        converter: (store) => store,
-        builder: (context, store) => SettingsList(
+      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+        builder: (context, state) => SettingsList(
           darkBackgroundColor: const Color(0xff303030),
           contentPadding: const EdgeInsets.all(16.0),
           sections: [
@@ -92,7 +86,7 @@ class AppearancePage extends StatelessWidget {
                     final backgroundPath = await _pickBackgroundImage();
 
                     if (backgroundPath != null) {
-                      await _setBackgroundImage(store, backgroundPath);
+                      await _setBackgroundImage(context, state, backgroundPath);
                     }
                   }
                 ),
@@ -104,7 +98,7 @@ class AppearancePage extends StatelessWidget {
                       "Are you sure you want to remove your conversation background image?",
                       context,
                       () async {
-                        await _removeBackgroundImage(store);
+                        await _removeBackgroundImage(context, state);
                         Navigator.of(context).pop();
                       }
                     );
@@ -118,4 +112,3 @@ class AppearancePage extends StatelessWidget {
     );
   }
 }
-*/

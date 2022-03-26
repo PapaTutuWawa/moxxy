@@ -1,20 +1,10 @@
-/*import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/redux/state.dart";
-import "package:moxxyv2/ui/redux/debug/actions.dart";
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
+import "package:moxxyv2/shared/preferences.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
-import "package:flutter_redux/flutter_redux.dart";
-
-class _DebuggingPageViewModel {
-  final bool enabled;
-  final void Function(bool) setEnabled;
-  final void Function(String) setIp;
-  final void Function(int) setPort;
-  final void Function(String) setPassphrase;
-
-  _DebuggingPageViewModel({ required this.enabled, required this.setEnabled, required this.setIp, required this.setPort, required this.setPassphrase });
-}
+import "package:flutter_bloc/flutter_bloc.dart";
 
 class DebuggingPage extends StatelessWidget {
   final TextEditingController _ipController;
@@ -27,15 +17,9 @@ class DebuggingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BorderlessTopbar.simple(title: "Debugging"),
-      body: StoreConnector<MoxxyState, _DebuggingPageViewModel>(
-        converter: (store) => _DebuggingPageViewModel(
-          enabled: store.state.debugState.enabled,
-          setEnabled: (enabled) => store.dispatch(DebugSetEnabledAction(enabled, false)),
-          setPort: (port) => store.dispatch(DebugSetPortAction(port)),
-          setIp: (ip) => store.dispatch(DebugSetIpAction(ip)),
-          setPassphrase: (passphrase) => store.dispatch(DebugSetPassphraseAction(passphrase))
-        ),
-        builder: (context, viewModel) => SettingsList(
+      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+        builder: (context, state) => SettingsList(
+          darkBackgroundColor: const Color(0xff303030),
           contentPadding: const EdgeInsets.all(16.0),
           sections: [
             SettingsSection(
@@ -43,8 +27,12 @@ class DebuggingPage extends StatelessWidget {
               tiles: [
                 SettingsTile.switchTile(
                   title: "Enable debugging",
-                  onToggle: (value) => viewModel.setEnabled(value),
-                  switchValue: viewModel.enabled
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(debugEnabled: value)
+                    )
+                  ),
+                  switchValue: state.debugEnabled
                 ),
                 SettingsTile(
                   title: "Encryption password",
@@ -66,7 +54,11 @@ class DebuggingPage extends StatelessWidget {
                           TextButton(
                             child: const Text("Okay"),
                             onPressed: () {
-                              viewModel.setPassphrase(_passphraseController.text);
+                              context.read<PreferencesBloc>().add(
+                                PreferencesChangedEvent(
+                                  state.copyWith(debugPassphrase: _passphraseController.text)
+                                )
+                              );
                               Navigator.of(context).pop();
                             }
                           )
@@ -94,7 +86,11 @@ class DebuggingPage extends StatelessWidget {
                           TextButton(
                             child: const Text("Okay"),
                             onPressed: () {
-                              viewModel.setIp(_ipController.text);
+                              context.read<PreferencesBloc>().add(
+                                PreferencesChangedEvent(
+                                  state.copyWith(debugIp: _ipController.text)
+                                )
+                              );
                               Navigator.of(context).pop();
                             }
                           )
@@ -123,7 +119,11 @@ class DebuggingPage extends StatelessWidget {
                           TextButton(
                             child: const Text("Okay"),
                             onPressed: () {
-                              viewModel.setPort(int.parse(_portController.text));
+                              context.read<PreferencesBloc>().add(
+                                PreferencesChangedEvent(
+                                  state.copyWith(debugPort: int.parse(_portController.text))
+                                )
+                              );
                               Navigator.of(context).pop();
                             }
                           )
@@ -140,4 +140,3 @@ class DebuggingPage extends StatelessWidget {
     );
   }
 }
-*/

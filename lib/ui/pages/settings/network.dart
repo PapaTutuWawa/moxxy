@@ -1,11 +1,10 @@
-/*import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/redux/state.dart";
-import "package:moxxyv2/ui/redux/preferences/actions.dart";
+import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
+import "package:moxxyv2/shared/preferences.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
-import "package:flutter_redux/flutter_redux.dart";
-import "package:redux/redux.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
 import "package:drop_down_list/drop_down_list.dart";
 
 class NetworkPage extends StatelessWidget {
@@ -15,9 +14,8 @@ class NetworkPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BorderlessTopbar.simple(title: "Network"),
-      body: StoreConnector<MoxxyState, Store>(
-        converter: (store) => store,
-        builder: (context, store) => SettingsList(
+      body: BlocBuilder<PreferencesBloc, PreferencesState>(
+        builder: (context, state) => SettingsList(
           darkBackgroundColor: const Color(0xff303030),
           contentPadding: const EdgeInsets.all(16.0),
           sections: [
@@ -27,23 +25,19 @@ class NetworkPage extends StatelessWidget {
                 SettingsTile(title: "Moxxy will automatically download files on..."),
                 SettingsTile.switchTile(
                   title: "Wifi",
-                  switchValue: store.state.preferencesState.autoDownloadWifi,
-                  onToggle: (value) => store.dispatch(
-                    SetPreferencesAction(
-                      store.state.preferencesState.copyWith(
-                        autoDownloadWifi: value
-                      )
+                  switchValue: state.autoDownloadWifi,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(autoDownloadWifi: value)
                     )
                   )
                 ),
                 SettingsTile.switchTile(
                   title: "Mobile Internet",
-                  switchValue: store.state.preferencesState.autoDownloadMobile,
-                  onToggle: (value) => store.dispatch(
-                    SetPreferencesAction(
-                      store.state.preferencesState.copyWith(
-                        autoDownloadMobile: value
-                      )
+                  switchValue: state.autoDownloadMobile,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(autoDownloadMobile: value)
                     )
                   )
                 ),
@@ -60,11 +54,11 @@ class NetworkPage extends StatelessWidget {
                         bottomSheetTitle: "Maximum File Size",
                         searchBackgroundColor: Colors.black12,
                         dataList: [
-                          SelectedListItem(store.state.preferencesState.maximumAutoDownloadSize == 1, "1MB"),
-                          SelectedListItem(store.state.preferencesState.maximumAutoDownloadSize == 5, "5MB"),
-                          SelectedListItem(store.state.preferencesState.maximumAutoDownloadSize == 15, "15MB"),
-                          SelectedListItem(store.state.preferencesState.maximumAutoDownloadSize == 100, "100MB"),
-                          SelectedListItem(store.state.preferencesState.maximumAutoDownloadSize == -1, "Always")
+                          SelectedListItem(state.maximumAutoDownloadSize == 1, "1MB"),
+                          SelectedListItem(state.maximumAutoDownloadSize == 5, "5MB"),
+                          SelectedListItem(state.maximumAutoDownloadSize == 15, "15MB"),
+                          SelectedListItem(state.maximumAutoDownloadSize == 100, "100MB"),
+                          SelectedListItem(state.maximumAutoDownloadSize == -1, "Always")
                         ],
                         selectedItem: (String selected) {
                           int value = -1;
@@ -91,11 +85,9 @@ class NetworkPage extends StatelessWidget {
                             break;
                           }
 
-                          store.dispatch(
-                            SetPreferencesAction(
-                              store.state.preferencesState.copyWith(
-                                maximumAutoDownloadSize: value
-                              )
+                          context.read<PreferencesBloc>().add(
+                            PreferencesChangedEvent(
+                              state.copyWith(maximumAutoDownloadSize: value)
                             )
                           );
                         },
@@ -113,4 +105,3 @@ class NetworkPage extends StatelessWidget {
     );
   }
 }
-*/

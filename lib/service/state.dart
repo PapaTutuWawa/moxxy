@@ -17,12 +17,7 @@ class StreamManagementStateConverter implements JsonConverter<StreamManagementSt
 
 @freezed
 class XmppState with _$XmppState {
-  factory XmppState(
-    String debugPassphrase,
-    String debugIp,
-    int debugPort,
-    bool debugEnabled,
-    {
+  factory XmppState({
       @StreamManagementStateConverter() StreamManagementState? smState,
       String? srid,
       String? resource,

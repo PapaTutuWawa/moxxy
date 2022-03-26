@@ -83,7 +83,6 @@ Future<void> performPreStart(BaseEvent c, { dynamic extra }) async {
         jid: account.jid,
         displayName: account.displayName,
         avatarUrl: state.avatarUrl,
-        debugEnabled: state.debugEnabled,
         permissionsToRequest: permissions,
         preferences: preferences,
         conversations: await GetIt.I.get<DatabaseService>().loadConversations(),
@@ -95,7 +94,6 @@ Future<void> performPreStart(BaseEvent c, { dynamic extra }) async {
     sendEvent(
       PreStartDoneEvent(
         state: "not_logged_in",
-        debugEnabled: state.debugEnabled,
         permissionsToRequest: List<int>.empty(),
         preferences: preferences
       ),
@@ -203,4 +201,9 @@ Future<void> performSetCSIState(BaseEvent c, { dynamic extra }) async {
   } else {
     csi.setInactive();
   }
+}
+
+Future<void> performSetPreferences(BaseEvent c, { dynamic extra }) async {
+  final command = c as SetPreferencesCommand;
+  GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
 }

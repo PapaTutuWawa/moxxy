@@ -118,14 +118,14 @@ void setupLogging() {
 }
 
 Future<void> initUDPLogger() async {
-  final state = await GetIt.I.get<XmppService>().getXmppState();
+  final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
-  if (state.debugEnabled) {
+  if (prefs.debugEnabled) {
     GetIt.I.get<Logger>().finest("UDPLogger created");
 
-    final port = state.debugPort;
-    final ip = state.debugIp;
-    final passphrase = state.debugPassphrase;
+    final port = prefs.debugPort;
+    final ip = prefs.debugIp;
+    final passphrase = prefs.debugPassphrase;
 
     if (port != 0 && ip.isNotEmpty && passphrase.isNotEmpty) {
       GetIt.I.get<UDPLogger>().init(passphrase, ip, port);
@@ -233,7 +233,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<BlockJidCommand>(performBlockJid),
       EventTypeMatcher<UnblockJidCommand>(performUnblockJid),
       EventTypeMatcher<UnblockAllCommand>(performUnblockAll),
-      EventTypeMatcher<SetCSIStateCommand>(performSetCSIState)
+      EventTypeMatcher<SetCSIStateCommand>(performSetCSIState),
+      EventTypeMatcher<SetPreferencesCommand>(performSetPreferences)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

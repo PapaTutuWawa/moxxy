@@ -5,11 +5,11 @@ import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 import "package:moxxyv2/ui/pages/sendfiles.dart";
+*/
 import "package:moxxyv2/ui/pages/settings/debugging.dart";
 import "package:moxxyv2/ui/pages/settings/privacy.dart";
 import "package:moxxyv2/ui/pages/settings/network.dart";
 import "package:moxxyv2/ui/pages/settings/appearance.dart";
-*/
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/ui/pages/settings/settings.dart";
 import "package:moxxyv2/ui/pages/settings/licenses.dart";
@@ -28,6 +28,7 @@ import "package:moxxyv2/ui/bloc/newconversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
+import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
@@ -62,6 +63,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
   GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
   GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
+  GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
 }
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -101,6 +103,9 @@ void main() async {
         ),
         BlocProvider<ProfileBloc>(
           create: (_) => GetIt.I.get<ProfileBloc>()
+        ),
+        BlocProvider<PreferencesBloc>(
+          create: (_) => GetIt.I.get<PreferencesBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -226,15 +231,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         settingsRoute: (context) => const SettingsPage(),
         aboutRoute: (context) => const SettingsAboutPage(),
         licensesRoute: (context) => const SettingsLicensesPage(),
+        appearanceRoute: (context) => const AppearancePage(),
+        networkRoute: (context) => const NetworkPage(),
+        privacyRoute: (context) => const PrivacyPage(),
+        debuggingRoute: (context) => DebuggingPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
         sendFilesRoute: (context) => SendFilesPage(),
         addContactRoute: (context) => AddContactPage(),
-        debuggingRoute: (context) => DebuggingPage(),
-        privacyRoute: (context) => const PrivacyPage(),
-        networkRoute: (context) => const NetworkPage(),
-        appearanceRoute: (context) => const AppearancePage(),
         */
       },
       home: Splashscreen()

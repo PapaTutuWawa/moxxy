@@ -71,15 +71,8 @@ class XmppService {
     // GetIt.I.get<Logger>().finest("data != null: " + (data != null).toString());
 
     if (data == null) {
-      _state = XmppState(
-        "",
-        "",
-        0,
-        false
-      );
-
+      _state = XmppState();
       await _commitXmppState();
-
       return _state!;
     }
 

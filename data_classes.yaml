@@ -23,7 +23,6 @@ files:
           - JsonImplementation
         attributes:
           state: String
-          debugEnabled: bool
           permissionsToRequest: List<int>
           preferences:
             type: PreferencesState
@@ -221,6 +220,15 @@ files:
           - JsonImplementation
         attributes:
           active: bool
+      - name: SetPreferencesCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          preferences:
+            type: PreferencesState
+            deserialise: true
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
