@@ -2,9 +2,9 @@ import "package:moxxyv2/ui/eventhandler.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
 import "package:moxxyv2/ui/pages/register/register.dart";
-import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 import "package:moxxyv2/ui/pages/sendfiles.dart";
+import "package:moxxyv2/ui/pages/addcontact/addcontact.dart";
 */
 import "package:moxxyv2/ui/pages/settings/debugging.dart";
 import "package:moxxyv2/ui/pages/settings/privacy.dart";
@@ -40,8 +40,6 @@ import "package:flutter/foundation.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
-
-// TODO: Merge debug settings into the preferences
 
 void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
@@ -139,8 +137,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       PerformPreStartCommand()
     ) as PreStartDoneEvent;
 
-    // TODO: Set preferences and debug stuff.
-
+    GetIt.I.get<PreferencesBloc>().add(
+      PreferencesChangedEvent(result.preferences)
+    );
+    
     if (result.state == preStartLoggedInState) {
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(

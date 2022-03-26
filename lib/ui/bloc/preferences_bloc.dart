@@ -13,12 +13,14 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   }
 
   Future<void> _onPreferencesChanged(PreferencesChangedEvent event, Emitter<PreferencesState> emit) async {
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
-      SetPreferencesCommand(
-        preferences: state
-      ),
-      awaitable: false
-    );
+    if (event.notify) {
+      GetIt.I.get<BackgroundServiceDataSender>().sendData(
+        SetPreferencesCommand(
+          preferences: state
+        ),
+        awaitable: false
+      );
+    }
 
     emit(event.preferences);
   }
