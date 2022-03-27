@@ -17,8 +17,7 @@ import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
 import "package:permission_handler/permission_handler.dart";
 
-Future<void> performLoginHandler(BaseEvent c, { dynamic extra }) async {
-  final command = c as LoginCommand;
+Future<void> performLoginHandler(LoginCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   GetIt.I.get<Logger>().fine("Performing login");
@@ -50,8 +49,7 @@ Future<void> performLoginHandler(BaseEvent c, { dynamic extra }) async {
   }
 }
 
-Future<void> performPreStart(BaseEvent c, { dynamic extra }) async {
-  final command = c as PerformPreStartCommand;
+Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) async {
   final id = extra as String;
   
   final xmpp = GetIt.I.get<XmppService>();
@@ -103,8 +101,7 @@ Future<void> performPreStart(BaseEvent c, { dynamic extra }) async {
   }
 }
 
-Future<void> performAddConversation(BaseEvent c, { dynamic extra }) async {
-  final command = c as AddConversationCommand;
+Future<void> performAddConversation(AddConversationCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   final db = GetIt.I.get<DatabaseService>();
@@ -152,8 +149,7 @@ Future<void> performAddConversation(BaseEvent c, { dynamic extra }) async {
   }
 }
 
-Future<void> performGetMessagesForJid(BaseEvent c, { dynamic extra }) async {
-  final command = c as GetMessagesForJidCommand;
+Future<void> performGetMessagesForJid(GetMessagesForJidCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   sendEvent(
@@ -164,13 +160,11 @@ Future<void> performGetMessagesForJid(BaseEvent c, { dynamic extra }) async {
   );
 }
 
-Future<void> performSetOpenConversation(BaseEvent c, { dynamic extra }) async {
-  final command = c as SetOpenConversationCommand;
+Future<void> performSetOpenConversation(SetOpenConversationCommand command, { dynamic extra }) async {
   GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? "");
 }
 
-Future<void> performSendMessage(BaseEvent c, { dynamic extra }) async {
-  final command = c as SendMessageCommand;
+Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) async {
   GetIt.I.get<XmppService>().sendMessage(
     body: command.body,
     jid: command.jid,
@@ -179,23 +173,19 @@ Future<void> performSendMessage(BaseEvent c, { dynamic extra }) async {
   );
 }
 
-Future<void> performBlockJid(BaseEvent c, { dynamic extra }) async {
-  final command = c as BlockJidCommand;
-  GetIt.I.get<BlocklistService>().blockJid(c.jid);
+Future<void> performBlockJid(BlockJidCommand command, { dynamic extra }) async {
+  GetIt.I.get<BlocklistService>().blockJid(command.jid);
 }
 
-Future<void> performUnblockJid(BaseEvent c, { dynamic extra }) async {
-  final command = c as UnblockJidCommand;
-  GetIt.I.get<BlocklistService>().unblockJid(c.jid);
+Future<void> performUnblockJid(UnblockJidCommand command, { dynamic extra }) async {
+  GetIt.I.get<BlocklistService>().unblockJid(command.jid);
 }
 
-Future<void> performUnblockAll(BaseEvent c, { dynamic extra }) async {
+Future<void> performUnblockAll(UnblockAllCommand command, { dynamic extra }) async {
   GetIt.I.get<BlocklistService>().unblockAll();
 }
 
-Future<void> performSetCSIState(BaseEvent c, { dynamic extra }) async {
-  final command = c as SetCSIStateCommand;
-
+Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) async {
   final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager)!;
   if (command.active) {
     csi.setActive();
@@ -204,13 +194,11 @@ Future<void> performSetCSIState(BaseEvent c, { dynamic extra }) async {
   }
 }
 
-Future<void> performSetPreferences(BaseEvent c, { dynamic extra }) async {
-  final command = c as SetPreferencesCommand;
+Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extra }) async {
   GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
 }
 
-Future<void> performAddContact(BaseEvent c, { dynamic extra }) async {
-  final command = c as AddContactCommand;
+Future<void> performAddContact(AddContactCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   final jid = command.jid;

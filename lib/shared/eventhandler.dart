@@ -1,28 +1,34 @@
 import "package:meta/meta.dart";
 
-/// Base event class. All events must extend this.
-abstract class BaseEvent {}
+typedef EventCallbackType<E> = Future<void> Function(E event, { dynamic extra});
 
-typedef EventCallbackType = Future<void> Function(BaseEvent event, { dynamic extra});
-
-abstract class EventMatcher {
+abstract class EventMatcher<E> {
   @mustCallSuper
   EventMatcher(this.callback);
 
   /// Return true if the event matches some criteria. False if
   /// not.
-  bool matches(BaseEvent event);
+  bool matches(dynamic event);
 
   /// Function to be called when an event matches the description.
-  EventCallbackType callback;
+  EventCallbackType<E> callback;
+
+  /// Function to be overriden by the matcher. Convert [event] to [T] and call the
+  /// callback.
+  Future<void> call(dynamic event, dynamic extra);
 }
 
 /// Matches an event according to if the event "is T".
-class EventTypeMatcher<T extends BaseEvent> extends EventMatcher {
-  EventTypeMatcher(EventCallbackType callback) : super(callback);
+class EventTypeMatcher<T> extends EventMatcher<T> {
+  EventTypeMatcher(EventCallbackType<T> callback) : super(callback);
 
   @override
-  bool matches(BaseEvent event) => event is T;
+  bool matches(dynamic event) => event is T;
+
+  @override
+  Future<void> call(dynamic event, dynamic extra) async {
+    await callback(event as T, extra: extra);
+  }
 }
 
 /// A simple system for registering event handlers. Those handlers are checked whenever
@@ -38,10 +44,10 @@ class EventHandler {
   /// Calls the callback of the first [EventMatcher] for which [matches] returns true.
   /// Returns true in that case. Otherwise, returns false if no [EventMatcher] matches.
   /// If extra is provided, it will be passed down to the callback if it is called.
-  bool run(BaseEvent event, { dynamic extra }) {
+  bool run(dynamic event, { dynamic extra }) {
     for (final matcher in _matchers) {
       if (matcher.matches(event)) {
-        matcher.callback(event, extra: extra);
+        matcher.call(event, extra);
         return true;
       }
     }

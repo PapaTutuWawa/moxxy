@@ -5,6 +5,7 @@ import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/account.dart";
+import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -29,8 +30,9 @@ import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/blocking.dart";
 
 import "package:get_it/get_it.dart";
-import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
+import "package:flutter_secure_storage/flutter_secure_storage.dart";
+
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
 
@@ -42,6 +44,7 @@ class XmppService {
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
   final Logger _log;
+  final EventHandler _eventHandler;
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
@@ -54,7 +57,24 @@ class XmppService {
     _networkStateSubscription = null,
     _state = null,
     _currentConnectionType = ConnectivityResult.none,
-    _log = Logger("XmppService");
+    _eventHandler = EventHandler(),
+    _log = Logger("XmppService") {
+      _eventHandler.addMatchers([
+          EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
+          EventTypeMatcher<StreamManagementEnabledEvent>(_onStreamManagementEnabled),
+          EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
+          EventTypeMatcher<SubscriptionRequestReceivedEvent>(_onSubscriptionRequestReceived),
+          EventTypeMatcher<DeliveryReceiptReceivedEvent>(_onDeliveryReceiptReceived),
+          EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
+          EventTypeMatcher<RosterPushEvent>(_onRosterPush),
+          EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
+          EventTypeMatcher<MessageAckedEvent>(_onMessageAcked),
+          EventTypeMatcher<MessageEvent>(_onMessage),
+          EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
+          EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
+          EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
+      ]);
+    }
 
   Future<String?> _readKeyOrNull(String key) async {
     if (await _storage.containsKey(key: key)) {
@@ -251,300 +271,9 @@ class XmppService {
 
     return prefs.autoDownloadWifi && _currentConnectionType == ConnectivityResult.wifi || prefs.autoDownloadMobile && _currentConnectionType == ConnectivityResult.mobile;
   }
-  
-  Future<void> _handleEvent(XmppEvent event) async {
-    if (event is ConnectionStateChangedEvent) {
-      // TODO
-      //sendData(ConnectionStateEvent(state: event.state.toString().split(".")[1]));
-
-      // TODO: This will fire as soon as we listen to the stream. So we either have to debounce it here or in [XmppConnection]
-      _networkStateSubscription ??= Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-          _log.fine("Got ConnectivityResult: " + result.toString());
-
-          switch (result) { 
-            case ConnectivityResult.none: {
-              GetIt.I.get<XmppConnection>().onNetworkConnectionLost();
-            }
-            break;
-            case ConnectivityResult.wifi: {
-              _currentConnectionType = ConnectivityResult.wifi;
-              // TODO: This will crash inside [XmppConnection] as soon as this happens
-              GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
-            }
-            break;
-            case ConnectivityResult.mobile: {
-              _currentConnectionType = ConnectivityResult.mobile;
-              // TODO: This will crash inside [XmppConnection] as soon as this happens
-              GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
-            }
-            break;
-            case ConnectivityResult.ethernet: {
-              // NOTE: A hack, but should be fine
-              _currentConnectionType = ConnectivityResult.wifi;
-              // TODO: This will crash inside [XmppConnection] as soon as this happens
-              GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
-            }
-            break;
-            default: break;
-          }
-      });
-      
-      if (event.state == XmppConnectionState.connected) {
-        final connection = GetIt.I.get<XmppConnection>();
-
-        // TODO: Maybe have something better
-        final settings = connection.getConnectionSettings();
-        modifyXmppState((state) => state.copyWith(
-            jid: settings.jid.toString(),
-            password: settings.password.toString()
-        ));
-
-        // In section 5 of XEP-0198 it says that a client should not request the roster
-        // in case of a stream resumption.
-        if (!event.resumed) {
-          GetIt.I.get<RosterService>().requestRoster();
-          // Request our own avatar and maybe those of our contacts
-        }
-
-        // Either we get the cached version or we retrieve it for the first time
-        GetIt.I.get<BlocklistService>().getBlocklist();
-        
-        if (loginTriggeredFromUI) {
-          // TODO: Trigger another event so the UI can see this aswell
-          await setAccountData(AccountState(
-              jid: connection.getConnectionSettings().jid.toString(),
-              displayName: connection.getConnectionSettings().jid.local,
-              avatarUrl: ""
-          ));
-        }
-      }
-    } else if (event is StreamManagementEnabledEvent) {
-      // TODO: Remove
-      modifyXmppState((state) => state.copyWith(
-          srid: event.id,
-          resource: event.resource
-      ));
-    } else if (event is ResourceBindingSuccessEvent) {
-      modifyXmppState((state) => state.copyWith(
-          resource: event.resource
-      ));
-    } else if (event is SubscriptionRequestReceivedEvent) {
-      final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-
-      if (prefs.autoAcceptSubscriptionRequests) {
-        GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(
-          event.from.toBare().toString()
-        );
-      }
-
-      if (!prefs.showSubscriptionRequests) return;
-      
-      final db = GetIt.I.get<DatabaseService>();
-      final conversation = await db.getConversationByJid(event.from.toBare().toString());
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      if (conversation != null) { 
-        final newConversation = await db.updateConversation(
-          id: conversation.id,
-          open: true,
-          lastChangeTimestamp: timestamp
-        );
-
-        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
-      } else {
-        // TODO: Make it configurable if this should happen
-        final bare = event.from.toBare();
-        final conv = await db.addConversationFromData(
-          bare.toString().split("@")[0],
-          "",
-          "", // TODO: avatarUrl
-          bare.toString(),
-          0,
-          timestamp,
-          [],
-          true
-        );
-
-        sendEvent(ConversationAddedEvent(conversation: conv));
-      }
-    } else if (event is DeliveryReceiptReceivedEvent) {
-      _log.finest("Received delivery receipt from ${event.from.toString()}");
-      final db = GetIt.I.get<DatabaseService>();
-      final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
-      if (dbMsg == null) {
-        _log.warning("Did not find the message with id ${event.id} in the database!");
-        return;
-      }
-      
-      final msg = await db.updateMessage(
-        id: dbMsg.id!,
-        received: true
-      );
-
-      sendEvent(MessageUpdatedEvent(message: msg));
-    } else if (event is ChatMarkerEvent) {
-      _log.finest("Chat marker from ${event.from.toString()}");
-      if (event.type == "acknowledged") return;
-
-      final db = GetIt.I.get<DatabaseService>();
-      final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
-      if (dbMsg == null) {
-        _log.warning("Did not find the message in the database!");
-        return;
-      }
-      
-      final msg = await db.updateMessage(
-        id: dbMsg.id!,
-        received: dbMsg.received || event.type == "received" || event.type == "displayed",
-        displayed: dbMsg.displayed || event.type == "displayed"
-      );
-
-      sendEvent(MessageUpdatedEvent(message: msg));
-    } else if (event is MessageEvent) {
-      // TODO: Clean this huge mess up
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final db = GetIt.I.get<DatabaseService>();
-      final fromBare = event.fromJid.toBare().toString();
-      final isChatOpen = _currentlyOpenedChatJid == fromBare;
-      final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
-      final srcUrl = _getMessageSrcUrl(event);
-      final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
-      final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-      String dbBody = event.body;
-      String? replyId;
-      
-      // Respond to the message delivery request
-      if (event.deliveryReceiptRequested && isInRoster && prefs.sendChatMarkers) {
-        // NOTE: We do not await it to prevent us being blocked if the IQ response id delayed
-        _acknowledgeMessage(event);
-      }
-      
-      String? thumbnailData;
-      final thumbnails = firstNotNull([ event.sfs?.metadata.thumbnails, event.sims?.thumbnails ]) ?? [];
-      for (final i in thumbnails) {
-        if (i is BlurhashThumbnail) {
-          thumbnailData = i.hash;
-          break;
-        }
-      }
-
-      // TODO
-      if (event.reply != null /* && check if event.reply.to is okay */) {
-        replyId = event.reply!.id;
-        if (event.reply!.start != null && event.reply!.end != null) {
-          dbBody = dbBody.replaceRange(event.reply!.start!, event.reply!.end!, "");
-          _log.finest("Removed message reply compatibility fallback from message");
-        }
-      }
-
-      Message msg = await db.addMessageFromData(
-        dbBody,
-        timestamp,
-        event.fromJid.toString(),
-        fromBare,
-        false,
-        isMedia,
-        event.sid,
-        srcUrl: srcUrl,
-        thumbnailData: thumbnailData,
-        thumbnailDimensions: event.sfs?.metadata.dimensions,
-        quoteId: replyId
-      );
-
-      final canDownload = (await Permission.storage.status).isGranted && await _canDownloadFile();
-
-      // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
-      //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-      final ext = srcUrl?.split(".").last;
-      String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
-      bool shouldNotify = !(isMedia && isInRoster && canDownload);
-      if (isMedia && isInRoster && canDownload) {
-        final download = GetIt.I.get<DownloadService>();
-        final metadata = await download.peekFile(srcUrl);
-
-        if (metadata.mime != null) {
-          mimeGuess = metadata.mime!;
-        }
-
-        if (prefs.maximumAutoDownloadSize == -1 || (metadata.size != null && metadata.size! <= prefs.maximumAutoDownloadSize * 1000000)) {
-          msg = msg.copyWith(isDownloading: true);
-          // NOTE: If we are here, then srcUrl must be non-null
-          download.downloadFile(srcUrl, msg.id, fromBare, mimeGuess);
-        } else {
-          shouldNotify = true;
-        }
-      }
-
-      final body = isMedia ? mimeTypeToConversationBody(mimeGuess) : event.body;
-      final conversation = await db.getConversationByJid(fromBare);
-      if (conversation != null) { 
-        final newConversation = await db.updateConversation(
-          id: conversation.id,
-          lastMessageBody: body,
-          lastChangeTimestamp: timestamp,
-          unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
-        );
-
-        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
-
-        if (!isChatOpen && shouldNotify) {
-          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare, body: body);
-        }
-      } else {
-        final conv = await db.addConversationFromData(
-          fromBare.split("@")[0], // TODO: Check with the roster first
-          body,
-          "", // TODO: avatarUrl
-          fromBare, // TODO: jid
-          1,
-          timestamp,
-          [],
-          true
-        );
-
-        sendEvent(
-          ConversationAddedEvent(
-            conversation: conv
-          )
-        );
-
-        if (!isChatOpen && shouldNotify) {
-          await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare, body: body);
-        }
-      }
-
-      sendEvent(MessageAddedEvent(message: msg));
-    } else if (event is RosterPushEvent) {
-      GetIt.I.get<RosterService>().handleRosterPushEvent(event);
-      _log.fine("Roster push version: " + (event.ver ?? "(null)"));
-    } else if (event is AuthenticationFailedEvent) {
-      // TODO
-      //sendData(LoginFailedEvent(reason: saslErrorToHumanReadable(event.saslError)));
-    } else if (event is AvatarUpdatedEvent) {
-      await GetIt.I.get<AvatarService>().updateAvatarForJid(
-        event.jid,
-        event.hash,
-        event.base64
-      );
-    } else if (event is MessageAckedEvent) {
-      final jid = JID.fromString(event.to).toBare().toString();
-      final db = GetIt.I.get<DatabaseService>();
-      final msg = await db.getMessageByXmppId(event.id, jid);
-      if (msg != null) {
-        await db.updateMessage(id: msg.id!, acked: true);
-      } else {
-        _log.finest("Wanted to mark message as acked but did not find the message to ack");
-      }
-    } else if (event is BlocklistBlockPushEvent) {
-      await GetIt.I.get<BlocklistService>().onBlocklistPush(BlockPushType.block, event.items);
-    } else if (event is BlocklistUnblockPushEvent) {
-      await GetIt.I.get<BlocklistService>().onBlocklistPush(BlockPushType.unblock, event.items);
-    } else if (event is BlocklistUnblockAllPushEvent) {
-      GetIt.I.get<BlocklistService>().onUnblockAllPush();
-    }
-  }
-  
+ 
   void installEventHandlers() {
-    GetIt.I.get<XmppConnection>().asBroadcastStream().listen(_handleEvent);
+    GetIt.I.get<XmppConnection>().asBroadcastStream().listen(_eventHandler.run);
   }
 
   Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
@@ -563,5 +292,315 @@ class XmppService {
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
     installEventHandlers();
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
+  }
+
+  Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
+    // TODO
+    //sendData(ConnectionStateEvent(state: event.state.toString().split(".")[1]));
+
+    // TODO: This will fire as soon as we listen to the stream. So we either have to debounce it here or in [XmppConnection]
+    _networkStateSubscription ??= Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+        _log.fine("Got ConnectivityResult: " + result.toString());
+
+        switch (result) { 
+          case ConnectivityResult.none: {
+            GetIt.I.get<XmppConnection>().onNetworkConnectionLost();
+          }
+          break;
+          case ConnectivityResult.wifi: {
+            _currentConnectionType = ConnectivityResult.wifi;
+            // TODO: This will crash inside [XmppConnection] as soon as this happens
+            GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
+          }
+          break;
+          case ConnectivityResult.mobile: {
+            _currentConnectionType = ConnectivityResult.mobile;
+            // TODO: This will crash inside [XmppConnection] as soon as this happens
+            GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
+          }
+          break;
+          case ConnectivityResult.ethernet: {
+            // NOTE: A hack, but should be fine
+            _currentConnectionType = ConnectivityResult.wifi;
+            // TODO: This will crash inside [XmppConnection] as soon as this happens
+            GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
+          }
+          break;
+          default: break;
+        }
+    });
+    
+    if (event.state == XmppConnectionState.connected) {
+      final connection = GetIt.I.get<XmppConnection>();
+
+      // TODO: Maybe have something better
+      final settings = connection.getConnectionSettings();
+      modifyXmppState((state) => state.copyWith(
+          jid: settings.jid.toString(),
+          password: settings.password.toString()
+      ));
+
+      // In section 5 of XEP-0198 it says that a client should not request the roster
+      // in case of a stream resumption.
+      if (!event.resumed) {
+        GetIt.I.get<RosterService>().requestRoster();
+        // Request our own avatar and maybe those of our contacts
+      }
+
+      // Either we get the cached version or we retrieve it for the first time
+      GetIt.I.get<BlocklistService>().getBlocklist();
+      
+      if (loginTriggeredFromUI) {
+        // TODO: Trigger another event so the UI can see this aswell
+        await setAccountData(AccountState(
+            jid: connection.getConnectionSettings().jid.toString(),
+            displayName: connection.getConnectionSettings().jid.local,
+            avatarUrl: ""
+        ));
+      }
+    }
+  }
+
+  Future<void> _onStreamManagementEnabled(StreamManagementEnabledEvent event, { dynamic extra }) async {
+    // TODO: Remove
+    modifyXmppState((state) => state.copyWith(
+        srid: event.id,
+        resource: event.resource
+    ));
+  }
+
+  Future<void> _onResourceBindingSuccess(ResourceBindingSuccessEvent event, { dynamic extra }) async {
+    modifyXmppState((state) => state.copyWith(
+        resource: event.resource
+    ));
+  }
+
+  Future<void> _onSubscriptionRequestReceived(SubscriptionRequestReceivedEvent event, { dynamic extra }) async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+
+    if (prefs.autoAcceptSubscriptionRequests) {
+      GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(
+        event.from.toBare().toString()
+      );
+    }
+
+    if (!prefs.showSubscriptionRequests) return;
+    
+    final db = GetIt.I.get<DatabaseService>();
+    final conversation = await db.getConversationByJid(event.from.toBare().toString());
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    if (conversation != null) { 
+      final newConversation = await db.updateConversation(
+        id: conversation.id,
+        open: true,
+        lastChangeTimestamp: timestamp
+      );
+
+      sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+    } else {
+      // TODO: Make it configurable if this should happen
+      final bare = event.from.toBare();
+      final conv = await db.addConversationFromData(
+        bare.toString().split("@")[0],
+        "",
+        "", // TODO: avatarUrl
+        bare.toString(),
+        0,
+        timestamp,
+        [],
+        true
+      );
+
+      sendEvent(ConversationAddedEvent(conversation: conv));
+    }
+  }
+
+  Future<void> _onDeliveryReceiptReceived(DeliveryReceiptReceivedEvent event, { dynamic extra }) async {
+    _log.finest("Received delivery receipt from ${event.from.toString()}");
+    final db = GetIt.I.get<DatabaseService>();
+    final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
+    if (dbMsg == null) {
+      _log.warning("Did not find the message with id ${event.id} in the database!");
+      return;
+    }
+    
+    final msg = await db.updateMessage(
+      id: dbMsg.id!,
+      received: true
+    );
+
+    sendEvent(MessageUpdatedEvent(message: msg));
+  }
+
+  Future<void> _onChatMarker(ChatMarkerEvent event, { dynamic extra }) async {
+    _log.finest("Chat marker from ${event.from.toString()}");
+    if (event.type == "acknowledged") return;
+
+    final db = GetIt.I.get<DatabaseService>();
+    final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
+    if (dbMsg == null) {
+      _log.warning("Did not find the message in the database!");
+      return;
+    }
+    
+    final msg = await db.updateMessage(
+      id: dbMsg.id!,
+      received: dbMsg.received || event.type == "received" || event.type == "displayed",
+      displayed: dbMsg.displayed || event.type == "displayed"
+    );
+
+    sendEvent(MessageUpdatedEvent(message: msg));
+  }
+
+  Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
+    // TODO: Clean this huge mess up
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final db = GetIt.I.get<DatabaseService>();
+    final fromBare = event.fromJid.toBare().toString();
+    final isChatOpen = _currentlyOpenedChatJid == fromBare;
+    final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
+    final srcUrl = _getMessageSrcUrl(event);
+    final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    String dbBody = event.body;
+    String? replyId;
+    
+    // Respond to the message delivery request
+    if (event.deliveryReceiptRequested && isInRoster && prefs.sendChatMarkers) {
+      // NOTE: We do not await it to prevent us being blocked if the IQ response id delayed
+      _acknowledgeMessage(event);
+    }
+    
+    String? thumbnailData;
+    final thumbnails = firstNotNull([ event.sfs?.metadata.thumbnails, event.sims?.thumbnails ]) ?? [];
+    for (final i in thumbnails) {
+      if (i is BlurhashThumbnail) {
+        thumbnailData = i.hash;
+        break;
+      }
+    }
+
+    // TODO
+    if (event.reply != null /* && check if event.reply.to is okay */) {
+      replyId = event.reply!.id;
+      if (event.reply!.start != null && event.reply!.end != null) {
+        dbBody = dbBody.replaceRange(event.reply!.start!, event.reply!.end!, "");
+        _log.finest("Removed message reply compatibility fallback from message");
+      }
+    }
+
+    Message msg = await db.addMessageFromData(
+      dbBody,
+      timestamp,
+      event.fromJid.toString(),
+      fromBare,
+      false,
+      isMedia,
+      event.sid,
+      srcUrl: srcUrl,
+      thumbnailData: thumbnailData,
+      thumbnailDimensions: event.sfs?.metadata.dimensions,
+      quoteId: replyId
+    );
+
+    final canDownload = (await Permission.storage.status).isGranted && await _canDownloadFile();
+
+    // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
+    //       for ".../aaaaaaaaa", in which case we would've failed anyways.
+    final ext = srcUrl?.split(".").last;
+    String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
+    bool shouldNotify = !(isMedia && isInRoster && canDownload);
+    if (isMedia && isInRoster && canDownload) {
+      final download = GetIt.I.get<DownloadService>();
+      final metadata = await download.peekFile(srcUrl);
+
+      if (metadata.mime != null) {
+        mimeGuess = metadata.mime!;
+      }
+
+      if (prefs.maximumAutoDownloadSize == -1 || (metadata.size != null && metadata.size! <= prefs.maximumAutoDownloadSize * 1000000)) {
+        msg = msg.copyWith(isDownloading: true);
+        // NOTE: If we are here, then srcUrl must be non-null
+        download.downloadFile(srcUrl, msg.id, fromBare, mimeGuess);
+      } else {
+        shouldNotify = true;
+      }
+    }
+
+    final body = isMedia ? mimeTypeToConversationBody(mimeGuess) : event.body;
+    final conversation = await db.getConversationByJid(fromBare);
+    if (conversation != null) { 
+      final newConversation = await db.updateConversation(
+        id: conversation.id,
+        lastMessageBody: body,
+        lastChangeTimestamp: timestamp,
+        unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
+      );
+
+      sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+
+      if (!isChatOpen && shouldNotify) {
+        await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare, body: body);
+      }
+    } else {
+      final conv = await db.addConversationFromData(
+        fromBare.split("@")[0], // TODO: Check with the roster first
+        body,
+        "", // TODO: avatarUrl
+        fromBare, // TODO: jid
+        1,
+        timestamp,
+        [],
+        true
+      );
+
+      sendEvent(
+        ConversationAddedEvent(
+          conversation: conv
+        )
+      );
+
+      if (!isChatOpen && shouldNotify) {
+        await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare, body: body);
+      }
+    }
+
+    sendEvent(MessageAddedEvent(message: msg));
+  }
+
+  Future<void> _onRosterPush(RosterPushEvent event, { dynamic extra }) async {
+    GetIt.I.get<RosterService>().handleRosterPushEvent(event);
+    _log.fine("Roster push version: " + (event.ver ?? "(null)"));
+  }
+
+  Future<void> _onAvatarUpdated(AvatarUpdatedEvent event, { dynamic extra }) async {
+    await GetIt.I.get<AvatarService>().updateAvatarForJid(
+      event.jid,
+      event.hash,
+      event.base64
+    );
+  }
+  
+  Future<void> _onMessageAcked(MessageAckedEvent event, { dynamic extra }) async {
+    final jid = JID.fromString(event.to).toBare().toString();
+    final db = GetIt.I.get<DatabaseService>();
+    final msg = await db.getMessageByXmppId(event.id, jid);
+    if (msg != null) {
+      await db.updateMessage(id: msg.id!, acked: true);
+    } else {
+      _log.finest("Wanted to mark message as acked but did not find the message to ack");
+    }
+  }
+
+  Future<void> _onBlocklistBlockPush(BlocklistBlockPushEvent event, { dynamic extra }) async {
+    await GetIt.I.get<BlocklistService>().onBlocklistPush(BlockPushType.block, event.items);
+  }
+
+  Future<void> _onBlocklistUnblockPush(BlocklistUnblockPushEvent event, { dynamic extra }) async {
+    await GetIt.I.get<BlocklistService>().onBlocklistPush(BlockPushType.unblock, event.items);
+  }
+
+  Future<void> _onBlocklistUnblockAllPush(BlocklistUnblockAllPushEvent event, { dynamic extra }) async {
+    GetIt.I.get<BlocklistService>().onUnblockAllPush();
   }
 }

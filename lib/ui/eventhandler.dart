@@ -5,7 +5,7 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart" as conversations;
-import "package:moxxyv2/ui/bloc/newconversation_bloc.dart" as newConversation;
+import "package:moxxyv2/ui/bloc/newconversation_bloc.dart" as new_conversation;
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
@@ -56,53 +56,42 @@ void setupEventHandler() {
   });
 }
 
-Future<void> onConversationAdded(BaseEvent e, { dynamic extra }) async {
-  final event = e as ConversationAddedEvent;
-
+Future<void> onConversationAdded(ConversationAddedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
     conversations.ConversationsAddedEvent(event.conversation)
   );
 }
 
-Future<void> onConversationUpdated(BaseEvent e, { dynamic extra }) async {
-  final event = e as ConversationUpdatedEvent;
-
+Future<void> onConversationUpdated(ConversationUpdatedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
     conversations.ConversationsUpdatedEvent(event.conversation)
   );
 }
 
-Future<void> onMessageAdded(BaseEvent e, { dynamic extra }) async {
-  final event = e as MessageAddedEvent;
-
+Future<void> onMessageAdded(MessageAddedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversation.ConversationBloc>().add(
     conversation.MessageAddedEvent(event.message)
   );
 }
 
-Future<void> onMessageUpdated(BaseEvent e, { dynamic extra }) async {
-  final event = e as MessageUpdatedEvent;
-
+Future<void> onMessageUpdated(MessageUpdatedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversation.ConversationBloc>().add(
     conversation.MessageUpdatedEvent(event.message)
   );
 }
 
-Future<void> onBlocklistPushed(BaseEvent e, { dynamic extra }) async {
-  final event = e as BlocklistPushEvent;
-
+Future<void> onBlocklistPushed(BlocklistPushEvent event, { dynamic extra }) async {
   GetIt.I.get<blocklist.BlocklistBloc>().add(
     blocklist.BlocklistPushedEvent(
-      e.added,
-      e.removed
+      event.added,
+      event.removed
     )
   );
 }
 
-Future<void> onRosterPush(BaseEvent e, { dynamic extra }) async {
-  final event = e as RosterDiffEvent;
-  GetIt.I.get<newConversation.NewConversationBloc>().add(
-    newConversation.RosterPushedEvent(
+Future<void> onRosterPush(RosterDiffEvent event, { dynamic extra }) async {
+  GetIt.I.get<new_conversation.NewConversationBloc>().add(
+    new_conversation.RosterPushedEvent(
       event.added,
       event.modified,
       event.removed

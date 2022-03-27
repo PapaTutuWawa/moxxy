@@ -5,4 +5,4 @@ import "package:moxxyv2/shared/models/message.dart";
 
 part "commands.g.dart";
 
-abstract class BackgroundCommand extends BaseEvent implements JsonImplementation {}
+abstract class BackgroundCommand implements JsonImplementation {}
