@@ -11,8 +11,6 @@ import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 
-// TODO: Rename to events.dart
-
 void setupEventHandler() {
   final handler = EventHandler();
   handler.addMatchers([

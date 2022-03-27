@@ -1,4 +1,4 @@
-import "package:moxxyv2/ui/eventhandler.dart";
+import "package:moxxyv2/ui/events.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
 import "package:moxxyv2/ui/pages/register/register.dart";
