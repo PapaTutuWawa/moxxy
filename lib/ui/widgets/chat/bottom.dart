@@ -30,7 +30,7 @@ class MessageBubbleBottom extends StatelessWidget {
             )
           )
         ),
-        ...(message.acked && !message.received && !message.displayed ? [
+        ...(message.sent && message.acked && !message.received && !message.displayed ? [
             const Padding(
               padding: EdgeInsets.only(left: 3.0),
               child: Icon(
@@ -39,7 +39,7 @@ class MessageBubbleBottom extends StatelessWidget {
               )
             )
           ] : []),
-        ...(message.received && !message.displayed ? [
+        ...(message.sent && message.received && !message.displayed ? [
             const Padding(
               padding: EdgeInsets.only(left: 3.0),
               child: Icon(
@@ -48,7 +48,7 @@ class MessageBubbleBottom extends StatelessWidget {
               )
             )
           ] : []),
-        ...(message.displayed ? [
+        ...(message.sent && message.displayed ? [
             Padding(
               padding: const EdgeInsets.only(left: 3.0),
               child: Icon(
