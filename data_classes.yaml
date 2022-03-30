@@ -249,6 +249,15 @@ files:
           - JsonImplementation
         attributes:
           jid: String
+      - name: RequestDownloadCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          message:
+            type: Message
+            deserialise: true
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

@@ -6,6 +6,7 @@ import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart" as conversations;
 import "package:moxxyv2/ui/bloc/newconversation_bloc.dart" as new_conversation;
+import "package:moxxyv2/ui/service/download.dart";
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
@@ -19,7 +20,8 @@ void setupEventHandler() {
       EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),
       EventTypeMatcher<ConversationAddedEvent>(onConversationAdded),
       EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed),
-      EventTypeMatcher<RosterDiffEvent>(onRosterPush)
+      EventTypeMatcher<RosterDiffEvent>(onRosterPush),
+      EventTypeMatcher<DownloadProgressEvent>(onDownloadProgress)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -95,4 +97,8 @@ Future<void> onRosterPush(RosterDiffEvent event, { dynamic extra }) async {
       event.removed
     )
   );
+}
+
+Future<void> onDownloadProgress(DownloadProgressEvent event, { dynamic extra }) async {
+  GetIt.I.get<UIDownloadService>().onProgress(event.id, event.progress);
 }

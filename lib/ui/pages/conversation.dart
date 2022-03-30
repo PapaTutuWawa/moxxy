@@ -3,7 +3,7 @@ import "dart:io";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/widgets/chatbubble.dart";
+import "package:moxxyv2/ui/widgets/chat/chatbubble.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/widgets/quotedmessage.dart";

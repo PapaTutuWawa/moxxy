@@ -32,6 +32,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<MessageUpdatedEvent>(_onMessageUpdated);
   }
 
+  /// Returns true if [msg] is meant for the open conversation. False otherwise.
+  bool _isMessageForConversation(Message msg) => msg.conversationJid == state.conversation?.jid;
+  
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
     emit(
       state.copyWith(backgroundPath: event.backgroundPath)
@@ -139,7 +142,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onMessageAdded(MessageAddedEvent event, Emitter<ConversationState> emit) async {
-    if (event.message.conversationJid != state.conversation?.jid) return;
+    if (!_isMessageForConversation(event.message)) return;
 
     emit(
       state.copyWith(
@@ -149,23 +152,30 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onMessageUpdated(MessageUpdatedEvent event, Emitter<ConversationState> emit) async {
-    if (event.message.conversationJid != state.conversation?.jid) return;
+    if (!_isMessageForConversation(event.message)) return;
 
     // TODO: Check if we are iterating the correct wa
     // Small trick: The newer messages are much more likely to be updated than
     // older messages.
+    /*
     final messages = state.messages;
     for (int i = messages.length - 1; i >= 0; i--) {
       if (messages[i].id == event.message.id) {
+        print("Found message to update");
         messages[i] = event.message;
         break;
       }
     }
+    */
     
     // We don't have to re-sort the list here as timestamps never change
     emit(
       state.copyWith(
-        messages: List.from(messages),
+        messages: List.from(state.messages.map((m) {
+              if (m.id == event.message.id) return event.message;
+
+              return m;
+        })),
       )
     );
   }

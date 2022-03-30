@@ -1,9 +1,11 @@
 import "dart:io";
 
+import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
-import "package:moxxyv2/ui/widgets/chat/image.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
+import "package:moxxyv2/ui/widgets/chat/helpers.dart";
+//import "package:moxxyv2/ui/widgets/chat/media/image.dart";
 
 import "package:flutter/material.dart";
 import "package:path/path.dart" as pathlib;
@@ -12,78 +14,59 @@ import "package:video_compress/video_compress.dart";
 import "package:open_file/open_file.dart";
 
 class VideoChatWidget extends StatefulWidget {
-  final String path;
   final String timestamp;
-  final String conversationJid;
+  final Message message;
+  final double maxWidth;
   final BorderRadius radius;
-  final String? thumbnailData;
-  final Size thumbnailSize;
-  final bool received;
-  final bool displayed;
-  final bool acked;
 
-  const VideoChatWidget({
-      required this.path,
+  const VideoChatWidget(
+    this.message,
+    this.maxWidth,
+    {
       required this.timestamp,
       required this.radius,
-      required this.thumbnailSize,
-      required this.conversationJid,
-      required this.received,
-      required this.displayed,
-      required this.acked,
-      this.thumbnailData,
       Key? key
-  }) : super(key: key);
+    }
+  ) : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
   _VideoChatWidgetState createState() => _VideoChatWidgetState(
-    path: path,
+    message,
+    maxWidth,
     timestamp: timestamp,
-    conversationJid: conversationJid,
     radius: radius,
-    thumbnailData: thumbnailData,
-    thumbnailSize: thumbnailSize,
-    received: received,
-    displayed: displayed,
-    acked: acked
   );
 }
 
 class _VideoChatWidgetState extends State<VideoChatWidget> {
-  final String path;
   final String timestamp;
-  final String conversationJid;
   final BorderRadius radius;
-  final String? thumbnailData;
-  final Size thumbnailSize;
-  final bool received;
-  final bool displayed;
-  final bool acked;
+  final double maxWidth;
+  final Message message;
 
   String _thumbnailPath;
   bool _hasThumbnail;
 
-  _VideoChatWidgetState({
-      required this.path,
+  _VideoChatWidgetState(
+    this.message,
+    this.maxWidth,
+    {
       required this.timestamp,
       required this.radius,
-      required this.thumbnailSize,
-      required this.conversationJid,
-      required this.received,
-      required this.displayed,
-      required this.acked,
-      this.thumbnailData
-  }) : _thumbnailPath = "", _hasThumbnail = true;
+    }
+  ) : _thumbnailPath = "", _hasThumbnail = true;
 
   Future<String> _getThumbnailPath() async {
     final base = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_PICTURES);
-    return pathlib.join(base, "Moxxy", ".thumbnail", conversationJid, pathlib.basename(path));
+    return pathlib.join(base, "Moxxy", ".thumbnail", message.conversationJid, pathlib.basename(message.mediaUrl!));
   }
 
   // TODO: Maybe create the thumbnail in another isolate
   Widget _showThumbnail() {
     if (_thumbnailPath.isNotEmpty && _hasThumbnail) {
+      // TODO:
+      /*
       return ImageChatWidget(
         path: _thumbnailPath,
         timestamp: timestamp,
@@ -95,14 +78,17 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
         acked: acked,
         extra: const PlayButton()
       );
+      */
+      return const SizedBox();
     } else {
       if (!_hasThumbnail) {
-        if (thumbnailData != null) {
+        if (message.thumbnailData != null) {
+          final thumbnailSize = getThumbnailSize(message, maxWidth);
           return BlurhashChatWidget(
             borderRadius: radius,
             width: thumbnailSize.width.toInt(),
             height: thumbnailSize.height.toInt(),
-            thumbnailData: thumbnailData!,
+            thumbnailData: message.thumbnailData!,
             // TODO: Show download button
             child: const PlayButton()
           );
@@ -120,6 +106,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   }
   
   Future<void> _init() async {
+    final path = message.mediaUrl!;
     final thumbnailPath = await _getThumbnailPath();
     if (await File(thumbnailPath).exists()) {
       setState(() {
@@ -160,7 +147,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
     return IntrinsicWidth(
       child: InkWell(
         onTap: () {
-          OpenFile.open(path);
+          OpenFile.open(message.mediaUrl!);
         },
         child: Stack(
           children: [
@@ -196,10 +183,8 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
                 child: MessageBubbleBottom(
-                  timestamp: timestamp,
-                  received: received,
-                  displayed: displayed,
-                  acked: acked
+                  message,
+                  timestamp: timestamp
                 )
               )
             ) 

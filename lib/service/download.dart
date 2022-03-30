@@ -78,7 +78,7 @@ class DownloadService {
           sendEvent(
             DownloadProgressEvent(
               id: mId,
-              progress: progress
+              progress: progress == 1 ? 0.99 : progress
             )
           );
 

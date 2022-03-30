@@ -1,6 +1,7 @@
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/preferences.dart";
@@ -8,6 +9,7 @@ import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/service/avatars.dart";
+import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -239,4 +241,24 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
   // Try to figure out an avatar
   await GetIt.I.get<AvatarService>().subscribeJid(jid);
   GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid);
+}
+
+Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic extra }) async {
+  sendEvent(MessageUpdatedEvent(message: command.message.copyWith(isDownloading: true)));
+
+  final download = GetIt.I.get<DownloadService>();
+  final metadata = await download.peekFile(command.message.srcUrl!);
+
+  // TODO: Maybe deduplicate with the code in the xmpp service
+  // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
+  //       for ".../aaaaaaaaa", in which case we would've failed anyways.
+  final ext = command.message.srcUrl!.split(".").last;
+  final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
+
+  await download.downloadFile(
+    command.message.srcUrl!,
+    command.message.id,
+    command.message.conversationJid,
+    mimeGuess
+  );
 }
