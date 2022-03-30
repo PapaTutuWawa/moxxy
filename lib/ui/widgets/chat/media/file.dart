@@ -14,11 +14,21 @@ class _FileChatBaseWidget extends StatelessWidget {
   final String url;
   final String filename;
   final MessageBubbleBottom bottom;
+  final bool showIcon;
 
   final Widget? extra;
   final DownloadProgress? progress;
 
-  const _FileChatBaseWidget(this.url, this.filename, this.bottom, { this.extra, this.progress });
+  const _FileChatBaseWidget(
+    this.url,
+    this.filename,
+    this.bottom,
+    {
+      this.extra,
+      this.progress,
+      this.showIcon = true
+    }
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +38,12 @@ class _FileChatBaseWidget extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 8.0),
           child: Stack(
             children: [
-              const Icon(
-                Icons.file_present,
-                size: 128.0
-              ),
+              ...(showIcon ? [
+                  const Icon(
+                    Icons.file_present,
+                    size: 128.0
+                  )
+              ] : []),
               ...(progress != null ?
                 [
                   Positioned.fill(
@@ -103,7 +115,8 @@ class FileChatWidget extends StatelessWidget {
       message.srcUrl!,
       filename,
       MessageBubbleBottom(message, timestamp: timestamp),
-      progress: DownloadProgress(id: message.id)
+      progress: DownloadProgress(id: message.id),
+      showIcon: false
     );
   }
 
