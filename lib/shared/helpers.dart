@@ -1,3 +1,5 @@
+import "dart:core";
+
 /// Add a leading zero, if required, to ensure that an integer is rendered
 /// as a two "digit" string.
 ///
@@ -160,4 +162,9 @@ String mimeTypeToConversationBody(String? mime) {
   }
 
   return "📁 File";
+}
+
+/// Parse an Uri and return the "filename".
+String filenameFromUrl(String url) {
+  return Uri.parse(url).pathSegments.last;
 }

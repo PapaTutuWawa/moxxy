@@ -198,6 +198,7 @@ class DatabaseService {
     {
       String? srcUrl,
       String? mediaUrl,
+      String? mediaType,
       String? thumbnailData,
       String? thumbnailDimensions,
       String? originId,
@@ -211,6 +212,7 @@ class DatabaseService {
       ..body = body
       ..sent = sent
       ..isMedia = isMedia
+      ..mediaType = mediaType
       ..srcUrl = srcUrl
       ..sid = sid
       ..thumbnailData = thumbnailData

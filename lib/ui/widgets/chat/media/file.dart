@@ -2,6 +2,7 @@ import "dart:core";
 
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 import "package:moxxyv2/ui/widgets/chat/download.dart";
@@ -36,28 +37,30 @@ class _FileChatBaseWidget extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
-          child: Stack(
-            children: [
-              ...(showIcon ? [
-                  const Icon(
-                    Icons.file_present,
-                    size: 128.0
-                  )
-              ] : []),
-              ...(progress != null ?
-                [
-                  Positioned.fill(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: 64.0,
-                        height: 64.0,
-                        child: progress!
+          child: IntrinsicHeight(
+            child: Stack(
+              children: [
+                ...(showIcon ? [
+                    const Icon(
+                      Icons.file_present,
+                      size: 128.0
+                    )
+                  ] : []),
+                ...(progress != null ?
+                  [
+                    Positioned.fill(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: 64.0,
+                          height: 64.0,
+                          child: progress!
+                        )
                       )
                     )
-                  )
-                ] : [])
-            ]
+                  ] : [])
+              ]
+            )
           )
         ),
         Text(
@@ -91,10 +94,9 @@ class FileChatWidget extends StatelessWidget {
   ) : super(key: key);
 
   Widget _buildNonDownloaded() {
-    final filename = Uri.parse(message.srcUrl!).pathSegments.last;
     return _FileChatBaseWidget(
       message.srcUrl!,
-      filename,
+      filenameFromUrl(message.srcUrl!),
       MessageBubbleBottom(message, timestamp: timestamp),
       extra: ElevatedButton(
         onPressed: () {
@@ -110,10 +112,9 @@ class FileChatWidget extends StatelessWidget {
 
 
   Widget _buildDownloading() {
-    final filename = Uri.parse(message.srcUrl!).pathSegments.last;
     return _FileChatBaseWidget(
       message.srcUrl!,
-      filename,
+      filenameFromUrl(message.srcUrl!),
       MessageBubbleBottom(message, timestamp: timestamp),
       progress: DownloadProgress(id: message.id),
       showIcon: false

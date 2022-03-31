@@ -1,5 +1,8 @@
 import "dart:io";
 
+import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/backgroundsender.dart";
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/widgets/chat/helpers.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
@@ -11,6 +14,78 @@ import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 
 import "package:flutter/material.dart";
 import "package:open_file/open_file.dart";
+import "package:get_it/get_it.dart";
+
+class ImageBaseChatWidget extends StatelessWidget {
+  final String? path;
+  final BorderRadius radius;
+  final Widget child;
+  final Widget? extra;
+  final MessageBubbleBottom bottom;
+
+  const ImageBaseChatWidget(
+    this.path,
+    this.radius,
+    this.child,
+    this.bottom,
+    {
+      this.extra
+    }
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicWidth(
+      child: InkResponse(
+        onTap: () {
+          if (path != null) {
+            OpenFile.open(path);
+          }
+        },
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: radius,
+              child: child
+            ),
+            Positioned(
+              bottom: 0,
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                alignment: Alignment.bottomCenter,
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withAlpha(0),
+                      Colors.black12,
+                      Colors.black54
+                    ]
+                  )
+                )
+              )
+            ),
+            ...(extra != null ? [ extra! ] : []),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
+                child: bottom
+              )
+            ) 
+          ]
+        )
+      )
+    );
+  }
+}
 
 class ImageChatWidget extends StatelessWidget {
   final Message message;
@@ -30,6 +105,13 @@ class ImageChatWidget extends StatelessWidget {
     }
   ) : super(key: key);
 
+  void _requestDownload() {
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      RequestDownloadCommand(message: message),
+      awaitable: false
+    );
+  }
+  
   Widget _buildNonDownloaded() {
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
@@ -39,21 +121,22 @@ class ImageChatWidget extends StatelessWidget {
         borderRadius: radius,
         thumbnailData: message.thumbnailData!,
         child: DownloadButton(
-          // TODO
-          onPressed: () {}
+          onPressed: () => _requestDownload()
         )
       );
     }
 
-    // TODO: Non-downloaded image with no thumbnail
-    return const Padding(
-      padding: EdgeInsets.all(16.0),
-      child: SizedBox()
+    return FileChatWidget(
+      message,
+      timestamp,
+      extra: ElevatedButton(
+        onPressed: () => _requestDownload(),
+        child: const Text("Download")
+      )
     );
   }
 
   Widget _buildDownloading() {
-    // TODO
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
       return BlurhashChatWidget(
@@ -64,7 +147,11 @@ class ImageChatWidget extends StatelessWidget {
         child: DownloadProgress(id: message.id)
       );
     }
-    return const SizedBox();
+
+    return FileChatWidget(
+      message,
+      timestamp
+    );
   }
 
   Widget _buildImage() {

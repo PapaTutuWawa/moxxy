@@ -502,6 +502,9 @@ class XmppService {
       }
     }
 
+
+    final ext = srcUrl != null ? filenameFromUrl(srcUrl) : null;
+    String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
     Message msg = await db.addMessageFromData(
       dbBody,
       timestamp,
@@ -511,6 +514,7 @@ class XmppService {
       isMedia,
       event.sid,
       srcUrl: srcUrl,
+      mediaType: mimeGuess,
       thumbnailData: thumbnailData,
       thumbnailDimensions: event.sfs?.metadata.dimensions,
       quoteId: replyId
@@ -518,10 +522,6 @@ class XmppService {
 
     final canDownload = (await Permission.storage.status).isGranted && await _canDownloadFile();
 
-    // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
-    //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-    final ext = srcUrl?.split(".").last;
-    String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
     bool shouldNotify = !(isMedia && isInRoster && canDownload);
     if (isMedia && isInRoster && canDownload) {
       final download = GetIt.I.get<DownloadService>();

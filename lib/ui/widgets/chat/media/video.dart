@@ -5,7 +5,7 @@ import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/helpers.dart";
-//import "package:moxxyv2/ui/widgets/chat/media/image.dart";
+import "package:moxxyv2/ui/widgets/chat/media/image.dart";
 
 import "package:flutter/material.dart";
 import "package:path/path.dart" as pathlib;
@@ -21,21 +21,21 @@ class VideoChatWidget extends StatefulWidget {
 
   const VideoChatWidget(
     this.message,
+    this.timestamp,
+    this.radius,
     this.maxWidth,
     {
-      required this.timestamp,
-      required this.radius,
       Key? key
     }
   ) : super(key: key);
 
-  @override
   // ignore: no_logic_in_create_state
+  @override
   _VideoChatWidgetState createState() => _VideoChatWidgetState(
     message,
     maxWidth,
-    timestamp: timestamp,
-    radius: radius,
+    timestamp,
+    radius,
   );
 }
 
@@ -51,10 +51,8 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   _VideoChatWidgetState(
     this.message,
     this.maxWidth,
-    {
-      required this.timestamp,
-      required this.radius,
-    }
+    this.timestamp,
+    this.radius,
   ) : _thumbnailPath = "", _hasThumbnail = true;
 
   Future<String> _getThumbnailPath() async {
@@ -62,88 +60,38 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
     return pathlib.join(base, "Moxxy", ".thumbnail", message.conversationJid, pathlib.basename(message.mediaUrl!));
   }
 
-  // TODO: Maybe create the thumbnail in another isolate
-  Widget _showThumbnail() {
-    if (_thumbnailPath.isNotEmpty && _hasThumbnail) {
-      // TODO:
-      /*
-      return ImageChatWidget(
-        path: _thumbnailPath,
-        timestamp: timestamp,
-        radius: radius,
-        thumbnailData: thumbnailData,
-        thumbnailSize: thumbnailSize,
-        received: received,
-        displayed: displayed,
-        acked: acked,
-        extra: const PlayButton()
-      );
-      */
-      return const SizedBox();
-    } else {
-      if (!_hasThumbnail) {
-        if (message.thumbnailData != null) {
-          final thumbnailSize = getThumbnailSize(message, maxWidth);
-          return BlurhashChatWidget(
-            borderRadius: radius,
-            width: thumbnailSize.width.toInt(),
-            height: thumbnailSize.height.toInt(),
-            thumbnailData: message.thumbnailData!,
-            // TODO: Show download button
-            child: const PlayButton()
-          );
-        } else {
-          // TODO: Show download button
-          return const Text("File not found");
-        }
-      } else {
-        return const Padding(
-          padding: EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0, bottom: 32.0),
-          child: CircularProgressIndicator()
-        );
-      }
-    }
+  Widget _buildNonDownloaded() {
+    // TODO
+    return const SizedBox();
   }
-  
-  Future<void> _init() async {
-    final path = message.mediaUrl!;
-    final thumbnailPath = await _getThumbnailPath();
-    if (await File(thumbnailPath).exists()) {
-      setState(() {
-          _thumbnailPath = thumbnailPath;
-      });
-    } else {
-      final thumbnailDirPath = pathlib.dirname(thumbnailPath);
-      final thumbnailDir = Directory(thumbnailDirPath);
-      if (!(await thumbnailDir.exists())) {
-        await thumbnailDir.create(recursive: true);
-      }
 
-      // Thumbnail not available
-      if (await File(path).exists()) {
-        // TODO: Generate thumbnail
-        final f = await VideoCompress.getFileThumbnail(
-          path,
-          quality: 75
-        );
+  Widget _buildDownloading() {
+    // TODO
+    return const SizedBox();
+  }
 
-        setState(() {
-            _thumbnailPath = f.path;
-        });
-      } else {
-        setState(() {
-            _hasThumbnail = false;
-        });
-      }
-    }
+  Widget _buildVideo() {
+    return ImageBaseChatWidget(
+      message.mediaUrl!,
+      radius,
+      Image.file(File(message.mediaUrl!)),
+      MessageBubbleBottom(
+        message,
+        timestamp: timestamp,
+      ),
+      extra: const PlayButton()
+    );
+  }
+
+  Widget _innerBuild() {
+    if (!message.isDownloading && message.mediaUrl != null) return _buildVideo();
+    if (message.isDownloading) return _buildDownloading();
+
+    return _buildNonDownloaded();
   }
   
   @override
   Widget build(BuildContext context) {
-    if (_thumbnailPath.isEmpty) {
-      _init();
-    }
-
     return IntrinsicWidth(
       child: InkWell(
         onTap: () {
@@ -153,7 +101,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
           children: [
             ClipRRect(
               borderRadius: radius,
-              child: _showThumbnail()
+              child: _innerBuild()
             ),
             Positioned(
               bottom: 0,
