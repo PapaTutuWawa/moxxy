@@ -34,7 +34,6 @@ MessageType getMessageType(Message message) {
 
 /// Build an inlinable message widget
 Widget buildMessageWidget(Message message, String timestamp, double maxWidth, BorderRadius radius) {
-  print(message.srcUrl);
   switch (getMessageType(message)) {
     case MessageType.text: {
       return TextChatWidget(
