@@ -19,7 +19,6 @@ enum MessageType {
 MessageType getMessageType(Message message) {
   if (message.isMedia) {
     final mime = message.mediaType;
-    print(mime);
     if (mime == null) return MessageType.file;
 
     if (mime.startsWith("image/")) return MessageType.image;
