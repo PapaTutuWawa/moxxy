@@ -49,16 +49,10 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
     this.radius,
   );
 
-  /// Returns the path of a possible thumbnail for the video. Does not imply that the file
-  /// exists.
-  String _getThumbnailPath() {
-    final base = GetIt.I.get<UIDataService>().thumbnailBase;
-    return pathlib.join(base, message.conversationJid, pathlib.basename(message.mediaUrl!));
-  }
-
   /// Generate the thumbnail if needed.
   Future<bool> _thumbnailFuture() async {
-    final thumbnailFile = File(_getThumbnailPath());
+    final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(message);
+    final thumbnailFile = File(thumbnail);
     if (await thumbnailFile.exists()) {
       return true;
     }
@@ -106,10 +100,11 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data!) {
+            final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(message);
             return ImageBaseChatWidget(
               message.mediaUrl!,
               radius,
-              Image.file(File(_getThumbnailPath())),
+              Image.file(File(thumbnail)),
               MessageBubbleBottom(message),
               extra: const PlayButton()
             );
