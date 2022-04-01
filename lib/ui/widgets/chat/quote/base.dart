@@ -4,17 +4,21 @@ import "package:moxxyv2/ui/constants.dart";
 import "package:flutter/material.dart";
 
 /// This Widget is used to show that a message has been quoted.
-class QuotedMessageWidget extends StatelessWidget {
+class QuoteBaseWidget extends StatelessWidget {
   final Message message;
+  final Widget child;
   final void Function()? resetQuotedMessage;
 
   /// [message]: The message used to quote
   /// [resetQuotedMessage]: Function to reset the quoted message
-  const QuotedMessageWidget({
-      required this.message,
+  const QuoteBaseWidget(
+    this.message,
+    this.child,
+    {
       this.resetQuotedMessage,
       Key? key
-  }) : super(key: key);
+    }
+  ) : super(key: key);
 
   Color _getColor() {
     if (message.sent) {
@@ -62,7 +66,7 @@ class QuotedMessageWidget extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.all(8.0).add(const EdgeInsets.only(left: quoteLeftBorderWidth, right: 26.0)),
-              child: Text(message.body)
+              child: child
             ),
           ]
         )

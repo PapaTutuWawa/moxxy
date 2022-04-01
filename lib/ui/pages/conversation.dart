@@ -3,10 +3,10 @@ import "dart:io";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/widgets/chat/chatbubble.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/widgets/textfield.dart";
-import "package:moxxyv2/ui/widgets/quotedmessage.dart";
+import "package:moxxyv2/ui/widgets/chat/media/media.dart";
+import "package:moxxyv2/ui/widgets/chat/chatbubble.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
@@ -367,10 +367,9 @@ class _ConversationPageState extends State<ConversationPage> {
                               contentPadding: textfieldPaddingConversation,
                               cornerRadius: textfieldRadiusConversation,
                               controller: _controller,
-                              // TODO: Handle media messages being quoted
-                              topWidget: state.quotedMessage != null ? QuotedMessageWidget(
-                                message: state.quotedMessage!,
-                                resetQuotedMessage: () => context.read<ConversationBloc>().add(QuoteRemovedEvent())
+                              topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(
+                                state.quotedMessage!,
+                                resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent())
                               ) : null
                             )
                           ),

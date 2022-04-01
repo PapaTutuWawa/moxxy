@@ -103,13 +103,6 @@ class ImageChatWidget extends StatelessWidget {
     }
   ) : super(key: key);
 
-  void _requestDownload() {
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
-      RequestDownloadCommand(message: message),
-      awaitable: false
-    );
-  }
-  
   Widget _buildNonDownloaded() {
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
@@ -119,7 +112,7 @@ class ImageChatWidget extends StatelessWidget {
         borderRadius: radius,
         thumbnailData: message.thumbnailData!,
         child: DownloadButton(
-          onPressed: () => _requestDownload()
+          onPressed: () => requestMediaDownload(message)
         )
       );
     }
@@ -127,7 +120,7 @@ class ImageChatWidget extends StatelessWidget {
     return FileChatWidget(
       message,
       extra: ElevatedButton(
-        onPressed: () => _requestDownload(),
+        onPressed: () => requestMediaDownload(message),
         child: const Text("Download")
       )
     );

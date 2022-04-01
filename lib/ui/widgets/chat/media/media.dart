@@ -1,8 +1,11 @@
+import "dart:io";
+
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/widgets/chat/text.dart";
 import "package:moxxyv2/ui/widgets/chat/media/image.dart";
 import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 import "package:moxxyv2/ui/widgets/chat/media/video.dart";
+import "package:moxxyv2/ui/widgets/chat/quote/base.dart";
 
 import "package:flutter/material.dart";
 
@@ -38,7 +41,8 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius)
     case MessageType.text: {
       return TextChatWidget(
         message,
-        enablePadding: false
+        enablePadding: false,
+        topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!) : null
       );
     }
     case MessageType.image: {
@@ -56,15 +60,37 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius)
 }
 
 /// Build a widget that represents a quoted message within another bubble.
-/*Widget buildQuoteMessageWidget(Message message) {
+Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) {
   switch (getMessageType(message)) {
-    case MessageType.text: return TextChatWidget(
-      message: message
-      enablePadding: false
-    );
-    case MessageType.image: return buildImageMessageWidget(message);
-    case MessageType.video: return buildVideoMessageWidget(message);
-    //case MessageType.audio: return buildImageMessageWidget(message);
-    case MessageType.file: return buildFileMessageWidget(message);
+    case MessageType.text: {
+      return QuoteBaseWidget(message, Text(message.body), resetQuotedMessage: resetQuote);
+    }
+    // TODO
+    case MessageType.image: {
+      return QuoteBaseWidget(
+        message,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SizedBox(
+              width: 48.0,
+              height: 48.0,
+              // TODO: Error handling
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                child: Image.file(
+                  File(message.mediaUrl!),
+                  fit: BoxFit.cover,
+                )
+              )
+            )
+          ]
+        ),
+        resetQuotedMessage: resetQuote
+      );
+    }
+    case MessageType.video: return const SizedBox();
+    //case MessageType.audio: return const SizedBox();
+    case MessageType.file: return const SizedBox();
   }
-}*/
+}

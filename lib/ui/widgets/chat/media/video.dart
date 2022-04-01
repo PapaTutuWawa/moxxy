@@ -87,8 +87,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
     return FileChatWidget(
       message,
       extra: ElevatedButton(
-        // TODO
-        onPressed: () {},
+        onPressed: () => requestMediaDownload(message),
         child: const Text("Download")
       )
     );
