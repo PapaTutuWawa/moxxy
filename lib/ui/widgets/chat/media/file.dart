@@ -81,12 +81,10 @@ class _FileChatBaseWidget extends StatelessWidget {
 /// cannot determine the mime type.
 class FileChatWidget extends StatelessWidget {
   final Message message;
-  final String timestamp;
   final Widget? extra;
 
   const FileChatWidget(
     this.message,
-    this.timestamp,
     {
       this.extra,
       Key? key
@@ -97,7 +95,7 @@ class FileChatWidget extends StatelessWidget {
     return _FileChatBaseWidget(
       message.srcUrl!,
       filenameFromUrl(message.srcUrl!),
-      MessageBubbleBottom(message, timestamp: timestamp),
+      MessageBubbleBottom(message),
       extra: ElevatedButton(
         onPressed: () {
           GetIt.I.get<BackgroundServiceDataSender>().sendData(
@@ -115,7 +113,7 @@ class FileChatWidget extends StatelessWidget {
     return _FileChatBaseWidget(
       message.srcUrl!,
       filenameFromUrl(message.srcUrl!),
-      MessageBubbleBottom(message, timestamp: timestamp),
+      MessageBubbleBottom(message),
       progress: DownloadProgress(id: message.id),
       showIcon: false
     );
@@ -128,10 +126,7 @@ class FileChatWidget extends StatelessWidget {
     return _FileChatBaseWidget(
       message.srcUrl!,
       filename,
-      MessageBubbleBottom(
-        message,
-        timestamp: timestamp
-      )
+      MessageBubbleBottom(message)
     );
   }
 

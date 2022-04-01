@@ -1,20 +1,62 @@
+import "dart:async";
+
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/ui/constants.dart";
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 
 import "package:flutter/material.dart";
 
-class MessageBubbleBottom extends StatelessWidget {
-  final String timestamp;
+class MessageBubbleBottom extends StatefulWidget {
   final Message message;
 
-  const MessageBubbleBottom(
-    this.message,
-    {
-      required this.timestamp,
-      Key? key
-    }
-  ) : super(key: key);
+  const MessageBubbleBottom(this.message, { Key? key }): super(key: key);
 
+  @override
+  _MessageBubbleBottomState createState() => _MessageBubbleBottomState(
+    message
+  );
+}
+
+class _MessageBubbleBottomState extends State<MessageBubbleBottom> {
+  final Message message;
+
+  late String _timestampString;
+  late Timer? _updateTimer;
+
+  _MessageBubbleBottomState(
+    this.message,
+  ) : super() {
+    // Different name for now to prevent possible shadowing issues
+    final _now = DateTime.now().millisecondsSinceEpoch;
+    _timestampString = formatMessageTimestamp(message.timestamp, _now);
+
+    // Only start the timer if neccessary
+    if (_now - message.timestamp <= 15 * Duration.millisecondsPerMinute) {
+      _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
+          setState(() {
+              final now = DateTime.now().millisecondsSinceEpoch;
+              _timestampString = formatMessageTimestamp(message.timestamp, now);
+
+              if (now - message.timestamp > 15 * Duration.millisecondsPerMinute) {
+                _updateTimer!.cancel();
+              }
+          });
+      });
+    } else {
+      _updateTimer = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_updateTimer != null) {
+      _updateTimer!.cancel();
+    }
+    
+    super.dispose();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -23,7 +65,7 @@ class MessageBubbleBottom extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 3.0),
           child: Text(
-            timestamp,
+            _timestampString,
             style: const TextStyle(
               fontSize: fontsizeSubbody,
               color: Color(0xffddfdfd)

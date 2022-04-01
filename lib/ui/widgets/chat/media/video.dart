@@ -16,14 +16,12 @@ import "package:video_compress/video_compress.dart";
 import "package:open_file/open_file.dart";
 
 class VideoChatWidget extends StatefulWidget {
-  final String timestamp;
   final Message message;
   final double maxWidth;
   final BorderRadius radius;
 
   const VideoChatWidget(
     this.message,
-    this.timestamp,
     this.radius,
     this.maxWidth,
     {
@@ -36,13 +34,11 @@ class VideoChatWidget extends StatefulWidget {
   _VideoChatWidgetState createState() => _VideoChatWidgetState(
     message,
     maxWidth,
-    timestamp,
     radius,
   );
 }
 
 class _VideoChatWidgetState extends State<VideoChatWidget> {
-  final String timestamp;
   final BorderRadius radius;
   final double maxWidth;
   final Message message;
@@ -50,7 +46,6 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   _VideoChatWidgetState(
     this.message,
     this.maxWidth,
-    this.timestamp,
     this.radius,
   );
 
@@ -76,7 +71,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
         quality: 75
       );
       if (bytes == null) return false;
-      await thumbnailFile.writeAsBytes(bytes!);
+      await thumbnailFile.writeAsBytes(bytes);
 
       return true;
     }
@@ -91,7 +86,6 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
 
     return FileChatWidget(
       message,
-      timestamp,
       extra: ElevatedButton(
         // TODO
         onPressed: () {},
@@ -104,10 +98,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
     // TODO
     if (message.thumbnailData != null) {}
 
-    return FileChatWidget(
-      message,
-      timestamp,
-    );
+    return FileChatWidget(message);
   }
 
   Widget _buildVideo() {
@@ -120,10 +111,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
               message.mediaUrl!,
               radius,
               Image.file(File(_getThumbnailPath())),
-              MessageBubbleBottom(
-                message,
-                timestamp: timestamp,
-              ),
+              MessageBubbleBottom(message),
               extra: const PlayButton()
             );
           } else {
@@ -184,10 +172,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: MessageBubbleBottom(
-                  message,
-                  timestamp: timestamp
-                )
+                child: MessageBubbleBottom(message)
               )
             ) 
           ]

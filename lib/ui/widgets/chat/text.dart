@@ -8,13 +8,11 @@ import "package:flutter/material.dart";
 /// cannot determine the mime type.
 class TextChatWidget extends StatelessWidget {
   final Message message;
-  final String timestamp;
   final Widget? topWidget;
   final bool enablePadding;
 
   const TextChatWidget(
     this.message,
-    this.timestamp,
     {
       this.enablePadding = true,
       this.topWidget,
@@ -40,10 +38,7 @@ class TextChatWidget extends StatelessWidget {
           ),
           Padding(
             padding: enablePadding ? const EdgeInsets.all(8.0) : const EdgeInsets.all(0.0),
-            child: MessageBubbleBottom(
-              message,
-              timestamp: timestamp
-            )
+            child: MessageBubbleBottom(message)
           )
         ]
       )

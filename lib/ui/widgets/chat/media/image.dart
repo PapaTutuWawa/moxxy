@@ -89,14 +89,12 @@ class ImageBaseChatWidget extends StatelessWidget {
 
 class ImageChatWidget extends StatelessWidget {
   final Message message;
-  final String timestamp;
   final BorderRadius radius;
   final double maxWidth;
   final Widget? extra;
 
   const ImageChatWidget(
     this.message,
-    this.timestamp,
     this.radius,
     this.maxWidth,
     {
@@ -128,7 +126,6 @@ class ImageChatWidget extends StatelessWidget {
 
     return FileChatWidget(
       message,
-      timestamp,
       extra: ElevatedButton(
         onPressed: () => _requestDownload(),
         child: const Text("Download")
@@ -148,10 +145,7 @@ class ImageChatWidget extends StatelessWidget {
       );
     }
 
-    return FileChatWidget(
-      message,
-      timestamp
-    );
+    return FileChatWidget(message);
   }
 
   Widget _buildImage() {
@@ -171,7 +165,6 @@ class ImageChatWidget extends StatelessWidget {
         } else {
           return FileChatWidget(
             message,
-            timestamp,
             extra: const FileNotFound()
           );
         }
@@ -192,10 +185,7 @@ class ImageChatWidget extends StatelessWidget {
       message.mediaUrl,
       radius,
       _innerBuild(),
-      MessageBubbleBottom(
-        message,
-        timestamp: timestamp
-      )
+      MessageBubbleBottom(message)
     );
   }
 }

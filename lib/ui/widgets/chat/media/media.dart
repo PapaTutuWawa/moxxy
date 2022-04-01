@@ -33,25 +33,24 @@ MessageType getMessageType(Message message) {
 }
 
 /// Build an inlinable message widget
-Widget buildMessageWidget(Message message, String timestamp, double maxWidth, BorderRadius radius) {
+Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius) {
   switch (getMessageType(message)) {
     case MessageType.text: {
       return TextChatWidget(
         message,
-        timestamp,
         enablePadding: false
       );
     }
     case MessageType.image: {
-      return ImageChatWidget(message, timestamp, radius, maxWidth);
+      return ImageChatWidget(message, radius, maxWidth);
     }
     case MessageType.video: {
-      return VideoChatWidget(message, timestamp, radius, maxWidth);
+      return VideoChatWidget(message, radius, maxWidth);
     }
     // TODO
     //case MessageType.audio: return buildImageMessageWidget(message);
     case MessageType.file: {
-      return FileChatWidget(message, timestamp);
+      return FileChatWidget(message);
     }
   }
 }
