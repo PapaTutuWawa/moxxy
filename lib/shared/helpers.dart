@@ -144,6 +144,7 @@ String? guessMimeTypeFromExtension(String ext) {
     case "jpg":
     case "jpeg": return "image/jpeg";
     case "webp": return "image/webp";
+    case "mp4": return "video/mp4";
   }
 
   return null;

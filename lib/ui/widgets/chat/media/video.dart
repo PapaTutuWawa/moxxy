@@ -1,15 +1,17 @@
 import "dart:io";
 
 import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/helpers.dart";
 import "package:moxxyv2/ui/widgets/chat/media/image.dart";
+import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 
 import "package:flutter/material.dart";
 import "package:path/path.dart" as pathlib;
-import "package:external_path/external_path.dart";
+import "package:get_it/get_it.dart";
 import "package:video_compress/video_compress.dart";
 import "package:open_file/open_file.dart";
 
@@ -45,41 +47,92 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   final double maxWidth;
   final Message message;
 
-  String _thumbnailPath;
-  bool _hasThumbnail;
-
   _VideoChatWidgetState(
     this.message,
     this.maxWidth,
     this.timestamp,
     this.radius,
-  ) : _thumbnailPath = "", _hasThumbnail = true;
+  );
 
-  Future<String> _getThumbnailPath() async {
-    final base = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_PICTURES);
-    return pathlib.join(base, "Moxxy", ".thumbnail", message.conversationJid, pathlib.basename(message.mediaUrl!));
+  /// Returns the path of a possible thumbnail for the video. Does not imply that the file
+  /// exists.
+  String _getThumbnailPath() {
+    final base = GetIt.I.get<UIDataService>().thumbnailBase;
+    return pathlib.join(base, message.conversationJid, pathlib.basename(message.mediaUrl!));
   }
 
+  /// Generate the thumbnail if needed.
+  Future<bool> _thumbnailFuture() async {
+    final thumbnailFile = File(_getThumbnailPath());
+    if (await thumbnailFile.exists()) {
+      return true;
+    }
+
+    // Thumbnail does not exist
+    final sourceFile = File(message.mediaUrl!);
+    if (await sourceFile.exists()) {
+      final bytes = await VideoCompress.getByteThumbnail(
+        sourceFile.path,
+        quality: 75
+      );
+      await thumbnailFile.writeAsBytes(bytes!);
+
+      return true;
+    }
+
+    // Source file also does not exist. Return "error".
+    return false;
+  }
+  
   Widget _buildNonDownloaded() {
     // TODO
-    return const SizedBox();
+    if (message.thumbnailData != null) {}
+
+    return FileChatWidget(
+      message,
+      timestamp,
+      extra: ElevatedButton(
+        // TODO
+        onPressed: () {},
+        child: const Text("Download")
+      )
+    );
   }
 
   Widget _buildDownloading() {
     // TODO
-    return const SizedBox();
+    if (message.thumbnailData != null) {}
+
+    return FileChatWidget(
+      message,
+      timestamp,
+    );
   }
 
   Widget _buildVideo() {
-    return ImageBaseChatWidget(
-      message.mediaUrl!,
-      radius,
-      Image.file(File(message.mediaUrl!)),
-      MessageBubbleBottom(
-        message,
-        timestamp: timestamp,
-      ),
-      extra: const PlayButton()
+    return FutureBuilder<bool>(
+      future: _thumbnailFuture(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.data!) {
+            return ImageBaseChatWidget(
+              message.mediaUrl!,
+              radius,
+              Image.file(File(_getThumbnailPath())),
+              MessageBubbleBottom(
+                message,
+                timestamp: timestamp,
+              ),
+              extra: const PlayButton()
+            );
+          } else {
+            // TODO: Error
+            return const Text("Error");
+          }
+        } else {
+          return const CircularProgressIndicator();
+        }
+      }
     );
   }
 

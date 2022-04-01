@@ -31,6 +31,7 @@ import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
 import "package:moxxyv2/ui/bloc/addcontact_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
+import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
@@ -51,8 +52,10 @@ void setupLogging() {
   GetIt.I.registerSingleton<Logger>(Logger("MoxxyMain"));
 }
 
-void setupUIServices() {
+Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIDownloadService>(UIDownloadService());
+  GetIt.I.registerSingleton<UIDataService>(UIDataService());
+  await GetIt.I.get<UIDataService>().init();
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
@@ -71,7 +74,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
 // TODO: Theme the switches
 void main() async {
   setupLogging();
-  setupUIServices();
+  await setupUIServices();
   
   await initializeServiceIfNeeded();
   setupEventHandler();
