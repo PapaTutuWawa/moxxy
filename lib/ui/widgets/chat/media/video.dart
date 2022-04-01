@@ -75,6 +75,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
         sourceFile.path,
         quality: 75
       );
+      if (bytes == null) return false;
       await thumbnailFile.writeAsBytes(bytes!);
 
       return true;
