@@ -112,27 +112,6 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
                     Image.file(
                       File(thumbnail), fit: BoxFit.cover,
                     ),
-                    Positioned(
-                      bottom: 0,
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withAlpha(0),
-                              Colors.black12,
-                              Colors.black54
-                            ]
-                          )
-                        )
-                      )
-                    ),
                     PlayButton(size: 16.0)
                   ]
                 )
@@ -163,28 +142,7 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white70
-                      )
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withAlpha(0),
-                              Colors.black12,
-                              Colors.black54
-                            ]
-                          )
-                        )
+                        color: Colors.white60
                       )
                     ),
                     Icon(

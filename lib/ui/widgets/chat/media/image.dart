@@ -4,6 +4,7 @@ import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/ui/widgets/chat/gradient.dart";
 import "package:moxxyv2/ui/widgets/chat/helpers.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 import "package:moxxyv2/ui/widgets/chat/filenotfound.dart";
@@ -49,27 +50,7 @@ class ImageBaseChatWidget extends StatelessWidget {
               borderRadius: radius,
               child: child
             ),
-            Positioned(
-              bottom: 0,
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                alignment: Alignment.bottomCenter,
-                decoration: BoxDecoration(
-                  borderRadius: radius,
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withAlpha(0),
-                      Colors.black12,
-                      Colors.black54
-                    ]
-                  )
-                )
-              )
-            ),
+            BottomGradient(radius),
             ...(extra != null ? [ extra! ] : []),
             Positioned(
               bottom: 0,
