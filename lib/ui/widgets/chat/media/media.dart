@@ -1,5 +1,6 @@
 import "dart:io";
 
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/widgets/chat/text.dart";
@@ -109,8 +110,7 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
                   alignment: Alignment.center,
                   children: [
                     Image.file(
-                      File(thumbnail),
-                      fit: BoxFit.cover,
+                      File(thumbnail), fit: BoxFit.cover,
                     ),
                     Positioned(
                       bottom: 0,
@@ -144,6 +144,59 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
       );
     }
     //case MessageType.audio: return const SizedBox();
-    case MessageType.file: return const SizedBox();
+    case MessageType.file: return QuoteBaseWidget(
+      message,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Text(filenameFromUrl(message.srcUrl!))
+            ),
+            SizedBox(
+              width: 48.0,
+              height: 48.0,
+              child: ClipRRect(
+                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white70
+                      )
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        alignment: Alignment.bottomCenter,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withAlpha(0),
+                              Colors.black12,
+                              Colors.black54
+                            ]
+                          )
+                        )
+                      )
+                    ),
+                    Icon(
+                      Icons.file_present
+                    )
+                  ]
+                )
+              )
+            )
+          ]
+        ),
+        resetQuotedMessage: resetQuote
+    );
   }
 }
