@@ -31,7 +31,18 @@ class QuoteBaseWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const quoteLeftBorderWidth = 7.0;
+    EdgeInsetsGeometry padding = EdgeInsets.only(
+      left: 8.0 + quoteLeftBorderWidth,
+      right: 8.0,
+      top: 8.0,
+      bottom: 8.0
+    );
 
+    // Prevent a too large right padding if we have nothing to keep distance from
+    if (resetQuotedMessage != null) {
+      padding = padding.add(const EdgeInsets.only(right: 26.0));
+    }
+    
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -65,7 +76,7 @@ class QuoteBaseWidget extends StatelessWidget {
               )] : []
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0).add(const EdgeInsets.only(left: quoteLeftBorderWidth, right: 26.0)),
+              padding: padding,
               child: child
             ),
           ]
