@@ -24,12 +24,9 @@ class TransparentBoxShadow extends BoxShadow {
 /// A widget to show a message that was sent within a chat or is about to be sent.
 class SharedMediaContainer extends StatelessWidget {
   final Widget? child;
-  final ImageProvider? image;
-  final bool showBorder;
-  final bool drawShadow;
   final void Function()? onTap;
 
-  const SharedMediaContainer({ this.child, this.image, this.onTap, this.showBorder = false, this.drawShadow = false, Key? key }) : super(key: key);
+  const SharedMediaContainer(this.child, { this.onTap, Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,22 +37,7 @@ class SharedMediaContainer extends StatelessWidget {
         width: 75,
         child: AspectRatio(
           aspectRatio: 1.0,
-          child: Container(
-            child: child,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: showBorder ? Border.all(
-                // TODO: Make this border prettier
-                width: 2.0,
-                color: primaryColor
-              ) : null,
-              boxShadow: drawShadow ? [ const TransparentBoxShadow(blurRadius: 2.0) ] : [],
-              image: image != null ? DecorationImage(
-                fit: BoxFit.cover,
-                image: image!
-              ) : null
-            )
-          )
+          child: child 
         )
       )
     );

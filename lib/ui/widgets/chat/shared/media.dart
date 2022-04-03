@@ -3,6 +3,7 @@ import "dart:math";
 
 import "package:moxxyv2/shared/models/media.dart";
 import "package:moxxyv2/ui/widgets/sharedimage.dart";
+import "package:moxxyv2/ui/widgets/chat/media/media.dart";
 
 import "package:flutter/material.dart";
 import "package:open_file/open_file.dart";
@@ -12,13 +13,6 @@ class SharedMediaDisplay extends StatelessWidget {
 
   const SharedMediaDisplay(this.sharedMedia, { Key? key }) : super(key: key);
 
-  Widget _renderSharedItem(SharedMedium item) {
-    return SharedMediaContainer(
-      image: FileImage(File(item.path)),
-      onTap: () => OpenFile.open(item.path)
-    );
-  }
-
   List<Widget> _renderItems() {
     int clampedStartIndex = sharedMedia.length > 8 ? sharedMedia.length - 9 : 0;
     int clampedEndIndex = min(clampedStartIndex + 8, sharedMedia.length) - 1;
@@ -26,7 +20,7 @@ class SharedMediaDisplay extends StatelessWidget {
 
     for (var i = clampedEndIndex; i >= clampedStartIndex; i--) {
       print(i);
-      tmp.add(_renderSharedItem(sharedMedia[i]));
+      tmp.add(buildSharedMediaWidget(sharedMedia[i]));
     }
 
     return tmp;

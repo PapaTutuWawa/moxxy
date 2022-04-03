@@ -1,6 +1,6 @@
 import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/ui/widgets/sharedmedia.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/ui/widgets/chat/shared/media.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/pages/profile/selfheader.dart";
 import "package:moxxyv2/ui/pages/profile/conversationheader.dart";

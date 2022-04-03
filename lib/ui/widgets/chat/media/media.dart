@@ -2,6 +2,7 @@ import "dart:io";
 
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/shared/models/media.dart";
 import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/widgets/chat/text.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
@@ -9,9 +10,10 @@ import "package:moxxyv2/ui/widgets/chat/media/image.dart";
 import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 import "package:moxxyv2/ui/widgets/chat/media/video.dart";
 import "package:moxxyv2/ui/widgets/chat/quote/base.dart";
+import "package:moxxyv2/ui/widgets/chat/shared/image.dart";
+import "package:moxxyv2/ui/widgets/chat/shared/file.dart";
 
-import "package:flutter/material.dart";
-import "package:get_it/get_it.dart";
+import "package:flutter/material.dart"; import "package:get_it/get_it.dart";
 
 enum MessageType {
   text,
@@ -29,8 +31,7 @@ MessageType getMessageType(Message message) {
     if (mime == null) return MessageType.file;
 
     if (mime.startsWith("image/")) return MessageType.image;
-    else if (mime.startsWith("video/")) return MessageType.video;
-    // TODO
+    else if (mime.startsWith("video/")) return MessageType.video; // TODO
     //else if (mime.startswith("audio/")) return MessageType.audio;
 
     return MessageType.file;
@@ -157,4 +158,16 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
         resetQuotedMessage: resetQuote
     );
   }
+}
+
+Widget buildSharedMediaWidget(SharedMedium medium) {
+  if (medium.mime == null) return SharedFileWidget(medium.path);
+
+  if (medium.mime!.startsWith("image/")) return SharedImageWidget(medium.path);
+  // TODO: Video
+  if (medium.mime!.startsWith("video/")) return const SizedBox();
+  // TODO: Audio
+  //if (message.mime!.startsWith("audio/")) return const SizedBox();
+
+  return SharedFileWidget(medium.path);
 }
