@@ -12,6 +12,7 @@ import "package:moxxyv2/ui/widgets/chat/media/video.dart";
 import "package:moxxyv2/ui/widgets/chat/quote/base.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/image.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/file.dart";
+import "package:moxxyv2/ui/widgets/chat/shared/video.dart";
 
 import "package:flutter/material.dart"; import "package:get_it/get_it.dart";
 
@@ -160,12 +161,11 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
   }
 }
 
-Widget buildSharedMediaWidget(SharedMedium medium) {
+Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
   if (medium.mime == null) return SharedFileWidget(medium.path);
 
   if (medium.mime!.startsWith("image/")) return SharedImageWidget(medium.path);
-  // TODO: Video
-  if (medium.mime!.startsWith("video/")) return const SizedBox();
+  if (medium.mime!.startsWith("video/")) return SharedVideoWidget(medium.path, conversationJid);
   // TODO: Audio
   //if (message.mime!.startsWith("audio/")) return const SizedBox();
 

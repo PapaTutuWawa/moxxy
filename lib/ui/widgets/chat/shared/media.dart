@@ -10,8 +10,9 @@ import "package:open_file/open_file.dart";
 
 class SharedMediaDisplay extends StatelessWidget {
   final List<SharedMedium> sharedMedia;
+  final String jid;
 
-  const SharedMediaDisplay(this.sharedMedia, { Key? key }) : super(key: key);
+  const SharedMediaDisplay(this.sharedMedia, this.jid, { Key? key }) : super(key: key);
 
   List<Widget> _renderItems() {
     int clampedStartIndex = sharedMedia.length > 8 ? sharedMedia.length - 9 : 0;
@@ -20,7 +21,7 @@ class SharedMediaDisplay extends StatelessWidget {
 
     for (var i = clampedEndIndex; i >= clampedStartIndex; i--) {
       print(i);
-      tmp.add(buildSharedMediaWidget(sharedMedia[i]));
+      tmp.add(buildSharedMediaWidget(sharedMedia[i], jid));
     }
 
     return tmp;

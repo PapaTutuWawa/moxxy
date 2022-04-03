@@ -42,7 +42,8 @@ class ProfilePage extends StatelessWidget {
                   Visibility(
                     visible: !state.isSelfProfile && state.conversation!.sharedMedia.isNotEmpty,
                     child: state.isSelfProfile ? const SizedBox() : SharedMediaDisplay(
-                      state.conversation!.sharedMedia
+                      state.conversation!.sharedMedia,
+                      state.conversation!.jid
                     )
                   )
                 ]

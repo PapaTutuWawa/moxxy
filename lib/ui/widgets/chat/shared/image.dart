@@ -7,7 +7,6 @@ import "package:flutter/material.dart";
 
 class SharedImageWidget extends StatelessWidget {
   final String path;
-  //final void Function()? onTap;
 
   const SharedImageWidget(this.path, { Key? key }) : super(key: key);
 

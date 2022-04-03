@@ -21,9 +21,17 @@ class UIDataService {
 
   /// Returns the path of a possible thumbnail for the video. Does not imply that the file
   /// exists.
-  String getThumbnailPath(Message message) => pathlib.join(
-    _thumbnailBase,
+  String getThumbnailPath(Message message) => getThumbnailPathFull(
     message.conversationJid,
     pathlib.basename(message.mediaUrl!)
   );
+
+  /// Returns the path of a possible thumbnail for the video. Does not imply that the file
+  /// exists.
+  String getThumbnailPathFull(String conversationJid, String filename) => pathlib.join(
+    _thumbnailBase,
+    conversationJid,
+    filename
+  );
+
 }
