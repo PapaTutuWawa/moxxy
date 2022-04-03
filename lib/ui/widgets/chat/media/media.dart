@@ -47,7 +47,6 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius)
     case MessageType.text: {
       return TextChatWidget(
         message,
-        enablePadding: false,
         topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!) : null
       );
     }

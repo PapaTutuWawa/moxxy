@@ -9,12 +9,10 @@ import "package:flutter/material.dart";
 class TextChatWidget extends StatelessWidget {
   final Message message;
   final Widget? topWidget;
-  final bool enablePadding;
 
   const TextChatWidget(
     this.message,
     {
-      this.enablePadding = true,
       this.topWidget,
       Key? key
     }
@@ -27,7 +25,7 @@ class TextChatWidget extends StatelessWidget {
         children: [
           ...(topWidget != null ? [ topWidget! ] : []),
           Padding(
-            padding: enablePadding ? const EdgeInsets.only(left: 8.0) : const EdgeInsets.only(left: 0.0),
+            padding: topWidget != null ? const EdgeInsets.only(left: 8.0) : const EdgeInsets.only(left: 0.0),
             child: Text(
               message.body,
               style: const TextStyle(
@@ -37,7 +35,7 @@ class TextChatWidget extends StatelessWidget {
             )
           ),
           Padding(
-            padding: enablePadding ? const EdgeInsets.all(8.0) : const EdgeInsets.all(0.0),
+            padding: topWidget != null ? const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0) : const EdgeInsets.all(0.0),
             child: MessageBubbleBottom(message)
           )
         ]
