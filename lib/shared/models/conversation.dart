@@ -1,3 +1,5 @@
+import "package:moxxyv2/shared/models/media.dart";
+
 import "package:freezed_annotation/freezed_annotation.dart";
 
 part "conversation.freezed.dart";
@@ -14,7 +16,7 @@ class Conversation with _$Conversation {
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
     int lastChangeTimestamp,
     // TODO: Maybe have a model for this, but this should be enough
-    List<String> sharedMediaPaths,
+    List<SharedMedium> sharedMedia,
     int id,
     // Indicates if the conversation should be shown on the homescreen
     bool open,

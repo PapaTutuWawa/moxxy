@@ -6,13 +6,23 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/roster.dart";
+import "package:moxxyv2/shared/models/media.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/message.dart";
 import "package:moxxyv2/service/db/roster.dart";
+import "package:moxxyv2/service/db/media.dart";
 
 import "package:isar/isar.dart";
 import "package:logging/logging.dart";
+
+SharedMedium sharedMediumDbToModel(DBSharedMedium s) {
+  return SharedMedium(
+    s.id!,
+    s.path,
+    mime: s.mime
+  );
+}
 
 Conversation conversationDbToModel(DBConversation c, bool inRoster) {
   return Conversation(
@@ -22,7 +32,7 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster) {
     c.jid,
     c.unreadCounter,
     c.lastChangeTimestamp,
-    c.sharedMediaPaths,
+    c.sharedMedia.map(sharedMediumDbToModel).toList(),
     c.id!,
     c.open,
     inRoster
@@ -95,6 +105,7 @@ class DatabaseService {
 
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
+      await c.sharedMedia.load();
       final conv = conversationDbToModel(
         c,
         await isInRoster(c.jid)
@@ -133,8 +144,9 @@ class DatabaseService {
   }
 
   /// Updates the conversation with id [id] inside the database.
-  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl, List<String>? sharedMediaPaths }) async {
+  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl, DBSharedMedium? sharedMedium }) async {
     final c = (await isar.dBConversations.get(id))!;
+    await c.sharedMedia.load();
     if (lastMessageBody != null) {
       c.lastMessageBody = lastMessageBody;
     }
@@ -150,12 +162,13 @@ class DatabaseService {
     if (avatarUrl != null) {
       c.avatarUrl = avatarUrl;
     }
-    if (sharedMediaPaths != null) {
-      c.sharedMediaPaths = sharedMediaPaths;
+    if (sharedMedium != null) {
+      c.sharedMedia.add(sharedMedium);
     }
 
     await isar.writeTxn((isar) async {
         await isar.dBConversations.put(c);
+        await c.sharedMedia.save();
     });
 
     final conversation = conversationDbToModel(c, await isInRoster(c.jid));
@@ -165,7 +178,7 @@ class DatabaseService {
 
   /// Creates a [Conversation] inside the database given the data. This is so that the
   /// [Conversation] object can carry its database id.
-  Future<Conversation> addConversationFromData(String title, String lastMessageBody, String avatarUrl, String jid, int unreadCounter, int lastChangeTimestamp, List<String> sharedMediaPaths, bool open) async {
+  Future<Conversation> addConversationFromData(String title, String lastMessageBody, String avatarUrl, String jid, int unreadCounter, int lastChangeTimestamp, List<DBSharedMedium> sharedMedia, bool open) async {
     final c = DBConversation()
       ..jid = jid
       ..title = title
@@ -173,8 +186,9 @@ class DatabaseService {
       ..lastChangeTimestamp = lastChangeTimestamp
       ..unreadCounter = unreadCounter
       ..lastMessageBody = lastMessageBody
-      ..sharedMediaPaths = sharedMediaPaths
       ..open = open;
+
+    c.sharedMedia.addAll(sharedMedia);
 
     await isar.writeTxn((isar) async {
         await isar.dBConversations.put(c);
@@ -186,6 +200,19 @@ class DatabaseService {
     return conversation;
   }
 
+  /// Like [addConversationFromData] but for [SharedMedium].
+  Future<DBSharedMedium> addSharedMediumFromData(String path, { String? mime }) async {
+    final s = DBSharedMedium()
+      ..path = path
+      ..mime = mime;
+
+    await isar.writeTxn((isar) async {
+        await isar.dBSharedMediums.put(s);
+    });
+
+    return s;
+  }
+  
   /// Same as [addConversationFromData] but for a [Message].
   Future<Message> addMessageFromData(
     String body,

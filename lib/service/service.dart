@@ -51,6 +51,7 @@ import "package:uuid/uuid.dart";
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/roster.dart";
 import "package:moxxyv2/service/db/message.dart";
+import "package:moxxyv2/service/db/media.dart";
 
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,7 +94,8 @@ Future<Isar> openDatabase() async {
     schemas: [
       DBConversationSchema,
       DBRosterItemSchema,
-      DBMessageSchema
+      DBMessageSchema,
+      DBSharedMediumSchema
     ],
     directory: dir.path
   );

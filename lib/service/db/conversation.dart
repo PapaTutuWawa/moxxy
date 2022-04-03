@@ -1,3 +1,5 @@
+import "package:moxxyv2/service/db/media.dart";
+
 import "package:isar/isar.dart";
 
 part "conversation.g.dart";
@@ -22,5 +24,5 @@ class DBConversation {
 
   late bool open;
 
-  late List<String> sharedMediaPaths;
+  final sharedMedia = IsarLinks<DBSharedMedium>();
 }

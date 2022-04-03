@@ -118,11 +118,13 @@ class DownloadService {
     _rateLimits.remove(url);
 
     final conv = (await GetIt.I.get<DatabaseService>().getConversationByJid(conversationJid))!;
-    final sharedMediaPaths = List<String>.from(conv.sharedMediaPaths, growable: true);
-    sharedMediaPaths.add(downloadedPath);
+    final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
+      downloadedPath,
+      mime: mime
+    );
     final newConv = await GetIt.I.get<DatabaseService>().updateConversation(
       id: conv.id,
-      sharedMediaPaths: sharedMediaPaths
+      sharedMedium: sharedMedium
     );
     sendEvent(ConversationUpdatedEvent(conversation: newConv));
   }

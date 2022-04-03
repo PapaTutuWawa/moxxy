@@ -1,31 +1,32 @@
 import "dart:io";
 import "dart:math";
 
+import "package:moxxyv2/shared/models/media.dart";
 import "package:moxxyv2/ui/widgets/sharedimage.dart";
 
 import "package:flutter/material.dart";
 import "package:open_file/open_file.dart";
 
 class SharedMediaDisplay extends StatelessWidget {
-  final List<String> sharedMediaPaths;
+  final List<SharedMedium> sharedMedia;
 
-  const SharedMediaDisplay({ required this.sharedMediaPaths, Key? key }) : super(key: key);
+  const SharedMediaDisplay(this.sharedMedia, { Key? key }) : super(key: key);
 
-  Widget _renderSharedItem(String item) {
+  Widget _renderSharedItem(SharedMedium item) {
     return SharedMediaContainer(
-      image: FileImage(File(item)),
-      onTap: () => OpenFile.open(item)
+      image: FileImage(File(item.path)),
+      onTap: () => OpenFile.open(item.path)
     );
   }
 
   List<Widget> _renderItems() {
-    int clampedStartIndex = sharedMediaPaths.length > 8 ? sharedMediaPaths.length - 9 : 0;
-    int clampedEndIndex = min(clampedStartIndex + 8, sharedMediaPaths.length) - 1;
+    int clampedStartIndex = sharedMedia.length > 8 ? sharedMedia.length - 9 : 0;
+    int clampedEndIndex = min(clampedStartIndex + 8, sharedMedia.length) - 1;
     final tmp = List<Widget>.empty(growable: true);
 
     for (var i = clampedEndIndex; i >= clampedStartIndex; i--) {
       print(i);
-      tmp.add(_renderSharedItem(sharedMediaPaths[i]));
+      tmp.add(_renderSharedItem(sharedMedia[i]));
     }
 
     return tmp;
@@ -33,7 +34,7 @@ class SharedMediaDisplay extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    if (sharedMediaPaths.isEmpty) return const SizedBox();
+    if (sharedMedia.isEmpty) return const SizedBox();
 
     final width = MediaQuery.of(context).size.width;
     // NOTE: Based on the formula width = 2padding + (n-1)5 + 75n,
