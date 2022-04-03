@@ -207,6 +207,9 @@ class _ConversationPageState extends State<ConversationPage> {
     double maxWidth = MediaQuery.of(context).size.width * 0.6;
     
     return BlocBuilder<ConversationBloc, ConversationState>(
+      // TODO: Replace with a much better solution to the ListView being constantly
+      //       rebuilt.
+      buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.messages != next.messages || prev.conversation != next.conversation || prev.backgroundPath != next.backgroundPath,
       builder: (context, state) {
         return WillPopScope(
           onWillPop: () async {
