@@ -19,6 +19,9 @@ class StanzaHandlerData with _$StanzaHandlerData {
     // we implement OMEMO.
     Stanza stanza,
     {
+      // Whether the stanza is retransmitted. Only useful in the context of outgoing
+      // stanza handlers. MUST NOT be overwritten.
+      @Default(false) bool retransmitted,
       StatelessMediaSharingData? sims,
       StatelessFileSharingData? sfs,
       OOBData? oob,

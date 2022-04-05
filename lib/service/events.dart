@@ -263,8 +263,8 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
 }
 
 Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async {
-  GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
   await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
       avatarUrl: command.path
   ));
+  GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }

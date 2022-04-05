@@ -313,7 +313,7 @@ class XmppConnection {
   /// [stanza] has none.
   /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
   /// none.
-  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true, bool awaitable = true }) async {
+  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true, bool awaitable = true, bool retransmitted = false }) async {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
       stanza = stanza.copyWith(id: generateId());
@@ -329,7 +329,7 @@ class XmppConnection {
     }
 
     // Tell the SM manager that we're about to send a stanza
-    await _runOutoingStanzaHandlers(stanza);
+    await _runOutoingStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
     
     // This uses the StreamManager to behave like a send queue
     if (_canSendData()) {
@@ -446,8 +446,8 @@ class XmppConnection {
   /// Iterate over [handlers] and check if the handler matches [stanza]. If it does,
   /// call its callback and end the processing if the callback returned true; continue
   /// if it returned false.
-  Future<bool> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza) async {
-    StanzaHandlerData state = StanzaHandlerData(false, stanza);
+  Future<bool> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
+    StanzaHandlerData state = initial ?? StanzaHandlerData(false, stanza);
     for (final handler in handlers) {
       if (handler.matches(stanza)) {
         state = await handler.callback(stanza, state);
@@ -464,10 +464,11 @@ class XmppConnection {
       stanza
     );
   }
-  Future<bool> _runOutoingStanzaHandlers(Stanza stanza) async {
+  Future<bool> _runOutoingStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
     return await _runStanzaHandlers(
       _outgoingStanzaHandlers,
-      stanza
+      stanza,
+      initial: initial
     );
   }
   

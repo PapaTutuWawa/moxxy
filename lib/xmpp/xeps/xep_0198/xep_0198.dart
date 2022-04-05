@@ -60,11 +60,11 @@ class StreamManagementManager extends XmppManagerBase {
     final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
     final attrs = getAttributes();
     bool hasRetransmittedStanza = false;
-    for (final i in _unackedStanzas.keys) {
+    for (final i in _unackedStanzas.keys.toList()) {
       final item = _unackedStanzas[i]!;
       if (ignoreTimestamps || currentTimestamp - item.timestamp > ackDuration.inMilliseconds) {
         logger.finest("Retransmitting stanza");
-        attrs.sendStanza(item.stanza);
+        attrs.sendStanza(item.stanza, retransmitted: true);
         _unackedStanzas[i] = _UnackedStanza(
           item.stanza,
           currentTimestamp
@@ -235,12 +235,14 @@ class StreamManagementManager extends XmppManagerBase {
   Future<StanzaHandlerData> _onClientStanzaSent(Stanza stanza, StanzaHandlerData state) async {
     _startTimer();
 
-    _incrementC2S();
-    _unackedStanzas[_state.c2s] = _UnackedStanza(stanza, DateTime.now().millisecondsSinceEpoch);
+    if (!state.retransmitted) {
+      _incrementC2S();
+      _unackedStanzas[_state.c2s] = _UnackedStanza(stanza, DateTime.now().millisecondsSinceEpoch);
+    }
 
     logger.fine("Queue after sending: " + _unackedStanzas.toString());
 
-    if (isStreamManagementEnabled()) {
+    if (isStreamManagementEnabled() && !state.retransmitted) {
       getAttributes().sendNonza(StreamManagementRequestNonza());
     }
 

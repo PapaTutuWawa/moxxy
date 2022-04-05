@@ -9,7 +9,7 @@ import "package:moxxyv2/xmpp/stanza.dart";
 
 class XmppManagerAttributes {
   /// Send a stanza whose response can be awaited.
-  final Future<XMLNode> Function(Stanza stanza, { bool addFrom, bool addId }) sendStanza;
+  final Future<XMLNode> Function(Stanza stanza, { bool addFrom, bool addId, bool retransmitted }) sendStanza;
 
   /// Send a nonza.
   final void Function(XMLNode) sendNonza;
