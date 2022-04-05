@@ -33,7 +33,7 @@ class NetworkPage extends StatelessWidget {
                   )
                 ),
                 SettingsTile.switchTile(
-                  title: "Mobile Internet",
+                  title: "Mobile Data",
                   switchValue: state.autoDownloadMobile,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
