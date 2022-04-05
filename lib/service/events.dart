@@ -7,8 +7,7 @@ import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
-import "package:moxxyv2/service/blocking.dart";
-import "package:moxxyv2/service/avatars.dart";
+import "package:moxxyv2/service/blocking.dart"; import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
@@ -261,4 +260,11 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
     command.message.conversationJid,
     mimeGuess
   );
+}
+
+Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async {
+  GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
+  await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
+      avatarUrl: command.path
+  ));
 }

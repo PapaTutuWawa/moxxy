@@ -1,4 +1,4 @@
-import "package:moxxyv2/ui/widgets/sharedimage.dart";
+/*import "package:moxxyv2/ui/widgets/sharedimage.dart";
 import "package:moxxyv2/ui/constants.dart";
 
 import "package:flutter/material.dart";
@@ -118,3 +118,4 @@ class SendFilesPage extends StatelessWidget {
     );
   }
 }
+*/

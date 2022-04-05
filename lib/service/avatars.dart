@@ -122,11 +122,13 @@ class AvatarService {
     return await _getUserAvatarManager().unsubscribe(jid);
   }
 
-  Future<bool> publish(String path) async {
+  /// Publishes the data at [path] as an avatar with PubSub ID
+  /// [hash]. [hash] must be the hex-encoded version of the SHA-1 hash
+  /// of the avatar data.
+  Future<bool> publishAvatar(String path, String hash) async {
     final file = File(path);
     final bytes = await file.readAsBytes();
     final base64 = base64Encode(bytes);
-    final hash = HEX.encode((await Sha1().hash(bytes)).bytes);
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final public = prefs.isAvatarPublic;
 

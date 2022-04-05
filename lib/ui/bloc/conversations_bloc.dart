@@ -12,6 +12,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     on<ConversationsInitEvent>(_onInit);
     on<ConversationsAddedEvent>(_onConversationsAdded);
     on<ConversationsUpdatedEvent>(_onConversationsUpdated);
+    on<AvatarChangedEvent>(_onAvatarChanged);
   }
 
   Future<void> _onInit(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
@@ -41,6 +42,14 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
 
             return c;
         }).toList()..sort(compareConversation))
+      )
+    );
+  }
+
+  Future<void> _onAvatarChanged(AvatarChangedEvent event, Emitter<ConversationsState> emit) async {
+    return emit(
+      state.copyWith(
+        avatarUrl: event.path
       )
     );
   }

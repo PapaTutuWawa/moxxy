@@ -1,5 +1,6 @@
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/shared/commands.dart";
 
 import "package:flutter/material.dart";
 import "package:qr_flutter/qr_flutter.dart";
@@ -8,11 +9,13 @@ class SelfProfileHeader extends StatelessWidget {
   final String jid;
   final String avatarUrl;
   final String displayName;
+  final void Function(String, String) setAvatar;
   
   const SelfProfileHeader(
     this.jid,
     this.avatarUrl,
     this.displayName,
+    this.setAvatar,
     {
       Key? key
     }
@@ -46,6 +49,14 @@ class SelfProfileHeader extends StatelessWidget {
     );
   }
 
+  Future<void> pickAndSetAvatar(BuildContext context) async {
+    final avatar = await pickAvatar(context, avatarUrl);
+
+    if (avatar != null) {
+      setAvatar(avatar.path, avatar.hash);
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -56,9 +67,7 @@ class SelfProfileHeader extends StatelessWidget {
           avatarUrl: avatarUrl,
           altIcon: Icons.person,
           showEditButton: false,
-          // TODO
-          //onTapFunction: () => pickAndSetAvatar(context, viewModel.setAvatarUrl, viewModel.avatarUrl)
-          onTapFunction: () {}
+          onTapFunction: () => pickAndSetAvatar(context)
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),

@@ -24,3 +24,10 @@ class ConversationsUpdatedEvent extends ConversationsEvent {
 
   ConversationsUpdatedEvent(this.conversation);
 }
+
+/// Triggered when the avatar of the logged-in user has changed
+class AvatarChangedEvent extends ConversationsEvent {
+  final String path;
+
+  AvatarChangedEvent(this.path);
+}

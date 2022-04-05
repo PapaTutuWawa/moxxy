@@ -12,12 +12,15 @@ import "package:flutter_bloc/flutter_bloc.dart";
 class ProfilePage extends StatelessWidget {
   const ProfilePage({ Key? key }) : super(key: key);
 
-  Widget _buildHeader(ProfileState state) {
+  Widget _buildHeader(BuildContext context, ProfileState state) {
     if (state.isSelfProfile) {
       return SelfProfileHeader(
         state.jid,
         state.avatarUrl,
-        state.displayName
+        state.displayName,
+        (path, hash) => context.read<ProfileBloc>().add(
+          AvatarSetEvent(path, hash)
+        )
       );
     }
 
@@ -36,7 +39,7 @@ class ProfilePage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: _buildHeader(state)
+                    child: _buildHeader(context, state)
                   ),
                   // TODO: Maybe don't show this conditionally but always
                   Visibility(

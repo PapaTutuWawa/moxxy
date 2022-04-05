@@ -237,7 +237,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<UnblockAllCommand>(performUnblockAll),
       EventTypeMatcher<SetCSIStateCommand>(performSetCSIState),
       EventTypeMatcher<SetPreferencesCommand>(performSetPreferences),
-      EventTypeMatcher<RequestDownloadCommand>(performRequestDownload)
+      EventTypeMatcher<RequestDownloadCommand>(performRequestDownload),
+      EventTypeMatcher<SetAvatarCommand>(performSetAvatar)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

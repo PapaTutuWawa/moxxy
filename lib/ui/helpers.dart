@@ -7,6 +7,8 @@ import "package:flutter/material.dart";
 import "package:file_picker/file_picker.dart";
 import "package:image_cropping/image_cropping.dart";
 import "package:path_provider/path_provider.dart";
+import "package:cryptography/cryptography.dart";
+import "package:hex/hex.dart";
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action.
@@ -90,10 +92,17 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
   return null;
 }
 
-/// Open the file picker to pick an image, open the cropping tool and then send it to
-/// the backend. [setAvatarUrl] is the function to mutate the state and set the avatar.
+class PickedAvatar {
+  final String path;
+  final String hash;
+
+  const PickedAvatar(this.path, this.hash);
+}
+
+/// Open the file picker to pick an image, open the cropping tool and then save it.
 /// [avatarUrl] is the path of the old avatar or "" if none has been set.
-Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAvatarUrl, String avatarUrl) async {
+/// Returns the path of the new avatar path.
+Future<PickedAvatar?> pickAvatar(BuildContext context, String avatarUrl) async {
   final data = await pickAndCropImage(context);
 
   if (data != null) {
@@ -103,13 +112,17 @@ Future<void> pickAndSetAvatar(BuildContext context, void Function(String) setAva
 
     File oldAvatar = File(avatarUrl);
     if (await oldAvatar.exists()) await oldAvatar.delete();
-    
-    File avatar = File(accountDir.path + "/avatar.png");
-    await avatar.writeAsBytes(data);
 
-    // TODO: If the path doesn't change then the UI won't be updated. Hash it and use that as the filename?
-    setAvatarUrl(avatar.path);
+    // Hash the data
+    final hash = (await Sha1().hash(data)).bytes;
+    final hashhex = HEX.encode(hash);
+    
+    File avatar = File(accountDir.path + "/avatar_${hashhex}.png");
+    await avatar.writeAsBytes(data);
+    return PickedAvatar(avatar.path, hashhex);
   }
+
+  return null;
 }
 
 /// Turn the SASL error into a string that a regular user could understand.

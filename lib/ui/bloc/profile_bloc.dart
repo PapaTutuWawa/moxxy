@@ -1,5 +1,8 @@
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
+import "package:moxxyv2/shared/backgroundsender.dart";
+import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 
 import "package:bloc/bloc.dart";
@@ -14,6 +17,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc() : super(ProfileState()) {
     on<ProfilePageRequestedEvent>(_onProfileRequested);
     on<ConversationUpdatedEvent>(_onConversationUpdated);
+    on<AvatarSetEvent>(_onAvatarSet);
   }
 
   Future<void> _onProfileRequested(ProfilePageRequestedEvent event, Emitter<ProfileState> emit) async {
@@ -48,5 +52,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     if (state.conversation == null || state.conversation!.jid != event.conversation.jid) return;
 
     emit(state.copyWith(conversation: event.conversation));
+  }
+
+  Future<void> _onAvatarSet(AvatarSetEvent event, Emitter<ProfileState> emit) async {
+    emit(
+      state.copyWith(
+        avatarUrl: event.path
+      )
+    );
+
+    GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
+    
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      SetAvatarCommand(
+        path: event.path,
+        hash: event.hash
+      ),
+      awaitable: false
+    );
   }
 }

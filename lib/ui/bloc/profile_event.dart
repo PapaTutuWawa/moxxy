@@ -27,3 +27,11 @@ class ConversationUpdatedEvent extends ProfileEvent {
 
   ConversationUpdatedEvent(this.conversation);
 }
+
+/// Triggered by the UI when a new avatar has been set
+class AvatarSetEvent extends ProfileEvent {
+  final String path;
+  final String hash;
+
+  AvatarSetEvent(this.path, this.hash);
+}
