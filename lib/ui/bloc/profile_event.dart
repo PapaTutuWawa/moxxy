@@ -20,3 +20,10 @@ class ProfilePageRequestedEvent extends ProfileEvent {
     }
   );
 }
+
+/// Triggered when a conversation is updated
+class ConversationUpdatedEvent extends ProfileEvent {
+  final Conversation conversation;
+
+  ConversationUpdatedEvent(this.conversation);
+}

@@ -6,6 +6,7 @@ import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart" as conversations;
 import "package:moxxyv2/ui/bloc/newconversation_bloc.dart" as new_conversation;
+import "package:moxxyv2/ui/bloc/profile_bloc.dart" as profile;
 import "package:moxxyv2/ui/service/download.dart";
 
 import "package:logging/logging.dart";
@@ -65,6 +66,9 @@ Future<void> onConversationAdded(ConversationAddedEvent event, { dynamic extra }
 Future<void> onConversationUpdated(ConversationUpdatedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
     conversations.ConversationsUpdatedEvent(event.conversation)
+  );
+  GetIt.I.get<profile.ProfileBloc>().add(
+    profile.ConversationUpdatedEvent(event.conversation)
   );
 }
 

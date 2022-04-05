@@ -13,6 +13,7 @@ part "profile_bloc.freezed.dart";
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc() : super(ProfileState()) {
     on<ProfilePageRequestedEvent>(_onProfileRequested);
+    on<ConversationUpdatedEvent>(_onConversationUpdated);
   }
 
   Future<void> _onProfileRequested(ProfilePageRequestedEvent event, Emitter<ProfileState> emit) async {
@@ -41,5 +42,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         )
       )
     );
+  }
+
+  Future<void> _onConversationUpdated(ConversationUpdatedEvent event, Emitter<ProfileState> emit) async {
+    if (state.conversation == null || state.conversation!.jid != event.conversation.jid) return;
+
+    emit(state.copyWith(conversation: event.conversation));
   }
 }
