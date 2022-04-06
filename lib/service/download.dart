@@ -120,6 +120,7 @@ class DownloadService {
     final conv = (await GetIt.I.get<DatabaseService>().getConversationByJid(conversationJid))!;
     final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
       downloadedPath,
+      msg.timestamp,
       mime: mime
     );
     final newConv = await GetIt.I.get<DatabaseService>().updateConversation(

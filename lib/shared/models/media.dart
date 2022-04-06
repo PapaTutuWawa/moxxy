@@ -8,6 +8,7 @@ class SharedMedium with _$SharedMedium {
   factory SharedMedium(
     int id,
     String path,
+    int timestamp,
     { String? mime }
   ) = _SharedMedia;
 

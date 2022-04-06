@@ -14,15 +14,15 @@ class SharedMediaDisplay extends StatelessWidget {
   const SharedMediaDisplay(this.sharedMedia, this.jid, { Key? key }) : super(key: key);
 
   List<Widget> _renderItems() {
-    int clampedStartIndex = sharedMedia.length > 8 ? sharedMedia.length - 9 : 0;
-    int clampedEndIndex = min(clampedStartIndex + 8, sharedMedia.length) - 1;
     final tmp = List<Widget>.empty(growable: true);
 
+    int clampedStartIndex = sharedMedia.length >= 8 ? sharedMedia.length - 7 : 0;
+    int clampedEndIndex = sharedMedia.length - 1;
+
     for (var i = clampedEndIndex; i >= clampedStartIndex; i--) {
-      print(i);
       tmp.add(buildSharedMediaWidget(sharedMedia[i], jid));
     }
-
+    
     return tmp;
   }
   

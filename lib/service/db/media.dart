@@ -11,4 +11,7 @@ class DBSharedMedium {
   late String path;
 
   late String? mime;
+
+  // The timestamp of the corresponding message
+  late int timestamp;
 }

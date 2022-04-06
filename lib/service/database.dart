@@ -20,11 +20,15 @@ SharedMedium sharedMediumDbToModel(DBSharedMedium s) {
   return SharedMedium(
     s.id!,
     s.path,
+    s.timestamp,
     mime: s.mime
   );
 }
 
 Conversation conversationDbToModel(DBConversation c, bool inRoster) {
+  final media = c.sharedMedia.map(sharedMediumDbToModel).toList();
+  media.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+
   return Conversation(
     c.title,
     c.lastMessageBody,
@@ -32,7 +36,7 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster) {
     c.jid,
     c.unreadCounter,
     c.lastChangeTimestamp,
-    c.sharedMedia.map(sharedMediumDbToModel).toList(),
+    media,
     c.id!,
     c.open,
     inRoster
@@ -201,10 +205,11 @@ class DatabaseService {
   }
 
   /// Like [addConversationFromData] but for [SharedMedium].
-  Future<DBSharedMedium> addSharedMediumFromData(String path, { String? mime }) async {
+  Future<DBSharedMedium> addSharedMediumFromData(String path, int timestamp, { String? mime }) async {
     final s = DBSharedMedium()
       ..path = path
-      ..mime = mime;
+      ..mime = mime
+      ..timestamp = timestamp;
 
     await isar.writeTxn((isar) async {
         await isar.dBSharedMediums.put(s);
