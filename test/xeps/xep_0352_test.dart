@@ -13,7 +13,7 @@ void main() {
           bool nonzaSent = false;
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
-              sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
+              sendStanza: (_, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {},
               sendNonza: (nonza) {
                 nonzaSent = true;
@@ -39,7 +39,7 @@ void main() {
       test("Test setting the CSI state when CSI is supported", () {
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
-              sendStanza: (_, { bool addFrom = true, bool addId = true}) async => XMLNode(tag: "hallo"),
+              sendStanza: (_, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async => XMLNode(tag: "hallo"),
               sendEvent: (event) {},
               sendNonza: (nonza) {
                 expect(nonza.attributes["xmlns"] == csiXmlns, true, reason: "Expected only nonzas with XMLNS '$csiXmlns'");

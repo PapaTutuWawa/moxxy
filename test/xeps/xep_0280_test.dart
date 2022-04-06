@@ -9,7 +9,7 @@ import "package:test/test.dart";
 void main() {
   test("Test if we're vulnerable against CVE-2020-26547 style vulnerabilities", () async {
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async {
+        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());
           return XMLNode(tag: "iq", attributes: { "type": "result" });

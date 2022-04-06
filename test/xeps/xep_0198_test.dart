@@ -34,7 +34,7 @@ void main() {
       Stanza lastSentStanza = Stanza(tag: "message");
 
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async {
+        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());
           lastSentStanza = stanza;
@@ -90,7 +90,7 @@ void main() {
       Stanza lastSentStanza = Stanza(tag: "message");
 
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async {
+        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());
           lastSentStanza = stanza;
@@ -127,7 +127,7 @@ void main() {
       // NOTE: This test is to ensure that the manager does not immediately freak out if
       //       we give it no resumption id.
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async => stanza,
+        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false  }) async => stanza,
         sendNonza: (nonza) {},
         sendEvent: (event) {},
         sendRawXml: (raw) {},
@@ -152,7 +152,7 @@ void main() {
   
   test("Test stream management essentials", () {
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true }) async => stanza,
+        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false  }) async => stanza,
         sendNonza: (nonza) {},
         sendEvent: (event) {},
         sendRawXml: (raw) {},

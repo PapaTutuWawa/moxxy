@@ -51,6 +51,7 @@ class TestMigrator extends Migrator<Greeting> {
     true
   );
 
+  @override
   Future<void> commit(int version, Greeting data) async {
     onCommited(version, data);
   }
@@ -92,6 +93,7 @@ class NoDataMigrator extends Migrator<Greeting> {
     true
   );
 
+  @override
   Future<void> commit(int version, Greeting data) async {
     onCommited(version, data);
   }
@@ -146,6 +148,7 @@ class MultipleStagedMigrator extends Migrator<Greeting> {
     true
   );
 
+  @override
   Future<void> commit(int version, Greeting data) async {
     onCommited(version, data);
   }
