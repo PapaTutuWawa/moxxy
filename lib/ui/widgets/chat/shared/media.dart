@@ -22,6 +22,8 @@ class SharedMediaDisplay extends StatelessWidget {
     for (var i = clampedEndIndex; i >= clampedStartIndex; i--) {
       tmp.add(buildSharedMediaWidget(sharedMedia[i], jid));
     }
+
+    // TODO: Add an extra widget to show a list of all shared media if we had to hide some
     
     return tmp;
   }
