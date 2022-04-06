@@ -50,7 +50,7 @@ class SelfProfileHeader extends StatelessWidget {
   }
 
   Future<void> pickAndSetAvatar(BuildContext context) async {
-    final avatar = await pickAvatar(context, avatarUrl);
+    final avatar = await pickAvatar(context, jid, avatarUrl);
 
     if (avatar != null) {
       setAvatar(avatar.path, avatar.hash);

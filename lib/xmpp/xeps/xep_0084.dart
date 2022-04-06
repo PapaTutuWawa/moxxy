@@ -3,6 +3,7 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
 
 class UserAvatar {
@@ -78,5 +79,16 @@ class UserAvatarManager extends XmppManagerBase {
   /// Unsubscribe the data node of [jid].
   Future<bool> unsubscribe(String jid) async {
     return await _getPubSubManager().unsubscribe(jid, userAvatarDataXmlns);
+  }
+
+  /// Returns the PubSub Id of an avatar after doing a disco#items query.
+  /// Note that this assumes that there is only one (1) item published on
+  /// the node.
+  Future<String?> getAvatarId(String jid) async {
+    final disco = getAttributes().getManagerById(discoManager)! as DiscoManager;
+    final response = await disco.discoItemsQuery(jid, node: userAvatarDataXmlns);
+    if (response == null || response.isEmpty) return null;
+
+    return response.first.name;
   }
 }

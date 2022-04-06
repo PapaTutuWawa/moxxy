@@ -22,7 +22,8 @@ void setupEventHandler() {
       EventTypeMatcher<ConversationAddedEvent>(onConversationAdded),
       EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed),
       EventTypeMatcher<RosterDiffEvent>(onRosterPush),
-      EventTypeMatcher<DownloadProgressEvent>(onDownloadProgress)
+      EventTypeMatcher<DownloadProgressEvent>(onDownloadProgress),
+      EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -105,4 +106,13 @@ Future<void> onRosterPush(RosterDiffEvent event, { dynamic extra }) async {
 
 Future<void> onDownloadProgress(DownloadProgressEvent event, { dynamic extra }) async {
   GetIt.I.get<UIDownloadService>().onProgress(event.id, event.progress);
+}
+
+Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }) async {
+  GetIt.I.get<conversations.ConversationsBloc>().add(
+    conversations.AvatarChangedEvent(event.path)
+  );
+  GetIt.I.get<profile.ProfileBloc>().add(
+    profile.AvatarSetEvent(event.path, event.hash)
+  );
 }

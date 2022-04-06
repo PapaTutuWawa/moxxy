@@ -154,7 +154,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ConversationsInitEvent(
           result.displayName!,
           result.jid!,
-          result.conversations!
+          result.conversations!,
+          avatarUrl: result.avatarUrl,
         )
       );
       GetIt.I.get<NewConversationBloc>().add(

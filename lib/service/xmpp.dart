@@ -360,6 +360,10 @@ class XmppService {
         // Request our own avatar and maybe those of our contacts
       }
 
+      // Make sure we display our own avatar correctly
+      // TODO: Maybe don't do this on mobile Internet
+      GetIt.I.get<AvatarService>().requestOwnAvatar();
+      
       // Either we get the cached version or we retrieve it for the first time
       GetIt.I.get<BlocklistService>().getBlocklist();
       

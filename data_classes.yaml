@@ -153,6 +153,15 @@ files:
           # Indicate if the conversation is new (true) or modified (false).
           # Does not mean anything unless conversation != null.
           added: bool
+      # Triggered by the service if our avatar changed
+      - name: SelfAvatarChangedEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          path: String
+          hash: String
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

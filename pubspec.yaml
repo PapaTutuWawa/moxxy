@@ -74,6 +74,7 @@ dependencies:
       ref: bfab5e28f1f1ea624232002f0d05481cb2bd9997
   flutter_vibrate: ^1.3.0
   mutex: ^3.0.0
+  flutter_image_compress: ^1.1.0
 
 dev_dependencies:
   #flutter_test:

@@ -1,6 +1,7 @@
 import "dart:async";
 import "dart:io";
 
+import "package:moxxyv2/shared/avatar.dart";
 import "package:moxxyv2/xmpp/sasl/errors.dart";
 
 import "package:flutter/material.dart";
@@ -9,6 +10,7 @@ import "package:image_cropping/image_cropping.dart";
 import "package:path_provider/path_provider.dart";
 import "package:cryptography/cryptography.dart";
 import "package:hex/hex.dart";
+import "package:flutter_image_compress/flutter_image_compress.dart";
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action.
@@ -102,24 +104,24 @@ class PickedAvatar {
 /// Open the file picker to pick an image, open the cropping tool and then save it.
 /// [avatarUrl] is the path of the old avatar or "" if none has been set.
 /// Returns the path of the new avatar path.
-Future<PickedAvatar?> pickAvatar(BuildContext context, String avatarUrl) async {
+Future<PickedAvatar?> pickAvatar(BuildContext context, String jid, String oldPath) async {
   final data = await pickAndCropImage(context);
 
   if (data != null) {
-    String cacheDir = (await getApplicationDocumentsDirectory()).path;
-    Directory accountDir = Directory(cacheDir + "/account");
-    await accountDir.create();
+    // TODO: Maybe tweak these values
+    final compressedData = await FlutterImageCompress.compressWithList(
+      data,
+      minHeight: 256,
+      minWidth: 256,
+      quality: 90,
+      format: CompressFormat.png
+    );
 
-    File oldAvatar = File(avatarUrl);
-    if (await oldAvatar.exists()) await oldAvatar.delete();
-
-    // Hash the data
-    final hash = (await Sha1().hash(data)).bytes;
+    final hash = (await Sha1().hash(compressedData)).bytes;
     final hashhex = HEX.encode(hash);
+    final avatarPath = await saveAvatarInCache(compressedData, hashhex, jid, oldPath);
     
-    File avatar = File(accountDir.path + "/avatar_${hashhex}.png");
-    await avatar.writeAsBytes(data);
-    return PickedAvatar(avatar.path, hashhex);
+    return PickedAvatar(avatarPath, hashhex);
   }
 
   return null;

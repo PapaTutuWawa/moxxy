@@ -3,7 +3,9 @@ import "dart:convert";
 
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/shared/avatar.dart";
 import "package:moxxyv2/service/service.dart";
+import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -30,38 +32,22 @@ class AvatarService {
 
   DiscoManager _getDiscoManager() => GetIt.I.get<XmppConnection>().getManagerById(discoManager)! as DiscoManager;
   
-  Future<String> _getAvatarCacheDir() async {
-    return path.join((await getTemporaryDirectory()).path, "avatar");
-  }
-  
-  Future<String> saveAvatar(String jid, String hash, String base64) async {
-    final cachePath = await _getAvatarCacheDir();
-    final f = File(path.join(cachePath, jid + "_" + hash));
-    if (!(await f.exists())) await f.create(recursive: true);
-
-    await f.writeAsBytes(base64Decode(base64));
-
-    return f.path;
-  }
-
   Future<void> updateAvatarForJid(String jid, String hash, String base64) async {
-    final path = await GetIt.I.get<AvatarService>().saveAvatar(
-      jid,
-      hash,
-      base64
-    );
-
     final db = GetIt.I.get<DatabaseService>();
     final originalConversation = await db.getConversationByJid(jid);
+    bool saved = false;
     if (originalConversation != null) {
+      final avatarPath = await saveAvatarInCache(
+        base64Decode(base64),
+        hash,
+        jid,
+        originalConversation.avatarUrl
+      );
+      saved = true;
       final conv = await db.updateConversation(
         id: originalConversation.id,
-        avatarUrl: path
+        avatarUrl: avatarPath
       );
-
-      // Remove the old avatar$
-      final oldAvatar = File(originalConversation.avatarUrl);
-      if (await oldAvatar.exists()) await oldAvatar.delete();
 
       sendEvent(ConversationUpdatedEvent(conversation: conv));
     } else {
@@ -70,9 +56,21 @@ class AvatarService {
 
     final originalRoster = await db.getRosterItemByJid(jid);
     if (originalRoster != null) {
+      String avatarPath = "";
+      if (saved) {
+        avatarPath = await getAvatarPath(jid, hash);
+      } else {
+        avatarPath = await saveAvatarInCache(
+          base64Decode(base64),
+          hash,
+          jid,
+          originalRoster.avatarUrl
+        ); 
+      }
+
       final roster = await db.updateRosterItem(
         id: originalRoster.id,
-        avatarUrl: path
+        avatarUrl: avatarPath
       );
 
       sendEvent(RosterDiffEvent(modified: [roster]));
@@ -137,5 +135,37 @@ class AvatarService {
       hash,
       public
     );
+  }
+
+  Future<void> requestOwnAvatar() async {
+    final avatar = _getUserAvatarManager();
+    final xmpp = GetIt.I.get<XmppService>();
+    final state = await xmpp.getXmppState();
+    final jid = state.jid!;
+    final id = await avatar.getAvatarId(jid);
+
+    if (id == state.avatarHash) return;
+
+    _log.info("Mismatch between saved avatar data and server-side avatar data about ourself");
+    final data = await avatar.getUserAvatar(jid);
+    if (data == null) {
+      _log.severe("Failed to fetch our avatar");
+      return;
+    }
+
+    _log.info("Received data for our own avatar");
+    
+    final avatarPath = await saveAvatarInCache(
+      base64Decode(data.base64),
+      data.hash,
+      jid,
+      state.avatarUrl
+    );
+    await xmpp.modifyXmppState((state) => state.copyWith(
+        avatarUrl: avatarPath,
+        avatarHash: data.hash
+    ));
+
+    sendEvent(SelfAvatarChangedEvent(path: avatarPath, hash: data.hash));
   }
 }

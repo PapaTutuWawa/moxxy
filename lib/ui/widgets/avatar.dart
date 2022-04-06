@@ -25,24 +25,14 @@ class AvatarWrapper extends StatelessWidget {
     );
   }
 
-  // TODO: Remove this. This is just for UI debugging
-  ImageProvider _constructImage() {
-    if (avatarUrl!.startsWith("https://")) {
-      return NetworkImage(avatarUrl!);
-    } else {
-      return FileImage(File(avatarUrl!));
-    }
-  }
-  
-  /* Either display the alt or the actual image */
+  /// Either display the alt or the actual image
   Widget _avatarWrapper() {
     bool useAlt = avatarUrl == null || avatarUrl == "";
     
     return CircleAvatar(
       backgroundColor: Colors.grey[800]!,
       child: useAlt ? _constructAlt() : null,
-      // TODO
-      backgroundImage: !useAlt ? _constructImage() : null,
+      backgroundImage: !useAlt ? FileImage(File(avatarUrl!)) : null,
       radius: radius
     );
   }

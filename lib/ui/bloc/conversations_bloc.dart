@@ -20,6 +20,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
       state.copyWith(
         displayName: event.displayName,
         jid: event.jid,
+        avatarUrl: event.avatarUrl ?? "",
         conversations: event.conversations..sort(compareConversation)
       )
     );

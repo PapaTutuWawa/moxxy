@@ -6,9 +6,17 @@ abstract class ConversationsEvent {}
 class ConversationsInitEvent extends ConversationsEvent {
   final String displayName;
   final String jid;
+  final String? avatarUrl;
   final List<Conversation> conversations;
 
-  ConversationsInitEvent(this.displayName, this.jid, this.conversations);
+  ConversationsInitEvent(
+    this.displayName,
+    this.jid,
+    this.conversations,
+    {
+      this.avatarUrl
+    }
+  );
 }
 
 /// Triggered when a conversation has been added.
