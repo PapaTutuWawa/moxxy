@@ -30,6 +30,7 @@ files:
           jid: String?
           displayName: String?
           avatarUrl: String?
+          avatarHash: String?
           conversations:
             type: List<Conversation>?
             deserialise: true

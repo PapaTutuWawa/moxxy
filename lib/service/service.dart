@@ -194,10 +194,9 @@ void onStart() {
       ]);
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
-      final account = await xmpp.getAccountData();
       final settings = await xmpp.getConnectionSettings();
 
-      if (account!= null && settings != null) {
+      if (settings != null && settings.jid != null && settings.password != null) {
         xmpp.connect(settings, false);
       }
   })();

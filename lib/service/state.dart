@@ -22,9 +22,11 @@ class XmppState with _$XmppState {
       String? srid,
       String? resource,
       String? jid,
+      String? displayName,
       String? password,
       String? lastRosterVersion,
       @Default("") avatarUrl,
+      @Default("") avatarHash,
       @Default(false) bool askedStoragePermission
   }) = _XmppState;
 

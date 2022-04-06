@@ -1,6 +1,7 @@
 import "dart:convert";
 
 import "package:moxxyv2/shared/preferences.dart";
+import "package:moxxyv2/shared/migrator.dart";
 
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:logging/logging.dart";
@@ -9,16 +10,67 @@ const currentVersion = 7;
 const preferencesVersionKey = "prefs_version";
 const preferencesDataKey = "prefs_data";
 
-class PreferencesService {
-  int _version = -1;
-  PreferencesState? _preferences;
+class _PreferencesMigrator extends Migrator<PreferencesState> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
-  final Logger _log;
 
-  PreferencesService() : _log = Logger("PreferencesService");
-  
+  _PreferencesMigrator() : super(
+    currentVersion,
+    [
+      Migration<PreferencesState>(1, (data) => PreferencesState(
+          sendChatMarkers: data["sendChatMarkers"]!,
+          sendChatStates: data["sendChatStates"]!,
+          showSubscriptionRequests: data["showSubscriptionRequests"]!
+      )),
+      Migration<PreferencesState>(2, (data) => PreferencesState(
+          sendChatMarkers: data["sendChatMarkers"]!,
+          sendChatStates: data["sendChatStates"]!,
+          showSubscriptionRequests: data["showSubscriptionRequests"]!,
+          autoDownloadWifi: data["autoDownloadWifi"]!,
+          autoDownloadMobile: data["autoDownloadMobile"]!
+      )),
+      Migration<PreferencesState>(3, (data) => PreferencesState(
+          sendChatMarkers: data["sendChatMarkers"]!,
+          sendChatStates: data["sendChatStates"]!,
+          showSubscriptionRequests: data["showSubscriptionRequests"]!,
+          autoDownloadWifi: data["autoDownloadWifi"]!,
+          autoDownloadMobile: data["autoDownloadMobile"]!,
+          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!
+      )),
+      Migration<PreferencesState>(4, (data) => PreferencesState(
+          sendChatMarkers: data["sendChatMarkers"]!,
+          sendChatStates: data["sendChatStates"]!,
+          showSubscriptionRequests: data["showSubscriptionRequests"]!,
+          autoDownloadWifi: data["autoDownloadWifi"]!,
+          autoDownloadMobile: data["autoDownloadMobile"]!,
+          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
+          backgroundPath: data["backgroundPath"]!
+      )),
+      Migration<PreferencesState>(5, (data) => PreferencesState(
+          sendChatMarkers: data["sendChatMarkers"]!,
+          sendChatStates: data["sendChatStates"]!,
+          showSubscriptionRequests: data["showSubscriptionRequests"]!,
+          autoDownloadWifi: data["autoDownloadWifi"]!,
+          autoDownloadMobile: data["autoDownloadMobile"]!,
+          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
+          backgroundPath: data["backgroundPath"]!,
+          isAvatarPublic: data["isAvatarPublic"]!
+      )),
+      Migration<PreferencesState>(6, (data) => PreferencesState(
+          sendChatMarkers: data["sendChatMarkers"]!,
+          sendChatStates: data["sendChatStates"]!,
+          showSubscriptionRequests: data["showSubscriptionRequests"]!,
+          autoDownloadWifi: data["autoDownloadWifi"]!,
+          autoDownloadMobile: data["autoDownloadMobile"]!,
+          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
+          backgroundPath: data["backgroundPath"]!,
+          isAvatarPublic: data["isAvatarPublic"]!,
+          autoAcceptSubscriptionRequests: data["autoAcceptSubscriptionRequests"]
+      ))
+    ]
+  );
+
   // TODO: Deduplicate with XmppService. Maybe a StorageService?
   Future<String?> _readKeyOrNull(String key) async {
     if (await _storage.containsKey(key: key)) {
@@ -27,111 +79,45 @@ class PreferencesService {
       return null;
     }
   }
- 
-  Future<void> _commitPreferences() async {
-    await _storage.write(key: preferencesVersionKey, value: _version.toString());
-    await _storage.write(key: preferencesDataKey, value: json.encode(_preferences!.toJson()));
+  
+  @override
+  Future<Map<String, dynamic>?> loadRawData() async {
+    final raw = await _readKeyOrNull(preferencesDataKey);
+    if (raw != null) return json.decode(raw);
+
+    return null;
   }
+
+  @override
+  Future<int?> loadVersion() async {
+    final raw = await _readKeyOrNull(preferencesVersionKey);
+    if (raw != null) return int.parse(raw);
+
+    return null;
+  }
+
+  @override
+  PreferencesState fromData(Map<String, dynamic> data) => PreferencesState.fromJson(data);
+
+  @override
+  PreferencesState fromDefault() => PreferencesState();
+  
+  @override
+  Future<void> commit(int version, PreferencesState data) async {
+    await _storage.write(key: preferencesVersionKey, value: version.toString());
+    await _storage.write(key: preferencesDataKey, value: json.encode(data.toJson()));
+  }
+}
+
+class PreferencesService {
+  PreferencesState? _preferences;
+  final _PreferencesMigrator _migrator;
+  final Logger _log;
+
+  PreferencesService() : _migrator = _PreferencesMigrator(), _log = Logger("PreferencesService");
   
   Future<void> _loadPreferences() async {
-    final version = int.parse((await _readKeyOrNull(preferencesVersionKey)) ?? "-1");
-    final dataRaw = await _readKeyOrNull(preferencesDataKey);
-
-    if (version < 1 || dataRaw == null) {
-      _log.finest("Creating preferences...");
-      _preferences = PreferencesState();
-      _version = currentVersion;
-      await _commitPreferences();
-    } else if(version < 2) {
-      final data = json.decode(dataRaw);
-
-      _log.finest("Upgrading from a 0 < version < 2 to current version");
-      _preferences = PreferencesState(
-        sendChatMarkers: data["sendChatMarkers"]!,
-        sendChatStates: data["sendChatStates"]!,
-        showSubscriptionRequests: data["showSubscriptionRequests"]!
-      );
-      _version = currentVersion;
-      await _commitPreferences();
-    } else if (version < 3) {
-      final data = json.decode(dataRaw);
-
-      _log.finest("Upgrading from a 1 < version < 3 to current version");
-      _preferences = PreferencesState(
-        sendChatMarkers: data["sendChatMarkers"]!,
-        sendChatStates: data["sendChatStates"]!,
-        showSubscriptionRequests: data["showSubscriptionRequests"]!,
-        autoDownloadWifi: data["autoDownloadWifi"]!,
-        autoDownloadMobile: data["autoDownloadMobile"]!
-      );
-      _version = currentVersion;
-      await _commitPreferences();
-    } else if (version < 4) {
-      final data = json.decode(dataRaw);
-
-      _log.finest("Upgrading from a 2 < version < 4 to current version");
-      _preferences = PreferencesState(
-        sendChatMarkers: data["sendChatMarkers"]!,
-        sendChatStates: data["sendChatStates"]!,
-        showSubscriptionRequests: data["showSubscriptionRequests"]!,
-        autoDownloadWifi: data["autoDownloadWifi"]!,
-        autoDownloadMobile: data["autoDownloadMobile"]!,
-        maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!
-      );
-      _version = currentVersion;
-      await _commitPreferences();
-    } else if (version < 5) {
-      final data = json.decode(dataRaw);
-
-      _log.finest("Upgrading from a 4 < version < 5 to current version");
-      _preferences = PreferencesState(
-        sendChatMarkers: data["sendChatMarkers"]!,
-        sendChatStates: data["sendChatStates"]!,
-        showSubscriptionRequests: data["showSubscriptionRequests"]!,
-        autoDownloadWifi: data["autoDownloadWifi"]!,
-        autoDownloadMobile: data["autoDownloadMobile"]!,
-        maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
-        backgroundPath: data["backgroundPath"]!
-      );
-      _version = currentVersion;
-      await _commitPreferences();
-    } else if (version < 6) {
-      final data = json.decode(dataRaw);
-
-      _log.finest("Upgrading from a 5 < version < 6 to current version");
-      _preferences = PreferencesState(
-        sendChatMarkers: data["sendChatMarkers"]!,
-        sendChatStates: data["sendChatStates"]!,
-        showSubscriptionRequests: data["showSubscriptionRequests"]!,
-        autoDownloadWifi: data["autoDownloadWifi"]!,
-        autoDownloadMobile: data["autoDownloadMobile"]!,
-        maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
-        backgroundPath: data["backgroundPath"]!,
-        isAvatarPublic: data["isAvatarPublic"]!
-      );
-      _version = currentVersion;
-      await _commitPreferences();
-    } else if (version < 7) {
-      final data = json.decode(dataRaw);
-
-      _log.finest("Upgrading from a 6 < version < 7 to current version");
-      _preferences = PreferencesState(
-        sendChatMarkers: data["sendChatMarkers"]!,
-        sendChatStates: data["sendChatStates"]!,
-        showSubscriptionRequests: data["showSubscriptionRequests"]!,
-        autoDownloadWifi: data["autoDownloadWifi"]!,
-        autoDownloadMobile: data["autoDownloadMobile"]!,
-        maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
-        backgroundPath: data["backgroundPath"]!,
-        isAvatarPublic: data["isAvatarPublic"]!,
-        autoAcceptSubscriptionRequests: data["autoAcceptSubscriptionRequests"]
-      );
-      _version = currentVersion;
-      await _commitPreferences();
-    } else {
-      _version = currentVersion;
-      _preferences = PreferencesState.fromJson(json.decode(dataRaw));
-    } 
+    _preferences = await _migrator.load();
   }
 
   Future<PreferencesState> getPreferences() async {
@@ -144,6 +130,6 @@ class PreferencesService {
     if (_preferences == null) await _loadPreferences();
 
     _preferences = func(_preferences!);
-    await _commitPreferences();
+    await _migrator.commit(currentVersion, _preferences!);
   }
 }

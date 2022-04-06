@@ -4,8 +4,8 @@ import "dart:convert";
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/account.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
+import "package:moxxyv2/shared/migrator.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -37,20 +37,63 @@ import "package:flutter_background_service/flutter_background_service.dart";
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
 
+const currentXmppStateVersion = 1;
 const xmppStateKey = "xmppState";
-const xmppAccountDataKey = "xmppAccount";
+const xmppStateVersionKey = "xmppState_version";
 
-class XmppService {
+class _XmppStateMigrator extends Migrator<XmppState> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
+
+  _XmppStateMigrator() : super(currentXmppStateVersion, []);
+
+  // TODO: Deduplicate
+  Future<String?> _readKeyOrNull(String key) async {
+    if (await _storage.containsKey(key: key)) {
+      return await _storage.read(key: key);
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> loadRawData() async {
+    final raw = await _readKeyOrNull(xmppStateKey);
+    if (raw != null) return json.decode(raw);
+
+    return null;
+  }
+
+  @override
+  Future<int?> loadVersion() async {
+    final raw = await _readKeyOrNull(xmppStateVersionKey);
+    if (raw != null) return int.parse(raw);
+
+    return null;
+  }
+
+  @override
+  XmppState fromData(Map<String, dynamic> data) => XmppState.fromJson(data);
+
+  @override
+  XmppState fromDefault() => XmppState();
+  
+  @override
+  Future<void> commit(int version, XmppState data) async {
+    await _storage.write(key: xmppStateVersionKey, value: currentXmppStateVersion.toString());
+    await _storage.write(key: xmppStateKey, value: json.encode(data.toJson()));
+  }
+}
+
+class XmppService {
   final Logger _log;
   final EventHandler _eventHandler;
+  final _XmppStateMigrator _migrator;
   bool loginTriggeredFromUI = false;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
   XmppState? _state;
-  
   ConnectivityResult _currentConnectionType;
   
   XmppService() :
@@ -59,6 +102,7 @@ class XmppService {
     _state = null,
     _currentConnectionType = ConnectivityResult.none,
     _eventHandler = EventHandler(),
+    _migrator = _XmppStateMigrator(),
     _log = Logger("XmppService") {
       _eventHandler.addMatchers([
           EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
@@ -77,41 +121,17 @@ class XmppService {
       ]);
     }
 
-  Future<String?> _readKeyOrNull(String key) async {
-    if (await _storage.containsKey(key: key)) {
-      return await _storage.read(key: key);
-    } else {
-      return null;
-    }
-  }
-  
   Future<XmppState> getXmppState() async {
     if (_state != null) return _state!;
 
-    final data = await _readKeyOrNull(xmppStateKey);
-    // GetIt.I.get<Logger>().finest("data != null: " + (data != null).toString());
-
-    if (data == null) {
-      _state = XmppState();
-      await _commitXmppState();
-      return _state!;
-    }
-
-    _state = XmppState.fromJson(json.decode(data));
+    _state = await _migrator.load();
     return _state!;
-  }
-  
-  Future<void> _commitXmppState() async {
-    // final logger = GetIt.I.get<Logger>();
-    // logger.finest("Commiting _xmppState to EncryptedSharedPrefs");
-    // logger.finest("=> ${json.encode(_state!.toJson())}");
-    await _storage.write(key: xmppStateKey, value: json.encode(_state!.toJson()));
   }
 
   /// A wrapper to modify the [XmppState] and commit it.
   Future<void> modifyXmppState(XmppState Function(XmppState) func) async {
     _state = func(_state!);
-    await _commitXmppState();
+    await _migrator.commit(currentXmppStateVersion, _state!);
   }
 
   Future<ConnectionSettings?> getConnectionSettings() async {
@@ -152,25 +172,6 @@ class XmppService {
   /// Returns the JID of the chat that is currently opened. Null, if none is open.
   String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
   
-  /// Load the [AccountState] from storage. Returns null if not found.
-  Future<AccountState?> getAccountData() async {
-    final data = await _readKeyOrNull(xmppAccountDataKey);
-    if (data == null) {
-      return null;
-    }
-
-    return AccountState.fromJson(jsonDecode(data));
-  }
-  /// Save [state] to storage such that it can be loaded again by [getAccountData].
-  Future<void> setAccountData(AccountState state) async {
-    return await _storage.write(key: xmppAccountDataKey, value: jsonEncode(state.toJson()));
-  }
-  /// Removes the account data from storage.
-  Future<void> removeAccountData() async {
-    // TODO: This sometimes fails
-    await _storage.delete(key: xmppAccountDataKey);
-  }
-
   /// Sends a message to [jid] with the body of [body].
   Future<void> sendMessage({
       required String body,
@@ -365,10 +366,11 @@ class XmppService {
       
       if (loginTriggeredFromUI) {
         // TODO: Trigger another event so the UI can see this aswell
-        await setAccountData(AccountState(
+        await modifyXmppState((state) => state.copyWith(
             jid: connection.getConnectionSettings().jid.toString(),
             displayName: connection.getConnectionSettings().jid.local,
-            avatarUrl: ""
+            avatarUrl: "",
+            avatarHash: ""
         ));
       }
     }

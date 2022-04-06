@@ -54,16 +54,14 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
   final id = extra as String;
   
   final xmpp = GetIt.I.get<XmppService>();
-  final account = await xmpp.getAccountData();
   final settings = await xmpp.getConnectionSettings();
   final state = await xmpp.getXmppState();
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
 
 
-  GetIt.I.get<Logger>().finest("account != null: " + (account != null).toString());
   GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
 
-  if (account!= null && settings != null) {
+  if (settings != null && settings.jid != null && settings.password != null) {
     await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
     // Check some permissions
@@ -80,9 +78,10 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
     sendEvent(
       PreStartDoneEvent(
         state: "logged_in",
-        jid: account.jid,
-        displayName: account.displayName,
+        jid: state.jid,
+        displayName: state.displayName,
         avatarUrl: state.avatarUrl,
+        avatarHash: state.avatarHash,
         permissionsToRequest: permissions,
         preferences: preferences,
         conversations: await GetIt.I.get<DatabaseService>().loadConversations(),
@@ -264,7 +263,8 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
 
 Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async {
   await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-      avatarUrl: command.path
+      avatarUrl: command.path,
+      avatarHash: command.hash
   ));
   GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
