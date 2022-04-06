@@ -106,7 +106,6 @@ class XmppService {
     _log = Logger("XmppService") {
       _eventHandler.addMatchers([
           EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
-          EventTypeMatcher<StreamManagementEnabledEvent>(_onStreamManagementEnabled),
           EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
           EventTypeMatcher<SubscriptionRequestReceivedEvent>(_onSubscriptionRequestReceived),
           EventTypeMatcher<DeliveryReceiptReceivedEvent>(_onDeliveryReceiptReceived),
@@ -374,14 +373,6 @@ class XmppService {
         ));
       }
     }
-  }
-
-  Future<void> _onStreamManagementEnabled(StreamManagementEnabledEvent event, { dynamic extra }) async {
-    // TODO: Remove
-    modifyXmppState((state) => state.copyWith(
-        srid: event.id,
-        resource: event.resource
-    ));
   }
 
   Future<void> _onResourceBindingSuccess(ResourceBindingSuccessEvent event, { dynamic extra }) async {
