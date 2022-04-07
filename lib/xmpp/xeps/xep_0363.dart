@@ -3,9 +3,14 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/types/error.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+
+const errorNoUploadServer = 1;
+const errorFileTooBig = 2;
+const errorGeneric = 3;
 
 class HttpFileUploadSlot {
   final String putUrl;
@@ -67,16 +72,15 @@ class HttpFileUploadManager extends XmppManagerBase {
   /// the file's size in octets. [contentType] is optional and refers to the file's
   /// Mime type.
   /// Returns an [HttpFileUploadSlot] if the request was successful; null otherwise.
-  /// TODO: Somehow communicate errors
-  Future<HttpFileUploadSlot?> requestUploadSlot(String filename, int filesize, { String? contentType }) async {
+  Future<MayFail<HttpFileUploadSlot>> requestUploadSlot(String filename, int filesize, { String? contentType }) async {
     if (_entityJid == null) {
       logger.warning("Attempted to request HTTP File Upload slot but no entity is known to send this request to.");
-      return null;
+      return MayFail.failure(errorNoUploadServer);
     }
 
     if (_maxUploadSize != null && filesize > _maxUploadSize!) {
       logger.warning("Attempted to request HTTP File Upload slot for a file that exceeds the filesize limit");
-      return null;
+      return MayFail.failure(errorFileTooBig);
     }
     
     final attrs = getAttributes();
@@ -100,7 +104,8 @@ class HttpFileUploadManager extends XmppManagerBase {
 
     if (response.attributes["type"]! != "result") {
       logger.severe("Failed to request HTTP File Upload slot.");
-      return null;
+      // TODO: Be more precise
+      return MayFail.failure(errorGeneric);
     }
 
     final slot = response.firstTag("slot", xmlns: httpFileUploadXmlns)!;
@@ -117,10 +122,12 @@ class HttpFileUploadManager extends XmppManagerBase {
       headers[name] = value;
     }
 
-    return HttpFileUploadSlot(
-      putUrl,
-      getUrl,
-      headers
+    return MayFail.success(
+      HttpFileUploadSlot(
+        putUrl,
+        getUrl,
+        headers
+      )
     );
   }
 }
