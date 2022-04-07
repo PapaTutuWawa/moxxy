@@ -63,6 +63,9 @@ const csiXmlns = "urn:xmpp:csi:0";
 // XEP-0359
 const stableIdXmlns = "urn:xmpp:sid:0";
 
+// XEP-0363
+const httpFileUploadXmlns = "urn:xmpp:http:upload:0";
+
 // XEP-0372
 const referenceXmlns = "urn:xmpp:reference:0";
 

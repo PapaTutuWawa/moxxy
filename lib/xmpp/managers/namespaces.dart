@@ -17,3 +17,4 @@ const oobManager = "im.moxxy.oobmanager";
 const sfsManager = "im.moxxy.sfsmanager";
 const messageRepliesManager = "im.moxxy.messagerepliesmanager";
 const blockingManager = "im.moxxy.blockingmanager";
+const httpFileUploadManager = "im.moxxy.blockingmanager";
