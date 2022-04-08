@@ -12,6 +12,109 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
+/// Closure which returns true if the jid of a [RosterItem] is equal to [jid].
+bool Function(RosterItem) _jidEqualsWrapper(String jid) {
+  return (i) => i.jid == jid;
+}
+
+/// Compare the local roster with the roster we received either by request or by push.
+/// Returns a diff between the roster before and after the request or the push.
+/// NOTE: This abuses the [RosterDiffEvent] type a bit.
+Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRosterItem> remoteRoster, bool isRosterPush) async {
+  final List<String> removed = List.empty(growable: true);
+  final List<RosterItem> modified = List.empty(growable: true);
+  final List<RosterItem> added = List.empty(growable: true);
+  final db = GetIt.I.get<DatabaseService>();
+
+  for (final item in remoteRoster) {
+    if (isRosterPush) {
+      // Handle removed items
+      if (item.subscription == "remove") {
+        removed.add(item.jid);
+        continue;
+      }
+
+      final litem = firstWhereOrNull(currentRoster, _jidEqualsWrapper(item.jid));
+      if (litem != null) {
+        // Item has been modified
+        final newItem = await db.updateRosterItem(
+          id: litem.id,
+          subscription: item.subscription,
+          groups: item.groups
+        );
+
+        modified.add(newItem);
+
+        // Check if we have a conversation that we need to modify
+        final conv = await db.getConversationByJid(item.jid);
+        if (conv != null) {
+          sendEvent(
+            ConversationUpdatedEvent(
+              conversation: conv.copyWith(subscription: item.subscription)
+            )
+          );
+        }
+      } else {
+        // Item has been modified
+        final newItem = await db.addRosterItemFromData(
+          "",
+          item.jid,
+          item.name ?? item.jid.split("@")[0],
+          item.subscription,
+          groups: item.groups
+        );
+
+        added.add(newItem);
+      }
+    } else {
+      if (!listContains(currentRoster, (RosterItem i) => i.jid == item.jid)) {
+        // Item has been deleted
+        removed.add(item.jid);
+        continue;
+      }
+
+      final litem = firstWhereOrNull(currentRoster, _jidEqualsWrapper(item.jid));
+      if (litem != null) {
+        // Item is modified
+        if (litem.title != item.name || litem.subscription != item.subscription || litem.groups != item.groups) {
+          final modifiedItem = await db.updateRosterItem(
+            id: litem.id,
+            title: item.name,
+            subscription: item.subscription,
+            groups: item.groups
+          );
+          modified.add(modifiedItem);
+
+          // Check if we have a conversation that we need to modify
+          final conv = await db.getConversationByJid(litem.jid);
+          if (conv != null) {
+            sendEvent(
+              ConversationUpdatedEvent(
+                conversation: conv.copyWith(subscription: item.subscription)
+              )
+            );
+          }
+        }
+      } else {
+        // Item is new
+        added.add(await db.addRosterItemFromData(
+            "",
+            item.jid,
+            item.jid.split("@")[0],
+            item.subscription,
+            groups: item.groups
+        ));
+      }
+    }
+  }
+  
+  return RosterDiffEvent(
+    added: added,
+    modified: modified,
+    removed: removed
+  );
+}
+
 class RosterService {
   final Logger _log;
   
@@ -79,112 +182,30 @@ class RosterService {
       return;
     }
 
-    final newItems = List<RosterItem>.empty(growable: true);
-    final removedItems = List<String>.empty(growable: true);
-    final modifiedItems = List<RosterItem>.empty(growable: true);
-    final db = GetIt.I.get<DatabaseService>();
-    final currentRoster = await db.getRoster();
-
-    // TODO: This entire code is still a mess
-    for (final item in currentRoster) {
-      final ritem = firstWhereOrNull(result.items, (XmppRosterItem i) => i.jid == item.jid);
-
-      if (ritem != null) {
-        // The JID is in the current roster and the requested one
-        if (ritem.name != item.title || ritem.subscription != item.subscription || ritem.groups != item.groups) {
-          final modifiedItem = await db.updateRosterItem(
-            id: item.id,
-            title: ritem.name,
-            subscription: ritem.subscription,
-            groups: ritem.groups
-          );
-          modifiedItems.add(modifiedItem);
-        }
-      } else {
-        // The JID is in the current roster but not in the requested one
-        // => Roster Item has been removed
-        await db.removeRosterItemByJid(item.jid);
-        removedItems.add(item.jid);
-      }
-    }
-
-    // Handle deleted items
-    for (final item in result.items) {
-      if (!listContains(currentRoster, (RosterItem i) => i.jid == item.jid)) {
-        if (await isInRoster(item.jid)) continue;
-        newItems.add(await db.addRosterItemFromData(
-            "",
-            item.jid,
-            item.jid.split("@")[0],
-            item.subscription
-        ));
-      }
-    }
-
-    sendEvent(
-      RosterDiffEvent(
-        added: newItems,
-        modified: modifiedItems,
-        removed: removedItems
-      )
-    );
+    final currentRoster = await GetIt.I.get<DatabaseService>().getRoster();
+    sendEvent(await rosterDiff(currentRoster, result.items, false));
   }
 
   /// Handles a roster push.
   Future<void> handleRosterPushEvent(RosterPushEvent event) async {
     final item = event.item;
+    final currentRoster = await GetIt.I.get<DatabaseService>().getRoster();
+    sendEvent(await rosterDiff(currentRoster, [ item ], true));
+  }
 
+  Future<void> acceptSubscriptionRequest(String jid) async {
+    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(jid);
+  }
 
-    final db = GetIt.I.get<DatabaseService>();
-    final rosterItem = await db.getRosterItemByJid(item.jid);
-    final RosterItem modelRosterItem;
+  Future<void> rejectSubscriptionRequest(String jid) async {
+    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestRejection(jid);
+  }
 
-    if (item.subscription == "remove") {
-      // NOTE: It could be that we triggered this roster push and thus have it already
-      //       removed.
-      await removeFromRosterDatabase(item.jid, nullOkay: true);
-
-      sendEvent(
-        RosterDiffEvent(
-          removed: [ item.jid ]
-        )
-      );
-
-      return;
-    }
-
-    // Handle all other cases the same
-    if (rosterItem != null) {
-      modelRosterItem = await db.updateRosterItem(
-        id: rosterItem.id,
-        title: item.name,
-        groups: item.groups
-      );
-
-      sendEvent(
-        RosterDiffEvent(
-          modified: [ modelRosterItem ]
-        )
-      );
-    } else {
-      if (await isInRoster(item.jid)) {
-        _log.info("Received roster push for ${item.jid} but this JID is already in the roster database. Ignoring...");
-        return;
-      }
-
-      modelRosterItem = await db.addRosterItemFromData(
-        "",
-        item.jid,
-        item.jid.split("@")[0],
-        item.subscription,
-        groups: item.groups
-      );
-
-      sendEvent(
-        RosterDiffEvent(
-          added: [ modelRosterItem ]
-        )
-      );
-    }
+  void sendSubscriptionRequest(String jid) {
+    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequest(jid);
+  }
+  
+  void sendUnsubscriptionRequest(String jid) {
+    GetIt.I.get<XmppConnection>().getPresenceManager().sendUnsubscriptionRequest(jid);
   }
 }
