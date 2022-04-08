@@ -101,7 +101,8 @@ class PresenceManager extends XmppManagerBase {
       Stanza.presence(
         type: "subscribe",
         to: to
-      )
+      ),
+      addFrom: StanzaFromType.none
     );
   }
 
@@ -111,7 +112,8 @@ class PresenceManager extends XmppManagerBase {
       Stanza.presence(
         type: "unsubscribe",
         to: to
-      )
+      ),
+      addFrom: StanzaFromType.none
     );
   }
 
