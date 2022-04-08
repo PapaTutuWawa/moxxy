@@ -3,6 +3,7 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
@@ -114,13 +115,25 @@ class PresenceManager extends XmppManagerBase {
     );
   }
 
-  /// Accept a presence subscription request for [to]
+  /// Accept a presence subscription request for [to].
   void sendSubscriptionRequestApproval(String to) {
     getAttributes().sendStanza(
       Stanza.presence(
         type: "subscribed",
         to: to
-      )
+      ),
+      addFrom: StanzaFromType.none
+    );
+  }
+
+  /// Reject a presence subscription request for [to].
+  void sendSubscriptionRequestRejection(String to) {
+    getAttributes().sendStanza(
+      Stanza.presence(
+        type: "unsubscribed",
+        to: to
+      ),
+      addFrom: StanzaFromType.none
     );
   }
 }

@@ -36,6 +36,15 @@ enum XmppConnectionState {
   error
 }
 
+enum StanzaFromType {
+  // Add the full JID to the stanza as the from attribute
+  full,
+  // Add the bare JID to the stanza as the from attribute
+  bare,
+  // Add no JID as the from attribute
+  none
+}
+
 class StreamHeaderNonza extends XMLNode {
   StreamHeaderNonza(String serverDomain) : super(
       tag: "stream:stream",
@@ -313,13 +322,22 @@ class XmppConnection {
   /// [stanza] has none.
   /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
   /// none.
-  Future<XMLNode> sendStanza(Stanza stanza, { bool addFrom = true, bool addId = true, bool awaitable = true, bool retransmitted = false }) async {
+  Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true, bool retransmitted = false }) async {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
       stanza = stanza.copyWith(id: generateId());
     }
-    if (addFrom && (stanza.from == null || stanza.from == "")) {
-      stanza = stanza.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());
+    if (addFrom != StanzaFromType.none && (stanza.from == null || stanza.from == "")) {
+      switch (addFrom) {
+      case StanzaFromType.full: {
+        stanza = stanza.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());
+      }
+      break;
+      case StanzaFromType.bare: {
+        stanza = stanza.copyWith(from: _connectionSettings.jid.toBare().toString());
+      }
+      break;
+      }
     }
 
     final stanzaString = stanza.toXml();
@@ -380,7 +398,7 @@ class XmppConnection {
           )
         ]
       ),
-      addFrom: false
+      addFrom: StanzaFromType.none
     );
   }
 
@@ -449,8 +467,8 @@ class XmppConnection {
   Future<bool> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
     StanzaHandlerData state = initial ?? StanzaHandlerData(false, stanza);
     for (final handler in handlers) {
-      if (handler.matches(stanza)) {
-        state = await handler.callback(stanza, state);
+      if (handler.matches(state.stanza)) {
+        state = await handler.callback(state.stanza, state);
         if (state.done) return true;
       }
     }
@@ -509,8 +527,6 @@ class XmppConnection {
 
   /// Called whenever we receive data that has been parsed as XML.
   void handleXmlStream(XMLNode node) async {
-    _log.finest("<== " + node.toXml());
-
     if (node.tag == "stream:stream" && node.children.isEmpty) {
       _handleError(null);
       return;

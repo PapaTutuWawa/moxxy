@@ -4,12 +4,13 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 
 class XmppManagerAttributes {
   /// Send a stanza whose response can be awaited.
-  final Future<XMLNode> Function(Stanza stanza, { bool addFrom, bool addId, bool retransmitted }) sendStanza;
+  final Future<XMLNode> Function(Stanza stanza, { StanzaFromType addFrom, bool addId, bool retransmitted }) sendStanza;
 
   /// Send a nonza.
   final void Function(XMLNode) sendNonza;
