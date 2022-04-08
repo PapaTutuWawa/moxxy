@@ -329,14 +329,15 @@ class XmppConnection {
     }
     if (addFrom != StanzaFromType.none && (stanza.from == null || stanza.from == "")) {
       switch (addFrom) {
-      case StanzaFromType.full: {
-        stanza = stanza.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());
-      }
-      break;
-      case StanzaFromType.bare: {
-        stanza = stanza.copyWith(from: _connectionSettings.jid.toBare().toString());
-      }
-      break;
+        case StanzaFromType.full: {
+          stanza = stanza.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());
+        }
+        break;
+        case StanzaFromType.bare: {
+          stanza = stanza.copyWith(from: _connectionSettings.jid.toBare().toString());
+        }
+        break;
+        case StanzaFromType.none: break;
       }
     }
 
