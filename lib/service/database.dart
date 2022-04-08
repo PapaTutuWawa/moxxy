@@ -25,7 +25,7 @@ SharedMedium sharedMediumDbToModel(DBSharedMedium s) {
   );
 }
 
-Conversation conversationDbToModel(DBConversation c, bool inRoster, String? subscription) {
+Conversation conversationDbToModel(DBConversation c, bool inRoster, String subscription) {
   final media = c.sharedMedia.map(sharedMediumDbToModel).toList();
   media.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
@@ -50,6 +50,7 @@ RosterItem rosterDbToModel(DBRosterItem i) {
     avatarUrl: i.avatarUrl,
     jid: i.jid,
     subscription: i.subscription,
+    ask: i.ask,
     groups: i.groups,
     title: i.title
   );
@@ -117,7 +118,7 @@ class DatabaseService {
       final conv = conversationDbToModel(
         c,
         rosterItem != null,
-        rosterItem?.subscription
+        rosterItem?.subscription ?? "none"
       );
       tmp.add(conv);
        _conversationCache[conv.id] = conv;
@@ -181,7 +182,7 @@ class DatabaseService {
     });
 
     final rosterItem = await getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription);
+    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none");
     _conversationCache[c.id!] = conversation;
     return conversation;
   }
@@ -205,7 +206,7 @@ class DatabaseService {
     }); 
 
     final rosterItem = await getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription); 
+    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none"); 
     _conversationCache[c.id!] = conversation;
 
     return conversation;
@@ -361,12 +362,13 @@ class DatabaseService {
   }
 
   /// Create a roster item from data
-  Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title, String subscription, { List<String>? groups }) async {
+  Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title, String subscription, String ask, { List<String>? groups }) async {
     final rosterItem = DBRosterItem()
       ..jid = jid
       ..title = title
       ..avatarUrl = avatarUrl
       ..subscription = subscription
+      ..ask = ask
       ..groups = groups ?? const [];
 
     await isar.writeTxn((isar) async {
@@ -380,7 +382,7 @@ class DatabaseService {
   }
 
   /// Updates the roster item with id [id] inside the database.
-  Future<RosterItem> updateRosterItem({ required int id, String? avatarUrl, String? title, String? subscription, List<String>? groups }) async {
+  Future<RosterItem> updateRosterItem({ required int id, String? avatarUrl, String? title, String? subscription, String? ask, List<String>? groups }) async {
     final i = (await isar.dBRosterItems.get(id))!;
     if (avatarUrl != null) {
       i.avatarUrl = avatarUrl;
@@ -393,6 +395,9 @@ class DatabaseService {
     }
     if (subscription != null) {
       i.subscription = subscription;
+    }
+    if (ask != null) {
+      i.ask = ask;
     }
 
     await isar.writeTxn((isar) async {

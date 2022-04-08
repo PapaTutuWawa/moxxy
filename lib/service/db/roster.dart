@@ -16,4 +16,6 @@ class DBRosterItem {
   late List<String> groups;
 
   late String subscription;
+
+  late String ask;
 }

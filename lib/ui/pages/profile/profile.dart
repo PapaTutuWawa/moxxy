@@ -50,14 +50,13 @@ class ProfilePage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 32.0).add(EdgeInsets.only(top: 8.0)),
                     child: SettingsTile.switchTile(
                       title: "Share online status",
-                      // TODO: This
-                      // TODO: Requires that we also store the subscription state in the
-                      //       database.
                       switchValue: state.conversation!.subscription == "to" || state.conversation!.subscription == "both",
                       onToggle: (value) {
-                        GetIt.I.get<BackgroundServiceDataSender>().sendData(
-                          SetShareOnlineStatusCommand(jid: state.conversation!.jid, share: value),
-                          awaitable: false
+                        context.read<ProfileBloc>().add(
+                          SetSubscriptionStateEvent(
+                            state.conversation!.jid,
+                            value
+                          )
                         );
                       }
                     )

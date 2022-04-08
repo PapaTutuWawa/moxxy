@@ -23,7 +23,7 @@ class Conversation with _$Conversation {
     // Indicates, if [jid] is a regular user, if the user is in the roster.
     bool inRoster,
     // The subscription state of the roster item
-    String? subscription
+    String subscription
   ) = _Conversation;
 
   // JSON

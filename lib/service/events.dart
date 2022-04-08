@@ -270,11 +270,24 @@ Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async
 }
 
 Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { dynamic extra }) async {
-  final xmpp = GetIt.I.get<XmppConnection>();
+  final roster = GetIt.I.get<RosterService>();
+  final db = GetIt.I.get<DatabaseService>();
+  final item = await db.getRosterItemByJid(command.jid);
+
+  // TODO: Maybe log
+  if (item == null) return;
 
   if (command.share) {
-    xmpp.getPresenceManager().sendSubscriptionRequestApproval(command.jid);
+    if (item.ask == "subscribe") {
+      roster.acceptSubscriptionRequest(command.jid);
+    } else {
+      roster.sendSubscriptionRequest(command.jid);
+    }
   } else {
-    xmpp.getPresenceManager().sendUnsubscriptionRequest(command.jid);
+    if (item.ask == "subscribe") {
+      roster.rejectSubscriptionRequest(command.jid);
+    } else {
+      roster.sendUnsubscriptionRequest(command.jid);
+    }
   }
 }

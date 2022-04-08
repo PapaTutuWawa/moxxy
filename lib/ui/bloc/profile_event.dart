@@ -35,3 +35,11 @@ class AvatarSetEvent extends ProfileEvent {
 
   AvatarSetEvent(this.path, this.hash);
 }
+
+/// Triggered by the UI when the subscription state should be set
+class SetSubscriptionStateEvent extends ProfileEvent {
+  final String jid;
+  final bool shareStatus;
+
+  SetSubscriptionStateEvent(this.jid, this.shareStatus);
+}

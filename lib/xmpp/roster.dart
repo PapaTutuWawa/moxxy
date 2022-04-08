@@ -12,9 +12,10 @@ class XmppRosterItem {
   final String jid;
   final String? name;
   final String subscription;
+  final String? ask;
   final List<String> groups;
 
-  XmppRosterItem({ required this.jid, required this.subscription, this.name, this.groups = const [] });
+  XmppRosterItem({ required this.jid, required this.subscription, this.ask, this.name, this.groups = const [] });
 }
 
 enum RosterRemovalResult {
@@ -100,6 +101,7 @@ class RosterManager extends XmppManagerBase {
         item: XmppRosterItem(
           jid: item.attributes["jid"]!,
           subscription: item.attributes["subscription"]!,
+          ask: item.attributes["ask"],
           name: item.attributes["name"], 
         ),
         ver: query.attributes["ver"]
@@ -145,6 +147,7 @@ class RosterManager extends XmppManagerBase {
           name: item.attributes["name"],
           jid: item.attributes["jid"]!,
           subscription: item.attributes["subscription"]!,
+          ask: item.attributes["ask"],
           groups: item.findTags("group").map((groupNode) => groupNode.innerText()).toList()
       )).toList();
 

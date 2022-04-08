@@ -18,6 +18,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ProfilePageRequestedEvent>(_onProfileRequested);
     on<ConversationUpdatedEvent>(_onConversationUpdated);
     on<AvatarSetEvent>(_onAvatarSet);
+    on<SetSubscriptionStateEvent>(_onSetSubscriptionState);
   }
 
   Future<void> _onProfileRequested(ProfilePageRequestedEvent event, Emitter<ProfileState> emit) async {
@@ -68,6 +69,15 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         path: event.path,
         hash: event.hash
       ),
+      awaitable: false
+    );
+  }
+
+  Future<void> _onSetSubscriptionState(SetSubscriptionStateEvent event, Emitter<ProfileState> emit) async {
+    // TODO: Maybe already emit the state change to have it instant and debounce it until
+    //       everything else is done
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
       awaitable: false
     );
   }

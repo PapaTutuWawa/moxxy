@@ -61,6 +61,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
           item.jid,
           item.name ?? item.jid.split("@")[0],
           item.subscription,
+          item.ask ?? "",
           groups: item.groups
         );
 
@@ -102,6 +103,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
             item.jid,
             item.jid.split("@")[0],
             item.subscription,
+            item.ask ?? "",
             groups: item.groups
         ));
       }
@@ -134,8 +136,13 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(String avatarUrl, String jid, String title) async {
-    // TODO: Correct?
-    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title, "to");
+    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(
+      avatarUrl,
+      jid,
+      title,
+      "none",
+      ""
+    );
     final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
     if (!result) {
       // TODO: Signal error?
