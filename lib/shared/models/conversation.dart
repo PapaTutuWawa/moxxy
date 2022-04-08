@@ -21,7 +21,9 @@ class Conversation with _$Conversation {
     // Indicates if the conversation should be shown on the homescreen
     bool open,
     // Indicates, if [jid] is a regular user, if the user is in the roster.
-    bool inRoster
+    bool inRoster,
+    // The subscription state of the roster item
+    String? subscription
   ) = _Conversation;
 
   // JSON

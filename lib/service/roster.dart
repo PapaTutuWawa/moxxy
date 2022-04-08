@@ -31,7 +31,8 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(String avatarUrl, String jid, String title) async {
-    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title);
+    // TODO: Correct?
+    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(avatarUrl, jid, title, "to");
     final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
     if (!result) {
       // TODO: Signal error?
@@ -84,22 +85,26 @@ class RosterService {
     final db = GetIt.I.get<DatabaseService>();
     final currentRoster = await db.getRoster();
 
-    // Handle modified and new items
-    // TODO: I messed the types up
+    // TODO: This entire code is still a mess
     for (final item in currentRoster) {
-      if (listContains(result.items, (XmppRosterItem i) => i.jid == item.jid)) {
-        // TODO: Diff and update if needed
-        modifiedItems.add(item);
+      final ritem = firstWhereOrNull(result.items, (XmppRosterItem i) => i.jid == item.jid);
+
+      if (ritem != null) {
+        // The JID is in the current roster and the requested one
+        if (ritem.name != item.title || ritem.subscription != item.subscription || ritem.groups != item.groups) {
+          final modifiedItem = await db.updateRosterItem(
+            id: item.id,
+            title: ritem.name,
+            subscription: ritem.subscription,
+            groups: ritem.groups
+          );
+          modifiedItems.add(modifiedItem);
+        }
       } else {
+        // The JID is in the current roster but not in the requested one
+        // => Roster Item has been removed
         await db.removeRosterItemByJid(item.jid);
         removedItems.add(item.jid);
-
-        if (await isInRoster(item.jid)) continue;
-        newItems.add(await db.addRosterItemFromData(
-            "",
-            item.jid,
-            item.jid.split("@")[0]
-        ));
       }
     }
 
@@ -110,7 +115,8 @@ class RosterService {
         newItems.add(await db.addRosterItemFromData(
             "",
             item.jid,
-            item.jid.split("@")[0]
+            item.jid.split("@")[0],
+            item.subscription
         ));
       }
     }
@@ -170,6 +176,7 @@ class RosterService {
         "",
         item.jid,
         item.jid.split("@")[0],
+        item.subscription,
         groups: item.groups
       );
 

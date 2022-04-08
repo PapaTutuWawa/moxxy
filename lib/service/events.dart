@@ -268,3 +268,13 @@ Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async
   ));
   GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
+
+Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { dynamic extra }) async {
+  final xmpp = GetIt.I.get<XmppConnection>();
+
+  if (command.share) {
+    xmpp.getPresenceManager().sendSubscriptionRequestApproval(command.jid);
+  } else {
+    xmpp.getPresenceManager().sendUnsubscriptionRequest(command.jid);
+  }
+}

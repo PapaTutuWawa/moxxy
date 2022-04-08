@@ -276,6 +276,14 @@ files:
         attributes:
           path: String
           hash: String
+      - name: SetShareOnlineStatusCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          share: bool
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
