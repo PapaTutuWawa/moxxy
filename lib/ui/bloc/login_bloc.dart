@@ -57,6 +57,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(
       state.copyWith(
         working: true,
+        passwordVisible: false,
         jidState: const LoginFormState(true),
         passwordState: const LoginFormState(true)
       )
