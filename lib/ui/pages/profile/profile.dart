@@ -10,8 +10,6 @@ import "package:moxxyv2/shared/models/conversation.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:flutter_settings_ui/flutter_settings_ui.dart";
-import "package:get_it/get_it.dart";
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({ Key? key }) : super(key: key);
@@ -44,22 +42,6 @@ class ProfilePage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: _buildHeader(context, state)
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0).add(EdgeInsets.only(top: 8.0)),
-                    child: SettingsTile.switchTile(
-                      title: "Share online status",
-                      switchValue: state.conversation!.subscription == "to" || state.conversation!.subscription == "both",
-                      onToggle: (value) {
-                        context.read<ProfileBloc>().add(
-                          SetSubscriptionStateEvent(
-                            state.conversation!.jid,
-                            value
-                          )
-                        );
-                      }
-                    )
                   ),
 
                   // TODO: Maybe don't show this conditionally but always

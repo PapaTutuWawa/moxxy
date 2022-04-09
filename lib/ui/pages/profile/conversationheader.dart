@@ -1,7 +1,10 @@
 import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 
 import "package:flutter/material.dart";
+import "package:flutter_settings_ui/flutter_settings_ui.dart";
+import "package:get_it/get_it.dart";
 
 class ConversationProfileHeader extends StatelessWidget {
   final Conversation conversation;
@@ -33,6 +36,22 @@ class ConversationProfileHeader extends StatelessWidget {
             style: const TextStyle(
               fontSize: 15
             )
+          )
+        ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0).add(EdgeInsets.only(top: 8.0)),
+          child: SettingsTile.switchTile(
+            title: "Share online status",
+            switchValue: conversation.subscription == "to" || conversation.subscription == "both",
+            onToggle: (value) {
+              GetIt.I.get<ProfileBloc>().add(
+                SetSubscriptionStateEvent(
+                  conversation.jid,
+                  value
+                )
+              );
+            }
           )
         )
       ]
