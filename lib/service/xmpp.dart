@@ -464,9 +464,14 @@ class XmppService {
 
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
     // TODO: Clean this huge mess up
+    // Get the correct attributes in case we are dealing with a message carbon
+    final state = await getXmppState();
+    final fromRaw = event.fromJid.toBare().toString();
+    final sent = event.isCarbon ? fromRaw == state.jid : false;
+    final fromBare = event.isCarbon && sent ? event.toJid.toBare().toString() : fromRaw;
+
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final db = GetIt.I.get<DatabaseService>();
-    final fromBare = event.fromJid.toBare().toString();
     final isChatOpen = _currentlyOpenedChatJid == fromBare;
     final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
     final srcUrl = _getMessageSrcUrl(event);
@@ -499,7 +504,6 @@ class XmppService {
       }
     }
 
-
     final ext = srcUrl != null ? filenameFromUrl(srcUrl) : null;
     String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
     Message msg = await db.addMessageFromData(
@@ -507,7 +511,7 @@ class XmppService {
       timestamp,
       event.fromJid.toString(),
       fromBare,
-      false,
+      sent,
       isMedia,
       event.sid,
       srcUrl: srcUrl,
@@ -544,12 +548,13 @@ class XmppService {
         id: conversation.id,
         lastMessageBody: body,
         lastChangeTimestamp: timestamp,
-        unreadCounter: isChatOpen ? conversation.unreadCounter : conversation.unreadCounter + 1
+        unreadCounter: isChatOpen || sent ? conversation.unreadCounter : conversation.unreadCounter + 1,
+        open: true
       );
 
       sendEvent(ConversationUpdatedEvent(conversation: newConversation));
 
-      if (!isChatOpen && shouldNotify) {
+      if (!isChatOpen && shouldNotify && !sent) {
         await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare, body: body);
       }
     } else {
@@ -558,7 +563,7 @@ class XmppService {
         body,
         "", // TODO: avatarUrl
         fromBare, // TODO: jid
-        1,
+        sent ? 0 : 1,
         timestamp,
         [],
         true
@@ -570,7 +575,7 @@ class XmppService {
         )
       );
 
-      if (!isChatOpen && shouldNotify) {
+      if (!isChatOpen && shouldNotify && !sent) {
         await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare, body: body);
       }
     }

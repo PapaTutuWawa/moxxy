@@ -51,14 +51,15 @@ class MessageManager extends XmppManagerBase {
     )
   ];
   
-  Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
+  Future<StanzaHandlerData> _onMessage(Stanza _, StanzaHandlerData state) async {
     // First check if it's a carbon
-    final from = JID.fromString(message.attributes["from"]!);
+    final message = state.stanza;
     final body = message.firstTag("body");
-      
+    
     getAttributes().sendEvent(MessageEvent(
       body: body != null ? body.innerText() : "",
-      fromJid: from,
+      fromJid: JID.fromString(message.attributes["from"]!),
+      toJid: JID.fromString(message.attributes["to"]!),
       sid: message.attributes["id"]!,
       stanzaId: state.stableId ?? const StableStanzaId(),
       isCarbon: state.isCarbon,
