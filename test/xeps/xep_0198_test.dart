@@ -3,6 +3,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
@@ -34,7 +35,7 @@ void main() {
       Stanza lastSentStanza = Stanza(tag: "message");
 
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async {
+        sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());
           lastSentStanza = stanza;
@@ -71,7 +72,6 @@ void main() {
 
       final ack = XMLNode.xmlns(tag: "a", xmlns: "urn:xmpp:sm:3", attributes: { "h": "3" });
       await manager.runNonzaHandlers(ack);
-      manager.onTimerElapsed(null, ignoreTimestamps: true);
       expect(manager.getUnackedStanzas().isEmpty, true, reason: "All C2S stanzas have been acknoledged. The queue should be empty.");
       expect(manager.state.s2c, 2, reason: "Sending stanzas must not change the S2C counter");
 
@@ -79,10 +79,12 @@ void main() {
       runOutgoingStanzaHandlers(manager, stanza);
       expect(manager.state.c2s, 4, reason: "Sending a stanza must increment the C2S counter");
       await manager.runNonzaHandlers(ack);
-      manager.onTimerElapsed(null, ignoreTimestamps: true);
       // NOTE: In production this should be 4 since we have a Stream broadcasting an
       //       StanzaSent event. We don't here.
       expect(manager.state.c2s, 3, reason: "Retransmitting a stanza must not change the counter");
+
+      await manager.onStreamResumed(3);
+
       expect(compareXMLNodes(lastSentStanza, stanza), true, reason: "Unacknowledged C2S stanzas must be retransmitted");
   });
 
@@ -90,7 +92,7 @@ void main() {
       Stanza lastSentStanza = Stanza(tag: "message");
 
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async {
+        sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());
           lastSentStanza = stanza;
@@ -119,7 +121,8 @@ void main() {
       runOutgoingStanzaHandlers(manager, stanza);
 
       // Simulate a resumption
-      manager.onXmppEvent(StreamResumedEvent(h: 2));
+      await manager.onStreamResumed(2);
+
       expect(compareXMLNodes(lastSentStanza, stanza), true, reason: "Unacked stanzas should be retransmitted on stream resumption");
   });
 
@@ -127,7 +130,7 @@ void main() {
       // NOTE: This test is to ensure that the manager does not immediately freak out if
       //       we give it no resumption id.
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false  }) async => stanza,
+        sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async => stanza,
         sendNonza: (nonza) {},
         sendEvent: (event) {},
         sendRawXml: (raw) {},
@@ -150,9 +153,9 @@ void main() {
       expect(manager.state.s2c, 0);
   });
   
-  test("Test stream management essentials", () {
+  test("Test stream management essentials", () async {
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false  }) async => stanza,
+        sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async => stanza,
         sendNonza: (nonza) {},
         sendEvent: (event) {},
         sendRawXml: (raw) {},
@@ -171,16 +174,16 @@ void main() {
       manager.register(attributes);
       manager.onXmppEvent(StreamManagementEnabledEvent(id: "abc123", resource: "aaaa"));
 
-      manager.setState(StreamManagementState(200, 149));
+      manager.setState(StreamManagementState(140, 149));
 
       // [Connection lost, reconnecting]
       // <== <resumed h='150' ... />
       manager.onXmppEvent(ConnectingEvent());
       expect(manager.isStreamManagementEnabled(), false);
-      manager.onXmppEvent(StreamResumedEvent(h: 150));
-      expect(manager.isStreamManagementEnabled(), true);
 
-      expect(manager.state.c2s, 200);
-      expect(manager.state.s2c, 150);
+      await manager.onStreamResumed(150);
+
+      expect(manager.state.c2s, 150);
+      expect(manager.state.s2c, 149);
   });
 }

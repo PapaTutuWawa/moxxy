@@ -3,6 +3,7 @@ import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
@@ -27,18 +28,40 @@ class CarbonsManager extends XmppManagerBase {
       stanzaTag: "message",
       tagName: "received",
       tagXmlns: carbonsXmlns,
-      callback: _onMessage,
+      callback: _onMessageReceived,
+      // Before all managers the message manager depends on
+      priority: -98
+    ),
+    StanzaHandler(
+      stanzaTag: "message",
+      tagName: "sent",
+      tagXmlns: carbonsXmlns,
+      callback: _onMessageSent,
       // Before all managers the message manager depends on
       priority: -98
     )
   ];
 
-  Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
+  Future<StanzaHandlerData> _onMessageReceived(Stanza message, StanzaHandlerData state) async {
     final from = JID.fromString(message.attributes["from"]!);
     final received = message.firstTag("received", xmlns: carbonsXmlns)!;
     if (!isCarbonValid(from)) return state.copyWith(done: true);
 
     final forwarded = received.firstTag("forwarded", xmlns: forwardedXmlns)!;
+    final carbon = unpackForwarded(forwarded);
+
+    return state.copyWith(
+      isCarbon: true,
+      stanza: carbon
+    );
+  }
+
+  Future<StanzaHandlerData> _onMessageSent(Stanza message, StanzaHandlerData state) async {
+    final from = JID.fromString(message.attributes["from"]!);
+    final sent = message.firstTag("sent", xmlns: carbonsXmlns)!;
+    if (!isCarbonValid(from)) return state.copyWith(done: true);
+
+    final forwarded = sent.firstTag("forwarded", xmlns: forwardedXmlns)!;
     final carbon = unpackForwarded(forwarded);
 
     return state.copyWith(
@@ -58,7 +81,7 @@ class CarbonsManager extends XmppManagerBase {
           )
         ]
       ),
-      addFrom: true,
+      addFrom: StanzaFromType.full,
       addId: true
     );
 
@@ -85,7 +108,7 @@ class CarbonsManager extends XmppManagerBase {
           )
         ]
       ),
-      addFrom: true,
+      addFrom: StanzaFromType.full,
       addId: true
     );
 

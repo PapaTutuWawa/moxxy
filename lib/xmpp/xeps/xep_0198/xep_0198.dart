@@ -1,5 +1,3 @@
-import "dart:async";
-
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -11,96 +9,41 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
 
+import "package:meta/meta.dart";
+
 const xmlUintMax = 4294967296; // 2**32
 
-class _UnackedStanza {
-  final Stanza stanza;
-  final int timestamp;
-
-  const _UnackedStanza(this.stanza, this.timestamp);
-}
-
 class StreamManagementManager extends XmppManagerBase {
+  /// The queue of stanzas that are not (yet) acked
+  final Map<int, Stanza> _unackedStanzas;
   /// Commitable state of the StreamManagementManager
   StreamManagementState _state;
-  
-  final Map<int, _UnackedStanza> _unackedStanzas;
+  /// If the have enabled SM on the stream yet
   bool _streamManagementEnabled;
-  Timer? _ackTimer;
-  final Duration ackDuration;
-  final bool enableTimer;
 
-  /// Creates an XmppManager that implements XEP-0198.
-  /// [ackDuration] is the time which is given the server to ack every stanza. If
-  /// a stanza is older than [ackDuration], it will be resent.
-  /// [enableTimer] is an option that is only used for testing. It will disable the
-  /// timer.
-  StreamManagementManager({
-      this.ackDuration = const Duration(seconds: 10),
-      this.enableTimer = true
-  }) :
-  _state = StreamManagementState(0, 0),
+  StreamManagementManager()
+  : _state = StreamManagementState(0, 0),
     _unackedStanzas = {},
     _streamManagementEnabled = false;
-    
+  
   /// Functions for testing
-  Map<int, _UnackedStanza> getUnackedStanzas() => _unackedStanzas;
-
-  /// Called whenever the timer elapses. If [timer] is null, then the function
-  /// will log that is has been called outside of the timer.
-  /// [ignoreTimestamp] will ignore the timestamps and mercylessly retransmit every
-  /// stanza in the queue. Usefull for testing and stream resumption.
-  void onTimerElapsed(Timer? timer, { bool ignoreTimestamps = false }) {
-    if (timer != null) {
-      logger.finest("SM Timer elapsed");
-    } else {
-      logger.finest("onTimerElapsed called outside of the timer");
-    }
-
-    final currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-    final attrs = getAttributes();
-    bool hasRetransmittedStanza = false;
-    for (final i in _unackedStanzas.keys.toList()) {
-      final item = _unackedStanzas[i]!;
-      if (ignoreTimestamps || currentTimestamp - item.timestamp > ackDuration.inMilliseconds) {
-        logger.finest("Retransmitting stanza");
-        attrs.sendStanza(item.stanza, retransmitted: true);
-        _unackedStanzas[i] = _UnackedStanza(
-          item.stanza,
-          currentTimestamp
-        );
-        hasRetransmittedStanza = true;
-      }
-    }
-
-    if (hasRetransmittedStanza) {
-      _sendAckRequestPing();
-    }
-  }
-
-  void _stopTimer() {
-    if (_ackTimer != null) {
-      logger.finest("Stopping SM timer");
-      _ackTimer!.cancel();
-      _ackTimer = null;
-    }
-  }
-
-  void _startTimer() {
-    if (_ackTimer == null && enableTimer) {
-      logger.finest("Starting SM timer");
-      _ackTimer = Timer.periodic(ackDuration, onTimerElapsed);
-    }
-  }
+  @visibleForTesting
+  Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
   
   /// May be overwritten by a subclass. Should save [state] so that it can be loaded again
   /// with [this.loadState].
+  @visibleForOverriding
   Future<void> commitState() async {}
+
+  @visibleForOverriding
   Future<void> loadState() async {}
 
+  @internal
   void setState(StreamManagementState state) {
     _state = state;
   }
+
+  @visibleForTesting
   StreamManagementState get state => _state;
   
   @override
@@ -147,7 +90,7 @@ class StreamManagementManager extends XmppManagerBase {
       }
     } else if (event is StreamResumedEvent) {
       _enableStreamManagement();
-      _onStreamResumed(event.h);
+      onStreamResumed(event.h);
     } else if (event is StreamManagementEnabledEvent) {
       _enableStreamManagement();
 
@@ -191,37 +134,46 @@ class StreamManagementManager extends XmppManagerBase {
   /// This is a response to the question "How many of my stanzas have you handled".
   Future<bool> _handleAckResponse(XMLNode nonza) async {
     final h = int.parse(nonza.attributes["h"]!);
-    
-    _removeHandledStanzas(h);
-    _state = _state.copyWith(c2s: h);
-    await commitState();
 
-    if (_unackedStanzas.isEmpty) {
-      _stopTimer();
+    // Return early if we acked nothing.
+    // Taken from slixmpp's stream management code
+    if (h == _state.c2s && _unackedStanzas.isEmpty) return true;
+
+    final attrs = getAttributes();
+    final sequences = _unackedStanzas.keys.toList()..sort();
+    for (final height in sequences) {
+      // Do nothing if the ack does not concern this stanza
+      if (height > h) continue;
+
+      final stanza = _unackedStanzas[height]!;
+      _unackedStanzas.remove(height);
+      if (stanza.tag == "message" && stanza.id != null) {
+        attrs.sendEvent(
+          MessageAckedEvent(
+            id: stanza.id!,
+            to: stanza.to!
+          )
+        );
+      }
     }
 
+    if (h > _state.c2s) {
+      logger.info("C2S height jumped from ${_state.c2s} (local) to $h (remote).");
+      logger.info("Proceeding with $h as local C2S counter.");
+    }
+    
+    _state = _state.copyWith(c2s: h);
+    await commitState();
     return true;
   }
 
   // Just a helper function to not increment the counters above xmlUintMax
   void _incrementC2S() {
-    final c2s = _state.c2s;
-    if (c2s + 1 == xmlUintMax) {
-      _state = _state.copyWith(c2s: 0);
-    } else {
-      _state = _state.copyWith(c2s: c2s + 1);
-    }
-
+    _state = _state.copyWith(c2s: _state.c2s + 1 % xmlUintMax);
     commitState();
   }
   void _incrementS2C() {
-    final s2c = _state.s2c;
-    if (s2c + 1 == xmlUintMax) {
-      _state = _state.copyWith(s2c: 0);
-    } else {
-      _state = _state.copyWith(s2c: s2c + 1);
-    }
-
+    _state = _state.copyWith(s2c: _state.s2c + 1 % xmlUintMax);
     commitState();
   }
   
@@ -233,15 +185,10 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// Called whenever we send a stanza.
   Future<StanzaHandlerData> _onClientStanzaSent(Stanza stanza, StanzaHandlerData state) async {
-    _startTimer();
-
-    if (!state.retransmitted) {
-      _incrementC2S();
-      _unackedStanzas[_state.c2s] = _UnackedStanza(stanza, DateTime.now().millisecondsSinceEpoch);
-    }
-
-    logger.fine("Queue after sending: " + _unackedStanzas.toString());
-
+    _incrementC2S();
+    _unackedStanzas[_state.c2s] = stanza;
+    
+    // TODO: Do this after we sent the stanza
     if (isStreamManagementEnabled() && !state.retransmitted) {
       getAttributes().sendNonza(StreamManagementRequestNonza());
     }
@@ -249,40 +196,20 @@ class StreamManagementManager extends XmppManagerBase {
     return state;
   }
 
-  /// Removes all stanzas in the unacked queue that have a sequence number less-than or
-  /// equal to [h].
-  void _removeHandledStanzas(int h) {
-    // NOTE: Dart does not allow for a cleaner way that does both in the same iteration
-    // TODO: But what if... :flushed:
-    final attrs = getAttributes();
-    _unackedStanzas.forEach(
-      (key, value) {
-        if (key <= h && value.stanza.tag == "message" && value.stanza.id != null) {
-          attrs.sendEvent(
-            MessageAckedEvent(
-              id: value.stanza.id!,
-              to: value.stanza.to!
-            )
-          );
-        }
-      }
-    );
-    
-    _unackedStanzas.removeWhere(
-      (key, _) => key <= h
-    );
-    logger.fine("Queue after cleaning: " + _unackedStanzas.toString());
-
-
-  }
-
   /// To be called when the stream has been resumed
-  void _onStreamResumed(int h) {
-    _state = _state.copyWith(s2c: h);
-    commitState();
+  @visibleForTesting
+  Future<void> onStreamResumed(int h) async {
+    await _handleAckResponse(StreamManagementAckNonza(h));
 
-    _removeHandledStanzas(h);
-    onTimerElapsed(null, ignoreTimestamps: true);
+    final stanzas = _unackedStanzas.values.toList();
+    _unackedStanzas.clear();
+    
+    // Retransmit the rest of the queue
+    final attrs = getAttributes();
+    for (final stanza in stanzas) {
+      attrs.sendStanza(stanza, awaitable: false, retransmitted: true);
+    }
+    _sendAckRequestPing();
   }
 
   /// Pings the connection open by send an ack request
