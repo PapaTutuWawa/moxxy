@@ -1,7 +1,11 @@
+import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/events.dart" as events;
+import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:get_it/get_it.dart";
 
 part "conversations_state.dart";
 part "conversations_event.dart";
@@ -13,6 +17,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     on<ConversationsAddedEvent>(_onConversationsAdded);
     on<ConversationsUpdatedEvent>(_onConversationsUpdated);
     on<AvatarChangedEvent>(_onAvatarChanged);
+    on<ConversationClosedEvent>(_onConversationClosed);
   }
 
   Future<void> _onInit(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
@@ -51,6 +56,18 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     return emit(
       state.copyWith(
         avatarUrl: event.path
+      )
+    );
+  }
+
+  Future<void> _onConversationClosed(ConversationClosedEvent event, Emitter<ConversationsState> emit) async {
+    await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      CloseConversationCommand(jid: event.jid)
+    );
+
+    emit(
+      state.copyWith(
+        conversations: state.conversations.where((c) => c.jid != event.jid).toList()
       )
     );
   }

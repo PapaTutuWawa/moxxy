@@ -8,6 +8,7 @@ import "package:moxxyv2/ui/widgets/textfield.dart";
 import "package:moxxyv2/ui/widgets/chat/media/media.dart";
 import "package:moxxyv2/ui/widgets/chat/chatbubble.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/shared/models/message.dart";
@@ -253,8 +254,9 @@ class _ConversationPageState extends State<ConversationPage> {
                           "Are you sure you want to close this chat?",
                           context,
                           () {
-                            // TODO
-                            //viewModel.closeChat();
+                            context.read<ConversationsBloc>().add(
+                              ConversationClosedEvent(state.conversation!.jid)
+                            );
                             Navigator.of(context).pop();
                           }
                         );

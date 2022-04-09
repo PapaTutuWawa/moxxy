@@ -31,9 +31,9 @@ class ConversationsPage extends StatelessWidget {
           Conversation item = state.conversations[index];
           return Dismissible(
             key: ValueKey("conversation;" + item.toString()),
-            //onDismissed: (direction) => viewModel.closeConversation(item),
-            // TODO
-            onDismissed: (direction) {},
+            onDismissed: (direction) => context.read<ConversationsBloc>().add(
+              ConversationClosedEvent(item.jid)
+            ),
             background: Container(
               color: Colors.red,
               child: Padding(

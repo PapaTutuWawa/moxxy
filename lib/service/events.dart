@@ -7,7 +7,8 @@ import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
-import "package:moxxyv2/service/blocking.dart"; import "package:moxxyv2/service/avatars.dart";
+import "package:moxxyv2/service/blocking.dart";
+import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
@@ -84,7 +85,7 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
         avatarHash: state.avatarHash,
         permissionsToRequest: permissions,
         preferences: preferences,
-        conversations: await GetIt.I.get<DatabaseService>().loadConversations(),
+        conversations: (await GetIt.I.get<DatabaseService>().loadConversations()).where((c) => c.open).toList(),
         roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase()
       ),
       id: id
@@ -290,4 +291,23 @@ Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { 
       roster.sendUnsubscriptionRequest(command.jid);
     }
   }
+}
+
+Future<void> performCloseConversation(CloseConversationCommand command, { dynamic extra }) async {
+  final db = GetIt.I.get<DatabaseService>();
+  final conversation = await db.getConversationByJid(command.jid);
+  if (conversation == null) {
+    // TODO: Should not happen
+    return;
+  }
+
+  await db.updateConversation(
+    id: conversation.id,
+    open: false
+  );
+
+  sendEvent(
+    CloseConversationEvent(),
+    id: extra as String
+  );
 }

@@ -162,6 +162,12 @@ files:
         attributes:
           path: String
           hash: String
+      # Triggered by [CloseConversationCommand]
+      - name: CloseConversationEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -284,6 +290,13 @@ files:
         attributes:
           jid: String
           share: bool
+      - name: CloseConversationCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

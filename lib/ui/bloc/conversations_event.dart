@@ -39,3 +39,10 @@ class AvatarChangedEvent extends ConversationsEvent {
 
   AvatarChangedEvent(this.path);
 }
+
+/// Triggered by the UI when a conversation has been closed
+class ConversationClosedEvent extends ConversationsEvent {
+  final String jid;
+
+  ConversationClosedEvent(this.jid);
+}

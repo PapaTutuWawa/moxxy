@@ -238,7 +238,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SetPreferencesCommand>(performSetPreferences),
       EventTypeMatcher<RequestDownloadCommand>(performRequestDownload),
       EventTypeMatcher<SetAvatarCommand>(performSetAvatar),
-      EventTypeMatcher<SetShareOnlineStatusCommand>(performSetShareOnlineStatus)
+      EventTypeMatcher<SetShareOnlineStatusCommand>(performSetShareOnlineStatus),
+      EventTypeMatcher<CloseConversationCommand>(performCloseConversation)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
