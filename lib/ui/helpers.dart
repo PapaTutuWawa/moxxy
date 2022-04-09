@@ -111,9 +111,9 @@ Future<PickedAvatar?> pickAvatar(BuildContext context, String jid, String oldPat
     // TODO: Maybe tweak these values
     final compressedData = await FlutterImageCompress.compressWithList(
       data,
-      minHeight: 256,
-      minWidth: 256,
-      quality: 90,
+      minHeight: 200,
+      minWidth: 200,
+      quality: 60,
       format: CompressFormat.png
     );
 
