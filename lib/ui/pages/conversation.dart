@@ -47,6 +47,8 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
   );
 }
 
+/// A custom version of the Topbar NameAndAvatar style to integrate with
+/// bloc.
 class _ConversationTopbarWidget extends StatelessWidget {
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
     return prev.conversation?.title != next.conversation?.title
@@ -146,6 +148,113 @@ class _ConversationTopbarWidget extends StatelessWidget {
           ]
         );
       }
+    );
+  }
+}
+
+class _ConversationBottomRow extends StatelessWidget {
+  final TextEditingController controller;
+  final ValueNotifier<bool> isSpeedDialOpen;
+
+  _ConversationBottomRow(this.controller, this.isSpeedDialOpen);
+  
+  @override
+  Widget build(BuildContext) {
+    return BlocBuilder<ConversationBloc, ConversationState>(
+      buildWhen: (prev, next) => prev.showSendButton != next.showSendButton,
+      builder: (context, state) => Container(
+        color: Theme.of(context).backgroundColor,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: CustomTextField(
+                  maxLines: 5,
+                  minLines: 1,
+                  hintText: "Send a message...",
+                  isDense: true,
+                  onChanged: (value) {
+                    context.read<ConversationBloc>().add(
+                      MessageTextChangedEvent(value)
+                    );
+                  },
+                  contentPadding: textfieldPaddingConversation,
+                  cornerRadius: textfieldRadiusConversation,
+                  controller: controller,
+                  topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(
+                    state.quotedMessage!,
+                    resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent())
+                  ) : null
+                )
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                // NOTE: https://stackoverflow.com/a/52786741
+                //       Thank you kind sir
+                child: SizedBox(
+                  height: 45.0,
+                  width: 45.0,
+                  child: FittedBox(
+                    child: SpeedDial(
+                      icon: state.showSendButton ? Icons.send : Icons.add,
+                      visible: true,
+                      curve: Curves.bounceInOut,
+                      backgroundColor: primaryColor,
+                      // TODO: Theme dependent?
+                      foregroundColor: Colors.white,
+                      openCloseDial: isSpeedDialOpen,
+                      onPress: () {
+                        if (state.showSendButton) {
+                          context.read<ConversationBloc>().add(
+                            MessageSentEvent()
+                          );
+                          controller.text = "";
+                        } else {
+                          isSpeedDialOpen.value = true;
+                        }
+                      },
+                      children: [
+                        SpeedDialChild(
+                          child: const Icon(Icons.image),
+                          onTap: () {
+                            showNotImplementedDialog("sending files", context);
+                            //Navigator.pushNamed(context, sendFilesRoute);
+                          },
+                          backgroundColor: primaryColor,
+                          // TODO: Theme dependent?
+                          foregroundColor: Colors.white,
+                          label: "Send Image"
+                        ),
+                        SpeedDialChild(
+                          child: const Icon(Icons.photo_camera),
+                          onTap: () {
+                            showNotImplementedDialog("sending files", context);
+                          },
+                          backgroundColor: primaryColor,
+                          // TODO: Theme dependent?
+                          foregroundColor: Colors.white,
+                          label: "Take photo"
+                        ),
+                        SpeedDialChild(
+                          child: const Icon(Icons.attach_file),
+                          onTap: () {
+                            showNotImplementedDialog("sending files", context);
+                          },
+                          backgroundColor: primaryColor,
+                          // TODO: Theme dependent?
+                          foregroundColor: Colors.white,
+                          label: "Add file"
+                        )
+                      ]
+                    )
+                  )
+                )
+              )
+            ]
+          )
+        )
+      )
     );
   }
 }
@@ -312,193 +421,49 @@ class _ConversationPageState extends State<ConversationPage> {
   Widget build(BuildContext context) {
     double maxWidth = MediaQuery.of(context).size.width * 0.6;
     
-    return BlocBuilder<ConversationBloc, ConversationState>(
-      // TODO: Replace with a much better solution to the ListView being constantly
-      //       rebuilt.
-      buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.messages != next.messages || prev.conversation != next.conversation || prev.backgroundPath != next.backgroundPath,
-      builder: (context, state) {
-        return WillPopScope(
-          onWillPop: () async {
-            context.read<ConversationBloc>().add(CurrentConversationResetEvent());
-            return true;
-          },
-          child: Scaffold(
-            appBar: BorderlessTopbar(_ConversationTopbarWidget()),
-            body: Container(
-              decoration: state.backgroundPath.isNotEmpty ? BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: FileImage(File(state.backgroundPath))
-                )
-              ) : null,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ...(!state.conversation!.inRoster ? [ _renderNotInRosterWidget(state, context) ] : []),
+    return WillPopScope(
+      onWillPop: () async {
+        GetIt.I.get<ConversationBloc>().add(CurrentConversationResetEvent());
+        return true;
+      },
+      child: Scaffold(
+        appBar: BorderlessTopbar(_ConversationTopbarWidget()),
+        body: Container(
+          decoration: /*state.backgroundPath.isNotEmpty ? BoxDecoration(
+          image: DecorationImage(
+          fit: BoxFit.cover,
+          image: FileImage(File(state.backgroundPath))
+        )
+        ) :*/ null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              BlocBuilder<ConversationBloc, ConversationState>(
+                buildWhen: (prev, next) => prev.conversation?.inRoster != next.conversation?.inRoster,
+                builder: (context, state) {
+                  if (state.conversation!.inRoster) return Container();
 
-                  Expanded(
-                    child: ListView.builder(
-                      reverse: true,
-                      itemCount: state.messages.length,
-                      itemBuilder: (context, index) => _renderBubble(state, context, index, maxWidth),
-                      shrinkWrap: true
-                    )
-                  ),
+                  return _renderNotInRosterWidget(state, context);
+                }
+              ),
 
-                  // TODO: Typing indicator
-                  /*
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container( 
-                      decoration: BoxDecoration(
-                        color: bubbleColorReceived,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      width: 80,
-                      height: 45,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white
-                              )
-                            ),
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white
-                              )
-                            ),
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white
-                              )
-                            ),
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.white
-                              )
-                            )
-                          ]
-                        )
-                      )
-                    )
-                  ),
-                  */
-                  
-                  Container(
-                    color: Theme.of(context).backgroundColor,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: CustomTextField(
-                              maxLines: 5,
-                              minLines: 1,
-                              hintText: "Send a message...",
-                              isDense: true,
-                              onChanged: (value) {
-                                context.read<ConversationBloc>().add(
-                                  MessageTextChangedEvent(value)
-                                );
-                              },
-                              contentPadding: textfieldPaddingConversation,
-                              cornerRadius: textfieldRadiusConversation,
-                              controller: _controller,
-                              topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(
-                                state.quotedMessage!,
-                                resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent())
-                              ) : null
-                            )
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
-                            // NOTE: https://stackoverflow.com/a/52786741
-                            //       Thank you kind sir
-                            child: SizedBox(
-                              height: 45.0,
-                              width: 45.0,
-                              child: FittedBox(
-                                child: SpeedDial(
-                                  icon: state.showSendButton ? Icons.send : Icons.add,
-                                  visible: true,
-                                  curve: Curves.bounceInOut,
-                                  backgroundColor: primaryColor,
-                                  // TODO: Theme dependent?
-                                  foregroundColor: Colors.white,
-                                  openCloseDial: _isSpeedDialOpen,
-                                  onPress: () {
-                                    if (state.showSendButton) {
-                                      context.read<ConversationBloc>().add(
-                                        MessageSentEvent()
-                                      );
-                                      _controller.text = "";
-                                    } else {
-                                      _isSpeedDialOpen.value = true;
-                                    }
-                                  },
-                                  children: [
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.image),
-                                      onTap: () {
-                                        showNotImplementedDialog("sending files", context);
-                                        //Navigator.pushNamed(context, sendFilesRoute);
-                                      },
-                                      backgroundColor: primaryColor,
-                                      // TODO: Theme dependent?
-                                      foregroundColor: Colors.white,
-                                      label: "Send Image"
-                                    ),
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.photo_camera),
-                                      onTap: () {
-                                        showNotImplementedDialog("sending files", context);
-                                      },
-                                      backgroundColor: primaryColor,
-                                      // TODO: Theme dependent?
-                                      foregroundColor: Colors.white,
-                                      label: "Take photo"
-                                    ),
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.attach_file),
-                                      onTap: () {
-                                        showNotImplementedDialog("sending files", context);
-                                      },
-                                      backgroundColor: primaryColor,
-                                      // TODO: Theme dependent?
-                                      foregroundColor: Colors.white,
-                                      label: "Add file"
-                                    ),
-                                  ]
-                                )
-                              )
-                            )
-                          )
-                        ]
-                      )
-                    )
+              BlocBuilder<ConversationBloc, ConversationState>(
+                buildWhen: (prev, next) => prev.messages != next.messages,
+                builder: (context, state) => Expanded(
+                  child: ListView.builder(
+                    reverse: true,
+                    itemCount: state.messages.length,
+                    itemBuilder: (context, index) => _renderBubble(state, context, index, maxWidth),
+                    shrinkWrap: true
                   )
-                ]
-              )
-            )
+                )
+              ),
+
+              _ConversationBottomRow(_controller, _isSpeedDialOpen)
+            ]
           )
-        );
-      }
+        )
+      )
     );
   }
 }
