@@ -80,3 +80,11 @@ class MessageUpdatedEvent extends ConversationEvent {
 
   MessageUpdatedEvent(this.message);
 }
+
+/// Triggered when we receive a chat state
+class ChatStateReceivedEvent extends ConversationEvent {
+  final String jid;
+  final String state;
+
+  ChatStateReceivedEvent(this.jid, this.state);
+}

@@ -47,19 +47,19 @@ class ChatStateManager extends XmppManagerBase {
       }
       break;
       case "composing": {
-        chatState = ChatState.active;
+        chatState = ChatState.composing;
       }
       break;
       case "paused": {
-        chatState = ChatState.active;
+        chatState = ChatState.paused;
       }
       break;
       case "inactive": {
-        chatState = ChatState.active;
+        chatState = ChatState.inactive;
       }
       break;
       case "gone": {
-        chatState = ChatState.active;
+        chatState = ChatState.gone;
       }
       break;
       default: {

@@ -12,6 +12,7 @@ import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/message.dart";
 import "package:moxxyv2/service/db/roster.dart";
 import "package:moxxyv2/service/db/media.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
 import "package:isar/isar.dart";
 import "package:logging/logging.dart";
@@ -25,7 +26,7 @@ SharedMedium sharedMediumDbToModel(DBSharedMedium s) {
   );
 }
 
-Conversation conversationDbToModel(DBConversation c, bool inRoster, String subscription) {
+Conversation conversationDbToModel(DBConversation c, bool inRoster, String subscription, ChatState chatState) {
   final media = c.sharedMedia.map(sharedMediumDbToModel).toList();
   media.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
@@ -40,7 +41,8 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster, String subsc
     c.id!,
     c.open,
     inRoster,
-    subscription
+    subscription,
+    chatState.toString().split(".").last
   );
 }
 
@@ -118,7 +120,8 @@ class DatabaseService {
       final conv = conversationDbToModel(
         c,
         rosterItem != null,
-        rosterItem?.subscription ?? "none"
+        rosterItem?.subscription ?? "none",
+        ChatState.gone
       );
       tmp.add(conv);
        _conversationCache[conv.id] = conv;
@@ -154,7 +157,7 @@ class DatabaseService {
   }
 
   /// Updates the conversation with id [id] inside the database.
-  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl, DBSharedMedium? sharedMedium }) async {
+  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl, DBSharedMedium? sharedMedium, ChatState? chatState }) async {
     final c = (await isar.dBConversations.get(id))!;
     await c.sharedMedia.load();
     if (lastMessageBody != null) {
@@ -182,7 +185,7 @@ class DatabaseService {
     });
 
     final rosterItem = await getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none");
+    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", chatState ?? ChatState.gone);
     _conversationCache[c.id!] = conversation;
     return conversation;
   }
@@ -206,7 +209,7 @@ class DatabaseService {
     }); 
 
     final rosterItem = await getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none"); 
+    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", ChatState.gone); 
     _conversationCache[c.id!] = conversation;
 
     return conversation;

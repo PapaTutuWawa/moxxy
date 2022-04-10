@@ -30,10 +30,14 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<CurrentConversationResetEvent>(_onCurrentConversationReset);
     on<MessageAddedEvent>(_onMessageAdded);
     on<MessageUpdatedEvent>(_onMessageUpdated);
+    on<ChatStateReceivedEvent>(_onChatStateReceived);
   }
 
+  /// Returns true if [jid] is the JID of the current conversation. False otherwise.
+  bool _isCurrentJid(String jid) => jid == state.conversation?.jid;
+  
   /// Returns true if [msg] is meant for the open conversation. False otherwise.
-  bool _isMessageForConversation(Message msg) => msg.conversationJid == state.conversation?.jid;
+  bool _isMessageForConversation(Message msg) => _isCurrentJid(msg.conversationJid);
   
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
     emit(
@@ -178,5 +182,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         })),
       )
     );
+  }
+
+  Future<void> _onChatStateReceived(ChatStateReceivedEvent event, Emitter<ConversationState> emit) async {
+    if (!_isCurrentJid(event.jid) || state.conversation == null) return;
+
+    emit(state.copyWith(conversation: state.conversation!.copyWith(chatState: event.state)));
   }
 }

@@ -96,7 +96,7 @@ class ConversationsPage extends StatelessWidget {
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(
           TopbarAvatarAndName(
-            state.displayName,
+            TopbarTitleText(state.displayName),
             AvatarWrapper(
               radius: 20.0,
               avatarUrl: state.avatarUrl,

@@ -4,6 +4,7 @@ import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
 part "events.g.dart";
 

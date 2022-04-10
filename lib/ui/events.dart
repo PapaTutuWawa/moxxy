@@ -23,7 +23,8 @@ void setupEventHandler() {
       EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed),
       EventTypeMatcher<RosterDiffEvent>(onRosterPush),
       EventTypeMatcher<DownloadProgressEvent>(onDownloadProgress),
-      EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged)
+      EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged),
+      EventTypeMatcher<ChatStateReceivedEvent>(onChatStateReceived)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -114,5 +115,11 @@ Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }
   );
   GetIt.I.get<profile.ProfileBloc>().add(
     profile.AvatarSetEvent(event.path, event.hash)
+  );
+}
+
+Future<void> onChatStateReceived(ChatStateReceivedEvent event, { dynamic extra }) async {
+  GetIt.I.get<conversation.ConversationBloc>().add(
+    conversation.ChatStateReceivedEvent(event.jid, event.state)
   );
 }

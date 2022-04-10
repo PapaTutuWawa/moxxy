@@ -2,8 +2,24 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 
 import "package:flutter/material.dart";
 
+class TopbarTitleText extends StatelessWidget {
+  final String text;
+
+  const TopbarTitleText(this.text, { Key? key }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 20
+      )
+    );
+  }
+}
+
 class TopbarAvatarAndName extends StatelessWidget {
-  final String title;
+  final Widget title;
   final AvatarWrapper avatar;
   final List<Widget> extra;
   final bool showBackButton;
@@ -26,12 +42,7 @@ class TopbarAvatarAndName extends StatelessWidget {
                 avatar,
                 Padding(
                   padding: const EdgeInsets.only(left: 8.0),
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 20
-                    )
-                  )
+                  child: title
                 )
               ]
             ),

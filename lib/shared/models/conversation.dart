@@ -1,4 +1,5 @@
 import "package:moxxyv2/shared/models/media.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
 import "package:freezed_annotation/freezed_annotation.dart";
 
@@ -23,7 +24,10 @@ class Conversation with _$Conversation {
     // Indicates, if [jid] is a regular user, if the user is in the roster.
     bool inRoster,
     // The subscription state of the roster item
-    String subscription
+    String subscription,
+    // The current chat state as String, e.g. "active", "gone", ...
+    // Needed as enums are not easily serialisable
+    String chatState
   ) = _Conversation;
 
   // JSON

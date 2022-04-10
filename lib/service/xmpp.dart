@@ -470,6 +470,15 @@ class XmppService {
     final sent = event.isCarbon ? fromRaw == state.jid : false;
     final fromBare = event.isCarbon && sent ? event.toJid.toBare().toString() : fromRaw;
 
+    if (!sent && event.chatState != null) {
+      sendEvent(
+        ChatStateReceivedEvent(
+          jid: fromBare,
+          state: event.chatState!.toString().split(".").last
+        )
+      );
+    }
+    
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final db = GetIt.I.get<DatabaseService>();
     final isChatOpen = _currentlyOpenedChatJid == fromBare;
