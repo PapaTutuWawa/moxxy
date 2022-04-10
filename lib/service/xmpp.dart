@@ -270,10 +270,11 @@ class XmppService {
   }
 
   /// Returns true if we are allowed to automatically download a file
-  Future<bool> _canDownloadFile() async {
+  Future<bool> _automaticFileDownloadAllowed() async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
-    return prefs.autoDownloadWifi && _currentConnectionType == ConnectivityResult.wifi || prefs.autoDownloadMobile && _currentConnectionType == ConnectivityResult.mobile;
+    return prefs.autoDownloadWifi && _currentConnectionType == ConnectivityResult.wifi
+      || prefs.autoDownloadMobile && _currentConnectionType == ConnectivityResult.mobile;
   }
  
   void installEventHandlers() {
@@ -399,7 +400,6 @@ class XmppService {
 
     if (!prefs.showSubscriptionRequests) return;
     
-    final db = GetIt.I.get<DatabaseService>();
     final cs = GetIt.I.get<ConversationService>();
     final conversation = await cs.getConversationByJid(event.from.toBare().toString());
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -479,133 +479,191 @@ class XmppService {
       )
     );
   }
+
+  /// Return true if [event] describes a message that we want to display.
+  bool _isMessageEventMessage(MessageEvent event) {
+    return event.body.isNotEmpty || event.sfs != null || event.sims != null;
+  }
+
+  /// Extract the thumbnail data from a message, if existent.
+  String? _getThumbnailData(MessageEvent event) {
+    final thumbnails = firstNotNull([
+        event.sfs?.metadata.thumbnails,
+        event.sims?.thumbnails
+    ]) ?? [];
+    for (final i in thumbnails) {
+      if (i is BlurhashThumbnail) {
+        return i.hash;
+      }
+    }
+
+    return null;
+  }
   
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
-    // TODO: Clean this huge mess up
-    // Get the correct attributes in case we are dealing with a message carbon
-    final state = await getXmppState();
-    final fromRaw = event.fromJid.toBare().toString();
-    final sent = event.isCarbon ? fromRaw == state.jid : false;
-    final fromBare = event.isCarbon && sent ? event.toJid.toBare().toString() : fromRaw;
+    // The jid this message event is meant for
+    String conversationJid = event.isCarbon
+      ? event.toJid.toBare().toString()
+      : event.fromJid.toBare().toString();
 
-    if (!sent && event.chatState != null) {
-      await _onChatState(event.chatState!, fromBare);
-    }
-    
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final db = GetIt.I.get<DatabaseService>();
-    final cs = GetIt.I.get<ConversationService>();
-    final isChatOpen = _currentlyOpenedChatJid == fromBare;
-    final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
-    final srcUrl = _getMessageSrcUrl(event);
-    final isMedia = srcUrl != null && Uri.parse(srcUrl).scheme == "https" && implies(event.oob != null, event.body == event.oob?.url);
+    // Process the chat state update. Can also be attached to other messages
+    if (event.chatState != null) await _onChatState(event.chatState!, conversationJid);
+
+    // Stop the processing here if the event does not describe a displayable message
+    if (!_isMessageEventMessage(event)) return;
+
+    final state = await getXmppState();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    String dbBody = event.body;
-    String? replyId;
+    // Is the conversation partner in our roster
+    final isInRoster = await GetIt.I.get<RosterService>().isInRoster(conversationJid);
+    // True if the message was sent by us (via a Carbon)
+    final sent = event.isCarbon && event.fromJid.toBare().toString() == state.jid;
+    // The timestamp at which we received the message
+    final messageTimestamp = DateTime.now().millisecondsSinceEpoch;
     
-    // Respond to the message delivery request
+    // Acknowledge the message if enabled
     if (event.deliveryReceiptRequested && isInRoster && prefs.sendChatMarkers) {
       // NOTE: We do not await it to prevent us being blocked if the IQ response id delayed
       _acknowledgeMessage(event);
     }
-    
-    String? thumbnailData;
-    final thumbnails = firstNotNull([ event.sfs?.metadata.thumbnails, event.sims?.thumbnails ]) ?? [];
-    for (final i in thumbnails) {
-      if (i is BlurhashThumbnail) {
-        thumbnailData = i.hash;
-        break;
-      }
-    }
 
+    // Pre-process the message in case it is a reply to another message
+    String? replyId;
+    String messageBody = event.body;
     // TODO
     if (event.reply != null /* && check if event.reply.to is okay */) {
       replyId = event.reply!.id;
+
+      // Strip the compatibility fallback, if specified
       if (event.reply!.start != null && event.reply!.end != null) {
-        dbBody = dbBody.replaceRange(event.reply!.start!, event.reply!.end!, "");
+        messageBody = messageBody.replaceRange(event.reply!.start!, event.reply!.end!, "");
         _log.finest("Removed message reply compatibility fallback from message");
       }
     }
 
-    final ext = srcUrl != null ? filenameFromUrl(srcUrl) : null;
-    String? mimeGuess = guessMimeTypeFromExtension(ext ?? "");
-    Message msg = await db.addMessageFromData(
-      dbBody,
-      timestamp,
+    // The Url of the file embedded in the message, if there is one.
+    final embeddedFileUrl = _getMessageSrcUrl(event);
+    // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
+    // that the message body and the OOB url are the same if the OOB url is not null.
+    final isFileEmbedded = embeddedFileUrl != null
+      && Uri.parse(embeddedFileUrl).scheme == "https"
+      && implies(event.oob != null, event.body == event.oob?.url);
+    // Indicates if we should auto-download the file, if a file is specified in the message
+    final shouldDownload = (await Permission.storage.status).isGranted
+      && await _automaticFileDownloadAllowed()
+      && isInRoster;
+    // The thumbnail for the embedded file.
+    final thumbnailData = _getThumbnailData(event);
+    // Indicates if a notification should be created for the message.
+    // The way this variable works is that if we can download the file, then the
+    // notification will be created later by the [DownloadService]. If we don't want the
+    // download to happen automatically, then the notification should happen immediately.
+    bool shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
+    // A guess for the Mime type of the embedded file.
+    String? mimeGuess;
+
+    // Create the message in the database
+    final db = GetIt.I.get<DatabaseService>();
+    Message message = await db.addMessageFromData(
+      messageBody,
+      messageTimestamp,
       event.fromJid.toString(),
-      fromBare,
+      conversationJid,
       sent,
-      isMedia,
+      isFileEmbedded,
       event.sid,
-      srcUrl: srcUrl,
+      srcUrl: embeddedFileUrl,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
+      // TODO: What about SIMS?
       thumbnailDimensions: event.sfs?.metadata.dimensions,
       quoteId: replyId
     );
+    
+    // Attempt to auto-download the embedded file
+    if (isFileEmbedded && shouldDownload) {
+      final ds = GetIt.I.get<DownloadService>();
+      final metadata = await ds.peekFile(embeddedFileUrl);
 
-    final canDownload = (await Permission.storage.status).isGranted && await _canDownloadFile();
+      if (metadata.mime != null) mimeGuess = metadata.mime;
 
-    bool shouldNotify = !(isMedia && isInRoster && canDownload);
-    if (isMedia && isInRoster && canDownload) {
-      final download = GetIt.I.get<DownloadService>();
-      final metadata = await download.peekFile(srcUrl);
-
-      if (metadata.mime != null) {
-        mimeGuess = metadata.mime!;
-      }
-
-      if (prefs.maximumAutoDownloadSize == -1 || (metadata.size != null && metadata.size! <= prefs.maximumAutoDownloadSize * 1000000)) {
-        msg = msg.copyWith(isDownloading: true);
-        // NOTE: If we are here, then srcUrl must be non-null
-        download.downloadFile(srcUrl, msg.id, fromBare, mimeGuess);
+      // Auto-download only if the file is below the set limit, if the limit is not set to
+      // "always download".
+      if (prefs.maximumAutoDownloadSize == -1
+        || (metadata.size != null && metadata.size! < prefs.maximumAutoDownloadSize * 1000000)) {
+        message = message.copyWith(isDownloading: true);
+        ds.downloadFile(embeddedFileUrl, message.id, conversationJid, mimeGuess);
       } else {
+        // Make sure we create the notification
         shouldNotify = true;
       }
     }
 
-    final body = isMedia ? mimeTypeToConversationBody(mimeGuess) : event.body;
-    final conversation = await cs.getConversationByJid(fromBare);
-    if (conversation != null) { 
+    final cs = GetIt.I.get<ConversationService>();
+    final ns = GetIt.I.get<NotificationsService>();
+    // The body to be displayed in the conversations list
+    final conversationBody = isFileEmbedded ? mimeTypeToConversationBody(mimeGuess) : messageBody;
+    // Specifies if we have the conversation this message goes to opened
+    final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
+    // The conversation we're about to modify, if it exists
+    final conversation = await cs.getConversationByJid(conversationJid);
+    // Whether to send the notification
+    final sendNotification = !sent && !isConversationOpened && shouldNotify;
+    if (conversation != null) {
+      // The conversation exists, so we can just update it
       final newConversation = await cs.updateConversation(
         conversation.id,
-        lastMessageBody: body,
-        lastChangeTimestamp: timestamp,
-        unreadCounter: isChatOpen || sent ? conversation.unreadCounter : conversation.unreadCounter + 1,
-        open: true
+        lastMessageBody: conversationBody,
+        lastChangeTimestamp: messageTimestamp,
+        // Do not increment the counter for messages we sent ourselves (via Carbons)
+        // or if we have the chat currently opened
+        unreadCounter: isConversationOpened || sent
+          ? conversation.unreadCounter
+          : conversation.unreadCounter + 1,
+        open: true 
       );
 
+      // Notify the UI of the update
       sendEvent(ConversationUpdatedEvent(conversation: newConversation));
 
-      if (!isChatOpen && shouldNotify && !sent) {
-        await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conversation.title : fromBare, body: body);
+      // Create the notification if we the user does not already know about the message
+      if (sendNotification) {
+        await ns.showNotification(
+          message,
+          isInRoster ? newConversation.title : conversationJid,
+          body: conversationBody
+        );
       }
     } else {
-      final conv = await db.addConversationFromData(
-        fromBare.split("@")[0], // TODO: Check with the roster first
-        body,
-        "", // TODO: avatarUrl
-        fromBare, // TODO: jid
+      // The conversation does not exist, so we must create it
+      final newConversation = await cs.addConversationFromData(
+        conversationJid.split("@")[0], // TODO: Check with the roster and User Nickname
+        conversationBody,
+        "", // TODO: Check if we know the avatar url already, e.g. from the roster
+        conversationJid,
         sent ? 0 : 1,
-        timestamp,
+        messageTimestamp,
         [],
         true
       );
 
-      sendEvent(
-        ConversationAddedEvent(
-          conversation: conv
-        )
-      );
+      // Notify the UI
+      sendEvent(ConversationAddedEvent(conversation: newConversation));
 
-      if (!isChatOpen && shouldNotify && !sent) {
-        await GetIt.I.get<NotificationsService>().showNotification(msg, isInRoster ? conv.title : fromBare, body: body);
+      // Creat the notification
+      if (sendNotification) {
+        await ns.showNotification(
+          message,
+          isInRoster ? newConversation.title : conversationJid,
+          body: messageBody
+        );
       }
     }
 
-    sendEvent(MessageAddedEvent(message: msg));
+    // Notify the UI of the message
+    sendEvent(MessageAddedEvent(message: message));
   }
-
+  
   Future<void> _onRosterPush(RosterPushEvent event, { dynamic extra }) async {
     GetIt.I.get<RosterService>().handleRosterPushEvent(event);
     _log.fine("Roster push version: " + (event.ver ?? "(null)"));
