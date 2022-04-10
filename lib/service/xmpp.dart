@@ -92,7 +92,8 @@ class XmppService {
   final Logger _log;
   final EventHandler _eventHandler;
   final _XmppStateMigrator _migrator;
-  bool loginTriggeredFromUI = false;
+  bool _loginTriggeredFromUI;
+  bool _appOpen;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
   XmppState? _state;
@@ -104,6 +105,8 @@ class XmppService {
     _state = null,
     _currentConnectionType = ConnectivityResult.none,
     _eventHandler = EventHandler(),
+    _appOpen = true,
+    _loginTriggeredFromUI = false,
     _migrator = _XmppStateMigrator(),
     _log = Logger("XmppService") {
       _eventHandler.addMatchers([
@@ -135,6 +138,11 @@ class XmppService {
     await _migrator.commit(currentXmppStateVersion, _state!);
   }
 
+  /// Stores whether the app is open or not. Useful for notifications.
+  void setAppState(bool open) {
+    _appOpen = open;
+  }
+  
   Future<ConnectionSettings?> getConnectionSettings() async {
     final state = await getXmppState();
 
@@ -286,7 +294,7 @@ class XmppService {
   Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
     final lastResource = (await getXmppState()).resource;
 
-    loginTriggeredFromUI = triggeredFromUI;
+    _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
     GetIt.I.get<XmppConnection>().connect(lastResource: lastResource);
     installEventHandlers();
@@ -295,7 +303,7 @@ class XmppService {
   Future<XmppConnectionResult> connectAwaitable(ConnectionSettings settings, bool triggeredFromUI) async {
     final lastResource = (await getXmppState()).resource;
 
-    loginTriggeredFromUI = triggeredFromUI;
+    _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
     installEventHandlers();
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
@@ -373,7 +381,7 @@ class XmppService {
       // Either we get the cached version or we retrieve it for the first time
       GetIt.I.get<BlocklistService>().getBlocklist();
       
-      if (loginTriggeredFromUI) {
+      if (_loginTriggeredFromUI) {
         // TODO: Trigger another event so the UI can see this aswell
         await modifyXmppState((state) => state.copyWith(
             jid: connection.getConnectionSettings().jid.toString(),
@@ -610,7 +618,7 @@ class XmppService {
     // The conversation we're about to modify, if it exists
     final conversation = await cs.getConversationByJid(conversationJid);
     // Whether to send the notification
-    final sendNotification = !sent && !isConversationOpened && shouldNotify;
+    final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen);
     if (conversation != null) {
       // The conversation exists, so we can just update it
       final newConversation = await cs.updateConversation(

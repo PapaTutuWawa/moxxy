@@ -191,6 +191,9 @@ Future<void> performUnblockAll(UnblockAllCommand command, { dynamic extra }) asy
 }
 
 Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) async {
+  // Tell the [XmppService] about the app state
+  GetIt.I.get<XmppService>().setAppState(command.active);
+
   final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager)!;
   if (command.active) {
     csi.setActive();
