@@ -5,7 +5,7 @@ import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
-import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
+import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
 
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
@@ -36,8 +36,8 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
 
     // Guard against an unneccessary roundtrip
     if (listContains(conversations.state.conversations, (Conversation c) => c.jid == event.jid)) {
-      GetIt.I.get<ConversationBloc>().add(
-        RequestedConversationEvent(
+      GetIt.I.get<conversation.ConversationBloc>().add(
+        conversation.RequestedConversationEvent(
           event.jid,
           event.title,
           event.avatarUrl,
@@ -64,8 +64,8 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
       conversations.add(ConversationsAddedEvent(result.conversation));
     }
 
-    GetIt.I.get<ConversationBloc>().add(
-      RequestedConversationEvent(
+    GetIt.I.get<conversation.ConversationBloc>().add(
+      conversation.RequestedConversationEvent(
         event.jid,
         event.title,
         event.avatarUrl,

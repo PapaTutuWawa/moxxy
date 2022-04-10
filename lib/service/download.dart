@@ -4,6 +4,7 @@ import "dart:io";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/service/notifications.dart";
 
 import "package:logging/logging.dart";
@@ -117,14 +118,14 @@ class DownloadService {
     _tasks.remove(url);
     _rateLimits.remove(url);
 
-    final conv = (await GetIt.I.get<DatabaseService>().getConversationByJid(conversationJid))!;
+    final conv = (await GetIt.I.get<ConversationService>().getConversationByJid(conversationJid))!;
     final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
       downloadedPath,
       msg.timestamp,
       mime: mime
     );
-    final newConv = await GetIt.I.get<DatabaseService>().updateConversation(
-      id: conv.id,
+    final newConv = await GetIt.I.get<ConversationService>().updateConversation(
+      conv.id,
       sharedMedium: sharedMedium
     );
     sendEvent(ConversationUpdatedEvent(conversation: newConv));

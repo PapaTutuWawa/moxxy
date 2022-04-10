@@ -49,19 +49,23 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
 
 class _ConversationTopbarWidget extends StatelessWidget {
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
-    // TODO: Chat state
     return prev.conversation?.title != next.conversation?.title
       || prev.conversation?.avatarUrl != next.conversation?.avatarUrl
       || prev.conversation?.chatState != next.conversation?.chatState;
   }
 
-  Widget _buildChatState(String state) {
+  Widget _buildChatState(ChatState state) {
     switch (state) {
-      case "paused":
-      case "active": {
-        return Text("Online");
+      case ChatState.paused:
+      case ChatState.active: {
+        return Text(
+          "Online",
+          style: const TextStyle(
+            color: Colors.green
+          )
+        );
       }
-      case "composing": {
+      case ChatState.composing: {
         // TODO: Colors
         return TypingIndicatorWidget(Colors.black, Colors.white);
       }

@@ -7,6 +7,7 @@ import "package:moxxyv2/shared/avatar.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
@@ -33,8 +34,9 @@ class AvatarService {
   DiscoManager _getDiscoManager() => GetIt.I.get<XmppConnection>().getManagerById(discoManager)! as DiscoManager;
   
   Future<void> updateAvatarForJid(String jid, String hash, String base64) async {
+    final cs = GetIt.I.get<ConversationService>();
     final db = GetIt.I.get<DatabaseService>();
-    final originalConversation = await db.getConversationByJid(jid);
+    final originalConversation = await cs.getConversationByJid(jid);
     bool saved = false;
     if (originalConversation != null) {
       final avatarPath = await saveAvatarInCache(
@@ -44,8 +46,8 @@ class AvatarService {
         originalConversation.avatarUrl
       );
       saved = true;
-      final conv = await db.updateConversation(
-        id: originalConversation.id,
+      final conv = await cs.updateConversation(
+        originalConversation.id,
         avatarUrl: avatarPath
       );
 

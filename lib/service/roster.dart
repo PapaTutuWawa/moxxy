@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/events.dart";
@@ -25,6 +26,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
   final List<RosterItem> modified = List.empty(growable: true);
   final List<RosterItem> added = List.empty(growable: true);
   final db = GetIt.I.get<DatabaseService>();
+  final cs = GetIt.I.get<ConversationService>();
 
   for (final item in remoteRoster) {
     if (isRosterPush) {
@@ -46,7 +48,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
         modified.add(newItem);
 
         // Check if we have a conversation that we need to modify
-        final conv = await db.getConversationByJid(item.jid);
+        final conv = await cs.getConversationByJid(item.jid);
         if (conv != null) {
           sendEvent(
             ConversationUpdatedEvent(
@@ -87,7 +89,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
           modified.add(modifiedItem);
 
           // Check if we have a conversation that we need to modify
-          final conv = await db.getConversationByJid(litem.jid);
+          final conv = await cs.getConversationByJid(litem.jid);
           if (conv != null) {
             sendEvent(
               ConversationUpdatedEvent(

@@ -42,7 +42,7 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster, String subsc
     c.open,
     inRoster,
     subscription,
-    chatState.toString().split(".").last
+    chatState
   );
 }
 
@@ -84,10 +84,8 @@ Message messageDbToModel(DBMessage m) {
 class DatabaseService {
   final Isar isar;
 
-  final HashMap<int, Conversation> _conversationCache = HashMap();
   final HashMap<String, List<Message>> _messageCache = HashMap();
   final HashMap<String, RosterItem> _rosterCache = HashMap();
-  final List<String> loadedConversations = List.empty(growable: true);
 
   bool _rosterLoaded;
   
@@ -95,20 +93,6 @@ class DatabaseService {
   
   DatabaseService(this.isar) : _rosterLoaded = false, _log = Logger("DatabaseService");
 
-  /// Returns the database ID of the conversation with jid [jid] or null if not found.
-  Future<Conversation?> getConversationByJid(String jid) async {
-    // TODO: Check if we already tried to load once
-    if (_conversationCache.isEmpty) {
-      await loadConversations();
-    }
-
-    return firstWhereOrNull(
-      // TODO: Maybe have it accept an iterable
-      _conversationCache.values.toList(),
-      (Conversation c) => c.jid == jid
-    );
-  }
-  
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<List<Conversation>> loadConversations() async {
     final conversationsRaw = await isar.dBConversations.where().findAll();
@@ -124,7 +108,6 @@ class DatabaseService {
         ChatState.gone
       );
       tmp.add(conv);
-       _conversationCache[conv.id] = conv;
     }
 
     return tmp;
@@ -132,17 +115,12 @@ class DatabaseService {
 
   /// Loads all messages for the conversation with jid [jid].
   Future<List<Message>> getMessagesForJid(String jid) async {
-    // TODO: Maybe just check if _messageCache.contains(jid)
-    if (loadedConversations.contains(jid)) {
+    if (_messageCache.containsKey(jid)) {
       return _messageCache[jid]!;
     }
 
     final messages = await isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
-    loadedConversations.add(jid);
-
-    if (!_messageCache.containsKey(jid)) {
-      _messageCache[jid] = List.empty(growable: true);
-    }
+    _messageCache[jid] = List.empty(growable: true);
 
     final List<Message> tmp = List.empty(growable: true);
     for (final m in messages) {
@@ -157,7 +135,16 @@ class DatabaseService {
   }
 
   /// Updates the conversation with id [id] inside the database.
-  Future<Conversation> updateConversation({ required int id, String? lastMessageBody, int? lastChangeTimestamp, bool? open, int? unreadCounter, String? avatarUrl, DBSharedMedium? sharedMedium, ChatState? chatState }) async {
+  Future<Conversation> updateConversation(int id, {
+      String? lastMessageBody,
+      int? lastChangeTimestamp,
+      bool? open,
+      int? unreadCounter,
+      String? avatarUrl,
+      DBSharedMedium? sharedMedium,
+      ChatState? chatState
+    }
+  ) async {
     final c = (await isar.dBConversations.get(id))!;
     await c.sharedMedia.load();
     if (lastMessageBody != null) {
@@ -186,13 +173,21 @@ class DatabaseService {
 
     final rosterItem = await getRosterItemByJid(c.jid);
     final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", chatState ?? ChatState.gone);
-    _conversationCache[c.id!] = conversation;
     return conversation;
   }
 
   /// Creates a [Conversation] inside the database given the data. This is so that the
   /// [Conversation] object can carry its database id.
-  Future<Conversation> addConversationFromData(String title, String lastMessageBody, String avatarUrl, String jid, int unreadCounter, int lastChangeTimestamp, List<DBSharedMedium> sharedMedia, bool open) async {
+  Future<Conversation> addConversationFromData(
+    String title,
+    String lastMessageBody,
+    String avatarUrl,
+    String jid,
+    int unreadCounter,
+    int lastChangeTimestamp,
+    List<DBSharedMedium> sharedMedia,
+    bool open
+  ) async {
     final c = DBConversation()
       ..jid = jid
       ..title = title
@@ -210,8 +205,6 @@ class DatabaseService {
 
     final rosterItem = await getRosterItemByJid(c.jid);
     final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", ChatState.gone); 
-    _conversationCache[c.id!] = conversation;
-
     return conversation;
   }
 

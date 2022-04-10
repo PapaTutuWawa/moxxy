@@ -7,6 +7,7 @@ import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/download.dart";
@@ -105,13 +106,13 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
 Future<void> performAddConversation(AddConversationCommand command, { dynamic extra }) async {
   final id = extra as String;
 
-  final db = GetIt.I.get<DatabaseService>();
-  final conversation = await db.getConversationByJid(command.jid);
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(command.jid);
   if (conversation != null) {
     if (!conversation.open) {
       // Re-open the conversation
-      final updatedConversation = await db.updateConversation(
-        id: conversation.id,
+      final updatedConversation = await cs.updateConversation(
+        conversation.id,
         open: true
       );
 
@@ -130,7 +131,7 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
     );
     return;
   } else {
-    final conversation = await db.addConversationFromData(
+    final conversation = await cs.addConversationFromData(
       command.title,
       command.lastMessageBody,
       command.avatarUrl,
@@ -209,17 +210,20 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
     return;
   }
 
-  final db = GetIt.I.get<DatabaseService>();
-  final conversation = await db.getConversationByJid(jid);
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(jid);
   if (conversation != null) {
-    final c = await db.updateConversation(id: conversation.id, open: true);
+    final c = await cs.updateConversation(
+      conversation.id,
+      open: true
+    );
 
     sendEvent(
       AddContactResultEvent(conversation: c, added: false),
       id: id
     );
   } else {            
-    final c = await db.addConversationFromData(
+    final c = await cs.addConversationFromData(
       jid.split("@")[0],
       "",
       "",
@@ -294,15 +298,15 @@ Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { 
 }
 
 Future<void> performCloseConversation(CloseConversationCommand command, { dynamic extra }) async {
-  final db = GetIt.I.get<DatabaseService>();
-  final conversation = await db.getConversationByJid(command.jid);
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(command.jid);
   if (conversation == null) {
     // TODO: Should not happen
     return;
   }
 
-  await db.updateConversation(
-    id: conversation.id,
+  await cs.updateConversation(
+    conversation.id,
     open: false
   );
 

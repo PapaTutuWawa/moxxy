@@ -16,6 +16,7 @@ import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
 import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
@@ -23,6 +24,7 @@ import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
+import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
@@ -151,14 +153,14 @@ class XmppService {
   /// Marks the conversation with jid [jid] as open and resets its unread counter if it is
   /// greater than 0.
   Future<void> setCurrentlyOpenedChatJid(String jid) async {
-    final db = GetIt.I.get<DatabaseService>();
+    final cs = GetIt.I.get<ConversationService>();
 
     _currentlyOpenedChatJid = jid;
-    final conversation = await db.getConversationByJid(jid);
+    final conversation = await cs.getConversationByJid(jid);
 
     if (conversation != null && conversation.unreadCounter > 0) {
-      final newConversation = await db.updateConversation(
-        id: conversation.id,
+      final newConversation = await cs.updateConversation(
+        conversation.id,
         unreadCounter: 0
       );
 
@@ -179,6 +181,7 @@ class XmppService {
       String? commandId
   }) async {
     final db = GetIt.I.get<DatabaseService>();
+    final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final sid = conn.generateId();
@@ -215,9 +218,9 @@ class XmppService {
       )
     );
 
-    final conversation = await db.getConversationByJid(jid);
-    final newConversation = await db.updateConversation(
-      id: conversation!.id,
+    final conversation = await cs.getConversationByJid(jid);
+    final newConversation = await cs.updateConversation(
+      conversation!.id,
       lastMessageBody: body,
       lastChangeTimestamp: timestamp
     );
@@ -397,11 +400,12 @@ class XmppService {
     if (!prefs.showSubscriptionRequests) return;
     
     final db = GetIt.I.get<DatabaseService>();
-    final conversation = await db.getConversationByJid(event.from.toBare().toString());
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = await cs.getConversationByJid(event.from.toBare().toString());
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     if (conversation != null) { 
-      final newConversation = await db.updateConversation(
-        id: conversation.id,
+      final newConversation = await cs.updateConversation(
+        conversation.id,
         open: true,
         lastChangeTimestamp: timestamp
       );
@@ -410,7 +414,7 @@ class XmppService {
     } else {
       // TODO: Make it configurable if this should happen
       final bare = event.from.toBare();
-      final conv = await db.addConversationFromData(
+      final conv = await cs.addConversationFromData(
         bare.toString().split("@")[0],
         "",
         "", // TODO: avatarUrl
@@ -462,6 +466,20 @@ class XmppService {
     sendEvent(MessageUpdatedEvent(message: msg));
   }
 
+  Future<void> _onChatState(ChatState state, String jid) async {
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = await cs.getConversationByJid(jid);
+    if (conversation == null) return;
+
+    final newConversation = conversation.copyWith(chatState: state);
+    cs.setConversation(newConversation);
+    sendEvent(
+      ConversationUpdatedEvent(
+        conversation: newConversation
+      )
+    );
+  }
+  
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
     // TODO: Clean this huge mess up
     // Get the correct attributes in case we are dealing with a message carbon
@@ -471,16 +489,12 @@ class XmppService {
     final fromBare = event.isCarbon && sent ? event.toJid.toBare().toString() : fromRaw;
 
     if (!sent && event.chatState != null) {
-      sendEvent(
-        ChatStateReceivedEvent(
-          jid: fromBare,
-          state: event.chatState!.toString().split(".").last
-        )
-      );
+      await _onChatState(event.chatState!, fromBare);
     }
     
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final db = GetIt.I.get<DatabaseService>();
+    final cs = GetIt.I.get<ConversationService>();
     final isChatOpen = _currentlyOpenedChatJid == fromBare;
     final isInRoster = await GetIt.I.get<RosterService>().isInRoster(fromBare);
     final srcUrl = _getMessageSrcUrl(event);
@@ -551,10 +565,10 @@ class XmppService {
     }
 
     final body = isMedia ? mimeTypeToConversationBody(mimeGuess) : event.body;
-    final conversation = await db.getConversationByJid(fromBare);
+    final conversation = await cs.getConversationByJid(fromBare);
     if (conversation != null) { 
-      final newConversation = await db.updateConversation(
-        id: conversation.id,
+      final newConversation = await cs.updateConversation(
+        conversation.id,
         lastMessageBody: body,
         lastChangeTimestamp: timestamp,
         unreadCounter: isChatOpen || sent ? conversation.unreadCounter : conversation.unreadCounter + 1,

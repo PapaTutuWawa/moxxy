@@ -168,15 +168,6 @@ files:
           - BackgroundEvent
         implements:
           - JsonImplementation
-      # Triggered by the service if we receive a chat state
-      - name: ChatStateReceivedEvent
-        extends:
-          - BackgroundEvent
-        implements:
-          - JsonImplementation
-        attributes:
-          jid: String
-          state: String
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

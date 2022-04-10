@@ -6,6 +6,40 @@ import "package:freezed_annotation/freezed_annotation.dart";
 part "conversation.freezed.dart";
 part "conversation.g.dart";
 
+class ConversationChatStateConverter implements JsonConverter<ChatState, Map<String, dynamic>> {
+  const ConversationChatStateConverter();
+
+  @override
+  ChatState fromJson(Map<String, dynamic> json) {
+    print(json["chatState"]);
+    switch (json["chatState"]) {
+      case "active": {
+        return ChatState.active;
+      }
+      case "composing": {
+        return ChatState.composing;
+      } 
+      case "paused": {
+        return ChatState.paused;
+      }
+      case "inactive": {
+        return ChatState.inactive;
+      }
+      case "gone": {
+        return ChatState.gone;
+      }
+      default: {
+        return ChatState.gone;
+      }
+    }
+  }
+  
+  @override
+  Map<String, dynamic> toJson(ChatState state) => {
+    "chatState": state.toString().split(".").last
+  };
+}
+
 @freezed
 class Conversation with _$Conversation {
   factory Conversation(
@@ -16,7 +50,6 @@ class Conversation with _$Conversation {
     int unreadCounter,
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
     int lastChangeTimestamp,
-    // TODO: Maybe have a model for this, but this should be enough
     List<SharedMedium> sharedMedia,
     int id,
     // Indicates if the conversation should be shown on the homescreen
@@ -25,9 +58,8 @@ class Conversation with _$Conversation {
     bool inRoster,
     // The subscription state of the roster item
     String subscription,
-    // The current chat state as String, e.g. "active", "gone", ...
-    // Needed as enums are not easily serialisable
-    String chatState
+    // The current chat state
+    @ConversationChatStateConverter() ChatState chatState
   ) = _Conversation;
 
   // JSON
