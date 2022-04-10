@@ -8,6 +8,7 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
 import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
@@ -59,6 +60,7 @@ class ConversationsPage extends StatelessWidget {
                 maxTextWidth,
                 item.lastChangeTimestamp,
                 true,
+                typingIndicator: item.chatState == ChatState.composing,
                 key: ValueKey("conversationRow;" + item.jid)
               )
             ) 
@@ -89,7 +91,7 @@ class ConversationsPage extends StatelessWidget {
       )
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationsBloc, ConversationsState>(

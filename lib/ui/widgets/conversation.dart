@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
+import "package:moxxyv2/ui/widgets/chat/typing.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/constants.dart";
 
@@ -16,11 +17,22 @@ class ConversationsListRow extends StatefulWidget {
   final double maxTextWidth;
   final int lastChangeTimestamp;
   final bool update; // Should a timer run to update the timestamp
+  final bool typingIndicator;
   
-  const ConversationsListRow(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp, this.update, { Key? key }) : super(key: key);
+  const ConversationsListRow(
+    this.avatarUrl,
+    this.name,
+    this.lastMessageBody,
+    this.unreadCount,
+    this.maxTextWidth,
+    this.lastChangeTimestamp,
+    this.update, {
+      this.typingIndicator = false,
+      Key? key
+    }
+  ) : super(key: key);
 
   @override
-  // ignore: no_logic_in_create_state
   _ConversationsListRowState createState() => _ConversationsListRowState(
     avatarUrl,
     name,
@@ -28,7 +40,8 @@ class ConversationsListRow extends StatefulWidget {
     unreadCount,
     maxTextWidth,
     lastChangeTimestamp,
-    update
+    update,
+    typingIndicator: typingIndicator
   );
 }
 
@@ -39,11 +52,23 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
   final int unreadCount;
   final double maxTextWidth;
   final int lastChangeTimestamp;
+  final bool update; // Should a timer run to update the timestamp
+  final bool typingIndicator;
 
   late String _timestampString;
   late Timer? _updateTimer;
   
-  _ConversationsListRowState(this.avatarUrl, this.name, this.lastMessageBody, this.unreadCount, this.maxTextWidth, this.lastChangeTimestamp, bool update) {
+  _ConversationsListRowState(
+    this.avatarUrl,
+    this.name,
+    this.lastMessageBody,
+    this.unreadCount,
+    this.maxTextWidth,
+    this.lastChangeTimestamp,
+    this.update, {
+      this.typingIndicator = false
+    }
+  ) {
     final _now = DateTime.now().millisecondsSinceEpoch;
 
     _timestampString = formatConversationTimestamp(
@@ -80,6 +105,18 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
     }
 
     super.dispose();
+  }
+
+  Widget _buildLastMessageBody() {
+    if (typingIndicator) {
+      return TypingIndicatorWidget(Colors.black, Colors.white);
+    }
+
+    return Text(
+      lastMessageBody,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis
+    );
   }
   
   @override
@@ -120,12 +157,8 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                     constraints: BoxConstraints(
                       maxWidth: maxTextWidth
                     ),
-
-                    child: Text(
-                      lastMessageBody,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis
-                    )
+                    // TODO: Colors
+                    child: _buildLastMessageBody()
                   )
                 ]
               )
