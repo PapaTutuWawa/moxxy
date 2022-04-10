@@ -426,43 +426,64 @@ class _ConversationPageState extends State<ConversationPage> {
         GetIt.I.get<ConversationBloc>().add(CurrentConversationResetEvent());
         return true;
       },
-      child: Scaffold(
-        appBar: BorderlessTopbar(_ConversationTopbarWidget()),
-        body: Container(
-          decoration: /*state.backgroundPath.isNotEmpty ? BoxDecoration(
-          image: DecorationImage(
-          fit: BoxFit.cover,
-          image: FileImage(File(state.backgroundPath))
-        )
-        ) :*/ null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              BlocBuilder<ConversationBloc, ConversationState>(
-                buildWhen: (prev, next) => prev.conversation?.inRoster != next.conversation?.inRoster,
-                builder: (context, state) {
-                  if (state.conversation!.inRoster) return Container();
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: BlocBuilder<ConversationBloc, ConversationState>(
+              buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
+              builder: (context, state) {
+                final query = MediaQuery.of(context);
+                print(state.backgroundPath);
+                return Image.file(
+                  File(state.backgroundPath),
+                  fit: BoxFit.cover,
+                  width: query.size.width,
+                  height: query.size.height - query.padding.top
+                );
+              }
+            )
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Scaffold(
+              backgroundColor: Color.fromRGBO(0, 0, 0, 0),
+              appBar: BorderlessTopbar(_ConversationTopbarWidget()),
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  BlocBuilder<ConversationBloc, ConversationState>(
+                    buildWhen: (prev, next) => prev.conversation?.inRoster != next.conversation?.inRoster,
+                    builder: (context, state) {
+                      if (state.conversation!.inRoster) return Container();
 
-                  return _renderNotInRosterWidget(state, context);
-                }
-              ),
+                      return _renderNotInRosterWidget(state, context);
+                    }
+                  ),
 
-              BlocBuilder<ConversationBloc, ConversationState>(
-                buildWhen: (prev, next) => prev.messages != next.messages,
-                builder: (context, state) => Expanded(
-                  child: ListView.builder(
-                    reverse: true,
-                    itemCount: state.messages.length,
-                    itemBuilder: (context, index) => _renderBubble(state, context, index, maxWidth),
-                    shrinkWrap: true
-                  )
-                )
-              ),
+                  BlocBuilder<ConversationBloc, ConversationState>(
+                    buildWhen: (prev, next) => prev.messages != next.messages,
+                    builder: (context, state) => Expanded(
+                      child: ListView.builder(
+                        reverse: true,
+                        itemCount: state.messages.length,
+                        itemBuilder: (context, index) => _renderBubble(state, context, index, maxWidth),
+                        shrinkWrap: true
+                      )
+                    )
+                  ),
 
-              _ConversationBottomRow(_controller, _isSpeedDialOpen)
-            ]
-          )
-        )
+                  _ConversationBottomRow(_controller, _isSpeedDialOpen)
+                ]
+              )
+            )
+          ),
+        ]
       )
     );
   }

@@ -9,5 +9,7 @@ class PreferencesChangedEvent extends PreferencesEvent {
   final PreferencesState preferences;
   final bool notify;
 
-  PreferencesChangedEvent(this.preferences, { this.notify = true });
+  PreferencesChangedEvent(this.preferences, {
+      this.notify = true,
+  });
 }

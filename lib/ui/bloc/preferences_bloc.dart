@@ -1,3 +1,4 @@
+import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/shared/preferences.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
@@ -16,9 +17,16 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
     if (event.notify) {
       GetIt.I.get<BackgroundServiceDataSender>().sendData(
         SetPreferencesCommand(
-          preferences: state
+          preferences: event.preferences
         ),
         awaitable: false
+      );
+    }
+
+    // Notify the conversation UI if we changed the background
+    if (event.preferences.backgroundPath != state.backgroundPath) {
+      GetIt.I.get<ConversationBloc>().add(
+        BackgroundChangedEvent(event.preferences.backgroundPath)
       );
     }
 

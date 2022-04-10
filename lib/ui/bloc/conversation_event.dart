@@ -6,7 +6,14 @@ abstract class ConversationEvent {}
 class InitConversationEvent extends ConversationEvent {
   final String backgroundPath;
 
-  InitConversationEvent (this.backgroundPath);
+  InitConversationEvent(this.backgroundPath);
+}
+
+/// Triggered when the background image changed
+class BackgroundChangedEvent extends ConversationEvent {
+  final String backgroundPath;
+
+  BackgroundChangedEvent(this.backgroundPath);
 }
 
 /// Triggered when the content of the input field changed.

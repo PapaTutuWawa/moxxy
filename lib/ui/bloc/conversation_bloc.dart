@@ -45,6 +45,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<MessageUpdatedEvent>(_onMessageUpdated);
     on<ConversationUpdatedEvent>(_onConversationUpdated);
     on<AppStateChanged>(_onAppStateChanged);
+    on<BackgroundChangedEvent>(_onBackgroundChanged);
   }
 
   void _setLastChangeTimestamp() {
@@ -268,5 +269,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       _stopComposeTimer();
       _updateChatState(ChatState.gone);
     }
+  }
+
+  Future<void> _onBackgroundChanged(BackgroundChangedEvent event, Emitter<ConversationState> emit) async {
+    return emit(state.copyWith(backgroundPath: event.backgroundPath));
   }
 }
