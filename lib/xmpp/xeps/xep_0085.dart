@@ -69,4 +69,18 @@ class ChatStateManager extends XmppManagerBase {
 
     return state.copyWith(chatState: chatState);
   }
+
+  /// Send a chat state notification to [to]. You can specify the type attribute
+  /// of the message with [messageType].
+  void sendChatState(ChatState state, String to, { String messageType = "chat" }) {
+    final tagName = state.toString().split(".").last;
+
+    getAttributes().sendStanza(
+      Stanza.message(
+        to: to,
+        type: messageType,
+        children: [ XMLNode.xmlns(tag: tagName, xmlns: chatStateXmlns) ]
+      )
+    );
+  }
 }

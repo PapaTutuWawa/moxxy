@@ -1,3 +1,4 @@
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/media.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
@@ -10,33 +11,11 @@ class ConversationChatStateConverter implements JsonConverter<ChatState, Map<Str
   const ConversationChatStateConverter();
 
   @override
-  ChatState fromJson(Map<String, dynamic> json) {
-    print(json["chatState"]);
-    switch (json["chatState"]) {
-      case "active": {
-        return ChatState.active;
-      }
-      case "composing": {
-        return ChatState.composing;
-      } 
-      case "paused": {
-        return ChatState.paused;
-      }
-      case "inactive": {
-        return ChatState.inactive;
-      }
-      case "gone": {
-        return ChatState.gone;
-      }
-      default: {
-        return ChatState.gone;
-      }
-    }
-  }
+  ChatState fromJson(Map<String, dynamic> json) => chatStateFromString(json["chatState"]);
   
   @override
   Map<String, dynamic> toJson(ChatState state) => {
-    "chatState": state.toString().split(".").last
+    "chatState": chatStateToString(state)
   };
 }
 

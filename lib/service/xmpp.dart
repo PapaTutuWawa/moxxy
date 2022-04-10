@@ -178,7 +178,8 @@ class XmppService {
       required String body,
       required String jid,
       Message? quotedMessage,
-      String? commandId
+      String? commandId,
+      ChatState? chatState
   }) async {
     final db = GetIt.I.get<DatabaseService>();
     final cs = GetIt.I.get<ConversationService>();
@@ -214,7 +215,8 @@ class XmppService {
         originId: originId,
         quoteBody: quotedMessage?.body,
         quoteFrom: quotedMessage?.from,
-        quoteId: quotedMessage?.originId ?? quotedMessage?.sid
+        quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+        chatState: chatState
       )
     );
 

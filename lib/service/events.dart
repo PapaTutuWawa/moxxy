@@ -170,6 +170,9 @@ Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) a
   GetIt.I.get<XmppService>().sendMessage(
     body: command.body,
     jid: command.jid,
+    chatState: command.chatState.isNotEmpty
+      ? chatStateFromString(command.chatState)
+      : null,
     quotedMessage: command.quotedMessage,
     commandId: extra as String
   );
@@ -314,4 +317,15 @@ Future<void> performCloseConversation(CloseConversationCommand command, { dynami
     CloseConversationEvent(),
     id: extra as String
   );
+}
+
+Future<void> performSendChatState(SendChatStateCommand command, { dynamic extra }) async {
+  final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+
+  // Only send chat states if the users wants to send them
+  if (!prefs.sendChatMarkers) return;
+
+  final conn = GetIt.I.get<XmppConnection>();
+  final man = conn.getManagerById(chatStateManager)!;
+  man.sendChatState(chatStateFromString(command.state), command.jid);
 }

@@ -1,5 +1,7 @@
 import "dart:core";
 
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
+
 /// Add a leading zero, if required, to ensure that an integer is rendered
 /// as a two "digit" string.
 ///
@@ -169,3 +171,28 @@ String mimeTypeToConversationBody(String? mime) {
 String filenameFromUrl(String url) {
   return Uri.parse(url).pathSegments.last;
 }
+
+ChatState chatStateFromString(String raw) {
+  switch(raw) {
+    case "active": {
+      return ChatState.active;
+    }
+    case "composing": {
+      return ChatState.composing;
+    } 
+    case "paused": {
+      return ChatState.paused;
+    }
+    case "inactive": {
+      return ChatState.inactive;
+    }
+    case "gone": {
+      return ChatState.gone;
+    }
+    default: {
+      return ChatState.gone;
+    }
+  }
+}
+
+String chatStateToString(ChatState state) => state.toString().split(".").last;

@@ -243,7 +243,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RequestDownloadCommand>(performRequestDownload),
       EventTypeMatcher<SetAvatarCommand>(performSetAvatar),
       EventTypeMatcher<SetShareOnlineStatusCommand>(performSetShareOnlineStatus),
-      EventTypeMatcher<CloseConversationCommand>(performCloseConversation)
+      EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
+      EventTypeMatcher<SendChatStateCommand>(performSendChatState)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

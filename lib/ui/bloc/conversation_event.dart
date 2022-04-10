@@ -87,3 +87,10 @@ class ConversationUpdatedEvent extends ConversationEvent {
 
   ConversationUpdatedEvent(this.conversation);
 }
+
+/// Triggered when the app is left, either by the screen locking or the user switching apps
+class AppStateChanged extends ConversationEvent {
+  final bool open;
+
+  AppStateChanged(this.open);
+}

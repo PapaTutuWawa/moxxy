@@ -1,3 +1,4 @@
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
@@ -7,6 +8,7 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
@@ -21,6 +23,7 @@ class MessageDetails {
   final String? quoteBody;
   final String? quoteId;
   final String? quoteFrom;
+  final ChatState? chatState;
 
   const MessageDetails({
       required this.to,
@@ -31,7 +34,8 @@ class MessageDetails {
       this.originId,
       this.quoteBody,
       this.quoteId,
-      this.quoteFrom
+      this.quoteFrom,
+      this.chatState
   });
 }
 
@@ -139,6 +143,13 @@ class MessageManager extends XmppManagerBase {
       stanza.addChild(makeOriginIdElement(details.originId!));
     }
 
+    if (details.chatState != null) {
+      stanza.addChild(
+        // TODO: Move this into xep_0085.dart
+        XMLNode.xmlns(tag: chatStateToString(details.chatState!), xmlns: chatStateXmlns)
+      );
+    }
+    
     getAttributes().sendStanza(stanza);
   }
 }

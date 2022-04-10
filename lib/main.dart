@@ -188,14 +188,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     final sender = GetIt.I.get<BackgroundServiceDataSender>();
     switch (state) {
-      case AppLifecycleState.paused: sender.sendData(
+      case AppLifecycleState.paused: {
+        sender.sendData(
           SetCSIStateCommand(active: false)
         );
-        break;
-      case AppLifecycleState.resumed: sender.sendData(
+        GetIt.I.get<ConversationBloc>().add(AppStateChanged(false));
+      }
+      break;
+      case AppLifecycleState.resumed: {
+        sender.sendData(
           SetCSIStateCommand(active: true)
         );
-        break;
+        GetIt.I.get<ConversationBloc>().add(AppStateChanged(true));
+      }
+      break;
       default: break;
     }
   }
