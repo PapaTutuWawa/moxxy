@@ -1,6 +1,5 @@
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/shared/commands.dart";
 
 import "package:flutter/material.dart";
 import "package:qr_flutter/qr_flutter.dart";

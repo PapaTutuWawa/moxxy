@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:io";
 
 import "package:moxxyv2/shared/avatar.dart";
 import "package:moxxyv2/xmpp/sasl/errors.dart";
@@ -7,7 +6,6 @@ import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:flutter/material.dart";
 import "package:file_picker/file_picker.dart";
 import "package:image_cropping/image_cropping.dart";
-import "package:path_provider/path_provider.dart";
 import "package:cryptography/cryptography.dart";
 import "package:hex/hex.dart";
 import "package:flutter_image_compress/flutter_image_compress.dart";

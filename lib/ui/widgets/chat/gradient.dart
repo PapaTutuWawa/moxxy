@@ -5,7 +5,7 @@ import "package:flutter/material.dart";
 class BottomGradient extends StatelessWidget {
   final BorderRadius radius;
 
-  const BottomGradient(this.radius);
+  const BottomGradient(this.radius, { Key? key }) : super(key: key);
   
   @override
   Widget build(BuildContext context) {

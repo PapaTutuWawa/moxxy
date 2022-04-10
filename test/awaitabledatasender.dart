@@ -7,6 +7,7 @@ class TestDataType implements JsonImplementation {
 
   TestDataType(this.data);
 
+  @override
   Map<String, dynamic> toJson() => {
     "data": data
   };
@@ -44,7 +45,7 @@ void main() {
 
   test("Sending an event without awaiting it", () async {
       final handler = FakeAwaitableDataSender<TestDataType, TestDataType>();
-      final id = "abc123";
+      const id = "abc123";
       final result = handler.sendData(TestDataType("hallo"), awaitable: true, id: id);
       await handler.onData(DataWrapper(id, TestDataType("welt")));
 

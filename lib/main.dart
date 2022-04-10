@@ -125,13 +125,11 @@ class MyApp extends StatefulWidget {
   const MyApp(this.navigationKey, { Key? key }) : super(key: key);
 
   @override
-  _MyAppState createState() => _MyAppState(navigationKey);
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  final GlobalKey<NavigatorState> navigationKey;
-
-  _MyAppState(this.navigationKey);
+  _MyAppState();
 
   @override
   void initState() {
@@ -164,12 +162,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         )
       );
 
-      navigationKey.currentState!.pushNamedAndRemoveUntil(
+      widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
         conversationsRoute,
         (_) => false
       );
     } else if (result.state == preStartNotLoggedInState) {
-      navigationKey.currentState!.pushNamedAndRemoveUntil(
+      widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
         introRoute,
         (_) => false
       );
@@ -233,7 +231,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
         backgroundColor: const Color(0xff303030)
       ),
-      navigatorKey: navigationKey,
+      navigatorKey: widget.navigationKey,
       themeMode: ThemeMode.system,
       routes: {
         introRoute: (context) => const Intro(),
@@ -241,7 +239,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         conversationsRoute: (context) => const ConversationsPage(),
         newConversationRoute: (context) => const NewConversationPage(),
         conversationRoute: (context) => const ConversationPage(),
-        blocklistRoute: (context) => BlocklistPage(),
+        blocklistRoute: (context) => const BlocklistPage(),
         profileRoute: (context) => const ProfilePage(),
         settingsRoute: (context) => const SettingsPage(),
         aboutRoute: (context) => const SettingsAboutPage(),
@@ -250,14 +248,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         networkRoute: (context) => const NetworkPage(),
         privacyRoute: (context) => const PrivacyPage(),
         debuggingRoute: (context) => DebuggingPage(),
-        addContactRoute: (context) => AddContactPage(),
+        addContactRoute: (context) => const AddContactPage(),
         /*
         registrationRoute: (context) => RegistrationPage(),
         postRegistrationRoute: (context) => const PostRegistrationPage(),
         sendFilesRoute: (context) => SendFilesPage(),
         */
       },
-      home: Splashscreen()
+      home: const Splashscreen()
     );
   }
 }

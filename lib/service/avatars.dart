@@ -18,8 +18,6 @@ import "package:moxxyv2/xmpp/xeps/xep_0084.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 
 import "package:logging/logging.dart";
-import "package:path_provider/path_provider.dart";
-import "package:path/path.dart" as path;
 import "package:get_it/get_it.dart";
 import "package:hex/hex.dart";
 import "package:cryptography/cryptography.dart";

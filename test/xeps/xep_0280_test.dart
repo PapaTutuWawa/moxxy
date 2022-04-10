@@ -1,3 +1,4 @@
+import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
@@ -9,7 +10,7 @@ import "package:test/test.dart";
 void main() {
   test("Test if we're vulnerable against CVE-2020-26547 style vulnerabilities", () async {
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { bool addFrom = true, bool addId = true, bool retransmitted = false }) async {
+        sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async {
           // ignore: avoid_print
           print("==> " + stanza.toXml());
           return XMLNode(tag: "iq", attributes: { "type": "result" });

@@ -1,11 +1,7 @@
-import "dart:io";
-import "dart:math";
-
 import "package:moxxyv2/shared/models/media.dart";
 import "package:moxxyv2/ui/widgets/chat/media/media.dart";
 
 import "package:flutter/material.dart";
-import "package:open_file/open_file.dart";
 
 class SharedMediaDisplay extends StatelessWidget {
   final List<SharedMedium> sharedMedia;

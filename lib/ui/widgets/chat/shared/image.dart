@@ -1,6 +1,5 @@
 import "dart:io";
 
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
 import "package:flutter/material.dart";

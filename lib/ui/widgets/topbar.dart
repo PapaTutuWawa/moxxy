@@ -63,7 +63,7 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   const BorderlessTopbar(this.child, { Key? key }) : super(key: key);
 
   BorderlessTopbar.justBackButton({ Key? key })
-    : this(Row(children: const [ BackButton() ], key: key));
+    : this(Row(children: const [ BackButton() ]), key: key);
   
   /// A simple borderless topbar that displays just the back button (if wanted) and a
   /// Text() title.

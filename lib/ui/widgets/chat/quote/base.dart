@@ -31,7 +31,7 @@ class QuoteBaseWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const quoteLeftBorderWidth = 7.0;
-    EdgeInsetsGeometry padding = EdgeInsets.only(
+    EdgeInsetsGeometry padding = const EdgeInsets.only(
       left: 8.0 + quoteLeftBorderWidth,
       right: 8.0,
       top: 8.0,

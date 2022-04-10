@@ -4,14 +4,12 @@ import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/widgets/chat/gradient.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
-import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/helpers.dart";
 import "package:moxxyv2/ui/widgets/chat/media/image.dart";
 import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 
 import "package:flutter/material.dart";
-import "package:path/path.dart" as pathlib;
 import "package:get_it/get_it.dart";
 import "package:video_compress/video_compress.dart";
 import "package:open_file/open_file.dart";
@@ -30,36 +28,21 @@ class VideoChatWidget extends StatefulWidget {
     }
   ) : super(key: key);
 
-  // ignore: no_logic_in_create_state
   @override
-  _VideoChatWidgetState createState() => _VideoChatWidgetState(
-    message,
-    maxWidth,
-    radius,
-  );
+  _VideoChatWidgetState createState() => _VideoChatWidgetState();
 }
 
 class _VideoChatWidgetState extends State<VideoChatWidget> {
-  final BorderRadius radius;
-  final double maxWidth;
-  final Message message;
-
-  _VideoChatWidgetState(
-    this.message,
-    this.maxWidth,
-    this.radius,
-  );
-
   /// Generate the thumbnail if needed.
   Future<bool> _thumbnailFuture() async {
-    final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(message);
+    final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(widget.message);
     final thumbnailFile = File(thumbnail);
     if (await thumbnailFile.exists()) {
       return true;
     }
 
     // Thumbnail does not exist
-    final sourceFile = File(message.mediaUrl!);
+    final sourceFile = File(widget.message.mediaUrl!);
     if (await sourceFile.exists()) {
       final bytes = await VideoCompress.getByteThumbnail(
         sourceFile.path,
@@ -77,12 +60,12 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   
   Widget _buildNonDownloaded() {
     // TODO
-    if (message.thumbnailData != null) {}
+    if (widget.message.thumbnailData != null) {}
 
     return FileChatWidget(
-      message,
+      widget.message,
       extra: ElevatedButton(
-        onPressed: () => requestMediaDownload(message),
+        onPressed: () => requestMediaDownload(widget.message),
         child: const Text("Download")
       )
     );
@@ -90,9 +73,9 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
 
   Widget _buildDownloading() {
     // TODO
-    if (message.thumbnailData != null) {}
+    if (widget.message.thumbnailData != null) {}
 
-    return FileChatWidget(message);
+    return FileChatWidget(widget.message);
   }
 
   Widget _buildVideo() {
@@ -101,12 +84,12 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data!) {
-            final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(message);
+            final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(widget.message);
             return ImageBaseChatWidget(
-              message.mediaUrl!,
-              radius,
+              widget.message.mediaUrl!,
+              widget.radius,
               Image.file(File(thumbnail)),
-              MessageBubbleBottom(message),
+              MessageBubbleBottom(widget.message),
               extra: const PlayButton()
             );
           } else {
@@ -121,6 +104,7 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   }
 
   Widget _innerBuild() {
+    final message = widget.message;
     if (!message.isDownloading && message.mediaUrl != null) return _buildVideo();
     if (message.isDownloading) return _buildDownloading();
 
@@ -132,22 +116,22 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
     return IntrinsicWidth(
       child: InkWell(
         onTap: () {
-          OpenFile.open(message.mediaUrl!);
+          OpenFile.open(widget.message.mediaUrl!);
         },
         child: Stack(
           children: [
             ClipRRect(
-              borderRadius: radius,
+              borderRadius: widget.radius,
               child: _innerBuild()
             ),
-            BottomGradient(radius),
+            BottomGradient(widget.radius),
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: MessageBubbleBottom(message)
+                child: MessageBubbleBottom(widget.message)
               )
             ) 
           ]

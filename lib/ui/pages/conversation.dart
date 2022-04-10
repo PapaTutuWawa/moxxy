@@ -11,7 +11,6 @@ import "package:moxxyv2/ui/widgets/chat/typing.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
-import "package:moxxyv2/ui/pages/profile/profile.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
@@ -60,16 +59,16 @@ class _ConversationTopbarWidget extends StatelessWidget {
     switch (state) {
       case ChatState.paused:
       case ChatState.active: {
-        return Text(
+        return const Text(
           "Online",
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.green
           )
         );
       }
       case ChatState.composing: {
         // TODO: Colors
-        return TypingIndicatorWidget(Colors.black, Colors.white);
+        return const TypingIndicatorWidget(Colors.black, Colors.white);
       }
       default: {
         return Container();
@@ -156,10 +155,10 @@ class _ConversationBottomRow extends StatelessWidget {
   final TextEditingController controller;
   final ValueNotifier<bool> isSpeedDialOpen;
 
-  _ConversationBottomRow(this.controller, this.isSpeedDialOpen);
+  const _ConversationBottomRow(this.controller, this.isSpeedDialOpen);
   
   @override
-  Widget build(BuildContext) {
+  Widget build(BuildContext context) {
     return BlocBuilder<ConversationBloc, ConversationState>(
       buildWhen: (prev, next) => prev.showSendButton != next.showSendButton,
       builder: (context, state) => Container(
@@ -436,7 +435,6 @@ class _ConversationPageState extends State<ConversationPage> {
               buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
               builder: (context, state) {
                 final query = MediaQuery.of(context);
-                print(state.backgroundPath);
                 return Image.file(
                   File(state.backgroundPath),
                   fit: BoxFit.cover,
@@ -452,7 +450,8 @@ class _ConversationPageState extends State<ConversationPage> {
             top: 0,
             bottom: 0,
             child: Scaffold(
-              backgroundColor: Color.fromRGBO(0, 0, 0, 0),
+              // TODO: Maybe replace the scaffold itself to prevent transparency
+              backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
               appBar: BorderlessTopbar(_ConversationTopbarWidget()),
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

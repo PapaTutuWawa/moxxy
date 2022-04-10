@@ -1,8 +1,5 @@
 import "dart:io";
 
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
-import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/widgets/chat/gradient.dart";
 import "package:moxxyv2/ui/widgets/chat/helpers.dart";
@@ -15,7 +12,6 @@ import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 
 import "package:flutter/material.dart";
 import "package:open_file/open_file.dart";
-import "package:get_it/get_it.dart";
 
 class ImageBaseChatWidget extends StatelessWidget {
   final String? path;
@@ -30,9 +26,10 @@ class ImageBaseChatWidget extends StatelessWidget {
     this.child,
     this.bottom,
     {
-      this.extra
+      this.extra,
+      Key? key
     }
-  );
+  ) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

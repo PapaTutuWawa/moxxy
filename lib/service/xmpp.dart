@@ -1,7 +1,6 @@
 import "dart:async";
 import "dart:convert";
 
-import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/eventhandler.dart";

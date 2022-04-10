@@ -1,6 +1,5 @@
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/xmpp.dart";
@@ -60,10 +59,7 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
   final state = await xmpp.getXmppState();
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
 
-
-  GetIt.I.get<Logger>().finest("settings != null: " + (settings != null).toString());
-
-  if (settings != null && settings.jid != null && settings.password != null) {
+  if (settings != null) {
     await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
     // Check some permissions

@@ -33,62 +33,37 @@ class ConversationsListRow extends StatefulWidget {
   ) : super(key: key);
 
   @override
-  _ConversationsListRowState createState() => _ConversationsListRowState(
-    avatarUrl,
-    name,
-    lastMessageBody,
-    unreadCount,
-    maxTextWidth,
-    lastChangeTimestamp,
-    update,
-    typingIndicator: typingIndicator
-  );
+  _ConversationsListRowState createState() => _ConversationsListRowState();
 }
 
 class _ConversationsListRowState extends State<ConversationsListRow> {
-  final String avatarUrl;
-  final String name;
-  final String lastMessageBody;
-  final int unreadCount;
-  final double maxTextWidth;
-  final int lastChangeTimestamp;
-  final bool update; // Should a timer run to update the timestamp
-  final bool typingIndicator;
-
   late String _timestampString;
   late Timer? _updateTimer;
-  
-  _ConversationsListRowState(
-    this.avatarUrl,
-    this.name,
-    this.lastMessageBody,
-    this.unreadCount,
-    this.maxTextWidth,
-    this.lastChangeTimestamp,
-    this.update, {
-      this.typingIndicator = false
-    }
-  ) {
+
+  @override
+  void initState() {
+    super.initState();
+
     final _now = DateTime.now().millisecondsSinceEpoch;
 
     _timestampString = formatConversationTimestamp(
-      lastChangeTimestamp,
+      widget.lastChangeTimestamp,
       _now
     );
 
     // NOTE: We could also check and run the timer hourly, but who has a messenger on the
     //       conversation screen open for hours on end?
-    if (update && lastChangeTimestamp > -1 && _now - lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+    if (widget.update && widget.lastChangeTimestamp > -1 && _now - widget.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
       _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
           final now = DateTime.now().millisecondsSinceEpoch;
           setState(() {
               _timestampString = formatConversationTimestamp(
-                lastChangeTimestamp,
+                widget.lastChangeTimestamp,
                 now
               );
           });
 
-          if (now - lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+          if (now - widget.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
             _updateTimer!.cancel();
             _updateTimer = null;
           }
@@ -97,7 +72,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
       _updateTimer = null;
     }
   }
-
+  
   @override
   void dispose() {
     if (_updateTimer != null) {
@@ -108,12 +83,12 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
   }
 
   Widget _buildLastMessageBody() {
-    if (typingIndicator) {
-      return TypingIndicatorWidget(Colors.black, Colors.white);
+    if (widget.typingIndicator) {
+      return const TypingIndicatorWidget(Colors.black, Colors.white);
     }
 
     return Text(
-      lastMessageBody,
+      widget.lastMessageBody,
       maxLines: 1,
       overflow: TextOverflow.ellipsis
     );
@@ -121,7 +96,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
   
   @override
   Widget build(BuildContext context) {
-    String badgeText = unreadCount > 99 ? "99+" : unreadCount.toString();
+    String badgeText = widget.unreadCount > 99 ? "99+" : widget.unreadCount.toString();
 
     return Stack(
       children: [
@@ -131,9 +106,9 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
               padding: const EdgeInsets.all(8.0),
               child: AvatarWrapper(
                 radius: 35.0,
-                avatarUrl: avatarUrl,
+                avatarUrl: widget.avatarUrl,
                 // TODO: Make this consistent by moving this inside the AvatarWrapper widget
-                alt: Text(name[0] + name[1])
+                alt: Text(widget.name[0] + widget.name[1])
               )
             ),
             Padding(
@@ -143,10 +118,10 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                 children: [
                   Container(
                     constraints: BoxConstraints(
-                      maxWidth: maxTextWidth
+                      maxWidth: widget.maxTextWidth
                     ),
                     child: Text(
-                      name,
+                      widget.name,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis
@@ -155,7 +130,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                   // TODO: Change color and font size
                   Container(
                     constraints: BoxConstraints(
-                      maxWidth: maxTextWidth
+                      maxWidth: widget.maxTextWidth
                     ),
                     // TODO: Colors
                     child: _buildLastMessageBody()
@@ -165,7 +140,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
             ),
             const Spacer(),
             Visibility(
-              visible: unreadCount > 0,
+              visible: widget.unreadCount > 0,
               child: Padding(
                 padding: const EdgeInsetsDirectional.only(end: 8.0),
                 child: Badge(
@@ -177,7 +152,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
           ]
         ),
         Visibility(
-          visible: lastChangeTimestamp != timestampNever,
+          visible: widget.lastChangeTimestamp != timestampNever,
           child: Positioned(
             top: 8,
             right: 8,

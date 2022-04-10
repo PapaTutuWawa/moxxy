@@ -6,7 +6,7 @@ import "package:test/test.dart";
 
 void main() {
   final localRoster = [
-    RosterItem(id: 0, jid: "hallo@server.example", title: "", subscription: "none", groups: [], avatarUrl: "")
+    const RosterItem(id: 0, jid: "hallo@server.example", title: "", subscription: "none", groups: [], avatarUrl: "", ask: "")
   ];
 
   test("Test if the roster diff works for roster pushes", () async {

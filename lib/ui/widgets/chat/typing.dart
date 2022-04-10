@@ -11,7 +11,14 @@ class _FlashingCircle extends StatelessWidget {
   final Color colorLight;
   final Color colorDark;
 
-  _FlashingCircle(this.controller, this.animation, this.interval, this.colorLight, this.colorDark);
+  const _FlashingCircle(
+    this.controller,
+    this.animation,
+    this.interval,
+    this.colorLight,
+    this.colorDark,
+    { Key? key }
+  ) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +49,7 @@ class TypingIndicatorWidget extends StatefulWidget {
   final Color colorLight;
   final Color colorDark;
 
-  const TypingIndicatorWidget(this.colorLight, this.colorDark);
+  const TypingIndicatorWidget(this.colorLight, this.colorDark, { Key? key }) : super(key: key);
   
   @override
   _TypingIndicatorWidget createState() => _TypingIndicatorWidget();
@@ -81,16 +88,34 @@ class _TypingIndicatorWidget extends State<TypingIndicatorWidget> with TickerPro
       child: Row(
         children: [
           Padding(
-            padding: EdgeInsets.all(2.0),
-            child: _FlashingCircle(_controller, _animation, Interval(0.20, 0.7), widget.colorLight, widget.colorDark)
+            padding: const EdgeInsets.all(2.0),
+            child: _FlashingCircle(
+              _controller,
+              _animation,
+              const Interval(0.20, 0.7),
+              widget.colorLight,
+              widget.colorDark
+            )
           ),
           Padding(
-            padding: EdgeInsets.all(2.0),
-            child: _FlashingCircle(_controller, _animation, Interval(0.40, 0.8), widget.colorLight, widget.colorDark)
+            padding: const EdgeInsets.all(2.0),
+            child: _FlashingCircle(
+              _controller,
+              _animation,
+              const Interval(0.40, 0.8),
+              widget.colorLight,
+              widget.colorDark
+            )
           ),
           Padding(
-            padding: EdgeInsets.all(2.0),
-            child: _FlashingCircle(_controller, _animation, Interval(0.60, 0.9), widget.colorLight, widget.colorDark)
+            padding: const EdgeInsets.all(2.0),
+            child: _FlashingCircle(
+              _controller,
+              _animation,
+              const Interval(0.60, 0.9),
+              widget.colorLight,
+              widget.colorDark
+            )
           ),
         ]
       )

@@ -40,7 +40,7 @@ class ConversationProfileHeader extends StatelessWidget {
         ),
 
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0).add(EdgeInsets.only(top: 8.0)),
+          padding: const EdgeInsets.symmetric(horizontal: 32.0).add(const EdgeInsets.only(top: 8.0)),
           child: SettingsTile.switchTile(
             title: "Share online status",
             switchValue: conversation.subscription == "to" || conversation.subscription == "both",

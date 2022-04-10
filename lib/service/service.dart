@@ -5,13 +5,9 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
-import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
@@ -78,9 +74,8 @@ typedef EventMiddlewareType = void Function(BackgroundEvent, { String id });
 /// A middleware for packing an event into a [DataWrapper] and also
 /// logging what we send.
 void sendEvent(BackgroundEvent event, { String? id }) {
-  final json = event.toJson();
   final data = DataWrapper(
-    id ?? Uuid().v4(),
+    id ?? const Uuid().v4(),
     event
   );
   // NOTE: *S*erver to *F*oreground
@@ -200,7 +195,7 @@ void onStart() {
 
       final settings = await xmpp.getConnectionSettings();
 
-      if (settings != null && settings.jid != null && settings.password != null) {
+      if (settings != null) {
         xmpp.connect(settings, false);
       }
   })();

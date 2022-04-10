@@ -6,10 +6,6 @@ import "package:flutter/material.dart";
 
 class Intro extends StatelessWidget {
   const Intro({ Key? key }) : super(key: key);
-
-  static Page page() {
-    return MaterialPage<void>(child: const Intro());
-  }
   
   @override
   Widget build(BuildContext context) {

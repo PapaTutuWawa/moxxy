@@ -16,7 +16,7 @@ Future<String> saveAvatarInCache(List<int> bytes, String hash, String jid, Strin
     if (await oldAvatar.exists()) await oldAvatar.delete();
   }
 
-  String avatarPath = pathlib.join(usersDir.path, "avatar_${hash}.png");
+  String avatarPath = pathlib.join(usersDir.path, "avatar_$hash.png");
   File avatarFile = File(avatarPath);
   await avatarFile.writeAsBytes(bytes);
 
@@ -27,5 +27,5 @@ Future<String> saveAvatarInCache(List<int> bytes, String hash, String jid, Strin
 /// the existence of an avatar.
 Future<String> getAvatarPath(String jid, String hash) async {
   String cacheDir = (await getApplicationDocumentsDirectory()).path;
-  return pathlib.join(cacheDir, "users", jid, "avatar_${hash}.png");
+  return pathlib.join(cacheDir, "users", jid, "avatar_$hash.png");
 }

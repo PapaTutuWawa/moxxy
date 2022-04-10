@@ -1,5 +1,3 @@
-import "package:moxxyv2/ui/constants.dart";
-
 import "package:flutter/material.dart";
 
 /// A class for adding a shadow to Containers which even works if the

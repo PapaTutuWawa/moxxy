@@ -1,27 +1,11 @@
-import "dart:async";
-
-import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/constants.dart";
-//import "package:moxxyv2/ui/widgets/chat/download.dart";
-//import "package:moxxyv2/ui/widgets/chat/downloadbutton.dart";
-//import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
-//import "package:moxxyv2/ui/widgets/chat/image.dart";
-//import "package:moxxyv2/ui/widgets/chat/video.dart";
-//import "package:moxxyv2/ui/widgets/chat/file.dart";
-//import "package:moxxyv2/ui/widgets/chat/text.dart";
 import "package:moxxyv2/ui/widgets/chat/media/media.dart";
 
-// TODO: Maybe move this out of the UI code
-//import "package:moxxyv2/shared/commands.dart";
 
 // TODO: The timestamp may be too light
 // TODO: The timestamp is too small
 import "package:flutter/material.dart";
-//import "package:path/path.dart" as path;
-
-// TODO: Maybe move this out of the UI code
-//import "package:flutter_background_service/flutter_background_service.dart";
 
 class ChatBubble extends StatelessWidget {
   final Message message;
@@ -38,8 +22,9 @@ class ChatBubble extends StatelessWidget {
       required this.between,
       required this.start,
       required this.end,
-      required this.maxWidth
-  });
+      required this.maxWidth,
+      Key? key
+  }) : super(key: key);
   
   BorderRadius _getBorderRadius() {
     return BorderRadius.only(

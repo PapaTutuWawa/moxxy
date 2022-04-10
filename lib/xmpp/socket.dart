@@ -174,7 +174,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     _socketSubscription = _socket.listen(
       (List<int> event) {
         final data = utf8.decode(event);
-        print("<== " + data);
+        _log.finest("<== " + data);
         _dataStream.add(data);
       },
       onError: (Object error) {

@@ -42,7 +42,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
-        NavigationDestination(
+        const NavigationDestination(
           profileRoute
         )
       )

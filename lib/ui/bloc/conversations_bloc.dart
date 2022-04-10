@@ -1,5 +1,4 @@
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/events.dart" as events;
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 

@@ -1,4 +1,3 @@
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
 import "package:flutter/material.dart";
@@ -12,7 +11,7 @@ class SharedFileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return SharedMediaContainer(
       Container(
-        child: Icon(
+        child: const Icon(
           Icons.file_present,
           size: 48.0
         ),

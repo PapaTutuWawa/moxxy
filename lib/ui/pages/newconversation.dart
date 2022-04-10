@@ -5,7 +5,6 @@ import "package:moxxyv2/ui/widgets/topbar.dart";
 import "package:moxxyv2/ui/widgets/conversation.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/shared/models/roster.dart";
-import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/constants.dart";
 
 import "package:flutter/material.dart";

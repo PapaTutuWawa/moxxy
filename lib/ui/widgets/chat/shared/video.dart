@@ -1,6 +1,5 @@
 import "dart:io";
 
-import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
@@ -30,7 +29,7 @@ class SharedVideoWidget extends StatelessWidget {
             Image.file(
               File(thumbnail), fit: BoxFit.cover
             ),
-            PlayButton(size: 16.0)
+            const PlayButton(size: 16.0)
           ]
         )
       )

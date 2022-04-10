@@ -32,18 +32,14 @@ class StreamManagementManager extends XmppManagerBase {
   
   /// May be overwritten by a subclass. Should save [state] so that it can be loaded again
   /// with [this.loadState].
-  @visibleForOverriding
   Future<void> commitState() async {}
 
-  @visibleForOverriding
   Future<void> loadState() async {}
 
-  @internal
   void setState(StreamManagementState state) {
     _state = state;
   }
 
-  @visibleForTesting
   StreamManagementState get state => _state;
   
   @override

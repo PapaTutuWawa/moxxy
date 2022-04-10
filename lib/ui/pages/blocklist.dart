@@ -11,6 +11,8 @@ enum BlocklistOptions {
 }
 
 class BlocklistPage extends StatelessWidget {
+  const BlocklistPage({ Key? key }) : super(key: key);
+
   Widget _buildListView(BlocklistState state) {
     if (state.blocklist.isEmpty) {
       return Padding(
@@ -46,7 +48,7 @@ class BlocklistPage extends StatelessWidget {
                 child: Text(jid)
               ),
               IconButton(
-                icon: Icon(Icons.delete),
+                icon: const Icon(Icons.delete),
                 color: Colors.red,
                 onPressed: () => showConfirmationDialog(
                   "Unblock $jid?",

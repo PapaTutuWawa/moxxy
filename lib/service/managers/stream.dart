@@ -8,8 +8,8 @@ import "package:get_it/get_it.dart";
 class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
   Future<void> commitState() async {
-    await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-        smState: this.state
+    await GetIt.I.get<XmppService>().modifyXmppState((s) => s.copyWith(
+        smState: state
     ));
   }
 

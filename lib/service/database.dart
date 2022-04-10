@@ -1,13 +1,10 @@
 import "dart:collection";
 import "dart:async";
 
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/media.dart";
-import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/message.dart";
 import "package:moxxyv2/service/db/roster.dart";

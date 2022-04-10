@@ -31,8 +31,12 @@ MessageType getMessageType(Message message) {
     final mime = message.mediaType;
     if (mime == null) return MessageType.file;
 
-    if (mime.startsWith("image/")) return MessageType.image;
-    else if (mime.startsWith("video/")) return MessageType.video; // TODO
+    if (mime.startsWith("image/")) {
+      return MessageType.image;
+    } else if (mime.startsWith("video/")) {
+      return MessageType.video;
+    }
+    // TODO
     //else if (mime.startswith("audio/")) return MessageType.audio;
 
     return MessageType.file;
@@ -82,7 +86,7 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
               height: 48.0,
               // TODO: Error handling
               child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                 child: Image.file(
                   File(message.mediaUrl!),
                   fit: BoxFit.cover,
@@ -106,14 +110,14 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
               height: 48.0,
               // TODO: Error handling
               child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Image.file(
                       File(thumbnail), fit: BoxFit.cover,
                     ),
-                    PlayButton(size: 16.0)
+                    const PlayButton(size: 16.0)
                   ]
                 )
               )
@@ -137,16 +141,16 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
               width: 48.0,
               height: 48.0,
               child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white60
                       )
                     ),
-                    Icon(
+                    const Icon(
                       Icons.file_present
                     )
                   ]
