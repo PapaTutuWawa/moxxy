@@ -4,6 +4,7 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
@@ -58,6 +59,7 @@ class MessageEvent extends XmppEvent {
   final StatelessFileSharingData? sfs;
   final StatelessMediaSharingData? sims;
   final ReplyData? reply;
+  final ChatState? chatState;
 
   MessageEvent({
       required this.body,
@@ -72,7 +74,8 @@ class MessageEvent extends XmppEvent {
       this.oob,
       this.sfs,
       this.sims,
-      this.reply
+      this.reply,
+      this.chatState
   });
 }
 

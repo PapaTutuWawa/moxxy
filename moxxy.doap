@@ -64,6 +64,14 @@
     </implements>
     <implements>
       <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0085.html" />
+	<xmpp:status>partial</xmpp:status>
+	<xmpp:note xml:lang="en">Read-only implementation</xmpp:note>
+	<xmpp:version>2.1</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0115.html" />
 	<xmpp:status>partial</xmpp:status>
 	<xmpp:version>1.5.2</xmpp:version>
