@@ -169,6 +169,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         messages: List.from([ ...state.messages, result.message ]),
         messageText: "",
+        quotedMessage: null,
         showSendButton: false
       )
     );
@@ -264,7 +265,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     if (event.open) {
       _updateChatState(ChatState.active);
     } else {
-      _stopComposeTimer
+      _stopComposeTimer();
       _updateChatState(ChatState.gone);
     }
   }
