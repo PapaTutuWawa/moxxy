@@ -95,38 +95,40 @@ class ConversationsPage extends StatelessWidget {
     return BlocBuilder<ConversationsBloc, ConversationsState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(
-          avatar: AvatarWrapper(
-            radius: 20.0,
-            avatarUrl: state.avatarUrl,
-            altIcon: Icons.person
-          ),
-          title: state.displayName,
-          onTapFunction: () => GetIt.I.get<ProfileBloc>().add(
-            ProfilePageRequestedEvent(
-              true,
-              jid: state.jid,
+          TopbarAvatarAndName(
+            state.displayName,
+            AvatarWrapper(
+              radius: 20.0,
               avatarUrl: state.avatarUrl,
-              displayName: state.displayName
-            )
-          ),
-          showBackButton: false,
-          extra: [
-            PopupMenuButton(
-              onSelected: (ConversationsOptions result) {
-                switch (result) {
-                  case ConversationsOptions.settings: Navigator.pushNamed(context, settingsRoute);
-                  break;
-                }
-              },
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (BuildContext context) => [
-                const PopupMenuItem(
-                  value: ConversationsOptions.settings,
-                  child: Text("Settings")
-                )
-              ]
-            )
-          ]
+              altIcon: Icons.person
+            ),
+            () => GetIt.I.get<ProfileBloc>().add(
+              ProfilePageRequestedEvent(
+                true,
+                jid: state.jid,
+                avatarUrl: state.avatarUrl,
+                displayName: state.displayName
+              )
+            ),
+            showBackButton: false,
+            extra: [
+              PopupMenuButton(
+                onSelected: (ConversationsOptions result) {
+                  switch (result) {
+                    case ConversationsOptions.settings: Navigator.pushNamed(context, settingsRoute);
+                    break;
+                  }
+                },
+                icon: const Icon(Icons.more_vert),
+                itemBuilder: (BuildContext context) => [
+                  const PopupMenuItem(
+                    value: ConversationsOptions.settings,
+                    child: Text("Settings")
+                  )
+                ]
+              )
+            ]
+          )
         ),
         body: _listWrapper(context, state),
         floatingActionButton: SpeedDial(

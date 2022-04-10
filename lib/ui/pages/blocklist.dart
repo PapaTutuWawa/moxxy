@@ -70,7 +70,7 @@ class BlocklistPage extends StatelessWidget {
     return BlocBuilder<BlocklistBloc, BlocklistState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
-          title: "Blocklist",
+          "Blocklist",
           extra: [
             Expanded(child: Container()),
             PopupMenuButton(

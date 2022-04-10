@@ -2,62 +2,79 @@ import "package:moxxyv2/ui/widgets/avatar.dart";
 
 import "package:flutter/material.dart";
 
+class TopbarAvatarAndName extends StatelessWidget {
+  final String title;
+  final AvatarWrapper avatar;
+  final List<Widget> extra;
+  final bool showBackButton;
+  final void Function() onTap;
+
+  const TopbarAvatarAndName(this.title, this.avatar, this.onTap, { this.showBackButton = true, this.extra = const [], Key? key }) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Visibility(
+          child: const BackButton(),
+          visible: showBackButton
+        ),
+        Center(
+          child: InkWell(
+            child: Row(
+              children: [
+                avatar,
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20
+                    )
+                  )
+                )
+              ]
+            ),
+            onTap: onTap
+          )
+        ),
+        const Spacer(),
+        ...extra
+      ]
+    );
+  }
+}
+
 /// Provides a Signal-like topbar without borders or anything else
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
-  final List<Widget> children;
+  final Widget child;
 
-  const BorderlessTopbar({ required this.children, Key? key }) : super(key: key);
+  const BorderlessTopbar(this.child, { Key? key }) : super(key: key);
 
-  BorderlessTopbar.justBackButton({Key? key}) : children = [
-    const BackButton()
-  ], super(key: key);
+  BorderlessTopbar.justBackButton({ Key? key })
+    : this(Row(children: const [ BackButton() ], key: key));
   
   /// A simple borderless topbar that displays just the back button (if wanted) and a
   /// Text() title.
-  BorderlessTopbar.simple({ required String title , List<Widget>? extra, bool showBackButton = true, Key? key }) : children = [
-    Visibility(
-      child: const BackButton(),
-      visible: showBackButton
-    ),
-    Text(
-      title,
-      style: const TextStyle(
-        fontSize: 20
-      )
-    ),
-    ...(extra ?? [])
-  ], super(key: key);
-
-  /// Displays a clickable avatar and title and a back button, if wanted
-  // TODO: Reuse BorderlessTopbar.simple
-  BorderlessTopbar.avatarAndName({ required AvatarWrapper avatar, required String title, void Function()? onTapFunction, List<Widget>? extra, bool showBackButton = true, Key? key }) : children = [
-    Visibility(
-      child: const BackButton(),
-      visible: showBackButton
-    ),
-    Center(
-      child: InkWell(
-        child: Row(
-          children: [
-            avatar,
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20
-                )
-              )
-            )
-          ]
+  BorderlessTopbar.simple(String title, { List<Widget> extra = const [], bool showBackButton = true, Key? key }) : this(Row(
+      children: [
+        Visibility(
+          child: const BackButton(),
+          visible: showBackButton
         ),
-        onTap: onTapFunction
-      )
-    ),
-    const Spacer(),
-    ...(extra ?? [])
-  ], super(key: key);
-
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 20
+          )
+        ),
+        ...extra
+      ]
+  ), key: key);
+  
+  /// Displays a clickable avatar and title and a back button, if wanted
+  const BorderlessTopbar.avatarAndName(TopbarAvatarAndName child, { Key? key }) : this(child, key: key);
+  
   @override
   final Size preferredSize = const Size.fromHeight(60);
   
@@ -66,9 +83,7 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: children
-        )
+        child: child
       )
     );
   }

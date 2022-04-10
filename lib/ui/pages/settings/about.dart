@@ -18,7 +18,7 @@ class SettingsAboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(title: "About"),
+      appBar: BorderlessTopbar.simple("About"),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(

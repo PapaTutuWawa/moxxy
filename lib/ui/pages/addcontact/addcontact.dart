@@ -15,7 +15,7 @@ class AddContactPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AddContactBloc, AddContactState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.simple(title: "Add new contact"),
+        appBar: BorderlessTopbar.simple("Add new contact"),
         body: Column(
           children: [
             Visibility(

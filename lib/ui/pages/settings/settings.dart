@@ -12,7 +12,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(title: "Settings"),
+      appBar: BorderlessTopbar.simple("Settings"),
       body: SettingsList(
         // TODO: Seems hacky
         darkBackgroundColor: const Color(0xff303030),

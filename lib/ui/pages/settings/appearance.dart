@@ -70,7 +70,7 @@ class AppearancePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(title: "Appearance"),
+      appBar: BorderlessTopbar.simple("Appearance"),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
           darkBackgroundColor: const Color(0xff303030),

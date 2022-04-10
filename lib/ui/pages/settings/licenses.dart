@@ -32,7 +32,7 @@ class SettingsLicensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(title: "Licenses"),
+      appBar: BorderlessTopbar.simple("Licenses"),
       body: ListView.builder(
         itemCount: usedLibraryList.length,
         itemBuilder: (context, index) => LicenseRow(library: usedLibraryList[index])

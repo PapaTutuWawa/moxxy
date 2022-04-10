@@ -56,7 +56,7 @@ class NewConversationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     double maxTextWidth = MediaQuery.of(context).size.width * 0.6;
     return Scaffold(
-      appBar: BorderlessTopbar.simple(title: "Start new chat"),
+      appBar: BorderlessTopbar.simple("Start new chat"),
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
         builder: (context, state) => ListView.builder(
           itemCount: state.roster.length + 2,

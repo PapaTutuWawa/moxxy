@@ -13,7 +13,7 @@ class NetworkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(title: "Network"),
+      appBar: BorderlessTopbar.simple("Network"),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
           darkBackgroundColor: const Color(0xff303030),

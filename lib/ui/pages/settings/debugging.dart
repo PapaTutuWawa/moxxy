@@ -16,7 +16,7 @@ class DebuggingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(title: "Debugging"),
+      appBar: BorderlessTopbar.simple("Debugging"),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
           darkBackgroundColor: const Color(0xff303030),

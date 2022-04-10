@@ -16,7 +16,7 @@ class Login extends StatelessWidget {
       builder: (context, state) => WillPopScope(
         onWillPop: () async => !state.working,
         child: Scaffold(
-          appBar: BorderlessTopbar.simple(title: "Login"),
+          appBar: BorderlessTopbar.simple("Login"),
           body: Column(
             children: [
               Visibility(
