@@ -18,7 +18,7 @@ import "package:moxxyv2/ui/pages/blocklist.dart";
 import "package:moxxyv2/ui/pages/conversation.dart";
 import "package:moxxyv2/ui/pages/newconversation.dart";
 import "package:moxxyv2/ui/pages/conversations.dart";
-import "package:moxxyv2/ui/pages/login/login.dart";
+import "package:moxxyv2/ui/pages/login.dart";
 import "package:moxxyv2/ui/pages/intro.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";

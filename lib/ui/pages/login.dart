@@ -7,8 +7,6 @@ import "package:moxxyv2/ui/bloc/login_bloc.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 
-// TODO: Move out of its folder
-
 class Login extends StatelessWidget {
   const Login({ Key? key }) : super(key: key);
  
