@@ -5,11 +5,57 @@ import "package:moxxyv2/shared/preferences.dart";
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:drop_down_list/drop_down_list.dart";
+
+class _AutoDownloadSizes {
+  final int value;
+  final String text;
+
+  const _AutoDownloadSizes(this.text, this.value);
+}
 
 class NetworkPage extends StatelessWidget {
-  const NetworkPage({ Key? key }): super(key: key);
+  final List<_AutoDownloadSizes> _autoDownloadSizes = const [
+    _AutoDownloadSizes("1MB", 1),
+    _AutoDownloadSizes("5MB", 5),
+    _AutoDownloadSizes("15MB", 15),
+    _AutoDownloadSizes("100MB", 100),
+    _AutoDownloadSizes("Always", -1),
+  ];
 
+  const NetworkPage({ Key? key }): super(key: key);
+  
+  Widget _buildFileSizeListItem(BuildContext context, String text, int value, bool selected) {
+    final textTheme = Theme.of(context).textTheme.labelLarge;
+    return TextButton(
+      onPressed: () {
+        Navigator.of(context).pop();
+
+        final bloc = context.read<PreferencesBloc>();
+        bloc.add(
+          PreferencesChangedEvent(
+            bloc.state.copyWith(maximumAutoDownloadSize: value)
+          )
+        );
+      },
+      child: selected
+        ? IntrinsicWidth(
+            child: Row(
+              children: [
+                Text(text, style: textTheme),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.check,
+                    color: textTheme!.color
+                  )
+                ) 
+              ]
+            )
+          )
+        : Text(text, style: textTheme)
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,55 +92,25 @@ class NetworkPage extends StatelessWidget {
                   subtitle: "The maximum file size for a file to be automatically downloaded",
                   subtitleMaxLines: 2,
                   onPressed: (context) {
-                    // TODO: This does not work on dark mode
-                    DropDownState(
-                      DropDown(
-                        submitButtonText: "Okay",
-                        submitButtonColor: const Color.fromRGBO(70, 76, 222, 1),
-                        bottomSheetTitle: "Maximum File Size",
-                        searchBackgroundColor: Colors.black12,
-                        dataList: [
-                          SelectedListItem(state.maximumAutoDownloadSize == 1, "1MB"),
-                          SelectedListItem(state.maximumAutoDownloadSize == 5, "5MB"),
-                          SelectedListItem(state.maximumAutoDownloadSize == 15, "15MB"),
-                          SelectedListItem(state.maximumAutoDownloadSize == 100, "100MB"),
-                          SelectedListItem(state.maximumAutoDownloadSize == -1, "Always")
-                        ],
-                        selectedItem: (String selected) {
-                          int value = -1;
-                          switch (selected) {
-                            case "1MB": {
-                              value = 1;
-                            }
-                            break;
-                            case "5MB": {
-                              value = 5;
-                            }
-                            break;
-                            case "15MB": {
-                              value = 15;
-                            }
-                            break;
-                            case "100MB": {
-                              value = 100;
-                            }
-                            break;
-                            default: {
-                              value = -1;
-                            }
-                            break;
-                          }
-
-                          context.read<PreferencesBloc>().add(
-                            PreferencesChangedEvent(
-                              state.copyWith(maximumAutoDownloadSize: value)
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _autoDownloadSizes.length,
+                            itemBuilder: (context, index) => _buildFileSizeListItem(
+                              context,
+                              _autoDownloadSizes[index].text,
+                              _autoDownloadSizes[index].value,
+                              _autoDownloadSizes[index].value == state.maximumAutoDownloadSize,
                             )
-                          );
-                        },
-                        enableMultipleSelection: false,
-                        searchController: TextEditingController()
-                      ),
-                    ).showModal(context);
+                          )
+                        );
+                      },
+                      isDismissible: true
+                    );
                   }
                 ),
               ]
