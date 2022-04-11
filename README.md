@@ -2,6 +2,8 @@
 
 An experimental XMPP client that tries to be as easy, modern and beautiful as possible.
 
+The code is also available on [codeberg](https://codeberg.org/moxxy/moxxyv2).
+
 ## Screenshots
 
 ![screenshots](./assets/repo/title.png)
