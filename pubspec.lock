@@ -288,13 +288,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.4"
-  drop_down_list:
-    dependency: "direct main"
-    description:
-      name: drop_down_list
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.0.2"
   equatable:
     dependency: "direct main"
     description:
