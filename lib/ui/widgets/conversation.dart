@@ -97,71 +97,76 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
   @override
   Widget build(BuildContext context) {
     String badgeText = widget.unreadCount > 99 ? "99+" : widget.unreadCount.toString();
+    // TODO: Maybe turn this into an attribute of the widget to prevent calling this
+    //       for every conversation
+    final width = MediaQuery.of(context).size.width;
 
-    return Stack(
-      children: [
-        Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: AvatarWrapper(
-                radius: 35.0,
-                avatarUrl: widget.avatarUrl,
-                // TODO: Make this consistent by moving this inside the AvatarWrapper widget
-                alt: Text(widget.name[0] + widget.name[1])
-              )
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    constraints: BoxConstraints(
-                      maxWidth: widget.maxTextWidth
-                    ),
-                    child: Text(
-                      widget.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis
-                    )
-                  ),
-                  // TODO: Change color and font size
-                  Container(
-                    constraints: BoxConstraints(
-                      maxWidth: widget.maxTextWidth
-                    ),
-                    // TODO: Colors
-                    child: _buildLastMessageBody()
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          AvatarWrapper(
+            radius: 35.0,
+            avatarUrl: widget.avatarUrl,
+            // TODO: Make this consistent by moving this inside the AvatarWrapper widget
+            alt: Text(widget.name[0] + widget.name[1])
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: width - 70.0 - 16.0 - 8.0,
+                  child: Row(
+                    children: [
+                      Container(
+                        constraints: BoxConstraints(
+                          maxWidth: widget.maxTextWidth
+                        ),
+                        child: Text(
+                          widget.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis
+                        )
+                      ),
+                      Spacer(),
+                      Visibility(
+                        visible: widget.lastChangeTimestamp != timestampNever,
+                        child: Text(_timestampString)
+                      )
+                    ]
                   )
-                ]
-              )
-            ),
-            const Spacer(),
-            Visibility(
-              visible: widget.unreadCount > 0,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 8.0),
-                child: Badge(
-                  badgeContent: Text(badgeText),
-                  badgeColor: bubbleColorSent
-                )
-              )
+                ),
+                SizedBox(
+                  width: width - 70.0 - 16.0 - 8.0,
+                  child: Row(
+                    children: [
+                      // TODO: Change color and font size
+                      Container(
+                        constraints: BoxConstraints(
+                          maxWidth: widget.maxTextWidth
+                        ),
+                        // TODO: Colors
+                        child: _buildLastMessageBody()
+                      ),
+                      Spacer(),
+                      Visibility(
+                        visible: widget.unreadCount > 0,
+                        child: Badge(
+                          badgeContent: Text(badgeText),
+                          badgeColor: bubbleColorSent
+                        )
+                      )
+                    ]
+                  )
+                ),
+              ]
             )
-          ]
-        ),
-        Visibility(
-          visible: widget.lastChangeTimestamp != timestampNever,
-          child: Positioned(
-            top: 8,
-            right: 8,
-            child: Text(
-              _timestampString
-            )
-          )
-        ) 
-      ]
+          ) 
+        ]
+      )
     );
   }
 }
