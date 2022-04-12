@@ -95,6 +95,17 @@ class PresenceManager extends XmppManagerBase {
     ));
   }
 
+  /// Send an unavailable presence with no 'to' attribute.
+  void sendUnavailablePresence() {
+    final attrs = getAttributes();
+    attrs.sendStanza(
+      Stanza.presence(
+        type: "unavailable"
+      ),
+      addFrom: StanzaFromType.full
+    );
+  }
+  
   /// Sends a subscription request to [to].
   void sendSubscriptionRequest(String to) {
     getAttributes().sendStanza(

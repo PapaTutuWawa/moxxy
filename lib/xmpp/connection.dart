@@ -113,6 +113,9 @@ class XmppConnection {
   /// For indicating in a [ConnectionStateChangedEvent] that the event occured because we
   /// did a reconnection.
   bool _resuming;
+  /// For indicating whether we expect the socket to close to prevent accidentally
+  /// triggering a reconnection attempt when we don't want to.
+  bool _disconnecting;
   /// Timers for the keep-alive ping and the backoff connection process.
   Timer? _connectionPingTimer;
   Timer? _backoffTimer;
@@ -139,6 +142,7 @@ class XmppConnection {
     _streamBuffer = XmlStreamBuffer(),
     _currentBackoffAttempt = 0,
     _resuming = true,
+    _disconnecting = false,
     _uuid = const Uuid(),
     // NOTE: For testing 
     _socket = socket ?? TCPSocketWrapper(),
@@ -150,7 +154,7 @@ class XmppConnection {
     _socketStream = _socket.getDataStream();
     // TODO: Handle on done
     _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
-    _socket.getErrorStream().listen(_handleError);
+    _socket.getEventStream().listen(_handleSocketEvent);
   }
 
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
@@ -269,11 +273,9 @@ class XmppConnection {
   ConnectionSettings getConnectionSettings() {
     return _connectionSettings;
   }
-  
-  void _handleError(Object? error) {
-    _log.severe((error ?? "").toString());
 
-    // TODO: This may be too harsh for every error
+  /// Attempts to reconnect to the server by following an exponential backoff.
+  void _attemptReconnection() {
     _setConnectionState(XmppConnectionState.notConnected);
     _socket.close();
 
@@ -284,6 +286,30 @@ class XmppConnection {
       _backoffTimer = Timer(Duration(minutes: minutes), () {
           connect();
       });
+    }
+  }
+  
+  /// Called when a stream ending error has occurred
+  void _handleError(Object? error) {
+    if (error != null) {
+      _log.severe("_handleError: ${error}");
+    } else {
+      _log.severe("_handleError: Called with null");
+    } 
+
+    // TODO: This may be too harsh for every error
+    _attemptReconnection();
+  }
+
+  /// Called whenever the socket creates an event
+  void _handleSocketEvent(XmppSocketEvent event) {
+    if (event is XmppSocketErrorEvent) {
+      _handleError(event.error);
+    } else if (event is XmppSocketClosureEvent) {
+      // Only reconnect if we didn't expect this
+      if (!_disconnecting) {
+        _attemptReconnection();
+      }
     }
   }
 
@@ -306,6 +332,11 @@ class XmppConnection {
     _socket.write(node.toXml());
   }
 
+  /// Sends [raw] to the server.
+  void sendRawString(String raw) {
+    _socket.write(raw);
+  }
+  
   /// Returns true if we can send data through the socket.
   bool _canSendData() {
     return [
@@ -825,6 +856,15 @@ class XmppConnection {
     }
   }
 
+  /// Attempt to gracefully close the session
+  void disconnect() {
+    _disconnecting = true;
+    getPresenceManager().sendUnavailablePresence();
+    sendRawString("</stream:stream>");
+    _setConnectionState(XmppConnectionState.notConnected);
+    _socket.close();
+  }
+  
   /// Like [connect] but the Future resolves when the resource binding is either done or
   /// SASL has failed.
   Future<XmppConnectionResult> connectAwaitable({ String? lastResource }) {
@@ -839,8 +879,7 @@ class XmppConnection {
     assert(_xmppManagers.containsKey(rosterManager));
     assert(_xmppManagers.containsKey(discoManager));
 
-    // TODO: Remove once StartTLS is implemented
-    assert(_connectionSettings.useDirectTLS == true);
+    _disconnecting = false;
     
     if (lastResource != null) {
       _resource = lastResource;

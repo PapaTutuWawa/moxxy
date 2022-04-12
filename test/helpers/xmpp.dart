@@ -21,13 +21,13 @@ class Expectation {
 class StubTCPSocket extends BaseSocketWrapper {
   int _state = 0;
   final StreamController<String> _dataStream;
-  final StreamController<Object> _errorStream;
+  final StreamController<XmppSocketEvent> _eventStream;
   final List<Expectation> _play; // Request -> Response(s)
 
   StubTCPSocket({ required List<Expectation> play })
   : _play = play,
   _dataStream = StreamController<String>.broadcast(),
-  _errorStream = StreamController<Object>.broadcast();
+  _eventStream = StreamController<XmppSocketEvent>.broadcast();
 
   @override
   bool isSecure() => true;
@@ -41,7 +41,7 @@ class StubTCPSocket extends BaseSocketWrapper {
   @override
   Stream<String> getDataStream() => _dataStream.stream.asBroadcastStream();
   @override
-  Stream<Object> getErrorStream() => _errorStream.stream.asBroadcastStream();
+  Stream<XmppSocketEvent> getEventStream() => _eventStream.stream.asBroadcastStream();
 
   @override
   void write(Object? object) {
