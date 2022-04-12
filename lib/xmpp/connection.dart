@@ -857,12 +857,15 @@ class XmppConnection {
   }
 
   /// Attempt to gracefully close the session
-  void disconnect() {
+  Future<void> disconnect() async {
     _disconnecting = true;
     getPresenceManager().sendUnavailablePresence();
     sendRawString("</stream:stream>");
     _setConnectionState(XmppConnectionState.notConnected);
     _socket.close();
+
+    // Clear Stream Management state, if available
+    await getStreamManagementManager()?.resetState();
   }
   
   /// Like [connect] but the Future resolves when the resource binding is either done or

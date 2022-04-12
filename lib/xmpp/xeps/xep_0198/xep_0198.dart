@@ -40,6 +40,19 @@ class StreamManagementManager extends XmppManagerBase {
     _state = state;
   }
 
+  /// Resets the state such that a resumption is no longer possible without creating
+  /// a new session. Primarily useful for clearing the state after disconnecting
+  Future<void> resetState() async {
+    setState(_state.copyWith(
+        c2s: 0,
+        s2c: 0,
+        streamResumptionLocation: null,
+        streamResumptionId: null,
+    ));
+
+    await commitState();
+  }
+  
   StreamManagementState get state => _state;
   
   @override
