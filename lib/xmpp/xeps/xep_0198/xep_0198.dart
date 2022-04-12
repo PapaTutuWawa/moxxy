@@ -9,6 +9,7 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
 
+import "package:mutex/mutex.dart";
 import "package:meta/meta.dart";
 
 const xmlUintMax = 4294967296; // 2**32
@@ -18,12 +19,15 @@ class StreamManagementManager extends XmppManagerBase {
   final Map<int, Stanza> _unackedStanzas;
   /// Commitable state of the StreamManagementManager
   StreamManagementState _state;
+  /// Mutex lock for _state
+  final Mutex _stateMutex;
   /// If the have enabled SM on the stream yet
   bool _streamManagementEnabled;
 
   StreamManagementManager()
   : _state = StreamManagementState(0, 0),
     _unackedStanzas = {},
+    _stateMutex = Mutex(),
     _streamManagementEnabled = false;
   
   /// Functions for testing
@@ -43,14 +47,15 @@ class StreamManagementManager extends XmppManagerBase {
   /// Resets the state such that a resumption is no longer possible without creating
   /// a new session. Primarily useful for clearing the state after disconnecting
   Future<void> resetState() async {
-    setState(_state.copyWith(
-        c2s: 0,
-        s2c: 0,
-        streamResumptionLocation: null,
-        streamResumptionId: null,
-    ));
-
-    await commitState();
+    await _stateMutex.protect(() async {
+        setState(_state.copyWith(
+            c2s: 0,
+            s2c: 0,
+            streamResumptionLocation: null,
+            streamResumptionId: null,
+        ));
+        await commitState();
+    });
   }
   
   StreamManagementState get state => _state;
@@ -103,13 +108,15 @@ class StreamManagementManager extends XmppManagerBase {
     } else if (event is StreamManagementEnabledEvent) {
       _enableStreamManagement();
 
-      setState(StreamManagementState(
-          0,
-          0,
-          streamResumptionId: event.id,
-          streamResumptionLocation: event.location
-      ));
-      commitState();
+      _stateMutex.protect(() async {
+          setState(StreamManagementState(
+              0,
+              0,
+              streamResumptionId: event.id,
+              streamResumptionLocation: event.location
+          ));
+          await commitState();
+      });
     } else if (event is ConnectingEvent) {
       _disableStreamManagement();
     }
@@ -170,20 +177,26 @@ class StreamManagementManager extends XmppManagerBase {
       logger.info("C2S height jumped from ${_state.c2s} (local) to $h (remote).");
       logger.info("Proceeding with $h as local C2S counter.");
     }
-    
-    _state = _state.copyWith(c2s: h);
-    await commitState();
+
+    await _stateMutex.protect(() async {
+        _state = _state.copyWith(c2s: h);
+        await commitState();
+    });
     return true;
   }
 
   // Just a helper function to not increment the counters above xmlUintMax
-  void _incrementC2S() {
-    _state = _state.copyWith(c2s: _state.c2s + 1 % xmlUintMax);
-    commitState();
+  Future<void> _incrementC2S() async {
+    await _stateMutex.protect(() async {
+        _state = _state.copyWith(c2s: _state.c2s + 1 % xmlUintMax);
+        await commitState();
+    });
   }
-  void _incrementS2C() {
-    _state = _state.copyWith(s2c: _state.s2c + 1 % xmlUintMax);
-    commitState();
+  Future<void> _incrementS2C() async {
+    await _stateMutex.protect(() async {
+        _state = _state.copyWith(s2c: _state.s2c + 1 % xmlUintMax);
+        await commitState();
+    });
   }
   
   /// Called whenever we receive a stanza from the server.
