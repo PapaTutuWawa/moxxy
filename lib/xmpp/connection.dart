@@ -292,7 +292,7 @@ class XmppConnection {
   /// Called when a stream ending error has occurred
   void _handleError(Object? error) {
     if (error != null) {
-      _log.severe("_handleError: ${error}");
+      _log.severe("_handleError: $error");
     } else {
       _log.severe("_handleError: Called with null");
     } 
