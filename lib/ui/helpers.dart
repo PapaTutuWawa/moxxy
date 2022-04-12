@@ -133,3 +133,13 @@ String saslErrorToHumanReadable(String saslError) {
 
   return "SASL error: " + saslError;
 }
+
+/// Turn [text] into a text that can be used with the [AvatarWrapper]'s alt.
+/// [text] must be non-empty.
+String avatarAltText(String text) {
+  assert(text.isNotEmpty);
+
+  if (text.length == 1) return text[0].toUpperCase();
+
+  return (text[0] + text[1]).toUpperCase();
+}

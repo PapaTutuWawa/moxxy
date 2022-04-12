@@ -1,22 +1,30 @@
 import "dart:io";
+
+import "package:moxxyv2/ui/helpers.dart";
+
 import "package:flutter/material.dart";
 
 class AvatarWrapper extends StatelessWidget {
   final String? avatarUrl;
-  final Widget? alt;
+  final String? altText;
   final IconData? altIcon;
   final double radius;
   final bool showEditButton;
   final void Function()? onTapFunction;
 
-  AvatarWrapper({ required this.radius, this.avatarUrl, this.alt, this.altIcon, this.onTapFunction, this.showEditButton = false, Key? key }) : super(key: key) {
-    assert(avatarUrl != null || (avatarUrl == null || avatarUrl == "") && (alt != null || altIcon != null));
+  AvatarWrapper({ required this.radius, this.avatarUrl, this.altText, this.altIcon, this.onTapFunction, this.showEditButton = false, Key? key }) : super(key: key) {
+    assert(avatarUrl != null || (avatarUrl == null || avatarUrl == "") && (altText != null && altText != "" || altIcon != null));
     assert(showEditButton ? onTapFunction != null : true);
   }
   
   Widget _constructAlt() {
-    if (alt != null) {
-      return alt!;
+    if (altText != null) {
+      return Text(
+        avatarAltText(altText!),
+        style: TextStyle(
+          fontSize: radius * 0.8
+        )
+      );
     }
 
     return Icon(

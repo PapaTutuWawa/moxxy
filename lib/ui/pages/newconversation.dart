@@ -24,7 +24,7 @@ class NewConversationPage extends StatelessWidget {
   }
   */
 
-  Widget _renderIconEntry(Icon icon, String text, void Function() onTap) {
+  Widget _renderIconEntry(IconData icon, String text, void Function() onTap) {
     return InkWell(
       onTap: onTap,
       child: Row(
@@ -33,7 +33,7 @@ class NewConversationPage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: AvatarWrapper(
               radius: 35.0,
-              alt: icon
+              altIcon: icon
             )
           ),
           Padding(
@@ -62,12 +62,12 @@ class NewConversationPage extends StatelessWidget {
           itemBuilder: (context, index) {
             switch(index) {
               case 0: return _renderIconEntry(
-                const Icon(Icons.person_add),
+                Icons.person_add,
                 "Add contact",
                 () => Navigator.pushNamed(context, addContactRoute)
               );
               case 1: return _renderIconEntry(
-                const Icon(Icons.group_add),
+                Icons.group_add,
                 "Create groupchat",
                 () => showNotImplementedDialog("groupchat", context)
               );

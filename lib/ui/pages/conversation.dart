@@ -93,7 +93,7 @@ class _ConversationTopbarWidget extends StatelessWidget {
           AvatarWrapper(
             radius: 25.0,
             avatarUrl: state.conversation!.avatarUrl,
-            alt: Text(state.conversation!.title[0])
+            altText: state.conversation!.title,
           ),
           () => GetIt.I.get<ProfileBloc>().add(
             ProfilePageRequestedEvent(

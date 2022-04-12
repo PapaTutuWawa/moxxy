@@ -1,3 +1,4 @@
+import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
@@ -18,7 +19,7 @@ class ConversationProfileHeader extends StatelessWidget {
         AvatarWrapper(
           radius: 110.0,
           avatarUrl: conversation.avatarUrl,
-          alt: Text(conversation.title[0])
+          altText: conversation.title
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),

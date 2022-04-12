@@ -108,8 +108,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
           AvatarWrapper(
             radius: 35.0,
             avatarUrl: widget.avatarUrl,
-            // TODO: Make this consistent by moving this inside the AvatarWrapper widget
-            alt: Text(widget.name[0] + widget.name[1])
+            altText: widget.name
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
@@ -131,7 +130,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                           overflow: TextOverflow.ellipsis
                         )
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Visibility(
                         visible: widget.lastChangeTimestamp != timestampNever,
                         child: Text(_timestampString)
@@ -151,7 +150,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                         // TODO: Colors
                         child: _buildLastMessageBody()
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Visibility(
                         visible: widget.unreadCount > 0,
                         child: Badge(
