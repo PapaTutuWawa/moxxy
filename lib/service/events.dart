@@ -190,7 +190,11 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
   // Tell the [XmppService] about the app state
   GetIt.I.get<XmppService>().setAppState(command.active);
 
-  final csi = GetIt.I.get<XmppConnection>().getManagerById(csiManager)!;
+  final conn = GetIt.I.get<XmppConnection>();
+
+  // Only send the CSI nonza when we're connected
+  if (conn.getConnectionState() != XmppConnectionState.connected) return;
+  final csi = conn.getManagerById(csiManager)!;
   if (command.active) {
     csi.setActive();
   } else {
