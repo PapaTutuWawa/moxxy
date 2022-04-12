@@ -29,7 +29,7 @@ class AvatarWrapper extends StatelessWidget {
 
     return Icon(
       altIcon,
-      size: radius * (180/110)
+      size: radius
     );
   }
 
