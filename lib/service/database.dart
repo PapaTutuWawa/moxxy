@@ -13,6 +13,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
 import "package:isar/isar.dart";
 import "package:get_it/get_it.dart";
+import "package:path_provider/path_provider.dart";
 import "package:logging/logging.dart";
 
 SharedMedium sharedMediumDbToModel(DBSharedMedium s) {
@@ -80,15 +81,28 @@ Message messageDbToModel(DBMessage m) {
 }
 
 class DatabaseService {
-  final Isar isar;
+  late Isar _isar;
   
   final Logger _log;
   
-  DatabaseService(this.isar) : _log = Logger("DatabaseService");
+  DatabaseService() : _log = Logger("DatabaseService");
 
+  Future<void> initialize() async {
+    final dir = await getApplicationSupportDirectory();
+    _isar = await Isar.open(
+      schemas: [
+        DBConversationSchema,
+        DBRosterItemSchema,
+        DBMessageSchema,
+        DBSharedMediumSchema
+      ],
+      directory: dir.path
+    );
+  }
+  
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<List<Conversation>> loadConversations() async {
-    final conversationsRaw = await isar.dBConversations.where().findAll();
+    final conversationsRaw = await _isar.dBConversations.where().findAll();
 
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
@@ -108,7 +122,7 @@ class DatabaseService {
 
   /// Load messages for [jid] from the database.
   Future<List<Message>> loadMessagesForJid(String jid) async {
-    final rawMessages = await isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
+    final rawMessages = await _isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
     final List<Message> messages = List.empty(growable: true);
     for (final m in rawMessages) {
       await m.quotes.load();
@@ -131,7 +145,7 @@ class DatabaseService {
       ChatState? chatState
     }
   ) async {
-    final c = (await isar.dBConversations.get(id))!;
+    final c = (await _isar.dBConversations.get(id))!;
     await c.sharedMedia.load();
     if (lastMessageBody != null) {
       c.lastMessageBody = lastMessageBody;
@@ -152,8 +166,8 @@ class DatabaseService {
       c.sharedMedia.add(sharedMedium);
     }
 
-    await isar.writeTxn((isar) async {
-        await isar.dBConversations.put(c);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBConversations.put(c);
         await c.sharedMedia.save();
     });
 
@@ -185,8 +199,8 @@ class DatabaseService {
 
     c.sharedMedia.addAll(sharedMedia);
 
-    await isar.writeTxn((isar) async {
-        await isar.dBConversations.put(c);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBConversations.put(c);
     }); 
 
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
@@ -201,8 +215,8 @@ class DatabaseService {
       ..mime = mime
       ..timestamp = timestamp;
 
-    await isar.writeTxn((isar) async {
-        await isar.dBSharedMediums.put(s);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBSharedMediums.put(s);
     });
 
     return s;
@@ -253,8 +267,8 @@ class DatabaseService {
       }
     }
 
-    await isar.writeTxn((isar) async {
-        await isar.dBMessages.put(m);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBMessages.put(m);
     });
 
     final msg = messageDbToModel(m);
@@ -262,7 +276,7 @@ class DatabaseService {
   }
 
   Future<DBMessage?> getMessageByXmppId(String id, String conversationJid) async {
-    return await isar.dBMessages.filter()
+    return await _isar.dBMessages.filter()
       .conversationJidEqualTo(conversationJid)
       .and()
       .group((q) => q
@@ -280,7 +294,7 @@ class DatabaseService {
       bool? displayed,
       bool? acked
   }) async {
-    final i = (await isar.dBMessages.get(id))!;
+    final i = (await _isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
       i.mediaUrl = mediaUrl;
     }
@@ -297,8 +311,8 @@ class DatabaseService {
       i.acked = acked;
     }
 
-    await isar.writeTxn((isar) async {
-        await isar.dBMessages.put(i);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBMessages.put(i);
     });
     await i.quotes.load();
     
@@ -308,14 +322,14 @@ class DatabaseService {
   
   /// Loads roster items from the database
   Future<List<RosterItem>> loadRosterItems() async {
-    final roster = await isar.dBRosterItems.where().findAll();
+    final roster = await _isar.dBRosterItems.where().findAll();
     return roster.map(rosterDbToModel).toList();
   }
 
   /// Removes a roster item from the database and cache
   Future<void> removeRosterItem(int id) async {
-    await isar.writeTxn((isar) async {
-        await isar.dBRosterItems.delete(id);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBRosterItems.delete(id);
     });
   }
 
@@ -338,8 +352,8 @@ class DatabaseService {
       ..ask = ask
       ..groups = groups;
 
-    await isar.writeTxn((isar) async {
-        await isar.dBRosterItems.put(rosterItem);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBRosterItems.put(rosterItem);
     });
 
     final item = rosterDbToModel(rosterItem);
@@ -356,7 +370,7 @@ class DatabaseService {
       List<String>? groups
     }
   ) async {
-    final i = (await isar.dBRosterItems.get(id))!;
+    final i = (await _isar.dBRosterItems.get(id))!;
     if (avatarUrl != null) {
       i.avatarUrl = avatarUrl;
     }
@@ -373,8 +387,8 @@ class DatabaseService {
       i.ask = ask;
     }
 
-    await isar.writeTxn((isar) async {
-        await isar.dBRosterItems.put(i);
+    await _isar.writeTxn((_isar) async {
+        await _isar.dBRosterItems.put(i);
     });
 
     final item = rosterDbToModel(i);

@@ -42,15 +42,8 @@ import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:get_it/get_it.dart";
-import "package:isar/isar.dart";
-import "package:path_provider/path_provider.dart";
 import "package:logging/logging.dart";
 import "package:uuid/uuid.dart";
-
-import "package:moxxyv2/service/db/conversation.dart";
-import "package:moxxyv2/service/db/roster.dart";
-import "package:moxxyv2/service/db/message.dart";
-import "package:moxxyv2/service/db/media.dart";
 
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,20 +76,6 @@ void sendEvent(BackgroundEvent event, { String? id }) {
   GetIt.I.get<Logger>().fine("S2F: " + data.toString());
   
   GetIt.I.get<FlutterBackgroundService>().sendData(data.toJson());
-}
-
-// TODO: Move into the database service
-Future<Isar> openDatabase() async {
-  final dir = await getApplicationSupportDirectory();
-  return await Isar.open(
-    schemas: [
-      DBConversationSchema,
-      DBRosterItemSchema,
-      DBMessageSchema,
-      DBSharedMediumSchema
-    ],
-    directory: dir.path
-  );
 }
 
 void setupLogging() {
@@ -153,7 +132,11 @@ void onStart() {
   (() async {
       // Register singletons
       GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
-      GetIt.I.registerSingleton<DatabaseService>(DatabaseService(await openDatabase()));
+
+      // Initialize the database
+      GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
+      await GetIt.I.get<DatabaseService>().initialize();
+
       GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
       GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
       GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
