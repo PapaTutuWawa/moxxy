@@ -7,6 +7,7 @@ import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/conversation.dart";
+import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/download.dart";
@@ -152,7 +153,7 @@ Future<void> performGetMessagesForJid(GetMessagesForJidCommand command, { dynami
 
   sendEvent(
     MessagesResultEvent(
-      messages: await GetIt.I.get<DatabaseService>().getMessagesForJid(command.jid)
+      messages: await GetIt.I.get<MessageService>().getMessagesForJid(command.jid)
     ),
     id: id
   );
@@ -282,8 +283,8 @@ Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async
 
 Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { dynamic extra }) async {
   final roster = GetIt.I.get<RosterService>();
-  final db = GetIt.I.get<DatabaseService>();
-  final item = await db.getRosterItemByJid(command.jid);
+  final rs = GetIt.I.get<RosterService>();
+  final item = await rs.getRosterItemByJid(command.jid);
 
   // TODO: Maybe log
   if (item == null) return;

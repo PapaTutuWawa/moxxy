@@ -1,10 +1,10 @@
-import "dart:collection";
 import "dart:async";
 
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/media.dart";
+import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/db/conversation.dart";
 import "package:moxxyv2/service/db/message.dart";
 import "package:moxxyv2/service/db/roster.dart";
@@ -12,6 +12,7 @@ import "package:moxxyv2/service/db/media.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
 import "package:isar/isar.dart";
+import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
 SharedMedium sharedMediumDbToModel(DBSharedMedium s) {
@@ -80,15 +81,10 @@ Message messageDbToModel(DBMessage m) {
 
 class DatabaseService {
   final Isar isar;
-
-  final HashMap<String, List<Message>> _messageCache = HashMap();
-  final HashMap<String, RosterItem> _rosterCache = HashMap();
-
-  bool _rosterLoaded;
   
   final Logger _log;
   
-  DatabaseService(this.isar) : _rosterLoaded = false, _log = Logger("DatabaseService");
+  DatabaseService(this.isar) : _log = Logger("DatabaseService");
 
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<List<Conversation>> loadConversations() async {
@@ -97,7 +93,7 @@ class DatabaseService {
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
       await c.sharedMedia.load();
-      final rosterItem = await getRosterItemByJid(c.jid);
+      final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
       final conv = conversationDbToModel(
         c,
         rosterItem != null,
@@ -110,25 +106,18 @@ class DatabaseService {
     return tmp;
   }
 
-  /// Loads all messages for the conversation with jid [jid].
-  Future<List<Message>> getMessagesForJid(String jid) async {
-    if (_messageCache.containsKey(jid)) {
-      return _messageCache[jid]!;
-    }
-
-    final messages = await isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
-    _messageCache[jid] = List.empty(growable: true);
-
-    final List<Message> tmp = List.empty(growable: true);
-    for (final m in messages) {
+  /// Load messages for [jid] from the database.
+  Future<List<Message>> loadMessagesForJid(String jid) async {
+    final rawMessages = await isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
+    final List<Message> messages = List.empty(growable: true);
+    for (final m in rawMessages) {
       await m.quotes.load();
 
       final msg = messageDbToModel(m);
-      _messageCache[jid]!.add(msg);
-      tmp.add(msg);
+      messages.add(msg);
     }
 
-    return tmp;
+    return messages;
   }
 
   /// Updates the conversation with id [id] inside the database.
@@ -168,7 +157,7 @@ class DatabaseService {
         await c.sharedMedia.save();
     });
 
-    final rosterItem = await getRosterItemByJid(c.jid);
+    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
     final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", chatState ?? ChatState.gone);
     return conversation;
   }
@@ -200,7 +189,7 @@ class DatabaseService {
         await isar.dBConversations.put(c);
     }); 
 
-    final rosterItem = await getRosterItemByJid(c.jid);
+    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
     final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", ChatState.gone); 
     return conversation;
   }
@@ -269,10 +258,6 @@ class DatabaseService {
     });
 
     final msg = messageDbToModel(m);
-    if (_messageCache.containsKey(conversationJid)) {
-      _messageCache[conversationJid]!.add(msg);
-    }
-
     return msg;
   }
 
@@ -288,7 +273,13 @@ class DatabaseService {
   }
   
   /// Updates the message item with id [id] inside the database.
-  Future<Message> updateMessage({ required int id, String? mediaUrl, String? mediaType, bool? received, bool? displayed, bool? acked }) async {
+  Future<Message> updateMessage(int id, {
+      String? mediaUrl,
+      String? mediaType,
+      bool? received,
+      bool? displayed,
+      bool? acked
+  }) async {
     final i = (await isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
       i.mediaUrl = mediaUrl;
@@ -312,70 +303,59 @@ class DatabaseService {
     await i.quotes.load();
     
     final msg = messageDbToModel(i);
-
-    // Update cache
-    if (_messageCache.containsKey(msg.conversationJid)) {
-      _messageCache[msg.conversationJid] = _messageCache[msg.conversationJid]!.map((m) {
-          if (m.id == msg.id) return msg;
-
-          return m;
-      }).toList();
-    }
-    
     return msg;
   }
   
   /// Loads roster items from the database
   Future<List<RosterItem>> loadRosterItems() async {
     final roster = await isar.dBRosterItems.where().findAll();
-    final items = roster.map((item) => rosterDbToModel(item));
-
-    _rosterCache.clear();
-    for (var item in items) {
-      _rosterCache[item.jid] = item;
-    }
-
-    _log.finest("Roster loaded: $items");
-    _rosterLoaded = true;
-    return items.toList();
+    return roster.map(rosterDbToModel).toList();
   }
 
   /// Removes a roster item from the database and cache
-  Future<void> removeRosterItemByJid(String jid, { bool nullOkay = false }) async {
-    final item = _rosterCache[jid];
-    
-    if (item != null) {
-      await isar.writeTxn((isar) async {
-          await isar.dBRosterItems.delete(item.id);
-      });
-      _rosterCache.remove(jid);
-    } else if (!nullOkay) {
-      _log.severe("removeFromRoster: Could not find $jid in roster state");
-    }
+  Future<void> removeRosterItem(int id) async {
+    await isar.writeTxn((isar) async {
+        await isar.dBRosterItems.delete(id);
+    });
   }
 
   /// Create a roster item from data
-  Future<RosterItem> addRosterItemFromData(String avatarUrl, String jid, String title, String subscription, String ask, { List<String>? groups }) async {
+  Future<RosterItem> addRosterItemFromData(
+    String avatarUrl,
+    String jid,
+    String title,
+    String subscription,
+    String ask,
+    {
+      List<String> groups = const []
+    }
+  ) async {
     final rosterItem = DBRosterItem()
       ..jid = jid
       ..title = title
       ..avatarUrl = avatarUrl
       ..subscription = subscription
       ..ask = ask
-      ..groups = groups ?? const [];
+      ..groups = groups;
 
     await isar.writeTxn((isar) async {
         await isar.dBRosterItems.put(rosterItem);
     });
 
     final item = rosterDbToModel(rosterItem);
-
-    _rosterCache[item.jid] = item;
     return item;
   }
 
   /// Updates the roster item with id [id] inside the database.
-  Future<RosterItem> updateRosterItem({ required int id, String? avatarUrl, String? title, String? subscription, String? ask, List<String>? groups }) async {
+  Future<RosterItem> updateRosterItem(
+    int id, {
+      String? avatarUrl,
+      String? title,
+      String? subscription,
+      String? ask,
+      List<String>? groups
+    }
+  ) async {
     final i = (await isar.dBRosterItems.get(id))!;
     if (avatarUrl != null) {
       i.avatarUrl = avatarUrl;
@@ -398,36 +378,6 @@ class DatabaseService {
     });
 
     final item = rosterDbToModel(i);
-    _rosterCache[item.jid] = item;
     return item;
   }
-  
-  /// Returns true if a roster item with jid [jid] exists
-  Future<bool> isInRoster(String jid) async {
-    if (!_rosterLoaded) {
-      await loadRosterItems();
-    }
-
-    return _rosterCache.containsKey(jid);
-  }
-
-  /// Returns true if a roster item with jid [jid] exists
-  Future<List<RosterItem>> getRoster() async {
-    if (!_rosterLoaded) {
-      await loadRosterItems();
-    }
-
-    return _rosterCache.values.toList();
-  }
-  
-  /// Returns the roster item if it exists
-  Future<RosterItem?> getRosterItemByJid(String jid) async {
-    if (await isInRoster(jid)) {
-      return _rosterCache[jid];
-    }
-
-    return null;
-  }
-
-  bool isRosterLoaded() => _rosterLoaded;
 }

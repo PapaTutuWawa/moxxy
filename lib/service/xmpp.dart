@@ -24,6 +24,7 @@ import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/conversation.dart";
+import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/download.dart";
 import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
@@ -441,14 +442,15 @@ class XmppService {
   Future<void> _onDeliveryReceiptReceived(DeliveryReceiptReceivedEvent event, { dynamic extra }) async {
     _log.finest("Received delivery receipt from ${event.from.toString()}");
     final db = GetIt.I.get<DatabaseService>();
+    final ms = GetIt.I.get<MessageService>();
     final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
     if (dbMsg == null) {
       _log.warning("Did not find the message with id ${event.id} in the database!");
       return;
     }
     
-    final msg = await db.updateMessage(
-      id: dbMsg.id!,
+    final msg = await ms.updateMessage(
+      dbMsg.id!,
       received: true
     );
 
@@ -460,14 +462,15 @@ class XmppService {
     if (event.type == "acknowledged") return;
 
     final db = GetIt.I.get<DatabaseService>();
+    final ms = GetIt.I.get<MessageService>();
     final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
     if (dbMsg == null) {
       _log.warning("Did not find the message in the database!");
       return;
     }
     
-    final msg = await db.updateMessage(
-      id: dbMsg.id!,
+    final msg = await ms.updateMessage(
+      dbMsg.id!,
       received: dbMsg.received || event.type == "received" || event.type == "displayed",
       displayed: dbMsg.displayed || event.type == "displayed"
     );
@@ -689,9 +692,10 @@ class XmppService {
   Future<void> _onMessageAcked(MessageAckedEvent event, { dynamic extra }) async {
     final jid = JID.fromString(event.to).toBare().toString();
     final db = GetIt.I.get<DatabaseService>();
+    final ms = GetIt.I.get<MessageService>();
     final msg = await db.getMessageByXmppId(event.id, jid);
     if (msg != null) {
-      await db.updateMessage(id: msg.id!, acked: true);
+      await ms.updateMessage(msg.id!, acked: true);
     } else {
       _log.finest("Wanted to mark message as acked but did not find the message to ack");
     }

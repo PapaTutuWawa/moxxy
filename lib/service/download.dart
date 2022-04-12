@@ -5,6 +5,7 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/conversation.dart";
+import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/notifications.dart";
 
 import "package:logging/logging.dart";
@@ -102,8 +103,8 @@ class DownloadService {
       MediaScanner.loadMedia(path: downloadedPath);
     }
 
-    final msg = await GetIt.I.get<DatabaseService>().updateMessage(
-      id: _tasks[url]!,
+    final msg = await GetIt.I.get<MessageService>().updateMessage(
+      _tasks[url]!,
       mediaUrl: downloadedPath,
       mediaType: mime
     );

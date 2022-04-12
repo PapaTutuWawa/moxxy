@@ -6,8 +6,8 @@ import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/avatar.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/xmpp.dart";
-import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/conversation.dart";
+import "package:moxxyv2/service/roster.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/connection.dart";
@@ -33,7 +33,7 @@ class AvatarService {
   
   Future<void> updateAvatarForJid(String jid, String hash, String base64) async {
     final cs = GetIt.I.get<ConversationService>();
-    final db = GetIt.I.get<DatabaseService>();
+    final rs = GetIt.I.get<RosterService>();
     final originalConversation = await cs.getConversationByJid(jid);
     bool saved = false;
     if (originalConversation != null) {
@@ -54,7 +54,7 @@ class AvatarService {
       _log.warning("Failed to get conversation");
     }
 
-    final originalRoster = await db.getRosterItemByJid(jid);
+    final originalRoster = await rs.getRosterItemByJid(jid);
     if (originalRoster != null) {
       String avatarPath = "";
       if (saved) {
@@ -68,8 +68,8 @@ class AvatarService {
         ); 
       }
 
-      final roster = await db.updateRosterItem(
-        id: originalRoster.id,
+      final roster = await rs.updateRosterItem(
+        originalRoster.id,
         avatarUrl: avatarPath
       );
 

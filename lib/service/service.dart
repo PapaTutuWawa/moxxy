@@ -35,6 +35,7 @@ import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/service/conversation.dart";
+import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/events.dart";
 
 import "package:flutter/material.dart";
@@ -160,6 +161,7 @@ void onStart() {
       GetIt.I.registerSingleton<AvatarService>(AvatarService());
       GetIt.I.registerSingleton<RosterService>(RosterService());
       GetIt.I.registerSingleton<ConversationService>(ConversationService());
+      GetIt.I.registerSingleton<MessageService>(MessageService());
       final xmpp = XmppService();
       GetIt.I.registerSingleton<XmppService>(xmpp);
 
