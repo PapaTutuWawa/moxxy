@@ -13,6 +13,10 @@ abstract class Cache<K, V> {
   /// Return true if [key] is in the cache.
   @visibleForOverriding
   bool inCache(K key);
+
+  /// Return all values that are cached
+  @visibleForOverriding
+  List<V> getValues();
 }
 
 class _LRUCacheEntry<V> {
@@ -36,6 +40,9 @@ class LRUCache<K, V> extends Cache<K, V> {
   V? getValue(K key) {
     return _cache[key]?.value;
   }
+
+  @override
+  List<V> getValues() => _cache.values.map((i) => i.value).toList();
   
   @override
   void cache(K key, V value) {

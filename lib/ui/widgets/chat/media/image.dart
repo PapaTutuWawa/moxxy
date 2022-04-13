@@ -1,6 +1,7 @@
-import "dart:io";
+import "dart:typed_data";
 
 import "package:moxxyv2/shared/models/message.dart";
+import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/ui/widgets/chat/gradient.dart";
 import "package:moxxyv2/ui/widgets/chat/helpers.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
@@ -11,6 +12,7 @@ import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
 import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 
 import "package:flutter/material.dart";
+import "package:get_it/get_it.dart";
 import "package:open_file/open_file.dart";
 
 class ImageBaseChatWidget extends StatelessWidget {
@@ -121,22 +123,33 @@ class ImageChatWidget extends StatelessWidget {
 
   Widget _buildImage() {
     final thumbnailSize = getThumbnailSize(message, maxWidth);
-    
-    return Image.file(
-      File(message.mediaUrl!),
-      errorBuilder: (context, error, trace) {
-        if (message.thumbnailData != null) {
-          return BlurhashChatWidget(
-            width: thumbnailSize.width.toInt(),
-            height: thumbnailSize.height.toInt(),
-            borderRadius: radius,
-            thumbnailData: message.thumbnailData!,
-            child: const FileNotFound()
-          );
+
+    return FutureBuilder<Uint8List>(
+      future: GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(message.mediaUrl!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.data != null) {
+            return Image.memory(
+              snapshot.data!
+            );
+          } else if (message.thumbnailData != null) {
+            return BlurhashChatWidget(
+              width: thumbnailSize.width.toInt(),
+              height: thumbnailSize.height.toInt(),
+              borderRadius: radius,
+              thumbnailData: message.thumbnailData!,
+              child: const FileNotFound()
+            );
+          } else {
+            return FileChatWidget(
+              message,
+              extra: const FileNotFound()
+            );
+          }
         } else {
-          return FileChatWidget(
-            message,
-            extra: const FileNotFound()
+          return const Padding(
+            padding: EdgeInsets.all(32.0),
+            child: CircularProgressIndicator()
           );
         }
       }

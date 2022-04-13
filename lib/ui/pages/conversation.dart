@@ -160,7 +160,7 @@ class _ConversationBottomRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationBloc, ConversationState>(
-      buildWhen: (prev, next) => prev.showSendButton != next.showSendButton,
+      buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage,
       builder: (context, state) => Container(
         color: Theme.of(context).backgroundColor,
         child: Padding(

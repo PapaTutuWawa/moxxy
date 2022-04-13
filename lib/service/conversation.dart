@@ -1,6 +1,5 @@
-import "dart:collection";
-
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/shared/cache.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/db/media.dart";
@@ -12,11 +11,11 @@ import "package:get_it/get_it.dart";
 class ConversationService {
   final Logger _log;
 
-  final HashMap<int, Conversation> _conversationCache;
+  final LRUCache<int, Conversation> _conversationCache;
   bool _loadedConversations;
 
   ConversationService()
-    : _conversationCache = HashMap(),
+    : _conversationCache = LRUCache(100),
       _loadedConversations = false,
       _log = Logger("ConversationService");
 
@@ -25,7 +24,7 @@ class ConversationService {
   Future<void> _loadConversations() async {
     final conversations = await GetIt.I.get<DatabaseService>().loadConversations();
     for (final c in conversations) {
-      _conversationCache[c.id] = c;
+      _conversationCache.cache(c.id, c);
     }
   }
       
@@ -38,7 +37,7 @@ class ConversationService {
 
     return firstWhereOrNull(
       // TODO: Maybe have it accept an iterable
-      _conversationCache.values.toList(),
+      _conversationCache.getValues(),
       (Conversation c) => c.jid == jid
     );
   }
@@ -50,13 +49,13 @@ class ConversationService {
       _loadedConversations = true;
     }
 
-    return _conversationCache[id];
+    return _conversationCache.getValue(id);
   }
 
   /// For modifying the cache without writing it to disk. Useful, for example, when
   /// changing the chat state.
   void setConversation(Conversation conversation) {
-    _conversationCache[conversation.id] = conversation;
+    _conversationCache.cache(conversation.id, conversation);
   }
   
   /// Wrapper around [DatabaseService]'s [updateConversation] that modifies the cache.
@@ -82,7 +81,7 @@ class ConversationService {
       chatState: conversation?.chatState ?? ChatState.gone
     );
 
-    _conversationCache[id] = newConversation;
+    _conversationCache.cache(id, newConversation);
     return newConversation;
   }
 
@@ -108,7 +107,7 @@ class ConversationService {
       open
     );
 
-    _conversationCache[newConversation.id] = newConversation;
+    _conversationCache.cache(newConversation.id, newConversation);
     return newConversation;
   }
 }

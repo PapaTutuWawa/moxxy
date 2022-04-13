@@ -1,8 +1,10 @@
-import "dart:io";
+import "dart:typed_data";
 
+import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
 import "package:flutter/material.dart";
+import "package:get_it/get_it.dart";
 
 class SharedImageWidget extends StatelessWidget {
   final String path;
@@ -12,13 +14,30 @@ class SharedImageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SharedMediaContainer(
-      Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          image: DecorationImage(
-            fit: BoxFit.cover,
-            image: FileImage(File(path))
-          )
+      ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: FutureBuilder<Uint8List>(
+          future: GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(path),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.data != null) {
+                return Image.memory(
+                  snapshot.data!,
+                  fit: BoxFit.cover
+                );
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Icon(
+                    Icons.error_outline,
+                    size: 32.0
+                  )
+                );
+              }
+            } else {
+              return const CircularProgressIndicator();
+            }
+          }
         )
       )
     );

@@ -1,9 +1,9 @@
-import "dart:io";
+import "dart:typed_data";
 
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/media.dart";
-import "package:moxxyv2/ui/service/data.dart";
+import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/ui/widgets/chat/text.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/media/image.dart";
@@ -14,7 +14,8 @@ import "package:moxxyv2/ui/widgets/chat/shared/image.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/file.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/video.dart";
 
-import "package:flutter/material.dart"; import "package:get_it/get_it.dart";
+import "package:flutter/material.dart";
+import "package:get_it/get_it.dart";
 
 enum MessageType {
   text,
@@ -84,12 +85,30 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
             SizedBox(
               width: 48.0,
               height: 48.0,
-              // TODO: Error handling
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-                child: Image.file(
-                  File(message.mediaUrl!),
-                  fit: BoxFit.cover,
+                child: FutureBuilder<Uint8List>(
+                  future: GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(message.mediaUrl!),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      if (snapshot.data != null) {
+                        return Image.memory(
+                          snapshot.data!,
+                          fit: BoxFit.cover
+                        );
+                      } else {
+                        return const Padding(
+                          padding: EdgeInsets.all(32.0),
+                          child: Icon(
+                            Icons.error_outline,
+                            size: 32.0
+                          )
+                        );
+                      }
+                    } else {
+                      return const CircularProgressIndicator();
+                    }
+                  }
                 )
               )
             )
@@ -99,7 +118,6 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
       );
     }
     case MessageType.video: {
-      final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(message);
       return QuoteBaseWidget(
         message,
         Row(
@@ -108,14 +126,33 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
             SizedBox(
               width: 48.0,
               height: 48.0,
-              // TODO: Error handling
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-                    Image.file(
-                      File(thumbnail), fit: BoxFit.cover,
+                    FutureBuilder<Uint8List>(
+                      future: GetIt.I.get<ThumbnailCacheService>().getVideoThumbnail(message.mediaUrl!),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          if (snapshot.data != null) {
+                            return Image.memory(
+                              snapshot.data!,
+                              fit: BoxFit.cover
+                            );
+                          } else {
+                            return const Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: Icon(
+                                Icons.error_outline,
+                                size: 32.0
+                              )
+                            );
+                          }
+                        } else {
+                          return const CircularProgressIndicator();
+                        }
+                      }
                     ),
                     const PlayButton(size: 16.0)
                   ]
