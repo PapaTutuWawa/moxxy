@@ -118,6 +118,8 @@ Future<void> initUDPLogger() async {
 void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
 
+  GetIt.I.registerSingleton<Completer>(Completer());
+  
   setupLogging();
   setupBackgroundEventHandler();
 
@@ -183,6 +185,9 @@ void onStart() {
       if (settings != null) {
         xmpp.connect(settings, false);
       }
+
+
+      GetIt.I.get<Completer>().complete();
   })();
 }
 

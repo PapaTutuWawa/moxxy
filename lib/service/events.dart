@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
@@ -54,6 +56,10 @@ Future<void> performLoginHandler(LoginCommand command, { dynamic extra }) async 
 
 Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) async {
   final id = extra as String;
+
+  // Prevent a race condition where the UI sends the prestart command before the service
+  // has finished setting everything up
+  await GetIt.I.get<Completer>().future;
   
   final xmpp = GetIt.I.get<XmppService>();
   final settings = await xmpp.getConnectionSettings();

@@ -32,6 +32,7 @@ import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
 import "package:moxxyv2/ui/bloc/addcontact_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/ui/service/data.dart";
+import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
@@ -55,6 +56,7 @@ void setupLogging() {
 Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIDownloadService>(UIDownloadService());
   GetIt.I.registerSingleton<UIDataService>(UIDataService());
+  GetIt.I.registerSingleton<ThumbnailCacheService>(ThumbnailCacheService());
   await GetIt.I.get<UIDataService>().init();
 }
 

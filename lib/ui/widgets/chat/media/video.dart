@@ -1,7 +1,8 @@
-import "dart:io";
+import "dart:typed_data";
 
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/ui/service/data.dart";
+import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/ui/widgets/chat/gradient.dart";
 import "package:moxxyv2/ui/widgets/chat/bottom.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
@@ -11,7 +12,6 @@ import "package:moxxyv2/ui/widgets/chat/media/file.dart";
 
 import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
-import "package:video_compress/video_compress.dart";
 import "package:open_file/open_file.dart";
 
 class VideoChatWidget extends StatefulWidget {
@@ -33,31 +33,6 @@ class VideoChatWidget extends StatefulWidget {
 }
 
 class _VideoChatWidgetState extends State<VideoChatWidget> {
-  /// Generate the thumbnail if needed.
-  Future<bool> _thumbnailFuture() async {
-    final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(widget.message);
-    final thumbnailFile = File(thumbnail);
-    if (await thumbnailFile.exists()) {
-      return true;
-    }
-
-    // Thumbnail does not exist
-    final sourceFile = File(widget.message.mediaUrl!);
-    if (await sourceFile.exists()) {
-      final bytes = await VideoCompress.getByteThumbnail(
-        sourceFile.path,
-        quality: 75
-      );
-      if (bytes == null) return false;
-      await thumbnailFile.writeAsBytes(bytes);
-
-      return true;
-    }
-
-    // Source file also does not exist. Return "error".
-    return false;
-  }
-  
   Widget _buildNonDownloaded() {
     // TODO
     if (widget.message.thumbnailData != null) {}
@@ -79,25 +54,32 @@ class _VideoChatWidgetState extends State<VideoChatWidget> {
   }
 
   Widget _buildVideo() {
-    return FutureBuilder<bool>(
-      future: _thumbnailFuture(),
+    return FutureBuilder<Uint8List>(
+      future: GetIt.I.get<ThumbnailCacheService>().getVideoThumbnail(widget.message.mediaUrl!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.data!) {
-            final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPath(widget.message);
+          if (snapshot.data != null) {
             return ImageBaseChatWidget(
               widget.message.mediaUrl!,
               widget.radius,
-              Image.file(File(thumbnail)),
+              Image.memory(snapshot.data!),
               MessageBubbleBottom(widget.message),
               extra: const PlayButton()
             );
           } else {
-            // TODO: Error
-            return const Text("Error");
+            return const Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Icon(
+                Icons.error_outline,
+                size: 32.0
+              )
+            );
           }
         } else {
-          return const CircularProgressIndicator();
+          return const Padding(
+            padding: EdgeInsets.all(32.0),
+            child: CircularProgressIndicator()
+          );
         }
       }
     );
