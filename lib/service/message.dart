@@ -63,10 +63,10 @@ class MessageService {
       quoteId: quoteId
     );
 
+    // Only update the cache if the conversation already has been loaded. This prevents
+    // us from accidentally not loading the conversation afterwards.
     if (_messageCache.containsKey(conversationJid)) {
       _messageCache[conversationJid] = _messageCache[conversationJid]!..add(msg);
-    } else {
-      _messageCache[conversationJid] = List.from([ msg ], growable: true);
     }
 
     return msg;

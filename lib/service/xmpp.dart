@@ -189,13 +189,13 @@ class XmppService {
       String? commandId,
       ChatState? chatState
   }) async {
-    final db = GetIt.I.get<DatabaseService>();
+    final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final sid = conn.generateId();
     final originId = conn.generateId();
-    final message = await db.addMessageFromData(
+    final message = await ms.addMessageFromData(
       body,
       timestamp,
       conn.getConnectionSettings().jid.toString(),
@@ -575,8 +575,8 @@ class XmppService {
     String? mimeGuess;
 
     // Create the message in the database
-    final db = GetIt.I.get<DatabaseService>();
-    Message message = await db.addMessageFromData(
+    final ms = GetIt.I.get<MessageService>();
+    Message message = await ms.addMessageFromData(
       messageBody,
       messageTimestamp,
       event.fromJid.toString(),
