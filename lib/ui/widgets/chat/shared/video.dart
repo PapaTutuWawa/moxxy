@@ -1,6 +1,7 @@
-import "dart:io";
+import "dart:typed_data";
+import "dart:async";
 
-import "package:moxxyv2/ui/service/data.dart";
+import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
 import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
@@ -16,18 +17,34 @@ class SharedVideoWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filename = pathlib.basename(path);
-    final thumbnail = GetIt.I.get<UIDataService>().getThumbnailPathFull(jid, filename);
-
-    // TODO: Error handling
     return SharedMediaContainer(
       ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Image.file(
-              File(thumbnail), fit: BoxFit.cover
+            FutureBuilder<Uint8List>(
+              future: GetIt.I.get<ThumbnailCacheService>().getVideoThumbnail(path),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  if (snapshot.data != null) {
+                    return Image.memory(
+                      snapshot.data!,
+                      fit: BoxFit.cover
+                    );
+                  } else {
+                    return const Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Icon(
+                        Icons.error_outline,
+                        size: 32.0
+                      )
+                    );
+                  }
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              }
             ),
             const PlayButton(size: 16.0)
           ]

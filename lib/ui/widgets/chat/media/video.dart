@@ -14,6 +14,8 @@ import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
 import "package:open_file/open_file.dart";
 
+// TODO: This should be stateless
+
 class VideoChatWidget extends StatefulWidget {
   final Message message;
   final double maxWidth;
