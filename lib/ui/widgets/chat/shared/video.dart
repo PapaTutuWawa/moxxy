@@ -1,5 +1,4 @@
 import "dart:typed_data";
-import "dart:async";
 
 import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
@@ -7,7 +6,6 @@ import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
 import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
-import "package:path/path.dart" as pathlib;
 
 class SharedVideoWidget extends StatelessWidget {
   final String path;
