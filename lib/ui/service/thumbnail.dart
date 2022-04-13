@@ -1,9 +1,12 @@
 import "dart:typed_data";
 import "dart:isolate";
 
+import "package:moxxyv2/shared/cache.dart";
+
 import "package:logging/logging.dart";
 import "package:video_thumbnail/video_thumbnail.dart";
 import "package:flutter_isolate/flutter_isolate.dart";
+import "package:mutex/mutex.dart";
 
 Future<void> _generateVideoThumbnail(List<dynamic> values) async {
   final data = await VideoThumbnail.thumbnailData(
@@ -17,33 +20,40 @@ Future<void> _generateVideoThumbnail(List<dynamic> values) async {
 class ThumbnailCacheService {
   final Logger _log;
 
-  // TODO: Implement some eviction policy
   // Asset path -> decoded data
-  final Map<String, Uint8List> _thumbnailCache;
+  final LRUCache<String, Uint8List> _thumbnailCache;
+  final Mutex _cacheMutex;
 
   ThumbnailCacheService()
-  : _thumbnailCache = {},
-      _log = Logger("ThumbnailCacheService");
+  // TODO: Maybe raise this limit
+  : _thumbnailCache = LRUCache(200),
+    _cacheMutex = Mutex(),
+    _log = Logger("ThumbnailCacheService");
 
-  bool isCached(String path) => _thumbnailCache.containsKey(path);
-
-  // TODO: Maybe lock this function to prevent the same path to be generated over and over
   Future<Uint8List> getVideoThumbnail(String path) async {
-    if (isCached(path)) {
-      _log.finest("Thumbnail data is in cache!");
-      return _thumbnailCache[path]!;
-    }
+    Uint8List? data;
 
-    _log.finest("Thumbnail data not in cache generating...");
+    // Turning this into a critical section allows us to prevent multiple calls to the
+    // isolate in case we generate thumbnails for the same path multiple times.
+    await _cacheMutex.protect(() async {
+        if (_thumbnailCache.inCache(path)) {
+          _log.finest("Thumbnail data is in cache!");
+          data = _thumbnailCache.getValue(path)!;
+          return;
+        }
 
-    final port = ReceivePort();
-    final isolate = await FlutterIsolate.spawn(_generateVideoThumbnail, [ port.sendPort, path ]);
-    final data = (await port.first) as Uint8List;
-    isolate.kill(priority: Isolate.immediate);
-    
-    _log.finest("Generation done.");
-    _thumbnailCache[path] = Uint8List.fromList(data);
-    _log.finest("Returning.");
-    return data;
+        _log.finest("Thumbnail data not in cache generating...");
+
+        final port = ReceivePort();
+        final isolate = await FlutterIsolate.spawn(_generateVideoThumbnail, [ port.sendPort, path ]);
+        data = (await port.first) as Uint8List;
+        isolate.kill(priority: Isolate.immediate);
+        
+        _log.finest("Generation done.");
+        _thumbnailCache.cache(path, Uint8List.fromList(data!));
+        _log.finest("Returning.");
+    });
+
+    return data!;
   }
 }
