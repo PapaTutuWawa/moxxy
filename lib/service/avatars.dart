@@ -79,7 +79,13 @@ class AvatarService {
 
   Future<void> fetchAndUpdateAvatarForJid(String jid) async {
     final items = (await _getDiscoManager().discoItemsQuery(jid)) ?? [];
+    final itemNodes = items.map((i) => i.node);
 
+    _log.finest("Disco items for $jid:");
+    for (final item in itemNodes) {
+      _log.finest("- $item");
+    }
+    
     String base64 = "";
     String hash = "";
     if (listContains<DiscoItem>(items, (item) => item.node == userAvatarDataXmlns)) {

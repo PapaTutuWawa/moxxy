@@ -367,17 +367,25 @@ class XmppService {
           password: settings.password.toString()
       ));
 
-      // In section 5 of XEP-0198 it says that a client should not request the roster
-      // in case of a stream resumption.
       if (!event.resumed) {
+        // In section 5 of XEP-0198 it says that a client should not request the roster
+        // in case of a stream resumption.
         GetIt.I.get<RosterService>().requestRoster();
-        // Request our own avatar and maybe those of our contacts
-      }
 
-      // Make sure we display our own avatar correctly
+        // TODO: Once groupchats come into the equation, this gets trickier
+        // TODO: Do this in a much smarter fashion by checking if their avatar hash has
+        //       changed while we were offline.
+        final roster = await GetIt.I.get<RosterService>().getRoster();
+        for (final item in roster) {
+          GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(item.jid);
+        }
+      }
+      
+      // Make sure we display our own avatar correctly.
+      // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
       // TODO: Maybe don't do this on mobile Internet
       GetIt.I.get<AvatarService>().requestOwnAvatar();
-      
+
       // Either we get the cached version or we retrieve it for the first time
       GetIt.I.get<BlocklistService>().getBlocklist();
       
