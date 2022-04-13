@@ -15,6 +15,8 @@ class ProfilePage extends StatelessWidget {
         state.jid,
         state.avatarUrl,
         state.displayName,
+        state.serverFeatures,
+        state.streamFeatures,
         (path, hash) => context.read<ProfileBloc>().add(
           AvatarSetEvent(path, hash)
         )

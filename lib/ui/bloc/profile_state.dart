@@ -7,6 +7,8 @@ class ProfileState with _$ProfileState {
       @Default(null) Conversation? conversation,
       @Default("") String jid,
       @Default("") String avatarUrl,
-      @Default("") String displayName
+      @Default("") String displayName,
+      @Default([]) List<String> serverFeatures,
+      @Default([]) List<String> streamFeatures,
   }) = _ProfileState;
 }

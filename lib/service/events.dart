@@ -339,3 +339,16 @@ Future<void> performSendChatState(SendChatStateCommand command, { dynamic extra 
   final man = conn.getManagerById(chatStateManager)!;
   man.sendChatState(chatStateFromString(command.state), command.jid);
 }
+
+Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final conn = GetIt.I.get<XmppConnection>();
+  sendEvent(
+    GetFeaturesEvent(
+      serverFeatures: conn.serverFeatures,
+      streamFeatures: conn.streamFeatures
+    ),
+    id: id
+  );
+}

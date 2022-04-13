@@ -3,6 +3,7 @@ import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/commands.dart";
+import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 
 import "package:bloc/bloc.dart";
@@ -47,6 +48,19 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         )
       )
     );
+
+    if (event.isSelfProfile) {
+      final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+        GetFeaturesCommand()
+      ) as GetFeaturesEvent;
+
+      emit(
+        this.state.copyWith(
+          serverFeatures: result.serverFeatures,
+          streamFeatures: result.streamFeatures
+        )
+      );
+    }
   }
 
   Future<void> _onConversationUpdated(ConversationUpdatedEvent event, Emitter<ProfileState> emit) async {

@@ -157,6 +157,9 @@ class XmppConnection {
     _socket.getEventStream().listen(_handleSocketEvent);
   }
 
+  List<String> get streamFeatures => _streamFeatures;
+  List<String> get serverFeatures => _serverFeatures;
+
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
   /// [sortHandlers] should NOT be touched. It specified if the handler priorities
   /// should be set up. The only time this should be false is when called via

@@ -168,6 +168,15 @@ files:
           - BackgroundEvent
         implements:
           - JsonImplementation
+      # Returned by [GetFeaturesCommand]
+      - name: GetFeaturesEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          streamFeatures: List<String>
+          serverFeatures: List<String>
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -306,6 +315,11 @@ files:
         attributes:
           state: String
           jid: String
+      - name: GetFeaturesCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
