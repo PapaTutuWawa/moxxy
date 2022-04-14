@@ -1,13 +1,15 @@
 import "dart:async";
+import "dart:typed_data";
 
 import "package:moxxyv2/shared/avatar.dart";
+import "package:moxxyv2/ui/bloc/crop_bloc.dart";
 import "package:moxxyv2/xmpp/sasl/errors.dart";
 
 import "package:flutter/material.dart";
 import "package:file_picker/file_picker.dart";
-import "package:image_cropping/image_cropping.dart";
 import "package:cryptography/cryptography.dart";
 import "package:hex/hex.dart";
+import "package:get_it/get_it.dart";
 import "package:flutter_image_compress/flutter_image_compress.dart";
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
@@ -71,7 +73,7 @@ void dismissSoftKeyboard(BuildContext context) {
 /// Open the file picker to pick an image and open the cropping tool.
 /// The Future either resolves to null if the user cancels the action or
 /// the actual image data.
-Future<dynamic> pickAndCropImage(BuildContext context) async {
+Future<Uint8List?> pickAndCropImage(BuildContext context) async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(
     allowMultiple: false,
     type: FileType.image,
@@ -79,14 +81,7 @@ Future<dynamic> pickAndCropImage(BuildContext context) async {
   );
 
   if (result != null) {
-    Completer completer = Completer();
-    ImageCropping.cropImage(
-      context: context,
-      imageBytes: result.files.single.bytes!,
-      onImageDoneListener: (data) => completer.complete(data),
-      selectedImageRatio: ImageRatio.RATIO_1_1
-    );
-    return completer.future;
+    return GetIt.I.get<CropBloc>().cropImageWithData(result.files.single.bytes!);
   }
 
   return null;

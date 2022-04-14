@@ -1,6 +1,7 @@
 import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
 import "package:flutter/material.dart";
+import "package:open_file/open_file.dart";
 
 class SharedFileWidget extends StatelessWidget {
   final String path;
@@ -19,7 +20,8 @@ class SharedFileWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           color: Colors.white60
         )
-      )
+      ),
+      onTap: () => OpenFile.open(path)
     );
   }
 }

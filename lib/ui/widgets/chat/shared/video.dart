@@ -6,6 +6,7 @@ import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
 import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
+import "package:open_file/open_file.dart";
 
 class SharedVideoWidget extends StatelessWidget {
   final String path;
@@ -47,7 +48,8 @@ class SharedVideoWidget extends StatelessWidget {
             const PlayButton(size: 16.0)
           ]
         )
-      )
+      ),
+      onTap: () => OpenFile.open(path)
     );
   }
 }

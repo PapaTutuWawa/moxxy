@@ -5,6 +5,7 @@ import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
 
 import "package:flutter/material.dart";
 import "package:get_it/get_it.dart";
+import "package:open_file/open_file.dart";
 
 class SharedImageWidget extends StatelessWidget {
   final String path;
@@ -39,7 +40,8 @@ class SharedImageWidget extends StatelessWidget {
             }
           }
         )
-      )
+      ),
+      onTap: () => OpenFile.open(path)
     );
   }
 }

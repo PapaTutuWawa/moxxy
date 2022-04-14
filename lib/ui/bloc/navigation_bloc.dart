@@ -13,6 +13,7 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     on<PushedNamedEvent>(_onPushedNamed);
     on<PushedNamedAndRemoveUntilEvent>(_onPushedNamedAndRemoveUntil);
     on<PushedNamedReplaceEvent>(_onPushedNamedReplaceEvent);
+    on<PoppedRouteEvent>(_onPoppedRoute);
   }
 
   Future<void> _onPushedNamed(PushedNamedEvent event, Emitter<NavigationState> emit) async {
@@ -35,5 +36,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       event.destination.path,
       arguments: event.destination.arguments
     );
+  }
+
+  Future<void> _onPoppedRoute(PoppedRouteEvent event, Emitter<NavigationState> emit) async {
+    navigationKey.currentState!.pop();
   }
 }

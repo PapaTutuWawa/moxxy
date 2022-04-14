@@ -21,6 +21,7 @@ import "package:moxxyv2/ui/pages/conversations.dart";
 import "package:moxxyv2/ui/pages/login.dart";
 import "package:moxxyv2/ui/pages/intro.dart";
 import "package:moxxyv2/ui/pages/sharedmedia.dart";
+import "package:moxxyv2/ui/pages/crop.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/login_bloc.dart";
@@ -32,6 +33,7 @@ import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
 import "package:moxxyv2/ui/bloc/addcontact_bloc.dart";
 import "package:moxxyv2/ui/bloc/sharedmedia_bloc.dart";
+import "package:moxxyv2/ui/bloc/crop_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/service/thumbnail.dart";
@@ -73,6 +75,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
   GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
   GetIt.I.registerSingleton<SharedMediaBloc>(SharedMediaBloc());
+  GetIt.I.registerSingleton<CropBloc>(CropBloc());
 }
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -121,6 +124,9 @@ void main() async {
         ),
         BlocProvider<SharedMediaBloc>(
           create: (_) => GetIt.I.get<SharedMediaBloc>()
+        ),
+        BlocProvider<CropBloc>(
+          create: (_) => GetIt.I.get<CropBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -264,6 +270,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case privacyRoute: return PrivacyPage.route;
           case debuggingRoute: return DebuggingPage.route;
           case addContactRoute: return AddContactPage.route;
+          case cropRoute: return CropPage.route;
         }
 
         return null;

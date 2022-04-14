@@ -25,6 +25,7 @@ const double fontsizeBody = 15;
 const double fontsizeSubbody = 10;
 
 // Navigation constants
+const String cropRoute = "/crop";
 const String introRoute = "/intro";
 const String loginRoute = "/route";
 const String registrationRoute = "/registration";

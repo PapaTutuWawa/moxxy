@@ -32,3 +32,5 @@ class PushedNamedReplaceEvent extends NavigationEvent {
 
   PushedNamedReplaceEvent(this.destination);
 }
+
+class PoppedRouteEvent extends NavigationEvent {}
