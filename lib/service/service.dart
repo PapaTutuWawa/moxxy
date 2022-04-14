@@ -89,7 +89,10 @@ void setupLogging() {
 
         if (tooLong) {
           msg = msg.substring(967 - logMessageHeader.length - 2);
+        } else {
+          msg = "";
         }
+
         final logMessage = logMessageHeader + line;
 
         if (GetIt.I.isRegistered<UDPLogger>()) {
@@ -103,7 +106,7 @@ void setupLogging() {
           // ignore: avoid_print
           print(logMessage);
         }
-      } while (logMessageHeader.length + msg.length >= 967);
+      } while (msg.isNotEmpty);
   });
 }
 
