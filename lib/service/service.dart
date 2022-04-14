@@ -80,19 +80,30 @@ void sendEvent(BackgroundEvent event, { String? id }) {
 
 void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
-  Logger.root.onRecord.listen((record) { 
-      final logMessage = "[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}";
-      if (GetIt.I.isRegistered<UDPLogger>()) {
-        final udp = GetIt.I.get<UDPLogger>();
-        if (udp.isEnabled()) {
-          udp.sendLog(logMessage, record.time.millisecondsSinceEpoch, record.level.name);
-        }
-      }
+  Logger.root.onRecord.listen((record) {
+      final logMessageHeader = "[${record.level.name}] (${record.loggerName}) ${record.time}: ";
+      String msg = record.message;
+      do {
+        final tooLong = logMessageHeader.length + msg.length >= 967;
+        final line = tooLong ? msg.substring(0, 967 - logMessageHeader.length) : msg;
 
-      if (kDebugMode) {
-        // ignore: avoid_print
-        print(logMessage);
-      }
+        if (tooLong) {
+          msg = msg.substring(967 - logMessageHeader.length - 2);
+        }
+        final logMessage = logMessageHeader + line;
+
+        if (GetIt.I.isRegistered<UDPLogger>()) {
+          final udp = GetIt.I.get<UDPLogger>();
+          if (udp.isEnabled()) {
+            udp.sendLog(logMessage, record.time.millisecondsSinceEpoch, record.level.name);
+          }
+        }
+
+        if (kDebugMode) {
+          // ignore: avoid_print
+          print(logMessage);
+        }
+      } while (logMessageHeader.length + msg.length >= 967);
   });
 }
 
