@@ -12,6 +12,6 @@ class BackgroundServiceDataSender extends AwaitableDataSender<BackgroundCommand,
 
   @override
   Future<void> sendDataImpl(DataWrapper data) async {
-    _srv.invoke("command", data.toJson());
+    _srv.sendData(data.toJson());
   }
 }

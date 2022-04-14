@@ -41,7 +41,6 @@ import "package:moxxyv2/service/events.dart";
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
-import "package:flutter_background_service_android/flutter_background_service_android.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 import "package:uuid/uuid.dart";
@@ -50,7 +49,7 @@ Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final service = FlutterBackgroundService();
-  if (await service.isRunning()) {
+  if (await service.isServiceRunning()) {
     //GetIt.I.get<Logger>().info("Stopping background service");
 
     if (kDebugMode) {
@@ -76,7 +75,7 @@ void sendEvent(BackgroundEvent event, { String? id }) {
   // NOTE: *S*erver to *F*oreground
   GetIt.I.get<Logger>().fine("S2F: " + data.toJson().toString());
   
-  FlutterBackgroundService().invoke("event", data.toJson());
+  FlutterBackgroundService().sendData(data.toJson());
 }
 
 void setupLogging() {
@@ -130,7 +129,7 @@ Future<void> initUDPLogger() async {
 }
 
 /// Entrypoint for the background service
-void onStart(ServiceInstance service) {
+void onStart() {
   WidgetsFlutterBinding.ensureInitialized();
 
   GetIt.I.registerSingleton<Completer>(Completer());
@@ -138,11 +137,10 @@ void onStart(ServiceInstance service) {
   setupLogging();
   setupBackgroundEventHandler();
 
-  // TODO: This is Android specific
-  GetIt.I.registerSingleton<AndroidServiceInstance>(service as AndroidServiceInstance);
   GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
-  service.on("command").listen(handleEvent);
-  service.setForegroundNotificationInfo(title: "Moxxy", content: "Connecting...");
+  final service = FlutterBackgroundService();
+  service.onDataReceived.listen(handleEvent);
+  service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
 
   GetIt.I.get<Logger>().finest("Running...");
 
@@ -198,7 +196,7 @@ void onStart(ServiceInstance service) {
       final settings = await xmpp.getConnectionSettings();
 
       if (settings != null) {
-        //xmpp.connect(settings, false);
+        xmpp.connect(settings, false);
       }
 
       GetIt.I.get<Completer>().complete();
@@ -221,7 +219,6 @@ Future<void> initializeService() async {
       isForegroundMode: true
     )
   );
-  service.startService();
 }
 
 void setupBackgroundEventHandler() {
