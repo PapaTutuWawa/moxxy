@@ -9,6 +9,7 @@ import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
+import "package:moxxyv2/ui/bloc/sharedmedia_bloc.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 
 import "package:get_it/get_it.dart";
@@ -101,12 +102,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
   
   Future<void> _onRequestedConversation(RequestedConversationEvent event, Emitter<ConversationState> emit) async {
+    final conversation = firstWhereOrNull(
+      GetIt.I.get<ConversationsBloc>().state.conversations,
+      (Conversation c) => c.jid == event.jid
+    )!;
     emit(
       state.copyWith(
-        conversation: firstWhereOrNull(
-          GetIt.I.get<ConversationsBloc>().state.conversations,
-          (Conversation c) => c.jid == event.jid
-        )
+        conversation: conversation
       )
     );
 
@@ -135,6 +137,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     GetIt.I.get<BackgroundServiceDataSender>().sendData(
       SetOpenConversationCommand(jid: event.jid),
       awaitable: false
+    );
+    GetIt.I.get<SharedMediaBloc>().add(
+      SetSharedMedia(
+        conversation.title,
+        conversation.jid,
+        conversation.sharedMedia
+      )
     );
   }
 

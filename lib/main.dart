@@ -20,6 +20,7 @@ import "package:moxxyv2/ui/pages/newconversation.dart";
 import "package:moxxyv2/ui/pages/conversations.dart";
 import "package:moxxyv2/ui/pages/login.dart";
 import "package:moxxyv2/ui/pages/intro.dart";
+import "package:moxxyv2/ui/pages/sharedmedia.dart";
 import "package:moxxyv2/ui/pages/splashscreen/splashscreen.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/login_bloc.dart";
@@ -30,6 +31,7 @@ import "package:moxxyv2/ui/bloc/blocklist_bloc.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
 import "package:moxxyv2/ui/bloc/addcontact_bloc.dart";
+import "package:moxxyv2/ui/bloc/sharedmedia_bloc.dart";
 import "package:moxxyv2/ui/service/download.dart";
 import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/service/thumbnail.dart";
@@ -70,6 +72,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
   GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
   GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
+  GetIt.I.registerSingleton<SharedMediaBloc>(SharedMediaBloc());
 }
 
 // TODO: Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -115,6 +118,9 @@ void main() async {
         ),
         BlocProvider<AddContactBloc>(
           create: (_) => GetIt.I.get<AddContactBloc>()
+        ),
+        BlocProvider<SharedMediaBloc>(
+          create: (_) => GetIt.I.get<SharedMediaBloc>()
         )
       ],
       child: MyApp(navKey)
@@ -247,6 +253,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             type: PageTransitionType.rightToLeft,
             settings: settings
           );
+          case sharedMediaRoute: return SharedMediaPage.route;
           case blocklistRoute: return BlocklistPage.route;
           case profileRoute: return ProfilePage.route;
           case settingsRoute: return SettingsPage.route;

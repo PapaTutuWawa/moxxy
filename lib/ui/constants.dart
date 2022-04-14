@@ -31,6 +31,7 @@ const String registrationRoute = "/registration";
 const String postRegistrationRoute = registrationRoute + "/post";
 const String conversationsRoute = "/conversations";
 const String conversationRoute = "/conversation";
+const String sharedMediaRoute = conversationRoute + "/shared_media";
 const String profileRoute = conversationRoute + "/profile";
 const String sendFilesRoute = conversationRoute + "/send_files";
 const String newConversationRoute = "/new_conversation";

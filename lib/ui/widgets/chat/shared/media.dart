@@ -1,5 +1,6 @@
 import "package:moxxyv2/shared/models/media.dart";
 import "package:moxxyv2/ui/widgets/chat/media/media.dart";
+import "package:moxxyv2/ui/widgets/chat/shared/summary.dart";
 
 import "package:flutter/material.dart";
 
@@ -19,7 +20,9 @@ class SharedMediaDisplay extends StatelessWidget {
       tmp.add(buildSharedMediaWidget(sharedMedia[i], jid));
     }
 
-    // TODO: Add an extra widget to show a list of all shared media if we had to hide some
+    if (sharedMedia.length >= 8) {
+      tmp.add(SharedSummaryWidget(sharedMedia.length - 7));
+    }
     
     return tmp;
   }
