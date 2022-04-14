@@ -266,6 +266,8 @@ class _ConversationBottomRow extends StatelessWidget {
 class ConversationPage extends StatefulWidget {
   const ConversationPage({ Key? key }) : super(key: key);
 
+  static get route => MaterialPageRoute(builder: (context) => const ConversationPage());
+  
   @override
   _ConversationPageState createState() => _ConversationPageState();
 }

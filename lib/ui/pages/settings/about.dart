@@ -9,6 +9,8 @@ import "package:url_launcher/url_launcher.dart";
 class SettingsAboutPage extends StatelessWidget {
   const SettingsAboutPage({ Key? key }) : super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => const SettingsAboutPage());
+  
   void _openUrl(String url) async {
     if (!await launch(url)) {
       // TODO: Show a popup to copy the url

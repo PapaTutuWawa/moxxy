@@ -9,6 +9,8 @@ import "package:flutter_bloc/flutter_bloc.dart";
 class ProfilePage extends StatelessWidget {
   const ProfilePage({ Key? key }) : super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => const ProfilePage());
+  
   Widget _buildHeader(BuildContext context, ProfileState state) {
     if (state.isSelfProfile) {
       return SelfProfileHeader(

@@ -9,6 +9,8 @@ import "package:flutter/foundation.dart";
 class SettingsPage extends StatelessWidget {
   const SettingsPage({ Key? key }) : super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => const SettingsPage());
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

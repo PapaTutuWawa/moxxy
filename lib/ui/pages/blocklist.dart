@@ -13,6 +13,8 @@ enum BlocklistOptions {
 class BlocklistPage extends StatelessWidget {
   const BlocklistPage({ Key? key }) : super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => const BlocklistPage());
+  
   Widget _buildListView(BlocklistState state) {
     if (state.blocklist.isEmpty) {
       return Padding(

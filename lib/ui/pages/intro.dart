@@ -6,6 +6,8 @@ import "package:flutter/material.dart";
 
 class Intro extends StatelessWidget {
   const Intro({ Key? key }) : super(key: key);
+
+  static get route => MaterialPageRoute(builder: (_) => const Intro());
   
   @override
   Widget build(BuildContext context) {

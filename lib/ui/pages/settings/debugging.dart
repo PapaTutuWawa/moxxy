@@ -13,6 +13,8 @@ class DebuggingPage extends StatelessWidget {
 
   DebuggingPage({ Key? key }) : _ipController = TextEditingController(), _passphraseController = TextEditingController(), _portController = TextEditingController(), super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => DebuggingPage());
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

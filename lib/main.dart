@@ -41,6 +41,7 @@ import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:page_transition/page_transition.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
@@ -235,27 +236,30 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
       navigatorKey: widget.navigationKey,
       themeMode: ThemeMode.system,
-      routes: {
-        introRoute: (context) => const Intro(),
-        loginRoute: (context) => const Login(),
-        conversationsRoute: (context) => const ConversationsPage(),
-        newConversationRoute: (context) => const NewConversationPage(),
-        conversationRoute: (context) => const ConversationPage(),
-        blocklistRoute: (context) => const BlocklistPage(),
-        profileRoute: (context) => const ProfilePage(),
-        settingsRoute: (context) => const SettingsPage(),
-        aboutRoute: (context) => const SettingsAboutPage(),
-        licensesRoute: (context) => const SettingsLicensesPage(),
-        appearanceRoute: (context) => const AppearancePage(),
-        networkRoute: (context) => const NetworkPage(),
-        privacyRoute: (context) => const PrivacyPage(),
-        debuggingRoute: (context) => DebuggingPage(),
-        addContactRoute: (context) => const AddContactPage(),
-        /*
-        registrationRoute: (context) => RegistrationPage(),
-        postRegistrationRoute: (context) => const PostRegistrationPage(),
-        sendFilesRoute: (context) => SendFilesPage(),
-        */
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case introRoute: return Intro.route;
+          case loginRoute: return Login.route;
+          case conversationsRoute: return ConversationsPage.route;
+          case newConversationRoute: return NewConversationPage.route;
+          case conversationRoute: return PageTransition(
+            child: const ConversationPage(),
+            type: PageTransitionType.rightToLeft,
+            settings: settings
+          );
+          case blocklistRoute: return BlocklistPage.route;
+          case profileRoute: return ProfilePage.route;
+          case settingsRoute: return SettingsPage.route;
+          case aboutRoute: return SettingsAboutPage.route;
+          case licensesRoute: return SettingsLicensesPage.route;
+          case appearanceRoute: return AppearancePage.route;
+          case networkRoute: return NetworkPage.route;
+          case privacyRoute: return PrivacyPage.route;
+          case debuggingRoute: return DebuggingPage.route;
+          case addContactRoute: return AddContactPage.route;
+        }
+
+        return null;
       },
       home: const Splashscreen()
     );

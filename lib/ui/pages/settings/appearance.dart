@@ -15,6 +15,8 @@ import "package:path/path.dart" as path;
 class AppearancePage extends StatelessWidget {
   const AppearancePage({ Key? key }): super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => const AppearancePage());
+  
   // TODO: Move this somewhere else to not mix UI and application logic
   Future<String?> _pickBackgroundImage() async {
     final result = await FilePicker.platform.pickFiles(

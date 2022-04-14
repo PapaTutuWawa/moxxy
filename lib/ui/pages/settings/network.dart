@@ -23,6 +23,8 @@ class NetworkPage extends StatelessWidget {
   ];
 
   const NetworkPage({ Key? key }): super(key: key);
+
+  static get route => MaterialPageRoute(builder: (_) => const NetworkPage());
   
   Widget _buildFileSizeListItem(BuildContext context, String text, int value, bool selected) {
     final textTheme = Theme.of(context).textTheme.labelLarge;

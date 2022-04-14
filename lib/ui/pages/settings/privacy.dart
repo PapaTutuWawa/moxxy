@@ -9,6 +9,8 @@ import "package:flutter_bloc/flutter_bloc.dart";
 class PrivacyPage extends StatelessWidget {
   const PrivacyPage({ Key? key }): super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => const PrivacyPage());
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

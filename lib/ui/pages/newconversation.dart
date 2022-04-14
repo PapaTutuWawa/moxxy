@@ -13,17 +13,8 @@ import "package:flutter_bloc/flutter_bloc.dart";
 class NewConversationPage extends StatelessWidget {
   const NewConversationPage({ Key? key }) : super(key: key);
 
-  /*
-  void _addNewConversation(_NewConversationViewModel viewModel, BuildContext context, RosterItem rosterItem) {
-    viewModel.addConversation(
-      rosterItem.title,
-      rosterItem.avatarUrl,
-      "",
-      rosterItem.jid
-    );
-  }
-  */
-
+  static get route => MaterialPageRoute(builder: (_) => const NewConversationPage());
+  
   Widget _renderIconEntry(IconData icon, String text, void Function() onTap) {
     return InkWell(
       onTap: onTap,

@@ -29,6 +29,8 @@ class LicenseRow extends StatelessWidget {
 class SettingsLicensesPage extends StatelessWidget {
   const SettingsLicensesPage({ Key? key }) : super(key: key);
 
+  static get route => MaterialPageRoute(builder: (_) => const SettingsLicensesPage());
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

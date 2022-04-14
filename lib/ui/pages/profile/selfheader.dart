@@ -144,7 +144,7 @@ class SelfProfileHeader extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: ExpansionTile(
-            title: Text("Server information"),
+            title: const Text("Server information"),
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,

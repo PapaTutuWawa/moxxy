@@ -9,7 +9,9 @@ import "package:flutter_bloc/flutter_bloc.dart";
 
 class Login extends StatelessWidget {
   const Login({ Key? key }) : super(key: key);
- 
+
+  static get route => MaterialPageRoute(builder: (_) => const Login());
+  
   @override Widget build(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) => WillPopScope(
