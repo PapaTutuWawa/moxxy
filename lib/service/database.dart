@@ -99,6 +99,8 @@ class DatabaseService {
       ],
       directory: dir.path
     );
+
+    _log.finest("Database setup done");
   }
   
   /// Loads all conversations from the database and adds them to the state and cache.
