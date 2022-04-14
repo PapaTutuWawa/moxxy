@@ -47,13 +47,14 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster, String subsc
 
 RosterItem rosterDbToModel(DBRosterItem i) {
   return RosterItem(
-    id: i.id!,
-    avatarUrl: i.avatarUrl,
-    jid: i.jid,
-    subscription: i.subscription,
-    ask: i.ask,
-    groups: i.groups,
-    title: i.title
+    i.id!,
+    i.avatarUrl,
+    i.avatarHash,
+    i.jid,
+    i.title,
+    i.subscription,
+    i.ask,
+    i.groups
   );
 }
 
@@ -336,6 +337,7 @@ class DatabaseService {
   /// Create a roster item from data
   Future<RosterItem> addRosterItemFromData(
     String avatarUrl,
+    String avatarHash,
     String jid,
     String title,
     String subscription,
@@ -348,6 +350,7 @@ class DatabaseService {
       ..jid = jid
       ..title = title
       ..avatarUrl = avatarUrl
+      ..avatarHash = avatarHash
       ..subscription = subscription
       ..ask = ask
       ..groups = groups;
@@ -364,6 +367,7 @@ class DatabaseService {
   Future<RosterItem> updateRosterItem(
     int id, {
       String? avatarUrl,
+      String? avatarHash,
       String? title,
       String? subscription,
       String? ask,
@@ -373,6 +377,9 @@ class DatabaseService {
     final i = (await _isar.dBRosterItems.get(id))!;
     if (avatarUrl != null) {
       i.avatarUrl = avatarUrl;
+    }
+    if (avatarHash != null) {
+      i.avatarHash = avatarHash;
     }
     if (title != null) {
       i.title = title;

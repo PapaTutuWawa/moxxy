@@ -121,7 +121,7 @@ class XmppService {
           EventTypeMatcher<MessageEvent>(_onMessage),
           EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
           EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
-          EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
+          EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush)
       ]);
     }
 
@@ -373,11 +373,9 @@ class XmppService {
         GetIt.I.get<RosterService>().requestRoster();
 
         // TODO: Once groupchats come into the equation, this gets trickier
-        // TODO: Do this in a much smarter fashion by checking if their avatar hash has
-        //       changed while we were offline.
         final roster = await GetIt.I.get<RosterService>().getRoster();
         for (final item in roster) {
-          GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(item.jid);
+          GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(item.jid, item.avatarHash);
         }
       }
       

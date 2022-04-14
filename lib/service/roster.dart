@@ -61,6 +61,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
         // Item has been modified
         final newItem = await rs.addRosterItemFromData(
           "",
+          "",
           item.jid,
           item.name ?? item.jid.split("@")[0],
           item.subscription,
@@ -104,6 +105,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
         // Item is new
         added.add(await rs.addRosterItemFromData(
             "",
+            "",
             item.jid,
             item.jid.split("@")[0],
             item.subscription,
@@ -142,6 +144,7 @@ class RosterService {
   /// Wrapper around [DatabaseService]'s addRosterItemFromData that updates the cache.
   Future<RosterItem> addRosterItemFromData(
     String avatarUrl,
+    String avatarHash,
     String jid,
     String title,
     String subscription,
@@ -152,6 +155,7 @@ class RosterService {
   ) async {
     final item = await addRosterItemFromData(
       avatarUrl,
+      avatarHash,
       jid,
       title,
       subscription,
@@ -169,6 +173,7 @@ class RosterService {
   Future<RosterItem> updateRosterItem(
     int id, {
       String? avatarUrl,
+      String? avatarHash,
       String? title,
       String? subscription,
       String? ask,
@@ -178,6 +183,7 @@ class RosterService {
     final newItem = await GetIt.I.get<DatabaseService>().updateRosterItem(
       id,
       avatarUrl: avatarUrl,
+      avatarHash: avatarHash,
       title: title,
       subscription: subscription,
       ask: ask,
@@ -246,9 +252,10 @@ class RosterService {
   /// Attempts to add an item to the roster by first performing the roster set
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
-  Future<RosterItem> addToRosterWrapper(String avatarUrl, String jid, String title) async {
+  Future<RosterItem> addToRosterWrapper(String avatarUrl, String avatarHash, String jid, String title) async {
     final item = await addRosterItemFromData(
       avatarUrl,
+      avatarHash,
       jid,
       title,
       "none",

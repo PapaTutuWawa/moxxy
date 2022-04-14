@@ -252,11 +252,11 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
     );
   }
 
-  roster.addToRosterWrapper("", jid, jid.split("@")[0]);
+  roster.addToRosterWrapper("", "", jid, jid.split("@")[0]);
   
   // Try to figure out an avatar
   await GetIt.I.get<AvatarService>().subscribeJid(jid);
-  GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid);
+  GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid, "");
 }
 
 Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic extra }) async {

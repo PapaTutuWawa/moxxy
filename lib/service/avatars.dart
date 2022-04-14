@@ -70,14 +70,15 @@ class AvatarService {
 
       final roster = await rs.updateRosterItem(
         originalRoster.id,
-        avatarUrl: avatarPath
+        avatarUrl: avatarPath,
+        avatarHash: hash
       );
 
       sendEvent(RosterDiffEvent(modified: [roster]));
     }
   }
-
-  Future<void> fetchAndUpdateAvatarForJid(String jid) async {
+  
+  Future<void> fetchAndUpdateAvatarForJid(String jid, String oldHash) async {
     final items = (await _getDiscoManager().discoItemsQuery(jid)) ?? [];
     final itemNodes = items.map((i) => i.node);
 
@@ -89,8 +90,14 @@ class AvatarService {
     String base64 = "";
     String hash = "";
     if (listContains<DiscoItem>(items, (item) => item.node == userAvatarDataXmlns)) {
+      final avatar = _getUserAvatarManager();
+      final pubsubHash = await avatar.getAvatarId(jid);
+
+      // Don't request if we already have the newest avatar
+      if (pubsubHash == oldHash) return;
+      
       // Query via PubSub
-      final data = await _getUserAvatarManager().getUserAvatar(jid);
+      final data = await avatar.getUserAvatar(jid);
       if (data == null) return;
       
       base64 = data.base64;
