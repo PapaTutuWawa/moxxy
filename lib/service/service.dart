@@ -41,6 +41,7 @@ import "package:moxxyv2/service/events.dart";
 import "package:flutter/material.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
+import "package:flutter_background_service_android/flutter_background_service_android.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 import "package:uuid/uuid.dart";
@@ -49,8 +50,8 @@ Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final service = FlutterBackgroundService();
-  if (await service.isServiceRunning()) {
-    GetIt.I.get<Logger>().info("Stopping background service");
+  if (await service.isRunning()) {
+    //GetIt.I.get<Logger>().info("Stopping background service");
 
     if (kDebugMode) {
       //service.stopBackgroundService();
@@ -73,9 +74,9 @@ void sendEvent(BackgroundEvent event, { String? id }) {
     event
   );
   // NOTE: *S*erver to *F*oreground
-  GetIt.I.get<Logger>().fine("S2F: " + data.toString());
+  GetIt.I.get<Logger>().fine("S2F: " + data.toJson().toString());
   
-  GetIt.I.get<FlutterBackgroundService>().sendData(data.toJson());
+  FlutterBackgroundService().invoke("event", data.toJson());
 }
 
 void setupLogging() {
@@ -89,7 +90,10 @@ void setupLogging() {
 
         if (tooLong) {
           msg = msg.substring(967 - logMessageHeader.length - 2);
+        } else {
+          msg = "";
         }
+
         final logMessage = logMessageHeader + line;
 
         if (GetIt.I.isRegistered<UDPLogger>()) {
@@ -103,7 +107,7 @@ void setupLogging() {
           // ignore: avoid_print
           print(logMessage);
         }
-      } while (logMessageHeader.length + msg.length >= 967);
+      } while (msg.isNotEmpty);
   });
 }
 
@@ -126,7 +130,7 @@ Future<void> initUDPLogger() async {
 }
 
 /// Entrypoint for the background service
-void onStart() {
+void onStart(ServiceInstance service) {
   WidgetsFlutterBinding.ensureInitialized();
 
   GetIt.I.registerSingleton<Completer>(Completer());
@@ -134,11 +138,11 @@ void onStart() {
   setupLogging();
   setupBackgroundEventHandler();
 
-  final service = FlutterBackgroundService();
-  GetIt.I.registerSingleton<FlutterBackgroundService>(service);
+  // TODO: This is Android specific
+  GetIt.I.registerSingleton<AndroidServiceInstance>(service as AndroidServiceInstance);
   GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
-  service.onDataReceived.listen(handleEvent);
-  service.setNotificationInfo(title: "Moxxy", content: "Connecting...");
+  service.on("command").listen(handleEvent);
+  service.setForegroundNotificationInfo(title: "Moxxy", content: "Connecting...");
 
   GetIt.I.get<Logger>().finest("Running...");
 
@@ -194,23 +198,22 @@ void onStart() {
       final settings = await xmpp.getConnectionSettings();
 
       if (settings != null) {
-        xmpp.connect(settings, false);
+        //xmpp.connect(settings, false);
       }
-
 
       GetIt.I.get<Completer>().complete();
   })();
 }
 
-Future<FlutterBackgroundService> initializeService() async {
+Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
   await service.configure(
     // TODO: iOS
     iosConfiguration: IosConfiguration(
       autoStart: true,
-      onBackground: () {},
-      onForeground: () {}
+      onBackground: (_) => true,
+      onForeground: (_) => true
     ),
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
@@ -218,8 +221,7 @@ Future<FlutterBackgroundService> initializeService() async {
       isForegroundMode: true
     )
   );
-
-  return service;
+  service.startService();
 }
 
 void setupBackgroundEventHandler() {

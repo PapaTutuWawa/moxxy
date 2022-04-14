@@ -34,7 +34,7 @@ import "package:moxxyv2/service/blocking.dart";
 import "package:get_it/get_it.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
-import "package:flutter_background_service/flutter_background_service.dart";
+import "package:flutter_background_service_android/flutter_background_service_android.dart";
 
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
@@ -312,15 +312,15 @@ class XmppService {
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
     switch (event.state) {
       case XmppConnectionState.connected: {
-        FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
+        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
       }
       break;
       case XmppConnectionState.connecting: {
-        FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Connecting...");
+        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Connecting...");
       }
       break;
       default: {
-        FlutterBackgroundService().setNotificationInfo(title: "Moxxy", content: "Disconnected");
+        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Disconnected");
       }
       break;
     }

@@ -30,14 +30,13 @@ void setupEventHandler() {
   GetIt.I.registerSingleton<EventHandler>(handler);
 
   // Make sure that we handle events from flutter_background_service
-  FlutterBackgroundService().onDataReceived.listen((Map<String, dynamic>? json) async {
+  FlutterBackgroundService().on("event").listen((Map<String, dynamic>? json) async {
+      print("##################################");
       final log = GetIt.I.get<Logger>();
       if (json == null) {
         log.warning("Received null from the background service. Ignoring...");
         return;
       }
-
-      log.finest("S2F: $json");
       
       // NOTE: This feels dirty, but we gotta do it
       final event = getEventFromJson(json["data"]!)!;
@@ -45,7 +44,9 @@ void setupEventHandler() {
         json["id"]!,
         event
       );
-      
+
+      log.finest("S2F: " + event.toString());
+
       // First attempt to deal with awaitables
       bool found = false;
       found = await GetIt.I.get<BackgroundServiceDataSender>().onData(data);
