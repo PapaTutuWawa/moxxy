@@ -90,10 +90,15 @@ class _ConversationTopbarWidget extends StatelessWidget {
               ]
             )
           ),
-          AvatarWrapper(
-            radius: 25.0,
-            avatarUrl: state.conversation!.avatarUrl,
-            altText: state.conversation!.title,
+          Hero(
+            tag: "conversation_profile_picture",
+            child: Material(
+              child: AvatarWrapper(
+                radius: 25.0,
+                avatarUrl: state.conversation!.avatarUrl,
+                altText: state.conversation!.title,
+              )
+            ),
           ),
           () => GetIt.I.get<ProfileBloc>().add(
             ProfilePageRequestedEvent(

@@ -98,10 +98,15 @@ class ConversationsPage extends StatelessWidget {
         appBar: BorderlessTopbar.avatarAndName(
           TopbarAvatarAndName(
             TopbarTitleText(state.displayName),
-            AvatarWrapper(
-              radius: 20.0,
-              avatarUrl: state.avatarUrl,
-              altIcon: Icons.person
+            Hero(
+              tag: "self_profile_picture",
+              child: Material(
+                child: AvatarWrapper(
+                  radius: 20.0,
+                  avatarUrl: state.avatarUrl,
+                  altIcon: Icons.person
+                )
+              )
             ),
             () => GetIt.I.get<ProfileBloc>().add(
               ProfilePageRequestedEvent(

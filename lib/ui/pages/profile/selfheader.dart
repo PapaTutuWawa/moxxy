@@ -92,13 +92,19 @@ class SelfProfileHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        AvatarWrapper(
-          radius: 110.0,
-          avatarUrl: avatarUrl,
-          altIcon: Icons.person,
-          showEditButton: false,
-          onTapFunction: () => pickAndSetAvatar(context)
+        Hero(
+          tag: "self_profile_picture",
+          child: Material(
+            child: AvatarWrapper(
+              radius: 110.0,
+              avatarUrl: avatarUrl,
+              altIcon: Icons.person,
+              showEditButton: false,
+              onTapFunction: () => pickAndSetAvatar(context)
+            )
+          )
         ),
+
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Row(

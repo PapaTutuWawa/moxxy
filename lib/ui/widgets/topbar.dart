@@ -20,7 +20,7 @@ class TopbarTitleText extends StatelessWidget {
 
 class TopbarAvatarAndName extends StatelessWidget {
   final Widget title;
-  final AvatarWrapper avatar;
+  final Widget avatar;
   final List<Widget> extra;
   final bool showBackButton;
   final void Function() onTap;

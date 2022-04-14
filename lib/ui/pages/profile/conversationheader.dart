@@ -16,10 +16,15 @@ class ConversationProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AvatarWrapper(
-          radius: 110.0,
-          avatarUrl: conversation.avatarUrl,
-          altText: conversation.title
+        Hero(
+          tag: "conversation_profile_picture",
+          child: Material(
+            child: AvatarWrapper(
+              radius: 110.0,
+              avatarUrl: conversation.avatarUrl,
+              altText: conversation.title
+            )
+          )
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
