@@ -442,11 +442,22 @@ class _ConversationPageState extends State<ConversationPage> {
               buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
               builder: (context, state) {
                 final query = MediaQuery.of(context);
-                return Image.file(
-                  File(state.backgroundPath),
-                  fit: BoxFit.cover,
+
+                if (state.backgroundPath.isNotEmpty) {
+                  return Image.file(
+                    File(state.backgroundPath),
+                    fit: BoxFit.cover,
+                    width: query.size.width,
+                    height: query.size.height - query.padding.top
+                  );
+                }
+
+                return SizedBox(
                   width: query.size.width,
-                  height: query.size.height - query.padding.top
+                  height: query.size.height,
+                  child: Container(
+                    color: Theme.of(context).backgroundColor
+                  )
                 );
               }
             )
