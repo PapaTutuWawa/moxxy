@@ -165,7 +165,7 @@ void onStart(ServiceInstance service) {
 
   GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
   service.on("command").listen(handleEvent);
-  service.setForegroundNotificationInfo(title: "Moxxy", content: "Connecting...");
+  service.setForegroundNotificationInfo(title: "Moxxy", content: "Preparing...");
 
   GetIt.I.get<Logger>().finest("Running...");
 
@@ -221,7 +221,11 @@ void onStart(ServiceInstance service) {
       final settings = await xmpp.getConnectionSettings();
 
       if (settings != null) {
+        // The title of the notification will be changed as soon as the connection state
+        // of [XmppConnection] changes.
         xmpp.connect(settings, false);
+      } else {
+        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Idle");
       }
 
       GetIt.I.get<Completer>().complete();
