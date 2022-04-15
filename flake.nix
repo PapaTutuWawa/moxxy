@@ -1,7 +1,7 @@
 {
   description = "Moxxy v2";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:PapaTutuWawa/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -34,11 +34,11 @@
     ]);
   in {
     devShell = pkgs.mkShell {
-      buildInputs = with pkgs; [	
+      buildInputs = with pkgs; [
         flutter pinnedJDK android.platform-tools dart scrcpy # Flutter/Android
-	pythonEnv gnumake # Build scripts
-	gitlint jq # Code hygiene
-	ripgrep # General utilities
+	      pythonEnv gnumake # Build scripts
+	      gitlint jq # Code hygiene
+	      ripgrep # General utilities
       ];
 
       ANDROID_HOME = "${android.androidsdk}/libexec/android-sdk";

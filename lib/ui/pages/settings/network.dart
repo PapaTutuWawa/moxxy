@@ -27,7 +27,7 @@ class NetworkPage extends StatelessWidget {
   static get route => MaterialPageRoute(builder: (_) => const NetworkPage());
   
   Widget _buildFileSizeListItem(BuildContext context, String text, int value, bool selected) {
-    final textTheme = Theme.of(context).textTheme.labelLarge;
+    final textTheme = Theme.of(context).textTheme.subtitle2;
     return TextButton(
       onPressed: () {
         Navigator.of(context).pop();
