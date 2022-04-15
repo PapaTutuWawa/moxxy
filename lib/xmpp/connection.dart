@@ -562,21 +562,16 @@ class XmppConnection {
 
   /// Called whenever we receive data that has been parsed as XML.
   void handleXmlStream(XMLNode node) async {
-    if (node.tag == "stream:stream" && node.children.isEmpty) {
-      _handleError(null);
-      return;
-    }
-    
     switch (_routingState) {
       case RoutingState.unauthenticated: {
         // We expect the stream header here
-        if (node.tag != "stream:stream") {
-          _log.severe("Expected stream header");
+        if (node.tag != "stream:features") {
+          _log.severe("Expected stream features");
           _routingState = RoutingState.error;
           return;
         }
 
-        final streamFeatures = node.firstTag("stream:features")!;
+        final streamFeatures = node;
 
         // First check for StartTLS
         final startTLS = streamFeatures.firstTag("starttls", xmlns: startTlsXmlns);
@@ -667,14 +662,13 @@ class XmppConnection {
       }
       break;
       case RoutingState.checkStreamManagement: {
-        // We expect the stream header here
-        if (node.tag != "stream:stream") {
-          _log.severe("Expected stream header");
+        if (node.tag != "stream:features") {
+          _log.severe("Expected stream features");
           _routingState = RoutingState.error;
           return;
         }
 
-        final streamFeatures = node.firstTag("stream:features")!;
+        final streamFeatures = node;
         // TODO: Handle required features?
         // NOTE: In case of reconnecting
         _streamFeatures.clear();
