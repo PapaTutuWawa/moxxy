@@ -159,7 +159,7 @@ class XmppConnection {
 
   List<String> get streamFeatures => _streamFeatures;
   List<String> get serverFeatures => _serverFeatures;
-
+  
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
   /// [sortHandlers] should NOT be touched. It specified if the handler priorities
   /// should be set up. The only time this should be false is when called via
@@ -311,6 +311,7 @@ class XmppConnection {
     } else if (event is XmppSocketClosureEvent) {
       // Only reconnect if we didn't expect this
       if (!_disconnecting) {
+        _log.fine("Received XmppSocketClosureEvent, but _disconnecting is false. Reconnecting...");
         _attemptReconnection();
       }
     }
@@ -385,11 +386,14 @@ class XmppConnection {
     await _runOutoingStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
     
     // This uses the StreamManager to behave like a send queue
-    if (_canSendData()) {
+    final canSendData = _canSendData();
+    if (canSendData) {
       _socket.write(stanzaString);
 
       // Try to ack every stanza
       // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
+    } else {
+      _log.fine("_canSendData() returned false since _connectionState == $_connectionState");
     }
 
     if (awaitable) {
@@ -402,6 +406,7 @@ class XmppConnection {
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
   void _setConnectionState(XmppConnectionState state) {
+    _log.finest("Updating _connectionState from $_connectionState to $state");
     _connectionState = state;
     _eventStreamController.add(ConnectionStateChangedEvent(state: state, resumed: _resuming));
 
@@ -415,6 +420,12 @@ class XmppConnection {
     }
   }
 
+  /// Sets the routing state and logs the change
+  void _updateRoutingState(RoutingState state) {
+    _log.finest("Updating _routingState from $_routingState to $state");
+    _routingState = state;
+  }
+  
   /// Returns the connection's events as a stream.
   Stream<XmppEvent> asBroadcastStream() {
     return _eventStreamController.stream.asBroadcastStream();
@@ -442,7 +453,7 @@ class XmppConnection {
   bool _handleResourceBindingResult(XMLNode stanza) {
     if (stanza.tag != "iq" || stanza.attributes["type"] != "result") {
       _log.severe("Resource binding failed!");
-      _routingState = RoutingState.error;
+      _updateRoutingState(RoutingState.error);
       return false;
     }
 
@@ -576,14 +587,15 @@ class XmppConnection {
         // First check for StartTLS
         final startTLS = streamFeatures.firstTag("starttls", xmlns: startTlsXmlns);
         if (startTLS != null) {
-          _routingState = RoutingState.performStartTLS;
+          _log.fine("StartTLS is availabe. Performing StartTLS upgrade.");
+          _updateRoutingState(RoutingState.performStartTLS);
           sendRawXML(StartTLSNonza());
           return;
         }
 
         if (!_socket.isSecure()) {
           _log.severe("Refusing to go any further on an insecure connection");
-          _routingState = RoutingState.error;
+          _updateRoutingState(RoutingState.error);
           _setConnectionState(XmppConnectionState.error);
           return;
         }
@@ -597,22 +609,25 @@ class XmppConnection {
         );
 
         if (authenticator == null) {
-          _routingState = RoutingState.error;
+          _log.severe("Failed to select an authenticator!");
+          _updateRoutingState(RoutingState.error);
           return;
         } else {
           _authenticator = authenticator;
         }
 
-        _routingState = RoutingState.performSaslAuth;
+        _log.fine("Proceeding with SASL authentication");
+        _updateRoutingState(RoutingState.performSaslAuth);
         final result = await _authenticator.next(null);
         if (result.getState() == AuthenticationResult.success) {
-          _routingState = RoutingState.checkStreamManagement;
+          _log.fine("SASL authentication was successful. Proceeding to check stream features");
+          _updateRoutingState(RoutingState.checkStreamManagement);
           _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.failure) {
-          _log.severe("SASL failed");
+          _log.severe("SASL authentication failed!");
           _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(XmppConnectionState.error);
-          _routingState = RoutingState.error;
+          _updateRoutingState(RoutingState.error);
 
           if (_connectionCompleter != null) {
             _connectionCompleter!.complete(
@@ -629,35 +644,36 @@ class XmppConnection {
       case RoutingState.performStartTLS: {
         if (node.tag != "proceed" || node.attributes["xmlns"] != startTlsXmlns) {
           _log.severe("Failed to proceed with StartTLS negotiation");
-          _routingState = RoutingState.error;
+          _updateRoutingState(RoutingState.error);
           _setConnectionState(XmppConnectionState.error);
           return;
         }
 
-        _log.finest("Securing socket...");
+        _log.fine("Securing socket...");
         final result = await _socket.secure(_connectionSettings.jid.domain);
         if (!result) {
           _log.severe("Failed to secure the socket");
-          _routingState = RoutingState.error;
+          _updateRoutingState(RoutingState.error);
           _setConnectionState(XmppConnectionState.error);
           return;
         }
-        _log.finest("Done!");
-
-        _routingState = RoutingState.unauthenticated;
+        _log.fine("Done!");
+        _log.fine("Restarting stream negotiation on TLS secured stream.");
+        _updateRoutingState(RoutingState.unauthenticated);
         _sendStreamHeader();
       }
       break;
       case RoutingState.performSaslAuth: {
         final result = await _authenticator.next(node);
         if (result.getState() == AuthenticationResult.success) {
-          _routingState = RoutingState.checkStreamManagement;
+          _log.fine("SASL authentication was successful. Proceeding to check stream features");
+          _updateRoutingState(RoutingState.checkStreamManagement);
           _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.failure) {
-          _log.severe("SASL failed");
+          _log.severe("SASL authentication failed!");
           _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(XmppConnectionState.error);
-          _routingState = RoutingState.error;
+          _updateRoutingState(RoutingState.error);
         }
       }
       break;
@@ -685,17 +701,21 @@ class XmppConnection {
           // Try to work with SM first
           if (srid != null) {
             // Try to resume the last stream
-            _routingState = RoutingState.performStreamResumption;
+            _log.fine("Found stream resumption Id. Attempting to perform stream resumption");
+            _updateRoutingState(RoutingState.performStreamResumption);
             sendRawXML(StreamManagementResumeNonza(srid, h));
           } else {
             // Try to enable SM
             _resuming = false;
-            _routingState = RoutingState.bindResourcePreSM;
+            _log.fine("Attempting to bind resource before enabling Stream Management");
+            _updateRoutingState(RoutingState.bindResourcePreSM);
             _performResourceBinding();
           }
         } else {
           _resuming = false;
-          _routingState = RoutingState.bindResource;
+          _log.fine("Either there is no StreamManagementManager registered or the stream does not support Stream Management.");
+          _log.fine("Proceeding to bind resource");
+          _updateRoutingState(RoutingState.bindResource);
           _performResourceBinding();
         }
       }
@@ -703,7 +723,8 @@ class XmppConnection {
       case RoutingState.bindResource: {
         final proceed = _handleResourceBindingResult(node);
         if (proceed) {
-          _routingState = RoutingState.handleStanzas;
+          _log.fine("Stream negotiation done. Ready to handle stanzas");
+          _updateRoutingState(RoutingState.handleStanzas);
           getPresenceManager().sendInitialPresence();
           if (_connectionCompleter != null) {
             _connectionCompleter!.complete(
@@ -713,7 +734,7 @@ class XmppConnection {
           }
         } else {
           _log.severe("Resource binding failed!");
-          _routingState = RoutingState.error;
+          _updateRoutingState(RoutingState.error);
           _setConnectionState(XmppConnectionState.error);
           return;
         }
@@ -731,7 +752,8 @@ class XmppConnection {
             _connectionCompleter = null;
           }
 
-          _routingState = RoutingState.enableSM;
+          _log.fine("Attempting to enable Stream Management");
+          _updateRoutingState(RoutingState.enableSM);
           sendRawXML(StreamManagementEnableNonza());
         }
       }
@@ -741,7 +763,7 @@ class XmppConnection {
           _log.fine("Stream Resumption successful!");
           // NOTE: _resource is already set if we resume
           assert(_resource != "");
-          _routingState = RoutingState.handleStanzas;
+          _updateRoutingState(RoutingState.handleStanzas);
           _setConnectionState(XmppConnectionState.connected);
 
           // Restore the CSI state if we have a manager
@@ -757,7 +779,7 @@ class XmppConnection {
         } else if (node.tag == "failed") {
           // NOTE: If we are here, we have it.
           final manager = getStreamManagementManager()!;
-          _log.fine("Stream resumption failed. Proceeding with new stream...");
+          _log.info("Stream resumption failed. Proceeding with new stream...");
 
           // We have to do this because we otherwise get a stanza stuck in the queue,
           // thus spamming the server on every <a /> nonza we receive.
@@ -766,7 +788,7 @@ class XmppConnection {
 
           _serverFeatures.clear();
           _resuming = false;
-          _routingState = RoutingState.bindResourcePreSM;
+          _updateRoutingState(RoutingState.bindResourcePreSM);
           _performResourceBinding();
         }
       }
@@ -775,7 +797,7 @@ class XmppConnection {
         if (node.tag == "failed") {
           // Not critical
           _log.warning("Failed to enable SM: " + node.tag);
-          _routingState = RoutingState.handleStanzas;
+          _updateRoutingState(RoutingState.handleStanzas);
           getPresenceManager().sendInitialPresence();
         } else if (node.tag == "enabled") {
           _log.fine("SM enabled!");
@@ -793,7 +815,7 @@ class XmppConnection {
             )
           );
 
-          _routingState = RoutingState.handleStanzas;
+          _updateRoutingState(RoutingState.handleStanzas);
           getPresenceManager().sendInitialPresence();
           _setConnectionState(XmppConnectionState.connected);
         }
@@ -911,9 +933,10 @@ class XmppConnection {
     if (!result) {
       _handleError(null);
     } else {
-      _currentBackoffAttempt = 0; 
+      _currentBackoffAttempt = 0;
+      _log.fine("Preparing the internal state for a connection attempt");
       _setConnectionState(XmppConnectionState.connecting);
-      _routingState = RoutingState.unauthenticated;
+      _updateRoutingState(RoutingState.unauthenticated);
       _sendStreamHeader();
     }
   }
