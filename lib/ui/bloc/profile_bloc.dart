@@ -55,7 +55,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ) as GetFeaturesEvent;
 
       emit(
-        this.state.copyWith(
+        state.copyWith(
           serverFeatures: result.serverFeatures,
           streamFeatures: result.streamFeatures
         )

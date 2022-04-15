@@ -17,13 +17,13 @@ class SharedSummaryWidget extends StatelessWidget {
       ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.black38
           ),
           child: Center(
             child: Text(
-              "+$notShown",
-              style: TextStyle(
+              "+$number",
+              style: const TextStyle(
                 fontSize: 30
               )
             )

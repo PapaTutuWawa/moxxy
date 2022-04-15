@@ -8,27 +8,7 @@ import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:get_it/get_it.dart";
 import "package:bloc/bloc.dart";
 
-abstract class CropEvent {}
-
-class ImageCroppedEvent extends CropEvent {
-  final Uint8List image;
-
-  ImageCroppedEvent(this.image);
-}
-
-class ResetImageEvent extends CropEvent {}
-
-class _SetImageEvent extends CropEvent {
-  final Uint8List image;
-
-  _SetImageEvent(this.image);
-}
-
-class CropState {
-  final Uint8List? image;
-
-  CropState(this.image);
-}
+part "crop_event.dart";
 
 class CropBloc extends Bloc<CropEvent, CropState> {
   late Completer<Uint8List?> _completer;
@@ -36,7 +16,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
   CropBloc() : super(CropState(null)) {
     on<ImageCroppedEvent>(_onImageCropped);
     on<ResetImageEvent>(_onImageReset);
-    on<_SetImageEvent>(_onImageSet);
+    on<SetImageEvent>(_onImageSet);
   }
 
   Future<void> _onImageCropped(ImageCroppedEvent event, Emitter<CropState> emit) async {
@@ -51,7 +31,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
     emit(CropState(null));
   }
 
-  Future<void> _onImageSet(_SetImageEvent event, Emitter<CropState> emit) async {
+  Future<void> _onImageSet(SetImageEvent event, Emitter<CropState> emit) async {
     emit(CropState(event.image));
   }
   
@@ -61,7 +41,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
 
     final bytes = await file.readAsBytes();
 
-    emit(CropState(bytes));
+    add(SetImageEvent(bytes));
   }
 
   /// User-callable function. Loads the image, navigates to the page
@@ -95,7 +75,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
       )
     );
 
-    add(_SetImageEvent(data));
+    add(SetImageEvent(data));
     
     return _completer.future;
   }

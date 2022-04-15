@@ -1,5 +1,4 @@
 import "package:moxxyv2/ui/bloc/crop_bloc.dart";
-import "package:moxxyv2/ui/widgets/topbar.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
@@ -37,9 +36,9 @@ class CropPage extends StatelessWidget {
           left: 10,
           top: 10,
           child: Material(
-            color: Color.fromRGBO(0, 0, 0, 0),
+            color: const Color.fromRGBO(0, 0, 0, 0),
             child: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.arrow_back,
                 size: 32.0
               ),
@@ -55,9 +54,9 @@ class CropPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Material(
-                color: Color.fromRGBO(0, 0, 0, 0),
+                color: const Color.fromRGBO(0, 0, 0, 0),
                 child: InkWell(
-                  child: Icon(
+                  child: const Icon(
                     Icons.check_circle_outline,
                     size: 64.0
                   ),
@@ -72,8 +71,8 @@ class CropPage extends StatelessWidget {
   }
 
   Widget _buildLoadingBody() {
-    return Center(
-      child: const CircularProgressIndicator()
+    return const Center(
+      child: CircularProgressIndicator()
     );
   }
   

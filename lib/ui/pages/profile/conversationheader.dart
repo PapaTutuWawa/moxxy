@@ -1,4 +1,3 @@
-import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/widgets/avatar.dart";
 import "package:moxxyv2/ui/bloc/profile_bloc.dart";
 import "package:moxxyv2/shared/models/conversation.dart";

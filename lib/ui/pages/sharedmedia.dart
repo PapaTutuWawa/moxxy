@@ -14,7 +14,6 @@ class SharedMediaPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SharedMediaBloc, SharedMediaState>(
       builder: (context, state) {
-        print(state.toString());
         return Scaffold(
           appBar: BorderlessTopbar.simple(state.title),
           body: Padding(

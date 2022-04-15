@@ -1,5 +1,3 @@
-import "package:moxxyv2/ui/widgets/avatar.dart";
-
 import "package:flutter/material.dart";
 
 class TopbarTitleText extends StatelessWidget {
