@@ -30,7 +30,7 @@ void setupEventHandler() {
   GetIt.I.registerSingleton<EventHandler>(handler);
 
   // Make sure that we handle events from flutter_background_service
-  FlutterBackgroundService().onDataReceived.listen((Map<String, dynamic>? json) async {
+  FlutterBackgroundService().on("event").listen((Map<String, dynamic>? json) async {
       final log = GetIt.I.get<Logger>();
       if (json == null) {
         log.warning("Received null from the background service. Ignoring...");
