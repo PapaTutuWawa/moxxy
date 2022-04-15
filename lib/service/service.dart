@@ -151,12 +151,12 @@ Future<void> initUDPLogger() async {
 void onStart(ServiceInstance service) {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Ensure that all native plugins are registered against this FlutterEngine, so that
+  // we can use path_provider, notifications, ...
+  DartPluginRegistrant.ensureInitialized();
+
   // TODO: Android specific
   GetIt.I.registerSingleton<AndroidServiceInstance>(service as AndroidServiceInstance);
-
-  // TODO: Tell the Flutter engine to register plugins against this background isolate.
-  //       Otherwise any calls to native code from the background service will fail
-  DartPluginRegistrant.ensureInitialized();
 
   GetIt.I.registerSingleton<Completer>(Completer());
   
