@@ -1,7 +1,7 @@
 {
   description = "Moxxy v2";
   inputs = {
-    nixpkgs.url = "github:PapaTutuWawa/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:PapaTutuWawa/nixpkgs/nixos-unstable-flutter-2.13.0-0.1.pre";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -35,7 +35,7 @@
   in {
     devShell = pkgs.mkShell {
       buildInputs = with pkgs; [
-        flutter pinnedJDK android.platform-tools dart scrcpy # Flutter/Android
+        flutterPackages.beta pinnedJDK android.platform-tools flutterPackages.dart-beta scrcpy # Flutter/Android
 	      pythonEnv gnumake # Build scripts
 	      gitlint jq # Code hygiene
 	      ripgrep # General utilities
