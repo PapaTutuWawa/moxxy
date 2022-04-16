@@ -13,6 +13,7 @@ import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/download.dart";
+import "package:moxxyv2/service/state.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
@@ -349,6 +350,20 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
       serverFeatures: conn.serverFeatures,
       streamFeatures: conn.streamFeatures
     ),
+    id: id
+  );
+}
+
+Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final conn = GetIt.I.get<XmppConnection>();
+  final xmpp = GetIt.I.get<XmppService>();
+  await conn.disconnect();
+  await xmpp.modifyXmppState((state) => XmppState());
+
+  sendEvent(
+    SignedOutEvent(),
     id: id
   );
 }

@@ -1,10 +1,12 @@
 import "package:moxxyv2/ui/helpers.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
+import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_settings_ui/flutter_settings_ui.dart";
 import "package:flutter/foundation.dart";
+import "package:get_it/get_it.dart";
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({ Key? key }) : super(key: key);
@@ -35,8 +37,7 @@ class SettingsPage extends StatelessWidget {
                   "Sign Out",
                   "You are about to sign out. Proceed?",
                   context,
-                  // TODO
-                  () {}
+                  () => GetIt.I.get<PreferencesBloc>().add(SignedOutEvent())
                 )
               )
             ]

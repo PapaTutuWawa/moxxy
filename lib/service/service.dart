@@ -251,7 +251,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SetShareOnlineStatusCommand>(performSetShareOnlineStatus),
       EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
       EventTypeMatcher<SendChatStateCommand>(performSendChatState),
-      EventTypeMatcher<GetFeaturesCommand>(performGetFeatures)
+      EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
+      EventTypeMatcher<SignOutCommand>(performSignOut)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

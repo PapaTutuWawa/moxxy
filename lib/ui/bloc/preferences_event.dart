@@ -13,3 +13,6 @@ class PreferencesChangedEvent extends PreferencesEvent {
       this.notify = true,
   });
 }
+
+/// Triggered by the UI when signing out is requested
+class SignedOutEvent extends PreferencesEvent {}

@@ -177,6 +177,12 @@ files:
         attributes:
           streamFeatures: List<String>
           serverFeatures: List<String>
+      # Returned by [SignOutCommand]
+      - name: SignedOutEvent
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -316,6 +322,11 @@ files:
           state: String
           jid: String
       - name: GetFeaturesCommand
+        extends:
+          - BackgroundCommand
+        implements:
+          - JsonImplementation
+      - name: SignOutCommand 
         extends:
           - BackgroundCommand
         implements:
