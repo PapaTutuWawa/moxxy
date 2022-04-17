@@ -266,15 +266,26 @@ void handleEvent(Map<String, dynamic>? data) {
     log.warning("Received null from the UI isolate. Ignoring...");
     return;
   }
-
-  log.fine("F2S: " + data.toString());
   
   final String id = data["id"]!;
-  final command = getCommandFromJson(data["data"]!);
-
+  final command = getCommandFromJson(data["data"]!); 
   if (command == null) {
     log.severe("Unknown command type ${data['type']}");
     return;
+  }
+
+  if (command is LoginCommand) {
+    final redacted = {
+      "id": id,
+      "data": LoginCommand(
+        jid: command.jid,
+        password: "*******",
+        useDirectTLS: command.useDirectTLS
+      ).toJson()
+    };
+    log.fine("F2S: " + redacted.toString());
+  } else {
+    log.fine("F2S: " + data.toString());
   }
 
   GetIt.I.get<EventHandler>().run(command, extra: id);

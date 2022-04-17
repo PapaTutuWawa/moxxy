@@ -116,6 +116,8 @@ class XmppConnection {
   /// For indicating whether we expect the socket to close to prevent accidentally
   /// triggering a reconnection attempt when we don't want to.
   bool _disconnecting;
+  /// For indicating whether we expect a socket closure due to StartTLS.
+  bool _performingStartTLS;
   /// Timers for the keep-alive ping and the backoff connection process.
   Timer? _connectionPingTimer;
   Timer? _backoffTimer;
@@ -142,6 +144,7 @@ class XmppConnection {
     _streamBuffer = XmlStreamBuffer(),
     _currentBackoffAttempt = 0,
     _resuming = true,
+    _performingStartTLS = false,
     _disconnecting = false,
     _uuid = const Uuid(),
     // NOTE: For testing 
@@ -310,7 +313,7 @@ class XmppConnection {
       _handleError(event.error);
     } else if (event is XmppSocketClosureEvent) {
       // Only reconnect if we didn't expect this
-      if (!_disconnecting) {
+      if (!_disconnecting && !_performingStartTLS) {
         _log.fine("Received XmppSocketClosureEvent, but _disconnecting is false. Reconnecting...");
         _attemptReconnection();
       }
@@ -649,6 +652,7 @@ class XmppConnection {
           return;
         }
 
+        _performingStartTLS = true;
         _log.fine("Securing socket...");
         final result = await _socket.secure(_connectionSettings.jid.domain);
         if (!result) {
@@ -659,6 +663,7 @@ class XmppConnection {
         }
         _log.fine("Done!");
         _log.fine("Restarting stream negotiation on TLS secured stream.");
+        _performingStartTLS = false;
         _updateRoutingState(RoutingState.unauthenticated);
         _sendStreamHeader();
       }
@@ -935,6 +940,7 @@ class XmppConnection {
     } else {
       _currentBackoffAttempt = 0;
       _log.fine("Preparing the internal state for a connection attempt");
+      _performingStartTLS = false;
       _setConnectionState(XmppConnectionState.connecting);
       _updateRoutingState(RoutingState.unauthenticated);
       _sendStreamHeader();

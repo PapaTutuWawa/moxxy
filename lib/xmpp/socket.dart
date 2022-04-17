@@ -58,7 +58,7 @@ abstract class BaseSocketWrapper {
 
 /// TCP socket implementation for [XmppConnection]
 class TCPSocketWrapper extends BaseSocketWrapper {
-  late Socket _socket;
+  Socket? _socket;
   final StreamController<String> _dataStream;
   final StreamController<XmppSocketEvent> _eventStream;
   late StreamSubscription<dynamic> _socketSubscription;
@@ -69,9 +69,9 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   
   TCPSocketWrapper()
   : _log = Logger("TCPSocketWrapper"),
-  _dataStream = StreamController.broadcast(),
-  _eventStream = StreamController.broadcast(),
-  _secure = false;
+    _dataStream = StreamController.broadcast(),
+    _eventStream = StreamController.broadcast(),
+    _secure = false;
 
   @override
   bool isSecure() => _secure;
@@ -93,7 +93,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     results.sort(srvRecordSortComparator);
     for (final srv in results) {
       try {
-        _log.finest("Attempting secure conection to ${srv.target}:${srv.port}...");
+        _log.finest("Attempting secure connection to ${srv.target}:${srv.port}...");
         _socket = await SecureSocket.connect(
           srv.target,
           srv.port,
@@ -105,8 +105,8 @@ class TCPSocketWrapper extends BaseSocketWrapper {
         _secure = true;
         _log.finest("Success!");
         return true;
-      } on SocketException {
-        return false;
+      } on SocketException catch(e) {
+        _log.finest("Failure! $e");
       }
     }
 
@@ -116,10 +116,6 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   Future<bool> _rfc6120Connect(String domain) async {
     // TODO: Maybe do DNSSEC one day
     final results = await Moxdns.srvQuery("_xmpp-client._tcp.$domain", false);
-    if (results.isEmpty) {
-      return await _rfc6120FallbackConnect(domain);
-    }
-
     results.sort(srvRecordSortComparator);
 
     for (final srv in results) {
@@ -132,13 +128,13 @@ class TCPSocketWrapper extends BaseSocketWrapper {
         );
         _log.finest("Success!");
         return true;
-      } on SocketException {
-        _log.finest("Failure!");
+      } on SocketException catch(e) {
+        _log.finest("Failure! $e");
         continue;
       }
     }
 
-    return false;
+    return await _rfc6120FallbackConnect(domain);
   }
 
   Future<bool> _hostPortConnect(String host, int port) async {
@@ -151,14 +147,19 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       );
       _log.finest("Success!");
       return true;
-    } on SocketException {
-      _log.finest("Failure!");
+    } on SocketException catch(e) {
+      _log.finest("Failure! $e");
       return false;
     }
   }
   
   Future<bool> _rfc6120FallbackConnect(String domain) async {
-    return await _hostPortConnect(domain, 5222);
+    if (await _hostPortConnect(domain, 5222)) {
+      _setupStreams();
+      return true;
+    }
+
+    return false;
   }
 
   @override
@@ -168,9 +169,14 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       return true;
     }
 
+    if (_socket == null) {
+      _log.severe("Failed to secure socket since _socket is null");
+      return false;
+    }
+    
     try {
       _socket = await SecureSocket.secure(
-        _socket,
+        _socket!,
         supportedProtocols: const [ xmppClientALPNId ],
         onBadCertificate: (cert) => _onBadCertificate(cert, domain)
       );
@@ -184,7 +190,12 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   }
   
   void _setupStreams() {
-    _socketSubscription = _socket.listen(
+    if (_socket == null) {
+      _log.severe("Failed to setup streams as _socket is null");
+      return;
+    }
+
+    _socketSubscription = _socket!.listen(
       (List<int> event) {
         final data = utf8.decode(event);
         _log.finest("<== " + data);
@@ -195,7 +206,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
         _eventStream.add(XmppSocketErrorEvent(error));
       }
     );
-    _socket.done.then((_) {
+    _socket!.done.then((_) {
         _eventStream.add(XmppSocketClosureEvent());
     });
   }
@@ -234,8 +245,14 @@ class TCPSocketWrapper extends BaseSocketWrapper {
 
   @override
   void close() {
-    _socket.close();
-    _socket.flush();
+    if (_socket == null) {
+      _log.warning("Failed to close socket since _socket is null");
+      return;
+    }
+
+
+    _socket!.close();
+    _socket!.flush();
     _socketSubscription.cancel();
   }
 
@@ -247,12 +264,17 @@ class TCPSocketWrapper extends BaseSocketWrapper {
 
   @override
   void write(Object? data) {
+    if (_socket == null) {
+      _log.severe("Failed to write to socket as _socket is null");
+      return;
+    }
+
     if (data != null && data is String) {
       _log.finest("==> " + data);
     }
 
     try {
-      _socket.write(data);
+      _socket!.write(data);
     } on SocketException catch (e) {
       _eventStream.add(XmppSocketErrorEvent(e));
     }
