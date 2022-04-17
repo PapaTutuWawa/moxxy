@@ -211,7 +211,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   Future<void> _onJidAdded(JidAddedEvent event, Emitter<ConversationState> emit) async {
     // TODO: Maybe have some state here
     GetIt.I.get<BackgroundServiceDataSender>().sendData(
-      UnblockJidCommand(jid: state.conversation!.jid)
+      AddContactCommand(jid: state.conversation!.jid)
     );
   }
 
