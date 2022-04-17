@@ -46,13 +46,29 @@ PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
   );
 }
 
+/// Sends a block command to the service to block [jid].
+void _blockJid(String jid, BuildContext context) {
+  showConfirmationDialog(
+    "Block $jid?",
+    "Are you sure you want to block $jid? You won't receive messages from them until you unblock them.",
+    context,
+    () {
+      context.read<ConversationBloc>().add(JidBlockedEvent(jid));
+      Navigator.of(context).pop();
+    }
+  );
+}
+
 /// A custom version of the Topbar NameAndAvatar style to integrate with
 /// bloc.
 class _ConversationTopbarWidget extends StatelessWidget {
+  const _ConversationTopbarWidget({ Key? key }) : super(key: key);
+
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
     return prev.conversation?.title != next.conversation?.title
       || prev.conversation?.avatarUrl != next.conversation?.avatarUrl
-      || prev.conversation?.chatState != next.conversation?.chatState;
+      || prev.conversation?.chatState != next.conversation?.chatState
+      || prev.conversation?.jid != next.conversation?.jid;
   }
 
   Widget _buildChatState(ChatState state) {
@@ -138,7 +154,7 @@ class _ConversationTopbarWidget extends StatelessWidget {
                   }
                   break;
                   case ConversationOption.block: {
-                    //_block(state, context);
+                    _blockJid(state.conversation!.jid, context);
                   }
                   break;
                 }
@@ -365,20 +381,6 @@ class _ConversationPageState extends State<ConversationPage> {
       )
     );
   }
-
-  void _block(ConversationState state, BuildContext context) {
-    final jid = state.conversation!.jid;
-
-    showConfirmationDialog(
-      "Block $jid?",
-      "Are you sure you want to block $jid? You won't receive messages from them until you unblock them.",
-      context,
-      () {
-        context.read<ConversationBloc>().add(JidBlockedEvent(jid));
-        Navigator.of(context).pop();
-      }
-    );
-  }
   
   /// Render a widget that allows the user to either block the user or add them to their
   /// roster
@@ -414,7 +416,7 @@ class _ConversationPageState extends State<ConversationPage> {
             Expanded(
               child: TextButton(
                 child: const Text("Block"),
-                onPressed: () => _block(state, context)
+                onPressed: () => _blockJid(state.conversation!.jid, context)
               )
             )
           ]
@@ -470,7 +472,7 @@ class _ConversationPageState extends State<ConversationPage> {
             child: Scaffold(
               // TODO: Maybe replace the scaffold itself to prevent transparency
               backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
-              appBar: BorderlessTopbar(_ConversationTopbarWidget()),
+              appBar: const BorderlessTopbar(_ConversationTopbarWidget()),
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
