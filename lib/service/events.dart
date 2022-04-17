@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/xmpp.dart";
@@ -23,7 +24,34 @@ import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
 import "package:permission_handler/permission_handler.dart";
 
-Future<void> performLoginHandler(LoginCommand command, { dynamic extra }) async {
+void setupBackgroundEventHandler() {
+  final handler = EventHandler();
+  handler.addMatchers([
+      EventTypeMatcher<LoginCommand>(performLogin),
+      EventTypeMatcher<PerformPreStartCommand>(performPreStart),
+      EventTypeMatcher<AddConversationCommand>(performAddConversation),
+      EventTypeMatcher<AddContactCommand>(performAddContact),
+      EventTypeMatcher<GetMessagesForJidCommand>(performGetMessagesForJid),
+      EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation),
+      EventTypeMatcher<SendMessageCommand>(performSendMessage),
+      EventTypeMatcher<BlockJidCommand>(performBlockJid),
+      EventTypeMatcher<UnblockJidCommand>(performUnblockJid),
+      EventTypeMatcher<UnblockAllCommand>(performUnblockAll),
+      EventTypeMatcher<SetCSIStateCommand>(performSetCSIState),
+      EventTypeMatcher<SetPreferencesCommand>(performSetPreferences),
+      EventTypeMatcher<RequestDownloadCommand>(performRequestDownload),
+      EventTypeMatcher<SetAvatarCommand>(performSetAvatar),
+      EventTypeMatcher<SetShareOnlineStatusCommand>(performSetShareOnlineStatus),
+      EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
+      EventTypeMatcher<SendChatStateCommand>(performSendChatState),
+      EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
+      EventTypeMatcher<SignOutCommand>(performSignOut)
+  ]);
+
+  GetIt.I.registerSingleton<EventHandler>(handler);
+}
+
+Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   GetIt.I.get<Logger>().fine("Performing login");

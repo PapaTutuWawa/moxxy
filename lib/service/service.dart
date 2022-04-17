@@ -232,33 +232,6 @@ void onStart(ServiceInstance service) {
   })();
 }
 
-void setupBackgroundEventHandler() {
-  final handler = EventHandler();
-  handler.addMatchers([
-      EventTypeMatcher<LoginCommand>(performLoginHandler),
-      EventTypeMatcher<PerformPreStartCommand>(performPreStart),
-      EventTypeMatcher<AddConversationCommand>(performAddConversation),
-      EventTypeMatcher<AddContactCommand>(performAddContact),
-      EventTypeMatcher<GetMessagesForJidCommand>(performGetMessagesForJid),
-      EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation),
-      EventTypeMatcher<SendMessageCommand>(performSendMessage),
-      EventTypeMatcher<BlockJidCommand>(performBlockJid),
-      EventTypeMatcher<UnblockJidCommand>(performUnblockJid),
-      EventTypeMatcher<UnblockAllCommand>(performUnblockAll),
-      EventTypeMatcher<SetCSIStateCommand>(performSetCSIState),
-      EventTypeMatcher<SetPreferencesCommand>(performSetPreferences),
-      EventTypeMatcher<RequestDownloadCommand>(performRequestDownload),
-      EventTypeMatcher<SetAvatarCommand>(performSetAvatar),
-      EventTypeMatcher<SetShareOnlineStatusCommand>(performSetShareOnlineStatus),
-      EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
-      EventTypeMatcher<SendChatStateCommand>(performSendChatState),
-      EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
-      EventTypeMatcher<SignOutCommand>(performSignOut)
-  ]);
-
-  GetIt.I.registerSingleton<EventHandler>(handler);
-}
-
 void handleEvent(Map<String, dynamic>? data) {
   // NOTE: *F*oreground to *S*ervice
   final log = GetIt.I.get<Logger>();
