@@ -238,6 +238,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<LoginCommand>(performLoginHandler),
       EventTypeMatcher<PerformPreStartCommand>(performPreStart),
       EventTypeMatcher<AddConversationCommand>(performAddConversation),
+      EventTypeMatcher<AddContactCommand>(performAddContact),
       EventTypeMatcher<GetMessagesForJidCommand>(performGetMessagesForJid),
       EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation),
       EventTypeMatcher<SendMessageCommand>(performSendMessage),
