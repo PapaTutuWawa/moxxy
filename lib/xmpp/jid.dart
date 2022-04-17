@@ -39,16 +39,24 @@ class JID {
             buffer = "";
             state = 2;
           } else if (eol) {
-            _domain = buffer + c;
-          } else {
+            _domain = buffer;
+
+            if (c != " ") {
+              _domain = _domain + c;
+            }
+          } else if (c != " ") {
             buffer += c;
           }
         }
         break;
         case 2: {
           if (eol) {
-            _resource = buffer + c;
-          } else {
+            _resource = buffer;
+
+            if (c != " ") {
+              _resource = _resource + c;
+            }
+          } else if (c != ""){
             buffer += c;
           }
         }

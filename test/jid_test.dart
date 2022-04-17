@@ -34,4 +34,9 @@ void main() {
       expect(JID.fromString("hallo@welt/abc") == JID("hallo", "welt", "abc"), true );
       expect(JID.fromString("hallo@welt") == JID("hallo", "welt", "a"), false);
   });
+
+  test("Whitespaces", () {
+      expect(JID.fromString("hallo@welt ") == JID("hallo", "welt", ""), true);
+      expect(JID.fromString("hallo@welt/abc ") == JID("hallo", "welt", "abc"), true);
+  });
 }
