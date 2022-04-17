@@ -8,12 +8,10 @@ import "package:moxxyv2/ui/bloc/addcontact_bloc.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 
-// TODO: Move out of its directory
-
 class AddContactPage extends StatelessWidget {
   const AddContactPage({ Key? key }) : super(key: key);
 
-  static get route => const AddContactPage();
+  static get route => MaterialPageRoute(builder: (_) => const AddContactPage());
   
   @override
   Widget build(BuildContext context) {
