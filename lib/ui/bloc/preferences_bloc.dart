@@ -37,7 +37,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   }
 
   Future<void> _onSignedOut(SignedOutEvent event, Emitter<PreferencesState> emit) async {
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    await GetIt.I.get<BackgroundServiceDataSender>().sendData(
       SignOutCommand()
     );
 
