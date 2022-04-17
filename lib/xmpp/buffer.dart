@@ -9,8 +9,7 @@ class XmlStreamBuffer extends StreamTransformerBase<String, XMLNode> {
   final StreamController<XMLNode> _streamController;
   final XmlNodeDecoder _decoder;
 
-  XmlStreamBuffer()
-    : _streamController = StreamController(), _decoder = XmlNodeDecoder();
+  XmlStreamBuffer() : _streamController = StreamController(), _decoder = const XmlNodeDecoder();
 
   @override
   Stream<XMLNode> bind(Stream<String> stream) {
