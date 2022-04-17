@@ -61,7 +61,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   Socket? _socket;
   final StreamController<String> _dataStream;
   final StreamController<XmppSocketEvent> _eventStream;
-  late StreamSubscription<dynamic> _socketSubscription;
+  StreamSubscription<dynamic>? _socketSubscription;
 
   final Logger _log;
 
@@ -137,6 +137,9 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     return await _rfc6120FallbackConnect(domain);
   }
 
+  /// Connect to [host] with port [port] and returns true if the connection
+  /// was successfully established. Does not setup the streams as this has
+  /// to be done by the caller.
   Future<bool> _hostPortConnect(String host, int port) async {
     try {
       _log.finest("Attempting fallback connection to $host:$port...");
@@ -152,14 +155,14 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       return false;
     }
   }
-  
-  Future<bool> _rfc6120FallbackConnect(String domain) async {
-    if (await _hostPortConnect(domain, 5222)) {
-      _setupStreams();
-      return true;
-    }
 
-    return false;
+  /// Connect to [domain] using the default C2S port of XMPP. Returns
+  /// true if the connection was successful. Does not setup the streams
+  /// as [_rfc6120FallbackConnect] should only be called from
+  /// [_rfc6120Connect], which already sets the streams up on a successful
+  /// connection.
+  Future<bool> _rfc6120FallbackConnect(String domain) async {
+    return await _hostPortConnect(domain, 5222);
   }
 
   @override
@@ -245,15 +248,18 @@ class TCPSocketWrapper extends BaseSocketWrapper {
 
   @override
   void close() {
+    if (_socketSubscription != null) {
+      _log.finest("Closing socket subscription");
+      _socketSubscription!.cancel();
+    }
+
     if (_socket == null) {
       _log.warning("Failed to close socket since _socket is null");
       return;
     }
 
-
     _socket!.close();
     _socket!.flush();
-    _socketSubscription.cancel();
   }
 
   @override
