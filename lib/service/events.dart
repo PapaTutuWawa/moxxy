@@ -45,7 +45,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
       EventTypeMatcher<SendChatStateCommand>(performSendChatState),
       EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
-      EventTypeMatcher<SignOutCommand>(performSignOut)
+      EventTypeMatcher<SignOutCommand>(performSignOut),
+      EventTypeMatcher<DebugLogCommand>(performDebugLog)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -88,8 +89,10 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
 
   // Prevent a race condition where the UI sends the prestart command before the service
   // has finished setting everything up
+  GetIt.I.get<Logger>().finest("Waiting for preStart future to complete..");
   await GetIt.I.get<Completer>().future;
-  
+  GetIt.I.get<Logger>().finest("PreStart future done");
+
   final xmpp = GetIt.I.get<XmppService>();
   final settings = await xmpp.getConnectionSettings();
   final state = await xmpp.getXmppState();
@@ -394,4 +397,8 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
     SignedOutEvent(),
     id: id
   );
+}
+
+Future<void> performDebugLog(DebugLogCommand command, { dynamic extra }) async {
+  Logger("Debug").finest(command.log);
 }

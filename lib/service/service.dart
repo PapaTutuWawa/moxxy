@@ -51,18 +51,12 @@ Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final service = FlutterBackgroundService();
-  if (await service.isRunning()) {
-    //GetIt.I.get<Logger>().info("Stopping background service");
+  if (!(await service.isRunning())) {
+    GetIt.I.get<Logger>().info("Service is not running. Initializing service...");
 
-    if (kDebugMode) {
-      //service.stopBackgroundService();
-    } else {
-      return;
-    }
+    GetIt.I.get<Logger>().info("Initializing service");
+    await initializeService();
   }
-
-  GetIt.I.get<Logger>().info("Initializing service");
-  await initializeService();
 }
 
 Future<void> initializeService() async {
@@ -81,7 +75,11 @@ Future<void> initializeService() async {
       isForegroundMode: true
     )
   );
-  service.startService();
+  if (await service.startService()) {
+    GetIt.I.get<Logger>().finest("Service successfully started");
+  } else {
+    GetIt.I.get<Logger>().severe("Service failed to start");
+  }
 }
 
 /// A middleware for packing an event into a [DataWrapper] and also
@@ -98,7 +96,8 @@ void sendEvent(BackgroundEvent event, { String? id }) {
 }
 
 void setupLogging() {
-  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  //Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
       final logMessageHeader = "[${record.level.name}] (${record.loggerName}) ${record.time}: ";
       String msg = record.message;
@@ -121,7 +120,7 @@ void setupLogging() {
           }
         }
 
-        if (kDebugMode) {
+        if (/*kDebugMode*/ true) {
           // ignore: avoid_print
           print(logMessage);
         }
@@ -218,8 +217,11 @@ void onStart(ServiceInstance service) {
       ]);
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
+      GetIt.I.get<Logger>().finest("Done with xmpp");
+      
       final settings = await xmpp.getConnectionSettings();
 
+      GetIt.I.get<Logger>().finest("Got settings");
       if (settings != null) {
         // The title of the notification will be changed as soon as the connection state
         // of [XmppConnection] changes.
@@ -228,6 +230,7 @@ void onStart(ServiceInstance service) {
         GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Idle");
       }
 
+      GetIt.I.get<Logger>().finest("Resolving startup future");
       GetIt.I.get<Completer>().complete();
   })();
 }

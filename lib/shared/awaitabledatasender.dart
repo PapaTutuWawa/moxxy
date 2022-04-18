@@ -75,6 +75,7 @@ abstract class AwaitableDataSender<
         if (awaitable) {
           _awaitables[_id] = Completer();
           onAdd();
+          print("Id $_id added to the map");
         }
         
         await sendDataImpl(
@@ -95,6 +96,7 @@ abstract class AwaitableDataSender<
   /// Should be called when a [DataWrapper] has been received. Will resolve
   /// the promise received from [sendData].
   Future<bool> onData(DataWrapper<R> data) async {
+    print("Received data with id ${data.id}"); 
     bool found = false;
     Completer? completer;
     await _lock.protect(() async {
@@ -106,6 +108,7 @@ abstract class AwaitableDataSender<
     });
 
     if (found) {
+      print("Found event with Id ${data.id}");
       completer!.complete(data.data);
     }
     

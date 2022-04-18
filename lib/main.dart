@@ -1,3 +1,6 @@
+import "dart:async";
+import "dart:io";
+
 import "package:moxxyv2/ui/events.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
@@ -50,7 +53,7 @@ import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
 void setupLogging() {
-  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
       // ignore: avoid_print
       print("[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}");
@@ -82,6 +85,8 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
 //       Padding(padding: ..., child: Column(children: [ ... ]))
 // TODO: Theme the switches
 void main() async {
+  GetIt.I.registerSingleton<Completer>(Completer());
+
   setupLogging();
   await setupUIServices();
   
@@ -91,6 +96,9 @@ void main() async {
   
   final navKey = GlobalKey<NavigatorState>();
   setupBlocs(navKey);
+
+  // Lift the UI block
+  GetIt.I.get<Completer>().complete();
   
   runApp(
     MultiBlocProvider(
@@ -154,14 +162,28 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _performPreStart() async {
+    GetIt.I.get<Logger>().finest("Waiting for UI setup future to complete");
+    await GetIt.I.get<Completer>().future;
+    GetIt.I.get<Logger>().finest("Performing preStart");
+
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      DebugLogCommand(log: "Test")
+    );
+
+    // TODO: Figure out why this is needed
+    if (kReleaseMode) {
+      sleep(Duration(milliseconds: 600));
+    }
+    
     final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
       PerformPreStartCommand()
     ) as PreStartDoneEvent;
+    GetIt.I.get<Logger>().finest("Got preStart result: ${result.state}");
 
     GetIt.I.get<PreferencesBloc>().add(
       PreferencesChangedEvent(result.preferences)
     );
-    
+
     if (result.state == preStartLoggedInState) {
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
@@ -177,11 +199,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         )
       );
 
+      GetIt.I.get<Logger>().finest("Navigating to conversations");
       widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
         conversationsRoute,
         (_) => false
       );
     } else if (result.state == preStartNotLoggedInState) {
+      GetIt.I.get<Logger>().finest("Navigating to intro");
       widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
         introRoute,
         (_) => false
