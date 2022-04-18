@@ -87,7 +87,6 @@ void main() {
       []
     )
   ];
-  final localRosterEmpty = [];
   final localRosterDouble = [
     RosterItem(
       0,
