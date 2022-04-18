@@ -13,7 +13,7 @@ void main() {
         settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        sendRawXML: (data) {},
+        sendRawXML: (data, { String? redact }) {},
         hashType: ScramHashType.sha1
       );
 
@@ -70,7 +70,7 @@ void main() {
         settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        sendRawXML: (data) {},
+        sendRawXML: (data, { String? redact }) {},
         hashType: ScramHashType.sha1
       );
 
@@ -85,7 +85,7 @@ void main() {
         settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
         clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
         initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        sendRawXML: (data) {},
+        sendRawXML: (data, { String? redact }) {},
         hashType: ScramHashType.sha1
       );
 

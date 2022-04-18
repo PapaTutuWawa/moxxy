@@ -4,7 +4,7 @@ import "package:moxxyv2/xmpp/sasl/plain.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 
-AuthenticationNegotiator? getAuthenticator(List<String> mechanisms, ConnectionSettings settings, void Function(XMLNode) sendRawXML) {
+AuthenticationNegotiator? getAuthenticator(List<String> mechanisms, ConnectionSettings settings, void Function(XMLNode, { String? redact}) sendRawXML) {
   // NOTE: Order based on https://wiki.xmpp.org/web/SASL_Authentication_and_SCRAM#Introduction
   if (mechanisms.contains(scramSha512Mechanism)) {
     //print("Proceeding with SASL SCRAM-SHA-512 authentication");

@@ -44,7 +44,7 @@ class StubTCPSocket extends BaseSocketWrapper {
   Stream<XmppSocketEvent> getEventStream() => _eventStream.stream.asBroadcastStream();
 
   @override
-  void write(Object? object) {
+  void write(Object? object, { String? redact }) {
     String str = object as String;
     // ignore: avoid_print
     print("==> " + str);

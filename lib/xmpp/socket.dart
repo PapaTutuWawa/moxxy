@@ -38,8 +38,9 @@ abstract class BaseSocketWrapper {
   /// reused by calling [this.connect] again.
   void close();
 
-  /// Write [data] into the socket.
-  void write(String data);
+  /// Write [data] into the socket. If [redact] is not null, then [redact] will be
+  /// logged instead of [data].
+  void write(String data, { String? redact });
   
   /// This must connect to [host]:[port] and initialize the streams accordingly.
   /// [domain] is the domain that TLS should be validated against, in case the Socket
@@ -269,14 +270,18 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   Stream<XmppSocketEvent> getEventStream() => _eventStream.stream.asBroadcastStream();
 
   @override
-  void write(Object? data) {
+  void write(Object? data, { String? redact }) {
     if (_socket == null) {
       _log.severe("Failed to write to socket as _socket is null");
       return;
     }
 
     if (data != null && data is String) {
-      _log.finest("==> " + data);
+      if (redact != null) {
+        _log.finest("**> " + redact);
+      } else {
+        _log.finest("==> " + data);
+      }
     }
 
     try {

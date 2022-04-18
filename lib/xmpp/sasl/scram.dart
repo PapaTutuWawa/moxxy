@@ -78,7 +78,7 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
   final HashAlgorithm _hash;
   String _serverSignature;
 
-  void Function(XMLNode) sendRawXML;
+  void Function(XMLNode, { String? redact }) sendRawXML;
 
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
   SaslScramNegotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required this.sendRawXML, required this.hashType }) : _hash = hashFromType(hashType), _serverSignature = "";
@@ -161,7 +161,10 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
         initialMessageNoGS2 = "n=" + settings.jid.local + ",r=$clientNonce";
 
         state = ScramState.initialMessageSent;
-        sendRawXML(SaslScramAuthNonza(body: base64.encode(utf8.encode(gs2Header + initialMessageNoGS2)), type: hashType));
+        sendRawXML(
+          SaslScramAuthNonza(body: base64.encode(utf8.encode(gs2Header + initialMessageNoGS2)), type: hashType),
+          redact: SaslScramAuthNonza(body: "******", type: hashType).toXml()
+        );
         return Result(AuthenticationResult.notDone, "");
       case ScramState.initialMessageSent:
         if (nonza!.tag == "failure") {
@@ -172,7 +175,10 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
         final response = await calculateChallengeResponse(challengeBase64);
         final responseBase64 = base64.encode(utf8.encode(response));
         state = ScramState.challengeResponseSent;
-        sendRawXML(SaslScramResponseNonza(body: responseBase64));
+        sendRawXML(
+          SaslScramResponseNonza(body: responseBase64),
+          redact: SaslScramResponseNonza(body: "******").toXml()
+        );
         return Result(AuthenticationResult.notDone, "");
       case ScramState.challengeResponseSent:
         final tag = nonza!.tag;

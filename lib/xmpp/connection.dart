@@ -335,8 +335,8 @@ class XmppConnection {
   }
 
   /// Sends an [XMLNode] without any further processing to the server.
-  void sendRawXML(XMLNode node) {
-    _socket.write(node.toXml());
+  void sendRawXML(XMLNode node, { String? redact }) {
+    _socket.write(node.toXml(), redact: redact);
   }
 
   /// Sends [raw] to the server.

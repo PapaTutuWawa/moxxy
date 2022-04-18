@@ -14,7 +14,7 @@ class SaslPlainAuthNonza extends SaslAuthNonza {
 }
 
 class SaslPlainNegotiator extends AuthenticationNegotiator {
-  void Function(XMLNode) sendRawXML;
+  void Function(XMLNode, { String? redact }) sendRawXML;
   bool authSent = false;
   final ConnectionSettings settings;
 
@@ -30,7 +30,10 @@ class SaslPlainNegotiator extends AuthenticationNegotiator {
         return Result(AuthenticationResult.success, "");
       }
     } else {
-      sendRawXML(SaslPlainAuthNonza(settings.jid.local, settings.password));
+      sendRawXML(
+        SaslPlainAuthNonza(settings.jid.local, settings.password),
+        redact: SaslPlainAuthNonza("******", "******").toXml()
+      );
       authSent = true;
       return Result(AuthenticationResult.notDone, "");
     }
