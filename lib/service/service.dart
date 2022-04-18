@@ -6,6 +6,7 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
+import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
@@ -40,7 +41,6 @@ import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/events.dart";
 
 import "package:flutter/material.dart";
-import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:flutter_background_service_android/flutter_background_service_android.dart";
 import "package:get_it/get_it.dart";
@@ -52,17 +52,15 @@ Future<void> initializeServiceIfNeeded() async {
 
   final service = FlutterBackgroundService();
   if (await service.isRunning()) {
-    //GetIt.I.get<Logger>().info("Stopping background service");
-
-    if (kDebugMode) {
-      //service.stopBackgroundService();
-    } else {
-      return;
-    }
+    GetIt.I.get<Logger>().info("Service is running. Sending pre start command");
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      PerformPreStartCommand(),
+      awaitable: false
+    );
+  } else {
+    GetIt.I.get<Logger>().info("Service is not running. Initializing service... ");
+    await initializeService();
   }
-
-  GetIt.I.get<Logger>().info("Initializing service");
-  await initializeService();
 }
 
 Future<void> initializeService() async {
@@ -81,7 +79,11 @@ Future<void> initializeService() async {
       isForegroundMode: true
     )
   );
-  service.startService();
+  if (await service.startService()) {
+    GetIt.I.get<Logger>().finest("Service successfully started");
+  } else {
+    GetIt.I.get<Logger>().severe("Service failed to start");
+  }
 }
 
 /// A middleware for packing an event into a [DataWrapper] and also
@@ -98,7 +100,8 @@ void sendEvent(BackgroundEvent event, { String? id }) {
 }
 
 void setupLogging() {
-  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  //Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
       final logMessageHeader = "[${record.level.name}] (${record.loggerName}) ${record.time}: ";
       String msg = record.message;
@@ -121,7 +124,7 @@ void setupLogging() {
           }
         }
 
-        if (kDebugMode) {
+        if (/*kDebugMode*/ true) {
           // ignore: avoid_print
           print(logMessage);
         }
@@ -218,8 +221,11 @@ void onStart(ServiceInstance service) {
       ]);
       GetIt.I.registerSingleton<XmppConnection>(connection);
 
+      GetIt.I.get<Logger>().finest("Done with xmpp");
+      
       final settings = await xmpp.getConnectionSettings();
 
+      GetIt.I.get<Logger>().finest("Got settings");
       if (settings != null) {
         // The title of the notification will be changed as soon as the connection state
         // of [XmppConnection] changes.
@@ -228,7 +234,10 @@ void onStart(ServiceInstance service) {
         GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Idle");
       }
 
+      GetIt.I.get<Logger>().finest("Resolving startup future");
       GetIt.I.get<Completer>().complete();
+
+      performPreStart(PerformPreStartCommand(), extra: "prestart-id-123");
   })();
 }
 

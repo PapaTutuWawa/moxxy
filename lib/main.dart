@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:moxxyv2/ui/events.dart";
 import "package:moxxyv2/ui/constants.dart";
 /*
@@ -39,18 +41,16 @@ import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 
 import "package:flutter/material.dart";
-import "package:flutter/foundation.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:page_transition/page_transition.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
 void setupLogging() {
-  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
       // ignore: avoid_print
       print("[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}");
@@ -82,6 +82,8 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
 //       Padding(padding: ..., child: Column(children: [ ... ]))
 // TODO: Theme the switches
 void main() async {
+  GetIt.I.registerSingleton<Completer>(Completer());
+
   setupLogging();
   await setupUIServices();
   
@@ -150,43 +152,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _performPreStart();
-  }
 
-  Future<void> _performPreStart() async {
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
-      PerformPreStartCommand()
-    ) as PreStartDoneEvent;
-
-    GetIt.I.get<PreferencesBloc>().add(
-      PreferencesChangedEvent(result.preferences)
-    );
-    
-    if (result.state == preStartLoggedInState) {
-      GetIt.I.get<ConversationsBloc>().add(
-        ConversationsInitEvent(
-          result.displayName!,
-          result.jid!,
-          result.conversations!,
-          avatarUrl: result.avatarUrl,
-        )
-      );
-      GetIt.I.get<NewConversationBloc>().add(
-        NewConversationInitEvent(
-          result.roster!
-        )
-      );
-
-      widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
-        conversationsRoute,
-        (_) => false
-      );
-    } else if (result.state == preStartNotLoggedInState) {
-      widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
-        introRoute,
-        (_) => false
-      );
-    }
+    // Lift the UI block
+    GetIt.I.get<Completer>().complete();
   }
   
   @override

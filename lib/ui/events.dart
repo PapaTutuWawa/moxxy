@@ -2,6 +2,7 @@ import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/ui/prestart.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart" as conversations;
@@ -25,6 +26,7 @@ void setupEventHandler() {
       EventTypeMatcher<RosterDiffEvent>(onRosterPush),
       EventTypeMatcher<DownloadProgressEvent>(onDownloadProgress),
       EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged),
+      EventTypeMatcher<PreStartDoneEvent>(preStartDone)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
