@@ -8,9 +8,13 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 
+import "package:meta/meta.dart";
+
 const errorNoUploadServer = 1;
 const errorFileTooBig = 2;
 const errorGeneric = 3;
+
+const allowedHTTPHeaders = const [ "authorization", "cookie", "expires" ];
 
 class HttpFileUploadSlot {
   final String putUrl;
@@ -18,6 +22,24 @@ class HttpFileUploadSlot {
   final Map<String, String> headers;
 
   const HttpFileUploadSlot(this.putUrl, this.getUrl, this.headers);
+}
+
+/// Strips out all newlines from [value].
+String _stripNewlinesFromString(String value) {
+  return value.replaceAll("\n", "").replaceAll("\r", "");
+}
+
+/// Prepares a list of headers by removing newlines from header names and values
+/// and also removes any headers that are not allowed by the XEP.
+@visibleForTesting
+Map<String, String> prepareHeaders(Map<String, String> headers) {
+  return headers.map((key, value) {
+      return MapEntry(
+        _stripNewlinesFromString(key),
+        _stripNewlinesFromString(value)
+      );
+  })
+  ..removeWhere((key, _) => !allowedHTTPHeaders.contains(key.toLowerCase()));
 }
 
 class HttpFileUploadManager extends XmppManagerBase {
@@ -51,9 +73,6 @@ class HttpFileUploadManager extends XmppManagerBase {
 
     return null;
   }
-
-  /// Returns true if we are allowed to include the header in the put request. False if not.
-  bool _isHeaderAllowed(String name) => [ "authorization", "cookie", "expires" ].contains(name.toLowerCase());
 
   @override
   void onXmppEvent(XmppEvent event) {
@@ -111,22 +130,18 @@ class HttpFileUploadManager extends XmppManagerBase {
     final slot = response.firstTag("slot", xmlns: httpFileUploadXmlns)!;
     final putUrl = slot.firstTag("put")!.attributes["url"]!;
     final getUrl = slot.firstTag("get")!.attributes["url"]!;
-    final Map<String, String> headers = {};
-
-    for (final headerElement in slot.findTags("header")) {
-      final name = headerElement.attributes["name"]!.replaceAll("\n", "");
-      final value = headerElement.innerText().replaceAll("\n", "");
-
-      if (!_isHeaderAllowed(name)) continue;
-
-      headers[name] = value;
-    }
+    final Map<String, String> headers = Map.fromEntries(
+      slot.findTags("header").map((tag) => MapEntry(
+          tag.attributes["name"]!,
+          tag.innerText()
+      ))
+    );
 
     return MayFail.success(
       HttpFileUploadSlot(
         putUrl,
         getUrl,
-        headers
+        prepareHeaders(headers)
       )
     );
   }
