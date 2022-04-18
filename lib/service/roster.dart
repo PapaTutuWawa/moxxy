@@ -5,12 +5,14 @@ import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/shared/models/roster.dart";
+import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 
+import "package:flutter/foundation.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
 
@@ -19,71 +21,105 @@ bool Function(RosterItem) _jidEqualsWrapper(String jid) {
   return (i) => i.jid == jid;
 }
 
+typedef AddRosterItemFunction = Future<RosterItem> Function(
+  String avatarUrl,
+  String avatarHash,
+  String jid,
+  String title,
+  String subscription,
+  String ask,
+  {
+    List<String> groups
+  }
+);
+typedef UpdateRosterItemFunction = Future<RosterItem> Function(
+  int id, {
+    String? avatarUrl,
+    String? avatarHash,
+    String? title,
+    String? subscription,
+    String? ask,
+    List<String>? groups
+  }
+);
+typedef RemoveRosterItemFunction = Future<void> Function(String jid);
+typedef GetConversationFunction = Future<Conversation?> Function(String jid);
+typedef SendEventFunction = void Function(BackgroundEvent event, { String? id });
+
 /// Compare the local roster with the roster we received either by request or by push.
 /// Returns a diff between the roster before and after the request or the push.
 /// NOTE: This abuses the [RosterDiffEvent] type a bit.
-Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRosterItem> remoteRoster, bool isRosterPush) async {
+Future<RosterDiffEvent> processRosterDiff(
+  List<RosterItem> currentRoster,
+  List<XmppRosterItem> remoteRoster,
+  bool isRosterPush,
+  AddRosterItemFunction addRosterItemFromData,
+  UpdateRosterItemFunction updateRosterItem,
+  RemoveRosterItemFunction removeRosterItemByJid,
+  GetConversationFunction getConversationByJid,
+  SendEventFunction _sendEvent
+) async {
   final List<String> removed = List.empty(growable: true);
   final List<RosterItem> modified = List.empty(growable: true);
   final List<RosterItem> added = List.empty(growable: true);
-  final rs = GetIt.I.get<RosterService>();
-  final cs = GetIt.I.get<ConversationService>();
 
   for (final item in remoteRoster) {
     if (isRosterPush) {
-      // Handle removed items
-      if (item.subscription == "remove") {
-        removed.add(item.jid);
-        continue;
-      }
-
       final litem = firstWhereOrNull(currentRoster, _jidEqualsWrapper(item.jid));
       if (litem != null) {
+        if (item.subscription == "remove") {
+          // We have the item locally but it has been removed
+          await removeRosterItemByJid(item.jid);
+          removed.add(item.jid);
+          continue;
+        }
+
         // Item has been modified
-        final newItem = await rs.updateRosterItem(
+        final newItem = await updateRosterItem(
           litem.id,
           subscription: item.subscription,
+          title: item.name,
+          ask: item.ask,
           groups: item.groups
         );
 
         modified.add(newItem);
 
         // Check if we have a conversation that we need to modify
-        final conv = await cs.getConversationByJid(item.jid);
+        final conv = await getConversationByJid(item.jid);
         if (conv != null) {
-          sendEvent(
+          _sendEvent(
             ConversationUpdatedEvent(
               conversation: conv.copyWith(subscription: item.subscription)
             )
           );
         }
       } else {
-        // Item has been modified
-        final newItem = await rs.addRosterItemFromData(
-          "",
-          "",
-          item.jid,
-          item.name ?? item.jid.split("@")[0],
-          item.subscription,
-          item.ask ?? "",
-          groups: item.groups
-        );
+        // Item does not exist locally
+        if (item.subscription == "remove") {
+          // Item has been removed but we don't have it locally
+          removed.add(item.jid);
+        } else {
+          // Item has been added and we don't have it locally
+          final newItem = await addRosterItemFromData(
+            "",
+            "",
+            item.jid,
+            item.name ?? item.jid.split("@")[0],
+            item.subscription,
+            item.ask ?? "",
+            groups: item.groups
+          );
 
-        added.add(newItem);
+          added.add(newItem);
+        }
       }
     } else {
-      if (!listContains(currentRoster, (RosterItem i) => i.jid == item.jid)) {
-        // Item has been deleted
-        await rs.removeRosterItemByJid(item.jid);
-        removed.add(item.jid);
-        continue;
-      }
-
       final litem = firstWhereOrNull(currentRoster, _jidEqualsWrapper(item.jid));
       if (litem != null) {
         // Item is modified
-        if (litem.title != item.name || litem.subscription != item.subscription || litem.groups != item.groups) {
-          final modifiedItem = await rs.updateRosterItem(
+        if (litem.title != item.name || litem.subscription != item.subscription || !listEquals(litem.groups, item.groups)) {
+          final modifiedItem = await updateRosterItem(
             litem.id,
             title: item.name,
             subscription: item.subscription,
@@ -92,9 +128,9 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
           modified.add(modifiedItem);
 
           // Check if we have a conversation that we need to modify
-          final conv = await cs.getConversationByJid(litem.jid);
+          final conv = await getConversationByJid(litem.jid);
           if (conv != null) {
-            sendEvent(
+            _sendEvent(
               ConversationUpdatedEvent(
                 conversation: conv.copyWith(subscription: item.subscription)
               )
@@ -103,7 +139,7 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
         }
       } else {
         // Item is new
-        added.add(await rs.addRosterItemFromData(
+        added.add(await addRosterItemFromData(
             "",
             "",
             item.jid,
@@ -113,6 +149,18 @@ Future<RosterDiffEvent> rosterDiff(List<RosterItem> currentRoster, List<XmppRost
             groups: item.groups
         ));
       }
+    }
+  }
+
+  if (!isRosterPush) {
+    for (final item in currentRoster) {
+      final ritem = firstWhereOrNull(remoteRoster, (XmppRosterItem i) => i.jid == item.jid);
+      if (ritem == null) {
+        await removeRosterItemByJid(item.jid);
+        removed.add(item.jid);
+      }
+      // We don't handle the modification case here as that is covered by the huge
+      // loop above
     }
   }
   
@@ -303,14 +351,36 @@ class RosterService {
     }
 
     final currentRoster = await getRoster();
-    sendEvent(await rosterDiff(currentRoster, result.items, false));
+    sendEvent(
+      await processRosterDiff(
+        currentRoster,
+        result.items,
+        false,
+        addRosterItemFromData,
+        updateRosterItem,
+        removeRosterItemByJid,
+        GetIt.I.get<ConversationService>().getConversationByJid,
+        sendEvent
+      )
+    );
   }
 
   /// Handles a roster push.
   Future<void> handleRosterPushEvent(RosterPushEvent event) async {
     final item = event.item;
     final currentRoster = await getRoster();
-    sendEvent(await rosterDiff(currentRoster, [ item ], true));
+    sendEvent(
+      await processRosterDiff(
+        currentRoster,
+        [ item ],
+        true,
+        addRosterItemFromData,
+        updateRosterItem,
+        removeRosterItemByJid,
+        GetIt.I.get<ConversationService>().getConversationByJid,
+        sendEvent
+      )
+    );
   }
 
   Future<void> acceptSubscriptionRequest(String jid) async {
