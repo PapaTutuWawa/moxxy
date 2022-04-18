@@ -45,8 +45,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
       EventTypeMatcher<SendChatStateCommand>(performSendChatState),
       EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
-      EventTypeMatcher<SignOutCommand>(performSignOut),
-      EventTypeMatcher<DebugLogCommand>(performDebugLog)
+      EventTypeMatcher<SignOutCommand>(performSignOut)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -397,8 +396,4 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
     SignedOutEvent(),
     id: id
   );
-}
-
-Future<void> performDebugLog(DebugLogCommand command, { dynamic extra }) async {
-  Logger("Debug").finest(command.log);
 }

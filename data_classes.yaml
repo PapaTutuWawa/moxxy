@@ -331,13 +331,6 @@ files:
           - BackgroundCommand
         implements:
           - JsonImplementation
-      - name: DebugLogCommand
-        extends:
-          - BackgroundCommand
-        implements:
-          - JsonImplementation
-        attributes:
-          log: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
