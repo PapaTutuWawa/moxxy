@@ -86,14 +86,15 @@ void main() async {
 
   setupLogging();
   await setupUIServices();
-  
-  await initializeServiceIfNeeded();
+
   setupEventHandler();
   GetIt.I.registerSingleton<BackgroundServiceDataSender>(BackgroundServiceDataSender());
-  
+
   final navKey = GlobalKey<NavigatorState>();
   setupBlocs(navKey);
-  
+
+  await initializeServiceIfNeeded();
+    
   runApp(
     MultiBlocProvider(
       providers: [
