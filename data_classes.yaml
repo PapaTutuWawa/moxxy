@@ -183,6 +183,12 @@ files:
           - BackgroundEvent
         implements:
           - JsonImplementation
+      # Returned by the service once it is ready
+      - name: ServiceReadyEvent 
+        extends:
+          - BackgroundEvent
+        implements:
+          - JsonImplementation
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

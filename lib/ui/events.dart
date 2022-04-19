@@ -1,7 +1,10 @@
+import "dart:async";
+
 import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/events.dart";
+import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/ui/prestart.dart";
 import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
@@ -26,7 +29,8 @@ void setupEventHandler() {
       EventTypeMatcher<RosterDiffEvent>(onRosterPush),
       EventTypeMatcher<DownloadProgressEvent>(onDownloadProgress),
       EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged),
-      EventTypeMatcher<PreStartDoneEvent>(preStartDone)
+      EventTypeMatcher<PreStartDoneEvent>(preStartDone),
+      EventTypeMatcher<ServiceReadyEvent>(onServiceReady)
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -126,5 +130,15 @@ Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }
   );
   GetIt.I.get<profile.ProfileBloc>().add(
     profile.AvatarSetEvent(event.path, event.hash)
+  );
+}
+
+Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
+  GetIt.I.get<Logger>().fine("onServiceReady: Waiting for UI future to resolve...");
+  await GetIt.I.get<Completer>().future;
+  GetIt.I.get<Logger>().fine("onServiceReady: Done");
+  GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    PerformPreStartCommand(),
+    awaitable: false
   );
 }

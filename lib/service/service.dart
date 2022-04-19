@@ -237,7 +237,7 @@ void onStart(ServiceInstance service) {
       GetIt.I.get<Logger>().finest("Resolving startup future");
       GetIt.I.get<Completer>().complete();
 
-      performPreStart(PerformPreStartCommand(), extra: "prestart-id-123");
+      sendEvent(ServiceReadyEvent());
   })();
 }
 
