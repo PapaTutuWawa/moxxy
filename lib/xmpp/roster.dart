@@ -3,10 +3,14 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/types/error.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
+
+const rosterErrorNoQuery = 1;
+const rosterErrorNonResult = 2;
 
 class XmppRosterItem {
   final String jid;
@@ -111,36 +115,9 @@ class RosterManager extends XmppManagerBase {
     return state.copyWith(done: true);
   }
 
-  /// Requests the roster from the server. [lastVersion] refers to the last version
-  /// of the roster we know about according to roster versioning.
-  Future<RosterRequestResult?> requestRoster() async {
-    if (_rosterVersion == null) {
-      await loadLastRosterVersion();
-    }
-
-    final attrs = getAttributes();
-    final response = await attrs.sendStanza(
-      Stanza.iq(
-        type: "get",
-        children: [
-          XMLNode.xmlns(
-            tag: "query",
-            xmlns: rosterXmlns,
-            attributes: {
-              ...(_rosterVersion != null ? { "ver": _rosterVersion! } : {})
-            }
-          )
-        ]
-      )
-    );
-
-    if (response.attributes["type"] != "result") {
-      logger.severe("Error requesting roster: " + response.toString());
-      return null;
-    }
-
-    final XMLNode? query = response.firstTag("query");
-
+  /// Shared code between requesting rosters without and with roster versioning, if
+  /// the server deems a regular roster response more efficient than n roster pushes.
+  Future<MayFail<RosterRequestResult>> _handleRosterResponse(XMLNode? query) async {
     final List<XmppRosterItem> items;
     if (query != null) {
       items = query.children.map((item) => XmppRosterItem(
@@ -156,15 +133,83 @@ class RosterManager extends XmppManagerBase {
         _rosterVersion = query.attributes["ver"];
       }
     } else {
-      items = List<XmppRosterItem>.empty();
+      logger.warning("Server response to roster request without roster versioning does not contain a <query /> element, while the type is not error. This violates RFC6121");
+      return MayFail.failure(rosterErrorNoQuery);
+    }
+
+    final ver = query.attributes["ver"];
+    if (ver != null) {
+      _rosterVersion = ver;
+      await commitLastRosterVersion(ver);
     }
     
-    return RosterRequestResult(
-      items: items,
-      ver: query != null ? query.attributes["ver"] : _rosterVersion
+    return MayFail.success(
+      RosterRequestResult(
+        items: items,
+        ver: ver
+      )
     );
+
+  }
+  
+  /// Requests the roster following RFC 6121 without using roster versioning.
+  Future<MayFail<RosterRequestResult>> requestRoster() async {
+    final attrs = getAttributes();
+    final response = await attrs.sendStanza(
+      Stanza.iq(
+        type: "get",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: rosterXmlns,
+          )
+        ]
+      )
+    );
+
+    if (response.attributes["type"] != "result") {
+      logger.warning("Error requesting roster without roster versioning: ${response.toXml()}");
+      return MayFail.failure(rosterErrorNonResult);
+    }
+
+    final XMLNode? query = response.firstTag("query", xmlns: rosterXmlns);
+    return await _handleRosterResponse(query);
   }
 
+  /// Requests a series of roster pushes according to RFC6121. Requires that the server
+  /// advertises urn:xmpp:features:rosterver in the stream features.
+  Future<MayFail<RosterRequestResult?>> requestRosterPushes() async {
+    if (_rosterVersion == null) {
+      await loadLastRosterVersion();
+    }
+
+    final attrs = getAttributes();
+    final result = await attrs.sendStanza(
+      Stanza.iq(
+        type: "get",
+        children: [
+          XMLNode.xmlns(
+            tag: "query",
+            xmlns: rosterXmlns,
+            attributes: {
+              "ver": _rosterVersion ?? ""
+            }
+          )
+        ]
+      )
+    );
+
+    if (result.attributes["type"] != "result") {
+      logger.warning("Requesting roster pushes failed: ${result.toXml()}");
+      return MayFail.failure(rosterErrorNonResult);
+    }
+
+    final query = result.firstTag("query", xmlns: rosterXmlns);
+    return await _handleRosterResponse(query);
+  }
+
+  bool rosterVersioningAvailable() => getAttributes().isStreamFeatureSupported(rosterVersioningXmlns);
+  
   /// Attempts to add [jid] with a title of [title] and groups [groups] to the roster.
   /// Returns true if the process was successful, false otherwise.
   Future<bool> addToRoster(String jid, String title, { List<String>? groups }) async {

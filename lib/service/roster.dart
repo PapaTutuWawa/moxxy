@@ -9,8 +9,9 @@ import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/roster.dart";
+import "package:moxxyv2/xmpp/types/error.dart";
+import "package:moxxyv2/xmpp/managers/namespaces.dart";
 
 import "package:flutter/foundation.dart";
 import "package:get_it/get_it.dart";
@@ -201,7 +202,7 @@ class RosterService {
       List<String> groups = const []
     }
   ) async {
-    final item = await addRosterItemFromData(
+    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(
       avatarUrl,
       avatarHash,
       jid,
@@ -341,28 +342,37 @@ class RosterService {
   }
 
   Future<void> requestRoster() async {
-    final result = await GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!.requestRoster();
+    final roster = GetIt.I.get<XmppConnection>().getManagerById(rosterManager)!;
+    MayFail<RosterRequestResult?> result;
+    if (roster.rosterVersioningAvailable()) {
+      _log.fine("Stream supports roster versioning");
+      result = await roster.requestRosterPushes();
+      _log.fine("Requesting roster pushes done");
+    } else {
+      _log.fine("Stream does not support roster versioning");
+      result = await roster.requestRoster();
+    }
 
-    _log.finest("requestRoster: Done");
-    
-    if (result == null || result.items.isEmpty) {
-      _log.fine("requestRoster: No roster items received");
+    if (result.isError()) {
+      _log.warning("Failed to request roster");
       return;
     }
 
-    final currentRoster = await getRoster();
-    sendEvent(
-      await processRosterDiff(
-        currentRoster,
-        result.items,
-        false,
-        addRosterItemFromData,
-        updateRosterItem,
-        removeRosterItemByJid,
-        GetIt.I.get<ConversationService>().getConversationByJid,
-        sendEvent
-      )
-    );
+    if (result.getValue() != null) {
+      final currentRoster = await getRoster();
+      sendEvent(
+        await processRosterDiff(
+          currentRoster,
+          result.getValue()!.items,
+          false,
+          addRosterItemFromData,
+          updateRosterItem,
+          removeRosterItemByJid,
+          GetIt.I.get<ConversationService>().getConversationByJid,
+          sendEvent
+        )
+      );
+    }
   }
 
   /// Handles a roster push.

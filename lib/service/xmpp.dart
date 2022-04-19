@@ -683,8 +683,8 @@ class XmppService {
   }
   
   Future<void> _onRosterPush(RosterPushEvent event, { dynamic extra }) async {
-    GetIt.I.get<RosterService>().handleRosterPushEvent(event);
     _log.fine("Roster push version: " + (event.ver ?? "(null)"));
+    await GetIt.I.get<RosterService>().handleRosterPushEvent(event);
   }
 
   Future<void> _onAvatarUpdated(AvatarUpdatedEvent event, { dynamic extra }) async {
