@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:io";
 
 import "package:moxxyv2/ui/events.dart";
 import "package:moxxyv2/ui/constants.dart";
@@ -42,11 +41,9 @@ import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/backgroundsender.dart";
 
 import "package:flutter/material.dart";
-import "package:flutter/foundation.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:page_transition/page_transition.dart";
 import "package:get_it/get_it.dart";
@@ -96,9 +93,6 @@ void main() async {
   
   final navKey = GlobalKey<NavigatorState>();
   setupBlocs(navKey);
-
-  // Lift the UI block
-  GetIt.I.get<Completer>().complete();
   
   runApp(
     MultiBlocProvider(
@@ -158,59 +152,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _performPreStart();
-  }
 
-  Future<void> _performPreStart() async {
-    GetIt.I.get<Logger>().finest("Waiting for UI setup future to complete");
-    await GetIt.I.get<Completer>().future;
-    GetIt.I.get<Logger>().finest("Performing preStart");
-
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
-      DebugLogCommand(log: "Test")
-    );
-
-    // TODO: Figure out why this is needed
-    if (kReleaseMode) {
-      sleep(Duration(milliseconds: 600));
-    }
-    
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
-      PerformPreStartCommand()
-    ) as PreStartDoneEvent;
-    GetIt.I.get<Logger>().finest("Got preStart result: ${result.state}");
-
-    GetIt.I.get<PreferencesBloc>().add(
-      PreferencesChangedEvent(result.preferences)
-    );
-
-    if (result.state == preStartLoggedInState) {
-      GetIt.I.get<ConversationsBloc>().add(
-        ConversationsInitEvent(
-          result.displayName!,
-          result.jid!,
-          result.conversations!,
-          avatarUrl: result.avatarUrl,
-        )
-      );
-      GetIt.I.get<NewConversationBloc>().add(
-        NewConversationInitEvent(
-          result.roster!
-        )
-      );
-
-      GetIt.I.get<Logger>().finest("Navigating to conversations");
-      widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
-        conversationsRoute,
-        (_) => false
-      );
-    } else if (result.state == preStartNotLoggedInState) {
-      GetIt.I.get<Logger>().finest("Navigating to intro");
-      widget.navigationKey.currentState!.pushNamedAndRemoveUntil(
-        introRoute,
-        (_) => false
-      );
-    }
+    // Lift the UI block
+    GetIt.I.get<Completer>().complete();
   }
   
   @override

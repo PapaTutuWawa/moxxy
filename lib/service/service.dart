@@ -6,6 +6,7 @@ import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/awaitabledatasender.dart";
+import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
@@ -40,7 +41,6 @@ import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/events.dart";
 
 import "package:flutter/material.dart";
-import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:flutter_background_service_android/flutter_background_service_android.dart";
 import "package:get_it/get_it.dart";
@@ -51,10 +51,14 @@ Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final service = FlutterBackgroundService();
-  if (!(await service.isRunning())) {
-    GetIt.I.get<Logger>().info("Service is not running. Initializing service...");
-
-    GetIt.I.get<Logger>().info("Initializing service");
+  if (await service.isRunning()) {
+    GetIt.I.get<Logger>().info("Service is running. Sending pre start command");
+    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      PerformPreStartCommand(),
+      awaitable: false
+    );
+  } else {
+    GetIt.I.get<Logger>().info("Service is not running. Initializing service... ");
     await initializeService();
   }
 }
@@ -232,6 +236,8 @@ void onStart(ServiceInstance service) {
 
       GetIt.I.get<Logger>().finest("Resolving startup future");
       GetIt.I.get<Completer>().complete();
+
+      performPreStart(PerformPreStartCommand(), extra: "prestart-id-123");
   })();
 }
 
