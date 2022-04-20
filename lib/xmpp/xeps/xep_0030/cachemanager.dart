@@ -31,9 +31,9 @@ class DiscoCacheManager extends XmppManagerBase {
   String getName() => "DiscoCache";
 
   @override
-  void onXmppEvent(XmppEvent event) {
+  Future<void> onXmppEvent(XmppEvent event) async {
     if (event is PresenceReceivedEvent) {
-      _onPresence(event.jid, event.presence);
+      await _onPresence(event.jid, event.presence);
     }
   }
 

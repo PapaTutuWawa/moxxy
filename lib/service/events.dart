@@ -54,7 +54,7 @@ void setupBackgroundEventHandler() {
 Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
   final id = extra as String;
 
-  GetIt.I.get<Logger>().fine("Performing login");
+  GetIt.I.get<Logger>().fine("Performing login...");
   final result = await GetIt.I.get<XmppService>().connectAwaitable(
     ConnectionSettings(
       jid: JID.fromString(command.jid),
@@ -63,6 +63,7 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
       allowPlainAuth: false
     ), true
   );
+  GetIt.I.get<Logger>().fine("Login done");
 
   if (result.success) {
     final settings = GetIt.I.get<XmppConnection>().getConnectionSettings();
@@ -73,6 +74,8 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
       ),
       id:id
     );
+
+    // TODO: Send the data of the [PreStartDoneEvent]
   } else {
     sendEvent(
       LoginFailureEvent(

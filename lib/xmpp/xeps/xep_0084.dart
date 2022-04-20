@@ -24,9 +24,8 @@ class UserAvatarManager extends XmppManagerBase {
   PubSubManager _getPubSubManager() => getAttributes().getManagerById(pubsubManager)! as PubSubManager;
   
   @override
-  void onXmppEvent(XmppEvent event) {
+  Future<void> onXmppEvent(XmppEvent event) async {
     if (event is PubSubNotificationEvent) {
-
       getAttributes().sendEvent(
         AvatarUpdatedEvent(
           jid: event.from,

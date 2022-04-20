@@ -88,14 +88,14 @@ class StreamManagementManager extends XmppManagerBase {
   ];
 
   @override
-  List<StanzaHandler> getOutgoingStanzaHandlers() => [
+  List<StanzaHandler> getOutgoingPostStanzaHandlers() => [
     StanzaHandler(
       callback: _onClientStanzaSent
     )
   ];
   
   @override
-  void onXmppEvent(XmppEvent event) {
+  Future<void> onXmppEvent(XmppEvent event) async {
     if (event is SendPingEvent) {
       if (isStreamManagementEnabled()) {
         _sendAckRequestPing();
@@ -104,11 +104,11 @@ class StreamManagementManager extends XmppManagerBase {
       }
     } else if (event is StreamResumedEvent) {
       _enableStreamManagement();
-      onStreamResumed(event.h);
+      await onStreamResumed(event.h);
     } else if (event is StreamManagementEnabledEvent) {
       _enableStreamManagement();
 
-      _stateMutex.protect(() async {
+      await _stateMutex.protect(() async {
           setState(StreamManagementState(
               0,
               0,
@@ -141,7 +141,9 @@ class StreamManagementManager extends XmppManagerBase {
   Future<bool> _handleAckRequest(XMLNode nonza) async {
     final attrs = getAttributes();
     logger.finest("Sending ack response");
-    attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
+    await _stateMutex.protect(() async {
+        attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
+    });
 
     return true;
   }
@@ -153,7 +155,12 @@ class StreamManagementManager extends XmppManagerBase {
 
     // Return early if we acked nothing.
     // Taken from slixmpp's stream management code
-    if (h == _state.c2s && _unackedStanzas.isEmpty) return true;
+    await _stateMutex.acquire();
+    if (h == _state.c2s && _unackedStanzas.isEmpty) {
+      _stateMutex.release();
+      return true;
+    }
+    _stateMutex.release();
 
     final attrs = getAttributes();
     final sequences = _unackedStanzas.keys.toList()..sort();
@@ -173,15 +180,16 @@ class StreamManagementManager extends XmppManagerBase {
       }
     }
 
-    if (h > _state.c2s) {
-      logger.info("C2S height jumped from ${_state.c2s} (local) to $h (remote).");
-      logger.info("Proceeding with $h as local C2S counter.");
-    }
-
     await _stateMutex.protect(() async {
-        _state = _state.copyWith(c2s: h);
-        await commitState();
+        if (h > _state.c2s) {
+          logger.info("C2S height jumped from ${_state.c2s} (local) to $h (remote).");
+          logger.info("Proceeding with $h as local C2S counter.");
+
+          _state = _state.copyWith(c2s: h);
+          await commitState();
+        }
     });
+
     return true;
   }
 
@@ -201,16 +209,15 @@ class StreamManagementManager extends XmppManagerBase {
   
   /// Called whenever we receive a stanza from the server.
   Future<StanzaHandlerData> _onServerStanzaReceived(Stanza stanza, StanzaHandlerData state) async {
-    _incrementS2C();
+    await _incrementS2C();
     return state;
   }
 
   /// Called whenever we send a stanza.
   Future<StanzaHandlerData> _onClientStanzaSent(Stanza stanza, StanzaHandlerData state) async {
-    _incrementC2S();
+    await _incrementC2S();
     _unackedStanzas[_state.c2s] = stanza;
     
-    // TODO: Do this after we sent the stanza
     if (isStreamManagementEnabled() && !state.retransmitted) {
       getAttributes().sendNonza(StreamManagementRequestNonza());
     }

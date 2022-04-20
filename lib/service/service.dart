@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:io";
 import "dart:ui";
 
 import "package:moxxyv2/shared/logging.dart";
@@ -41,6 +42,7 @@ import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/events.dart";
 
 import "package:flutter/material.dart";
+import "package:flutter/foundation.dart";
 import "package:flutter_background_service/flutter_background_service.dart";
 import "package:flutter_background_service_android/flutter_background_service_android.dart";
 import "package:get_it/get_it.dart";
@@ -50,15 +52,21 @@ import "package:uuid/uuid.dart";
 Future<void> initializeServiceIfNeeded() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final logger = GetIt.I.get<Logger>();
   final service = FlutterBackgroundService();
   if (await service.isRunning()) {
-    GetIt.I.get<Logger>().info("Service is running. Sending pre start command");
+    if (kDebugMode) {
+      logger.fine("Since kDebugMode is true, waiting 600ms before sending PreStartCommand");
+      sleep(const Duration(milliseconds: 600));
+    }
+
+    logger.info("Service is running. Sending pre start command");
     GetIt.I.get<BackgroundServiceDataSender>().sendData(
       PerformPreStartCommand(),
       awaitable: false
     );
   } else {
-    GetIt.I.get<Logger>().info("Service is not running. Initializing service... ");
+    logger.info("Service is not running. Initializing service... ");
     await initializeService();
   }
 }

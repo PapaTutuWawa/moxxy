@@ -127,14 +127,14 @@ class CarbonsManager extends XmppManagerBase {
   // TODO: Reset _isEnabled if we fail stream resumption or otherwise need to assume a new
   //       state.
   @override
-  void onXmppEvent(XmppEvent event) {
+  Future<void> onXmppEvent(XmppEvent event) async {
     if (event is ServerDiscoDoneEvent && !_isEnabled) {
       final attrs = getAttributes();
 
       if (attrs.isFeatureSupported(carbonsXmlns)) {
         logger.finest("Message carbons supported. Enabling...");
-
-        enableCarbons();
+        await enableCarbons();
+        logger.finest("Message carbons enabled");
       } else {
         logger.info("Message carbons not supported.");
       }

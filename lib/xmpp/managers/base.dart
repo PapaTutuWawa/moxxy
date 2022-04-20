@@ -22,9 +22,13 @@ abstract class XmppManagerBase {
   }
 
   /// Return the [StanzaHandler]s associated with this manager that deal with stanzas we
-  /// send.
-  List<StanzaHandler> getOutgoingStanzaHandlers() => [];
+  /// send. These are run before the stanza is sent.
+  List<StanzaHandler> getOutgoingPreStanzaHandlers() => [];
 
+  /// Return the [StanzaHandler]s associated with this manager that deal with stanzas we
+  /// send. These are run after the stanza is sent.
+  List<StanzaHandler> getOutgoingPostStanzaHandlers() => [];
+  
   /// Return the [StanzaHandler]s associated with this manager that deal with stanzas we
   /// receive.
   List<StanzaHandler> getIncomingStanzaHandlers() => [];
@@ -45,7 +49,7 @@ abstract class XmppManagerBase {
   Logger get logger => _log;
   
   /// Called when [XmppConnection] triggers an event
-  void onXmppEvent(XmppEvent event) {}
+  Future<void> onXmppEvent(XmppEvent event) async {}
 
   /// Runs all [NonzaHandler]s of this Manager which match the nonza. Resolves to true if
   /// the nonza has been handled by one of the handlers. Resolves to false otherwise.

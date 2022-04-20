@@ -28,6 +28,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 
 import "package:uuid/uuid.dart";
 import "package:logging/logging.dart";
+import "package:mutex/mutex.dart";
 
 enum XmppConnectionState {
   notConnected,
@@ -83,9 +84,11 @@ class XmppConnectionResult {
 class XmppConnection {
   final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse;
+  final Mutex _awaitingResponseMutex;
   final Map<String, XmppManagerBase> _xmppManagers;
   final List<StanzaHandler> _incomingStanzaHandlers;
-  final List<StanzaHandler> _outgoingStanzaHandlers;
+  final List<StanzaHandler> _outgoingPreStanzaHandlers;
+  final List<StanzaHandler> _outgoingPostStanzaHandlers;
   final BaseSocketWrapper _socket;
   XmppConnectionState _connectionState;
   late final Stream<String> _socketStream;
@@ -150,9 +153,11 @@ class XmppConnection {
     // NOTE: For testing 
     _socket = socket ?? TCPSocketWrapper(),
     _awaitingResponse = {},
+    _awaitingResponseMutex = Mutex(),
     _xmppManagers = {},
     _incomingStanzaHandlers = List.empty(growable: true),
-    _outgoingStanzaHandlers = List.empty(growable: true),
+    _outgoingPreStanzaHandlers = List.empty(growable: true),
+    _outgoingPostStanzaHandlers = List.empty(growable: true),
     _log = Logger("XmppConnection") {
     _socketStream = _socket.getDataStream();
     // TODO: Handle on done
@@ -195,11 +200,13 @@ class XmppConnection {
     }
 
     _incomingStanzaHandlers.addAll(manager.getIncomingStanzaHandlers());
-    _outgoingStanzaHandlers.addAll(manager.getOutgoingStanzaHandlers());
+    _outgoingPreStanzaHandlers.addAll(manager.getOutgoingPreStanzaHandlers());
+    _outgoingPostStanzaHandlers.addAll(manager.getOutgoingPostStanzaHandlers());
     
     if (sortHandlers) {
       _incomingStanzaHandlers.sort(stanzaHandlerSortComparator);
-      _outgoingStanzaHandlers.sort(stanzaHandlerSortComparator);
+      _outgoingPreStanzaHandlers.sort(stanzaHandlerSortComparator);
+      _outgoingPostStanzaHandlers.sort(stanzaHandlerSortComparator);
     }
   }
 
@@ -211,7 +218,8 @@ class XmppConnection {
 
     // Sort them
     _incomingStanzaHandlers.sort(stanzaHandlerSortComparator);
-    _outgoingStanzaHandlers.sort(stanzaHandlerSortComparator);
+    _outgoingPreStanzaHandlers.sort(stanzaHandlerSortComparator);
+    _outgoingPostStanzaHandlers.sort(stanzaHandlerSortComparator);
   }
   
   /// Generate an Id suitable for an origin-id or stanza id
@@ -380,30 +388,34 @@ class XmppConnection {
     }
 
     final stanzaString = stanza.toXml();
+    final id = stanza.id!;
 
-    if (awaitable) {
-      _awaitingResponse[stanza.id!] = Completer();
-    }
+    return await _awaitingResponseMutex.protect(() async {
+        if (awaitable) {
+          _awaitingResponse[id] = Completer();
+        }
 
-    // Tell the SM manager that we're about to send a stanza
-    await _runOutoingStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
-    
-    // This uses the StreamManager to behave like a send queue
-    final canSendData = _canSendData();
-    if (canSendData) {
-      _socket.write(stanzaString);
+        await _runOutoingPreStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
+        
+        // This uses the StreamManager to behave like a send queue
+        final canSendData = _canSendData();
+        if (canSendData) {
+          _socket.write(stanzaString);
 
-      // Try to ack every stanza
-      // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
-    } else {
-      _log.fine("_canSendData() returned false since _connectionState == $_connectionState");
-    }
+          // Try to ack every stanza
+          // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
+        } else {
+          _log.fine("_canSendData() returned false since _connectionState == $_connectionState");
+        }
 
-    if (awaitable) {
-      return _awaitingResponse[stanza.id!]!.future;
-    } else {
-      return Future.value(XMLNode(tag: "not-used"));
-    }
+        await _runOutoingPostStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
+        
+        if (awaitable) {
+          return _awaitingResponse[id]!.future;
+        } else {
+          return Future.value(XMLNode(tag: "not-used"));
+        }
+    });
   }
 
   /// Sets the connection state to [state] and triggers an event of type
@@ -453,7 +465,7 @@ class XmppConnection {
 
   /// Handles the result to the resource binding request and returns true if we should
   /// proceed and false if not.
-  bool _handleResourceBindingResult(XMLNode stanza) {
+  Future<bool> _handleResourceBindingResult(XMLNode stanza) async {
     if (stanza.tag != "iq" || stanza.attributes["type"] != "result") {
       _log.severe("Resource binding failed!");
       _updateRoutingState(RoutingState.error);
@@ -466,7 +478,7 @@ class XmppConnection {
     // TODO: Use our FullJID class
     _resource = jid.innerText().split("/")[1];
 
-    _sendEvent(ResourceBindingSuccessEvent(resource: _resource));
+    await _sendEvent(ResourceBindingSuccessEvent(resource: _resource));
 
     return true;
   }
@@ -487,7 +499,7 @@ class XmppConnection {
     if (serverInfo != null) {
       _log.finest("Discovered supported server features: ${serverInfo.features}");
       _serverFeatures.addAll(serverInfo.features);
-      _sendEvent(ServerDiscoDoneEvent());
+      await _sendEvent(ServerDiscoDoneEvent());
     } else {
       _log.warning("Failed to discover server features using XEP-0030");
     }
@@ -500,7 +512,7 @@ class XmppConnection {
         final info = await getDiscoCacheManager().getInfoByJid(item.jid);
         if (info != null) {
           _log.finest("Received info for ${item.jid}");
-          _sendEvent(ServerItemDiscoEvent(info: info, jid: item.jid));
+          await _sendEvent(ServerItemDiscoEvent(info: info, jid: item.jid));
         } else {
           _log.warning("Failed to discover disco info for ${item.jid}");
         }
@@ -531,9 +543,16 @@ class XmppConnection {
       stanza
     );
   }
-  Future<bool> _runOutoingStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
+  Future<bool> _runOutoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
     return await _runStanzaHandlers(
-      _outgoingStanzaHandlers,
+      _outgoingPreStanzaHandlers,
+      stanza,
+      initial: initial
+    );
+  }
+  Future<bool> _runOutoingPostStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
+    return await _runStanzaHandlers(
+      _outgoingPostStanzaHandlers,
       stanza,
       initial: initial
     );
@@ -559,16 +578,25 @@ class XmppConnection {
       return;
     }
 
+    // See if we are waiting for this stanza
     final stanza = Stanza.fromXMLNode(nonza);
     final id = stanza.attributes["id"];
-    if (id != null && _awaitingResponse.containsKey(id)) {
-      _awaitingResponse[id]!.complete(stanza);
-      _awaitingResponse.remove(id);
+    final awaited = await _awaitingResponseMutex.protect(() async {
+        if (id != null && _awaitingResponse.containsKey(id)) {
+          _awaitingResponse[id]!.complete(stanza);
+          _awaitingResponse.remove(id);
+          return true;
+        }
+
+        return false;
+    });
+    if (awaited) {
       return;
     }
 
+    // Run the incoming stanza handlers and bounce with an error if no manager handled
+    // it.
     final stanzaHandled = await _runIncomingStanzaHandlers(stanza);
-
     if (!stanzaHandled) {
       handleUnhandledStanza(this, stanza);
     }
@@ -628,7 +656,7 @@ class XmppConnection {
           _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.failure) {
           _log.severe("SASL authentication failed!");
-          _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          await _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(XmppConnectionState.error);
           _updateRoutingState(RoutingState.error);
 
@@ -675,7 +703,7 @@ class XmppConnection {
           _sendStreamHeader();
         } else if (result.getState() == AuthenticationResult.failure) {
           _log.severe("SASL authentication failed!");
-          _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
+          await _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(XmppConnectionState.error);
           _updateRoutingState(RoutingState.error);
 
@@ -734,7 +762,7 @@ class XmppConnection {
       }
       break;
       case RoutingState.bindResource: {
-        final proceed = _handleResourceBindingResult(node);
+        final proceed = await _handleResourceBindingResult(node);
         if (proceed) {
           _log.fine("Stream negotiation done. Ready to handle stanzas");
           _updateRoutingState(RoutingState.handleStanzas);
@@ -755,7 +783,7 @@ class XmppConnection {
       }
       break;
       case RoutingState.bindResourcePreSM: {
-        final proceed = _handleResourceBindingResult(node);
+        final proceed = await _handleResourceBindingResult(node);
         if (proceed) {
           if (_connectionCompleter != null) {
             _connectionCompleter!.complete(
@@ -785,7 +813,7 @@ class XmppConnection {
           }
           
           final h = int.parse(node.attributes["h"]!);
-          _sendEvent(StreamResumedEvent(h: h));
+          await _sendEvent(StreamResumedEvent(h: h));
 
           if (_serverFeatures.isEmpty) _discoverServerFeatures();
         } else if (node.tag == "failed") {
@@ -819,7 +847,7 @@ class XmppConnection {
             _log.finest("Stream resumption possible!");
           }
 
-          _sendEvent(
+          await _sendEvent(
             StreamManagementEnabledEvent(
               resource: _resource,
               id: node.attributes["id"],
@@ -847,11 +875,11 @@ class XmppConnection {
   }
   
   /// Sends an event to the connection's event stream.
-  void _sendEvent(XmppEvent event) {
+  Future<void> _sendEvent(XmppEvent event) async {
     _log.finest("Event: ${event.toString()}");
 
     for (var manager in _xmppManagers.values) {
-      manager.onXmppEvent(event);
+      await manager.onXmppEvent(event);
     }
 
     _eventStreamController.add(event);
@@ -925,7 +953,7 @@ class XmppConnection {
     }
 
     _resuming = true;
-    _sendEvent(ConnectingEvent());
+    await _sendEvent(ConnectingEvent());
 
     final smManager = getStreamManagementManager();
     String? host;

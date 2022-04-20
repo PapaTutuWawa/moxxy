@@ -14,7 +14,7 @@ const errorNoUploadServer = 1;
 const errorFileTooBig = 2;
 const errorGeneric = 3;
 
-const allowedHTTPHeaders = const [ "authorization", "cookie", "expires" ];
+const allowedHTTPHeaders = [ "authorization", "cookie", "expires" ];
 
 class HttpFileUploadSlot {
   final String putUrl;
@@ -75,7 +75,7 @@ class HttpFileUploadManager extends XmppManagerBase {
   }
 
   @override
-  void onXmppEvent(XmppEvent event) {
+  Future<void> onXmppEvent(XmppEvent event) async {
     if (event is ServerItemDiscoEvent) {
       if (_containsFileUploadIdentity(event.info) && event.info.features.contains(httpFileUploadXmlns)) {
         logger.info("Discovered HTTP File Upload for ${event.jid}");
