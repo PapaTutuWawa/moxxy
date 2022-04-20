@@ -138,7 +138,7 @@ class XmppConnection {
   /// the connection open. Defaults to 15 minutes.
   XmppConnection({
       BaseSocketWrapper? socket,
-      this.connectionPingDuration = const Duration(minutes: 15)
+      this.connectionPingDuration = const Duration(minutes: 5)
   }) :
     _connectionState = XmppConnectionState.notConnected,
     _routingState = RoutingState.unauthenticated,
