@@ -96,12 +96,14 @@ class XmppService {
   bool _appOpen;
   String _currentlyOpenedChatJid;
   StreamSubscription<ConnectivityResult>? _networkStateSubscription;
+  StreamSubscription<dynamic>? _xmppConnectionSubscription;
   XmppState? _state;
   ConnectivityResult _currentConnectionType;
   
   XmppService() :
     _currentlyOpenedChatJid = "",
     _networkStateSubscription = null,
+    _xmppConnectionSubscription = null,
     _state = null,
     _currentConnectionType = ConnectivityResult.none,
     _eventHandler = EventHandler(),
@@ -288,7 +290,8 @@ class XmppService {
   }
  
   void installEventHandlers() {
-    GetIt.I.get<XmppConnection>().asBroadcastStream().listen(_eventHandler.run);
+    _xmppConnectionSubscription?.cancel();
+    _xmppConnectionSubscription = GetIt.I.get<XmppConnection>().asBroadcastStream().listen(_eventHandler.run);
   }
 
   Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
