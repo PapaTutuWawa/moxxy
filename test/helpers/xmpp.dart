@@ -97,4 +97,10 @@ class StubTCPSocket extends BaseSocketWrapper {
   
   int getState() => _state;
   void resetState() => _state = 0;
+
+  @override
+  bool whitespacePingAllowed() => true;
+
+  @override
+  bool managesKeepalives() => false;
 }

@@ -11,6 +11,7 @@ import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
+import "package:moxxyv2/xmpp/ping.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
@@ -209,6 +210,7 @@ void onStart(ServiceInstance service) {
           MoxxyStreamManagementManager(),
           MoxxyDiscoManager(),
           MoxxyRosterManager(),
+          PingManager(),
           MessageManager(),
           PresenceManager(),
           CSIManager(),

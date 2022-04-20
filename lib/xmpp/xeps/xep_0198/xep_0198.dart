@@ -33,6 +33,9 @@ class StreamManagementManager extends XmppManagerBase {
   /// Functions for testing
   @visibleForTesting
   Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
+
+  /// Returns the amount of stanzas waiting to get acked
+  int getUnackedStanzaCount() => _unackedStanzas.length;
   
   /// May be overwritten by a subclass. Should save [state] so that it can be loaded again
   /// with [this.loadState].
@@ -96,13 +99,7 @@ class StreamManagementManager extends XmppManagerBase {
   
   @override
   Future<void> onXmppEvent(XmppEvent event) async {
-    if (event is SendPingEvent) {
-      if (isStreamManagementEnabled()) {
-        _sendAckRequestPing();
-      } else {
-        getAttributes().sendRawXml("");
-      }
-    } else if (event is StreamResumedEvent) {
+    if (event is StreamResumedEvent) {
       _enableStreamManagement();
       await onStreamResumed(event.h);
     } else if (event is StreamManagementEnabledEvent) {
@@ -156,7 +153,7 @@ class StreamManagementManager extends XmppManagerBase {
     // Return early if we acked nothing.
     // Taken from slixmpp's stream management code
     logger.fine("_handleAckResponse: Waiting to aquire lock...");
-    await _stateLock.synchronized(() async {;
+    await _stateLock.synchronized(() async {
         logger.fine("_handleAckResponse: Done...");
         if (h == _state.c2s && _unackedStanzas.isEmpty) {
           logger.fine("_handleAckResponse: Releasing lock...");
@@ -246,11 +243,11 @@ class StreamManagementManager extends XmppManagerBase {
     for (final stanza in stanzas) {
       attrs.sendStanza(stanza, awaitable: false, retransmitted: true);
     }
-    _sendAckRequestPing();
+    sendAckRequestPing();
   }
 
   /// Pings the connection open by send an ack request
-  void _sendAckRequestPing() {
+  void sendAckRequestPing() {
     getAttributes().sendNonza(StreamManagementRequestNonza());
   }
 }

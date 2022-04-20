@@ -6,6 +6,8 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 
+import "../helpers/xmpp.dart";
+
 import "package:test/test.dart";
 
 void main() {
@@ -29,8 +31,10 @@ void main() {
               getManagerById: (_) => null,
               isStreamFeatureSupported: (_) => false,
               isFeatureSupported: (_) => false,
-              getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
-          ));
+              getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
+              getSocket: () => StubTCPSocket(play: [])
+            )
+          );
 
           csi.setActive();
           csi.setInactive();
@@ -55,7 +59,8 @@ void main() {
               getManagerById: (_) => null,
               isStreamFeatureSupported: (xmlns) => xmlns == csiXmlns,
               isFeatureSupported: (_) => false,
-              getFullJID: () => JID.fromString("some.user@example.server/aaaaa")
+              getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
+              getSocket: () => StubTCPSocket(play: [])
           ));
 
           csi.setActive();

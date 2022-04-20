@@ -4,6 +4,7 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/socket.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
@@ -35,6 +36,9 @@ class XmppManagerAttributes {
   
   /// Returns the full JID of the current account
   final JID Function() getFullJID;
+
+  /// Returns the current socket. MUST NOT be used to send data.
+  final BaseSocketWrapper Function() getSocket;
   
   XmppManagerAttributes({
       required this.sendStanza,
@@ -45,6 +49,7 @@ class XmppManagerAttributes {
       required this.getConnectionSettings,
       required this.isStreamFeatureSupported,
       required this.isFeatureSupported,
-      required this.getFullJID
+      required this.getFullJID,
+      required this.getSocket
   });
 }

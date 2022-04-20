@@ -55,6 +55,12 @@ abstract class BaseSocketWrapper {
   /// May do nothing if the connection is always secure.
   /// Returns true if the socket has been successfully upgraded. False otherwise.
   Future<bool> secure(String domain);
+
+  /// Returns true if whitespace pings are allowed. False if not.
+  bool whitespacePingAllowed();
+
+  /// Returns true if it manages its own keepalive pings, like websockets. False if not.
+  bool managesKeepalives();
 }
 
 /// TCP socket implementation for [XmppConnection]
@@ -77,6 +83,12 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   @override
   bool isSecure() => _secure;
 
+  @override
+  bool whitespacePingAllowed() => true;
+
+  @override
+  bool managesKeepalives() => false;
+  
   bool _onBadCertificate(certificate, String domain) {
     _log.fine("Bad certificate: ${certificate.toString()}");
     final isExpired = certificate.endValidity.isAfter(DateTime.now());

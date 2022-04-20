@@ -183,7 +183,8 @@ class XmppConnection {
         getManagerById: getManagerById,
         isStreamFeatureSupported: isStreamFeatureSupported,
         isFeatureSupported: (feature) => _serverFeatures.contains(feature),
-        getFullJID: () => _connectionSettings.jid.withResource(_resource)
+        getFullJID: () => _connectionSettings.jid.withResource(_resource),
+        getSocket: () => _socket
     ));
 
     final id = manager.getId();
@@ -936,21 +937,27 @@ class XmppConnection {
     // Clear Stream Management state, if available
     await getStreamManagementManager()?.resetState();
   }
+
+  /// Make sure that all required managers are registered
+  void _runPreConnectionAssertions() {
+    assert(_xmppManagers.containsKey(presenceManager));
+    assert(_xmppManagers.containsKey(rosterManager));
+    assert(_xmppManagers.containsKey(discoManager));
+    assert(_xmppManagers.containsKey(pingManager));
+  }
   
   /// Like [connect] but the Future resolves when the resource binding is either done or
   /// SASL has failed.
   Future<XmppConnectionResult> connectAwaitable({ String? lastResource }) {
+    _runPreConnectionAssertions();
     _connectionCompleter = Completer();
     connect(lastResource: lastResource);
     return _connectionCompleter!.future;
   }
-  
+ 
   /// Start the connection process using the provided connection settings.
   Future<void> connect({ String? lastResource }) async {
-    assert(_xmppManagers.containsKey(presenceManager));
-    assert(_xmppManagers.containsKey(rosterManager));
-    assert(_xmppManagers.containsKey(discoManager));
-
+    _runPreConnectionAssertions();
     _disconnecting = false;
     
     if (lastResource != null) {

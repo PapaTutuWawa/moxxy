@@ -5,6 +5,8 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
 
+import "../helpers/xmpp.dart";
+
 import "package:test/test.dart";
 
 void main() {
@@ -27,7 +29,8 @@ void main() {
         ),
         isStreamFeatureSupported: (feat) => false,
         isFeatureSupported: (_) => false,
-        getFullJID: () => JID.fromString("bob@xmpp.example/uwu")
+        getFullJID: () => JID.fromString("bob@xmpp.example/uwu"),
+        getSocket: () => StubTCPSocket(play: [])
       );
       final manager = CarbonsManager();
       manager.register(attributes);
