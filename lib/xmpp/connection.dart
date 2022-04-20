@@ -139,7 +139,7 @@ class XmppConnection {
   }) :
     _connectionState = XmppConnectionState.notConnected,
     _routingState = RoutingState.unauthenticated,
-    _eventStreamController = StreamController(),
+    _eventStreamController = StreamController.broadcast(),
     _resource = "",
     _streamBuffer = XmlStreamBuffer(),
     _currentBackoffAttempt = 0,
@@ -632,15 +632,14 @@ class XmppConnection {
           _setConnectionState(XmppConnectionState.error);
           _updateRoutingState(RoutingState.error);
 
-          if (_connectionCompleter != null) {
-            _connectionCompleter!.complete(
-              XmppConnectionResult(
-                false,
-                reason: result.getValue()
-              )
-            );
-            _connectionCompleter = null;
-          }
+          _log.fine("Resolving _connectionCompleter due to a SASL failure");
+          _connectionCompleter?.complete(
+            XmppConnectionResult(
+              false,
+              reason: result.getValue()
+            )
+          );
+          _connectionCompleter = null;
         }
       }
       break;
@@ -679,6 +678,15 @@ class XmppConnection {
           _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
           _setConnectionState(XmppConnectionState.error);
           _updateRoutingState(RoutingState.error);
+
+          _log.fine("Resolving _connectionCompleter due to a SASL failure");
+          _connectionCompleter?.complete(
+            XmppConnectionResult(
+              false,
+              reason: result.getValue()
+            )
+          );
+          _connectionCompleter = null;
         }
       }
       break;
@@ -731,12 +739,11 @@ class XmppConnection {
           _log.fine("Stream negotiation done. Ready to handle stanzas");
           _updateRoutingState(RoutingState.handleStanzas);
           getPresenceManager().sendInitialPresence();
-          if (_connectionCompleter != null) {
-            _connectionCompleter!.complete(
-              const XmppConnectionResult(true)
-            );
-            _connectionCompleter = null;
-          }
+          _log.fine("Resolving _connectionCompleter since stream negotiation is done");
+          _connectionCompleter?.complete(
+            const XmppConnectionResult(true)
+          );
+          _connectionCompleter = null;
         } else {
           _log.severe("Resource binding failed!");
           _updateRoutingState(RoutingState.error);
