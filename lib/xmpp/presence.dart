@@ -52,9 +52,10 @@ class PresenceManager extends XmppManagerBase {
       logger.finest("Received presence from '${presence.from}'");
 
       getAttributes().sendEvent(PresenceReceivedEvent(JID.fromString(presence.from!), presence));
+      return state.copyWith(done: true);
     } 
 
-    return state.copyWith(done: false);
+    return state;
   }
 
   /// Returns the capability hash.
