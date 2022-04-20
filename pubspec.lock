@@ -664,13 +664,6 @@ packages:
       url: "https://github.com/PapaTutuWawa/moxdns.git"
     source: git
     version: "0.0.1"
-  mutex:
-    dependency: "direct main"
-    description:
-      name: mutex
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.0"
   nested:
     dependency: transitive
     description:
@@ -1000,6 +993,13 @@ packages:
       url: "https://github.com/PapaTutuWawa/swipeable_tile.git"
     source: git
     version: "1.0.0+6"
+  synchronized:
+    dependency: "direct main"
+    description:
+      name: synchronized
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
   term_glyph:
     dependency: transitive
     description:

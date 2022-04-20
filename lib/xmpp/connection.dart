@@ -27,8 +27,8 @@ import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 
 import "package:uuid/uuid.dart";
+import "package:synchronized/synchronized.dart";
 import "package:logging/logging.dart";
-import "package:mutex/mutex.dart";
 
 enum XmppConnectionState {
   notConnected,
@@ -84,7 +84,7 @@ class XmppConnectionResult {
 class XmppConnection {
   final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse;
-  final Mutex _awaitingResponseMutex;
+  final Lock _awaitingResponseLock;
   final Map<String, XmppManagerBase> _xmppManagers;
   final List<StanzaHandler> _incomingStanzaHandlers;
   final List<StanzaHandler> _outgoingPreStanzaHandlers;
@@ -153,7 +153,7 @@ class XmppConnection {
     // NOTE: For testing 
     _socket = socket ?? TCPSocketWrapper(),
     _awaitingResponse = {},
-    _awaitingResponseMutex = Mutex(),
+    _awaitingResponseLock = Lock(),
     _xmppManagers = {},
     _incomingStanzaHandlers = List.empty(growable: true),
     _outgoingPreStanzaHandlers = List.empty(growable: true),
@@ -390,13 +390,18 @@ class XmppConnection {
     final stanzaString = stanza.toXml();
     final id = stanza.id!;
 
-    return await _awaitingResponseMutex.protect(() async {
+    _log.fine("Attempting to acquire lock for $id...");
+    Future<XMLNode> future = Future.value(XMLNode(tag: "not-used"));
+    await _awaitingResponseLock.synchronized(() async {
+        _log.fine("Lock acquired for $id");
         if (awaitable) {
           _awaitingResponse[id] = Completer();
         }
 
+        _log.fine("Running pre stanza handlers..");
         await _runOutoingPreStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
-        
+        _log.fine("Done");
+
         // This uses the StreamManager to behave like a send queue
         final canSendData = _canSendData();
         if (canSendData) {
@@ -408,14 +413,18 @@ class XmppConnection {
           _log.fine("_canSendData() returned false since _connectionState == $_connectionState");
         }
 
+        _log.fine("Running post stanza handlers..");
         await _runOutoingPostStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
-        
+        _log.fine("Done");
+
         if (awaitable) {
-          return _awaitingResponse[id]!.future;
-        } else {
-          return Future.value(XMLNode(tag: "not-used"));
+          future = _awaitingResponse[id]!.future;
         }
+
+        _log.fine("Releasing lock for $id");
     });
+
+    return future;
   }
 
   /// Sets the connection state to [state] and triggers an event of type
@@ -581,14 +590,15 @@ class XmppConnection {
     // See if we are waiting for this stanza
     final stanza = Stanza.fromXMLNode(nonza);
     final id = stanza.attributes["id"];
-    final awaited = await _awaitingResponseMutex.protect(() async {
+    bool awaited = false;
+    await _awaitingResponseLock.synchronized(() async {
         if (id != null && _awaitingResponse.containsKey(id)) {
           _awaitingResponse[id]!.complete(stanza);
           _awaitingResponse.remove(id);
-          return true;
+          awaited = true;
         }
 
-        return false;
+        awaited = false;
     });
     if (awaited) {
       return;

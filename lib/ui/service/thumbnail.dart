@@ -7,7 +7,7 @@ import "package:logging/logging.dart";
 import "package:video_thumbnail/video_thumbnail.dart";
 import "package:flutter_image_compress/flutter_image_compress.dart";
 import "package:flutter_isolate/flutter_isolate.dart";
-import "package:mutex/mutex.dart";
+import "package:synchronized/synchronized.dart";
 
 Future<void> _generateVideoThumbnail(List<dynamic> values) async {
   final port = values[0];
@@ -36,12 +36,12 @@ class ThumbnailCacheService {
 
   // Asset path -> decoded data
   final LRUCache<String, Uint8List> _thumbnailCache;
-  final Mutex _cacheMutex;
+  final Lock _cacheLock;
 
   ThumbnailCacheService()
   // TODO: Maybe raise this limit
   : _thumbnailCache = LRUCache(200),
-    _cacheMutex = Mutex(),
+    _cacheLock = Lock(),
     _log = Logger("ThumbnailCacheService");
 
   Future<Uint8List> getVideoThumbnail(String path) async {
@@ -49,9 +49,12 @@ class ThumbnailCacheService {
 
     // Turning this into a critical section allows us to prevent multiple calls to the
     // isolate in case we generate thumbnails for the same path multiple times.
-    await _cacheMutex.protect(() async {
+    _log.fine("getVideoThumbnail: Waiting to acquire lock...");
+    await _cacheLock.synchronized(() async {
+        _log.fine("getVideoThumbnail: Done");
         if (_thumbnailCache.inCache(path)) {
           _log.finest("Thumbnail data is in cache!");
+          _log.finest("getVideoThumbnail: Releasing lock");
           data = _thumbnailCache.getValue(path)!;
           return;
         }
@@ -66,6 +69,7 @@ class ThumbnailCacheService {
         _log.finest("Generation done.");
         _thumbnailCache.cache(path, Uint8List.fromList(data!));
         _log.finest("Returning.");
+        _log.finest("getVideoThumbnail: Releasing lock");
     });
 
     return data!;
@@ -76,10 +80,13 @@ class ThumbnailCacheService {
 
     // Turning this into a critical section allows us to prevent multiple calls to the
     // isolate in case we generate thumbnails for the same path multiple times.
-    await _cacheMutex.protect(() async {
+    _log.finest("getImageThumbnail: Waiting to aquire lock...");
+    await _cacheLock.synchronized(() async {
+        _log.finest("getImageThumbnail: Done");
         if (_thumbnailCache.inCache(path)) {
           _log.finest("Thumbnail data is in cache!");
           data = _thumbnailCache.getValue(path)!;
+          _log.finest("getImageThumbnail: Releasing lock");
           return;
         }
 
@@ -93,6 +100,7 @@ class ThumbnailCacheService {
         _log.finest("Generation done.");
         _thumbnailCache.cache(path, Uint8List.fromList(data!));
         _log.finest("Returning.");
+        _log.finest("getImageThumbnail: Releasing lock");
     });
 
     return data!;

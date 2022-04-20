@@ -1,8 +1,9 @@
 import "dart:async";
 
+import "package:synchronized/synchronized.dart";
 import "package:uuid/uuid.dart";
+import "package:logging/logging.dart";
 import "package:meta/meta.dart";
-import "package:mutex/mutex.dart";
 
 /// Interface to allow arbitrary data to be sent as long as it can be
 /// JSON serialized/deserialized.
@@ -48,12 +49,13 @@ abstract class AwaitableDataSender<
   S extends JsonImplementation,
   R extends JsonImplementation
 > {
-  final Mutex _lock;
+  final Lock _lock;
   final Map<String, Completer<R>> _awaitables;
   final Uuid _uuid;
+  final Logger _log;
 
   @mustCallSuper
-  AwaitableDataSender() : _awaitables = {}, _uuid = const Uuid(), _lock = Mutex();
+  AwaitableDataSender() : _awaitables = {}, _uuid = const Uuid(), _lock = Lock(), _log = Logger("AwaitableDataSender");
 
   @visibleForTesting
   Map<String, Completer> getAwaitables() => _awaitables;
@@ -71,7 +73,10 @@ abstract class AwaitableDataSender<
   /// is false, then null will be imediately resolved.
   Future<R?> sendData(S data, { bool awaitable = true, @visibleForTesting String? id }) async {
     final _id = id ?? _uuid.v4();
-    await _lock.protect(() async {
+    Future<R?> future = Future.value(null);
+    _log.fine("sendData: Waiting to acquire lock...");
+    await _lock.synchronized(() async {
+        _log.fine("sendData: Done");
         if (awaitable) {
           _awaitables[_id] = Completer();
           onAdd();
@@ -83,13 +88,15 @@ abstract class AwaitableDataSender<
             data
           )
         );
+
+        if (awaitable) {
+          future = _awaitables[_id]!.future;
+        }
+
+        _log.fine("sendData: Releasing lock...");
     });
 
-    if (awaitable) {
-      return _awaitables[_id]!.future;
-    } else {
-      return Future.value(null);
-    }
+    return future;
   }
 
   /// Should be called when a [DataWrapper] has been received. Will resolve
@@ -97,12 +104,16 @@ abstract class AwaitableDataSender<
   Future<bool> onData(DataWrapper<R> data) async {
     bool found = false;
     Completer? completer;
-    await _lock.protect(() async {
+    _log.fine("onData: Waiting to acquire lock...");
+    await _lock.synchronized(() async {
+        _log.fine("onData: Done");
         completer = _awaitables[data.id];
         if (completer != null) {
           _awaitables.remove(data.id);
           found = true;
         }
+
+        _log.fine("onData: Releasing lock");
     });
 
     if (found) {

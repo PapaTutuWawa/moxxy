@@ -73,10 +73,10 @@ dependencies:
       url: https://github.com/PapaTutuWawa/swipeable_tile.git
       ref: bfab5e28f1f1ea624232002f0d05481cb2bd9997
   flutter_vibrate: 1.3.0
-  mutex: 3.0.0
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
   page_transition: 2.0.5
+  synchronized: 3.0.0
 
 dev_dependencies:
   #flutter_test:

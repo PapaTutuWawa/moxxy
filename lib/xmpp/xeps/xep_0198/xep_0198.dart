@@ -9,7 +9,7 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
 
-import "package:mutex/mutex.dart";
+import "package:synchronized/synchronized.dart";
 import "package:meta/meta.dart";
 
 const xmlUintMax = 4294967296; // 2**32
@@ -20,14 +20,14 @@ class StreamManagementManager extends XmppManagerBase {
   /// Commitable state of the StreamManagementManager
   StreamManagementState _state;
   /// Mutex lock for _state
-  final Mutex _stateMutex;
+  final Lock _stateLock;
   /// If the have enabled SM on the stream yet
   bool _streamManagementEnabled;
 
   StreamManagementManager()
   : _state = StreamManagementState(0, 0),
     _unackedStanzas = {},
-    _stateMutex = Mutex(),
+    _stateLock = Lock(),
     _streamManagementEnabled = false;
   
   /// Functions for testing
@@ -47,7 +47,7 @@ class StreamManagementManager extends XmppManagerBase {
   /// Resets the state such that a resumption is no longer possible without creating
   /// a new session. Primarily useful for clearing the state after disconnecting
   Future<void> resetState() async {
-    await _stateMutex.protect(() async {
+    await _stateLock.synchronized(() async {
         setState(_state.copyWith(
             c2s: 0,
             s2c: 0,
@@ -108,7 +108,7 @@ class StreamManagementManager extends XmppManagerBase {
     } else if (event is StreamManagementEnabledEvent) {
       _enableStreamManagement();
 
-      await _stateMutex.protect(() async {
+      await _stateLock.synchronized(() async {
           setState(StreamManagementState(
               0,
               0,
@@ -141,7 +141,7 @@ class StreamManagementManager extends XmppManagerBase {
   Future<bool> _handleAckRequest(XMLNode nonza) async {
     final attrs = getAttributes();
     logger.finest("Sending ack response");
-    await _stateMutex.protect(() async {
+    await _stateLock.synchronized(() async {
         attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
     });
 
@@ -155,32 +155,32 @@ class StreamManagementManager extends XmppManagerBase {
 
     // Return early if we acked nothing.
     // Taken from slixmpp's stream management code
-    await _stateMutex.acquire();
-    if (h == _state.c2s && _unackedStanzas.isEmpty) {
-      _stateMutex.release();
-      return true;
-    }
-    _stateMutex.release();
+    logger.fine("_handleAckResponse: Waiting to aquire lock...");
+    await _stateLock.synchronized(() async {;
+        logger.fine("_handleAckResponse: Done...");
+        if (h == _state.c2s && _unackedStanzas.isEmpty) {
+          logger.fine("_handleAckResponse: Releasing lock...");
+          return;
+        }
 
-    final attrs = getAttributes();
-    final sequences = _unackedStanzas.keys.toList()..sort();
-    for (final height in sequences) {
-      // Do nothing if the ack does not concern this stanza
-      if (height > h) continue;
+        final attrs = getAttributes();
+        final sequences = _unackedStanzas.keys.toList()..sort();
+        for (final height in sequences) {
+          // Do nothing if the ack does not concern this stanza
+          if (height > h) continue;
 
-      final stanza = _unackedStanzas[height]!;
-      _unackedStanzas.remove(height);
-      if (stanza.tag == "message" && stanza.id != null) {
-        attrs.sendEvent(
-          MessageAckedEvent(
-            id: stanza.id!,
-            to: stanza.to!
-          )
-        );
-      }
-    }
+          final stanza = _unackedStanzas[height]!;
+          _unackedStanzas.remove(height);
+          if (stanza.tag == "message" && stanza.id != null) {
+            attrs.sendEvent(
+              MessageAckedEvent(
+                id: stanza.id!,
+                to: stanza.to!
+              )
+            );
+          }
+        }
 
-    await _stateMutex.protect(() async {
         if (h > _state.c2s) {
           logger.info("C2S height jumped from ${_state.c2s} (local) to $h (remote).");
           logger.info("Proceeding with $h as local C2S counter.");
@@ -188,6 +188,8 @@ class StreamManagementManager extends XmppManagerBase {
           _state = _state.copyWith(c2s: h);
           await commitState();
         }
+
+        logger.fine("_handleAckResponse: Releasing lock...");
     });
 
     return true;
@@ -195,15 +197,21 @@ class StreamManagementManager extends XmppManagerBase {
 
   // Just a helper function to not increment the counters above xmlUintMax
   Future<void> _incrementC2S() async {
-    await _stateMutex.protect(() async {
+    logger.fine("_incrementC2S: Waiting to aquire lock...");
+    await _stateLock.synchronized(() async {
+        logger.fine("_incrementC2S: Done");
         _state = _state.copyWith(c2s: _state.c2s + 1 % xmlUintMax);
         await commitState();
+        logger.fine("_incrementC2S: Releasing lock...");
     });
   }
   Future<void> _incrementS2C() async {
-    await _stateMutex.protect(() async {
+    logger.fine("_incrementS2C: Waiting to aquire lock...");
+    await _stateLock.synchronized(() async {
+        logger.fine("_incrementS2C: Done");
         _state = _state.copyWith(s2c: _state.s2c + 1 % xmlUintMax);
         await commitState();
+        logger.fine("_incrementS2C: Releasing lock...");
     });
   }
   
