@@ -6,10 +6,10 @@ import "package:moxxyv2/xmpp/xeps/xep_0004.dart";
 class Identity {
   final String category;
   final String type;
-  final String name;
+  final String? name;
   final String? lang;
 
-  const Identity({ required this.category, required this.type, required this.name, this.lang });
+  const Identity({ required this.category, required this.type, this.name, this.lang });
 
   XMLNode toXMLNode() {
     return XMLNode(
@@ -60,7 +60,7 @@ DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
       identities.add(Identity(
           category: element.attributes["category"]!,
           type: element.attributes["type"]!,
-          name: element.attributes["name"]!
+          name: element.attributes["name"]
       ));
     } else {
       //print("Unknown disco tag: " + element.tag);

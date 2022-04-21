@@ -9,7 +9,7 @@ import "package:cryptography/cryptography.dart";
 /// disco information.
 Future<String> calculateCapabilityHash(DiscoInfo info, HashAlgorithm algorithm) async {
   String s = "";
-  final List<String> identitiesSorted = info.identities.toList().map((i) => i.category + "/" + i.type + "/" + (i.lang ?? "") + "/" + i.name).toList();
+  final List<String> identitiesSorted = info.identities.toList().map((i) => i.category + "/" + i.type + "/" + (i.lang ?? "") + "/" + (i.name ?? "")).toList();
   identitiesSorted.sort(ioctetSortComparator);
   s += identitiesSorted.join("<") + "<";
 
