@@ -41,7 +41,11 @@ class DiscoCacheManager extends XmppManagerBase {
     // We are only interested in presence that is just there to indicate its CapHash
     if (presence.attributes["type"] != null) return;
 
-    final disco = getAttributes().getManagerById(discoManager)! as DiscoManager;
+    // We're not interested in presence from other clients connected to the account
+    final attrs = getAttributes();
+    if (from.toBare() == attrs.getConnectionSettings().jid.toBare()) return;
+
+    final disco = attrs.getManagerById(discoManager)! as DiscoManager;
 
     // Check if we know the JID and its hash
     if (_capHashCache.containsKey(from.toString())) {
