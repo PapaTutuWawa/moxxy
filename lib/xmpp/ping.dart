@@ -24,7 +24,7 @@ class PingManager extends XmppManagerBase {
       
       final stream = attrs.getManagerById(smManager) as StreamManagementManager?;
       if (stream != null) {
-        if (stream.isStreamManagementEnabled() && stream.getUnackedStanzaCount() > 0) {
+        if (stream.isStreamManagementEnabled() /*&& stream.getUnackedStanzaCount() > 0*/) {
           stream.sendAckRequestPing();
         } else if (attrs.getSocket().whitespacePingAllowed()) {
           attrs.sendRawXml("");
@@ -38,6 +38,8 @@ class PingManager extends XmppManagerBase {
           _logWarning();
         }
       }
+    } else if (event is AckRequestResponseTimeoutEvent) {
+      getAttributes().getConnection().handleError(event);
     }
   }
 }

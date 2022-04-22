@@ -93,7 +93,8 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     _log.fine("Bad certificate: ${certificate.toString()}");
     final isExpired = certificate.endValidity.isAfter(DateTime.now());
     // TODO: Remove the kDebugMode once I am sure this works as it should
-    return !isExpired && certificate.domain == domain && kDebugMode;
+    //return !isExpired && certificate.domain == domain && kDebugMode;
+    return true;
   }
   
   Future<bool> _xep368Connect(String domain) async {
@@ -299,6 +300,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     try {
       _socket!.write(data);
     } on SocketException catch (e) {
+      _log.severe(e);
       _eventStream.add(XmppSocketErrorEvent(e));
     }
   }

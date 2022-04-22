@@ -39,6 +39,9 @@ class XmppManagerAttributes {
 
   /// Returns the current socket. MUST NOT be used to send data.
   final BaseSocketWrapper Function() getSocket;
+
+  /// Return the [XmppConnection] the manager is registered against.
+  final XmppConnection Function() getConnection;
   
   XmppManagerAttributes({
       required this.sendStanza,
@@ -50,6 +53,7 @@ class XmppManagerAttributes {
       required this.isStreamFeatureSupported,
       required this.isFeatureSupported,
       required this.getFullJID,
-      required this.getSocket
+      required this.getSocket,
+      required this.getConnection,
   });
 }

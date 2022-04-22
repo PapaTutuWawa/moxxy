@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
@@ -23,13 +25,30 @@ class StreamManagementManager extends XmppManagerBase {
   final Lock _stateLock;
   /// If the have enabled SM on the stream yet
   bool _streamManagementEnabled;
+  /// The time in which the response to an ack is still valid. Counts as a timeout
+  /// otherwise
+  @internal
+  final Duration ackTimeout;
+  /// The time at which the last ack has been sent
+  int _lastAckTimestamp;
+  /// The timer to see if we timed the connection out
+  Timer? _ackTimer;
+  /// Counts how many acks we're waiting for
+  int _pendingAcks;
+  /// Lock for both [_lastAckTimestamp] and [_pendingAcks].
+  final Lock _ackLock;
 
-  StreamManagementManager()
+  StreamManagementManager({
+      this.ackTimeout = const Duration(seconds: 30)
+  })
   : _state = StreamManagementState(0, 0),
     _unackedStanzas = {},
     _stateLock = Lock(),
-    _streamManagementEnabled = false;
-  
+    _streamManagementEnabled = false,
+    _lastAckTimestamp = -1,
+    _pendingAcks = 0,
+    _ackLock = Lock();
+
   /// Functions for testing
   @visibleForTesting
   Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
@@ -40,7 +59,6 @@ class StreamManagementManager extends XmppManagerBase {
   /// May be overwritten by a subclass. Should save [state] so that it can be loaded again
   /// with [this.loadState].
   Future<void> commitState() async {}
-
   Future<void> loadState() async {}
 
   void setState(StreamManagementState state) {
@@ -101,9 +119,18 @@ class StreamManagementManager extends XmppManagerBase {
   Future<void> onXmppEvent(XmppEvent event) async {
     if (event is StreamResumedEvent) {
       _enableStreamManagement();
+
+      await _ackLock.synchronized(() async {
+          _pendingAcks = 0;
+      });
+
       await onStreamResumed(event.h);
     } else if (event is StreamManagementEnabledEvent) {
       _enableStreamManagement();
+
+      await _ackLock.synchronized(() async {
+          _pendingAcks = 0;
+      });
 
       await _stateLock.synchronized(() async {
           setState(StreamManagementState(
@@ -119,6 +146,60 @@ class StreamManagementManager extends XmppManagerBase {
     }
   }
 
+  /// Starts the timer to detect timeouts based on ack responses, if the timer
+  /// is not already running.
+  void _startAckTimer() {
+    if (_ackTimer != null) return;
+
+    logger.fine("Starting ack timer");
+    _ackTimer = Timer.periodic(
+      ackTimeout,
+      _ackTimerCallback
+    );
+  }
+
+  /// Stops the timer, if it is running.
+  void _stopAckTimer() {
+    if (_ackTimer == null) return;
+
+    logger.fine("Stopping ack timer");
+    _ackTimer!.cancel();
+    _ackTimer = null;
+  }
+
+  /// Timer callback that checks if all acks have been answered. If not and the last
+  /// response has been more that [ackTimeout] in the past, declare the session dead.
+  void _ackTimerCallback(Timer timer) {
+    _ackLock.synchronized(() async {
+        final now = DateTime.now().millisecondsSinceEpoch;
+
+        if (now - _lastAckTimestamp >= ackTimeout.inMilliseconds && _pendingAcks > 0) {
+          getAttributes().sendEvent(AckRequestResponseTimeoutEvent());
+          _stopAckTimer();
+        }
+    });
+  }
+
+  /// Wrapper around sending an <r /> nonza that starts the ack timeout timer.
+  Future<void> _sendAckRequest() async {
+    logger.fine("_sendAckRequest: Waiting to acquire lock...");
+    await _ackLock.synchronized(() async {
+        logger.fine("_sendAckRequest: Done...");
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (now <= _lastAckTimestamp) return;
+
+        _lastAckTimestamp = now;
+        _pendingAcks++;
+        _startAckTimer();
+
+        logger.fine("_pendingAcks is now at $_pendingAcks");
+        
+        getAttributes().sendNonza(StreamManagementRequestNonza());
+        
+        logger.fine("_sendAckRequest: Releasing lock...");
+    }); 
+  }
+  
   /// Resets the enablement of stream management, but __NOT__ the internal state.
   /// This is to prevent ack requests being sent before we resume or re-enable
   /// stream management.
@@ -150,6 +231,16 @@ class StreamManagementManager extends XmppManagerBase {
   Future<bool> _handleAckResponse(XMLNode nonza) async {
     final h = int.parse(nonza.attributes["h"]!);
 
+    await _ackLock.synchronized(() async {
+        if (_pendingAcks > 0) {
+          _pendingAcks--;
+        } else {
+          _stopAckTimer();
+        }
+
+        logger.fine("_pendingAcks is now at $_pendingAcks");
+    });
+    
     // Return early if we acked nothing.
     // Taken from slixmpp's stream management code
     logger.fine("_handleAckResponse: Waiting to aquire lock...");
@@ -224,7 +315,7 @@ class StreamManagementManager extends XmppManagerBase {
     _unackedStanzas[_state.c2s] = stanza;
     
     if (isStreamManagementEnabled() && !state.retransmitted) {
-      getAttributes().sendNonza(StreamManagementRequestNonza());
+      await _sendAckRequest();
     }
 
     return state;
@@ -248,6 +339,6 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// Pings the connection open by send an ack request
   void sendAckRequestPing() {
-    getAttributes().sendNonza(StreamManagementRequestNonza());
+    _sendAckRequest();
   }
 }

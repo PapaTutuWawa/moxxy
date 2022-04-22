@@ -29,6 +29,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 import "package:uuid/uuid.dart";
 import "package:synchronized/synchronized.dart";
 import "package:logging/logging.dart";
+import "package:meta/meta.dart";
 
 enum XmppConnectionState {
   notConnected,
@@ -184,7 +185,8 @@ class XmppConnection {
         isStreamFeatureSupported: isStreamFeatureSupported,
         isFeatureSupported: (feature) => _serverFeatures.contains(feature),
         getFullJID: () => _connectionSettings.jid.withResource(_resource),
-        getSocket: () => _socket
+        getSocket: () => _socket,
+        getConnection: () => this
     ));
 
     final id = manager.getId();
@@ -305,11 +307,12 @@ class XmppConnection {
   }
   
   /// Called when a stream ending error has occurred
-  void _handleError(Object? error) {
+  @internal
+  void handleError(Object? error) {
     if (error != null) {
-      _log.severe("_handleError: $error");
+      _log.severe("handleError: $error");
     } else {
-      _log.severe("_handleError: Called with null");
+      _log.severe("handleError: Called with null");
     } 
 
     // TODO: This may be too harsh for every error
@@ -319,7 +322,7 @@ class XmppConnection {
   /// Called whenever the socket creates an event
   void _handleSocketEvent(XmppSocketEvent event) {
     if (event is XmppSocketErrorEvent) {
-      _handleError(event.error);
+      handleError(event.error);
     } else if (event is XmppSocketClosureEvent) {
       // Only reconnect if we didn't expect this
       if (!_disconnecting && !_performingStartTLS) {
@@ -790,7 +793,7 @@ class XmppConnection {
           return;
         }
 
-        _discoverServerFeatures();
+        //_discoverServerFeatures();
       }
       break;
       case RoutingState.bindResourcePreSM: {
@@ -826,7 +829,7 @@ class XmppConnection {
           final h = int.parse(node.attributes["h"]!);
           await _sendEvent(StreamResumedEvent(h: h));
 
-          if (_serverFeatures.isEmpty) _discoverServerFeatures();
+          //if (_serverFeatures.isEmpty) _discoverServerFeatures();
         } else if (node.tag == "failed") {
           // NOTE: If we are here, we have it.
           final manager = getStreamManagementManager()!;
@@ -871,7 +874,7 @@ class XmppConnection {
           _setConnectionState(XmppConnectionState.connected);
         }
  
-        _discoverServerFeatures();
+        //_discoverServerFeatures();
       }
       break;
       case RoutingState.handleStanzas: {
@@ -988,7 +991,7 @@ class XmppConnection {
       port: port
     );
     if (!result) {
-      _handleError(null);
+      handleError(null);
     } else {
       _currentBackoffAttempt = 0;
       _log.fine("Preparing the internal state for a connection attempt");
