@@ -3,7 +3,6 @@ import "dart:async";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart" as events;
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/models/message.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 import "package:moxxyv2/ui/constants.dart";
@@ -16,6 +15,7 @@ import "package:get_it/get_it.dart";
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:flutter/widgets.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "conversation_state.dart";
 part "conversation_event.dart";
@@ -87,7 +87,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     if (s == _currentChatState) return;
 
     _currentChatState = s;
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       SendChatStateCommand(
         state: s.toString().split(".").last,
         jid: state.conversation!.jid
@@ -127,14 +127,14 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       GetMessagesForJidCommand(
         jid: event.jid,
       )
     ) as events.MessagesResultEvent;
     emit(state.copyWith(messages: result.messages));
 
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       SetOpenConversationCommand(jid: event.jid),
       awaitable: false
     );
@@ -166,7 +166,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     _currentChatState = ChatState.active;
     _stopComposeTimer();
     
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       SendMessageCommand(
         jid: state.conversation!.jid,
         body: state.messageText,
@@ -203,14 +203,14 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onJidBlocked(JidBlockedEvent event, Emitter<ConversationState> emit) async {
     // TODO: Maybe have some state here
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       BlockJidCommand(jid: state.conversation!.jid)
     );
   }
 
   Future<void> _onJidAdded(JidAddedEvent event, Emitter<ConversationState> emit) async {
     // TODO: Maybe have some state here
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       AddContactCommand(jid: state.conversation!.jid)
     );
   }
@@ -218,7 +218,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
     _updateChatState(ChatState.gone);
 
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       SetOpenConversationCommand(jid: null),
       awaitable: false
     );

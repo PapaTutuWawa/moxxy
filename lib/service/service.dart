@@ -1,13 +1,10 @@
 import "dart:async";
 import "dart:io";
-import "dart:ui";
 
 import "package:moxxyv2/shared/logging.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/eventhandler.dart";
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/awaitabledatasender.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
@@ -41,71 +38,50 @@ import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/events.dart";
+import "package:moxxyv2/ui/events.dart" as ui_events;
 
-import "package:flutter/material.dart";
+import "package:moxplatform/moxplatform.dart";
+import "package:moxplatform_platform_interface/src/service.dart";
+import "package:moxplatform/types.dart";
+import "package:moxlib/awaitabledatasender.dart";
 import "package:flutter/foundation.dart";
-import "package:flutter_background_service/flutter_background_service.dart";
-import "package:flutter_background_service_android/flutter_background_service_android.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
-import "package:uuid/uuid.dart";
 
 Future<void> initializeServiceIfNeeded() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
   final logger = GetIt.I.get<Logger>();
-  final service = FlutterBackgroundService();
-  if (await service.isRunning()) {
+  final handler = MoxplatformPlugin.handler;
+  if (await handler.isRunning()) {
     if (kDebugMode) {
       logger.fine("Since kDebugMode is true, waiting 600ms before sending PreStartCommand");
       sleep(const Duration(milliseconds: 600));
     }
 
+    logger.info("Attaching to service...");
+    handler.attach(ui_events.handleIsolateEvent);
+    logger.info("Done");
+
     logger.info("Service is running. Sending pre start command");
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    handler.getDataSender().sendData(
       PerformPreStartCommand(),
       awaitable: false
     );
   } else {
     logger.info("Service is not running. Initializing service... ");
-    await initializeService();
-  }
-}
-
-Future<void> initializeService() async {
-  final service = FlutterBackgroundService();
-
-  await service.configure(
-    // TODO: iOS
-    iosConfiguration: IosConfiguration(
-      autoStart: true,
-      onBackground: (_) => true,
-      onForeground: (_) => true
-    ),
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      autoStart: true,
-      isForegroundMode: true
-    )
-  );
-  if (await service.startService()) {
-    GetIt.I.get<Logger>().finest("Service successfully started");
-  } else {
-    GetIt.I.get<Logger>().severe("Service failed to start");
+    await handler.start(
+      entrypoint,
+      handleUiEvent,
+      ui_events.handleIsolateEvent
+    );
   }
 }
 
 /// A middleware for packing an event into a [DataWrapper] and also
 /// logging what we send.
 void sendEvent(BackgroundEvent event, { String? id }) {
-  final data = DataWrapper(
-    id ?? const Uuid().v4(),
-    event
-  );
   // NOTE: *S*erver to *F*oreground
-  GetIt.I.get<Logger>().fine("S2F: " + data.toJson().toString());
-
-  GetIt.I.get<AndroidServiceInstance>().invoke("event", data.toJson());
+  GetIt.I.get<Logger>().fine("S2F: " + event.toJson().toString());
+  GetIt.I.get<BackgroundService>().sendEvent(event, id: id);
 }
 
 void setupLogging() {
@@ -145,7 +121,7 @@ Future<void> initUDPLogger() async {
   final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
   if (prefs.debugEnabled) {
-    GetIt.I.get<Logger>().finest("UDPLogger created");
+    Logger("initUDPLogger").finest("UDPLogger created");
 
     final port = prefs.debugPort;
     final ip = prefs.debugIp;
@@ -159,99 +135,87 @@ Future<void> initUDPLogger() async {
   }
 }
 
-/// Entrypoint for the background service
-void onStart(ServiceInstance service) {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Ensure that all native plugins are registered against this FlutterEngine, so that
-  // we can use path_provider, notifications, ...
-  DartPluginRegistrant.ensureInitialized();
-
-  // TODO: Android specific
-  GetIt.I.registerSingleton<AndroidServiceInstance>(service as AndroidServiceInstance);
-
+/// The entrypoint for all platforms after the platform specific initilization is done.
+Future<void> entrypoint() async {
+  // Register the lock
   GetIt.I.registerSingleton<Completer>(Completer());
-  
+
+  // Register singletons
+  GetIt.I.registerSingleton<Logger>(Logger("MoxxyService"));
+  GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
+
   setupLogging();
   setupBackgroundEventHandler();
 
-  GetIt.I.registerSingleton<Logger>(Logger("XmppService"));
-  service.on("command").listen(handleEvent);
-  service.setForegroundNotificationInfo(title: "Moxxy", content: "Preparing...");
+  // Initialize the database
+  GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
+  await GetIt.I.get<DatabaseService>().initialize();
 
-  GetIt.I.get<Logger>().finest("Running...");
+  GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
+  GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
+  GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
+  GetIt.I.registerSingleton<DownloadService>(DownloadService());
+  GetIt.I.registerSingleton<AvatarService>(AvatarService());
+  GetIt.I.registerSingleton<RosterService>(RosterService());
+  GetIt.I.registerSingleton<ConversationService>(ConversationService());
+  GetIt.I.registerSingleton<MessageService>(MessageService());
+  final xmpp = XmppService();
+  GetIt.I.registerSingleton<XmppService>(xmpp);
 
-  (() async {
-      // Register singletons
-      GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
+  await GetIt.I.get<NotificationsService>().init();
+  
+  // Init the UDPLogger
+  await initUDPLogger();
 
-      // Initialize the database
-      GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
-      await GetIt.I.get<DatabaseService>().initialize();
+  final connection = XmppConnection();
+  connection.registerManagers([
+      MoxxyStreamManagementManager(),
+      MoxxyDiscoManager(),
+      MoxxyRosterManager(),
+      PingManager(),
+      MessageManager(),
+      PresenceManager(),
+      CSIManager(),
+      DiscoCacheManager(),
+      CarbonsManager(),
+      PubSubManager(),
+      vCardManager(),
+      UserAvatarManager(),
+      StableIdManager(),
+      SIMSManager(),
+      MessageDeliveryReceiptManager(),
+      ChatMarkerManager(),
+      OOBManager(),
+      SFSManager(),
+      MessageRepliesManager(),
+      BlockingManager(),
+      ChatStateManager()
+  ]);
+  GetIt.I.registerSingleton<XmppConnection>(connection);
 
-      GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
-      GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
-      GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
-      GetIt.I.registerSingleton<DownloadService>(DownloadService());
-      GetIt.I.registerSingleton<AvatarService>(AvatarService());
-      GetIt.I.registerSingleton<RosterService>(RosterService());
-      GetIt.I.registerSingleton<ConversationService>(ConversationService());
-      GetIt.I.registerSingleton<MessageService>(MessageService());
-      final xmpp = XmppService();
-      GetIt.I.registerSingleton<XmppService>(xmpp);
+  GetIt.I.get<Logger>().finest("Done with xmpp");
+  
+  final settings = await xmpp.getConnectionSettings();
 
-      await GetIt.I.get<NotificationsService>().init();
-      
-      // Init the UDPLogger
-      await initUDPLogger();
+  GetIt.I.get<Logger>().finest("Got settings");
+  if (settings != null) {
+    // The title of the notification will be changed as soon as the connection state
+    // of [XmppConnection] changes.
+    xmpp.connect(settings, false);
+  } else {
+    GetIt.I.get<BackgroundService>().setNotification(
+      "Moxxy",
+      "Idle"
+    );
+  }
 
-      final connection = XmppConnection();
-      connection.registerManagers([
-          MoxxyStreamManagementManager(),
-          MoxxyDiscoManager(),
-          MoxxyRosterManager(),
-          PingManager(),
-          MessageManager(),
-          PresenceManager(),
-          CSIManager(),
-          DiscoCacheManager(),
-          CarbonsManager(),
-          PubSubManager(),
-          vCardManager(),
-          UserAvatarManager(),
-          StableIdManager(),
-          SIMSManager(),
-          MessageDeliveryReceiptManager(),
-          ChatMarkerManager(),
-          OOBManager(),
-          SFSManager(),
-          MessageRepliesManager(),
-          BlockingManager(),
-          ChatStateManager()
-      ]);
-      GetIt.I.registerSingleton<XmppConnection>(connection);
+  GetIt.I.get<Logger>().finest("Resolving startup future");
+  GetIt.I.get<Completer>().complete();
 
-      GetIt.I.get<Logger>().finest("Done with xmpp");
-      
-      final settings = await xmpp.getConnectionSettings();
-
-      GetIt.I.get<Logger>().finest("Got settings");
-      if (settings != null) {
-        // The title of the notification will be changed as soon as the connection state
-        // of [XmppConnection] changes.
-        xmpp.connect(settings, false);
-      } else {
-        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Idle");
-      }
-
-      GetIt.I.get<Logger>().finest("Resolving startup future");
-      GetIt.I.get<Completer>().complete();
-
-      sendEvent(ServiceReadyEvent());
-  })();
+  sendEvent(ServiceReadyEvent());
 }
 
-void handleEvent(Map<String, dynamic>? data) {
+Future<void> handleUiEvent(Map<String, dynamic>? data) async {
   // NOTE: *F*oreground to *S*ervice
   final log = GetIt.I.get<Logger>();
 

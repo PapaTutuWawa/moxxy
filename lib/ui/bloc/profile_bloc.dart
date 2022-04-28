@@ -1,7 +1,6 @@
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
@@ -9,6 +8,7 @@ import "package:moxxyv2/shared/models/conversation.dart";
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:get_it/get_it.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "profile_state.dart";
 part "profile_event.dart";
@@ -50,7 +50,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     );
 
     if (event.isSelfProfile) {
-      final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      final result = await MoxplatformPlugin.handler.getDataSender().sendData(
         GetFeaturesCommand()
       ) as GetFeaturesEvent;
 
@@ -78,7 +78,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
     
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       SetAvatarCommand(
         path: event.path,
         hash: event.hash
@@ -90,7 +90,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   Future<void> _onSetSubscriptionState(SetSubscriptionStateEvent event, Emitter<ProfileState> emit) async {
     // TODO: Maybe already emit the state change to have it instant and debounce it until
     //       everything else is done
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
       awaitable: false
     );

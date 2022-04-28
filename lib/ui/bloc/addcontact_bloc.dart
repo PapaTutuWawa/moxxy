@@ -1,13 +1,13 @@
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 
 import "package:get_it/get_it.dart";
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "addcontact_state.dart";
 part "addcontact_event.dart";
@@ -36,7 +36,7 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
       )
     );
 
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       AddContactCommand(
         jid: state.jid
       )

@@ -1,8 +1,6 @@
 import "dart:async";
 
 import "package:moxxyv2/shared/eventhandler.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
-import "package:moxxyv2/shared/awaitabledatasender.dart";
 import "package:moxxyv2/shared/events.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/ui/prestart.dart";
@@ -16,7 +14,9 @@ import "package:moxxyv2/ui/service/download.dart";
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
-import "package:flutter_background_service/flutter_background_service.dart";
+import "package:moxplatform/moxplatform.dart";
+import "package:moxplatform/types.dart";
+import "package:moxlib/awaitabledatasender.dart";
 
 void setupEventHandler() {
   final handler = EventHandler();
@@ -34,35 +34,34 @@ void setupEventHandler() {
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
+}
 
-  // Make sure that we handle events from flutter_background_service
-  FlutterBackgroundService().on("event").listen((Map<String, dynamic>? json) async {
-      final log = GetIt.I.get<Logger>();
-      if (json == null) {
-        log.warning("Received null from the background service. Ignoring...");
-        return;
-      }
-      
-      // NOTE: This feels dirty, but we gotta do it
-      final event = getEventFromJson(json["data"]!)!;
-      final data = DataWrapper<BackgroundEvent>(
-        json["id"]!,
-        event
-      );
+Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
+  final log = GetIt.I.get<Logger>();
+  if (json == null) {
+    log.warning("Received null from the background service. Ignoring...");
+    return;
+  }
+  
+  // NOTE: This feels dirty, but we gotta do it
+  final event = getEventFromJson(json["data"]!)!;
+  final data = DataWrapper<BackgroundEvent>(
+    json["id"]!,
+    event
+  );
 
-      log.finest("S2F: " + event.toString());
+  log.finest("S2F: " + event.toString());
 
-      // First attempt to deal with awaitables
-      bool found = false;
-      found = await GetIt.I.get<BackgroundServiceDataSender>().onData(data);
-      if (found) return;
+  // First attempt to deal with awaitables
+  bool found = false;
+  found = await MoxplatformPlugin.handler.getDataSender().onData(data);
+  if (found) return;
 
-      // Then run the event handlers
-      found = GetIt.I.get<EventHandler>().run(event);
-      if (found) return;
+  // Then run the event handlers
+  found = GetIt.I.get<EventHandler>().run(event);
+  if (found) return;
 
-      log.warning("Failed to match event");
-  });
+  log.warning("Failed to match event");
 }
 
 Future<void> onConversationAdded(ConversationAddedEvent event, { dynamic extra }) async {
@@ -137,7 +136,7 @@ Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
   GetIt.I.get<Logger>().fine("onServiceReady: Waiting for UI future to resolve...");
   await GetIt.I.get<Completer>().future;
   GetIt.I.get<Logger>().fine("onServiceReady: Done");
-  GetIt.I.get<BackgroundServiceDataSender>().sendData(
+  MoxplatformPlugin.handler.getDataSender().sendData(
     PerformPreStartCommand(),
     awaitable: false
   );

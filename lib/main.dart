@@ -41,13 +41,13 @@ import "package:moxxyv2/ui/service/data.dart";
 import "package:moxxyv2/ui/service/thumbnail.dart";
 import "package:moxxyv2/service/service.dart";
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:page_transition/page_transition.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
+import "package:moxplatform/moxplatform.dart";
 
 void setupLogging() {
   Logger.root.level = Level.ALL;
@@ -88,7 +88,6 @@ void main() async {
   await setupUIServices();
 
   setupEventHandler();
-  GetIt.I.registerSingleton<BackgroundServiceDataSender>(BackgroundServiceDataSender());
 
   final navKey = GlobalKey<NavigatorState>();
   setupBlocs(navKey);
@@ -168,7 +167,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    final sender = GetIt.I.get<BackgroundServiceDataSender>();
+    final sender = MoxplatformPlugin.handler.getDataSender();
     switch (state) {
       case AppLifecycleState.paused: {
         sender.sendData(

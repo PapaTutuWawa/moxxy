@@ -34,7 +34,7 @@ import "package:moxxyv2/service/blocking.dart";
 import "package:get_it/get_it.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
-import "package:flutter_background_service_android/flutter_background_service_android.dart";
+import "package:moxplatform_platform_interface/src/service.dart";
 
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
@@ -45,6 +45,7 @@ const xmppStateVersionKey = "xmppState_version";
 
 class _XmppStateMigrator extends Migrator<XmppState> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    // TODO: Set other options
     aOptions: AndroidOptions(encryptedSharedPreferences: true)
   );
 
@@ -315,15 +316,24 @@ class XmppService {
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
     switch (event.state) {
       case XmppConnectionState.connected: {
-        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Ready to receive messages");
+        GetIt.I.get<BackgroundService>().setNotification(
+          "Moxxy",
+          "Ready to receive messages"
+        );
       }
       break;
       case XmppConnectionState.connecting: {
-        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Connecting...");
+        GetIt.I.get<BackgroundService>().setNotification(
+          "Moxxy",
+          "Connecting..."
+        );
       }
       break;
       default: {
-        GetIt.I.get<AndroidServiceInstance>().setForegroundNotificationInfo(title: "Moxxy", content: "Disconnected");
+        GetIt.I.get<BackgroundService>().setNotification(
+          "Moxxy",
+          "Disconnected"
+        );
       }
       break;
     }
@@ -385,10 +395,10 @@ class XmppService {
       // Make sure we display our own avatar correctly.
       // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
       // TODO: Maybe don't do this on mobile Internet
-      GetIt.I.get<AvatarService>().requestOwnAvatar();
+      //GetIt.I.get<AvatarService>().requestOwnAvatar();
 
       // Either we get the cached version or we retrieve it for the first time
-      GetIt.I.get<BlocklistService>().getBlocklist();
+      //GetIt.I.get<BlocklistService>().getBlocklist();
       
       if (_loginTriggeredFromUI) {
         // TODO: Trigger another event so the UI can see this aswell

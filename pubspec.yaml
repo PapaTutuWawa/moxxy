@@ -43,7 +43,6 @@ dependencies:
   saslprep: 1.0.2
   #scrollable_positioned_list: 0.2.3
   equatable: 2.0.3
-  flutter_background_service: 2.0.0
   flutter_local_notifications: 9.3.2
   connectivity_plus: 2.2.0
   uuid: 3.0.5
@@ -62,7 +61,6 @@ dependencies:
   path: 1.8.1
   mime: 1.0.1
   blurhash: 1.0.0
-  media_scanner: 2.0.0
   permission_handler: 9.2.0
   external_path: 1.0.1
   video_thumbnail: 0.5.0
@@ -77,6 +75,21 @@ dependencies:
   flutter_isolate: 2.0.2
   page_transition: 2.0.5
   synchronized: 3.0.0
+
+  moxlib:
+    git:
+      url: https://codeberg.org/moxxy/moxlib.git
+      rev: 020c592d459654b7a807f115bd70809b3cf522bd
+  moxplatform:
+    git:
+      url: https://codeberg.org/moxxy/moxplatform.git
+      rev: e5daebcfc773e9951413d8a2079673aaf6126030
+      path: src/moxplatform
+  moxplatform_platform_interface:
+    git:
+      url: https://codeberg.org/moxxy/moxplatform.git
+      rev: e5daebcfc773e9951413d8a2079673aaf6126030
+      path: src/moxplatform_platform_interface
 
 dev_dependencies:
   #flutter_test:

@@ -1,7 +1,6 @@
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/ui/constants.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
@@ -9,6 +8,7 @@ import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:get_it/get_it.dart";
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "login_state.dart";
 part "login_event.dart";
@@ -63,7 +63,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       )
     );
 
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       LoginCommand(
         jid: state.jid,
         password: state.password,

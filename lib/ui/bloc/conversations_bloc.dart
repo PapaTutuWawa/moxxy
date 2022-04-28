@@ -1,10 +1,9 @@
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
 
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
-import "package:get_it/get_it.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "conversations_state.dart";
 part "conversations_event.dart";
@@ -60,7 +59,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   }
 
   Future<void> _onConversationClosed(ConversationClosedEvent event, Emitter<ConversationsState> emit) async {
-    await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       CloseConversationCommand(jid: event.jid)
     );
 

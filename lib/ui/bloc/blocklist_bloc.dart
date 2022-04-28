@@ -1,9 +1,8 @@
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
-import "package:get_it/get_it.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "blocklist_state.dart";
 part "blocklist_event.dart";
@@ -17,7 +16,7 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onJidUnblocked(UnblockedJidEvent event, Emitter<BlocklistState> emit) async {
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       UnblockJidCommand(
         jid: event.jid
       )
@@ -29,7 +28,7 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onUnblockedAll(UnblockedAllEvent event, Emitter<BlocklistState> emit) async {
-    GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    MoxplatformPlugin.handler.getDataSender().sendData(
       UnblockAllCommand()
     );
 

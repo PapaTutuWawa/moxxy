@@ -3,10 +3,10 @@ import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
 import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
 import "package:moxxyv2/shared/preferences.dart";
 import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 
 import "package:bloc/bloc.dart";
 import "package:get_it/get_it.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "preferences_event.dart";
 
@@ -18,7 +18,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
 
   Future<void> _onPreferencesChanged(PreferencesChangedEvent event, Emitter<PreferencesState> emit) async {
     if (event.notify) {
-      GetIt.I.get<BackgroundServiceDataSender>().sendData(
+      MoxplatformPlugin.handler.getDataSender().sendData(
         SetPreferencesCommand(
           preferences: event.preferences
         ),
@@ -37,7 +37,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   }
 
   Future<void> _onSignedOut(SignedOutEvent event, Emitter<PreferencesState> emit) async {
-    await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       SignOutCommand()
     );
 

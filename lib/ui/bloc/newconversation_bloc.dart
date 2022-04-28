@@ -3,13 +3,13 @@ import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/roster.dart";
 import "package:moxxyv2/shared/models/conversation.dart";
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
 import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
 
 import "package:bloc/bloc.dart";
 import "package:freezed_annotation/freezed_annotation.dart";
 import "package:get_it/get_it.dart";
+import "package:moxplatform/moxplatform.dart";
 
 part "newconversation_state.dart";
 part "newconversation_event.dart";
@@ -47,7 +47,7 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
       return;
     }
 
-    final result = await GetIt.I.get<BackgroundServiceDataSender>().sendData(
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       AddConversationCommand(
         title: event.title,
         jid: event.jid,

@@ -1,6 +1,5 @@
 import "dart:core";
 
-import "package:moxxyv2/shared/backgroundsender.dart";
 import "package:moxxyv2/shared/commands.dart";
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/shared/models/message.dart";
@@ -9,7 +8,7 @@ import "package:moxxyv2/ui/widgets/chat/download.dart";
 
 import "package:flutter/material.dart";
 import "package:path/path.dart" as pathlib;
-import "package:get_it/get_it.dart";
+import "package:moxplatform/moxplatform.dart";
 
 class _FileChatBaseWidget extends StatelessWidget {
   final String url;
@@ -98,7 +97,7 @@ class FileChatWidget extends StatelessWidget {
       MessageBubbleBottom(message),
       extra: ElevatedButton(
         onPressed: () {
-          GetIt.I.get<BackgroundServiceDataSender>().sendData(
+          MoxplatformPlugin.handler.getDataSender().sendData(
             RequestDownloadCommand(message: message),
             awaitable: false
           );

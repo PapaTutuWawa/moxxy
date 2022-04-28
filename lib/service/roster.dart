@@ -16,6 +16,7 @@ import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:flutter/foundation.dart";
 import "package:get_it/get_it.dart";
 import "package:logging/logging.dart";
+import "package:moxplatform/types.dart";
 
 /// Closure which returns true if the jid of a [RosterItem] is equal to [jid].
 bool Function(RosterItem) _jidEqualsWrapper(String jid) {

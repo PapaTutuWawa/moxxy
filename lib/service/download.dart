@@ -13,8 +13,8 @@ import "package:dio/dio.dart";
 import "package:path/path.dart" as path;
 import "package:get_it/get_it.dart";
 import "package:mime/mime.dart";
-import "package:media_scanner/media_scanner.dart";
 import "package:external_path/external_path.dart";
+import "package:moxplatform/moxplatform.dart";
 
 class FileMetadata {
   final String? mime;
@@ -100,7 +100,7 @@ class DownloadService {
     final mime = mimeGuess ?? lookupMimeType(downloadedPath);
 
     if (mime != null && ["image/", "video/", "audio/"].any((e) => mime.startsWith(e))) {
-      MediaScanner.loadMedia(path: downloadedPath);
+      MoxplatformPlugin.media.scanFile(downloadedPath);
     }
 
     final msg = await GetIt.I.get<MessageService>().updateMessage(
