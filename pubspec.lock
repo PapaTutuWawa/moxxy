@@ -630,12 +630,31 @@ packages:
   moxdns:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "35fc89584f05472e17846770603313bbd9cf31d9"
-      resolved-ref: "35fc89584f05472e17846770603313bbd9cf31d9"
-      url: "https://github.com/PapaTutuWawa/moxdns.git"
-    source: git
-    version: "0.0.1"
+      name: moxdns
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.1"
+  moxdns_android:
+    dependency: transitive
+    description:
+      name: moxdns_android
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.1"
+  moxdns_linux:
+    dependency: transitive
+    description:
+      name: moxdns_linux
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.1"
+  moxdns_platform_interface:
+    dependency: transitive
+    description:
+      name: moxdns_platform_interface
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.1"
   moxlib:
     dependency: "direct main"
     description:

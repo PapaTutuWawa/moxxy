@@ -99,7 +99,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   
   Future<bool> _xep368Connect(String domain) async {
     // TODO: Maybe do DNSSEC one day
-    final results = await Moxdns.srvQuery("_xmpps-client._tcp.$domain", false);
+    final results = await MoxdnsPlugin.srvQuery("_xmpps-client._tcp.$domain", false);
     if (results.isEmpty) {
       return false;
     }
@@ -129,7 +129,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   
   Future<bool> _rfc6120Connect(String domain) async {
     // TODO: Maybe do DNSSEC one day
-    final results = await Moxdns.srvQuery("_xmpp-client._tcp.$domain", false);
+    final results = await MoxdnsPlugin.srvQuery("_xmpp-client._tcp.$domain", false);
     results.sort(srvRecordSortComparator);
 
     for (final srv in results) {

@@ -47,9 +47,8 @@ dependencies:
   connectivity_plus: 2.2.0
   uuid: 3.0.5
   moxdns:
-    git:
-      url: https://github.com/PapaTutuWawa/moxdns.git
-      ref: 35fc89584f05472e17846770603313bbd9cf31d9
+    hosted: https://pub.polynom.me
+    version: 0.1.1
   #qr_code_scanner: 0.6.1
   #unifiedpush: 3.0.1
   udp: 5.0.1
