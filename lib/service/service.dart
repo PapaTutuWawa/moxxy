@@ -41,7 +41,6 @@ import "package:moxxyv2/service/events.dart";
 import "package:moxxyv2/ui/events.dart" as ui_events;
 
 import "package:moxplatform/moxplatform.dart";
-import "package:moxplatform_platform_interface/src/service.dart";
 import "package:moxplatform/types.dart";
 import "package:moxlib/awaitabledatasender.dart";
 import "package:flutter/foundation.dart";

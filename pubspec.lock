@@ -658,39 +658,31 @@ packages:
   moxlib:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "020c592d459654b7a807f115bd70809b3cf522bd"
-      url: "https://codeberg.org/moxxy/moxlib.git"
-    source: git
-    version: "0.1.0"
+      name: moxlib
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.1"
   moxplatform:
     dependency: "direct main"
     description:
-      path: "src/moxplatform"
-      ref: HEAD
-      resolved-ref: e5daebcfc773e9951413d8a2079673aaf6126030
-      url: "https://codeberg.org/moxxy/moxplatform.git"
-    source: git
-    version: "0.1.0"
+      name: moxplatform
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.4"
   moxplatform_android:
     dependency: transitive
     description:
-      path: "src/moxplatform_android"
-      ref: HEAD
-      resolved-ref: e5daebcfc773e9951413d8a2079673aaf6126030
-      url: "https://codeberg.org/moxxy/moxplatform.git"
-    source: git
-    version: "0.1.0"
+      name: moxplatform_android
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.4"
   moxplatform_platform_interface:
-    dependency: "direct main"
+    dependency: transitive
     description:
-      path: "src/moxplatform_platform_interface"
-      ref: HEAD
-      resolved-ref: e5daebcfc773e9951413d8a2079673aaf6126030
-      url: "https://codeberg.org/moxxy/moxplatform.git"
-    source: git
-    version: "0.1.0+1"
+      name: moxplatform_platform_interface
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.4"
   nested:
     dependency: transitive
     description:

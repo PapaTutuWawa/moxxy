@@ -76,19 +76,11 @@ dependencies:
   synchronized: 3.0.0
 
   moxlib:
-    git:
-      url: https://codeberg.org/moxxy/moxlib.git
-      rev: 020c592d459654b7a807f115bd70809b3cf522bd
+    hosted: https://pub.polynom.me
+    version: 0.1.1
   moxplatform:
-    git:
-      url: https://codeberg.org/moxxy/moxplatform.git
-      rev: e5daebcfc773e9951413d8a2079673aaf6126030
-      path: src/moxplatform
-  moxplatform_platform_interface:
-    git:
-      url: https://codeberg.org/moxxy/moxplatform.git
-      rev: e5daebcfc773e9951413d8a2079673aaf6126030
-      path: src/moxplatform_platform_interface
+    hosted: https://pub.polynom.me
+    version: 0.1.4
 
 dev_dependencies:
   #flutter_test:
