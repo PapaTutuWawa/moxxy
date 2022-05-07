@@ -6,30 +6,10 @@ import "package:test/test.dart";
 void main() {
   test("Test SRV ordering", () {
       final records = [
-        const SrvRecord(
-          target: "host2.server.example",
-          port: 5222,
-          priority: 2,
-          weight: 3
-        ),
-        const SrvRecord(
-          target: "host3.server.example",
-          port: 5222,
-          priority: 5,
-          weight: 0
-        ),
-        const SrvRecord(
-          target: "host4.server.example",
-          port: 5222,
-          priority: 2,
-          weight: 1
-        ),
-        const SrvRecord(
-          target: "host1.server.example",
-          port: 5222,
-          priority: 0,
-          weight: 0
-        )
+        const SrvRecord("host2.server.example", 5222, 2, 3),
+        const SrvRecord("host3.server.example", 5222, 5, 0),
+        const SrvRecord("host4.server.example", 5222, 2, 1),
+        const SrvRecord("host1.server.example", 5222, 0, 0)
       ];
       records.sort(srvRecordSortComparator);
 
