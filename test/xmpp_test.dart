@@ -38,7 +38,8 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
       isStreamFeatureSupported: (_) => false,
       isFeatureSupported: (_) => false,
       getFullJID: () => JID.fromString("$bareJid/$resource"),
-      getSocket: () => StubTCPSocket(play: [])
+      getSocket: () => StubTCPSocket(play: []),
+      getConnection: () => XmppConnection()
   ));
 
   final stanza = Stanza.fromXMLNode(XMLNode.fromString(stanzaString));
@@ -503,7 +504,8 @@ void main() {
               isStreamFeatureSupported: (_) => false,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
-              getSocket: () => StubTCPSocket(play: [])
+              getSocket: () => StubTCPSocket(play: []),
+              getConnection: () => XmppConnection()
           ));
 
           // NOTE: Based on https://gultsch.de/gajim_roster_push_and_message_interception.html

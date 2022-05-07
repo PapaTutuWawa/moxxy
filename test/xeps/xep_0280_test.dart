@@ -30,7 +30,8 @@ void main() {
         isStreamFeatureSupported: (feat) => false,
         isFeatureSupported: (_) => false,
         getFullJID: () => JID.fromString("bob@xmpp.example/uwu"),
-        getSocket: () => StubTCPSocket(play: [])
+        getSocket: () => StubTCPSocket(play: []),
+        getConnection: () => XmppConnection()
       );
       final manager = CarbonsManager();
       manager.register(attributes);

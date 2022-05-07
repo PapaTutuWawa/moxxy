@@ -44,7 +44,8 @@ XmppManagerAttributes mkAttributes(void Function(Stanza) callback) {
     isStreamFeatureSupported: (feat) => false,
     isFeatureSupported: (_) => false,
     getFullJID: () => JID.fromString("hallo@example.server/uwu"),
-    getSocket: () => StubTCPSocket(play: [])
+    getSocket: () => StubTCPSocket(play: []),
+    getConnection: () => XmppConnection()
   );
 }
 

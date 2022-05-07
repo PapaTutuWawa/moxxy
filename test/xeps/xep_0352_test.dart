@@ -32,7 +32,8 @@ void main() {
               isStreamFeatureSupported: (_) => false,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
-              getSocket: () => StubTCPSocket(play: [])
+              getSocket: () => StubTCPSocket(play: []),
+              getConnection: () => XmppConnection()
             )
           );
 
@@ -60,7 +61,8 @@ void main() {
               isStreamFeatureSupported: (xmlns) => xmlns == csiXmlns,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
-              getSocket: () => StubTCPSocket(play: [])
+              getSocket: () => StubTCPSocket(play: []),
+              getConnection: () => XmppConnection()
           ));
 
           csi.setActive();
