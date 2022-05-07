@@ -51,6 +51,7 @@ app.*.map.json
 # Generated data classes
 **/*.g.dart
 **/*.freezed.dart
+**/*.moxxy.dart
 
 # Direnv
 .envrc

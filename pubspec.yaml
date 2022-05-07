@@ -75,6 +75,9 @@ dependencies:
   page_transition: 2.0.5
   synchronized: 3.0.0
 
+  moxxyv2_builders:
+    hosted: https://pub.polynom.me
+    version: 0.1.0
   moxlib:
     hosted: https://pub.polynom.me
     version: 0.1.1
@@ -86,7 +89,7 @@ dev_dependencies:
   #flutter_test:
   #  sdk: flutter
   flutter_lints: 1.0.0
-  build_runner: 2.1.9
+  build_runner: 2.1.10
   test: 1.20.1
   flutter_launcher_icons: 0.9.2
   isar_generator: 2.2.1
@@ -95,19 +98,13 @@ dev_dependencies:
   meta: 1.7.0
 
 extra_licenses:
-  undraw.co:
+  - name: undraw.co
     license: "custom license"
     url: "https://undraw.co"
-  xmpp-providers:
+  - name: xmpp-providers
     # TODO: Dangerous
     license: "unknown license"
     url: "https://invent.kde.org/melvo/xmpp-providers"
-  moxdns:
-    license: "GPL-3.0"
-    url: "https://github.com/PapaTutuWawa/moxdns"
-  swipeable_tile:
-    license: "BSD-3-Clause"
-    url: "https://github.com/PapaTutuWawa/swipeable_tile"
  
 flutter:
   uses-material-design: true

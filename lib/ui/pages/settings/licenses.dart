@@ -1,9 +1,17 @@
-import "package:flutter/material.dart";
 import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/data/libraries.dart";
-import "package:moxxyv2/ui/data/generated/licenses.g.dart";
 
+import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
+
+part "licenses.moxxy.dart";
+
+class Library {
+  final String name;
+  final String license;
+  final String url;
+
+  const Library({ required this.name, required this.license, required this.url });
+}
 
 class LicenseRow extends StatelessWidget {
   final Library library;

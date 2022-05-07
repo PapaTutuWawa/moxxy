@@ -1,24 +1,21 @@
 files:
-  - path: lib/shared/events.g.dart
+  events:
     classes:
       - name: LoginSuccessfulEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
           jid: String
           displayName: String
       - name: LoginFailureEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
           reason: String
       - name: PreStartDoneEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -39,8 +36,7 @@ files:
             deserialise: true
       # Returned by [GetMessagesForJidCommand]
       - name: MessagesResultEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -50,8 +46,7 @@ files:
       # Triggered if a conversation has been added.
       # Also returned by [AddConversationCommand]
       - name: ConversationAddedEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -61,8 +56,7 @@ files:
       # Triggered if a conversation has been updated.
       # Also returned by [AddConversationCommand].
       - name: ConversationUpdatedEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -72,15 +66,13 @@ files:
       # Returned by [AddConversationCommand] if no conversation was added or
       # updated.
       - name: NoConversationModifiedEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
       # Send by the service if a message has been received or returned by
       # [SendMessageCommand].
       - name: MessageAddedEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -89,8 +81,7 @@ files:
             deserialise: true
       # Send by the service if a message has been updated.
       - name: MessageUpdatedEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -100,8 +91,7 @@ files:
       # Send by the service if the blocklist has been modified by a blocklist push or
       # if [BlockJidCommand] or [UnblockJidCommand] have been invoked.
       - name: BlocklistPushEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -109,14 +99,12 @@ files:
           removed: List<String>
       # Triggered if we receive a blocklist push unblocking every JID
       - name: BlocklistUnblockAllEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
       # Triggered by [DownloadService].
       - name: DownloadProgressEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -124,8 +112,7 @@ files:
           progress: double
       # Triggered by [RosterService] if we receive a roster push.
       - name: RosterDiffEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -142,8 +129,7 @@ files:
             default: "[]"
       # Triggered by the service in response to an [AddContactCommand].
       - name: AddContactResultEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -155,8 +141,7 @@ files:
           added: bool
       # Triggered by the service if our avatar changed
       - name: SelfAvatarChangedEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -164,14 +149,12 @@ files:
           hash: String
       # Triggered by [CloseConversationCommand]
       - name: CloseConversationEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
       # Returned by [GetFeaturesCommand]
       - name: GetFeaturesEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
         attributes:
@@ -179,25 +162,22 @@ files:
           serverFeatures: List<String>
       # Returned by [SignOutCommand]
       - name: SignedOutEvent
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
       # Returned by the service once it is ready
       - name: ServiceReadyEvent 
-        extends:
-          - BackgroundEvent
+        extends: BackgroundEvent
         implements:
           - JsonImplementation
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
     partof: events.dart
-  - path: lib/shared/commands.g.dart
+  commands:
     classes:
       - name: LoginCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
@@ -205,13 +185,11 @@ files:
           password: String
           useDirectTLS: bool
       - name: PerformPreStartCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
       - name: AddConversationCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
@@ -220,22 +198,19 @@ files:
           avatarUrl: String
           jid: String
       - name: GetMessagesForJidCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           jid: String
       - name: SetOpenConversationCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           jid: String?
       - name: SendMessageCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
@@ -246,34 +221,29 @@ files:
             type: Message?
             deserialise: true
       - name: BlockJidCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           jid: String
       - name: UnblockJidCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           jid: String
       - name: UnblockAllCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
       - name: SetCSIStateCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           active: bool
       - name: SetPreferencesCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
@@ -281,15 +251,13 @@ files:
             type: PreferencesState
             deserialise: true
       - name: AddContactCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           jid: String
       - name: RequestDownloadCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
@@ -297,44 +265,38 @@ files:
             type: Message
             deserialise: true
       - name: SetAvatarCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           path: String
           hash: String
       - name: SetShareOnlineStatusCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           jid: String
           share: bool
       - name: CloseConversationCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           jid: String
       - name: SendChatStateCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
           state: String
           jid: String
       - name: GetFeaturesCommand
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
       - name: SignOutCommand 
-        extends:
-          - BackgroundCommand
+        extends: BackgroundCommand
         implements:
           - JsonImplementation
     generate_builder: true

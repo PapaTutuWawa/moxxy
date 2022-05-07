@@ -18,10 +18,11 @@ greater. If you are running NixOS or using Nix, you can also use the Flake at th
 by running `nix develop` to get a development shell including everything that is needed.
 
 Before building Moxxy, you need to generate all needed data classes. To do this, run
-`flutter pub get` to install all dependencies. Then run `flutter pub run build_runner run` to generate
-state data classes and the database schemata. After that, run `make data` to generate the library list,
-the xmpp-providers list and the command and event classes. After that is done, you can either build the app
-with `flutter build` or just run the app in development mode with `flutter run`
+`flutter pub get` to install all dependencies. Then run `flutter pub run build_runner build` to generate
+state classes, data classes and the database schemata. After that is done, you can either
+build the app with `flutter build apk --debug` to create a debug build,
+`flutter build apk --release` to create a relase build or just run the app in development
+mode with `flutter run`.
 
 After implementing a change or a feature, please ensure that nothing is broken by the change
 by running `flutter test` afterwards. Also make sure that the code passes the linter by

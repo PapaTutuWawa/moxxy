@@ -4,4 +4,4 @@ import "package:moxxyv2/shared/models/message.dart";
 import "package:moxplatform/types.dart";
 import "package:moxlib/awaitabledatasender.dart";
 
-part "commands.g.dart";
+part "commands.moxxy.dart";

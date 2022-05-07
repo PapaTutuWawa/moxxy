@@ -84,7 +84,7 @@ packages:
       name: build
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.2"
+    version: "2.3.0"
   build_config:
     dependency: transitive
     description:
@@ -112,7 +112,7 @@ packages:
       name: build_runner
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.9"
+    version: "2.1.10"
   build_runner_core:
     dependency: transitive
     description:
@@ -253,6 +253,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
+  dart_pubspec_licenses:
+    dependency: transitive
+    description:
+      name: dart_pubspec_licenses
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.1"
   dart_style:
     dependency: transitive
     description:
@@ -683,6 +690,13 @@ packages:
       url: "https://pub.polynom.me"
     source: hosted
     version: "0.1.4"
+  moxxyv2_builders:
+    dependency: "direct main"
+    description:
+      name: moxxyv2_builders
+      url: "https://pub.polynom.me"
+    source: hosted
+    version: "0.1.0"
   nested:
     dependency: transitive
     description:
