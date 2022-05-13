@@ -13,6 +13,7 @@ import "package:moxxyv2/xmpp/sasl/nonza.dart";
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
 import "package:saslprep/saslprep.dart";
+import "package:moxlib/moxlib.dart";
 
 // NOTE: Inspired by https://github.com/vukoye/xmpp_dart/blob/3b1a0588562b9e591488c99d834088391840911d/lib/src/features/sasl/ScramSaslHandler.dart
 
@@ -71,17 +72,29 @@ const gs2Header = "n,,";
 
 class SaslScramNegotiator extends AuthenticationNegotiator {
   final ConnectionSettings settings;
-  ScramState state = ScramState.preSent;
   String? clientNonce;
   String initialMessageNoGS2;
   final ScramHashType hashType;
   final HashAlgorithm _hash;
   String _serverSignature;
+  final DeterministicFiniteAutomaton<ScramState, bool> _state;
 
   void Function(XMLNode, { String? redact }) sendRawXML;
 
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
-  SaslScramNegotiator({ required this.settings, this.clientNonce, required this.initialMessageNoGS2, required this.sendRawXML, required this.hashType }) : _hash = hashFromType(hashType), _serverSignature = "";
+  SaslScramNegotiator({
+      required this.settings,
+      required this.initialMessageNoGS2,
+      required this.sendRawXML,
+      required this.hashType,
+      this.clientNonce
+  }) :
+    _hash = hashFromType(hashType),
+    _serverSignature = "",
+    _state = DeterministicFiniteAutomaton(ScramState.preSent, trapState: ScramState.error) {
+      _state.addTransition(ScramState.preSent, true, ScramState.initialMessageSent);
+      _state.addTransition(ScramState.initialMessageSent, true, ScramState.challengeResponseSent);
+    }
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
     final pbkdf2 = Pbkdf2(
@@ -152,7 +165,7 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
 
   @override
   Future<Result<AuthenticationResult, String>> next(XMLNode? nonza) async {
-    switch (state) {
+    switch (_state.state) {
       case ScramState.preSent:
         if (clientNonce == null || clientNonce == "") {
           clientNonce = randomAlphaNumeric(40, provider: CoreRandomProvider.from(Random.secure()));
@@ -160,7 +173,7 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
         
         initialMessageNoGS2 = "n=" + settings.jid.local + ",r=$clientNonce";
 
-        state = ScramState.initialMessageSent;
+        _state.onInput(true);
         sendRawXML(
           SaslScramAuthNonza(body: base64.encode(utf8.encode(gs2Header + initialMessageNoGS2)), type: hashType),
           redact: SaslScramAuthNonza(body: "******", type: hashType).toXml()
@@ -168,13 +181,14 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
         return Result(AuthenticationResult.notDone, "");
       case ScramState.initialMessageSent:
         if (nonza!.tag == "failure") {
+          _state.onInput(false);
           return Result(AuthenticationResult.failure, getSaslError(nonza));
         }
 
         final challengeBase64 = nonza.innerText();
         final response = await calculateChallengeResponse(challengeBase64);
         final responseBase64 = base64.encode(utf8.encode(response));
-        state = ScramState.challengeResponseSent;
+        _state.onInput(true);
         sendRawXML(
           SaslScramResponseNonza(body: responseBase64),
           redact: SaslScramResponseNonza(body: "******").toXml()
@@ -187,12 +201,16 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
           // NOTE: This assumes that the string is always "v=..." and contains no other parameters
           final signature = parseKeyValue(utf8.decode(base64.decode(nonza.innerText())));
           if (signature["v"]! != _serverSignature) {
+            _state.onInput(false);
             return Result(AuthenticationResult.failure, "Server signature mismatch");
           }
+
           
+          _state.onInput(true);
           return Result(AuthenticationResult.success, "");
         }
         
+        _state.onInput(false);
         return Result(AuthenticationResult.failure, getSaslError(nonza));
       case ScramState.error:
         return Result(AuthenticationResult.failure, "");   
