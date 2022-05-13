@@ -80,10 +80,10 @@ dependencies:
     version: 0.1.0
   moxlib:
     hosted: https://pub.polynom.me
-    version: 0.1.1
+    version: 0.1.3
   moxplatform:
     hosted: https://pub.polynom.me
-    version: 0.1.4
+    version: 0.1.6
 
 dev_dependencies:
   #flutter_test:

@@ -668,28 +668,28 @@ packages:
       name: moxlib
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.3"
   moxplatform:
     dependency: "direct main"
     description:
       name: moxplatform
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.4"
+    version: "0.1.6"
   moxplatform_android:
     dependency: transitive
     description:
       name: moxplatform_android
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.4"
+    version: "0.1.6"
   moxplatform_platform_interface:
     dependency: transitive
     description:
       name: moxplatform_platform_interface
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.4"
+    version: "0.1.6"
   moxxyv2_builders:
     dependency: "direct main"
     description:

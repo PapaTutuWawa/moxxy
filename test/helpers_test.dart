@@ -211,13 +211,4 @@ void main() {
           expect(firstNotNull([null, null, 2]), 2);
       });
   });
-
-  group("implies", () {
-      test("Truth table test", () {
-          expect(implies(true, true), true);
-          expect(implies(true, false), false);
-          expect(implies(false, true), true);
-          expect(implies(false, false), true);
-      });
-  });
 }

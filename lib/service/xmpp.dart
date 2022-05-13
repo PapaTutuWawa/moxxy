@@ -35,6 +35,7 @@ import "package:get_it/get_it.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
 import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:moxplatform/moxplatform.dart";
+import "package:moxlib/moxlib.dart";
 
 import "package:logging/logging.dart";
 import "package:permission_handler/permission_handler.dart";
