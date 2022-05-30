@@ -4,6 +4,7 @@ import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/connection.dart";
+import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
@@ -45,7 +46,7 @@ XmppManagerAttributes mkAttributes(void Function(Stanza) callback) {
     isFeatureSupported: (_) => false,
     getFullJID: () => JID.fromString("hallo@example.server/uwu"),
     getSocket: () => StubTCPSocket(play: []),
-    getConnection: () => XmppConnection()
+    getConnection: () => XmppConnection(TestingReconnectionPolicy())
   );
 }
 

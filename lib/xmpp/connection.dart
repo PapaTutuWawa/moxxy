@@ -1,5 +1,4 @@
 import "dart:async";
-import "dart:math";
 
 import "package:moxxyv2/xmpp/socket.dart";
 import "package:moxxyv2/xmpp/buffer.dart";
@@ -12,6 +11,7 @@ import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
+import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/sasl/authenticator.dart";
 import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
@@ -30,6 +30,7 @@ import "package:uuid/uuid.dart";
 import "package:synchronized/synchronized.dart";
 import "package:logging/logging.dart";
 import "package:meta/meta.dart";
+import "package:moxlib/moxlib.dart";
 
 enum XmppConnectionState {
   notConnected,
@@ -94,6 +95,7 @@ class XmppConnection {
   XmppConnectionState _connectionState;
   late final Stream<String> _socketStream;
   late ConnectionSettings _connectionSettings;
+  final ReconnectionPolicy _reconnectionPolicy;
   
   /// Stream properties
   ///
@@ -112,8 +114,6 @@ class XmppConnection {
   RoutingState _routingState;
   /// The currently bound resource or "" if none has been bound yet.
   String _resource;
-  /// Counter for how manyy we have tried to reconnect.
-  int _currentBackoffAttempt;
   /// For indicating in a [ConnectionStateChangedEvent] that the event occured because we
   /// did a reconnection.
   bool _resuming;
@@ -122,9 +122,8 @@ class XmppConnection {
   bool _disconnecting;
   /// For indicating whether we expect a socket closure due to StartTLS.
   bool _performingStartTLS;
-  /// Timers for the keep-alive ping and the backoff connection process.
+  /// Timers for the keep-alive ping.
   Timer? _connectionPingTimer;
-  Timer? _backoffTimer;
   /// Completers for certain actions
   Completer<XmppConnectionResult>? _connectionCompleter;
 
@@ -137,16 +136,18 @@ class XmppConnection {
   /// [socket] is for debugging purposes.
   /// [connectionPingDuration] is the duration after which a ping will be sent to keep
   /// the connection open. Defaults to 15 minutes.
-  XmppConnection({
+  XmppConnection(
+    ReconnectionPolicy reconnectionPolicy,
+    {
       BaseSocketWrapper? socket,
       this.connectionPingDuration = const Duration(minutes: 5)
-  }) :
+    }
+  ) :
     _connectionState = XmppConnectionState.notConnected,
     _routingState = RoutingState.unauthenticated,
     _eventStreamController = StreamController.broadcast(),
     _resource = "",
     _streamBuffer = XmlStreamBuffer(),
-    _currentBackoffAttempt = 0,
     _resuming = true,
     _performingStartTLS = false,
     _disconnecting = false,
@@ -159,11 +160,15 @@ class XmppConnection {
     _incomingStanzaHandlers = List.empty(growable: true),
     _outgoingPreStanzaHandlers = List.empty(growable: true),
     _outgoingPostStanzaHandlers = List.empty(growable: true),
+    _reconnectionPolicy = reconnectionPolicy,
     _log = Logger("XmppConnection") {
-    _socketStream = _socket.getDataStream();
-    // TODO: Handle on done
-    _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
-    _socket.getEventStream().listen(_handleSocketEvent);
+      // Allow the reconnection policy to perform reconnections by itself
+      _reconnectionPolicy.register(_attemptReconnection);
+
+      _socketStream = _socket.getDataStream();
+      // TODO: Handle on done
+      _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
+      _socket.getEventStream().listen(_handleSocketEvent);
   }
 
   List<String> get streamFeatures => _streamFeatures;
@@ -295,15 +300,7 @@ class XmppConnection {
   void _attemptReconnection() {
     _setConnectionState(XmppConnectionState.notConnected);
     _socket.close();
-
-    if (_currentBackoffAttempt == 0) {
-      // TODO: This may to too long
-      final minutes = pow(2, _currentBackoffAttempt).toInt();
-      _currentBackoffAttempt++;
-      _backoffTimer = Timer(Duration(minutes: minutes), () {
-          connect();
-      });
-    }
+    connect();
   }
   
   /// Called when a stream ending error has occurred
@@ -316,7 +313,7 @@ class XmppConnection {
     } 
 
     // TODO: This may be too harsh for every error
-    _attemptReconnection();
+    _reconnectionPolicy.onFailure();
   }
 
   /// Called whenever the socket creates an event
@@ -892,6 +889,11 @@ class XmppConnection {
   Future<void> _sendEvent(XmppEvent event) async {
     _log.finest("Event: ${event.toString()}");
 
+    // Specific event handling
+    if (event is AckRequestResponseTimeoutEvent) {
+      _reconnectionPolicy.onFailure();
+    }
+    
     for (var manager in _xmppManagers.values) {
       await manager.onXmppEvent(event);
     }
@@ -966,11 +968,8 @@ class XmppConnection {
     if (lastResource != null) {
       _resource = lastResource;
     }
-    
-    if (_backoffTimer != null) {
-      _backoffTimer!.cancel();
-      _backoffTimer = null;
-    }
+
+    _reconnectionPolicy.reset();
 
     _resuming = true;
     await _sendEvent(ConnectingEvent());
@@ -993,7 +992,7 @@ class XmppConnection {
     if (!result) {
       handleError(null);
     } else {
-      _currentBackoffAttempt = 0;
+      _reconnectionPolicy.onSuccess();
       _log.fine("Preparing the internal state for a connection attempt");
       _performingStartTLS = false;
       _setConnectionState(XmppConnectionState.connecting);

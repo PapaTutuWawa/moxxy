@@ -3,6 +3,7 @@ import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
+import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 
@@ -33,7 +34,7 @@ void main() {
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
-              getConnection: () => XmppConnection()
+              getConnection: () => XmppConnection(TestingReconnectionPolicy())
             )
           );
 
@@ -62,7 +63,7 @@ void main() {
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
-              getConnection: () => XmppConnection()
+              getConnection: () => XmppConnection(TestingReconnectionPolicy())
           ));
 
           csi.setActive();

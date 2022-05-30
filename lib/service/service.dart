@@ -9,6 +9,7 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/ping.dart";
+import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
@@ -166,7 +167,7 @@ Future<void> entrypoint() async {
   // Init the UDPLogger
   await initUDPLogger();
 
-  final connection = XmppConnection();
+  final connection = XmppConnection(ExponentialBackoffReconnectionPolicy());
   connection.registerManagers([
       MoxxyStreamManagementManager(),
       MoxxyDiscoManager(),
