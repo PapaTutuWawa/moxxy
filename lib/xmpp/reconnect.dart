@@ -8,10 +8,18 @@ abstract class ReconnectionPolicy {
   /// Function provided by [XmppConnection] that allows the policy
   /// to perform a reconnection.
   void Function()? performReconnect;
+  /// Function provided by [XmppConnection] that allows the policy
+  /// to say that we lost the connection.
+  void Function()? triggerConnectionLost;
+  /// Indicate if should try to reconnect.
+  bool _shouldAttemptReconnection;
 
+  ReconnectionPolicy() : _shouldAttemptReconnection = false;
+  
   /// Called by [XmppConnection] to register the policy.
-  void register(void Function() performReconnect) {
+  void register(void Function() performReconnect, void Function() triggerConnectionLost) {
     this.performReconnect = performReconnect;
+    this.triggerConnectionLost = triggerConnectionLost;
 
     reset();
   }
@@ -26,6 +34,13 @@ abstract class ReconnectionPolicy {
 
   /// Caled by the [XmppConnection] when the reconnection was successful.
   void onSuccess();
+
+  bool get shouldReconnect => _shouldAttemptReconnection;
+
+  /// Set whether a reconnection attempt should be made.
+  void setShouldReconnect(bool value) {
+    _shouldAttemptReconnection = value;
+  }
 }
 
 /// A simple reconnection strategy: Make the reconnection delays exponentially longer
@@ -37,11 +52,14 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
 
   ExponentialBackoffReconnectionPolicy()
   : _counter = 0,
-    _log = Logger("ExponentialBackoffReconnectionPolicy");
+    _log = Logger("ExponentialBackoffReconnectionPolicy"),
+    super();
 
   /// Called when the backoff expired
   void _onTimerElapsed() {
-    performReconnect!();
+    if (shouldReconnect) {
+      performReconnect!();
+    }
   }
   
   @override
@@ -76,6 +94,8 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
 /// A stub reconnection policy for tests
 @visibleForTesting
 class TestingReconnectionPolicy extends ReconnectionPolicy {
+  TestingReconnectionPolicy() : super();
+
   @override
   void onSuccess() {}
 

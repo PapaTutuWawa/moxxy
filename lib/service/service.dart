@@ -39,6 +39,7 @@ import "package:moxxyv2/service/blocking.dart";
 import "package:moxxyv2/service/conversation.dart";
 import "package:moxxyv2/service/message.dart";
 import "package:moxxyv2/service/events.dart";
+import "package:moxxyv2/service/connectivity.dart";
 import "package:moxxyv2/ui/events.dart" as ui_events;
 
 import "package:moxplatform/moxplatform.dart";
@@ -192,6 +193,7 @@ Future<void> entrypoint() async {
       ChatStateManager()
   ]);
   GetIt.I.registerSingleton<XmppConnection>(connection);
+  GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
 
   GetIt.I.get<Logger>().finest("Done with xmpp");
   

@@ -163,7 +163,10 @@ class XmppConnection {
     _reconnectionPolicy = reconnectionPolicy,
     _log = Logger("XmppConnection") {
       // Allow the reconnection policy to perform reconnections by itself
-      _reconnectionPolicy.register(_attemptReconnection);
+      _reconnectionPolicy.register(
+        _attemptReconnection,
+        _onNetworkConnectionLost
+      );
 
       _socketStream = _socket.getDataStream();
       // TODO: Handle on done
@@ -918,21 +921,15 @@ class XmppConnection {
     );
   }
 
-  /// To be called when we lost network connection
-  Future<void> onNetworkConnectionLost() async {
+  /// To be called when we lost the network connection.
+  void _onNetworkConnectionLost() {
     _socket.close();
     _setConnectionState(XmppConnectionState.notConnected);
   }
 
-  /// To be called when we lost network connection
-  Future<void> onNetworkConnectionRegained() async {
-    if (_connectionState == XmppConnectionState.notConnected) {
-      connect();
-    }
-  }
-
   /// Attempt to gracefully close the session
   Future<void> disconnect() async {
+    _reconnectionPolicy.setShouldReconnect(false);
     _disconnecting = true;
     getPresenceManager().sendUnavailablePresence();
     sendRawString("</stream:stream>");
@@ -963,6 +960,7 @@ class XmppConnection {
   /// Start the connection process using the provided connection settings.
   Future<void> connect({ String? lastResource }) async {
     _runPreConnectionAssertions();
+    _reconnectionPolicy.setShouldReconnect(true);
     _disconnecting = false;
     
     if (lastResource != null) {

@@ -30,6 +30,7 @@ import "package:moxxyv2/service/notifications.dart";
 import "package:moxxyv2/service/avatars.dart";
 import "package:moxxyv2/service/preferences.dart";
 import "package:moxxyv2/service/blocking.dart";
+import "package:moxxyv2/service/connectivity.dart";
 
 import "package:get_it/get_it.dart";
 import "package:connectivity_plus/connectivity_plus.dart";
@@ -97,17 +98,13 @@ class XmppService {
   bool _loginTriggeredFromUI;
   bool _appOpen;
   String _currentlyOpenedChatJid;
-  StreamSubscription<ConnectivityResult>? _networkStateSubscription;
   StreamSubscription<dynamic>? _xmppConnectionSubscription;
   XmppState? _state;
-  ConnectivityResult _currentConnectionType;
   
   XmppService() :
     _currentlyOpenedChatJid = "",
-    _networkStateSubscription = null,
     _xmppConnectionSubscription = null,
     _state = null,
-    _currentConnectionType = ConnectivityResult.none,
     _eventHandler = EventHandler(),
     _appOpen = true,
     _loginTriggeredFromUI = false,
@@ -287,8 +284,9 @@ class XmppService {
   Future<bool> _automaticFileDownloadAllowed() async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
-    return prefs.autoDownloadWifi && _currentConnectionType == ConnectivityResult.wifi
-      || prefs.autoDownloadMobile && _currentConnectionType == ConnectivityResult.mobile;
+    final currentConnection = GetIt.I.get<ConnectivityService>().currentState;
+    return prefs.autoDownloadWifi && currentConnection == ConnectivityResult.wifi
+      || prefs.autoDownloadMobile && currentConnection == ConnectivityResult.mobile;
   }
  
   void installEventHandlers() {
@@ -338,38 +336,6 @@ class XmppService {
       }
       break;
     }
-    
-    // TODO: This will fire as soon as we listen to the stream. So we either have to debounce it here or in [XmppConnection]
-    _networkStateSubscription ??= Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-        _log.fine("Got ConnectivityResult: " + result.toString());
-
-        switch (result) { 
-          case ConnectivityResult.none: {
-            GetIt.I.get<XmppConnection>().onNetworkConnectionLost();
-          }
-          break;
-          case ConnectivityResult.wifi: {
-            _currentConnectionType = ConnectivityResult.wifi;
-            // TODO: This will crash inside [XmppConnection] as soon as this happens
-            GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
-          }
-          break;
-          case ConnectivityResult.mobile: {
-            _currentConnectionType = ConnectivityResult.mobile;
-            // TODO: This will crash inside [XmppConnection] as soon as this happens
-            GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
-          }
-          break;
-          case ConnectivityResult.ethernet: {
-            // NOTE: A hack, but should be fine
-            _currentConnectionType = ConnectivityResult.wifi;
-            // TODO: This will crash inside [XmppConnection] as soon as this happens
-            GetIt.I.get<XmppConnection>().onNetworkConnectionRegained();
-          }
-          break;
-          default: break;
-        }
-    });
     
     if (event.state == XmppConnectionState.connected) {
       final connection = GetIt.I.get<XmppConnection>();
