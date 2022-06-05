@@ -91,10 +91,10 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   
   bool _onBadCertificate(certificate, String domain) {
     _log.fine("Bad certificate: ${certificate.toString()}");
-    final isExpired = certificate.endValidity.isAfter(DateTime.now());
-    // TODO: Remove the kDebugMode once I am sure this works as it should
-    //return !isExpired && certificate.domain == domain && kDebugMode;
-    return true;
+    //final isExpired = certificate.endValidity.isAfter(DateTime.now());
+    // TODO: Either validate the certificate ourselves or use a platform native
+    //       hostname verifier (or Dart adds it themselves)
+    return false;
   }
   
   Future<bool> _xep368Connect(String domain) async {
