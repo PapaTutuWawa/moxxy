@@ -11,7 +11,6 @@ import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 
 import "../helpers/xmpp.dart";
 
-import "package:logging/logging.dart";
 import "package:test/test.dart";
 
 Future<void> runIncomingStanzaHandlers(StreamManagementManager man, Stanza stanza) async {
