@@ -9,7 +9,6 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/message.dart";
 import "package:moxxyv2/xmpp/ping.dart";
-import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
@@ -28,6 +27,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/service/managers/roster.dart";
 import "package:moxxyv2/service/managers/disco.dart";
 import "package:moxxyv2/service/managers/stream.dart";
+import "package:moxxyv2/service/moxxmpp/reconnect.dart";
 import "package:moxxyv2/service/database.dart";
 import "package:moxxyv2/service/xmpp.dart";
 import "package:moxxyv2/service/roster.dart";
@@ -168,7 +168,7 @@ Future<void> entrypoint() async {
   // Init the UDPLogger
   await initUDPLogger();
 
-  final connection = XmppConnection(ExponentialBackoffReconnectionPolicy());
+  final connection = XmppConnection(MoxxyReconnectionPolicy());
   connection.registerManagers([
       MoxxyStreamManagementManager(),
       MoxxyDiscoManager(),
@@ -194,6 +194,7 @@ Future<void> entrypoint() async {
   ]);
   GetIt.I.registerSingleton<XmppConnection>(connection);
   GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
+  await GetIt.I.get<ConnectivityService>().initialize();
 
   GetIt.I.get<Logger>().finest("Done with xmpp");
   

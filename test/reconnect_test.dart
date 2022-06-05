@@ -7,7 +7,7 @@ void main() {
   test("Test the network-connection-aware reconnection policy", () {
       bool performReconnectCalled = false;
       bool triggerConnectionLostCalled = false;
-      final policy = MoxxyReconnectionPolicy(ConnectivityResult.wifi);
+      final policy = MoxxyReconnectionPolicy();
       policy.register(
         () {
           // performReconnect
