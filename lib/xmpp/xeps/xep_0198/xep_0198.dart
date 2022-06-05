@@ -1,4 +1,5 @@
 import "dart:async";
+import "dart:math";
 
 import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/events.dart";
@@ -53,9 +54,12 @@ class StreamManagementManager extends XmppManagerBase {
   @visibleForTesting
   Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
 
+  @visibleForTesting
+  int getPendingAcks() => _pendingAcks;
+
   /// Returns the amount of stanzas waiting to get acked
   int getUnackedStanzaCount() => _unackedStanzas.length;
-  
+
   /// May be overwritten by a subclass. Should save [state] so that it can be loaded again
   /// with [this.loadState].
   Future<void> commitState() async {}
@@ -232,13 +236,17 @@ class StreamManagementManager extends XmppManagerBase {
     final h = int.parse(nonza.attributes["h"]!);
 
     await _ackLock.synchronized(() async {
-        if (_pendingAcks > 0) {
-          _pendingAcks--;
-        } else {
-          _stopAckTimer();
-        }
+        await _stateLock.synchronized(() async {
+            if (_pendingAcks > 0) {
+              // Prevent diff from becoming negative
+              final diff = max(_state.c2s - h, 0);
+              _pendingAcks = diff;
+            } else {
+              _stopAckTimer();
+            }
 
-        logger.fine("_pendingAcks is now at $_pendingAcks");
+            logger.fine("_pendingAcks is now at $_pendingAcks");
+        });
     });
     
     // Return early if we acked nothing.

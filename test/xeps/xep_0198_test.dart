@@ -11,6 +11,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 
 import "../helpers/xmpp.dart";
 
+import "package:logging/logging.dart";
 import "package:test/test.dart";
 
 Future<void> runIncomingStanzaHandlers(StreamManagementManager man, Stanza stanza) async {
@@ -152,6 +153,44 @@ void main() {
           expect(manager.getUnackedStanzas().length, 2);
           expect(manager.state.c2s, 5);
       });
+  });
+
+  group("Counting acks", () {
+      // TODO: These tests fail without logging enabled...
+      //       Why though
+      test("Sending all pending acks at once", () async {
+          final attributes = mkAttributes((_) {});
+          final manager = StreamManagementManager();
+          manager.register(attributes);
+          await manager.onXmppEvent(StreamManagementEnabledEvent(resource: "hallo"));
+
+          // Send a stanza 5 times
+          for (int i = 0; i < 5; i++) {
+            await runOutgoingStanzaHandlers(manager, stanza);
+          }
+          expect(manager.getPendingAcks(), 5);
+
+          // Ack all of them at once
+          await manager.runNonzaHandlers(mkAck(5));
+          expect(manager.getPendingAcks(), 0);
+      });
+      test("Sending partial pending acks at once", () async {
+          final attributes = mkAttributes((_) {});
+          final manager = StreamManagementManager();
+          manager.register(attributes);
+          await manager.onXmppEvent(StreamManagementEnabledEvent(resource: "hallo"));
+
+          // Send a stanza 5 times
+          for (int i = 0; i < 5; i++) {
+            await runOutgoingStanzaHandlers(manager, stanza);
+          }
+          expect(manager.getPendingAcks(), 5);
+
+          // Ack only 3 of them at once
+          await manager.runNonzaHandlers(mkAck(3));
+          expect(manager.getPendingAcks(), 2);
+      });
+
   });
 
   group("Stream resumption", () {
