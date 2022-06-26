@@ -601,8 +601,6 @@ class XmppConnection {
           _awaitingResponse.remove(id);
           awaited = true;
         }
-
-        awaited = false;
     });
     if (awaited) {
       return;
@@ -793,7 +791,10 @@ class XmppConnection {
           return;
         }
 
-        //_discoverServerFeatures();
+        if (_serverFeatures.isEmpty) {
+          await _discoverServerFeatures();
+          await _sendEvent(ServerDiscoDoneEvent());
+        }
       }
       break;
       case RoutingState.bindResourcePreSM: {
@@ -829,7 +830,12 @@ class XmppConnection {
           final h = int.parse(node.attributes["h"]!);
           await _sendEvent(StreamResumedEvent(h: h));
 
-          //if (_serverFeatures.isEmpty) _discoverServerFeatures();
+          // NOTE: Technically not needed but we don't persist disco data so
+          //       just request it if we don't have it.
+          if (_serverFeatures.isEmpty) {
+            await _discoverServerFeatures();
+            await _sendEvent(ServerDiscoDoneEvent());
+          }
         } else if (node.tag == "failed") {
           // NOTE: If we are here, we have it.
           final manager = getStreamManagementManager()!;
@@ -873,8 +879,11 @@ class XmppConnection {
           getPresenceManager().sendInitialPresence();
           _setConnectionState(XmppConnectionState.connected);
         }
- 
-        //_discoverServerFeatures();
+
+        if (_serverFeatures.isEmpty) {
+          await _discoverServerFeatures();
+          await _sendEvent(ServerDiscoDoneEvent());
+        }
       }
       break;
       case RoutingState.handleStanzas: {
