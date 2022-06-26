@@ -24,4 +24,29 @@ void main() {
       expect(reply.to, stanza.from);
       expect(reply.id, stanza.id);
   });
+
+  test("Make sure reply includes the new children", () {
+      final stanza = Stanza.iq(
+        to: "hallo",
+        from: "world",
+        id: "abc123",
+        type: "get",
+        children: [
+          XMLNode(tag: "test-tag"),
+          XMLNode(tag: "test-tag2")
+        ]
+      );
+
+      final reply = stanza.reply(
+        children: [
+          XMLNode.xmlns(
+            tag: "test",
+            xmlns: "test"
+          )
+        ]
+      );
+
+      expect(reply.children.length, 1);
+      expect(reply.firstTag("test") != null, true);
+  });
 }

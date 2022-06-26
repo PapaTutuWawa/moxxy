@@ -89,12 +89,12 @@ class Stanza extends XMLNode {
     );
   }
   
-  Stanza reply({ List<XMLNode>? children }) {
+  Stanza reply({ List<XMLNode> children = const [] }) {
     return copyWith(
       from: attributes["to"],
       to: attributes["from"],
       type: tag == "iq" ? "result" : attributes["type"],
-      children: const []
+      children: children
     );
   }
 
