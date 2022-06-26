@@ -122,7 +122,8 @@ class XmppService {
           EventTypeMatcher<MessageEvent>(_onMessage),
           EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
           EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
-          EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush)
+          EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
+          EventTypeMatcher<ServerDiscoDoneEvent>(_onServerDiscoDone)
       ]);
     }
 
@@ -697,5 +698,9 @@ class XmppService {
 
   Future<void> _onBlocklistUnblockAllPush(BlocklistUnblockAllPushEvent event, { dynamic extra }) async {
     GetIt.I.get<BlocklistService>().onUnblockAllPush();
+  }
+
+  Future<void> _onServerDiscoDone(ServerDiscoDoneEvent event, { dynamic extra }) async {
+    // TODO: Notify the blocklist
   }
 }
