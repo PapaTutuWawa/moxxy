@@ -378,6 +378,8 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
+  // TODO: Fix
+  /*
   sendEvent(
     GetFeaturesEvent(
       serverFeatures: conn.serverFeatures,
@@ -385,6 +387,7 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
     ),
     id: id
   );
+  */
 }
 
 Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {

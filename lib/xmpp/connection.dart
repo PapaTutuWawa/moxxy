@@ -1,5 +1,6 @@
 import "dart:async";
 
+import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/socket.dart";
 import "package:moxxyv2/xmpp/buffer.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
@@ -19,6 +20,7 @@ import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
@@ -99,8 +101,6 @@ class XmppConnection {
   
   /// Stream properties
   ///
-  /// Features we got after SASL auth (xmlns)
-  final List<String> _streamFeatures = List.empty(growable: true);
   /// Disco info we got after binding a resource (xmlns)
   final List<String> _serverFeatures = List.empty(growable: true);
   /// The buffer object to keep split up stanzas together
@@ -128,8 +128,10 @@ class XmppConnection {
   Completer<XmppConnectionResult>? _connectionCompleter;
 
   /// Negotiators
-  late AuthenticationNegotiator _authenticator;
-
+  final List<XmppFeatureNegotiatorBase> _featureNegotiators;
+  XmppFeatureNegotiatorBase? _currentNegotiator;
+  final List<XMLNode> _streamFeatures;
+  
   /// Misc
   final Logger _log;
 
@@ -161,6 +163,8 @@ class XmppConnection {
     _outgoingPreStanzaHandlers = List.empty(growable: true),
     _outgoingPostStanzaHandlers = List.empty(growable: true),
     _reconnectionPolicy = reconnectionPolicy,
+    _featureNegotiators = List.empty(growable: true),
+    _streamFeatures = List.empty(growable: true),
     _log = Logger("XmppConnection") {
       // Allow the reconnection policy to perform reconnections by itself
       _reconnectionPolicy.register(
@@ -174,7 +178,6 @@ class XmppConnection {
       _socket.getEventStream().listen(_handleSocketEvent);
   }
 
-  List<String> get streamFeatures => _streamFeatures;
   List<String> get serverFeatures => _serverFeatures;
   
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
@@ -231,6 +234,19 @@ class XmppConnection {
     _incomingStanzaHandlers.sort(stanzaHandlerSortComparator);
     _outgoingPreStanzaHandlers.sort(stanzaHandlerSortComparator);
     _outgoingPostStanzaHandlers.sort(stanzaHandlerSortComparator);
+  }
+
+  /// Register a list of negotiator with the connection.
+  void registerFeatureNegotiators(List<XmppFeatureNegotiatorBase> negotiators) {
+    for (final negotiator in negotiators) {
+      negotiator.register(
+        NegotiatorAttributes(sendRawXML)
+      );
+      _featureNegotiators.add(negotiator);
+    }
+
+    // Sort negotiators according to priority
+    _featureNegotiators.sort((a, b) => b.priority.compareTo(a.priority));
   }
   
   /// Generate an Id suitable for an origin-id or stanza id
@@ -614,286 +630,90 @@ class XmppConnection {
     }
   }
 
+  /// Returns the next negotiator to use during negotiation. Returns null if no
+  /// matching negotiator could be found. [features] refers to the <stream:features/>
+  /// nonza that triggers the picking of a new negotiator.
+  @visibleForTesting
+  XmppFeatureNegotiatorBase? getNextNegotiator(List<XMLNode> features) {
+    return firstWhereOrNull(
+      _featureNegotiators,
+      (negotiator) {
+        return (negotiator.state == NegotiatorState.ready ||
+                negotiator.state == NegotiatorState.retryLater) &&
+                negotiator.matchesFeature(features);
+      });
+  }
+
+  /// Returns true if [features] contains a stream feature that is required. If not,
+  /// returns false.
+  @visibleForTesting
+  bool containsRequiredFeature(List<XMLNode> features) {
+    return firstWhereOrNull(
+      features,
+      (XMLNode feature) => feature.firstTag('required') != null
+    ) != null;
+  }
+
+  @visibleForTesting
+  bool negotiationDone(List<XMLNode> features) {
+    return getNextNegotiator(features) == null && !containsRequiredFeature(features);
+  }
+
+  Future<void> _executeNegotiator(XMLNode nonza) async {
+    final result = await _currentNegotiator!.negotiate(nonza);
+    if (result != NegotiatorState.ready) {
+      if (_currentNegotiator!.sendStreamHeaderWhenDone) {
+        _currentNegotiator = null;
+        _sendStreamHeader();
+      } else {
+        // We need to track features
+        _streamFeatures.removeWhere((XMLNode feature) {
+            return feature.attributes["xmlns"] == _currentNegotiator!.negotiatingXmlns;
+        });
+        _currentNegotiator = getNextNegotiator(_streamFeatures);
+        if (_currentNegotiator == null) {
+          if (containsRequiredFeature(_streamFeatures)) {
+            _log.severe("No next negotiator picked while features are mandatory");
+            _updateRoutingState(RoutingState.error);
+          } else {
+            _log.finest("No next negotiator picked while no features are mandatory. Done.");
+            _updateRoutingState(RoutingState.handleStanzas);
+          }
+
+          return;
+        } else {
+          // There are still features we can negotiate
+          await _executeNegotiator(
+            XMLNode(
+              tag: "stream:features",
+              children: _streamFeatures
+            )
+          );
+        }
+      }
+    }
+  }
+  
   /// Called whenever we receive data that has been parsed as XML.
   void handleXmlStream(XMLNode node) async {
     switch (_routingState) {
-      case RoutingState.unauthenticated: {
-        // We expect the stream header here
-        if (node.tag != "stream:features") {
-          _log.severe("Expected stream features");
-          _routingState = RoutingState.error;
-          return;
+      case RoutingState.negotiating:
+        if (_currentNegotiator == null) {
+          // We just received stream features, so replace the cached list with the
+          // new ones.
+          _streamFeatures
+            ..clear()
+            ..addAll(node.children);
+
+          // Pick a new negotiator
+          _currentNegotiator = getNextNegotiator(node.children);
         }
 
-        final streamFeatures = node;
-
-        // First check for StartTLS
-        final startTLS = streamFeatures.firstTag("starttls", xmlns: startTlsXmlns);
-        if (startTLS != null) {
-          _log.fine("StartTLS is availabe. Performing StartTLS upgrade.");
-          _updateRoutingState(RoutingState.performStartTLS);
-          sendRawXML(StartTLSNonza());
-          return;
-        }
-
-        if (!_socket.isSecure()) {
-          _log.severe("Refusing to go any further on an insecure connection");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
-        
-        final mechanismNodes = streamFeatures.firstTag("mechanisms")!;
-        final mechanisms = mechanismNodes.children.map((node) => node.innerText()).toList();
-        final authenticator = getAuthenticator(
-          mechanisms,
-          _connectionSettings,
-          sendRawXML,
-        );
-
-        if (authenticator == null) {
-          _log.severe("Failed to select an authenticator!");
-          _updateRoutingState(RoutingState.error);
-          return;
-        } else {
-          _authenticator = authenticator;
-        }
-
-        _log.fine("Proceeding with SASL authentication");
-        _updateRoutingState(RoutingState.performSaslAuth);
-        final result = await _authenticator.next(null);
-        if (result.getState() == AuthenticationResult.success) {
-          _log.fine("SASL authentication was successful. Proceeding to check stream features");
-          _updateRoutingState(RoutingState.checkStreamManagement);
-          _sendStreamHeader();
-        } else if (result.getState() == AuthenticationResult.failure) {
-          _log.severe("SASL authentication failed!");
-          await _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          _setConnectionState(XmppConnectionState.error);
-          _updateRoutingState(RoutingState.error);
-
-          _log.fine("Resolving _connectionCompleter due to a SASL failure");
-          _connectionCompleter?.complete(
-            XmppConnectionResult(
-              false,
-              reason: result.getValue()
-            )
-          );
-          _connectionCompleter = null;
-        }
-      }
-      break;
-      case RoutingState.performStartTLS: {
-        if (node.tag != "proceed" || node.attributes["xmlns"] != startTlsXmlns) {
-          _log.severe("Failed to proceed with StartTLS negotiation");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
-
-        _performingStartTLS = true;
-        _log.fine("Securing socket...");
-        final result = await _socket.secure(_connectionSettings.jid.domain);
-        if (!result) {
-          _log.severe("Failed to secure the socket");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
-        _log.fine("Done!");
-        _log.fine("Restarting stream negotiation on TLS secured stream.");
-        _performingStartTLS = false;
-        _updateRoutingState(RoutingState.unauthenticated);
-        _sendStreamHeader();
-      }
-      break;
-      case RoutingState.performSaslAuth: {
-        final result = await _authenticator.next(node);
-        if (result.getState() == AuthenticationResult.success) {
-          _log.fine("SASL authentication was successful. Proceeding to check stream features");
-          _updateRoutingState(RoutingState.checkStreamManagement);
-          _sendStreamHeader();
-        } else if (result.getState() == AuthenticationResult.failure) {
-          _log.severe("SASL authentication failed!");
-          await _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          _setConnectionState(XmppConnectionState.error);
-          _updateRoutingState(RoutingState.error);
-
-          _log.fine("Resolving _connectionCompleter due to a SASL failure");
-          _connectionCompleter?.complete(
-            XmppConnectionResult(
-              false,
-              reason: result.getValue()
-            )
-          );
-          _connectionCompleter = null;
-        }
-      }
-      break;
-      case RoutingState.checkStreamManagement: {
-        if (node.tag != "stream:features") {
-          _log.severe("Expected stream features");
-          _routingState = RoutingState.error;
-          return;
-        }
-
-        final streamFeatures = node;
-        // TODO: Handle required features?
-        // NOTE: In case of reconnecting
-        _streamFeatures.clear();
-        for (var node in streamFeatures.children) {
-          _streamFeatures.add(node.attributes["xmlns"]);
-        }
-
-        final streamManager = getStreamManagementManager();
-        if (isStreamFeatureSupported(smXmlns) && streamManager != null) {
-          await streamManager.loadState();
-          final srid = streamManager.state.streamResumptionId;
-          final h = streamManager.state.s2c;
-          
-          // Try to work with SM first
-          if (srid != null) {
-            // Try to resume the last stream
-            _log.fine("Found stream resumption Id. Attempting to perform stream resumption");
-            _updateRoutingState(RoutingState.performStreamResumption);
-            sendRawXML(StreamManagementResumeNonza(srid, h));
-          } else {
-            // Try to enable SM
-            _resuming = false;
-            _log.fine("Attempting to bind resource before enabling Stream Management");
-            _updateRoutingState(RoutingState.bindResourcePreSM);
-            _performResourceBinding();
-          }
-        } else {
-          _resuming = false;
-          _log.fine("Either there is no StreamManagementManager registered or the stream does not support Stream Management.");
-          _log.fine("Proceeding to bind resource");
-          _updateRoutingState(RoutingState.bindResource);
-          _performResourceBinding();
-        }
-      }
-      break;
-      case RoutingState.bindResource: {
-        final proceed = await _handleResourceBindingResult(node);
-        if (proceed) {
-          _log.fine("Stream negotiation done. Ready to handle stanzas");
-          _updateRoutingState(RoutingState.handleStanzas);
-          getPresenceManager().sendInitialPresence();
-          _log.fine("Resolving _connectionCompleter since stream negotiation is done");
-          _connectionCompleter?.complete(
-            const XmppConnectionResult(true)
-          );
-          _connectionCompleter = null;
-        } else {
-          _log.severe("Resource binding failed!");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
-
-        if (_serverFeatures.isEmpty) {
-          await _discoverServerFeatures();
-          await _sendEvent(ServerDiscoDoneEvent());
-        }
-      }
-      break;
-      case RoutingState.bindResourcePreSM: {
-        final proceed = await _handleResourceBindingResult(node);
-        if (proceed) {
-          if (_connectionCompleter != null) {
-            _connectionCompleter!.complete(
-              const XmppConnectionResult(true)
-            );
-            _connectionCompleter = null;
-          }
-
-          _log.fine("Attempting to enable Stream Management");
-          _updateRoutingState(RoutingState.enableSM);
-          sendRawXML(StreamManagementEnableNonza());
-        }
-      }
-      break;
-      case RoutingState.performStreamResumption: {
-        if (node.tag == "resumed") {
-          _log.fine("Stream Resumption successful!");
-          // NOTE: _resource is already set if we resume
-          assert(_resource != "");
-          _updateRoutingState(RoutingState.handleStanzas);
-          _setConnectionState(XmppConnectionState.connected);
-
-          // Restore the CSI state if we have a manager
-          final csiManager = getCSIManager();
-          if (csiManager != null) {
-            csiManager.restoreCSIState();
-          }
-          
-          final h = int.parse(node.attributes["h"]!);
-          await _sendEvent(StreamResumedEvent(h: h));
-
-          // NOTE: Technically not needed but we don't persist disco data so
-          //       just request it if we don't have it.
-          if (_serverFeatures.isEmpty) {
-            await _discoverServerFeatures();
-            await _sendEvent(ServerDiscoDoneEvent());
-          }
-        } else if (node.tag == "failed") {
-          // NOTE: If we are here, we have it.
-          final manager = getStreamManagementManager()!;
-          _log.info("Stream resumption failed. Proceeding with new stream...");
-
-          // We have to do this because we otherwise get a stanza stuck in the queue,
-          // thus spamming the server on every <a /> nonza we receive.
-          manager.setState(StreamManagementState(0, 0));
-          await manager.commitState();
-
-          _serverFeatures.clear();
-          _resuming = false;
-          _updateRoutingState(RoutingState.bindResourcePreSM);
-          _performResourceBinding();
-        }
-      }
-      break;
-      case RoutingState.enableSM: {
-        if (node.tag == "failed") {
-          // Not critical
-          _log.warning("Failed to enable SM: " + node.tag);
-          _updateRoutingState(RoutingState.handleStanzas);
-          getPresenceManager().sendInitialPresence();
-        } else if (node.tag == "enabled") {
-          _log.fine("SM enabled!");
-
-          final id = node.attributes["id"];
-          if (id != null && [ "true", "1" ].contains(node.attributes["resume"])) {
-            _log.finest("Stream resumption possible!");
-          }
-
-          await _sendEvent(
-            StreamManagementEnabledEvent(
-              resource: _resource,
-              id: node.attributes["id"],
-              location: node.attributes["location"]
-            )
-          );
-
-          _updateRoutingState(RoutingState.handleStanzas);
-          getPresenceManager().sendInitialPresence();
-          _setConnectionState(XmppConnectionState.connected);
-        }
-
-        if (_serverFeatures.isEmpty) {
-          await _discoverServerFeatures();
-          await _sendEvent(ServerDiscoDoneEvent());
-        }
-      }
-      break;
-      case RoutingState.handleStanzas: {
+        await _executeNegotiator(node);
+        break;
+      case RoutingState.handleStanzas:
         await _handleStanza(node);
-      }
-      break;
-      case RoutingState.error: {
-        _log.warning("Received node while in error state. Ignoring: ${node.toXml()}");
-      }
-      break;
+        break;
     }
   }
   
