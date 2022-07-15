@@ -8,6 +8,7 @@ import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/ping.dart";
 import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
@@ -16,6 +17,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 
 import "helpers/xmpp.dart";
 
+import "package:logging/logging.dart";
 import "package:test/test.dart";
 
 /// Returns true if the roster manager triggeres an event for a given stanza
@@ -52,6 +54,8 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
 }
 
 void main() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((record) => print(record.message));
   test("Test a successful login attempt with no SM", () async {
       final fakeSocket = StubTCPSocket(
         play: [
@@ -227,6 +231,7 @@ void main() {
       conn.registerManager(DiscoManager());
       conn.registerManager(DiscoCacheManager());
       conn.registerManager(PresenceManager());
+      conn.registerManager(PingManager());
 
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
@@ -234,6 +239,7 @@ void main() {
       });
   });
 
+  /*
   test("Test a failed SASL auth", () async {
       final fakeSocket = StubTCPSocket(
         play: [
@@ -531,4 +537,5 @@ void main() {
           expect(result2, true, reason: "Roster pushes should be accepted if the bare JIDs are the same");
       });
   });
+  */
 }

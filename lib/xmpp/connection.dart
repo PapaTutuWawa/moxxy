@@ -630,66 +630,82 @@ class XmppConnection {
     }
   }
 
-  /// Returns the next negotiator to use during negotiation. Returns null if no
-  /// matching negotiator could be found. [features] refers to the <stream:features/>
-  /// nonza that triggers the picking of a new negotiator.
-  @visibleForTesting
-  XmppFeatureNegotiatorBase? getNextNegotiator(List<XMLNode> features) {
+  /// Returns true if all mandatory features in [features] have been negotiated.
+  /// Otherwise returns false.
+  bool _isMandatoryNegotiationDone(List<XMLNode> features) {
+    return features.every(
+      (XMLNode feature) {
+        return feature.firstTag("required") == null && feature.tag != "mechanisms";
+      }
+    );
+  }
+
+  /// Returns true if we can still negotiate. Returns false if no negotiator is
+  /// matching and ready.
+  bool _isNegotiationPossible(List<XMLNode> features) {
+    return _getNextNegotiator(features) != null;
+  }
+
+  /// Returns the next negotiator that matches [features]. Returns null if none can be
+  /// picked.
+  XmppFeatureNegotiatorBase? _getNextNegotiator(List<XMLNode> features) {
     return firstWhereOrNull(
       _featureNegotiators,
-      (negotiator) {
-        return (negotiator.state == NegotiatorState.ready ||
-                negotiator.state == NegotiatorState.retryLater) &&
-                negotiator.matchesFeature(features);
-      });
+      (XmppFeatureNegotiatorBase negotiator) {
+        return negotiator.state == NegotiatorState.ready && negotiator.matchesFeature(features);
+      }
+    );
   }
 
-  /// Returns true if [features] contains a stream feature that is required. If not,
-  /// returns false.
-  @visibleForTesting
-  bool containsRequiredFeature(List<XMLNode> features) {
-    return firstWhereOrNull(
-      features,
-      (XMLNode feature) => feature.firstTag('required') != null
-    ) != null;
-  }
+  /// To be called after _currentNegotiator!.negotiate(..) has been called. Checks the
+  /// state of the negotiator and picks the next negotiatior, ends negotiation or
+  /// waits, depending on what the negotiator did.
+  Future<void> _checkCurrentNegotiator() async {
+    if (_currentNegotiator!.state == NegotiatorState.done) {
+      _log.finest("Negotiator done");
 
-  @visibleForTesting
-  bool negotiationDone(List<XMLNode> features) {
-    return getNextNegotiator(features) == null && !containsRequiredFeature(features);
-  }
-
-  Future<void> _executeNegotiator(XMLNode nonza) async {
-    final result = await _currentNegotiator!.negotiate(nonza);
-    if (result != NegotiatorState.ready) {
       if (_currentNegotiator!.sendStreamHeaderWhenDone) {
         _currentNegotiator = null;
+        _streamFeatures.clear();
         _sendStreamHeader();
       } else {
-        // We need to track features
-        _streamFeatures.removeWhere((XMLNode feature) {
-            return feature.attributes["xmlns"] == _currentNegotiator!.negotiatingXmlns;
-        });
-        _currentNegotiator = getNextNegotiator(_streamFeatures);
-        if (_currentNegotiator == null) {
-          if (containsRequiredFeature(_streamFeatures)) {
-            _log.severe("No next negotiator picked while features are mandatory");
-            _updateRoutingState(RoutingState.error);
-          } else {
-            _log.finest("No next negotiator picked while no features are mandatory. Done.");
-            _updateRoutingState(RoutingState.handleStanzas);
-          }
+        // Track what features we still have
+        _streamFeatures
+          .removeWhere((node) {
+            return node.attributes["xmlns"] == _currentNegotiator!.negotiatingXmlns;
+          });
+        _currentNegotiator = null;
 
-          return;
+        if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
+          _updateRoutingState(RoutingState.handleStanzas);
         } else {
-          // There are still features we can negotiate
-          await _executeNegotiator(
-            XMLNode(
-              tag: "stream:features",
-              children: _streamFeatures
-            )
+          _currentNegotiator = _getNextNegotiator(_streamFeatures);
+
+          final fakeStanza = XMLNode(
+            tag: "stream:features",
+            children: _streamFeatures,
           );
+          await _currentNegotiator!.negotiate(fakeStanza);
+          await _checkCurrentNegotiator();
         }
+      }
+    } else if (_currentNegotiator!.state == NegotiatorState.retryLater) {
+      _log.finest('Negotiator want to continue later. Picking new one...');
+
+      _currentNegotiator!.state = NegotiatorState.ready;
+
+      if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
+        _log.finest('Negotiations done!');
+        _updateRoutingState(RoutingState.handleStanzas);
+      } else {
+        _log.finest('Picking new negotiator');
+        _currentNegotiator = _getNextNegotiator(_streamFeatures);
+        final fakeStanza = XMLNode(
+          tag: "stream:features",
+          children: _streamFeatures,
+        );
+        await _currentNegotiator!.negotiate(fakeStanza);
+        await _checkCurrentNegotiator();
       }
     }
   }
@@ -698,18 +714,42 @@ class XmppConnection {
   void handleXmlStream(XMLNode node) async {
     switch (_routingState) {
       case RoutingState.negotiating:
-        if (_currentNegotiator == null) {
-          // We just received stream features, so replace the cached list with the
-          // new ones.
+        if (_currentNegotiator != null) {
+          // If we already have a negotiator, just let it do its thing
+          _log.finest('Negotiator currently active...');
+
+          await _currentNegotiator!.negotiate(node);
+          await _checkCurrentNegotiator();
+        } else {
           _streamFeatures
             ..clear()
             ..addAll(node.children);
 
-          // Pick a new negotiator
-          _currentNegotiator = getNextNegotiator(node.children);
-        }
+          // We need to pick a new one
+          if (_isMandatoryNegotiationDone(node.children)) {
+            // Mandatory features are done but can we still negotiate more?
+            if (_isNegotiationPossible(node.children)) {
+              // We can still negotiate features, so do that.
+              _log.finest('All required stream features done! Continuing negotiation');
+              _currentNegotiator = _getNextNegotiator(node.children);
+              await _currentNegotiator!.negotiate(node);
+              await _checkCurrentNegotiator();
+            } else {
+              _updateRoutingState(RoutingState.handleStanzas);
+            }
+          } else {
+            // There still are mandatory features
+            if (!_isNegotiationPossible(node.children)) {
+              _log.severe("Mandatory negotiations not done but continuation not possible");
+              _updateRoutingState(RoutingState.error);
+              return;
+            }
 
-        await _executeNegotiator(node);
+            _currentNegotiator = _getNextNegotiator(node.children);
+            await _currentNegotiator!.negotiate(node);
+            await _checkCurrentNegotiator();
+          }
+        }
         break;
       case RoutingState.handleStanzas:
         await _handleStanza(node);
@@ -823,7 +863,7 @@ class XmppConnection {
       _log.fine("Preparing the internal state for a connection attempt");
       _performingStartTLS = false;
       _setConnectionState(XmppConnectionState.connecting);
-      _updateRoutingState(RoutingState.unauthenticated);
+      _updateRoutingState(RoutingState.negotiating);
       _sendStreamHeader();
     }
   }
