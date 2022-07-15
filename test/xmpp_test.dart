@@ -17,9 +17,9 @@ import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 
+import "helpers/logging.dart";
 import "helpers/xmpp.dart";
 
-import "package:logging/logging.dart";
 import "package:test/test.dart";
 
 /// Returns true if the roster manager triggeres an event for a given stanza
@@ -56,8 +56,8 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
 }
 
 void main() {
-  Logger.root.level = Level.ALL;
-  Logger.root.onRecord.listen((record) => print(record.message));
+  initLogger();
+
   test("Test a successful login attempt with no SM", () async {
       final fakeSocket = StubTCPSocket(
         play: [
