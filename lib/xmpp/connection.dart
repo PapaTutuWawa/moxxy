@@ -763,6 +763,10 @@ class XmppConnection {
       case RoutingState.handleStanzas:
         await _handleStanza(node);
         break;
+      case RoutingState.preConnection:
+      case RoutingState.error:
+        _log.warning("Received data while in non-receiving state");
+        break;
     }
   }
   

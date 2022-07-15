@@ -1,6 +1,6 @@
 enum RoutingState {
   error,
-  unauthenticated,
+  preConnection,
   negotiating,
   handleStanzas
 }
