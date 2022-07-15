@@ -1,10 +1,10 @@
 import "dart:convert";
 
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/sasl/negotiator.dart";
-import "package:moxxyv2/xmpp/sasl/nonza.dart";
 import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/negotiator.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/nonza.dart";
 
 class SaslPlainAuthNonza extends SaslAuthNonza {
   SaslPlainAuthNonza(String username, String password) : super(

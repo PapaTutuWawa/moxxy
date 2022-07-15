@@ -5,9 +5,9 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
-import "package:moxxyv2/xmpp/sasl/kv.dart";
-import "package:moxxyv2/xmpp/sasl/negotiator.dart";
-import "package:moxxyv2/xmpp/sasl/nonza.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/kv.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/negotiator.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/nonza.dart";
 
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
