@@ -238,6 +238,13 @@ class XmppConnection {
 
     _log.finest('Negotiators registered');
   }
+
+  /// Reset all registered negotiators.
+  void _resetNegotiators() {
+    for (final negotiator in _featureNegotiators.values) {
+      negotiator.reset();
+    }
+  }
   
   /// Generate an Id suitable for an origin-id or stanza id
   String generateId() {
@@ -796,6 +803,7 @@ class XmppConnection {
       _reconnectionPolicy.onSuccess();
       _log.fine("Preparing the internal state for a connection attempt");
       _performingStartTLS = false;
+      _resetNegotiators();
       _setConnectionState(XmppConnectionState.connecting);
       _updateRoutingState(RoutingState.negotiating);
       _sendStreamHeader();
