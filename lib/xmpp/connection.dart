@@ -239,14 +239,14 @@ class XmppConnection {
   /// Register a list of negotiator with the connection.
   void registerFeatureNegotiators(List<XmppFeatureNegotiatorBase> negotiators) {
     for (final negotiator in negotiators) {
-      negotiator.register(
-        NegotiatorAttributes(sendRawXML)
-      );
+      negotiator.register(NegotiatorAttributes(sendRawXML, () => _connectionSettings));
       _featureNegotiators.add(negotiator);
     }
 
     // Sort negotiators according to priority
     _featureNegotiators.sort((a, b) => b.priority.compareTo(a.priority));
+
+    _log.finest('Negotiators registered');
   }
   
   /// Generate an Id suitable for an origin-id or stanza id
@@ -649,12 +649,19 @@ class XmppConnection {
   /// Returns the next negotiator that matches [features]. Returns null if none can be
   /// picked.
   XmppFeatureNegotiatorBase? _getNextNegotiator(List<XMLNode> features) {
-    return firstWhereOrNull(
-      _featureNegotiators,
+    final matchingNegotiators = _featureNegotiators.where(
       (XmppFeatureNegotiatorBase negotiator) {
+        _log.finest("Is ready: ${negotiator.state == NegotiatorState.ready}");
+        _log.finest("Matches: ${negotiator.matchesFeature(features)}");
         return negotiator.state == NegotiatorState.ready && negotiator.matchesFeature(features);
       }
-    );
+    ).toList();
+
+    _log.finest('List of matching negotiators: ${matchingNegotiators.map((a) => a.toString())}');
+    
+    if (matchingNegotiators.isEmpty) return null;
+
+    return matchingNegotiators.first;
   }
 
   /// To be called after _currentNegotiator!.negotiate(..) has been called. Checks the
@@ -680,6 +687,7 @@ class XmppConnection {
           _updateRoutingState(RoutingState.handleStanzas);
         } else {
           _currentNegotiator = _getNextNegotiator(_streamFeatures);
+          _log.finest("Chose $_currentNegotiator as next negotiator");
 
           final fakeStanza = XMLNode(
             tag: "stream:features",
@@ -700,6 +708,7 @@ class XmppConnection {
       } else {
         _log.finest('Picking new negotiator');
         _currentNegotiator = _getNextNegotiator(_streamFeatures);
+        _log.finest("Chose $_currentNegotiator as next negotiator");
         final fakeStanza = XMLNode(
           tag: "stream:features",
           children: _streamFeatures,
@@ -732,6 +741,7 @@ class XmppConnection {
               // We can still negotiate features, so do that.
               _log.finest('All required stream features done! Continuing negotiation');
               _currentNegotiator = _getNextNegotiator(node.children);
+              _log.finest("Chose $_currentNegotiator as next negotiator");
               await _currentNegotiator!.negotiate(node);
               await _checkCurrentNegotiator();
             } else {
@@ -746,6 +756,7 @@ class XmppConnection {
             }
 
             _currentNegotiator = _getNextNegotiator(node.children);
+            _log.finest("Chose $_currentNegotiator as next negotiator");
             await _currentNegotiator!.negotiate(node);
             await _checkCurrentNegotiator();
           }

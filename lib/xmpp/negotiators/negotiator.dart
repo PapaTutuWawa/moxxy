@@ -1,3 +1,5 @@
+import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 
 /// The state a negotiator is currently in
@@ -7,13 +9,16 @@ enum NegotiatorState {
   // Feature negotiated; negotiator must not be used again
   done,
   // Cancel the current attempt but we are not done
-  retryLater
+  retryLater,
+  // The negotiator is in an error state
+  error
 }
 
 class NegotiatorAttributes {
   final void Function(XMLNode nonza) sendNonza;
-
-  const NegotiatorAttributes(this.sendNonza);
+  final ConnectionSettings Function() getConnectionSettings;
+  
+  const NegotiatorAttributes(this.sendNonza, this.getConnectionSettings);
 }
 
 abstract class XmppFeatureNegotiatorBase {
@@ -45,7 +50,10 @@ abstract class XmppFeatureNegotiatorBase {
   /// Returns true if a feature in [feature], which are the children of the
   /// <stream:features /> nonza, can be negotiated. Otherwise, returns false.
   bool matchesFeature(List<XMLNode> features) {
-    return features.contains((XMLNode feature) => feature.attributes["xmlns"] == negotiatingXmlns);
+    return firstWhereOrNull(
+      features,
+      (XMLNode feature) => feature.attributes["xmlns"] == negotiatingXmlns,
+    ) != null;
   }
 
   /// Called with the currently received nonza [nonza] when the negotiator is active.
@@ -57,7 +65,7 @@ abstract class XmppFeatureNegotiatorBase {
   /// must switch some internal state to prevent getting matched immediately again.
   /// If ready is returned, then the negotiator indicates that it is not done with
   /// negotiation.
-  Future<NegotiatorState> negotiate(XMLNode nonza);
+  Future<void> negotiate(XMLNode nonza);
 
   /// Reset the negotiator to a state that negotation can happen again.
   void reset() {
