@@ -1,6 +1,5 @@
 import "dart:async";
 
-import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/socket.dart";
 import "package:moxxyv2/xmpp/buffer.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
@@ -22,15 +21,11 @@ import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 
 import "package:uuid/uuid.dart";
 import "package:synchronized/synchronized.dart";
 import "package:logging/logging.dart";
-import "package:meta/meta.dart";
-import "package:moxlib/moxlib.dart";
 
 enum XmppConnectionState {
   notConnected,
@@ -144,7 +139,7 @@ class XmppConnection {
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
-    _routingState = RoutingState.unauthenticated,
+    _routingState = RoutingState.preConnection,
     _eventStreamController = StreamController.broadcast(),
     _resource = "",
     _streamBuffer = XmlStreamBuffer(),
@@ -191,7 +186,8 @@ class XmppConnection {
         sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
-        isStreamFeatureSupported: isStreamFeatureSupported,
+        // TODO: Fix
+        isStreamFeatureSupported: (String feature) => false,
         isFeatureSupported: (feature) => _serverFeatures.contains(feature),
         getFullJID: () => _connectionSettings.jid.withResource(_resource),
         getSocket: () => _socket,
@@ -321,7 +317,6 @@ class XmppConnection {
   }
   
   /// Called when a stream ending error has occurred
-  @internal
   void handleError(Object? error) {
     if (error != null) {
       _log.severe("handleError: $error");
@@ -355,11 +350,6 @@ class XmppConnection {
   /// Returns the [ConnectionState] of the connection
   XmppConnectionState getConnectionState() => _connectionState;
   
-  /// Returns true if the stream supports the XMLNS @feature.
-  bool isStreamFeatureSupported(String feature) {
-    return _streamFeatures.contains(feature);
-  }
-
   /// Sends an [XMLNode] without any further processing to the server.
   void sendRawXML(XMLNode node, { String? redact }) {
     _socket.write(node.toXml(), redact: redact);
@@ -471,81 +461,14 @@ class XmppConnection {
   /// Returns the connection's events as a stream.
   Stream<XmppEvent> asBroadcastStream() {
     return _eventStreamController.stream.asBroadcastStream();
-  }
+  }  
   
-  /// Perform a resource bind with a server-generated resource.
-  void _performResourceBinding() {
-    sendStanza(Stanza.iq(
-        type: "set",
-        children: [
-          XMLNode(
-            tag: "bind",
-            attributes: {
-              "xmlns": bindXmlns
-            }
-          )
-        ]
-      ),
-      addFrom: StanzaFromType.none
-    );
-  }
-
-  /// Handles the result to the resource binding request and returns true if we should
-  /// proceed and false if not.
-  Future<bool> _handleResourceBindingResult(XMLNode stanza) async {
-    if (stanza.tag != "iq" || stanza.attributes["type"] != "result") {
-      _log.severe("Resource binding failed!");
-      _updateRoutingState(RoutingState.error);
-      return false;
-    }
-
-    // Success
-    final bind = stanza.firstTag("bind")!;
-    final jid = bind.firstTag("jid")!;
-    // TODO: Use our FullJID class
-    _resource = jid.innerText().split("/")[1];
-
-    await _sendEvent(ResourceBindingSuccessEvent(resource: _resource));
-
-    return true;
-  }
-
   /// Timer callback to prevent the connection from timing out.
   void _pingConnectionOpen(Timer timer) {
     // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
     // send a whitespace ping
     if (_connectionState == XmppConnectionState.connected) {
       _sendEvent(SendPingEvent());
-    }
-  }
-
-  Future<void> _discoverServerFeatures() async {
-    _serverFeatures.clear();
-    final serverJid = _connectionSettings.jid.domain;
-    final serverInfo = await getDiscoCacheManager().getInfoByJid(serverJid);
-    if (serverInfo != null) {
-      _log.finest("Discovered supported server features: ${serverInfo.features}");
-      _serverFeatures.addAll(serverInfo.features);
-      await _sendEvent(ServerDiscoDoneEvent());
-    } else {
-      _log.warning("Failed to discover server features using XEP-0030");
-    }
-
-    final serverItems = await getDiscoManager().discoItemsQuery(serverJid);
-    if (serverItems != null) {
-      _log.finest("Received disco items for $serverJid");
-      for (final item in serverItems) {
-        _log.finest("Querying info for ${item.jid}");
-        final info = await getDiscoCacheManager().getInfoByJid(item.jid);
-        if (info != null) {
-          _log.finest("Received info for ${item.jid}");
-          await _sendEvent(ServerItemDiscoEvent(info: info, jid: item.jid));
-        } else {
-          _log.warning("Failed to discover disco info for ${item.jid}");
-        }
-      }
-    } else {
-      _log.warning("Failed to discover server items using XEP-0030");
     }
   }
 
@@ -735,8 +658,7 @@ class XmppConnection {
           // We need to pick a new one
           if (_isMandatoryNegotiationDone(node.children)) {
             // Mandatory features are done but can we still negotiate more?
-            if (_isNegotiationPossible(node.children)) {
-              // We can still negotiate features, so do that.
+            if (_isNegotiationPossible(node.children)) {// We can still negotiate features, so do that.
               _log.finest('All required stream features done! Continuing negotiation');
               _currentNegotiator = _getNextNegotiator(node.children);
               _log.finest("Chose $_currentNegotiator as next negotiator");

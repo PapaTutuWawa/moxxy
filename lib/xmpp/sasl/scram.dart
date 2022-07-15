@@ -1,13 +1,9 @@
 import "dart:convert";
 import "dart:math" show Random;
 
-import "package:moxxyv2/xmpp/types/result.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
-import "package:moxxyv2/xmpp/sasl/authenticator.dart";
-import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:moxxyv2/xmpp/sasl/kv.dart";
 import "package:moxxyv2/xmpp/sasl/negotiator.dart";
 import "package:moxxyv2/xmpp/sasl/nonza.dart";
@@ -206,6 +202,9 @@ class SaslScramNegotiator extends SaslNegotiator {
         }
         
         _scramState = ScramState.error;
+        state = NegotiatorState.error;
+        return;
+      case ScramState.error:
         state = NegotiatorState.error;
         return;
     }

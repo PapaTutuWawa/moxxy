@@ -1,10 +1,6 @@
 import "dart:convert";
 
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/types/result.dart";
-import "package:moxxyv2/xmpp/sasl/authenticator.dart";
-import "package:moxxyv2/xmpp/sasl/errors.dart";
 import "package:moxxyv2/xmpp/sasl/negotiator.dart";
 import "package:moxxyv2/xmpp/sasl/nonza.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";

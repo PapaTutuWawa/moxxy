@@ -4,7 +4,8 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 
 abstract class SaslNegotiator extends XmppFeatureNegotiatorBase {
-  final mechanismName;
+  /// The name inside the <mechanism /> element
+  final String mechanismName;
 
   SaslNegotiator(int priority, this.mechanismName) : super(priority, true, saslXmlns);
   
