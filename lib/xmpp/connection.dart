@@ -121,7 +121,7 @@ class XmppConnection {
   Completer<XmppConnectionResult>? _connectionCompleter;
 
   /// Negotiators
-  final List<XmppFeatureNegotiatorBase> _featureNegotiators;
+  final Map<String, XmppFeatureNegotiatorBase> _featureNegotiators;
   XmppFeatureNegotiatorBase? _currentNegotiator;
   final List<XMLNode> _streamFeatures;
   
@@ -156,7 +156,7 @@ class XmppConnection {
     _outgoingPreStanzaHandlers = List.empty(growable: true),
     _outgoingPostStanzaHandlers = List.empty(growable: true),
     _reconnectionPolicy = reconnectionPolicy,
-    _featureNegotiators = List.empty(growable: true),
+    _featureNegotiators = {},
     _streamFeatures = List.empty(growable: true),
     _log = Logger("XmppConnection") {
       // Allow the reconnection policy to perform reconnections by itself
@@ -234,11 +234,8 @@ class XmppConnection {
   void registerFeatureNegotiators(List<XmppFeatureNegotiatorBase> negotiators) {
     for (final negotiator in negotiators) {
       negotiator.register(NegotiatorAttributes(sendRawXML, () => _connectionSettings));
-      _featureNegotiators.add(negotiator);
+      _featureNegotiators[negotiator.id] = negotiator;
     }
-
-    // Sort negotiators according to priority
-    _featureNegotiators.sort((a, b) => b.priority.compareTo(a.priority));
 
     _log.finest('Negotiators registered');
   }
@@ -564,21 +561,24 @@ class XmppConnection {
   /// Returns true if we can still negotiate. Returns false if no negotiator is
   /// matching and ready.
   bool _isNegotiationPossible(List<XMLNode> features) {
-    return _getNextNegotiator(features) != null;
+    return _getNextNegotiator(features, log: false) != null;
   }
 
   /// Returns the next negotiator that matches [features]. Returns null if none can be
-  /// picked.
-  XmppFeatureNegotiatorBase? _getNextNegotiator(List<XMLNode> features) {
-    final matchingNegotiators = _featureNegotiators.where(
-      (XmppFeatureNegotiatorBase negotiator) {
-        _log.finest("Is ready: ${negotiator.state == NegotiatorState.ready}");
-        _log.finest("Matches: ${negotiator.matchesFeature(features)}");
-        return negotiator.state == NegotiatorState.ready && negotiator.matchesFeature(features);
-      }
-    ).toList();
+  /// picked. If [log] is true, then the list of matching negotiators will be logged.
+  XmppFeatureNegotiatorBase? _getNextNegotiator(List<XMLNode> features, {bool log = true}) {
+    final matchingNegotiators = _featureNegotiators.values
+      .where(
+        (XmppFeatureNegotiatorBase negotiator) {
+          return negotiator.state == NegotiatorState.ready && negotiator.matchesFeature(features);
+        }
+      )
+      .toList()
+      ..sort((a, b) => b.priority.compareTo(a.priority));
 
-    _log.finest('List of matching negotiators: ${matchingNegotiators.map((a) => a.toString())}');
+    if (log) {
+      _log.finest('List of matching negotiators: ${matchingNegotiators.map((a) => a.id)}');
+    }
     
     if (matchingNegotiators.isEmpty) return null;
 

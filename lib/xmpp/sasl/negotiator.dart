@@ -7,7 +7,7 @@ abstract class SaslNegotiator extends XmppFeatureNegotiatorBase {
   /// The name inside the <mechanism /> element
   final String mechanismName;
 
-  SaslNegotiator(int priority, this.mechanismName) : super(priority, true, saslXmlns);
+  SaslNegotiator(int priority, String id, this.mechanismName) : super(priority, true, saslXmlns, id);
   
   @override
   bool matchesFeature(List<XMLNode> features) {

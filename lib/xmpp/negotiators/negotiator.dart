@@ -33,13 +33,16 @@ abstract class XmppFeatureNegotiatorBase {
   /// The XMLNS the negotiator will negotiate
   final String negotiatingXmlns;
 
+  /// The Id of the negotiator
+  final String id;
+  
   /// The state the negotiator is currently in
   // TODO: Make private
   NegotiatorState state;
   
   late NegotiatorAttributes _attributes;
 
-  XmppFeatureNegotiatorBase(this.priority, this.sendStreamHeaderWhenDone, this.negotiatingXmlns)
+  XmppFeatureNegotiatorBase(this.priority, this.sendStreamHeaderWhenDone, this.negotiatingXmlns, this.id)
     : state = NegotiatorState.ready;
 
   /// Register the negotiator against a connection class by means of [attributes].

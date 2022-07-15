@@ -3,6 +3,7 @@ import "dart:convert";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/sasl/negotiator.dart";
 import "package:moxxyv2/xmpp/sasl/nonza.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 
 class SaslPlainAuthNonza extends SaslAuthNonza {
@@ -14,7 +15,7 @@ class SaslPlainAuthNonza extends SaslAuthNonza {
 class SaslPlainNegotiator extends SaslNegotiator {
   bool _authSent;
 
-  SaslPlainNegotiator() : _authSent = false, super(0, "PLAIN");
+  SaslPlainNegotiator() : _authSent = false, super(0, saslPlainNegotiator, "PLAIN");
 
   @override
   bool matchesFeature(List<XMLNode> features) {

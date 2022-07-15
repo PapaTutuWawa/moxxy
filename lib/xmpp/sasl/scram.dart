@@ -3,6 +3,7 @@ import "dart:math" show Random;
 
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/sasl/kv.dart";
 import "package:moxxyv2/xmpp/sasl/negotiator.dart";
@@ -37,6 +38,14 @@ String mechanismNameFromType(ScramHashType type) {
     case ScramHashType.sha1: return scramSha1Mechanism;
     case ScramHashType.sha256: return scramSha256Mechanism;
     case ScramHashType.sha512: return scramSha512Mechanism;
+  }
+}
+
+String namespaceFromType(ScramHashType type) {
+  switch (type) {
+    case ScramHashType.sha1: return saslScramSha1Negotiator;
+    case ScramHashType.sha256: return saslScramSha256Negotiator;
+    case ScramHashType.sha512: return saslScramSha512Negotiator;
   }
 }
 
@@ -78,11 +87,16 @@ class SaslScramNegotiator extends SaslNegotiator {
   ScramState _scramState;
   
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
-  SaslScramNegotiator(int priority, this.initialMessageNoGS2, this.clientNonce, this.hashType) :
+  SaslScramNegotiator(
+    int priority,
+    this.initialMessageNoGS2,
+    this.clientNonce,
+    this.hashType
+  ) :
     _hash = hashFromType(hashType),
     _serverSignature = "",
     _scramState = ScramState.preSent,
-    super(priority, mechanismNameFromType(hashType));
+    super(priority, namespaceFromType(hashType), mechanismNameFromType(hashType));
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
     final pbkdf2 = Pbkdf2(
