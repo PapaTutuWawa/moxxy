@@ -12,7 +12,8 @@ import "package:moxxyv2/xmpp/ping.dart";
 import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/sasl/authenticators.dart";
+import "package:moxxyv2/xmpp/sasl/plain.dart";
+import "package:moxxyv2/xmpp/sasl/scram.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 
@@ -236,7 +237,8 @@ void main() {
 
       conn.registerFeatureNegotiators(
         [
-          SaslAuthenticationNegotiator()
+          SaslPlainNegotiator(),
+          SaslScramNegotiator(10, "", "", ScramHashType.sha512)
         ]
       );
 
