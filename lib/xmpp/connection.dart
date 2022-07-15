@@ -186,12 +186,11 @@ class XmppConnection {
         sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
-        // TODO: Fix
-        isStreamFeatureSupported: (String feature) => false,
         isFeatureSupported: (feature) => _serverFeatures.contains(feature),
         getFullJID: () => _connectionSettings.jid.withResource(_resource),
         getSocket: () => _socket,
-        getConnection: () => this
+        getConnection: () => this,
+        getNegotiatorById: (id) => _featureNegotiators[id],
     ));
 
     final id = manager.getId();

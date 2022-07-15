@@ -7,6 +7,7 @@ import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/socket.dart";
 import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/stanza.dart";
 
 class XmppManagerAttributes {
@@ -28,9 +29,6 @@ class XmppManagerAttributes {
   /// (Maybe) Get a Manager attached to the connection by its Id.
   final XmppManagerBase? Function(String) getManagerById;
 
-  /// Returns true if a stream feature is supported
-  final bool Function(String) isStreamFeatureSupported;
-
   /// Returns true if a server feature is supported
   final bool Function(String) isFeatureSupported;
   
@@ -42,6 +40,8 @@ class XmppManagerAttributes {
 
   /// Return the [XmppConnection] the manager is registered against.
   final XmppConnection Function() getConnection;
+
+  final XmppFeatureNegotiatorBase? Function(String id) getNegotiatorById;
   
   XmppManagerAttributes({
       required this.sendStanza,
@@ -50,10 +50,10 @@ class XmppManagerAttributes {
       required this.sendEvent,
       required this.sendRawXml,
       required this.getConnectionSettings,
-      required this.isStreamFeatureSupported,
       required this.isFeatureSupported,
       required this.getFullJID,
       required this.getSocket,
       required this.getConnection,
+      required this.getNegotiatorById,
   });
 }

@@ -1,7 +1,9 @@
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
+import "package:moxxyv2/xmpp/stringxml.dart";
 
 class CSIActiveNonza extends XMLNode {
   CSIActiveNonza() : super(
@@ -21,6 +23,31 @@ class CSIInactiveNonza extends XMLNode {
   );
 }
 
+/// A Stub negotiator that is just for "intercepting" the stream feature.
+class CSINegotiator extends XmppFeatureNegotiatorBase {
+  CSINegotiator() : _supported = false, super(0, false, csiNegotiator, csiXmlns);
+
+  /// True if CSI is supported. False otherwise.
+  bool _supported;
+  bool get isSupported => _supported;
+  
+  @override
+  Future<void> negotiate(XMLNode node) async {
+    // negotiate is only called when the negotiator matched, meaning the server
+    // advertises CSI.
+    _supported = true;
+    state = NegotiatorState.done;
+  }
+
+  @override
+  void reset() {
+    _supported = false;
+
+    super.reset();
+  }
+}
+
+/// The manager requires a CSINegotiator to be registered as a feature negotiator.
 class CSIManager extends XmppManagerBase {
   bool _isActive;
 
@@ -31,6 +58,10 @@ class CSIManager extends XmppManagerBase {
 
   @override
   String getName() => "CSIManager";
+
+  bool _supported() {
+    return (getAttributes().getNegotiatorById(csiNegotiator)! as CSINegotiator).isSupported;
+  }
   
   /// To be called after a stream has been resumed as CSI does not
   /// survive a stream resumption.
@@ -47,7 +78,7 @@ class CSIManager extends XmppManagerBase {
     _isActive = true;
 
     final attrs = getAttributes();
-    if (attrs.isStreamFeatureSupported(csiXmlns)) {
+    if (_supported()) {
       attrs.sendNonza(CSIActiveNonza());
     }
   }
@@ -57,7 +88,7 @@ class CSIManager extends XmppManagerBase {
     _isActive = false;
 
     final attrs = getAttributes();
-    if (attrs.isStreamFeatureSupported(csiXmlns)) {
+    if (_supported()) {
       attrs.sendNonza(CSIInactiveNonza());
     }
   }
