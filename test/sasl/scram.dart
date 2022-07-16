@@ -5,6 +5,8 @@ import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
 
+import "../helpers/xmpp.dart";
+
 import "package:test/test.dart";
 import "package:hex/hex.dart";
 
@@ -25,6 +27,7 @@ final scramSha1StreamFeatures = XMLNode(
 );
 
 void main() {
+  final fakeSocket = StubTCPSocket(play: []);
   test("Test SASL SCRAM-SHA-1", () async {
       final negotiator = SaslScramNegotiator(0, "n=user,r=fyko+d2lbbFgONRv9qkxdawL", "fyko+d2lbbFgONRv9qkxdawL", ScramHashType.sha1);
       negotiator.register(
@@ -35,6 +38,7 @@ void main() {
           (_) => null,
           (_) => null,
           () => JID.fromString("user@server"),
+          () => fakeSocket,
         )
       );
 
@@ -96,6 +100,7 @@ void main() {
           (_) => null,
           (_) => null,
           () => JID.fromString("user@server"),
+          () => fakeSocket,
         )
       );
 
@@ -115,6 +120,7 @@ void main() {
           (_) => null,
           (_) => null,
           () => JID.fromString("user@server"),
+          () => fakeSocket,
         )
       );
 

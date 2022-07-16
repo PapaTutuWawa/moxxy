@@ -2,6 +2,7 @@ import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/settings.dart";
+import "package:moxxyv2/xmpp/socket.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 
@@ -25,6 +26,7 @@ class NegotiatorAttributes {
   final XmppManagerBase? Function(String id) getManagerById;
   /// Returns the full JID of the current account
   final JID Function() getFullJID;
+  final BaseSocketWrapper Function() getSocket;
 
   const NegotiatorAttributes(
     this.sendNonza,
@@ -33,6 +35,7 @@ class NegotiatorAttributes {
     this.getNegotiatorById,
     this.getManagerById,
     this.getFullJID,
+    this.getSocket,
   );
 }
 

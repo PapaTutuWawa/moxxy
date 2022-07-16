@@ -6,3 +6,4 @@ const csiNegotiator = 'im.moxxy.xeps.csi';
 const rosterNegotiator = 'im.moxxy.core.roster';
 const resourceBindingNegotiator = 'im.moxxy.core.resource';
 const streamManagementNegotiator = 'im.moxxy.xeps.sm';
+const startTlsNegotiator = 'im.moxxy.core.starttls';

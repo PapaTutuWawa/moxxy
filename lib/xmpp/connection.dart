@@ -57,13 +57,6 @@ class StreamHeaderNonza extends XMLNode {
     );
 }
 
-class StartTLSNonza extends XMLNode {
-  StartTLSNonza() : super.xmlns(
-    tag: "starttls",
-    xmlns: startTlsXmlns
-  );
-}
-
 class XmppConnectionResult {
   final bool success;
   // NOTE: [reason] is not human-readable, but the type of SASL error.
@@ -240,6 +233,7 @@ class XmppConnection {
           (id) => _featureNegotiators[id],
           (id) => _xmppManagers[id],
           () => _connectionSettings.jid.withResource(_resource),
+          () => _socket,
         ),
       );
       _featureNegotiators[negotiator.id] = negotiator;
