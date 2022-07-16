@@ -1,7 +1,9 @@
 import "package:moxxyv2/shared/helpers.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/managers/base.dart";
 
 /// The state a negotiator is currently in
 enum NegotiatorState {
@@ -19,8 +21,19 @@ class NegotiatorAttributes {
   final void Function(XMLNode nonza) sendNonza;
   final ConnectionSettings Function() getConnectionSettings;
   final Future<void> Function(XmppEvent event) sendEvent;
-  
-  const NegotiatorAttributes(this.sendNonza, this.getConnectionSettings, this.sendEvent);
+  final XmppFeatureNegotiatorBase? Function(String id) getNegotiatorById;
+  final XmppManagerBase? Function(String id) getManagerById;
+  /// Returns the full JID of the current account
+  final JID Function() getFullJID;
+
+  const NegotiatorAttributes(
+    this.sendNonza,
+    this.getConnectionSettings,
+    this.sendEvent,
+    this.getNegotiatorById,
+    this.getManagerById,
+    this.getFullJID,
+  );
 }
 
 abstract class XmppFeatureNegotiatorBase {

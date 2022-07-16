@@ -32,6 +32,9 @@ void main() {
           (XMLNode _) {},
           () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
           (_) async {},
+          (_) => null,
+          (_) => null,
+          () => JID.fromString("user@server"),
         )
       );
 
@@ -90,6 +93,9 @@ void main() {
           (XMLNode _) {},
           () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
           (_) async {},
+          (_) => null,
+          (_) => null,
+          () => JID.fromString("user@server"),
         )
       );
 
@@ -106,6 +112,9 @@ void main() {
           (XMLNode _) {},
           () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
           (_) async {},
+          (_) => null,
+          (_) => null,
+          () => JID.fromString("user@server"),
         )
       );
 

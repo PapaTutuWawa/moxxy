@@ -17,6 +17,8 @@ import "package:moxxyv2/xmpp/negotiators/sasl/plain.dart";
 import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 
 import "helpers/logging.dart";
 import "helpers/xmpp.dart";
@@ -237,13 +239,14 @@ void main() {
           DiscoManager(),
           DiscoCacheManager(),
           PingManager(),
+          StreamManagementManager(),
       ]);
-
       conn.registerFeatureNegotiators(
         [
           SaslPlainNegotiator(),
           SaslScramNegotiator(10, "", "", ScramHashType.sha512),
           ResourceBindingNegotiator(),
+          StreamManagementNegotiator(),
         ]
       );
 

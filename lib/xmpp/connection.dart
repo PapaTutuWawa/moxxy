@@ -237,6 +237,9 @@ class XmppConnection {
           sendRawXML,
           () => _connectionSettings,
           _sendEvent,
+          (id) => _featureNegotiators[id],
+          (id) => _xmppManagers[id],
+          () => _connectionSettings.jid.withResource(_resource),
         ),
       );
       _featureNegotiators[negotiator.id] = negotiator;
