@@ -21,7 +21,6 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "helpers/logging.dart";
 import "helpers/xmpp.dart";
 
-import "package:logging/logging.dart";
 import "package:test/test.dart";
 
 /// Returns true if the roster manager triggeres an event for a given stanza

@@ -53,7 +53,7 @@ class RosterFeatureNegotiator extends XmppFeatureNegotiatorBase {
   bool get isSupported => _supported;
   
   @override
-  Future<void> negotiate(XMLNode node) async {
+  Future<void> negotiate(XMLNode nonza) async {
     // negotiate is only called when the negotiator matched, meaning the server
     // advertises roster versioning.
     _supported = true;
