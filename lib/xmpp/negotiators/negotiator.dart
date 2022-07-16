@@ -1,4 +1,5 @@
 import "package:moxxyv2/shared/helpers.dart";
+import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 
@@ -17,8 +18,9 @@ enum NegotiatorState {
 class NegotiatorAttributes {
   final void Function(XMLNode nonza) sendNonza;
   final ConnectionSettings Function() getConnectionSettings;
+  final Future<void> Function(XmppEvent event) sendEvent;
   
-  const NegotiatorAttributes(this.sendNonza, this.getConnectionSettings);
+  const NegotiatorAttributes(this.sendNonza, this.getConnectionSettings, this.sendEvent);
 }
 
 abstract class XmppFeatureNegotiatorBase {

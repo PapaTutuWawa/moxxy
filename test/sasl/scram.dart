@@ -30,7 +30,8 @@ void main() {
       negotiator.register(
         NegotiatorAttributes(
           (XMLNode _) {},
-          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true)
+          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+          (_) async {},
         )
       );
 
@@ -87,7 +88,8 @@ void main() {
       negotiator.register(
         NegotiatorAttributes(
           (XMLNode _) {},
-          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true)
+          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+          (_) async {},
         )
       );
 
@@ -102,7 +104,8 @@ void main() {
       negotiator.register(
         NegotiatorAttributes(
           (XMLNode _) {},
-          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true)
+          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+          (_) async {},
         )
       );
 

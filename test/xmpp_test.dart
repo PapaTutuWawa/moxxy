@@ -12,6 +12,7 @@ import "package:moxxyv2/xmpp/ping.dart";
 import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
+import "package:moxxyv2/xmpp/negotiators/resource_binding.dart";
 import "package:moxxyv2/xmpp/negotiators/sasl/plain.dart";
 import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
@@ -239,7 +240,8 @@ void main() {
       conn.registerFeatureNegotiators(
         [
           SaslPlainNegotiator(),
-          SaslScramNegotiator(10, "", "", ScramHashType.sha512)
+          SaslScramNegotiator(10, "", "", ScramHashType.sha512),
+          ResourceBindingNegotiator(),
         ]
       );
 

@@ -232,7 +232,13 @@ class XmppConnection {
   /// Register a list of negotiator with the connection.
   void registerFeatureNegotiators(List<XmppFeatureNegotiatorBase> negotiators) {
     for (final negotiator in negotiators) {
-      negotiator.register(NegotiatorAttributes(sendRawXML, () => _connectionSettings));
+      negotiator.register(
+        NegotiatorAttributes(
+          sendRawXML,
+          () => _connectionSettings,
+          _sendEvent,
+        ),
+      );
       _featureNegotiators[negotiator.id] = negotiator;
     }
 
