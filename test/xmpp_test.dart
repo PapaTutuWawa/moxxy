@@ -21,6 +21,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "helpers/logging.dart";
 import "helpers/xmpp.dart";
 
+import "package:logging/logging.dart";
 import "package:test/test.dart";
 
 /// Returns true if the roster manager triggeres an event for a given stanza
@@ -231,11 +232,13 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
-      conn.registerManager(DiscoCacheManager());
-      conn.registerManager(PresenceManager());
-      conn.registerManager(PingManager());
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          DiscoCacheManager(),
+          PingManager(),
+      ]);
 
       conn.registerFeatureNegotiators(
         [
@@ -251,7 +254,6 @@ void main() {
       });
   });
 
-  /*
   test("Test a failed SASL auth", () async {
       final fakeSocket = StubTCPSocket(
         play: [
@@ -315,19 +317,25 @@ void main() {
       bool receivedEvent = false;
       final XmppConnection conn = XmppConnection(TestingReconnectionPolicy(), socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
-          jid: JID.fromString("polynomdivision@test.server"),
-          password: "aaaa",
-          useDirectTLS: true,
-          allowPlainAuth: true
+        jid: JID.fromString("polynomdivision@test.server"),
+        password: "aaaa",
+        useDirectTLS: true,
+        allowPlainAuth: true
       ));
-      conn.registerManager(PresenceManager());
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
+      conn.registerManagers([
+        PresenceManager(),
+        RosterManager(),
+        DiscoManager(),
+        PingManager(),
+      ]);
+      conn.registerFeatureNegotiators([
+        SaslPlainNegotiator()
+      ]);
 
       conn.asBroadcastStream().listen((event) {
-          if (event is AuthenticationFailedEvent && event.saslError == "not-authorized") {
-            receivedEvent = true;
-          }
+        if (event is AuthenticationFailedEvent && event.saslError == "not-authorized") {
+          receivedEvent = true;
+        }
       });
 
       await conn.connect();
@@ -404,9 +412,15 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
-      conn.registerManager(PresenceManager());
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          PingManager(),
+      ]);
+      conn.registerFeatureNegotiators([
+        SaslPlainNegotiator()
+      ]);
 
       conn.asBroadcastStream().listen((event) {
           if (event is AuthenticationFailedEvent && event.saslError == "mechanism-too-weak") {
@@ -492,9 +506,16 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: false
       ));
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
-      conn.registerManager(PresenceManager());
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          PingManager(),
+      ]);
+      conn.registerFeatureNegotiators([
+        SaslPlainNegotiator(),
+        SaslScramNegotiator(10, "", "", ScramHashType.sha1),
+      ]);
 
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
@@ -520,11 +541,11 @@ void main() {
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
-              isStreamFeatureSupported: (_) => false,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
-              getConnection: () => XmppConnection(TestingReconnectionPolicy())
+              getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+              getNegotiatorById: (_) => null,
           ));
 
           // NOTE: Based on https://gultsch.de/gajim_roster_push_and_message_interception.html
@@ -549,5 +570,4 @@ void main() {
           expect(result2, true, reason: "Roster pushes should be accepted if the bare JIDs are the same");
       });
   });
-  */
 }

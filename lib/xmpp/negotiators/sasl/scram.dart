@@ -1,6 +1,7 @@
 import "dart:convert";
 import "dart:math" show Random;
 
+import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
@@ -185,6 +186,9 @@ class SaslScramNegotiator extends SaslNegotiator {
         break;
       case ScramState.initialMessageSent:
         if (nonza.tag == "failure") {
+          final error = nonza.children.first.tag;
+          attributes.sendEvent(AuthenticationFailedEvent(error));
+
           state = NegotiatorState.error;
           _scramState = ScramState.error;
           return;
@@ -206,6 +210,9 @@ class SaslScramNegotiator extends SaslNegotiator {
           // NOTE: This assumes that the string is always "v=..." and contains no other parameters
           final signature = parseKeyValue(utf8.decode(base64.decode(nonza.innerText())));
           if (signature["v"]! != _serverSignature) {
+            // TODO: Notify of a signature mismatch
+            //final error = nonza.children.first.tag;
+            //attributes.sendEvent(AuthenticationFailedEvent(error));
             _scramState = ScramState.error;
             state = NegotiatorState.error;
             return;
@@ -214,7 +221,10 @@ class SaslScramNegotiator extends SaslNegotiator {
           state = NegotiatorState.done;
           return;
         }
-        
+
+        // We assume it's a <failure />
+        final error = nonza.children.first.tag;
+        attributes.sendEvent(AuthenticationFailedEvent(error));
         _scramState = ScramState.error;
         state = NegotiatorState.error;
         return;

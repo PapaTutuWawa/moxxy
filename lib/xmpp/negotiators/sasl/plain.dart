@@ -1,5 +1,6 @@
 import "dart:convert";
 
+import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
@@ -38,6 +39,10 @@ class SaslPlainNegotiator extends SaslNegotiator {
       if (tag == "success") {
         state = NegotiatorState.done;
       } else {
+        // We assume it's a <failure/>
+        final error = nonza.children.first.tag;
+        attributes.sendEvent(AuthenticationFailedEvent(error));
+        
         state = NegotiatorState.error;
       }
     }
