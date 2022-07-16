@@ -13,6 +13,7 @@ import "package:moxxyv2/xmpp/negotiators/sasl/nonza.dart";
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
 import "package:saslprep/saslprep.dart";
+import "package:logging/logging.dart";
 
 // NOTE: Inspired by https://github.com/vukoye/xmpp_dart/blob/3b1a0588562b9e591488c99d834088391840911d/lib/src/features/sasl/ScramSaslHandler.dart
 
@@ -86,6 +87,8 @@ class SaslScramNegotiator extends SaslNegotiator {
 
   // The internal state for performing the negotiation
   ScramState _scramState;
+
+  final Logger _log;
   
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
   SaslScramNegotiator(
@@ -97,6 +100,7 @@ class SaslScramNegotiator extends SaslNegotiator {
     _hash = hashFromType(hashType),
     _serverSignature = "",
     _scramState = ScramState.preSent,
+    _log = Logger("SaslScramNegotiator(${mechanismNameFromType(hashType)})"),
     super(priority, namespaceFromType(hashType), mechanismNameFromType(hashType));
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
@@ -168,6 +172,20 @@ class SaslScramNegotiator extends SaslNegotiator {
     return clientFinalMessageBare + ",p=" + base64.encode(clientProof);
   }
 
+  @override
+  bool matchesFeature(List<XMLNode> features) {
+    if (super.matchesFeature(features)) {
+      if (!attributes.getSocket().isSecure()) {
+        _log.warning("Refusing to match SASL feature due to unsecured connection");
+        return false;
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+  
   @override
   Future<void> negotiate(XMLNode nonza) async {
     switch (_scramState) {

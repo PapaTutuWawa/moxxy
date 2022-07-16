@@ -6,6 +6,7 @@ import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/negotiators/sasl/negotiator.dart";
 import "package:moxxyv2/xmpp/negotiators/sasl/nonza.dart";
+import "package:logging/logging.dart";
 
 class SaslPlainAuthNonza extends SaslAuthNonza {
   SaslPlainAuthNonza(String username, String password) : super(
@@ -16,13 +17,27 @@ class SaslPlainAuthNonza extends SaslAuthNonza {
 class SaslPlainNegotiator extends SaslNegotiator {
   bool _authSent;
 
-  SaslPlainNegotiator() : _authSent = false, super(0, saslPlainNegotiator, "PLAIN");
+  final Logger _log;
+  
+  SaslPlainNegotiator()
+    : _authSent = false,
+      _log = Logger("SaslPlainNegotiator"),
+      super(0, saslPlainNegotiator, "PLAIN");
 
   @override
   bool matchesFeature(List<XMLNode> features) {
     if (!attributes.getConnectionSettings().allowPlainAuth) return false;
     
-    return super.matchesFeature(features);
+    if (super.matchesFeature(features)) {
+      if (!attributes.getSocket().isSecure()) {
+        _log.warning("Refusing to match SASL feature due to unsecured connection");
+        return false;
+      }
+
+      return true;
+    }
+
+    return false;
   }
 
   @override
