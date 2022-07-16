@@ -23,6 +23,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 
+import "package:meta/meta.dart";
 import "package:uuid/uuid.dart";
 import "package:synchronized/synchronized.dart";
 import "package:logging/logging.dart";
@@ -165,6 +166,11 @@ class XmppConnection {
   }
 
   List<String> get serverFeatures => _serverFeatures;
+
+  /// Return the registered feature negotiator that has id [id]. Returns null if
+  /// none can be found.
+  @visibleForTesting
+  XmppFeatureNegotiatorBase? getNegotiatorById(String id) => _featureNegotiators[id];
   
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
   /// [sortHandlers] should NOT be touched. It specified if the handler priorities
@@ -183,7 +189,7 @@ class XmppConnection {
         getFullJID: () => _connectionSettings.jid.withResource(_resource),
         getSocket: () => _socket,
         getConnection: () => this,
-        getNegotiatorById: (id) => _featureNegotiators[id],
+        getNegotiatorById: getNegotiatorById,
     ));
 
     final id = manager.getId();
@@ -458,7 +464,7 @@ class XmppConnection {
       }
     }
   }
-
+  
   /// Sets the routing state and logs the change
   void _updateRoutingState(RoutingState state) {
     _log.finest("Updating _routingState from $_routingState to $state");
@@ -571,12 +577,13 @@ class XmppConnection {
   /// Returns true if we can still negotiate. Returns false if no negotiator is
   /// matching and ready.
   bool _isNegotiationPossible(List<XMLNode> features) {
-    return _getNextNegotiator(features, log: false) != null;
+    return getNextNegotiator(features, log: false) != null;
   }
 
   /// Returns the next negotiator that matches [features]. Returns null if none can be
   /// picked. If [log] is true, then the list of matching negotiators will be logged.
-  XmppFeatureNegotiatorBase? _getNextNegotiator(List<XMLNode> features, {bool log = true}) {
+  @visibleForTesting
+  XmppFeatureNegotiatorBase? getNextNegotiator(List<XMLNode> features, {bool log = true}) {
     final matchingNegotiators = _featureNegotiators.values
       .where(
         (XmppFeatureNegotiatorBase negotiator) {
@@ -627,7 +634,7 @@ class XmppConnection {
 
           await _onNegotiationsDone();
         } else {
-          _currentNegotiator = _getNextNegotiator(_streamFeatures);
+          _currentNegotiator = getNextNegotiator(_streamFeatures);
           _log.finest("Chose ${_currentNegotiator!.id} as next negotiator");
 
           final fakeStanza = XMLNode(
@@ -650,7 +657,7 @@ class XmppConnection {
         await _onNegotiationsDone();
       } else {
         _log.finest('Picking new negotiator...');
-        _currentNegotiator = _getNextNegotiator(_streamFeatures);
+        _currentNegotiator = getNextNegotiator(_streamFeatures);
         _log.finest("Chose $_currentNegotiator as next negotiator");
         final fakeStanza = XMLNode(
           tag: "stream:features",
@@ -663,7 +670,7 @@ class XmppConnection {
   }
   
   /// Called whenever we receive data that has been parsed as XML.
-  void handleXmlStream(XMLNode node) async {
+  Future<void> handleXmlStream(XMLNode node) async {
     switch (_routingState) {
       case RoutingState.negotiating:
         if (_currentNegotiator != null) {
@@ -682,7 +689,7 @@ class XmppConnection {
             // Mandatory features are done but can we still negotiate more?
             if (_isNegotiationPossible(node.children)) {// We can still negotiate features, so do that.
               _log.finest('All required stream features done! Continuing negotiation');
-              _currentNegotiator = _getNextNegotiator(node.children);
+              _currentNegotiator = getNextNegotiator(node.children);
               _log.finest("Chose $_currentNegotiator as next negotiator");
               await _currentNegotiator!.negotiate(node);
               await _checkCurrentNegotiator();
@@ -697,7 +704,7 @@ class XmppConnection {
               return;
             }
 
-            _currentNegotiator = _getNextNegotiator(node.children);
+            _currentNegotiator = getNextNegotiator(node.children);
             _log.finest("Chose $_currentNegotiator as next negotiator");
             await _currentNegotiator!.negotiate(node);
             await _checkCurrentNegotiator();
