@@ -62,7 +62,7 @@ class StreamManagementManager extends XmppManagerBase {
       acks = _pendingAcks;
     });
 
-    return acks;;
+    return acks;
   }
 
   /// Returns the amount of stanzas waiting to get acked
