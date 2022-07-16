@@ -385,6 +385,7 @@ class XmppConnection {
   /// [stanza] has none.
   /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
   /// none.
+  // TODO: if addId = false, the function crashes.
   Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true, bool retransmitted = false }) async {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
@@ -597,12 +598,19 @@ class XmppConnection {
     return matchingNegotiators.first;
   }
 
+  Future<void> _onNegotiationsDone() async {
+    unawaited(getPresenceManager().sendInitialPresence());
+
+    // TODO: Perform a disco sweep if we don't know anything about the server
+    //       and we did not resume.
+  }
+  
   /// To be called after _currentNegotiator!.negotiate(..) has been called. Checks the
   /// state of the negotiator and picks the next negotiatior, ends negotiation or
   /// waits, depending on what the negotiator did.
   Future<void> _checkCurrentNegotiator() async {
     if (_currentNegotiator!.state == NegotiatorState.done) {
-      _log.finest("Negotiator done");
+      _log.finest("Negotiator ${_currentNegotiator!.id} done");
 
       if (_currentNegotiator!.sendStreamHeaderWhenDone) {
         _currentNegotiator = null;
@@ -617,10 +625,13 @@ class XmppConnection {
         _currentNegotiator = null;
 
         if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
+          _log.finest("Negotiations done!");
           _updateRoutingState(RoutingState.handleStanzas);
+
+          await _onNegotiationsDone();
         } else {
           _currentNegotiator = _getNextNegotiator(_streamFeatures);
-          _log.finest("Chose $_currentNegotiator as next negotiator");
+          _log.finest("Chose ${_currentNegotiator!.id} as next negotiator");
 
           final fakeStanza = XMLNode(
             tag: "stream:features",
@@ -637,9 +648,11 @@ class XmppConnection {
 
       if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
         _log.finest('Negotiations done!');
+
         _updateRoutingState(RoutingState.handleStanzas);
+        await _onNegotiationsDone();
       } else {
-        _log.finest('Picking new negotiator');
+        _log.finest('Picking new negotiator...');
         _currentNegotiator = _getNextNegotiator(_streamFeatures);
         _log.finest("Chose $_currentNegotiator as next negotiator");
         final fakeStanza = XMLNode(
@@ -711,6 +724,9 @@ class XmppConnection {
     // Specific event handling
     if (event is AckRequestResponseTimeoutEvent) {
       _reconnectionPolicy.onFailure();
+    } else if (event is ResourceBindingSuccessEvent) {
+      _log.finest("Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}");
+      _resource = event.resource;
     }
     
     for (var manager in _xmppManagers.values) {

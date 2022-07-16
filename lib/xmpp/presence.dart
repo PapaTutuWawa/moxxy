@@ -76,7 +76,8 @@ class PresenceManager extends XmppManagerBase {
   /// Sends the initial presence to enable receiving messages.
   Future<void> sendInitialPresence() async {
     final attrs = getAttributes();
-    attrs.sendStanza(Stanza.presence(
+    attrs.sendNonza(
+      Stanza.presence(
         from: attrs.getFullJID().toString(),
         children: [
           XMLNode(
@@ -93,7 +94,8 @@ class PresenceManager extends XmppManagerBase {
             }
           )
         ]
-    ));
+      )
+    );
   }
 
   /// Send an unavailable presence with no 'to' attribute.
