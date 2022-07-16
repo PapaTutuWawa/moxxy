@@ -5,11 +5,21 @@ import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
 
 import "../helpers/xmpp.dart";
 
 import "package:test/test.dart";
+
+class MockedCSINegotiator extends CSINegotiator {
+  MockedCSINegotiator(this._isSupported);
+
+  final bool _isSupported;
+  
+  @override
+  bool get isSupported => _isSupported;
+}
 
 void main() {
   group("Test the XEP-0352 implementation", () {
@@ -34,8 +44,7 @@ void main() {
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
               getConnection: () => XmppConnection(TestingReconnectionPolicy()),
-              // TODO:
-              getNegotiatorById: (id) => null,
+              getNegotiatorById: (id) => id == csiNegotiator ? MockedCSINegotiator(false) : null,
             )
           );
 
@@ -64,8 +73,7 @@ void main() {
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
               getConnection: () => XmppConnection(TestingReconnectionPolicy()),
-              // TODO
-              getNegotiatorById: (id) => null,
+              getNegotiatorById: (id) => id == csiNegotiator ? MockedCSINegotiator(true) : null,
           ));
 
           csi.setActive();
