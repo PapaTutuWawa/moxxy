@@ -30,11 +30,12 @@ void main() {
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
-              isStreamFeatureSupported: (_) => false,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
-              getConnection: () => XmppConnection(TestingReconnectionPolicy())
+              getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+              // TODO:
+              getNegotiatorById: (id) => null,
             )
           );
 
@@ -59,11 +60,12 @@ void main() {
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
-              isStreamFeatureSupported: (xmlns) => xmlns == csiXmlns,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
-              getConnection: () => XmppConnection(TestingReconnectionPolicy())
+              getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+              // TODO
+              getNegotiatorById: (id) => null,
           ));
 
           csi.setActive();

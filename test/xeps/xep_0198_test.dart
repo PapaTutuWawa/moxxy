@@ -42,11 +42,11 @@ XmppManagerAttributes mkAttributes(void Function(Stanza) callback) {
       useDirectTLS: true,
       allowPlainAuth: false,
     ),
-    isStreamFeatureSupported: (feat) => false,
     isFeatureSupported: (_) => false,
     getFullJID: () => JID.fromString("hallo@example.server/uwu"),
     getSocket: () => StubTCPSocket(play: []),
-    getConnection: () => XmppConnection(TestingReconnectionPolicy())
+    getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+    getNegotiatorById: (id) => null,
   );
 }
 

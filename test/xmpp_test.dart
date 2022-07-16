@@ -40,11 +40,12 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
         allowPlainAuth: false,
       ),
       getManagerById: (_) => null,
-      isStreamFeatureSupported: (_) => false,
       isFeatureSupported: (_) => false,
       getFullJID: () => JID.fromString("$bareJid/$resource"),
       getSocket: () => StubTCPSocket(play: []),
-      getConnection: () => XmppConnection(TestingReconnectionPolicy())
+      getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+      // TODO
+      getNegotiatorById: (id) => null,
   ));
 
   final stanza = Stanza.fromXMLNode(XMLNode.fromString(stanzaString));
