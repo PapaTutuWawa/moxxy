@@ -201,6 +201,7 @@ Future<void> entrypoint() async {
       ResourceBindingNegotiator(),
       StartTlsNegotiator(),
       StreamManagementNegotiator(),
+      CSINegotiator(),
       SaslScramNegotiator(10, "", "", ScramHashType.sha512),
       SaslScramNegotiator(9, "", "", ScramHashType.sha256),
       SaslScramNegotiator(8, "", "", ScramHashType.sha1),
