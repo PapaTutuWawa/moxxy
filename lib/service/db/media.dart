@@ -1,9 +1,9 @@
-import "package:isar/isar.dart";
+import 'package:isar/isar.dart';
 
-part "media.g.dart";
+part 'media.g.dart';
 
 @Collection()
-@Name("SharedMedium")
+@Name('SharedMedium')
 class DBSharedMedium {
   int? id;
 

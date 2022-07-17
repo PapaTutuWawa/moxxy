@@ -1,5 +1,5 @@
-/// Sorts [toSort] using the i;octet collation defined by RFC 4790
-/// TODO: Maybe enforce utf8?
+/// A sort comparator using the i;octet collation defined by RFC 4790
+// TODO(Unknown): Maybe enforce utf8?
 int ioctetSortComparator(String a, String b) {
   if (a.isEmpty && b.isEmpty) {
     return 0;
@@ -17,7 +17,7 @@ int ioctetSortComparator(String a, String b) {
     return ioctetSortComparator(a.substring(1), b.substring(1));
   }
 
-  // TODO: Is this correct?
+  // TODO(Unknown): Is this correct?
   if (a.codeUnitAt(0) < b.codeUnitAt(0)) {
     return -1;
   }

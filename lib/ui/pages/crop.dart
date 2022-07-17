@@ -1,15 +1,15 @@
-import "package:moxxyv2/ui/bloc/crop_bloc.dart";
-
-import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
-import "package:crop_your_image/crop_your_image.dart";
+import 'package:crop_your_image/crop_your_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 
 class CropPage extends StatelessWidget {
-  final CropController _controller;
 
   CropPage({ Key? key }) : _controller = CropController(), super(key: key);
-
-  static get route => MaterialPageRoute(builder: (_) => CropPage());
+  final CropController _controller;
+ 
+  // ignore: implicit_dynamic_type
+  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => CropPage());
   
   Widget _buildImageBody(BuildContext context, CropState state) {
     return Stack(
@@ -27,10 +27,9 @@ class CropPage extends StatelessWidget {
             },
             aspectRatio: 1,
             withCircleUi: true,
-            interactive: false,
             initialSize: 0.8,
-            baseColor: Colors.black
-          )
+            baseColor: Colors.black,
+          ),
         ),
         Positioned(
           left: 10,
@@ -40,11 +39,11 @@ class CropPage extends StatelessWidget {
             child: IconButton(
               icon: const Icon(
                 Icons.arrow_back,
-                size: 32.0
+                size: 32,
               ),
-              onPressed: () => Navigator.of(context).pop()
-            )
-          )
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
         ),
         Positioned(
           left: 0,
@@ -56,23 +55,23 @@ class CropPage extends StatelessWidget {
               Material(
                 color: const Color.fromRGBO(0, 0, 0, 0),
                 child: InkWell(
+                  onTap: _controller.crop,
                   child: const Icon(
                     Icons.check_circle_outline,
-                    size: 64.0
+                    size: 64,
                   ),
-                  onTap: _controller.crop
-                )
+                ),
               )
-            ]
-          )
+            ],
+          ),
         )
-      ]
+      ],
     );
   }
 
   Widget _buildLoadingBody() {
     return const Center(
-      child: CircularProgressIndicator()
+      child: CircularProgressIndicator(),
     );
   }
   
@@ -86,10 +85,10 @@ class CropPage extends StatelessWidget {
             return true;
           },
           child: SafeArea(
-            child: state.image != null ? _buildImageBody(context, state) : _buildLoadingBody()
-          )
+            child: state.image != null ? _buildImageBody(context, state) : _buildLoadingBody(),
+          ),
         );
-      }
+      },
     );
   }
 }

@@ -1,49 +1,52 @@
-import "dart:convert";
+import 'dart:convert';
 
-import "package:moxxyv2/xmpp/rfcs/rfc_4790.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
-
-import "package:cryptography/cryptography.dart";
+import 'package:cryptography/cryptography.dart';
+import 'package:moxxyv2/xmpp/rfcs/rfc_4790.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
 
 /// Calculates the Entitiy Capability hash according to XEP-0115 based on the
 /// disco information.
 Future<String> calculateCapabilityHash(DiscoInfo info, HashAlgorithm algorithm) async {
-  String s = "";
-  final List<String> identitiesSorted = info.identities.toList().map((i) => i.category + "/" + i.type + "/" + (i.lang ?? "") + "/" + (i.name ?? "")).toList();
+  final buffer = StringBuffer();
+  final identitiesSorted = info.identities
+    .map((Identity i) => '${i.category}/${i.type}/${i.lang ?? ""}/${i.name ?? ""}')
+    .toList();
+  // ignore: cascade_invocations
   identitiesSorted.sort(ioctetSortComparator);
-  s += identitiesSorted.join("<") + "<";
+  buffer.write('${identitiesSorted.join("<")}<');
 
-  List<String> featuresSorted = List.from(info.features);
-  featuresSorted.sort(ioctetSortComparator);
-  s += featuresSorted.join("<") + "<";
+  final featuresSorted = List<String>.from(info.features)
+    ..sort(ioctetSortComparator);
+  buffer.write('${featuresSorted.join("<")}<');
 
   if (info.extendedInfo.isNotEmpty) {
-    final sortedExt = info.extendedInfo..sort((a, b) => ioctetSortComparator(
-        a.getFieldByVar("FORM_TYPE")!.values.first,
-        b.getFieldByVar("FORM_TYPE")!.values.first
-      )
+    final sortedExt = info.extendedInfo
+      ..sort((a, b) => ioctetSortComparator(
+        a.getFieldByVar('FORM_TYPE')!.values.first,
+        b.getFieldByVar('FORM_TYPE')!.values.first,
+      ),
     );
 
     for (final ext in sortedExt) {
-      s += ext.getFieldByVar("FORM_TYPE")!.values.first + "<";
+      buffer.write('${ext.getFieldByVar("FORM_TYPE")!.values.first}<');
 
       final sortedFields = ext.fields..sort((a, b) => ioctetSortComparator(
           a.varAttr!,
-          b.varAttr!
-        )
+          b.varAttr!,
+        ),
       );
 
       for (final field in sortedFields) {
-        if (field.varAttr == "FORM_TYPE") continue;
+        if (field.varAttr == 'FORM_TYPE') continue;
 
-        s += field.varAttr! + "<";
+        buffer.write('${field.varAttr!}<');
         final sortedValues = field.values..sort(ioctetSortComparator);
         for (final value in sortedValues) {
-          s += value + "<";
+          buffer.write('$value<');
         }
       }
     }
   }
   
-  return base64.encode((await algorithm.hash(utf8.encode(s))).bytes);
+  return base64.encode((await algorithm.hash(utf8.encode(buffer.toString()))).bytes);
 }

@@ -1,32 +1,32 @@
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/managers/handlers.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
 XMLNode makeChatMarkerMarkable() {
   return XMLNode.xmlns(
-    tag: "markable",
-    xmlns: chatMarkersXmlns
+    tag: 'markable',
+    xmlns: chatMarkersXmlns,
   );
 }
 
 XMLNode makeChatMarker(String tag, String id) {
-  assert(["received", "displayed", "acknowledged"].contains(tag));
+  assert(['received', 'displayed', 'acknowledged'].contains(tag), 'Invalid chat marker');
   return XMLNode.xmlns(
     tag: tag,
     xmlns: chatMarkersXmlns,
-    attributes: { "id": id }
+    attributes: { 'id': id },
   );
 }
 
 class ChatMarkerManager extends XmppManagerBase {
   @override
-  String getName() => "ChatMarkerManager";
+  String getName() => 'ChatMarkerManager';
 
   @override
   String getId() => chatMarkerManager;
@@ -37,7 +37,7 @@ class ChatMarkerManager extends XmppManagerBase {
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
-      stanzaTag: "message",
+      stanzaTag: 'message',
       tagXmlns: chatMarkersXmlns,
       callback: _onMessage,
       // Before the message handler
@@ -49,16 +49,16 @@ class ChatMarkerManager extends XmppManagerBase {
     final marker = message.firstTagByXmlns(chatMarkersXmlns)!;
 
     // Handle the <markable /> explicitly
-    if (marker.tag == "markable") return state.copyWith(isMarkable: true);
+    if (marker.tag == 'markable') return state.copyWith(isMarkable: true);
     
-    if (!["received", "displayed", "acknowledged"].contains(marker.tag)) {
+    if (!['received', 'displayed', 'acknowledged'].contains(marker.tag)) {
       logger.warning("Unknown message marker '${marker.tag}' found.");
     } else {
       getAttributes().sendEvent(ChatMarkerEvent(
           from: JID.fromString(message.from!),
           type: marker.tag,
-          id: marker.attributes["id"]!,
-      ));
+          id: marker.attributes['id']! as String,
+      ),);
     }
 
     return state.copyWith(done: true);

@@ -1,18 +1,17 @@
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
-import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/models/conversation.dart";
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
-import "package:bloc/bloc.dart";
-import "package:freezed_annotation/freezed_annotation.dart";
-import "package:get_it/get_it.dart";
-import "package:moxplatform/moxplatform.dart";
-
-part "profile_state.dart";
-part "profile_event.dart";
-part "profile_bloc.freezed.dart";
+part 'profile_bloc.freezed.dart';
+part 'profile_event.dart';
+part 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ProfileBloc() : super(ProfileState()) {
@@ -29,36 +28,37 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           isSelfProfile: true,
           jid: event.jid!,
           avatarUrl: event.avatarUrl!,
-          displayName: event.displayName!
-        )
+          displayName: event.displayName!,
+        ),
       );
     } else {
       emit(
         state.copyWith(
           isSelfProfile: false,
-          conversation: event.conversation!
-        )
+          conversation: event.conversation,
+        ),
       );
     }
 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
         const NavigationDestination(
-          profileRoute
-        )
-      )
+          profileRoute,
+        ),
+      ),
     );
 
     if (event.isSelfProfile) {
+      // ignore: cast_nullable_to_non_nullable
       final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-        GetFeaturesCommand()
+        GetFeaturesCommand(),
       ) as GetFeaturesEvent;
 
       emit(
         state.copyWith(
           serverFeatures: result.serverFeatures,
           streamManagementSupported: result.supportsStreamManagement,
-        )
+        ),
       );
     }
   }
@@ -72,27 +72,27 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   Future<void> _onAvatarSet(AvatarSetEvent event, Emitter<ProfileState> emit) async {
     emit(
       state.copyWith(
-        avatarUrl: event.path
-      )
+        avatarUrl: event.path,
+      ),
     );
 
     GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
     
-    MoxplatformPlugin.handler.getDataSender().sendData(
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       SetAvatarCommand(
         path: event.path,
-        hash: event.hash
+        hash: event.hash,
       ),
-      awaitable: false
+      awaitable: false,
     );
   }
 
   Future<void> _onSetSubscriptionState(SetSubscriptionStateEvent event, Emitter<ProfileState> emit) async {
-    // TODO: Maybe already emit the state change to have it instant and debounce it until
-    //       everything else is done
-    MoxplatformPlugin.handler.getDataSender().sendData(
+    // TODO(Unknown): Maybe already emit the state change to have it instant and debounce it until
+    //                everything else is done
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
-      awaitable: false
+      awaitable: false,
     );
   }
 }

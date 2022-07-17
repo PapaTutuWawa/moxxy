@@ -1,10 +1,10 @@
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/managers/handlers.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
 enum ChatState {
   active,
@@ -19,7 +19,7 @@ class ChatStateManager extends XmppManagerBase {
   List<String> getDiscoFeatures() => [ chatStateXmlns ];
 
   @override
-  String getName() => "ChatStateManager";
+  String getName() => 'ChatStateManager';
 
   @override
   String getId() => chatStateManager;
@@ -27,11 +27,11 @@ class ChatStateManager extends XmppManagerBase {
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
-      stanzaTag: "message",
+      stanzaTag: 'message',
       tagXmlns: chatStateXmlns,
       callback: _onChatStateReceived,
       // Before the message handler
-      priority: -99
+      priority: -99,
     )
   ];
 
@@ -40,23 +40,23 @@ class ChatStateManager extends XmppManagerBase {
     ChatState? chatState;
 
     switch (element.tag) {
-      case "active": {
+      case 'active': {
         chatState = ChatState.active;
       }
       break;
-      case "composing": {
+      case 'composing': {
         chatState = ChatState.composing;
       }
       break;
-      case "paused": {
+      case 'paused': {
         chatState = ChatState.paused;
       }
       break;
-      case "inactive": {
+      case 'inactive': {
         chatState = ChatState.inactive;
       }
       break;
-      case "gone": {
+      case 'gone': {
         chatState = ChatState.gone;
       }
       break;
@@ -70,15 +70,15 @@ class ChatStateManager extends XmppManagerBase {
 
   /// Send a chat state notification to [to]. You can specify the type attribute
   /// of the message with [messageType].
-  void sendChatState(ChatState state, String to, { String messageType = "chat" }) {
-    final tagName = state.toString().split(".").last;
+  void sendChatState(ChatState state, String to, { String messageType = 'chat' }) {
+    final tagName = state.toString().split('.').last;
 
     getAttributes().sendStanza(
       Stanza.message(
         to: to,
         type: messageType,
-        children: [ XMLNode.xmlns(tag: tagName, xmlns: chatStateXmlns) ]
-      )
+        children: [ XMLNode.xmlns(tag: tagName, xmlns: chatStateXmlns) ],
+      ),
     );
   }
 }

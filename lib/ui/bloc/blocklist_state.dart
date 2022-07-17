@@ -1,8 +1,8 @@
-part of "blocklist_bloc.dart";
+part of 'blocklist_bloc.dart';
 
 @freezed
 class BlocklistState with _$BlocklistState {
   factory BlocklistState({
-      @Default([]) blocklist
+    @Default(<String>[]) List<String> blocklist,
   }) = _BlocklistState;
 }

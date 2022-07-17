@@ -1,11 +1,11 @@
-part of "conversations_bloc.dart";
+part of 'conversations_bloc.dart';
 
 @freezed
 class ConversationsState with _$ConversationsState {
   factory ConversationsState({
-      @Default([]) List<Conversation> conversations,
-      @Default("") displayName,
-      @Default("") avatarUrl,
-      @Default("") jid
+    @Default(<Conversation>[]) List<Conversation> conversations,
+    @Default('') String displayName,
+    @Default('') String avatarUrl,
+    @Default('') String jid,
   }) = _ConversationsState;
 }

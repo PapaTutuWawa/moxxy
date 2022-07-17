@@ -1,22 +1,22 @@
-import "dart:async";
-import "dart:math";
+import 'dart:async';
+import 'dart:math';
 
-import "package:logging/logging.dart";
-import "package:meta/meta.dart";
+import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 
 abstract class ReconnectionPolicy {
-  /// Function provided by [XmppConnection] that allows the policy
+
+  ReconnectionPolicy() : _shouldAttemptReconnection = false;
+  /// Function provided by XmppConnection that allows the policy
   /// to perform a reconnection.
   void Function()? performReconnect;
-  /// Function provided by [XmppConnection] that allows the policy
+  /// Function provided by XmppConnection that allows the policy
   /// to say that we lost the connection.
   void Function()? triggerConnectionLost;
   /// Indicate if should try to reconnect.
   bool _shouldAttemptReconnection;
-
-  ReconnectionPolicy() : _shouldAttemptReconnection = false;
   
-  /// Called by [XmppConnection] to register the policy.
+  /// Called by XmppConnection to register the policy.
   void register(void Function() performReconnect, void Function() triggerConnectionLost) {
     this.performReconnect = performReconnect;
     this.triggerConnectionLost = triggerConnectionLost;
@@ -25,14 +25,14 @@ abstract class ReconnectionPolicy {
   }
   
   /// In case the policy depends on some internal state, this state must be reset
-  /// to an initial state when [reset] is called. In case timers run, they must be
+  /// to an initial state when reset is called. In case timers run, they must be
   /// terminated.
   void reset();
 
-  /// Called by the [XmppConnection] when the reconnection failed.
+  /// Called by the XmppConnection when the reconnection failed.
   void onFailure();
 
-  /// Caled by the [XmppConnection] when the reconnection was successful.
+  /// Caled by the XmppConnection when the reconnection was successful.
   void onSuccess();
 
   bool get shouldReconnect => _shouldAttemptReconnection;
@@ -46,14 +46,14 @@ abstract class ReconnectionPolicy {
 /// A simple reconnection strategy: Make the reconnection delays exponentially longer
 /// for every failed attempt.
 class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
-  int _counter;
-  Timer? _timer;
-  final Logger _log;
 
   ExponentialBackoffReconnectionPolicy()
   : _counter = 0,
-    _log = Logger("ExponentialBackoffReconnectionPolicy"),
+    _log = Logger('ExponentialBackoffReconnectionPolicy'),
     super();
+  int _counter;
+  Timer? _timer;
+  final Logger _log;
 
   /// Called when the backoff expired
   void _onTimerElapsed() {
@@ -64,7 +64,7 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
   
   @override
   void reset() {
-    _log.finest("Resetting internal state");
+    _log.finest('Resetting internal state');
     _counter = 0;
 
     if (_timer != null) {
@@ -75,7 +75,7 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
 
   @override
   void onFailure() {
-    _log.finest("Failure occured. Starting exponential backoff");
+    _log.finest('Failure occured. Starting exponential backoff');
     _counter++;
 
     if (_timer != null) {

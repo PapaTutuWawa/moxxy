@@ -1,25 +1,25 @@
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
-import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
 class CSIActiveNonza extends XMLNode {
   CSIActiveNonza() : super(
-    tag: "active",
-    attributes: {
-      "xmlns": csiXmlns
-    }
+    tag: 'active',
+    attributes: <String, String>{
+      'xmlns': csiXmlns
+    },
   );
 }
 
 class CSIInactiveNonza extends XMLNode {
   CSIInactiveNonza() : super(
-    tag: "inactive",
-    attributes: {
-      "xmlns": csiXmlns
-    }
+    tag: 'inactive',
+    attributes: <String, String>{
+      'xmlns': csiXmlns
+    },
   );
 }
 
@@ -49,15 +49,15 @@ class CSINegotiator extends XmppFeatureNegotiatorBase {
 
 /// The manager requires a CSINegotiator to be registered as a feature negotiator.
 class CSIManager extends XmppManagerBase {
-  bool _isActive;
 
-  CSIManager() : _isActive = true, super(); 
+  CSIManager() : _isActive = true, super();
+  bool _isActive; 
 
   @override
   String getId() => csiManager;
 
   @override
-  String getName() => "CSIManager";
+  String getName() => 'CSIManager';
 
   bool _supported() {
     return (getAttributes().getNegotiatorById(csiNegotiator)! as CSINegotiator).isSupported;

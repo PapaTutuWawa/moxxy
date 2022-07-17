@@ -1,9 +1,9 @@
-import "package:isar/isar.dart";
+import 'package:isar/isar.dart';
 
-part "roster.g.dart";
+part 'roster.g.dart';
 
 @Collection()
-@Name("RosterItem")
+@Name('RosterItem')
 class DBRosterItem {
   int? id;
 

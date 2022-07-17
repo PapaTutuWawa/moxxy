@@ -1,34 +1,34 @@
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0115.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0414.dart";
+import 'package:moxxyv2/xmpp/connection.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/managers/handlers.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0115.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0414.dart';
 
 class PresenceManager extends XmppManagerBase {
-  String? _capabilityHash;
 
   PresenceManager() : _capabilityHash = null, super();
+  String? _capabilityHash;
   
   @override
   String getId() => presenceManager;
 
   @override
-  String getName() => "PresenceManager";
+  String getName() => 'PresenceManager';
 
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
-      stanzaTag: "presence",
-      callback: _onPresence
+      stanzaTag: 'presence',
+      callback: _onPresence,
     )
   ];
 
@@ -38,10 +38,10 @@ class PresenceManager extends XmppManagerBase {
   Future<StanzaHandlerData> _onPresence(Stanza presence, StanzaHandlerData state) async {
     final attrs = getAttributes();
     switch (presence.type) {
-      case "subscribe":
-      case "subscribed": {
+      case 'subscribe':
+      case 'subscribed': {
         attrs.sendEvent(
-          SubscriptionRequestReceivedEvent(from: JID.fromString(presence.from!))
+          SubscriptionRequestReceivedEvent(from: JID.fromString(presence.from!)),
         );
         return state.copyWith(done: true);
       }
@@ -65,9 +65,9 @@ class PresenceManager extends XmppManagerBase {
       DiscoInfo(
         features: manager.getRegisteredDiscoFeatures(),
         identities: manager.getIdentities(),
-        extendedInfo: []
+        extendedInfo: [],
       ),
-      getHashByName("sha-1")!
+      getHashByName('sha-1')!,
     );
 
     return _capabilityHash!;
@@ -81,31 +81,30 @@ class PresenceManager extends XmppManagerBase {
         from: attrs.getFullJID().toString(),
         children: [
           XMLNode(
-            tag: "show",
-            text: "chat"
+            tag: 'show',
+            text: 'chat',
           ),
           XMLNode.xmlns(
-            tag: "c",
+            tag: 'c',
             xmlns: capsXmlns,
             attributes: {
-              "hash": "sha-1",
-              "node": "http://moxxy.im",
-              "ver": await getCapabilityHash()
-            }
+              'hash': 'sha-1',
+              'node': 'http://moxxy.im',
+              'ver': await getCapabilityHash()
+            },
           )
-        ]
-      )
+        ],
+      ),
     );
   }
 
   /// Send an unavailable presence with no 'to' attribute.
   void sendUnavailablePresence() {
-    final attrs = getAttributes();
-    attrs.sendStanza(
+    getAttributes().sendStanza(
       Stanza.presence(
-        type: "unavailable"
+        type: 'unavailable',
       ),
-      addFrom: StanzaFromType.full
+      addFrom: StanzaFromType.full,
     );
   }
   
@@ -113,10 +112,10 @@ class PresenceManager extends XmppManagerBase {
   void sendSubscriptionRequest(String to) {
     getAttributes().sendStanza(
       Stanza.presence(
-        type: "subscribe",
-        to: to
+        type: 'subscribe',
+        to: to,
       ),
-      addFrom: StanzaFromType.none
+      addFrom: StanzaFromType.none,
     );
   }
 
@@ -124,10 +123,10 @@ class PresenceManager extends XmppManagerBase {
   void sendUnsubscriptionRequest(String to) {
     getAttributes().sendStanza(
       Stanza.presence(
-        type: "unsubscribe",
-        to: to
+        type: 'unsubscribe',
+        to: to,
       ),
-      addFrom: StanzaFromType.none
+      addFrom: StanzaFromType.none,
     );
   }
 
@@ -135,10 +134,10 @@ class PresenceManager extends XmppManagerBase {
   void sendSubscriptionRequestApproval(String to) {
     getAttributes().sendStanza(
       Stanza.presence(
-        type: "subscribed",
-        to: to
+        type: 'subscribed',
+        to: to,
       ),
-      addFrom: StanzaFromType.none
+      addFrom: StanzaFromType.none,
     );
   }
 
@@ -146,10 +145,10 @@ class PresenceManager extends XmppManagerBase {
   void sendSubscriptionRequestRejection(String to) {
     getAttributes().sendStanza(
       Stanza.presence(
-        type: "unsubscribed",
-        to: to
+        type: 'unsubscribed',
+        to: to,
       ),
-      addFrom: StanzaFromType.none
+      addFrom: StanzaFromType.none,
     );
   }
 }

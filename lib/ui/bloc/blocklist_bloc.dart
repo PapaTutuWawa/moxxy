@@ -1,12 +1,11 @@
-import "package:moxxyv2/shared/commands.dart";
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
 
-import "package:bloc/bloc.dart";
-import "package:freezed_annotation/freezed_annotation.dart";
-import "package:moxplatform/moxplatform.dart";
-
-part "blocklist_state.dart";
-part "blocklist_event.dart";
-part "blocklist_bloc.freezed.dart";
+part 'blocklist_bloc.freezed.dart';
+part 'blocklist_event.dart';
+part 'blocklist_state.dart';
 
 class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   BlocklistBloc() : super(BlocklistState()) {
@@ -16,33 +15,35 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onJidUnblocked(UnblockedJidEvent event, Emitter<BlocklistState> emit) async {
-    MoxplatformPlugin.handler.getDataSender().sendData(
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       UnblockJidCommand(
-        jid: event.jid
-      )
+        jid: event.jid,
+      ),
     );
 
-    emit(
-      state.copyWith(blocklist: state.blocklist.where((i) => i != event.jid))
-    );
+    final blocklist = (state.blocklist as List<String>)
+      .where((String i) => i != event.jid)
+      .toList();
+    emit(state.copyWith(blocklist: blocklist));
   }
 
   Future<void> _onUnblockedAll(UnblockedAllEvent event, Emitter<BlocklistState> emit) async {
-    MoxplatformPlugin.handler.getDataSender().sendData(
-      UnblockAllCommand()
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      UnblockAllCommand(),
     );
 
     emit(
-      state.copyWith(blocklist: [])
+      state.copyWith(blocklist: <String>[]),
     );
   }
 
   Future<void> _onBlocklistPushed(BlocklistPushedEvent event, Emitter<BlocklistState> emit) async {
-    final blocklist = state.blocklist..add(event.added);
+    final blocklist = (state.blocklist as List<String>)
+      ..addAll(event.added);
     emit(
       state.copyWith(
-        blocklist: blocklist.where((i) => !event.removed.contains(i))
-      )
+        blocklist: blocklist.where((String i) => !event.removed.contains(i)).toList(),
+      ),
     );
   }
 }

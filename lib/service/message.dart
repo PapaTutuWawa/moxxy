@@ -1,16 +1,15 @@
-import "dart:collection";
+import 'dart:collection';
 
-import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/service/database.dart";
-
-import "package:logging/logging.dart";
-import "package:get_it/get_it.dart";
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 
 class MessageService {
+
+  MessageService() : _messageCache = HashMap(), _log = Logger('MessageService');
   final HashMap<String, List<Message>> _messageCache;
   final Logger _log;
-
-  MessageService() : _messageCache = HashMap(), _log = Logger("MessageService");
 
   /// Returns the messages for [jid], either from cache or from the database.
   Future<List<Message>> getMessagesForJid(String jid) async {
@@ -20,7 +19,7 @@ class MessageService {
 
     final messages = _messageCache[jid];
     if (messages == null) {
-      _log.warning("No messages found for $jid. Returning [].");
+      _log.warning('No messages found for $jid. Returning [].');
       return [];
     }
 
@@ -43,7 +42,7 @@ class MessageService {
       String? thumbnailData,
       String? thumbnailDimensions,
       String? originId,
-      String? quoteId
+      String? quoteId,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -60,7 +59,7 @@ class MessageService {
       thumbnailData: thumbnailData,
       thumbnailDimensions: thumbnailDimensions,
       originId: originId,
-      quoteId: quoteId
+      quoteId: quoteId,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents
@@ -78,7 +77,7 @@ class MessageService {
       String? mediaType,
       bool? received,
       bool? displayed,
-      bool? acked
+      bool? acked,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -86,7 +85,7 @@ class MessageService {
       mediaType: mediaType,
       received: received,
       displayed: displayed,
-      acked: acked
+      acked: acked,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

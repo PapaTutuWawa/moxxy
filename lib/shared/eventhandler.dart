@@ -1,4 +1,4 @@
-import "package:meta/meta.dart";
+import 'package:meta/meta.dart';
 
 typedef EventCallbackType<E> = Future<void> Function(E event, { dynamic extra});
 
@@ -13,7 +13,7 @@ abstract class EventMatcher<E> {
   /// Function to be called when an event matches the description.
   EventCallbackType<E> callback;
 
-  /// Function to be overriden by the matcher. Convert [event] to [T] and call the
+  /// Function to be overriden by the matcher. Convert [event] to T and call the
   /// callback.
   Future<void> call(dynamic event, dynamic extra);
 }
@@ -34,20 +34,20 @@ class EventTypeMatcher<T> extends EventMatcher<T> {
 /// A simple system for registering event handlers. Those handlers are checked whenever
 /// [run] is called.
 class EventHandler {
-  final List<EventMatcher> _matchers;
 
   EventHandler() : _matchers = List.empty(growable: true);
+  final List<EventMatcher> _matchers;
 
   void addMatchers(List<EventMatcher> matchers) => _matchers.addAll(matchers);
   void addMatcher(EventMatcher matcher) => _matchers.add(matcher);
 
-  /// Calls the callback of the first [EventMatcher] for which [matches] returns true.
+  /// Calls the callback of the first [EventMatcher] for which matches returns true.
   /// Returns true in that case. Otherwise, returns false if no [EventMatcher] matches.
   /// If extra is provided, it will be passed down to the callback if it is called.
-  bool run(dynamic event, { dynamic extra }) {
+  Future<bool> run(dynamic event, { dynamic extra }) async {
     for (final matcher in _matchers) {
       if (matcher.matches(event)) {
-        matcher.call(event, extra);
+        await matcher.call(event, extra);
         return true;
       }
     }

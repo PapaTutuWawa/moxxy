@@ -1,7 +1,6 @@
-import "package:moxxyv2/ui/service/download.dart";
-
-import "package:flutter/material.dart";
-import "package:get_it/get_it.dart";
+import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/ui/service/download.dart';
 
 // NOTE: Why do this? The reason is that if we did that in the [ChatBubble] widget, then
 //       we would have to redraw the entire widget everytime the progress updates. If
@@ -9,21 +8,21 @@ import "package:get_it/get_it.dart";
 //       update.
 
 class DownloadProgress extends StatefulWidget {
-  final int id;
 
   const DownloadProgress({ required this.id, Key? key }) : super(key: key);
+  final int id;
 
   @override
   // ignore: no_logic_in_create_state
-  _DownloadProgressState createState() => _DownloadProgressState(id: id);
+  DownloadProgressState createState() => DownloadProgressState(id: id);
 }
 
-class _DownloadProgressState extends State<DownloadProgress> {
+class DownloadProgressState extends State<DownloadProgress> {
+
+  DownloadProgressState({ required this.id }) : _progress = 0.0;
   final int id;
 
   double _progress;
-
-  _DownloadProgressState({ required this.id }) : _progress = 0.0;
 
   void _onProgressUpdate(double progress) {
     setState(() {

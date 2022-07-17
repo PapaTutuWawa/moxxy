@@ -1,11 +1,12 @@
 typedef UIDownloadCallback = void Function(double);
 
 /// This class handles download progress notifications from the backend and relays them
-/// to the correct [ChatBubble] instance so that it can update itself.
+/// to the correct ChatBubble instance so that it can update itself.
 class UIDownloadService {
-  final Map<int, UIDownloadCallback> _callbacks; // Database message id -> callback function
-
   UIDownloadService() : _callbacks = {};
+
+  // Database message id -> callback function
+  final Map<int, UIDownloadCallback> _callbacks;
 
   void registerCallback(int id, UIDownloadCallback callback) {
     _callbacks[id] = callback;
@@ -23,7 +24,7 @@ class UIDownloadService {
         _callbacks[id]!(progress);
       }
     } else {
-      // TODO: Log
+      // TODO(Unknown): Log
     }
   }
 }

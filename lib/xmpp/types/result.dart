@@ -3,10 +3,10 @@
 /// type indicates the return value, i.e. a result in a computation or the
 /// actual error description.
 class Result<S, V> {
-  final S _state;
-  final V _value;
 
   Result(S state, V value) : _state = state, _value = value;
+  final S _state;
+  final V _value;
 
   S getState() => _state;
   V getValue() => _value;

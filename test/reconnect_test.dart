@@ -1,11 +1,10 @@
-import "package:moxxyv2/service/connectivity.dart";
-import "package:moxxyv2/service/moxxmpp/reconnect.dart";
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/service/connectivity.dart';
+import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+import 'package:test/test.dart';
 
-import "package:get_it/get_it.dart";
-import "package:test/test.dart";
-import "package:connectivity_plus/connectivity_plus.dart";
-
-import "helpers/logging.dart";
+import 'helpers/logging.dart';
 
 void main() {
   initLogger();
@@ -14,9 +13,9 @@ void main() {
     ..setConnectivity(ConnectivityResult.wifi);
   GetIt.I.registerSingleton<ConnectivityService>(service);
 
-  test("Test the network-connection-aware reconnection policy", () {
-    bool performReconnectCalled = false;
-    bool triggerConnectionLostCalled = false;
+  test('Test the network-connection-aware reconnection policy', () {
+    var performReconnectCalled = false;
+    var triggerConnectionLostCalled = false;
     final policy = MoxxyReconnectionPolicy();
     policy.register(
       () {

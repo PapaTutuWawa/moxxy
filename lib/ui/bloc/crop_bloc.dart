@@ -1,23 +1,22 @@
-import "dart:async";
-import "dart:io";
-import "dart:typed_data";
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
+import 'package:bloc/bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
-import "package:get_it/get_it.dart";
-import "package:bloc/bloc.dart";
-
-part "crop_event.dart";
+part 'crop_event.dart';
 
 class CropBloc extends Bloc<CropEvent, CropState> {
-  late Completer<Uint8List?> _completer;
 
   CropBloc() : super(CropState(null)) {
     on<ImageCroppedEvent>(_onImageCropped);
     on<ResetImageEvent>(_onImageReset);
     on<SetImageEvent>(_onImageSet);
   }
+  late Completer<Uint8List?> _completer;
 
   Future<void> _onImageCropped(ImageCroppedEvent event, Emitter<CropState> emit) async {
     _completer.complete(event.image);
@@ -37,7 +36,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
   
   Future<void> _performCropping(String path) async {
     final file = File(path);
-    if (!await file.exists()) _completer.complete(null);
+    if (!file.existsSync()) _completer.complete(null);
 
     final bytes = await file.readAsBytes();
 
@@ -54,8 +53,8 @@ class CropBloc extends Bloc<CropEvent, CropState> {
     add(ResetImageEvent());
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
-        const NavigationDestination(cropRoute)
-      )
+        const NavigationDestination(cropRoute),
+      ),
     );   
     _performCropping(path);
 
@@ -65,14 +64,13 @@ class CropBloc extends Bloc<CropEvent, CropState> {
   /// User-callable function. Loads the image, navigates to the page
   /// and allows the user to crop the image. The future resolves when
   /// either an error occures or the image has been cropped.
-  /// [path] is the path to the file to load.
   Future<Uint8List?> cropImageWithData(Uint8List data) {
     _completer = Completer();
 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
-        const NavigationDestination(cropRoute)
-      )
+        const NavigationDestination(cropRoute),
+      ),
     );
 
     add(SetImageEvent(data));

@@ -1,7 +1,7 @@
-import "package:freezed_annotation/freezed_annotation.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-part "message.freezed.dart";
-part "message.g.dart";
+part 'message.freezed.dart';
+part 'message.g.dart';
 
 @freezed
 class Message with _$Message {
@@ -25,11 +25,11 @@ class Message with _$Message {
       String? thumbnailData,
       String? thumbnailDimensions,
       String? srcUrl,
-      @Default(false) received,
-      @Default(false) displayed,
-      @Default(false) acked,
+      @Default(false) bool received,
+      @Default(false) bool displayed,
+      @Default(false) bool acked,
       String? originId,
-      Message? quotes
+      Message? quotes,
     }
   ) = _Message;
 

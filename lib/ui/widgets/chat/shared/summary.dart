@@ -1,14 +1,13 @@
-import "dart:math";
+import 'dart:math';
 
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/widgets/chat/shared/base.dart";
-
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class SharedSummaryWidget extends StatelessWidget {
-  final int notShown;
 
   const SharedSummaryWidget(this.notShown, { Key? key }) : super(key: key);
+  final int notShown;
 
   @override
   Widget build(BuildContext context) {
@@ -18,19 +17,19 @@ class SharedSummaryWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: Container(
           decoration: const BoxDecoration(
-            color: Colors.black38
+            color: Colors.black38,
           ),
           child: Center(
             child: Text(
-              "+$number",
+              '+$number',
               style: const TextStyle(
-                fontSize: 30
-              )
-            )
-          )
-        )
+                fontSize: 30,
+              ),
+            ),
+          ),
+        ),
       ),
-      onTap: () => Navigator.of(context).pushNamed(sharedMediaRoute)
+      onTap: () => Navigator.of(context).pushNamed(sharedMediaRoute),
     );
   }
 }

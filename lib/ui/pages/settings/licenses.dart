@@ -1,26 +1,25 @@
-import "package:moxxyv2/ui/widgets/topbar.dart";
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import "package:flutter/material.dart";
-import "package:url_launcher/url_launcher.dart";
-
-part "licenses.moxxy.dart";
+part 'licenses.moxxy.dart';
 
 class Library {
+
+  const Library({ required this.name, required this.license, required this.url });
   final String name;
   final String license;
   final String url;
-
-  const Library({ required this.name, required this.license, required this.url });
 }
 
 class LicenseRow extends StatelessWidget {
-  final Library library;
 
   const LicenseRow({ required this.library, Key? key }) : super(key: key);
+  final Library library;
 
-  void _openUrl() async {
+  Future<void> _openUrl() async {
     if (!await launch(library.url)) {
-      // TODO: Show a popup to copy the url
+      // TODO(Unknown): Show a popup to copy the url
     }
   }
   
@@ -28,8 +27,8 @@ class LicenseRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(library.name),
-      subtitle: Text("Licensed under " + library.license),
-      onTap: _openUrl
+      subtitle: Text('Licensed under ${library.license}'),
+      onTap: _openUrl,
    );
   }
 }
@@ -37,16 +36,17 @@ class LicenseRow extends StatelessWidget {
 class SettingsLicensesPage extends StatelessWidget {
   const SettingsLicensesPage({ Key? key }) : super(key: key);
 
-  static get route => MaterialPageRoute(builder: (_) => const SettingsLicensesPage());
+  // ignore: implicit_dynamic_type
+  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const SettingsLicensesPage());
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple("Licenses"),
+      appBar: BorderlessTopbar.simple('Licenses'),
       body: ListView.builder(
         itemCount: usedLibraryList.length,
-        itemBuilder: (context, index) => LicenseRow(library: usedLibraryList[index])
-      )
+        itemBuilder: (context, index) => LicenseRow(library: usedLibraryList[index]),
+      ),
     );
   }
 }

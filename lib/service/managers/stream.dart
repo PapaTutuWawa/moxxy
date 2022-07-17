@@ -1,16 +1,15 @@
-import "dart:async";
+import 'dart:async';
 
-import "package:moxxyv2/service/xmpp.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
-
-import "package:get_it/get_it.dart";
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
 
 class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
   Future<void> commitState() async {
     await GetIt.I.get<XmppService>().modifyXmppState((s) => s.copyWith(
-        smState: state
-    ));
+        smState: state,
+    ),);
   }
 
   @override

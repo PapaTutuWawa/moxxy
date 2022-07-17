@@ -1,23 +1,23 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
 class DownloadButton extends StatelessWidget {
-  final void Function() onPressed;
 
   const DownloadButton({ required this.onPressed, Key? key }) : super(key: key);
+  final void Function() onPressed;
 
   @override
   Widget build(BuildContext context) {
     return Ink(
       decoration: const ShapeDecoration(
         color: Colors.black45,
-        shape: CircleBorder()
+        shape: CircleBorder(),
       ),
       child: IconButton(
         icon: const Icon(Icons.download),
-        iconSize: 64.0,
+        iconSize: 64,
         color: Colors.white,
-        onPressed: onPressed
-      )
+        onPressed: onPressed,
+      ),
     );
   }
 }

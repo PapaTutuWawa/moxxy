@@ -1,30 +1,30 @@
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
 abstract class Handler {
+
+  const Handler(this.matchStanzas, { this.nonzaTag, this.nonzaXmlns });
   final String? nonzaTag;
   final String? nonzaXmlns;
   final bool matchStanzas;
 
-  const Handler(this.matchStanzas, { this.nonzaTag, this.nonzaXmlns });
-
   /// Returns true if the node matches the description provided by this [Handler].
   bool matches(XMLNode node) {
-    bool matches = false;
+    var matches = false;
 
     if (nonzaTag == null && nonzaXmlns == null) {
       matches = true;
     }
 
     if (nonzaXmlns != null && nonzaTag != null) {
-      matches = (node.attributes["xmlns"] ?? "") == nonzaXmlns! && node.tag == nonzaTag!;
+      matches = (node.attributes['xmlns'] ?? '') == nonzaXmlns! && node.tag == nonzaTag!;
     }
     
     if (matchStanzas && nonzaTag == null) {
-      matches = [ "iq", "presence", "message" ].contains(node.tag);
+      matches = [ 'iq', 'presence', 'message' ].contains(node.tag);
     }
 
     return matches;
@@ -32,24 +32,20 @@ abstract class Handler {
 }
 
 class NonzaHandler extends Handler {
-  final Future<bool> Function(XMLNode) callback;
 
   NonzaHandler({
       required this.callback,
       String? nonzaTag,
-      String? nonzaXmlns
+      String? nonzaXmlns,
   }) : super(
     false,
     nonzaTag: nonzaTag,
-    nonzaXmlns: nonzaXmlns
+    nonzaXmlns: nonzaXmlns,
   );
+  final Future<bool> Function(XMLNode) callback;
 }
 
 class StanzaHandler extends Handler {
-  final String? tagName;
-  final String? tagXmlns;
-  final int priority;
-  final Future<StanzaHandlerData> Function(Stanza, StanzaHandlerData) callback;
 
   StanzaHandler({
       required this.callback,
@@ -60,12 +56,16 @@ class StanzaHandler extends Handler {
   }) : super(
       true,
       nonzaTag: stanzaTag,
-      nonzaXmlns: stanzaXmlns
+      nonzaXmlns: stanzaXmlns,
     );
+  final String? tagName;
+  final String? tagXmlns;
+  final int priority;
+  final Future<StanzaHandlerData> Function(Stanza, StanzaHandlerData) callback;
     
   @override
   bool matches(XMLNode node) {
-    bool matches = super.matches(node);
+    var matches = super.matches(node);
     
     if (matches == false) {
       return false;
@@ -78,7 +78,7 @@ class StanzaHandler extends Handler {
     } else if (tagXmlns != null) {
       return listContains(
         node.children,
-        (XMLNode _node) => _node.attributes.containsKey("xmlns") && _node.attributes["xmlns"] == tagXmlns
+        (XMLNode _node) => _node.attributes.containsKey('xmlns') && _node.attributes['xmlns'] == tagXmlns,
       );
     }
 

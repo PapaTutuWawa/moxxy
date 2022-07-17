@@ -1,47 +1,46 @@
-import "dart:typed_data";
+import 'dart:typed_data';
 
-import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/ui/service/thumbnail.dart";
-import "package:moxxyv2/ui/widgets/chat/gradient.dart";
-import "package:moxxyv2/ui/widgets/chat/bottom.dart";
-import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
-import "package:moxxyv2/ui/widgets/chat/helpers.dart";
-import "package:moxxyv2/ui/widgets/chat/media/image.dart";
-import "package:moxxyv2/ui/widgets/chat/media/file.dart";
-
-import "package:flutter/material.dart";
-import "package:get_it/get_it.dart";
-import "package:open_file/open_file.dart";
+import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/service/thumbnail.dart';
+import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
+import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
+import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
+import 'package:open_file/open_file.dart';
 
 class VideoChatWidget extends StatelessWidget {
-  final Message message;
-  final double maxWidth;
-  final BorderRadius radius;
 
   const VideoChatWidget(
     this.message,
     this.radius,
     this.maxWidth,
     {
-      Key? key
+      Key? key,
     }
   ) : super(key: key);
+  final Message message;
+  final double maxWidth;
+  final BorderRadius radius;
 
   Widget _buildNonDownloaded() {
-    // TODO
+    // TODO(Unknown): Handle no thumbnail
     if (message.thumbnailData != null) {}
 
     return FileChatWidget(
       message,
       extra: ElevatedButton(
         onPressed: () => requestMediaDownload(message),
-        child: const Text("Download")
-      )
+        child: const Text('Download'),
+      ),
     );
   }
 
   Widget _buildDownloading() {
-    // TODO
+    // TODO(Unknown): Handle no thumbnail
     if (message.thumbnailData != null) {}
 
     return FileChatWidget(message);
@@ -54,28 +53,28 @@ class VideoChatWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data != null) {
             return ImageBaseChatWidget(
-              message.mediaUrl!,
+              message.mediaUrl,
               radius,
               Image.memory(snapshot.data!),
               MessageBubbleBottom(message),
-              extra: const PlayButton()
+              extra: const PlayButton(),
             );
           } else {
             return const Padding(
-              padding: EdgeInsets.all(32.0),
+              padding: EdgeInsets.all(32),
               child: Icon(
                 Icons.error_outline,
-                size: 32.0
-              )
+                size: 32,
+              ),
             );
           }
         } else {
           return const Padding(
-            padding: EdgeInsets.all(32.0),
-            child: CircularProgressIndicator()
+            padding: EdgeInsets.all(32),
+            child: CircularProgressIndicator(),
           );
         }
-      }
+      },
     );
   }
 
@@ -91,13 +90,13 @@ class VideoChatWidget extends StatelessWidget {
     return IntrinsicWidth(
       child: InkWell(
         onTap: () {
-          OpenFile.open(message.mediaUrl!);
+          OpenFile.open(message.mediaUrl);
         },
         child: Stack(
           children: [
             ClipRRect(
               borderRadius: radius,
-              child: _innerBuild()
+              child: _innerBuild(),
             ),
             BottomGradient(radius),
             Positioned(
@@ -105,13 +104,13 @@ class VideoChatWidget extends StatelessWidget {
               left: 0,
               right: 0,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: MessageBubbleBottom(message)
-              )
+                padding: const EdgeInsets.only(bottom: 3, right: 6),
+                child: MessageBubbleBottom(message),
+              ),
             ) 
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 }

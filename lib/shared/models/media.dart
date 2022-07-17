@@ -1,7 +1,7 @@
-import "package:freezed_annotation/freezed_annotation.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-part "media.freezed.dart";
-part "media.g.dart";
+part 'media.freezed.dart';
+part 'media.g.dart';
 
 @freezed
 class SharedMedium with _$SharedMedium {
@@ -9,7 +9,7 @@ class SharedMedium with _$SharedMedium {
     int id,
     String path,
     int timestamp,
-    { String? mime }
+    { String? mime, }
   ) = _SharedMedia;
 
   // JSON

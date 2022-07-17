@@ -1,23 +1,22 @@
-import "dart:async";
+import 'dart:async';
 
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
-import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
-import "package:moxxyv2/ui/bloc/newconversation_bloc.dart";
-import "package:moxxyv2/ui/bloc/preferences_bloc.dart";
-import "package:moxxyv2/shared/events.dart";
-
-import "package:get_it/get_it.dart";
-import "package:logging/logging.dart";
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 /// Handler for when we received a [PreStartDoneEvent].
 Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
-  GetIt.I.get<Logger>().finest("Waiting for UI setup future to complete...");
-  await GetIt.I.get<Completer>().future;
-  GetIt.I.get<Logger>().finest("Done");
+  GetIt.I.get<Logger>().finest('Waiting for UI setup future to complete...');
+  await GetIt.I.get<Completer<void>>().future;
+  GetIt.I.get<Logger>().finest('Done');
 
   GetIt.I.get<PreferencesBloc>().add(
-    PreferencesChangedEvent(result.preferences)
+    PreferencesChangedEvent(result.preferences),
   );
 
   if (result.state == preStartLoggedInState) {
@@ -27,28 +26,28 @@ Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
         result.jid!,
         result.conversations!,
         avatarUrl: result.avatarUrl,
-      )
+      ),
     );
     GetIt.I.get<NewConversationBloc>().add(
       NewConversationInitEvent(
-        result.roster!
-      )
+        result.roster!,
+      ),
     );
 
-    GetIt.I.get<Logger>().finest("Navigating to conversations");
+    GetIt.I.get<Logger>().finest('Navigating to conversations');
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(conversationsRoute),
-        (_) => false
-      )
+        (_) => false,
+      ),
     );
   } else if (result.state == preStartNotLoggedInState) {
-    GetIt.I.get<Logger>().finest("Navigating to intro");
+    GetIt.I.get<Logger>().finest('Navigating to intro');
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(introRoute),
-        (_) => false
-      )
+        (_) => false,
+      ),
     );
   }
 }

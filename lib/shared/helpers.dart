@@ -1,6 +1,6 @@
-import "dart:core";
+import 'dart:core';
 
-import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
+import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 /// Add a leading zero, if required, to ensure that an integer is rendered
 /// as a two "digit" string.
@@ -8,7 +8,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 /// NOTE: This function assumes that 0 <= i <= 99
 String padInt(int i) {
   if (i <= 9) {
-    return "0" + i.toString();
+    return '0$i';
   }
 
   return i.toString();
@@ -35,42 +35,42 @@ T? firstWhereOrNull<T>(List<T> list, bool Function(T element) test) {
 /// timestamp and now are both in millisecondsSinceEpoch.
 /// Ensures that now >= timestamp
 String formatConversationTimestamp(int timestamp, int now) {
-  int difference = now - timestamp;
+  final difference = now - timestamp;
 
   // NOTE: Just to make sure
-  assert(difference >= 0);
+  assert(difference >= 0, 'Timestamp lies in the future');
 
   if (difference >= 60 * Duration.millisecondsPerMinute) {
-    int hourDifference = (difference / Duration.millisecondsPerHour).floor();
+    final hourDifference = (difference / Duration.millisecondsPerHour).floor();
     if (hourDifference >= 24) {
-      DateTime dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      String suffix = difference >= 364.5 * Duration.millisecondsPerDay ? dt.year.toString() : "";
-      return dt.day.toString() + "." + dt.month.toString() + "." + suffix; 
+      final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+      final suffix = difference >= 364.5 * Duration.millisecondsPerDay ? dt.year.toString() : '';
+      return '${dt.day}.${dt.month}.$suffix'; 
     } else {
-      return hourDifference.toString() + "h";
+      return '${hourDifference}h';
     }
   } else if (difference <= Duration.millisecondsPerMinute) {
-    return "Just now";
+    return 'Just now';
   }
 
-  return (difference / Duration.millisecondsPerMinute).floor().toString() + "min";
+  return '${(difference / Duration.millisecondsPerMinute).floor()}min';
 }
 
 /// Same as [formatConversationTimestamp] but for messages
 String formatMessageTimestamp(int timestamp, int now) {
-  int difference = now - timestamp;
+  final difference = now - timestamp;
 
   // NOTE: Just to make sure
-  assert(difference >= 0);
+  assert(difference >= 0, 'Timestamp lies in the future');
 
   if (difference >= 15 * Duration.millisecondsPerMinute) {
-    DateTime dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return dt.hour.toString() + ":" + padInt(dt.minute);
+    final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return '${dt.hour}:${padInt(dt.minute)}';
   } else {
     if (difference < Duration.millisecondsPerMinute) {
-      return "Just now";
+      return 'Just now';
     } else {
-      return (difference / Duration.millisecondsPerMinute).floor().toString() + "min ago";
+      return '${(difference / Duration.millisecondsPerMinute).floor()}min ago';
     }
   }
 }
@@ -90,11 +90,11 @@ JidFormatError validateJid(String jid) {
     return JidFormatError.empty;
   }
 
-  if (!jid.contains("@")) {
+  if (!jid.contains('@')) {
     return JidFormatError.noSeparator;
   }
 
-  List<String> parts = jid.split("@");
+  final parts = jid.split('@');
   if (parts.length != 2) {
     return JidFormatError.tooManySeparators;
   }
@@ -114,12 +114,12 @@ JidFormatError validateJid(String jid) {
 /// appears okay.
 String? validateJidString(String jid) {
   switch (validateJid(jid)) {
-    case JidFormatError.empty: return "XMPP-Address cannot be empty";
+    case JidFormatError.empty: return 'XMPP-Address cannot be empty';
     case JidFormatError.noSeparator:
-    case JidFormatError.tooManySeparators: return "XMPP-Address must contain exactly one @";
-    // TODO: Find a better text
-    case JidFormatError.noDomain: return "A domain must follow the @";
-    case JidFormatError.noLocalpart: return "Your username must preceed the @";
+    case JidFormatError.tooManySeparators: return 'XMPP-Address must contain exactly one @';
+    // TODO(Unknown): Find a better text
+    case JidFormatError.noDomain: return 'A domain must follow the @';
+    case JidFormatError.noLocalpart: return 'Your username must preceed the @';
     case JidFormatError.none: return null;
   }
 }
@@ -137,11 +137,11 @@ T? firstNotNull<T>(List<T?> items) {
 /// Attempt to guess a mimetype from its file extension
 String? guessMimeTypeFromExtension(String ext) {
   switch (ext) {
-    case "png": return "image/png";
-    case "jpg":
-    case "jpeg": return "image/jpeg";
-    case "webp": return "image/webp";
-    case "mp4": return "video/mp4";
+    case 'png': return 'image/png';
+    case 'jpg':
+    case 'jpeg': return 'image/jpeg';
+    case 'webp': return 'image/webp';
+    case 'mp4': return 'video/mp4';
   }
 
   return null;
@@ -150,16 +150,16 @@ String? guessMimeTypeFromExtension(String ext) {
 /// Show a combinatio of an emoji and its file type
 String mimeTypeToConversationBody(String? mime) {
   if (mime != null) {
-    if (mime.startsWith("image/")) {
-      return "📷 Image";
-    } else if (mime.startsWith("video/")) {
-      return "🎞️ Video";
-    } else if (mime.startsWith("audio/")) {
-      return "🎵 Audio";
+    if (mime.startsWith('image/')) {
+      return '📷 Image';
+    } else if (mime.startsWith('video/')) {
+      return '🎞️ Video';
+    } else if (mime.startsWith('audio/')) {
+      return '🎵 Audio';
     }
   }
 
-  return "📁 File";
+  return '📁 File';
 }
 
 /// Parse an Uri and return the "filename".
@@ -169,19 +169,19 @@ String filenameFromUrl(String url) {
 
 ChatState chatStateFromString(String raw) {
   switch(raw) {
-    case "active": {
+    case 'active': {
       return ChatState.active;
     }
-    case "composing": {
+    case 'composing': {
       return ChatState.composing;
     } 
-    case "paused": {
+    case 'paused': {
       return ChatState.paused;
     }
-    case "inactive": {
+    case 'inactive': {
       return ChatState.inactive;
     }
-    case "gone": {
+    case 'gone': {
       return ChatState.gone;
     }
     default: {
@@ -190,4 +190,4 @@ ChatState chatStateFromString(String raw) {
   }
 }
 
-String chatStateToString(ChatState state) => state.toString().split(".").last;
+String chatStateToString(ChatState state) => state.toString().split('.').last;

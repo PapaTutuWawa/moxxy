@@ -1,83 +1,82 @@
-import "dart:async";
-import "dart:io";
+import 'dart:async';
+import 'dart:io';
 
-import "package:moxxyv2/shared/logging.dart";
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/eventhandler.dart";
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/presence.dart";
-import "package:moxxyv2/xmpp/message.dart";
-import "package:moxxyv2/xmpp/negotiators/resource_binding.dart";
-import "package:moxxyv2/xmpp/negotiators/starttls.dart";
-import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
-import "package:moxxyv2/xmpp/ping.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0054.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0084.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0191.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0280.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0461.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
-import "package:moxxyv2/service/managers/roster.dart";
-import "package:moxxyv2/service/managers/disco.dart";
-import "package:moxxyv2/service/managers/stream.dart";
-import "package:moxxyv2/service/moxxmpp/reconnect.dart";
-import "package:moxxyv2/service/database.dart";
-import "package:moxxyv2/service/xmpp.dart";
-import "package:moxxyv2/service/roster.dart";
-import "package:moxxyv2/service/download.dart";
-import "package:moxxyv2/service/notifications.dart";
-import "package:moxxyv2/service/avatars.dart";
-import "package:moxxyv2/service/preferences.dart";
-import "package:moxxyv2/service/blocking.dart";
-import "package:moxxyv2/service/conversation.dart";
-import "package:moxxyv2/service/message.dart";
-import "package:moxxyv2/service/events.dart";
-import "package:moxxyv2/service/connectivity.dart";
-import "package:moxxyv2/ui/events.dart" as ui_events;
-
-import "package:moxplatform/moxplatform.dart";
-import "package:moxplatform/types.dart";
-import "package:moxlib/awaitabledatasender.dart";
-import "package:flutter/foundation.dart";
-import "package:get_it/get_it.dart";
-import "package:logging/logging.dart";
+import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:moxlib/awaitabledatasender.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxplatform/types.dart';
+import 'package:moxxyv2/service/avatars.dart';
+import 'package:moxxyv2/service/blocking.dart';
+import 'package:moxxyv2/service/connectivity.dart';
+import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/download.dart';
+import 'package:moxxyv2/service/events.dart';
+import 'package:moxxyv2/service/managers/disco.dart';
+import 'package:moxxyv2/service/managers/roster.dart';
+import 'package:moxxyv2/service/managers/stream.dart';
+import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+import 'package:moxxyv2/service/notifications.dart';
+import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/eventhandler.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/logging.dart';
+import 'package:moxxyv2/ui/events.dart' as ui_events;
+import 'package:moxxyv2/xmpp/connection.dart';
+import 'package:moxxyv2/xmpp/message.dart';
+import 'package:moxxyv2/xmpp/negotiators/resource_binding.dart';
+import 'package:moxxyv2/xmpp/negotiators/sasl/scram.dart';
+import 'package:moxxyv2/xmpp/negotiators/starttls.dart';
+import 'package:moxxyv2/xmpp/ping.dart';
+import 'package:moxxyv2/xmpp/presence.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0280.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0385.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0461.dart';
 
 Future<void> initializeServiceIfNeeded() async {
   final logger = GetIt.I.get<Logger>();
   final handler = MoxplatformPlugin.handler;
   if (await handler.isRunning()) {
     if (kDebugMode) {
-      logger.fine("Since kDebugMode is true, waiting 600ms before sending PreStartCommand");
+      logger.fine('Since kDebugMode is true, waiting 600ms before sending PreStartCommand');
       sleep(const Duration(milliseconds: 600));
     }
 
-    logger.info("Attaching to service...");
-    handler.attach(ui_events.handleIsolateEvent);
-    logger.info("Done");
+    logger.info('Attaching to service...');
+    await handler.attach(ui_events.handleIsolateEvent);
+    logger.info('Done');
 
-    logger.info("Service is running. Sending pre start command");
-    handler.getDataSender().sendData(
+    // ignore: cascade_invocations
+    logger.info('Service is running. Sending pre start command');
+    await handler.getDataSender().sendData(
       PerformPreStartCommand(),
-      awaitable: false
+      awaitable: false,
     );
   } else {
-    logger.info("Service is not running. Initializing service... ");
+    logger.info('Service is not running. Initializing service... ');
     await handler.start(
       entrypoint,
       handleUiEvent,
-      ui_events.handleIsolateEvent
+      ui_events.handleIsolateEvent,
     );
   }
 }
@@ -86,7 +85,7 @@ Future<void> initializeServiceIfNeeded() async {
 /// logging what we send.
 void sendEvent(BackgroundEvent event, { String? id }) {
   // NOTE: *S*erver to *F*oreground
-  GetIt.I.get<Logger>().fine("S2F: " + event.toJson().toString());
+  GetIt.I.get<Logger>().fine('S2F: ${event.toJson()}');
   GetIt.I.get<BackgroundService>().sendEvent(event, id: id);
 }
 
@@ -94,8 +93,8 @@ void setupLogging() {
   //Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-      final logMessageHeader = "[${record.level.name}] (${record.loggerName}) ${record.time}: ";
-      String msg = record.message;
+      final logMessageHeader = '[${record.level.name}] (${record.loggerName}) ${record.time}: ';
+      var msg = record.message;
       do {
         final tooLong = logMessageHeader.length + msg.length >= 967;
         final line = tooLong ? msg.substring(0, 967 - logMessageHeader.length) : msg;
@@ -103,7 +102,7 @@ void setupLogging() {
         if (tooLong) {
           msg = msg.substring(967 - logMessageHeader.length - 2);
         } else {
-          msg = "";
+          msg = '';
         }
 
         final logMessage = logMessageHeader + line;
@@ -115,6 +114,7 @@ void setupLogging() {
           }
         }
 
+        // ignore: literal_only_boolean_expressions
         if (/*kDebugMode*/ true) {
           // ignore: avoid_print
           print(logMessage);
@@ -127,14 +127,14 @@ Future<void> initUDPLogger() async {
   final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
   if (prefs.debugEnabled) {
-    Logger("initUDPLogger").finest("UDPLogger created");
+    Logger('initUDPLogger').finest('UDPLogger created');
 
     final port = prefs.debugPort;
     final ip = prefs.debugIp;
     final passphrase = prefs.debugPassphrase;
 
     if (port != 0 && ip.isNotEmpty && passphrase.isNotEmpty) {
-      GetIt.I.get<UDPLogger>().init(passphrase, ip, port);
+      await GetIt.I.get<UDPLogger>().init(passphrase, ip, port);
     }
   } else {
     GetIt.I.get<UDPLogger>().setEnabled(false);
@@ -144,10 +144,10 @@ Future<void> initUDPLogger() async {
 /// The entrypoint for all platforms after the platform specific initilization is done.
 Future<void> entrypoint() async {
   // Register the lock
-  GetIt.I.registerSingleton<Completer>(Completer());
+  GetIt.I.registerSingleton<Completer<void>>(Completer());
 
   // Register singletons
-  GetIt.I.registerSingleton<Logger>(Logger("MoxxyService"));
+  GetIt.I.registerSingleton<Logger>(Logger('MoxxyService'));
   GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
 
   setupLogging();
@@ -185,7 +185,7 @@ Future<void> entrypoint() async {
       DiscoCacheManager(),
       CarbonsManager(),
       PubSubManager(),
-      vCardManager(),
+      VCardManager(),
       UserAvatarManager(),
       StableIdManager(),
       SIMSManager(),
@@ -202,33 +202,33 @@ Future<void> entrypoint() async {
       StartTlsNegotiator(),
       StreamManagementNegotiator(),
       CSINegotiator(),
-      SaslScramNegotiator(10, "", "", ScramHashType.sha512),
-      SaslScramNegotiator(9, "", "", ScramHashType.sha256),
-      SaslScramNegotiator(8, "", "", ScramHashType.sha1),
+      SaslScramNegotiator(10, '', '', ScramHashType.sha512),
+      SaslScramNegotiator(9, '', '', ScramHashType.sha256),
+      SaslScramNegotiator(8, '', '', ScramHashType.sha1),
     ]);
 
   GetIt.I.registerSingleton<XmppConnection>(connection);
   GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
   await GetIt.I.get<ConnectivityService>().initialize();
 
-  GetIt.I.get<Logger>().finest("Done with xmpp");
+  GetIt.I.get<Logger>().finest('Done with xmpp');
   
   final settings = await xmpp.getConnectionSettings();
 
-  GetIt.I.get<Logger>().finest("Got settings");
+  GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
-    xmpp.connect(settings, false);
+    await xmpp.connect(settings, false);
   } else {
     GetIt.I.get<BackgroundService>().setNotification(
-      "Moxxy",
-      "Idle"
+      'Moxxy',
+      'Idle',
     );
   }
 
-  GetIt.I.get<Logger>().finest("Resolving startup future");
-  GetIt.I.get<Completer>().complete();
+  GetIt.I.get<Logger>().finest('Resolving startup future');
+  GetIt.I.get<Completer<void>>().complete();
 
   sendEvent(ServiceReadyEvent());
 }
@@ -238,12 +238,12 @@ Future<void> handleUiEvent(Map<String, dynamic>? data) async {
   final log = GetIt.I.get<Logger>();
 
   if (data == null) {
-    log.warning("Received null from the UI isolate. Ignoring...");
+    log.warning('Received null from the UI isolate. Ignoring...');
     return;
   }
   
-  final String id = data["id"]!;
-  final command = getCommandFromJson(data["data"]!); 
+  final id = data['id']! as String;
+  final command = getCommandFromJson(data['data']! as Map<String, dynamic>); 
   if (command == null) {
     log.severe("Unknown command type ${data['type']}");
     return;
@@ -251,17 +251,17 @@ Future<void> handleUiEvent(Map<String, dynamic>? data) async {
 
   if (command is LoginCommand) {
     final redacted = {
-      "id": id,
-      "data": LoginCommand(
+      'id': id,
+      'data': LoginCommand(
         jid: command.jid,
-        password: "*******",
-        useDirectTLS: command.useDirectTLS
+        password: '*******',
+        useDirectTLS: command.useDirectTLS,
       ).toJson()
     };
-    log.fine("F2S: " + redacted.toString());
+    log.fine('F2S: $redacted');
   } else {
-    log.fine("F2S: " + data.toString());
+    log.fine('F2S: $data');
   }
 
-  GetIt.I.get<EventHandler>().run(command, extra: id);
+  unawaited(GetIt.I.get<EventHandler>().run(command, extra: id));
 }

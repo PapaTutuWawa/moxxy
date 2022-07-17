@@ -1,20 +1,11 @@
-import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/widgets/chat/media/media.dart";
-
-
-// TODO: The timestamp may be too light
-// TODO: The timestamp is too small
-import "package:flutter/material.dart";
+// TODO(Unknown): The timestamp may be too light
+// TODO(Unknown): The timestamp is too small
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 
 class ChatBubble extends StatelessWidget {
-  final Message message;
-  final bool sentBySelf;
-  // 
-  final bool between;
-  final bool start;
-  final bool end;
-  final double maxWidth;
 
   const ChatBubble({
       required this.message,
@@ -23,15 +14,22 @@ class ChatBubble extends StatelessWidget {
       required this.start,
       required this.end,
       required this.maxWidth,
-      Key? key
+      Key? key,
   }) : super(key: key);
+  final Message message;
+  final bool sentBySelf;
+  // 
+  final bool between;
+  final bool start;
+  final bool end;
+  final double maxWidth;
   
   BorderRadius _getBorderRadius() {
     return BorderRadius.only(
       topLeft: !sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
       topRight: sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
       bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
-      bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge
+      bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
     );
   }
 
@@ -39,7 +37,7 @@ class ChatBubble extends StatelessWidget {
   /// False otherwise.
   bool _isInlinedWidget() {
     if (message.mediaType != null) {
-      return message.mediaType!.startsWith("image/");
+      return message.mediaType!.startsWith('image/');
     }
 
     return false;
@@ -65,27 +63,27 @@ class ChatBubble extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(
         left: !sentBySelf ? 8.0 : 0.0,
-        right: sentBySelf ? 8.0 : 0.0
+        right: sentBySelf ? 8.0 : 0.0,
       ),
       child: Row(
         mainAxisAlignment: sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           Container(
             constraints: BoxConstraints(
-              maxWidth: maxWidth
+              maxWidth: maxWidth,
             ),
             decoration: BoxDecoration(
               color: _getBubbleColor(context),
-              borderRadius: _getBorderRadius()
+              borderRadius: _getBorderRadius(),
             ),
             child: Padding(
               // NOTE: Images don't work well with padding here
-              padding: message.isMedia || message.quotes != null ? const EdgeInsets.all(0.0) : const EdgeInsets.all(8.0),
-              child: buildMessageWidget(message, maxWidth, _getBorderRadius())
-            )
+              padding: message.isMedia || message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
+              child: buildMessageWidget(message, maxWidth, _getBorderRadius()),
+            ),
           )
-        ]
-      )
+        ],
+      ),
     );
   }
 }

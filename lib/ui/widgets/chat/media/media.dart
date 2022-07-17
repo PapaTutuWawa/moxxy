@@ -1,21 +1,20 @@
-import "dart:typed_data";
+import 'dart:typed_data';
 
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/shared/models/media.dart";
-import "package:moxxyv2/ui/service/thumbnail.dart";
-import "package:moxxyv2/ui/widgets/chat/text.dart";
-import "package:moxxyv2/ui/widgets/chat/playbutton.dart";
-import "package:moxxyv2/ui/widgets/chat/media/image.dart";
-import "package:moxxyv2/ui/widgets/chat/media/file.dart";
-import "package:moxxyv2/ui/widgets/chat/media/video.dart";
-import "package:moxxyv2/ui/widgets/chat/quote/base.dart";
-import "package:moxxyv2/ui/widgets/chat/shared/image.dart";
-import "package:moxxyv2/ui/widgets/chat/shared/file.dart";
-import "package:moxxyv2/ui/widgets/chat/shared/video.dart";
-
-import "package:flutter/material.dart";
-import "package:get_it/get_it.dart";
+import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/media.dart';
+import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/service/thumbnail.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
+import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
+import 'package:moxxyv2/ui/widgets/chat/text.dart';
 
 enum MessageType {
   text,
@@ -32,12 +31,12 @@ MessageType getMessageType(Message message) {
     final mime = message.mediaType;
     if (mime == null) return MessageType.file;
 
-    if (mime.startsWith("image/")) {
+    if (mime.startsWith('image/')) {
       return MessageType.image;
-    } else if (mime.startsWith("video/")) {
+    } else if (mime.startsWith('video/')) {
       return MessageType.video;
     }
-    // TODO
+    // TODO(Unknown): Implement audio
     //else if (mime.startswith("audio/")) return MessageType.audio;
 
     return MessageType.file;
@@ -52,7 +51,7 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius)
     case MessageType.text: {
       return TextChatWidget(
         message,
-        topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!) : null
+        topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!) : null,
       );
     }
     case MessageType.image: {
@@ -61,7 +60,7 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius)
     case MessageType.video: {
       return VideoChatWidget(message, radius, maxWidth);
     }
-    // TODO
+    // TODO(Unknown): Implement audio
     //case MessageType.audio: return buildImageMessageWidget(message);
     case MessageType.file: {
       return FileChatWidget(message);
@@ -72,21 +71,19 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius)
 /// Build a widget that represents a quoted message within another bubble.
 Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) {
   switch (getMessageType(message)) {
-    case MessageType.text: {
+    case MessageType.text:
       return QuoteBaseWidget(message, Text(message.body), resetQuotedMessage: resetQuote);
-    }
-    // TODO
-    case MessageType.image: {
+    case MessageType.image:
       return QuoteBaseWidget(
         message,
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             SizedBox(
-              width: 48.0,
-              height: 48.0,
+              width: 48,
+              height: 48,
               child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 child: FutureBuilder<Uint8List>(
                   future: GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(message.mediaUrl!),
                   builder: (context, snapshot) {
@@ -94,40 +91,39 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
                       if (snapshot.data != null) {
                         return Image.memory(
                           snapshot.data!,
-                          fit: BoxFit.cover
+                          fit: BoxFit.cover,
                         );
                       } else {
                         return const Padding(
-                          padding: EdgeInsets.all(32.0),
+                          padding: EdgeInsets.all(32),
                           child: Icon(
                             Icons.error_outline,
-                            size: 32.0
-                          )
+                            size: 32,
+                          ),
                         );
                       }
                     } else {
                       return const CircularProgressIndicator();
                     }
-                  }
-                )
-              )
+                  },
+                ),
+              ),
             )
-          ]
+          ],
         ),
-        resetQuotedMessage: resetQuote
+        resetQuotedMessage: resetQuote,
       );
-    }
-    case MessageType.video: {
+    case MessageType.video:
       return QuoteBaseWidget(
         message,
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             SizedBox(
-              width: 48.0,
-              height: 48.0,
+              width: 48,
+              height: 48,
               child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
@@ -138,75 +134,76 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
                           if (snapshot.data != null) {
                             return Image.memory(
                               snapshot.data!,
-                              fit: BoxFit.cover
+                              fit: BoxFit.cover,
                             );
                           } else {
                             return const Padding(
-                              padding: EdgeInsets.all(32.0),
+                              padding: EdgeInsets.all(32),
                               child: Icon(
                                 Icons.error_outline,
-                                size: 32.0
-                              )
+                                size: 32,
+                              ),
                             );
                           }
                         } else {
                           return const CircularProgressIndicator();
                         }
-                      }
+                      },
                     ),
-                    const PlayButton(size: 16.0)
-                  ]
-                )
-              )
+                    const PlayButton(size: 16)
+                  ],
+                ),
+              ),
             )
-          ]
+          ],
         ),
-        resetQuotedMessage: resetQuote
+        resetQuotedMessage: resetQuote,
       );
-    }
+    // TODO(Unknown): Implement audio
     //case MessageType.audio: return const SizedBox();
-    case MessageType.file: return QuoteBaseWidget(
-      message,
+    case MessageType.file:
+      return QuoteBaseWidget(
+        message,
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: Text(filenameFromUrl(message.srcUrl!))
+              padding: const EdgeInsets.only(right: 8),
+              child: Text(filenameFromUrl(message.srcUrl!)),
             ),
             SizedBox(
-              width: 48.0,
-              height: 48.0,
+              width: 48,
+              height: 48,
               child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                borderRadius: const BorderRadius.all(Radius.circular(8)),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Container(
                       decoration: const BoxDecoration(
-                        color: Colors.white60
-                      )
+                        color: Colors.white60,
+                      ),
                     ),
                     const Icon(
-                      Icons.file_present
-                    )
-                  ]
-                )
-              )
+                      Icons.file_present,
+                    ),
+                  ],
+                ),
+              ),
             )
-          ]
+          ],
         ),
-        resetQuotedMessage: resetQuote
-    );
+        resetQuotedMessage: resetQuote,
+      );
   }
 }
 
 Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
   if (medium.mime == null) return SharedFileWidget(medium.path);
 
-  if (medium.mime!.startsWith("image/")) return SharedImageWidget(medium.path);
-  if (medium.mime!.startsWith("video/")) return SharedVideoWidget(medium.path, conversationJid);
-  // TODO: Audio
+  if (medium.mime!.startsWith('image/')) return SharedImageWidget(medium.path);
+  if (medium.mime!.startsWith('video/')) return SharedVideoWidget(medium.path, conversationJid);
+  // TODO(Unknown): Audio
   //if (message.mime!.startsWith("audio/")) return const SizedBox();
 
   return SharedFileWidget(medium.path);

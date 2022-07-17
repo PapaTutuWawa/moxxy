@@ -1,17 +1,17 @@
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
 
 class PingManager extends XmppManagerBase {
   @override
   String getId() => pingManager;
 
   @override
-  String getName() => "PingManager";
+  String getName() => 'PingManager';
 
   void _logWarning() {
-    logger.warning("Cannot send keepalives as SM is not available, the socket disallows whitespace pings and does not manage its own keepalives. Cannot guarantee that the connection survives.");
+    logger.warning('Cannot send keepalives as SM is not available, the socket disallows whitespace pings and does not manage its own keepalives. Cannot guarantee that the connection survives.');
   }
   
   @override
@@ -27,13 +27,13 @@ class PingManager extends XmppManagerBase {
         if (stream.isStreamManagementEnabled() /*&& stream.getUnackedStanzaCount() > 0*/) {
           stream.sendAckRequestPing();
         } else if (attrs.getSocket().whitespacePingAllowed()) {
-          attrs.sendRawXml("");
+          attrs.sendRawXml('');
         } else {
           _logWarning();
         }
       } else {
         if (attrs.getSocket().whitespacePingAllowed()) {
-          attrs.sendRawXml("");
+          attrs.sendRawXml('');
         } else {
           _logWarning();
         }

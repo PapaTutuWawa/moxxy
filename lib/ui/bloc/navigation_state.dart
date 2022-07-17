@@ -1,4 +1,4 @@
-part of "navigation_bloc.dart";
+part of 'navigation_bloc.dart';
 
 enum NavigationStatus {
   splashscreen,
@@ -10,6 +10,6 @@ enum NavigationStatus {
 @freezed
 class NavigationState with _$NavigationState {
   factory NavigationState({
-      @Default(NavigationStatus.intro) status
+    @Default(NavigationStatus.intro) NavigationStatus status,
   }) = _NavigationState;
 }

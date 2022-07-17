@@ -1,36 +1,36 @@
-part of "navigation_bloc.dart";
+part of 'navigation_bloc.dart';
 
 class NavigationDestination {
-  final String path;
-  final Object? arguments;
 
   const NavigationDestination(
     this.path,
     {
-      this.arguments
+      this.arguments,
     }
   );
+  final String path;
+  final Object? arguments;
 }
 
 abstract class NavigationEvent {}
 
 class PushedNamedEvent extends NavigationEvent {
-  final NavigationDestination destination;
 
   PushedNamedEvent(this.destination);
+  final NavigationDestination destination;
 }
 
 class PushedNamedAndRemoveUntilEvent extends NavigationEvent {
-  final NavigationDestination destination;
-  final RoutePredicate predicate;
 
   PushedNamedAndRemoveUntilEvent(this.destination, this.predicate);
+  final NavigationDestination destination;
+  final RoutePredicate predicate;
 }
 
 class PushedNamedReplaceEvent extends NavigationEvent {
-  final NavigationDestination destination;
 
   PushedNamedReplaceEvent(this.destination);
+  final NavigationDestination destination;
 }
 
 class PoppedRouteEvent extends NavigationEvent {}

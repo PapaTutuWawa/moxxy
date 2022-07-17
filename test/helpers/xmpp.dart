@@ -1,33 +1,32 @@
-import "dart:async";
+import 'dart:async';
 
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/socket.dart";
+import 'package:moxxyv2/xmpp/socket.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:test/test.dart';
 
-import "xml.dart";
-
-import "package:test/test.dart";
+import 'xml.dart';
 
 // TODO: Turn this into multiple Expectation classes
 class Expectation {
+
+  Expectation(this.expectation, this.response, { this.ignoreId = true, this.containsTag, this.justCheckAttributes });
   final XMLNode expectation;
   final XMLNode response;
   final bool ignoreId;
   final String? containsTag;
   final Map<String, String>? justCheckAttributes;
-
-  Expectation(this.expectation, this.response, { this.ignoreId = true, this.containsTag, this.justCheckAttributes });
 }
 
-class StubTCPSocket extends BaseSocketWrapper {
-  int _state = 0;
-  final StreamController<String> _dataStream;
-  final StreamController<XmppSocketEvent> _eventStream;
-  final List<Expectation> _play; // Request -> Response(s)
+class StubTCPSocket extends BaseSocketWrapper { // Request -> Response(s)
 
   StubTCPSocket({ required List<Expectation> play })
   : _play = play,
   _dataStream = StreamController<String>.broadcast(),
   _eventStream = StreamController<XmppSocketEvent>.broadcast();
+  int _state = 0;
+  final StreamController<String> _dataStream;
+  final StreamController<XmppSocketEvent> _eventStream;
+  final List<Expectation> _play;
 
   @override
   bool isSecure() => true;
@@ -45,9 +44,9 @@ class StubTCPSocket extends BaseSocketWrapper {
 
   @override
   void write(Object? object, { String? redact }) {
-    String str = object as String;
+    var str = object as String;
     // ignore: avoid_print
-    print("==> " + str);
+    print('==> $str');
 
     if (_state >= _play.length) {
       return;
@@ -60,10 +59,10 @@ class StubTCPSocket extends BaseSocketWrapper {
       str = str.substring(21);
     }
 
-    if (str.startsWith("<stream:stream")) {
-      str = str + "</stream:stream>";
+    if (str.startsWith('<stream:stream')) {
+      str = '$str</stream:stream>';
     } else {
-      if (str.endsWith("</stream:stream>")) {
+      if (str.endsWith('</stream:stream>')) {
         // TODO: Maybe prepend <stream:stream> so that we can detect it within
         //       [XmppConnection]
         str = str.substring(0, str.length - 16);
@@ -79,11 +78,11 @@ class StubTCPSocket extends BaseSocketWrapper {
       expect(
         compareXMLNodes(recv, expectation.expectation, ignoreId: expectation.ignoreId),
         true,
-        reason: "Expected: ${expectation.expectation.toXml()}, Got: ${recv.toXml()}"
+        reason: 'Expected: ${expectation.expectation.toXml()}, Got: ${recv.toXml()}',
       );
 
       if (expectation.containsTag != null) {
-        expect(recv.firstTag(expectation.containsTag!) != null, true, reason: "Tag ${expectation.containsTag!} not found");
+        expect(recv.firstTag(expectation.containsTag!) != null, true, reason: 'Tag ${expectation.containsTag!} not found');
       }
     }
 

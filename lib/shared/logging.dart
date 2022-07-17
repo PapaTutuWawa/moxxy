@@ -1,9 +1,9 @@
-import "dart:convert";
-import "dart:io";
+import 'dart:convert';
+import 'dart:io';
 
-import "package:cryptography/cryptography.dart";
-import "package:archive/archive_io.dart";
-import "package:udp/udp.dart";
+import 'package:archive/archive_io.dart';
+import 'package:cryptography/cryptography.dart';
+import 'package:udp/udp.dart';
 
 Future<List<int>> deriveKey(String key) async {
   return (await Sha256().hash(utf8.encode(key))).bytes;
@@ -20,7 +20,7 @@ Future<List<int>> encryptData(List<int> data, List<int> key, { List<int>? nonce 
   final secretBox = await algorithm.encrypt(
     data,
     secretKey: SecretKey(key),
-    nonce: nonce ?? algorithm.newNonce()
+    nonce: nonce ?? algorithm.newNonce(),
   );
 
   return [ ...secretBox.nonce, ...secretBox.mac.bytes, ...secretBox.cipherText ];
@@ -33,24 +33,28 @@ List<int> compressData(List<int> payload) {
 
 /// Format a log message similarly as to how Monal does it.
 List<int> logToPayload(String line, int timestamp, String loglevel, int counter, { String? filename }) {
-  return utf8.encode(jsonEncode({
-        "formattedMessage": line,
-        "timestamp": timestamp.toString(),
-        "level": loglevel,
-        "_counter": counter,
-        ...(filename != null ? { "filename": filename } : {})
-  }));
+  return utf8.encode(
+    jsonEncode(
+      <String, dynamic>{
+        'formattedMessage': line,
+        'timestamp': timestamp.toString(),
+        'level': loglevel,
+        '_counter': counter,
+        ...filename != null ? <String, String>{ 'filename': filename } : <String, String>{}
+      },
+    ),
+  );
 }
 
 class UDPLogger {
+
+  UDPLogger(): _counter = 0, _canSend = false, _enabled = true;
   late UDP _sender;
   late Endpoint _target;
   late List<int> _derivedKey;
   int _counter;
   bool _canSend;
   bool _enabled;
-
-  UDPLogger(): _counter = 0, _canSend = false, _enabled = true;
   
   Future<void> init(String key, String ip, int port) async {
     _sender = await UDP.bind(Endpoint.any());

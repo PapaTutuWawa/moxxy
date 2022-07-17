@@ -1,17 +1,10 @@
-import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-
-import "package:flutter/material.dart";
-import "package:qr_flutter/qr_flutter.dart";
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class SelfProfileHeader extends StatelessWidget {
-  final String jid;
-  final String avatarUrl;
-  final String displayName;
-  final List<String> serverFeatures;
-  final bool streamManagementSupported;
-  final void Function(String, String) setAvatar;
   
   const SelfProfileHeader(
     this.jid,
@@ -21,9 +14,15 @@ class SelfProfileHeader extends StatelessWidget {
     this.streamManagementSupported,
     this.setAvatar,
     {
-      Key? key
+      Key? key,
     }
   ) : super(key: key);
+  final String jid;
+  final String avatarUrl;
+  final String displayName;
+  final List<String> serverFeatures;
+  final bool streamManagementSupported;
+  final void Function(String, String) setAvatar;
 
   Widget _buildServerCheck(String title, String namespace) {
     return IntrinsicWidth(
@@ -32,10 +31,10 @@ class SelfProfileHeader extends StatelessWidget {
           Text(title),
           Checkbox(
             value: serverFeatures.contains(namespace),
-            onChanged: (_) {}
+            onChanged: (_) {},
           )
-        ]
-      )
+        ],
+      ),
     );
   }
 
@@ -46,14 +45,15 @@ class SelfProfileHeader extends StatelessWidget {
           Text(title),
           Checkbox(
             value: streamManagementSupported,
-            onChanged: (_) {}
+            onChanged: (_) {},
           )
-        ]
-      )
+        ],
+      ),
     );
   }
   
   Future<void> _showJidQRCode(BuildContext context) async {
+    // ignore: implicit_dynamic_function
     await showDialog(
       context: context,
       builder: (BuildContext context) => SimpleDialog(
@@ -63,19 +63,18 @@ class SelfProfileHeader extends StatelessWidget {
               width: 220,
               height: 220,
               child: QrImage(
-                data: "xmpp:" + jid,
-                version: QrVersions.auto,
-                size: 220.0,
+                data: 'xmpp:$jid',
+                size: 220,
                 backgroundColor: Colors.white,
-                embeddedImage: const AssetImage("assets/images/logo.png"),
+                embeddedImage: const AssetImage('assets/images/logo.png'),
                 embeddedImageStyle: QrEmbeddedImageStyle(
-                  size: const Size(50, 50)
-                )
-              )
-            )
+                  size: const Size(50, 50),
+                ),
+              ),
+            ),
           ) 
-        ]
-      )
+        ],
+      ),
     );
   }
 
@@ -90,75 +89,73 @@ class SelfProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Hero(
-          tag: "self_profile_picture",
+          tag: 'self_profile_picture',
           child: Material(
             child: AvatarWrapper(
-              radius: 110.0,
+              radius: 110,
               avatarUrl: avatarUrl,
               altIcon: Icons.person,
-              showEditButton: false,
-              onTapFunction: () => pickAndSetAvatar(context)
-            )
-          )
+              onTapFunction: () => pickAndSetAvatar(context),
+            ),
+          ),
         ),
 
         Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 displayName,
                 style: const TextStyle(
-                  fontSize: 20
-                )
+                  fontSize: 20,
+                ),
               )
-            ]
-          )
+            ],
+          ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 3.0),
+          padding: const EdgeInsets.only(top: 3),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 jid,
                 style: const TextStyle(
-                  fontSize: 15
-                )
+                  fontSize: 15,
+                ),
               ),
               Padding(
-                padding: const EdgeInsetsDirectional.only(start: 3.0),
+                padding: const EdgeInsetsDirectional.only(start: 3),
                 child: IconButton(
                   icon: const Icon(Icons.qr_code),
-                  onPressed: () => _showJidQRCode(context)
-                )
+                  onPressed: () => _showJidQRCode(context),
+                ),
               )
-            ]
-          )
+            ],
+          ),
         ),
 
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          padding: const EdgeInsets.symmetric(horizontal: 32),
           child: ExpansionTile(
-            title: const Text("Server information"),
+            title: const Text('Server information'),
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  _buildStreamCheck("StreamManagement", smXmlns),
-                  _buildServerCheck("Message Carbons", carbonsXmlns),
-                  _buildServerCheck("Blocklist", blockingXmlns),
-                  _buildServerCheck("HTTP File Upload", httpFileUploadXmlns),
-                ]
+                  _buildStreamCheck('StreamManagement', smXmlns),
+                  _buildServerCheck('Message Carbons', carbonsXmlns),
+                  _buildServerCheck('Blocklist', blockingXmlns),
+                  _buildServerCheck('HTTP File Upload', httpFileUploadXmlns),
+                ],
               )
-            ]
-          )
+            ],
+          ),
         ) 
-      ]
+      ],
     );
   }
 }

@@ -1,26 +1,20 @@
-import "dart:typed_data";
+import 'dart:typed_data';
 
-import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/ui/service/thumbnail.dart";
-import "package:moxxyv2/ui/widgets/chat/gradient.dart";
-import "package:moxxyv2/ui/widgets/chat/helpers.dart";
-import "package:moxxyv2/ui/widgets/chat/bottom.dart";
-import "package:moxxyv2/ui/widgets/chat/filenotfound.dart";
-import "package:moxxyv2/ui/widgets/chat/download.dart";
-import "package:moxxyv2/ui/widgets/chat/downloadbutton.dart";
-import "package:moxxyv2/ui/widgets/chat/blurhash.dart";
-import "package:moxxyv2/ui/widgets/chat/media/file.dart";
-
-import "package:flutter/material.dart";
-import "package:get_it/get_it.dart";
-import "package:open_file/open_file.dart";
+import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/service/thumbnail.dart';
+import 'package:moxxyv2/ui/widgets/chat/blurhash.dart';
+import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
+import 'package:moxxyv2/ui/widgets/chat/download.dart';
+import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
+import 'package:moxxyv2/ui/widgets/chat/filenotfound.dart';
+import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
+import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
+import 'package:open_file/open_file.dart';
 
 class ImageBaseChatWidget extends StatelessWidget {
-  final String? path;
-  final BorderRadius radius;
-  final Widget child;
-  final Widget? extra;
-  final MessageBubbleBottom bottom;
 
   const ImageBaseChatWidget(
     this.path,
@@ -29,9 +23,14 @@ class ImageBaseChatWidget extends StatelessWidget {
     this.bottom,
     {
       this.extra,
-      Key? key
+      Key? key,
     }
   ) : super(key: key);
+  final String? path;
+  final BorderRadius radius;
+  final Widget child;
+  final Widget? extra;
+  final MessageBubbleBottom bottom;
 
   @override
   Widget build(BuildContext context) {
@@ -47,31 +46,27 @@ class ImageBaseChatWidget extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: radius,
-              child: child
+              child: child,
             ),
             BottomGradient(radius),
-            ...(extra != null ? [ extra! ] : []),
+            ...extra != null ? [ extra! ] : [],
             Positioned(
               bottom: 0,
               left: 0,
               right: 0,
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 3.0, right: 6.0),
-                child: bottom
-              )
+                padding: const EdgeInsets.only(bottom: 3, right: 6),
+                child: bottom,
+              ),
             ) 
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 }
 
 class ImageChatWidget extends StatelessWidget {
-  final Message message;
-  final BorderRadius radius;
-  final double maxWidth;
-  final Widget? extra;
 
   const ImageChatWidget(
     this.message,
@@ -79,9 +74,13 @@ class ImageChatWidget extends StatelessWidget {
     this.maxWidth,
     {
       this.extra,
-      Key? key
+      Key? key,
     }
   ) : super(key: key);
+  final Message message;
+  final BorderRadius radius;
+  final double maxWidth;
+  final Widget? extra;
 
   Widget _buildNonDownloaded() {
     if (message.thumbnailData != null) {
@@ -92,8 +91,8 @@ class ImageChatWidget extends StatelessWidget {
         borderRadius: radius,
         thumbnailData: message.thumbnailData!,
         child: DownloadButton(
-          onPressed: () => requestMediaDownload(message)
-        )
+          onPressed: () => requestMediaDownload(message),
+        ),
       );
     }
 
@@ -101,8 +100,8 @@ class ImageChatWidget extends StatelessWidget {
       message,
       extra: ElevatedButton(
         onPressed: () => requestMediaDownload(message),
-        child: const Text("Download")
-      )
+        child: const Text('Download'),
+      ),
     );
   }
 
@@ -114,7 +113,7 @@ class ImageChatWidget extends StatelessWidget {
         height: thumbnailSize.height.toInt(),
         borderRadius: radius,
         thumbnailData: message.thumbnailData!,
-        child: DownloadProgress(id: message.id)
+        child: DownloadProgress(id: message.id),
       );
     }
 
@@ -130,7 +129,7 @@ class ImageChatWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data != null) {
             return Image.memory(
-              snapshot.data!
+              snapshot.data!,
             );
           } else if (message.thumbnailData != null) {
             return BlurhashChatWidget(
@@ -138,21 +137,21 @@ class ImageChatWidget extends StatelessWidget {
               height: thumbnailSize.height.toInt(),
               borderRadius: radius,
               thumbnailData: message.thumbnailData!,
-              child: const FileNotFound()
+              child: const FileNotFound(),
             );
           } else {
             return FileChatWidget(
               message,
-              extra: const FileNotFound()
+              extra: const FileNotFound(),
             );
           }
         } else {
           return const Padding(
-            padding: EdgeInsets.all(32.0),
-            child: CircularProgressIndicator()
+            padding: EdgeInsets.all(32),
+            child: CircularProgressIndicator(),
           );
         }
-      }
+      },
     );
   }
   
@@ -169,7 +168,7 @@ class ImageChatWidget extends StatelessWidget {
       message.mediaUrl,
       radius,
       _innerBuild(),
-      MessageBubbleBottom(message)
+      MessageBubbleBottom(message),
     );
   }
 }

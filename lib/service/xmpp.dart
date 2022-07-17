@@ -1,62 +1,60 @@
-import "dart:async";
-import "dart:convert";
+import 'dart:async';
+import 'dart:convert';
 
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/eventhandler.dart";
-import "package:moxxyv2/shared/migrator.dart";
-import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/roster.dart";
-import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/message.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
-import "package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart";
-import "package:moxxyv2/service/service.dart";
-import "package:moxxyv2/service/state.dart";
-import "package:moxxyv2/service/roster.dart";
-import "package:moxxyv2/service/database.dart";
-import "package:moxxyv2/service/conversation.dart";
-import "package:moxxyv2/service/message.dart";
-import "package:moxxyv2/service/download.dart";
-import "package:moxxyv2/service/notifications.dart";
-import "package:moxxyv2/service/avatars.dart";
-import "package:moxxyv2/service/preferences.dart";
-import "package:moxxyv2/service/blocking.dart";
-import "package:moxxyv2/service/connectivity.dart";
-
-import "package:get_it/get_it.dart";
-import "package:connectivity_plus/connectivity_plus.dart";
-import "package:flutter_secure_storage/flutter_secure_storage.dart";
-import "package:moxplatform/moxplatform.dart";
-import "package:moxlib/moxlib.dart";
-
-import "package:logging/logging.dart";
-import "package:permission_handler/permission_handler.dart";
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:moxlib/moxlib.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/service/avatars.dart';
+import 'package:moxxyv2/service/blocking.dart';
+import 'package:moxxyv2/service/connectivity.dart';
+import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/download.dart';
+import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/notifications.dart';
+import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/service/state.dart';
+import 'package:moxxyv2/shared/eventhandler.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/migrator.dart';
+import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/xmpp/connection.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/message.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/roster.dart';
+import 'package:moxxyv2/xmpp/settings.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 const currentXmppStateVersion = 1;
-const xmppStateKey = "xmppState";
-const xmppStateVersionKey = "xmppState_version";
+const xmppStateKey = 'xmppState';
+const xmppStateVersionKey = 'xmppState_version';
 
 class _XmppStateMigrator extends Migrator<XmppState> {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    // TODO: Set other options
-    aOptions: AndroidOptions(encryptedSharedPreferences: true)
-  );
 
   _XmppStateMigrator() : super(currentXmppStateVersion, []);
+  final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    // TODO(Unknown): Set other options
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
-  // TODO: Deduplicate
+  // TODO(Unknown): Deduplicate
   Future<String?> _readKeyOrNull(String key) async {
     if (await _storage.containsKey(key: key)) {
-      return await _storage.read(key: key);
+      return _storage.read(key: key);
     } else {
       return null;
     }
@@ -65,7 +63,7 @@ class _XmppStateMigrator extends Migrator<XmppState> {
   @override
   Future<Map<String, dynamic>?> loadRawData() async {
     final raw = await _readKeyOrNull(xmppStateKey);
-    if (raw != null) return json.decode(raw);
+    if (raw != null) return json.decode(raw) as Map<String, dynamic>;
 
     return null;
   }
@@ -92,6 +90,32 @@ class _XmppStateMigrator extends Migrator<XmppState> {
 }
 
 class XmppService {
+  
+  XmppService() :
+    _currentlyOpenedChatJid = '',
+    _xmppConnectionSubscription = null,
+    _state = null,
+    _eventHandler = EventHandler(),
+    _appOpen = true,
+    _loginTriggeredFromUI = false,
+    _migrator = _XmppStateMigrator(),
+    _log = Logger('XmppService') {
+      _eventHandler.addMatchers([
+        EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
+        EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
+        EventTypeMatcher<SubscriptionRequestReceivedEvent>(_onSubscriptionRequestReceived),
+        EventTypeMatcher<DeliveryReceiptReceivedEvent>(_onDeliveryReceiptReceived),
+        EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
+        EventTypeMatcher<RosterPushEvent>(_onRosterPush),
+        EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
+        EventTypeMatcher<MessageAckedEvent>(_onMessageAcked),
+        EventTypeMatcher<MessageEvent>(_onMessage),
+        EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
+        EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
+        EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
+        EventTypeMatcher<ServerDiscoDoneEvent>(_onServerDiscoDone)
+      ]);
+    }
   final Logger _log;
   final EventHandler _eventHandler;
   final _XmppStateMigrator _migrator;
@@ -100,32 +124,6 @@ class XmppService {
   String _currentlyOpenedChatJid;
   StreamSubscription<dynamic>? _xmppConnectionSubscription;
   XmppState? _state;
-  
-  XmppService() :
-    _currentlyOpenedChatJid = "",
-    _xmppConnectionSubscription = null,
-    _state = null,
-    _eventHandler = EventHandler(),
-    _appOpen = true,
-    _loginTriggeredFromUI = false,
-    _migrator = _XmppStateMigrator(),
-    _log = Logger("XmppService") {
-      _eventHandler.addMatchers([
-          EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
-          EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
-          EventTypeMatcher<SubscriptionRequestReceivedEvent>(_onSubscriptionRequestReceived),
-          EventTypeMatcher<DeliveryReceiptReceivedEvent>(_onDeliveryReceiptReceived),
-          EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
-          EventTypeMatcher<RosterPushEvent>(_onRosterPush),
-          EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
-          EventTypeMatcher<MessageAckedEvent>(_onMessageAcked),
-          EventTypeMatcher<MessageEvent>(_onMessage),
-          EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
-          EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
-          EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
-          EventTypeMatcher<ServerDiscoDoneEvent>(_onServerDiscoDone)
-      ]);
-    }
 
   Future<XmppState> getXmppState() async {
     if (_state != null) return _state!;
@@ -156,7 +154,7 @@ class XmppService {
       jid: JID.fromString(state.jid!),
       password: state.password!,
       useDirectTLS: true,
-      allowPlainAuth: false
+      allowPlainAuth: false,
     );
   }
 
@@ -171,11 +169,11 @@ class XmppService {
     if (conversation != null && conversation.unreadCounter > 0) {
       final newConversation = await cs.updateConversation(
         conversation.id,
-        unreadCounter: 0
+        unreadCounter: 0,
       );
 
       sendEvent(
-        ConversationUpdatedEvent(conversation: newConversation)
+        ConversationUpdatedEvent(conversation: newConversation),
       );
     }
   }
@@ -189,7 +187,7 @@ class XmppService {
       required String jid,
       Message? quotedMessage,
       String? commandId,
-      ChatState? chatState
+      ChatState? chatState,
   }) async {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
@@ -206,17 +204,17 @@ class XmppService {
       false,
       sid,
       originId: originId,
-      quoteId: quotedMessage?.originId ?? quotedMessage?.sid
+      quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
     );
 
     if (commandId != null) {
       sendEvent(
         MessageAddedEvent(message: message),
-        id: commandId
+        id: commandId,
       );
     }
     
-    conn.getManagerById(messageManager)!.sendMessage(
+    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
       MessageDetails(
         to: jid,
         body: body,
@@ -226,19 +224,19 @@ class XmppService {
         quoteBody: quotedMessage?.body,
         quoteFrom: quotedMessage?.from,
         quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
-        chatState: chatState
-      )
+        chatState: chatState,
+      ),
     );
 
     final conversation = await cs.getConversationByJid(jid);
     final newConversation = await cs.updateConversation(
       conversation!.id,
       lastMessageBody: body,
-      lastChangeTimestamp: timestamp
+      lastChangeTimestamp: timestamp,
     );
 
     sendEvent(
-      ConversationUpdatedEvent(conversation: newConversation)
+      ConversationUpdatedEvent(conversation: newConversation),
     );
   }
 
@@ -259,24 +257,28 @@ class XmppService {
     if (info == null) return;
 
     if (event.isMarkable && info.features.contains(chatMarkersXmlns)) {
-      GetIt.I.get<XmppConnection>().sendStanza(
-        Stanza.message(
-          to: event.fromJid.toBare().toString(),
-          type: event.type,
-          children: [
-            makeChatMarker("received", event.stanzaId.originId ?? event.sid)
-          ]
-        )
+      unawaited(
+        GetIt.I.get<XmppConnection>().sendStanza(
+          Stanza.message(
+            to: event.fromJid.toBare().toString(),
+            type: event.type,
+            children: [
+              makeChatMarker('received', event.stanzaId.originId ?? event.sid)
+            ],
+          ),
+        ),
       );
     } else if (event.deliveryReceiptRequested && info.features.contains(deliveryXmlns)) {
-      GetIt.I.get<XmppConnection>().sendStanza(
-        Stanza.message(
-          to: event.fromJid.toBare().toString(),
-          type: event.type,
-          children: [
-            makeMessageDeliveryResponse(event.stanzaId.originId ?? event.sid)
-          ]
-        )
+      unawaited(
+        GetIt.I.get<XmppConnection>().sendStanza(
+          Stanza.message(
+            to: event.fromJid.toBare().toString(),
+            type: event.type,
+            children: [
+              makeMessageDeliveryResponse(event.stanzaId.originId ?? event.sid)
+            ],
+          ),
+        ),
       );
     }
   }
@@ -300,7 +302,7 @@ class XmppService {
 
     _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
-    GetIt.I.get<XmppConnection>().connect(lastResource: lastResource);
+    unawaited(GetIt.I.get<XmppConnection>().connect(lastResource: lastResource));
     installEventHandlers();
   }
 
@@ -315,72 +317,75 @@ class XmppService {
 
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
     switch (event.state) {
-      case XmppConnectionState.connected: {
+      case XmppConnectionState.connected:
         GetIt.I.get<BackgroundService>().setNotification(
-          "Moxxy",
-          "Ready to receive messages"
+          'Moxxy',
+          'Ready to receive messages',
         );
-      }
       break;
-      case XmppConnectionState.connecting: {
+      case XmppConnectionState.connecting:
         GetIt.I.get<BackgroundService>().setNotification(
-          "Moxxy",
-          "Connecting..."
+          'Moxxy',
+          'Connecting...',
         );
-      }
       break;
-      default: {
+      case XmppConnectionState.notConnected:
         GetIt.I.get<BackgroundService>().setNotification(
-          "Moxxy",
-          "Disconnected"
+          'Moxxy',
+          'Disconnected',
         );
-      }
+      break;
+      case XmppConnectionState.error:
+        GetIt.I.get<BackgroundService>().setNotification(
+          'Moxxy',
+          'Error',
+        );
       break;
     }
     
     if (event.state == XmppConnectionState.connected) {
       final connection = GetIt.I.get<XmppConnection>();
 
-      // TODO: Maybe have something better
+      // TODO(Unknown): Maybe have something better
       final settings = connection.getConnectionSettings();
-      modifyXmppState((state) => state.copyWith(
+      await modifyXmppState((state) => state.copyWith(
           jid: settings.jid.toString(),
-          password: settings.password.toString()
-      ));
+          password: settings.password,
+      ),);
 
       if (!event.resumed) {
         // In section 5 of XEP-0198 it says that a client should not request the roster
         // in case of a stream resumption.
-        GetIt.I.get<RosterService>().requestRoster();
+        await GetIt.I.get<RosterService>().requestRoster();
 
-        // TODO: Once groupchats come into the equation, this gets trickier
+        // TODO(Unknown): Once groupchats come into the equation, this gets trickier
         final roster = await GetIt.I.get<RosterService>().getRoster();
         for (final item in roster) {
-          GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(item.jid, item.avatarHash);
+          await GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(item.jid, item.avatarHash);
         }
       }
       
       // Make sure we display our own avatar correctly.
       // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
-      // TODO: Maybe don't do this on mobile Internet
+      // TODO(Unknown): Maybe don't do this on mobile Internet
       //GetIt.I.get<AvatarService>().requestOwnAvatar();
       
       if (_loginTriggeredFromUI) {
-        // TODO: Trigger another event so the UI can see this aswell
+        // TODO(Unknown): Trigger another event so the UI can see this aswell
         await modifyXmppState((state) => state.copyWith(
             jid: connection.getConnectionSettings().jid.toString(),
             displayName: connection.getConnectionSettings().jid.local,
-            avatarUrl: "",
-            avatarHash: ""
-        ));
+            avatarUrl: '',
+            avatarHash: '',
+        ),);
       }
     }
   }
 
   Future<void> _onResourceBindingSuccess(ResourceBindingSuccessEvent event, { dynamic extra }) async {
-    modifyXmppState((state) => state.copyWith(
-        resource: event.resource
-    ));
+    await modifyXmppState((state) => state.copyWith(
+        resource: event.resource,
+    ),);
   }
 
   Future<void> _onSubscriptionRequestReceived(SubscriptionRequestReceivedEvent event, { dynamic extra }) async {
@@ -388,7 +393,7 @@ class XmppService {
 
     if (prefs.autoAcceptSubscriptionRequests) {
       GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(
-        event.from.toBare().toString()
+        event.from.toBare().toString(),
       );
     }
 
@@ -401,22 +406,22 @@ class XmppService {
       final newConversation = await cs.updateConversation(
         conversation.id,
         open: true,
-        lastChangeTimestamp: timestamp
+        lastChangeTimestamp: timestamp,
       );
 
       sendEvent(ConversationUpdatedEvent(conversation: newConversation));
     } else {
-      // TODO: Make it configurable if this should happen
+      // TODO(Unknown): Make it configurable if this should happen
       final bare = event.from.toBare();
       final conv = await cs.addConversationFromData(
-        bare.toString().split("@")[0],
-        "",
-        "", // TODO: avatarUrl
+        bare.toString().split('@')[0],
+        '',
+        '', // TODO(Unknown): avatarUrl
         bare.toString(),
         0,
         timestamp,
         [],
-        true
+        true,
       );
 
       sendEvent(ConversationAddedEvent(conversation: conv));
@@ -424,39 +429,39 @@ class XmppService {
   }
 
   Future<void> _onDeliveryReceiptReceived(DeliveryReceiptReceivedEvent event, { dynamic extra }) async {
-    _log.finest("Received delivery receipt from ${event.from.toString()}");
+    _log.finest('Received delivery receipt from ${event.from.toString()}');
     final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
     final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
     if (dbMsg == null) {
-      _log.warning("Did not find the message with id ${event.id} in the database!");
+      _log.warning('Did not find the message with id ${event.id} in the database!');
       return;
     }
     
     final msg = await ms.updateMessage(
       dbMsg.id!,
-      received: true
+      received: true,
     );
 
     sendEvent(MessageUpdatedEvent(message: msg));
   }
 
   Future<void> _onChatMarker(ChatMarkerEvent event, { dynamic extra }) async {
-    _log.finest("Chat marker from ${event.from.toString()}");
-    if (event.type == "acknowledged") return;
+    _log.finest('Chat marker from ${event.from.toString()}');
+    if (event.type == 'acknowledged') return;
 
     final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
     final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
     if (dbMsg == null) {
-      _log.warning("Did not find the message in the database!");
+      _log.warning('Did not find the message in the database!');
       return;
     }
     
     final msg = await ms.updateMessage(
       dbMsg.id!,
-      received: dbMsg.received || event.type == "received" || event.type == "displayed",
-      displayed: dbMsg.displayed || event.type == "displayed"
+      received: dbMsg.received || event.type == 'received' || event.type == 'displayed',
+      displayed: dbMsg.displayed || event.type == 'displayed',
     );
 
     sendEvent(MessageUpdatedEvent(message: msg));
@@ -471,8 +476,8 @@ class XmppService {
     cs.setConversation(newConversation);
     sendEvent(
       ConversationUpdatedEvent(
-        conversation: newConversation
-      )
+        conversation: newConversation,
+      ),
     );
   }
 
@@ -498,7 +503,7 @@ class XmppService {
   
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
     // The jid this message event is meant for
-    String conversationJid = event.isCarbon
+    final conversationJid = event.isCarbon
       ? event.toJid.toBare().toString()
       : event.fromJid.toBare().toString();
 
@@ -520,20 +525,20 @@ class XmppService {
     // Acknowledge the message if enabled
     if (event.deliveryReceiptRequested && isInRoster && prefs.sendChatMarkers) {
       // NOTE: We do not await it to prevent us being blocked if the IQ response id delayed
-      _acknowledgeMessage(event);
+      await _acknowledgeMessage(event);
     }
 
     // Pre-process the message in case it is a reply to another message
     String? replyId;
-    String messageBody = event.body;
-    // TODO
+    var messageBody = event.body;
+    // TODO(Unknown): Implement
     if (event.reply != null /* && check if event.reply.to is okay */) {
       replyId = event.reply!.id;
 
       // Strip the compatibility fallback, if specified
       if (event.reply!.start != null && event.reply!.end != null) {
-        messageBody = messageBody.replaceRange(event.reply!.start!, event.reply!.end!, "");
-        _log.finest("Removed message reply compatibility fallback from message");
+        messageBody = messageBody.replaceRange(event.reply!.start!, event.reply!.end, '');
+        _log.finest('Removed message reply compatibility fallback from message');
       }
     }
 
@@ -542,7 +547,7 @@ class XmppService {
     // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
     // that the message body and the OOB url are the same if the OOB url is not null.
     final isFileEmbedded = embeddedFileUrl != null
-      && Uri.parse(embeddedFileUrl).scheme == "https"
+      && Uri.parse(embeddedFileUrl).scheme == 'https'
       && implies(event.oob != null, event.body == event.oob?.url);
     // Indicates if we should auto-download the file, if a file is specified in the message
     final shouldDownload = (await Permission.storage.status).isGranted
@@ -554,13 +559,13 @@ class XmppService {
     // The way this variable works is that if we can download the file, then the
     // notification will be created later by the [DownloadService]. If we don't want the
     // download to happen automatically, then the notification should happen immediately.
-    bool shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
+    var shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
     String? mimeGuess;
 
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
-    Message message = await ms.addMessageFromData(
+    var message = await ms.addMessageFromData(
       messageBody,
       messageTimestamp,
       event.fromJid.toString(),
@@ -571,9 +576,9 @@ class XmppService {
       srcUrl: embeddedFileUrl,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
-      // TODO: What about SIMS?
+      // TODO(Unknown): What about SIMS?
       thumbnailDimensions: event.sfs?.metadata.dimensions,
-      quoteId: replyId
+      quoteId: replyId,
     );
     
     // Attempt to auto-download the embedded file
@@ -588,7 +593,7 @@ class XmppService {
       if (prefs.maximumAutoDownloadSize == -1
         || (metadata.size != null && metadata.size! < prefs.maximumAutoDownloadSize * 1000000)) {
         message = message.copyWith(isDownloading: true);
-        ds.downloadFile(embeddedFileUrl, message.id, conversationJid, mimeGuess);
+        await ds.downloadFile(embeddedFileUrl, message.id, conversationJid, mimeGuess);
       } else {
         // Make sure we create the notification
         shouldNotify = true;
@@ -616,7 +621,7 @@ class XmppService {
         unreadCounter: isConversationOpened || sent
           ? conversation.unreadCounter
           : conversation.unreadCounter + 1,
-        open: true 
+        open: true, 
       );
 
       // Notify the UI of the update
@@ -627,20 +632,20 @@ class XmppService {
         await ns.showNotification(
           message,
           isInRoster ? newConversation.title : conversationJid,
-          body: conversationBody
+          body: conversationBody,
         );
       }
     } else {
       // The conversation does not exist, so we must create it
       final newConversation = await cs.addConversationFromData(
-        conversationJid.split("@")[0], // TODO: Check with the roster and User Nickname
+        conversationJid.split('@')[0], // TODO(Unknown): Check with the roster and User Nickname
         conversationBody,
-        "", // TODO: Check if we know the avatar url already, e.g. from the roster
+        '', // TODO(Unknown): Check if we know the avatar url already, e.g. from the roster
         conversationJid,
         sent ? 0 : 1,
         messageTimestamp,
         [],
-        true
+        true,
       );
 
       // Notify the UI
@@ -651,7 +656,7 @@ class XmppService {
         await ns.showNotification(
           message,
           isInRoster ? newConversation.title : conversationJid,
-          body: messageBody
+          body: messageBody,
         );
       }
     }
@@ -661,7 +666,7 @@ class XmppService {
   }
   
   Future<void> _onRosterPush(RosterPushEvent event, { dynamic extra }) async {
-    _log.fine("Roster push version: " + (event.ver ?? "(null)"));
+    _log.fine("Roster push version: ${event.ver ?? "(null)"}");
     await GetIt.I.get<RosterService>().handleRosterPushEvent(event);
   }
 
@@ -669,7 +674,7 @@ class XmppService {
     await GetIt.I.get<AvatarService>().updateAvatarForJid(
       event.jid,
       event.hash,
-      event.base64
+      event.base64,
     );
   }
   
@@ -681,7 +686,7 @@ class XmppService {
     if (msg != null) {
       await ms.updateMessage(msg.id!, acked: true);
     } else {
-      _log.finest("Wanted to mark message as acked but did not find the message to ack");
+      _log.finest('Wanted to mark message as acked but did not find the message to ack');
     }
   }
 
@@ -699,6 +704,6 @@ class XmppService {
 
   Future<void> _onServerDiscoDone(ServerDiscoDoneEvent event, { dynamic extra }) async {
     // Either we get the cached version or we retrieve it for the first time
-    GetIt.I.get<BlocklistService>().getBlocklist();
+    await GetIt.I.get<BlocklistService>().getBlocklist();
   }
 }

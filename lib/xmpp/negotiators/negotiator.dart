@@ -1,10 +1,10 @@
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/socket.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/settings.dart';
+import 'package:moxxyv2/xmpp/socket.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
 /// The state a negotiator is currently in
 enum NegotiatorState {
@@ -19,14 +19,6 @@ enum NegotiatorState {
 }
 
 class NegotiatorAttributes {
-  final void Function(XMLNode nonza) sendNonza;
-  final ConnectionSettings Function() getConnectionSettings;
-  final Future<void> Function(XmppEvent event) sendEvent;
-  final XmppFeatureNegotiatorBase? Function(String id) getNegotiatorById;
-  final XmppManagerBase? Function(String id) getManagerById;
-  /// Returns the full JID of the current account
-  final JID Function() getFullJID;
-  final BaseSocketWrapper Function() getSocket;
 
   const NegotiatorAttributes(
     this.sendNonza,
@@ -37,9 +29,20 @@ class NegotiatorAttributes {
     this.getFullJID,
     this.getSocket,
   );
+  final void Function(XMLNode nonza) sendNonza;
+  final ConnectionSettings Function() getConnectionSettings;
+  final Future<void> Function(XmppEvent event) sendEvent;
+  final XmppFeatureNegotiatorBase? Function(String id) getNegotiatorById;
+  final XmppManagerBase? Function(String id) getManagerById;
+  /// Returns the full JID of the current account
+  final JID Function() getFullJID;
+  final BaseSocketWrapper Function() getSocket;
 }
 
 abstract class XmppFeatureNegotiatorBase {
+
+  XmppFeatureNegotiatorBase(this.priority, this.sendStreamHeaderWhenDone, this.negotiatingXmlns, this.id)
+    : state = NegotiatorState.ready;
   /// The priority regarding other negotiators. The higher, the earlier will the
   /// negotiator be used
   final int priority;
@@ -55,25 +58,21 @@ abstract class XmppFeatureNegotiatorBase {
   final String id;
   
   /// The state the negotiator is currently in
-  // TODO: Make private
   NegotiatorState state;
   
   late NegotiatorAttributes _attributes;
-
-  XmppFeatureNegotiatorBase(this.priority, this.sendStreamHeaderWhenDone, this.negotiatingXmlns, this.id)
-    : state = NegotiatorState.ready;
 
   /// Register the negotiator against a connection class by means of [attributes].
   void register(NegotiatorAttributes attributes) {
     _attributes = attributes;
   }
   
-  /// Returns true if a feature in [feature], which are the children of the
+  /// Returns true if a feature in [features], which are the children of the
   /// <stream:features /> nonza, can be negotiated. Otherwise, returns false.
   bool matchesFeature(List<XMLNode> features) {
     return firstWhereOrNull(
       features,
-      (XMLNode feature) => feature.attributes["xmlns"] == negotiatingXmlns,
+      (XMLNode feature) => feature.attributes['xmlns'] == negotiatingXmlns,
     ) != null;
   }
 

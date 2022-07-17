@@ -1,4 +1,4 @@
-part of "preferences_bloc.dart";
+part of 'preferences_bloc.dart';
 
 abstract class PreferencesEvent {}
 
@@ -6,12 +6,12 @@ abstract class PreferencesEvent {}
 /// If [notify] is true, then the background service will be
 /// notified of this change.
 class PreferencesChangedEvent extends PreferencesEvent {
-  final PreferencesState preferences;
-  final bool notify;
 
   PreferencesChangedEvent(this.preferences, {
       this.notify = true,
   });
+  final PreferencesState preferences;
+  final bool notify;
 }
 
 /// Triggered by the UI when signing out is requested

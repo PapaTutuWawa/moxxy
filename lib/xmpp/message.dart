@@ -1,31 +1,20 @@
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/managers/handlers.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 
 class MessageDetails {
-  final String to;
-  final String body;
-  final bool requestDeliveryReceipt;
-  final bool requestChatMarkers;
-  final String? id;
-  final String? originId;
-  final String? quoteBody;
-  final String? quoteId;
-  final String? quoteFrom;
-  final ChatState? chatState;
-  final StatelessFileSharingData? sfs;
 
   const MessageDetails({
       required this.to,
@@ -38,8 +27,19 @@ class MessageDetails {
       this.quoteId,
       this.quoteFrom,
       this.chatState,
-      this.sfs
+      this.sfs,
   });
+  final String to;
+  final String body;
+  final bool requestDeliveryReceipt;
+  final bool requestChatMarkers;
+  final String? id;
+  final String? originId;
+  final String? quoteBody;
+  final String? quoteId;
+  final String? quoteFrom;
+  final ChatState? chatState;
+  final StatelessFileSharingData? sfs;
 }
 
 class MessageManager extends XmppManagerBase {
@@ -47,92 +47,93 @@ class MessageManager extends XmppManagerBase {
   String getId() => messageManager;
 
   @override
-  String getName() => "MessageManager";
+  String getName() => 'MessageManager';
 
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
-      stanzaTag: "message",
+      stanzaTag: 'message',
       callback: _onMessage,
-      priority: -100
+      priority: -100,
     )
   ];
   
   Future<StanzaHandlerData> _onMessage(Stanza _, StanzaHandlerData state) async {
     // First check if it's a carbon
     final message = state.stanza;
-    final body = message.firstTag("body");
+    final body = message.firstTag('body');
     
     getAttributes().sendEvent(MessageEvent(
-      body: body != null ? body.innerText() : "",
-      fromJid: JID.fromString(message.attributes["from"]!),
-      toJid: JID.fromString(message.attributes["to"]!),
-      sid: message.attributes["id"]!,
+      body: body != null ? body.innerText() : '',
+      fromJid: JID.fromString(message.attributes['from']! as String),
+      toJid: JID.fromString(message.attributes['to']! as String),
+      sid: message.attributes['id']! as String,
       stanzaId: state.stableId ?? const StableStanzaId(),
       isCarbon: state.isCarbon,
       deliveryReceiptRequested: state.deliveryReceiptRequested,
       isMarkable: state.isMarkable,
-      type: message.attributes["type"],
+      type: message.attributes['type'] as String?,
       oob: state.oob,
       sfs: state.sfs,
       sims: state.sims,
       reply: state.reply,
-      chatState: state.chatState
-    ));
+      chatState: state.chatState,
+    ),);
 
     return state.copyWith(done: true);
   }
 
-  /// Send a message to [to] with the content [body]. If [deliveryRequest] is true, then
+  /// Send a message to to with the content body. If deliveryRequest is true, then
   /// the message will also request a delivery receipt from the receiver.
-  /// If [id] is non-null, then it will be the id of the message stanza.
-  /// element to this id. If [originId] is non-null, then it will create an "origin-id"
-  /// child in the message stanza and set its id to [originId].
+  /// If id is non-null, then it will be the id of the message stanza.
+  /// element to this id. If originId is non-null, then it will create an "origin-id"
+  /// child in the message stanza and set its id to originId.
   void sendMessage(MessageDetails details) {
     final stanza = Stanza.message(
       to: details.to,
-      type: "chat",
+      type: 'chat',
       id: details.id,
-      children: []
+      children: [],
     );
 
     if (details.quoteBody != null) {
-      final fallback = "&gt; ${details.quoteBody!}";
+      final fallback = '&gt; ${details.quoteBody!}';
 
-      stanza.addChild(
-        XMLNode(tag: "body", text: fallback + "\n${details.body}")
-      );
-      stanza.addChild(
-        XMLNode.xmlns(
-          tag: "reply",
-          xmlns: replyXmlns,
-          attributes: {
-            "to": details.quoteFrom!,
-            "id": details.quoteId!
-          }
+      stanza
+        ..addChild(
+          XMLNode(tag: 'body', text: '$fallback\n${details.body}'),
         )
-      );
-      stanza.addChild(
-        XMLNode.xmlns(
-          tag: "fallback",
-          xmlns: fallbackXmlns,
-          attributes: {
-            "for": replyXmlns
-          },
-          children: [
-            XMLNode(
-              tag: "body",
-              attributes: {
-                "start": "0",
-                "end": "${fallback.length}"
-              }
-            )
-          ]
+        ..addChild(
+          XMLNode.xmlns(
+            tag: 'reply',
+            xmlns: replyXmlns,
+            attributes: {
+              'to': details.quoteFrom!,
+              'id': details.quoteId!
+            },
+          ),
         )
-      );
+        ..addChild(
+          XMLNode.xmlns(
+            tag: 'fallback',
+            xmlns: fallbackXmlns,
+            attributes: {
+              'for': replyXmlns
+            },
+            children: [
+              XMLNode(
+                tag: 'body',
+                attributes: <String, String>{
+                  'start': '0',
+                  'end': '${fallback.length}'
+                },
+              )
+            ],
+          ),
+        );
     } else {
       stanza.addChild(
-        XMLNode(tag: "body", text: details.body)
+        XMLNode(tag: 'body', text: details.body),
       );
     }
 
@@ -148,8 +149,8 @@ class MessageManager extends XmppManagerBase {
 
     if (details.chatState != null) {
       stanza.addChild(
-        // TODO: Move this into xep_0085.dart
-        XMLNode.xmlns(tag: chatStateToString(details.chatState!), xmlns: chatStateXmlns)
+        // TODO(Unknown): Move this into xep_0085.dart
+        XMLNode.xmlns(tag: chatStateToString(details.chatState!), xmlns: chatStateXmlns),
       );
     }
     

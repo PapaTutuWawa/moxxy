@@ -1,25 +1,25 @@
-import "package:moxxyv2/xmpp/stringxml.dart";
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
 /// NOTE: Specified by https://github.com/PapaTutuWawa/custom-xeps/blob/master/xep-xxxx-file-thumbnails.md
 
-const fileThumbnailsXmlns = "proto:urn:xmpp:file-thumbnails:0";
-const blurhashThumbnailType = "blurhash";
+const fileThumbnailsXmlns = 'proto:urn:xmpp:file-thumbnails:0';
+const blurhashThumbnailType = 'blurhash';
 
 abstract class Thumbnail {}
 
 class BlurhashThumbnail extends Thumbnail {
-  final String hash;
 
   BlurhashThumbnail({ required this.hash });
+  final String hash;
 }
 
 Thumbnail? parseFileThumbnailElement(XMLNode node) {
-  assert(node.attributes["xmlns"] == fileThumbnailsXmlns);
-  assert(node.tag == "file-thumbnail");
+  assert(node.attributes['xmlns'] == fileThumbnailsXmlns, 'Invalid element xmlns');
+  assert(node.tag == 'file-thumbnail', 'Invalid element name');
 
-  switch (node.attributes["type"]!) {
+  switch (node.attributes['type']!) {
     case blurhashThumbnailType: {
-      final hash = node.firstTag("blurhash")!.innerText();
+      final hash = node.firstTag('blurhash')!.innerText();
       return BlurhashThumbnail(hash: hash);
     }
   }
@@ -30,8 +30,8 @@ Thumbnail? parseFileThumbnailElement(XMLNode node) {
 XMLNode? _fromThumbnail(Thumbnail thumbnail) {
   if (thumbnail is BlurhashThumbnail) {
     return XMLNode(
-      tag: "blurhash",
-      text: thumbnail.hash
+      tag: 'blurhash',
+      text: thumbnail.hash,
     );
   }
 
@@ -39,16 +39,16 @@ XMLNode? _fromThumbnail(Thumbnail thumbnail) {
 }
 
 XMLNode constructFileThumbnailElement(Thumbnail thumbnail) {
-  XMLNode node = _fromThumbnail(thumbnail)!;
-  String type = "";
+  final node = _fromThumbnail(thumbnail)!;
+  var type = '';
   if (thumbnail is BlurhashThumbnail) {
-    type = "blurhash";
+    type = 'blurhash';
   }
 
   return XMLNode.xmlns(
-    tag: "file-thumbnail",
+    tag: 'file-thumbnail',
     xmlns: fileThumbnailsXmlns,
-    attributes: { "type": type },
-    children: [ node ]
+    attributes: { 'type': type },
+    children: [ node ],
   );
 }

@@ -1,4 +1,4 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
 class Splashscreen extends StatelessWidget {
   const Splashscreen({ Key? key }) : super(key: key);
@@ -8,10 +8,10 @@ class Splashscreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Image.asset(
-          "assets/images/logo.png",
-          width: 200, height: 200
-        )
-      )
+          'assets/images/logo.png',
+          width: 200, height: 200,
+        ),
+      ),
     );
   }
 }

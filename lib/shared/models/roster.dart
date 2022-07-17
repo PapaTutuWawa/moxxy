@@ -1,7 +1,7 @@
-import "package:freezed_annotation/freezed_annotation.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-part "roster.freezed.dart";
-part "roster.g.dart";
+part 'roster.freezed.dart';
+part 'roster.g.dart';
 
 @freezed
 class RosterItem with _$RosterItem {
@@ -13,7 +13,7 @@ class RosterItem with _$RosterItem {
     String title,
     String subscription,
     String ask,
-    List<String> groups
+    List<String> groups,
   ) = _RosterItem;
 
   // JSON

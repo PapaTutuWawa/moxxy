@@ -1,14 +1,14 @@
-import "package:freezed_annotation/freezed_annotation.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0066.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0385.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0461.dart";
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0385.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0461.dart';
 
-part "data.freezed.dart";
+part 'data.freezed.dart';
 
 @freezed
 class StanzaHandlerData with _$StanzaHandlerData {
@@ -34,7 +34,7 @@ class StanzaHandlerData with _$StanzaHandlerData {
       @Default(false) bool isMarkable,
       // This is for stanza handlers that are not part of the XMPP library but still need
       // pass data around.
-      @Default({}) Map<String, dynamic> other
+      @Default(<String, dynamic>{}) Map<String, dynamic> other,
     }
   ) = _StanzaHandlerData;
 }

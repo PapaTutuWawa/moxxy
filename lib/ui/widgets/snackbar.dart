@@ -1,30 +1,31 @@
-import "package:moxxyv2/ui/constants.dart";
-
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 class PermanentSnackBar extends StatefulWidget {
+
+  // TODO(Unknown): Remove linter ignore
+  // ignore: prefer_const_constructors_in_immutables
+  PermanentSnackBar({ required this.text, required this.actionText, required this.onPressed, Key? key }) : super(key: key);
   final String text;
   final String actionText;
   final void Function() onPressed;
-
-  // TODO: Remove linter ignore
-  // ignore: prefer_const_constructors_in_immutables
-  PermanentSnackBar({ required this.text, required this.actionText, required this.onPressed, Key? key }) : super(key: key);
 
   @override
   // ignore: no_logic_in_create_state
-  _PermanentSnackBarState createState() => _PermanentSnackBarState(text: text, actionText: actionText, onPressed: onPressed);
+  PermanentSnackBarState createState() => PermanentSnackBarState(text: text, actionText: actionText, onPressed: onPressed);
 }
 
-class _PermanentSnackBarState extends State<PermanentSnackBar> with TickerProviderStateMixin {
+class PermanentSnackBarState extends State<PermanentSnackBar> with TickerProviderStateMixin {
+
+  PermanentSnackBarState({ required this.text, required this.actionText, required this.onPressed });
   final String text;
   final String actionText;
   final void Function() onPressed;
 
+  // ignore: use_late_for_private_fields_and_variables
   AnimationController? _controller;
+  // ignore: use_late_for_private_fields_and_variables
   Animation<Offset>? _animation;
-
-  _PermanentSnackBarState({ required this.text, required this.actionText, required this.onPressed });
 
   @override
   void initState() {
@@ -32,15 +33,15 @@ class _PermanentSnackBarState extends State<PermanentSnackBar> with TickerProvid
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 200),
-      vsync: this
+      vsync: this,
     )..forward();
     _animation = Tween(
-      begin: const Offset(0.0, 1.0),
-      end: Offset.zero
+      begin: const Offset(0, 1),
+      end: Offset.zero,
     ).animate(CurvedAnimation(
         parent: _controller!,
-        curve: Curves.easeOutCubic
-    ));
+        curve: Curves.easeOutCubic,
+    ),);
   }
   
   @override
@@ -50,25 +51,24 @@ class _PermanentSnackBarState extends State<PermanentSnackBar> with TickerProvid
       child: Container(
         color: primaryColor,
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(text),
               const Spacer(),
               TextButton(
+                onPressed: onPressed,
                 child: Text(
                   actionText,
                   style: const TextStyle(
-                    color: Colors.white
-                  )
+                    color: Colors.white,
+                  ),
                 ),
-                onPressed: onPressed
               )
-            ]
-          )
-        )
-      )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

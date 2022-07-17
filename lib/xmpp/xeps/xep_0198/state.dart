@@ -1,7 +1,7 @@
-import "package:freezed_annotation/freezed_annotation.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-part "state.freezed.dart";
-part "state.g.dart";
+part 'state.freezed.dart';
+part 'state.g.dart';
 
 @freezed
 class StreamManagementState with _$StreamManagementState {
@@ -10,7 +10,7 @@ class StreamManagementState with _$StreamManagementState {
     int s2c,
     {
       String? streamResumptionLocation,
-      String? streamResumptionId
+      String? streamResumptionId,
     }
   ) = _StreamManagementState;
 

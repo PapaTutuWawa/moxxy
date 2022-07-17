@@ -1,10 +1,9 @@
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/ui/bloc/blocklist_bloc.dart";
-import "package:moxxyv2/ui/widgets/topbar.dart";
-
-import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum BlocklistOptions {
   unblockAll
@@ -13,59 +12,59 @@ enum BlocklistOptions {
 class BlocklistPage extends StatelessWidget {
   const BlocklistPage({ Key? key }) : super(key: key);
 
-  static get route => MaterialPageRoute(builder: (_) => const BlocklistPage());
+  static MaterialPageRoute get route => MaterialPageRoute<dynamic>(builder: (_) => const BlocklistPage());
   
   Widget _buildListView(BlocklistState state) {
-    if (state.blocklist.isEmpty) {
+    if ((state.blocklist as List<String>).isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Image.asset("assets/images/happy_news.png")
+              padding: const EdgeInsets.only(top: 8),
+              child: Image.asset('assets/images/happy_news.png'),
             ),
             const Padding(
-              padding: EdgeInsets.only(top: 8.0),
-              child: Text("You have no users blocked")
+              padding: EdgeInsets.only(top: 8),
+              child: Text('You have no users blocked'),
             )
-          ]
-        )
+          ],
+        ),
       );
     }
 
     return ListView.builder(
-      itemCount: state.blocklist.length,
-      itemBuilder: (context, index) {
-        final jid = state.blocklist[index];
+      itemCount: (state.blocklist as List<String>).length,
+      itemBuilder: (BuildContext context, int index) {
+        final jid = (state.blocklist as List<String>)[index];
 
         return Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 32.0,
-            vertical: 16.0
+            horizontal: 32,
+            vertical: 16,
           ),
           child: Row(
             children: [
               Expanded(
-                child: Text(jid)
+                child: Text(jid),
               ),
               IconButton(
                 icon: const Icon(Icons.delete),
                 color: Colors.red,
                 onPressed: () => showConfirmationDialog(
-                  "Unblock $jid?",
-                  "Are you sure you want to unblock $jid? You will receive messages from this user again.",
+                  'Unblock $jid?',
+                  'Are you sure you want to unblock $jid? You will receive messages from this user again.',
                   context,
                   () {
                     context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
                     Navigator.of(context).pop();
                   }
-                )
+                ),
               )
-            ]
-          )
+            ],
+          ),
         );
-      }
+      },
     );
   }
 
@@ -74,15 +73,15 @@ class BlocklistPage extends StatelessWidget {
     return BlocBuilder<BlocklistBloc, BlocklistState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
-          "Blocklist",
+          'Blocklist',
           extra: [
             Expanded(child: Container()),
             PopupMenuButton(
               onSelected: (BlocklistOptions result) {
                 if (result == BlocklistOptions.unblockAll) {
                   showConfirmationDialog(
-                    "Are you sure?",
-                    "Are you sure you want to unblock all users?",
+                    'Are you sure?',
+                    'Are you sure you want to unblock all users?',
                     context,
                     () {
                       context.read<BlocklistBloc>().add(UnblockedAllEvent());
@@ -95,14 +94,14 @@ class BlocklistPage extends StatelessWidget {
               itemBuilder: (BuildContext context) => [
                 const PopupMenuItem(
                   value: BlocklistOptions.unblockAll,
-                  child: Text("Unblock all")
+                  child: Text('Unblock all'),
                 )
-              ]
+              ],
             )
-          ]
+          ],
         ),
-        body: _buildListView(state)
-      )
+        body: _buildListView(state),
+      ),
     );
   }
 }

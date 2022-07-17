@@ -1,15 +1,10 @@
-import "dart:math";
+import 'dart:math';
 
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
 /// Based on https://docs.flutter.dev/cookbook/effects/typing-indicator
 
 class _FlashingCircle extends StatelessWidget {
-  final AnimationController controller;
-  final Animation<double> animation;
-  final Interval interval;
-  final Color colorLight;
-  final Color colorDark;
 
   const _FlashingCircle(
     this.controller,
@@ -17,8 +12,13 @@ class _FlashingCircle extends StatelessWidget {
     this.interval,
     this.colorLight,
     this.colorDark,
-    { Key? key }
+    { Key? key, }
   ) : super(key: key);
+  final AnimationController controller;
+  final Animation<double> animation;
+  final Interval interval;
+  final Color colorLight;
+  final Color colorDark;
 
   @override
   Widget build(BuildContext context) {
@@ -36,30 +36,30 @@ class _FlashingCircle extends StatelessWidget {
             color: Color.lerp(
               colorLight,
               colorDark,
-              circleColorPercent
-            )
-          )
+              circleColorPercent,
+            ),
+          ),
         );
-      }
+      },
     );
   }
 }
 
 class TypingIndicatorWidget extends StatefulWidget {
-  final Color colorLight;
-  final Color colorDark;
 
   const TypingIndicatorWidget(this.colorLight, this.colorDark, { Key? key }) : super(key: key);
+  final Color colorLight;
+  final Color colorDark;
   
   @override
-  _TypingIndicatorWidget createState() => _TypingIndicatorWidget();
+  TypingIndicatorWidgetState createState() => TypingIndicatorWidgetState();
 }
 
-class _TypingIndicatorWidget extends State<TypingIndicatorWidget> with TickerProviderStateMixin {
+class TypingIndicatorWidgetState extends State<TypingIndicatorWidget> with TickerProviderStateMixin {
+
+  TypingIndicatorWidgetState();
   late AnimationController _controller;
   late Animation<double> _animation;
-
-  _TypingIndicatorWidget();
   
   @override
   void initState() {
@@ -71,8 +71,8 @@ class _TypingIndicatorWidget extends State<TypingIndicatorWidget> with TickerPro
 
     _animation = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
-      reverseCurve: const Interval(0.0, 0.3, curve: Curves.easeOut),
+      curve: const Interval(0, 0.5, curve: Curves.elasticOut),
+      reverseCurve: const Interval(0, 0.3, curve: Curves.easeOut),
     );
   }
 
@@ -88,37 +88,37 @@ class _TypingIndicatorWidget extends State<TypingIndicatorWidget> with TickerPro
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(2),
             child: _FlashingCircle(
               _controller,
               _animation,
               const Interval(0.20, 0.7),
               widget.colorLight,
-              widget.colorDark
-            )
+              widget.colorDark,
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(2),
             child: _FlashingCircle(
               _controller,
               _animation,
               const Interval(0.40, 0.8),
               widget.colorLight,
-              widget.colorDark
-            )
+              widget.colorDark,
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(2),
             child: _FlashingCircle(
               _controller,
               _animation,
               const Interval(0.60, 0.9),
               widget.colorLight,
-              widget.colorDark
-            )
+              widget.colorDark,
+            ),
           ),
-        ]
-      )
+        ],
+      ),
     );
   }
 }
