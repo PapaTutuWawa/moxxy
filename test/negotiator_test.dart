@@ -9,6 +9,7 @@ import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 
 import "helpers/logging.dart";
 import "helpers/xmpp.dart";
@@ -100,6 +101,7 @@ void main() {
       RosterManager(),
       DiscoManager(),
       PingManager(),
+      DiscoCacheManager(),
     ])
     ..setConnectionSettings(
       ConnectionSettings(

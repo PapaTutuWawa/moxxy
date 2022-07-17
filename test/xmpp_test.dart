@@ -17,6 +17,7 @@ import "package:moxxyv2/xmpp/negotiators/sasl/plain.dart";
 import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 
@@ -240,6 +241,7 @@ void main() {
           DiscoCacheManager(),
           PingManager(),
           StreamManagementManager(),
+          DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators(
         [
@@ -329,6 +331,7 @@ void main() {
         RosterManager(),
         DiscoManager(),
         PingManager(),
+        DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators([
         SaslPlainNegotiator()
@@ -419,6 +422,7 @@ void main() {
           RosterManager(),
           DiscoManager(),
           PingManager(),
+          DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators([
         SaslPlainNegotiator()
@@ -513,6 +517,7 @@ void main() {
           RosterManager(),
           DiscoManager(),
           PingManager(),
+          DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators([
         SaslPlainNegotiator(),
