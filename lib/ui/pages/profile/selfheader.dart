@@ -10,7 +10,7 @@ class SelfProfileHeader extends StatelessWidget {
   final String avatarUrl;
   final String displayName;
   final List<String> serverFeatures;
-  final List<String> streamFeatures;
+  final bool streamManagementSupported;
   final void Function(String, String) setAvatar;
   
   const SelfProfileHeader(
@@ -18,7 +18,7 @@ class SelfProfileHeader extends StatelessWidget {
     this.avatarUrl,
     this.displayName,
     this.serverFeatures,
-    this.streamFeatures,
+    this.streamManagementSupported,
     this.setAvatar,
     {
       Key? key
@@ -45,7 +45,7 @@ class SelfProfileHeader extends StatelessWidget {
         children: [
           Text(title),
           Checkbox(
-            value: streamFeatures.contains(namespace),
+            value: streamManagementSupported,
             onChanged: (_) {}
           )
         ]

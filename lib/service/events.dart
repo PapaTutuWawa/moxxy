@@ -19,6 +19,8 @@ import "package:moxxyv2/xmpp/connection.dart";
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart";
 
 import "package:logging/logging.dart";
 import "package:get_it/get_it.dart";
@@ -378,16 +380,14 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
-  // TODO: Fix
-  /*
+  final smNegotiator = conn.getNegotiatorById(streamManagementNegotiator)! as StreamManagementNegotiator;
   sendEvent(
     GetFeaturesEvent(
       serverFeatures: conn.serverFeatures,
-      streamFeatures: conn.streamFeatures
+      supportsStreamManagement: smNegotiator.isSupported,
     ),
     id: id
   );
-  */
 }
 
 Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {

@@ -158,7 +158,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          streamFeatures: List<String>
+          supportsStreamManagement: bool
           serverFeatures: List<String>
       # Returned by [SignOutCommand]
       - name: SignedOutEvent

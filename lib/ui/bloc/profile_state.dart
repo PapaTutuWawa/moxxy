@@ -9,6 +9,6 @@ class ProfileState with _$ProfileState {
       @Default("") String avatarUrl,
       @Default("") String displayName,
       @Default([]) List<String> serverFeatures,
-      @Default([]) List<String> streamFeatures,
+      @Default(false) bool streamManagementSupported,
   }) = _ProfileState;
 }

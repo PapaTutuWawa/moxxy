@@ -25,8 +25,13 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
 
   final Logger _log;
 
+  /// True if Stream Management is supported on this stream.
+  bool _supported;
+  get isSupported => _supported;
+  
   StreamManagementNegotiator()
     : _state = _StreamManagementNegotiatorState.ready,
+      _supported = false,
       _log = Logger("StreamManagementNegotiator"),
       super(10, false, smXmlns, streamManagementNegotiator);
 
@@ -50,6 +55,10 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
       
   @override
   Future<void> negotiate(XMLNode nonza) async {
+    // negotiate is only called when we matched the stream feature, so we know
+    // that the server advertises it.
+    _supported = true;
+
     switch (_state) {
       case _StreamManagementNegotiatorState.ready:
         final sm = attributes.getManagerById(smManager)! as StreamManagementManager;
@@ -128,6 +137,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
   @override
   void reset() {
     _state = _StreamManagementNegotiatorState.ready;
+    _supported = false;
 
     super.reset();
   }
