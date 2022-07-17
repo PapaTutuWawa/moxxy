@@ -602,11 +602,49 @@ class XmppConnection {
     return matchingNegotiators.first;
   }
 
-  Future<void> _onNegotiationsDone() async {
-    unawaited(getPresenceManager().sendInitialPresence());
+  Future<void> _performDiscoSweep() async {
+    final disco = getDiscoManager();
+    final discoCache = getDiscoCacheManager();
+    final serverJid = _connectionSettings.jid.domain;
+    final info = await discoCache.getInfoByJid(serverJid);
+    if (info != null) {
+      _log.finest("Discovered supported server features: ${info.features}");
+      _serverFeatures.addAll(info.features);
+      await _sendEvent(ServerDiscoDoneEvent());
+    } else {
+      _log.warning("Failed to discover server features");
+    }
 
-    // TODO: Perform a disco sweep if we don't know anything about the server
-    //       and we did not resume.
+    final items = await disco.discoItemsQuery(serverJid);
+    if (items != null) {
+      _log.finest("Discovered disco items form $serverJid");
+
+      // Query all items
+      for (final item in items) {
+        _log.finest("Querying info for ${item.jid}...");
+        final itemInfo = await discoCache.getInfoByJid(item.jid);
+        if (itemInfo != null) {
+          _log.finest("Received info for ${item.jid}");
+          await _sendEvent(ServerItemDiscoEvent(info: itemInfo, jid: item.jid));
+        } else {
+          _log.warning("Failed to discover info for ${item.jid}");
+        }
+      }
+    } else {
+      _log.warning("Failed to discover items of $serverJid");
+    }
+  }
+
+  /// Called once all negotiations are done. Sends the initial presence and performs
+  /// a disco sweep.
+  Future<void> _onNegotiationsDone() async {
+    await getPresenceManager().sendInitialPresence();
+
+    if (_serverFeatures.isEmpty) {
+      await _performDiscoSweep();
+    } else {
+      _log.info("Not performing disco sweep as _serverFeatures is not empty");
+    }
   }
   
   /// To be called after _currentNegotiator!.negotiate(..) has been called. Checks the
@@ -731,6 +769,9 @@ class XmppConnection {
     } else if (event is ResourceBindingSuccessEvent) {
       _log.finest("Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}");
       _resource = event.resource;
+
+      _log.finest("Resetting _serverFeatures");
+      _serverFeatures.clear();
     }
     
     for (var manager in _xmppManagers.values) {
