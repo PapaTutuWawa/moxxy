@@ -1,13 +1,19 @@
+import 'package:meta/meta.dart';
+
+@immutable
 class JID {
 
-  JID(this._local, this._domain, this._resource);
+  const JID(this.local, this.domain, this.resource);
 
-  JID.fromString(String jid): _local = '', _domain = '', _resource = '' {
+  factory JID.fromString(String jid) {
     // 0: Parsing either the local or domain part
     // 1: Parsing the domain part
     // 2: Parsing the resource
     var state = 0;
     var buffer = '';
+    var local_ = '';
+    var domain_ = '';
+    var resource_ = '';
     
     for (var i = 0; i < jid.length; i++) {
       final c = jid[i];
@@ -16,15 +22,15 @@ class JID {
       switch (state) {
         case 0: {
           if (c == '@') {
-            _local = buffer;
+            local_ = buffer;
             buffer = '';
             state = 1;
           } else if (c == '/') {
-            _domain = buffer;
+            domain_ = buffer;
             buffer = '';
             state = 2;
           } else if (eol) {
-            _domain = buffer + c;
+            domain_ = buffer + c;
           } else {
             buffer += c;
           }
@@ -32,14 +38,14 @@ class JID {
         break;
         case 1: {
           if (c == '/') {
-            _domain = buffer;
+            domain_ = buffer;
             buffer = '';
             state = 2;
           } else if (eol) {
-            _domain = buffer;
+            domain_ = buffer;
 
             if (c != ' ') {
-              _domain = _domain + c;
+              domain_ = domain_ + c;
             }
           } else if (c != ' ') {
             buffer += c;
@@ -48,10 +54,10 @@ class JID {
         break;
         case 2: {
           if (eol) {
-            _resource = buffer;
+            resource_ = buffer;
 
             if (c != ' ') {
-              _resource = _resource + c;
+              resource_ = resource_ + c;
             }
           } else if (c != ''){
             buffer += c;
@@ -59,20 +65,18 @@ class JID {
         }
       }
     }
-  }
-  String _local;
-  String _domain;
-  String _resource;
 
-  String get local => _local;
-  String get domain => _domain;
-  String get resource => _resource;
+    return JID(local_, domain_, resource_);
+  }
+  final String local;
+  final String domain;
+  final String resource;
 
   bool isBare() => resource.isEmpty;
   bool isFull() => resource.isNotEmpty;
 
-  JID toBare() => JID(_local, _domain, '');
-  JID withResource(String resource) => JID(_local, _domain, resource);
+  JID toBare() => JID(local, domain, '');
+  JID withResource(String resource) => JID(local, domain, resource);
   
   @override
   String toString() {
@@ -96,13 +100,13 @@ class JID {
   //       magic
   bool operator ==(Object other) {
     if (other is JID) {
-      return other.local == _local && other.domain == _domain && other.resource == _resource;
+      return other.local == local && other.domain == domain && other.resource == resource;
     }
 
     return false;
   }
 
-
-
-
+  /// I have no idea if that is correct.
+  @override
+  int get hashCode => local.hashCode + domain.hashCode + resource.hashCode;
 }
