@@ -153,7 +153,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     // Lift the UI block
-    GetIt.I.get<Completer>().complete();
+    GetIt.I.get<Completer<void>>().complete();
   }
   
   @override

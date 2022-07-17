@@ -133,7 +133,7 @@ Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }
 
 Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
   GetIt.I.get<Logger>().fine('onServiceReady: Waiting for UI future to resolve...');
-  await GetIt.I.get<Completer>().future;
+  await GetIt.I.get<Completer<void>>().future;
   GetIt.I.get<Logger>().fine('onServiceReady: Done');
   await MoxplatformPlugin.handler.getDataSender().sendData(
     PerformPreStartCommand(),

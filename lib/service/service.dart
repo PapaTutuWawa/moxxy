@@ -228,7 +228,7 @@ Future<void> entrypoint() async {
   }
 
   GetIt.I.get<Logger>().finest('Resolving startup future');
-  GetIt.I.get<Completer>().complete();
+  GetIt.I.get<Completer<void>>().complete();
 
   sendEvent(ServiceReadyEvent());
 }
