@@ -51,8 +51,8 @@ import 'package:page_transition/page_transition.dart';
 void setupLogging() {
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-      // ignore: avoid_print
-      print('[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}');
+    // ignore: avoid_print
+    print('[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}');
   });
   GetIt.I.registerSingleton<Logger>(Logger('MoxxyMain'));
 }
