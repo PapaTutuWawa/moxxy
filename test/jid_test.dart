@@ -31,7 +31,7 @@ void main() {
   });
 
   test('Equality', () {
-      expect(JID.fromString('hallo@welt/abc') == JID('hallo', 'welt', 'abc'), true );
+      expect(JID.fromString('hallo@welt/abc') == JID('hallo', 'welt', 'abc'), true);
       expect(JID.fromString('hallo@welt') == JID('hallo', 'welt', 'a'), false);
   });
 

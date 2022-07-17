@@ -1,3 +1,4 @@
+import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
 import 'package:moxxyv2/xmpp/ping.dart';

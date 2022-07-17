@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/attributes.dart';
