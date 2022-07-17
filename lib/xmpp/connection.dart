@@ -12,25 +12,21 @@ import "package:moxxyv2/xmpp/iq.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/reconnect.dart";
-import "package:moxxyv2/xmpp/sasl/authenticator.dart";
-import "package:moxxyv2/xmpp/sasl/authenticators.dart";
 import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
 
+import "package:meta/meta.dart";
 import "package:uuid/uuid.dart";
 import "package:synchronized/synchronized.dart";
 import "package:logging/logging.dart";
-import "package:meta/meta.dart";
-import "package:moxlib/moxlib.dart";
 
 enum XmppConnectionState {
   notConnected,
@@ -60,13 +56,6 @@ class StreamHeaderNonza extends XMLNode {
       },
       closeTag: false
     );
-}
-
-class StartTLSNonza extends XMLNode {
-  StartTLSNonza() : super.xmlns(
-    tag: "starttls",
-    xmlns: startTlsXmlns
-  );
 }
 
 class XmppConnectionResult {
@@ -99,8 +88,6 @@ class XmppConnection {
   
   /// Stream properties
   ///
-  /// Features we got after SASL auth (xmlns)
-  final List<String> _streamFeatures = List.empty(growable: true);
   /// Disco info we got after binding a resource (xmlns)
   final List<String> _serverFeatures = List.empty(growable: true);
   /// The buffer object to keep split up stanzas together
@@ -128,11 +115,13 @@ class XmppConnection {
   Completer<XmppConnectionResult>? _connectionCompleter;
 
   /// Negotiators
-  late AuthenticationNegotiator _authenticator;
-
+  final Map<String, XmppFeatureNegotiatorBase> _featureNegotiators;
+  XmppFeatureNegotiatorBase? _currentNegotiator;
+  final List<XMLNode> _streamFeatures;
+  
   /// Misc
   final Logger _log;
-
+  
   /// [socket] is for debugging purposes.
   /// [connectionPingDuration] is the duration after which a ping will be sent to keep
   /// the connection open. Defaults to 15 minutes.
@@ -144,7 +133,7 @@ class XmppConnection {
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
-    _routingState = RoutingState.unauthenticated,
+    _routingState = RoutingState.preConnection,
     _eventStreamController = StreamController.broadcast(),
     _resource = "",
     _streamBuffer = XmlStreamBuffer(),
@@ -161,6 +150,8 @@ class XmppConnection {
     _outgoingPreStanzaHandlers = List.empty(growable: true),
     _outgoingPostStanzaHandlers = List.empty(growable: true),
     _reconnectionPolicy = reconnectionPolicy,
+    _featureNegotiators = {},
+    _streamFeatures = List.empty(growable: true),
     _log = Logger("XmppConnection") {
       // Allow the reconnection policy to perform reconnections by itself
       _reconnectionPolicy.register(
@@ -174,8 +165,11 @@ class XmppConnection {
       _socket.getEventStream().listen(_handleSocketEvent);
   }
 
-  List<String> get streamFeatures => _streamFeatures;
   List<String> get serverFeatures => _serverFeatures;
+
+  /// Return the registered feature negotiator that has id [id]. Returns null if
+  /// none can be found.
+  XmppFeatureNegotiatorBase? getNegotiatorById(String id) => _featureNegotiators[id];
   
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
   /// [sortHandlers] should NOT be touched. It specified if the handler priorities
@@ -190,11 +184,11 @@ class XmppConnection {
         sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
-        isStreamFeatureSupported: isStreamFeatureSupported,
         isFeatureSupported: (feature) => _serverFeatures.contains(feature),
         getFullJID: () => _connectionSettings.jid.withResource(_resource),
         getSocket: () => _socket,
-        getConnection: () => this
+        getConnection: () => this,
+        getNegotiatorById: getNegotiatorById,
     ));
 
     final id = manager.getId();
@@ -231,6 +225,33 @@ class XmppConnection {
     _incomingStanzaHandlers.sort(stanzaHandlerSortComparator);
     _outgoingPreStanzaHandlers.sort(stanzaHandlerSortComparator);
     _outgoingPostStanzaHandlers.sort(stanzaHandlerSortComparator);
+  }
+
+  /// Register a list of negotiator with the connection.
+  void registerFeatureNegotiators(List<XmppFeatureNegotiatorBase> negotiators) {
+    for (final negotiator in negotiators) {
+      negotiator.register(
+        NegotiatorAttributes(
+          sendRawXML,
+          () => _connectionSettings,
+          _sendEvent,
+          (id) => _featureNegotiators[id],
+          (id) => _xmppManagers[id],
+          () => _connectionSettings.jid.withResource(_resource),
+          () => _socket,
+        ),
+      );
+      _featureNegotiators[negotiator.id] = negotiator;
+    }
+
+    _log.finest('Negotiators registered');
+  }
+
+  /// Reset all registered negotiators.
+  void _resetNegotiators() {
+    for (final negotiator in _featureNegotiators.values) {
+      negotiator.reset();
+    }
   }
   
   /// Generate an Id suitable for an origin-id or stanza id
@@ -307,7 +328,6 @@ class XmppConnection {
   }
   
   /// Called when a stream ending error has occurred
-  @internal
   void handleError(Object? error) {
     if (error != null) {
       _log.severe("handleError: $error");
@@ -341,11 +361,6 @@ class XmppConnection {
   /// Returns the [ConnectionState] of the connection
   XmppConnectionState getConnectionState() => _connectionState;
   
-  /// Returns true if the stream supports the XMLNS @feature.
-  bool isStreamFeatureSupported(String feature) {
-    return _streamFeatures.contains(feature);
-  }
-
   /// Sends an [XMLNode] without any further processing to the server.
   void sendRawXML(XMLNode node, { String? redact }) {
     _socket.write(node.toXml(), redact: redact);
@@ -372,6 +387,7 @@ class XmppConnection {
   /// [stanza] has none.
   /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
   /// none.
+  // TODO: if addId = false, the function crashes.
   Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true, bool retransmitted = false }) async {
     // Add extra data in case it was not set
     if (addId && (stanza.id == null || stanza.id == "")) {
@@ -447,7 +463,7 @@ class XmppConnection {
       }
     }
   }
-
+  
   /// Sets the routing state and logs the change
   void _updateRoutingState(RoutingState state) {
     _log.finest("Updating _routingState from $_routingState to $state");
@@ -457,81 +473,14 @@ class XmppConnection {
   /// Returns the connection's events as a stream.
   Stream<XmppEvent> asBroadcastStream() {
     return _eventStreamController.stream.asBroadcastStream();
-  }
+  }  
   
-  /// Perform a resource bind with a server-generated resource.
-  void _performResourceBinding() {
-    sendStanza(Stanza.iq(
-        type: "set",
-        children: [
-          XMLNode(
-            tag: "bind",
-            attributes: {
-              "xmlns": bindXmlns
-            }
-          )
-        ]
-      ),
-      addFrom: StanzaFromType.none
-    );
-  }
-
-  /// Handles the result to the resource binding request and returns true if we should
-  /// proceed and false if not.
-  Future<bool> _handleResourceBindingResult(XMLNode stanza) async {
-    if (stanza.tag != "iq" || stanza.attributes["type"] != "result") {
-      _log.severe("Resource binding failed!");
-      _updateRoutingState(RoutingState.error);
-      return false;
-    }
-
-    // Success
-    final bind = stanza.firstTag("bind")!;
-    final jid = bind.firstTag("jid")!;
-    // TODO: Use our FullJID class
-    _resource = jid.innerText().split("/")[1];
-
-    await _sendEvent(ResourceBindingSuccessEvent(resource: _resource));
-
-    return true;
-  }
-
   /// Timer callback to prevent the connection from timing out.
   void _pingConnectionOpen(Timer timer) {
     // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
     // send a whitespace ping
     if (_connectionState == XmppConnectionState.connected) {
       _sendEvent(SendPingEvent());
-    }
-  }
-
-  Future<void> _discoverServerFeatures() async {
-    _serverFeatures.clear();
-    final serverJid = _connectionSettings.jid.domain;
-    final serverInfo = await getDiscoCacheManager().getInfoByJid(serverJid);
-    if (serverInfo != null) {
-      _log.finest("Discovered supported server features: ${serverInfo.features}");
-      _serverFeatures.addAll(serverInfo.features);
-      await _sendEvent(ServerDiscoDoneEvent());
-    } else {
-      _log.warning("Failed to discover server features using XEP-0030");
-    }
-
-    final serverItems = await getDiscoManager().discoItemsQuery(serverJid);
-    if (serverItems != null) {
-      _log.finest("Received disco items for $serverJid");
-      for (final item in serverItems) {
-        _log.finest("Querying info for ${item.jid}");
-        final info = await getDiscoCacheManager().getInfoByJid(item.jid);
-        if (info != null) {
-          _log.finest("Received info for ${item.jid}");
-          await _sendEvent(ServerItemDiscoEvent(info: info, jid: item.jid));
-        } else {
-          _log.warning("Failed to discover disco info for ${item.jid}");
-        }
-      }
-    } else {
-      _log.warning("Failed to discover server items using XEP-0030");
     }
   }
 
@@ -614,286 +563,198 @@ class XmppConnection {
     }
   }
 
-  /// Called whenever we receive data that has been parsed as XML.
-  void handleXmlStream(XMLNode node) async {
-    switch (_routingState) {
-      case RoutingState.unauthenticated: {
-        // We expect the stream header here
-        if (node.tag != "stream:features") {
-          _log.severe("Expected stream features");
-          _routingState = RoutingState.error;
-          return;
+  /// Returns true if all mandatory features in [features] have been negotiated.
+  /// Otherwise returns false.
+  bool _isMandatoryNegotiationDone(List<XMLNode> features) {
+    return features.every(
+      (XMLNode feature) {
+        return feature.firstTag("required") == null && feature.tag != "mechanisms";
+      }
+    );
+  }
+
+  /// Returns true if we can still negotiate. Returns false if no negotiator is
+  /// matching and ready.
+  bool _isNegotiationPossible(List<XMLNode> features) {
+    return getNextNegotiator(features, log: false) != null;
+  }
+
+  /// Returns the next negotiator that matches [features]. Returns null if none can be
+  /// picked. If [log] is true, then the list of matching negotiators will be logged.
+  @visibleForTesting
+  XmppFeatureNegotiatorBase? getNextNegotiator(List<XMLNode> features, {bool log = true}) {
+    final matchingNegotiators = _featureNegotiators.values
+      .where(
+        (XmppFeatureNegotiatorBase negotiator) {
+          return negotiator.state == NegotiatorState.ready && negotiator.matchesFeature(features);
         }
+      )
+      .toList()
+      ..sort((a, b) => b.priority.compareTo(a.priority));
 
-        final streamFeatures = node;
+    if (log) {
+      _log.finest('List of matching negotiators: ${matchingNegotiators.map((a) => a.id)}');
+    }
+    
+    if (matchingNegotiators.isEmpty) return null;
 
-        // First check for StartTLS
-        final startTLS = streamFeatures.firstTag("starttls", xmlns: startTlsXmlns);
-        if (startTLS != null) {
-          _log.fine("StartTLS is availabe. Performing StartTLS upgrade.");
-          _updateRoutingState(RoutingState.performStartTLS);
-          sendRawXML(StartTLSNonza());
-          return;
-        }
+    return matchingNegotiators.first;
+  }
 
-        if (!_socket.isSecure()) {
-          _log.severe("Refusing to go any further on an insecure connection");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
-        
-        final mechanismNodes = streamFeatures.firstTag("mechanisms")!;
-        final mechanisms = mechanismNodes.children.map((node) => node.innerText()).toList();
-        final authenticator = getAuthenticator(
-          mechanisms,
-          _connectionSettings,
-          sendRawXML,
-        );
+  Future<void> _performDiscoSweep() async {
+    final disco = getDiscoManager();
+    final discoCache = getDiscoCacheManager();
+    final serverJid = _connectionSettings.jid.domain;
+    final info = await discoCache.getInfoByJid(serverJid);
+    if (info != null) {
+      _log.finest("Discovered supported server features: ${info.features}");
+      _serverFeatures.addAll(info.features);
+      await _sendEvent(ServerDiscoDoneEvent());
+    } else {
+      _log.warning("Failed to discover server features");
+    }
 
-        if (authenticator == null) {
-          _log.severe("Failed to select an authenticator!");
-          _updateRoutingState(RoutingState.error);
-          return;
+    final items = await disco.discoItemsQuery(serverJid);
+    if (items != null) {
+      _log.finest("Discovered disco items form $serverJid");
+
+      // Query all items
+      for (final item in items) {
+        _log.finest("Querying info for ${item.jid}...");
+        final itemInfo = await discoCache.getInfoByJid(item.jid);
+        if (itemInfo != null) {
+          _log.finest("Received info for ${item.jid}");
+          await _sendEvent(ServerItemDiscoEvent(info: itemInfo, jid: item.jid));
         } else {
-          _authenticator = authenticator;
-        }
-
-        _log.fine("Proceeding with SASL authentication");
-        _updateRoutingState(RoutingState.performSaslAuth);
-        final result = await _authenticator.next(null);
-        if (result.getState() == AuthenticationResult.success) {
-          _log.fine("SASL authentication was successful. Proceeding to check stream features");
-          _updateRoutingState(RoutingState.checkStreamManagement);
-          _sendStreamHeader();
-        } else if (result.getState() == AuthenticationResult.failure) {
-          _log.severe("SASL authentication failed!");
-          await _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          _setConnectionState(XmppConnectionState.error);
-          _updateRoutingState(RoutingState.error);
-
-          _log.fine("Resolving _connectionCompleter due to a SASL failure");
-          _connectionCompleter?.complete(
-            XmppConnectionResult(
-              false,
-              reason: result.getValue()
-            )
-          );
-          _connectionCompleter = null;
+          _log.warning("Failed to discover info for ${item.jid}");
         }
       }
-      break;
-      case RoutingState.performStartTLS: {
-        if (node.tag != "proceed" || node.attributes["xmlns"] != startTlsXmlns) {
-          _log.severe("Failed to proceed with StartTLS negotiation");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
+    } else {
+      _log.warning("Failed to discover items of $serverJid");
+    }
+  }
 
-        _performingStartTLS = true;
-        _log.fine("Securing socket...");
-        final result = await _socket.secure(_connectionSettings.jid.domain);
-        if (!result) {
-          _log.severe("Failed to secure the socket");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
-        _log.fine("Done!");
-        _log.fine("Restarting stream negotiation on TLS secured stream.");
-        _performingStartTLS = false;
-        _updateRoutingState(RoutingState.unauthenticated);
-        _sendStreamHeader();
-      }
-      break;
-      case RoutingState.performSaslAuth: {
-        final result = await _authenticator.next(node);
-        if (result.getState() == AuthenticationResult.success) {
-          _log.fine("SASL authentication was successful. Proceeding to check stream features");
-          _updateRoutingState(RoutingState.checkStreamManagement);
-          _sendStreamHeader();
-        } else if (result.getState() == AuthenticationResult.failure) {
-          _log.severe("SASL authentication failed!");
-          await _sendEvent(AuthenticationFailedEvent(saslError: result.getValue()));
-          _setConnectionState(XmppConnectionState.error);
-          _updateRoutingState(RoutingState.error);
+  /// Called once all negotiations are done. Sends the initial presence and performs
+  /// a disco sweep.
+  Future<void> _onNegotiationsDone() async {
+    await getPresenceManager().sendInitialPresence();
 
-          _log.fine("Resolving _connectionCompleter due to a SASL failure");
-          _connectionCompleter?.complete(
-            XmppConnectionResult(
-              false,
-              reason: result.getValue()
-            )
-          );
-          _connectionCompleter = null;
-        }
-      }
-      break;
-      case RoutingState.checkStreamManagement: {
-        if (node.tag != "stream:features") {
-          _log.severe("Expected stream features");
-          _routingState = RoutingState.error;
-          return;
-        }
+    if (_serverFeatures.isEmpty) {
+      await _performDiscoSweep();
+    } else {
+      _log.info("Not performing disco sweep as _serverFeatures is not empty");
+    }
+  }
+  
+  /// To be called after _currentNegotiator!.negotiate(..) has been called. Checks the
+  /// state of the negotiator and picks the next negotiatior, ends negotiation or
+  /// waits, depending on what the negotiator did.
+  Future<void> _checkCurrentNegotiator() async {
+    if (_currentNegotiator!.state == NegotiatorState.done) {
+      _log.finest("Negotiator ${_currentNegotiator!.id} done");
 
-        final streamFeatures = node;
-        // TODO: Handle required features?
-        // NOTE: In case of reconnecting
+      if (_currentNegotiator!.sendStreamHeaderWhenDone) {
+        _currentNegotiator = null;
         _streamFeatures.clear();
-        for (var node in streamFeatures.children) {
-          _streamFeatures.add(node.attributes["xmlns"]);
-        }
+        _sendStreamHeader();
+      } else {
+        // Track what features we still have
+        _streamFeatures
+          .removeWhere((node) {
+            return node.attributes["xmlns"] == _currentNegotiator!.negotiatingXmlns;
+          });
+        _currentNegotiator = null;
 
-        final streamManager = getStreamManagementManager();
-        if (isStreamFeatureSupported(smXmlns) && streamManager != null) {
-          await streamManager.loadState();
-          final srid = streamManager.state.streamResumptionId;
-          final h = streamManager.state.s2c;
-          
-          // Try to work with SM first
-          if (srid != null) {
-            // Try to resume the last stream
-            _log.fine("Found stream resumption Id. Attempting to perform stream resumption");
-            _updateRoutingState(RoutingState.performStreamResumption);
-            sendRawXML(StreamManagementResumeNonza(srid, h));
+        if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
+          _log.finest("Negotiations done!");
+          _updateRoutingState(RoutingState.handleStanzas);
+
+          await _onNegotiationsDone();
+        } else {
+          _currentNegotiator = getNextNegotiator(_streamFeatures);
+          _log.finest("Chose ${_currentNegotiator!.id} as next negotiator");
+
+          final fakeStanza = XMLNode(
+            tag: "stream:features",
+            children: _streamFeatures,
+          );
+          await _currentNegotiator!.negotiate(fakeStanza);
+          await _checkCurrentNegotiator();
+        }
+      }
+    } else if (_currentNegotiator!.state == NegotiatorState.retryLater) {
+      _log.finest('Negotiator want to continue later. Picking new one...');
+
+      _currentNegotiator!.state = NegotiatorState.ready;
+
+      if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
+        _log.finest('Negotiations done!');
+
+        _updateRoutingState(RoutingState.handleStanzas);
+        await _onNegotiationsDone();
+      } else {
+        _log.finest('Picking new negotiator...');
+        _currentNegotiator = getNextNegotiator(_streamFeatures);
+        _log.finest("Chose $_currentNegotiator as next negotiator");
+        final fakeStanza = XMLNode(
+          tag: "stream:features",
+          children: _streamFeatures,
+        );
+        await _currentNegotiator!.negotiate(fakeStanza);
+        await _checkCurrentNegotiator();
+      }
+    }
+  }
+  
+  /// Called whenever we receive data that has been parsed as XML.
+  Future<void> handleXmlStream(XMLNode node) async {
+    switch (_routingState) {
+      case RoutingState.negotiating:
+        if (_currentNegotiator != null) {
+          // If we already have a negotiator, just let it do its thing
+          _log.finest('Negotiator currently active...');
+
+          await _currentNegotiator!.negotiate(node);
+          await _checkCurrentNegotiator();
+        } else {
+          _streamFeatures
+            ..clear()
+            ..addAll(node.children);
+
+          // We need to pick a new one
+          if (_isMandatoryNegotiationDone(node.children)) {
+            // Mandatory features are done but can we still negotiate more?
+            if (_isNegotiationPossible(node.children)) {// We can still negotiate features, so do that.
+              _log.finest('All required stream features done! Continuing negotiation');
+              _currentNegotiator = getNextNegotiator(node.children);
+              _log.finest("Chose $_currentNegotiator as next negotiator");
+              await _currentNegotiator!.negotiate(node);
+              await _checkCurrentNegotiator();
+            } else {
+              _updateRoutingState(RoutingState.handleStanzas);
+            }
           } else {
-            // Try to enable SM
-            _resuming = false;
-            _log.fine("Attempting to bind resource before enabling Stream Management");
-            _updateRoutingState(RoutingState.bindResourcePreSM);
-            _performResourceBinding();
+            // There still are mandatory features
+            if (!_isNegotiationPossible(node.children)) {
+              _log.severe("Mandatory negotiations not done but continuation not possible");
+              _updateRoutingState(RoutingState.error);
+              return;
+            }
+
+            _currentNegotiator = getNextNegotiator(node.children);
+            _log.finest("Chose $_currentNegotiator as next negotiator");
+            await _currentNegotiator!.negotiate(node);
+            await _checkCurrentNegotiator();
           }
-        } else {
-          _resuming = false;
-          _log.fine("Either there is no StreamManagementManager registered or the stream does not support Stream Management.");
-          _log.fine("Proceeding to bind resource");
-          _updateRoutingState(RoutingState.bindResource);
-          _performResourceBinding();
         }
-      }
-      break;
-      case RoutingState.bindResource: {
-        final proceed = await _handleResourceBindingResult(node);
-        if (proceed) {
-          _log.fine("Stream negotiation done. Ready to handle stanzas");
-          _updateRoutingState(RoutingState.handleStanzas);
-          getPresenceManager().sendInitialPresence();
-          _log.fine("Resolving _connectionCompleter since stream negotiation is done");
-          _connectionCompleter?.complete(
-            const XmppConnectionResult(true)
-          );
-          _connectionCompleter = null;
-        } else {
-          _log.severe("Resource binding failed!");
-          _updateRoutingState(RoutingState.error);
-          _setConnectionState(XmppConnectionState.error);
-          return;
-        }
-
-        if (_serverFeatures.isEmpty) {
-          await _discoverServerFeatures();
-          await _sendEvent(ServerDiscoDoneEvent());
-        }
-      }
-      break;
-      case RoutingState.bindResourcePreSM: {
-        final proceed = await _handleResourceBindingResult(node);
-        if (proceed) {
-          if (_connectionCompleter != null) {
-            _connectionCompleter!.complete(
-              const XmppConnectionResult(true)
-            );
-            _connectionCompleter = null;
-          }
-
-          _log.fine("Attempting to enable Stream Management");
-          _updateRoutingState(RoutingState.enableSM);
-          sendRawXML(StreamManagementEnableNonza());
-        }
-      }
-      break;
-      case RoutingState.performStreamResumption: {
-        if (node.tag == "resumed") {
-          _log.fine("Stream Resumption successful!");
-          // NOTE: _resource is already set if we resume
-          assert(_resource != "");
-          _updateRoutingState(RoutingState.handleStanzas);
-          _setConnectionState(XmppConnectionState.connected);
-
-          // Restore the CSI state if we have a manager
-          final csiManager = getCSIManager();
-          if (csiManager != null) {
-            csiManager.restoreCSIState();
-          }
-          
-          final h = int.parse(node.attributes["h"]!);
-          await _sendEvent(StreamResumedEvent(h: h));
-
-          // NOTE: Technically not needed but we don't persist disco data so
-          //       just request it if we don't have it.
-          if (_serverFeatures.isEmpty) {
-            await _discoverServerFeatures();
-            await _sendEvent(ServerDiscoDoneEvent());
-          }
-        } else if (node.tag == "failed") {
-          // NOTE: If we are here, we have it.
-          final manager = getStreamManagementManager()!;
-          _log.info("Stream resumption failed. Proceeding with new stream...");
-
-          // We have to do this because we otherwise get a stanza stuck in the queue,
-          // thus spamming the server on every <a /> nonza we receive.
-          manager.setState(StreamManagementState(0, 0));
-          await manager.commitState();
-
-          _serverFeatures.clear();
-          _resuming = false;
-          _updateRoutingState(RoutingState.bindResourcePreSM);
-          _performResourceBinding();
-        }
-      }
-      break;
-      case RoutingState.enableSM: {
-        if (node.tag == "failed") {
-          // Not critical
-          _log.warning("Failed to enable SM: " + node.tag);
-          _updateRoutingState(RoutingState.handleStanzas);
-          getPresenceManager().sendInitialPresence();
-        } else if (node.tag == "enabled") {
-          _log.fine("SM enabled!");
-
-          final id = node.attributes["id"];
-          if (id != null && [ "true", "1" ].contains(node.attributes["resume"])) {
-            _log.finest("Stream resumption possible!");
-          }
-
-          await _sendEvent(
-            StreamManagementEnabledEvent(
-              resource: _resource,
-              id: node.attributes["id"],
-              location: node.attributes["location"]
-            )
-          );
-
-          _updateRoutingState(RoutingState.handleStanzas);
-          getPresenceManager().sendInitialPresence();
-          _setConnectionState(XmppConnectionState.connected);
-        }
-
-        if (_serverFeatures.isEmpty) {
-          await _discoverServerFeatures();
-          await _sendEvent(ServerDiscoDoneEvent());
-        }
-      }
-      break;
-      case RoutingState.handleStanzas: {
+        break;
+      case RoutingState.handleStanzas:
         await _handleStanza(node);
-      }
-      break;
-      case RoutingState.error: {
-        _log.warning("Received node while in error state. Ignoring: ${node.toXml()}");
-      }
-      break;
+        break;
+      case RoutingState.preConnection:
+      case RoutingState.error:
+        _log.warning("Received data while in non-receiving state");
+        break;
     }
   }
   
@@ -904,6 +765,12 @@ class XmppConnection {
     // Specific event handling
     if (event is AckRequestResponseTimeoutEvent) {
       _reconnectionPolicy.onFailure();
+    } else if (event is ResourceBindingSuccessEvent) {
+      _log.finest("Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}");
+      _resource = event.resource;
+
+      _log.finest("Resetting _serverFeatures");
+      _serverFeatures.clear();
     }
     
     for (var manager in _xmppManagers.values) {
@@ -1002,8 +869,9 @@ class XmppConnection {
       _reconnectionPolicy.onSuccess();
       _log.fine("Preparing the internal state for a connection attempt");
       _performingStartTLS = false;
+      _resetNegotiators();
       _setConnectionState(XmppConnectionState.connecting);
-      _updateRoutingState(RoutingState.unauthenticated);
+      _updateRoutingState(RoutingState.negotiating);
       _sendStreamHeader();
     }
   }

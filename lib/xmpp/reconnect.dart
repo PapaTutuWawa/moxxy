@@ -48,7 +48,7 @@ abstract class ReconnectionPolicy {
 class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
   int _counter;
   Timer? _timer;
-  Logger _log;
+  final Logger _log;
 
   ExponentialBackoffReconnectionPolicy()
   : _counter = 0,

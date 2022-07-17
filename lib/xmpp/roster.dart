@@ -8,6 +8,8 @@ import "package:moxxyv2/xmpp/managers/base.dart";
 import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/managers/handlers.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 
 const rosterErrorNoQuery = 1;
 const rosterErrorNonResult = 2;
@@ -42,6 +44,31 @@ class RosterPushEvent extends XmppEvent {
   RosterPushEvent({ required this.item, this.ver });
 }
 
+/// A Stub feature negotiator for finding out whether roster versioning is supported.
+class RosterFeatureNegotiator extends XmppFeatureNegotiatorBase {
+  RosterFeatureNegotiator() : _supported = false, super(0, false, rosterNegotiator, rosterVersioningXmlns);
+
+  /// True if rosterVersioning is supported. False otherwise.
+  bool _supported;
+  bool get isSupported => _supported;
+  
+  @override
+  Future<void> negotiate(XMLNode nonza) async {
+    // negotiate is only called when the negotiator matched, meaning the server
+    // advertises roster versioning.
+    _supported = true;
+    state = NegotiatorState.done;
+  }
+
+  @override
+  void reset() {
+    _supported = false;
+
+    super.reset();
+  }
+}
+
+/// This manager requires a RosterFeatureNegotiator to be registered.
 class RosterManager extends XmppManagerBase {
   String? _rosterVersion;
 
@@ -208,7 +235,9 @@ class RosterManager extends XmppManagerBase {
     return await _handleRosterResponse(query);
   }
 
-  bool rosterVersioningAvailable() => getAttributes().isStreamFeatureSupported(rosterVersioningXmlns);
+  bool rosterVersioningAvailable() {
+    return (getAttributes().getNegotiatorById(rosterNegotiator)! as RosterFeatureNegotiator).isSupported;
+  }
   
   /// Attempts to add [jid] with a title of [title] and groups [groups] to the roster.
   /// Returns true if the process was successful, false otherwise.

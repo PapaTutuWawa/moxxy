@@ -9,6 +9,7 @@ import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 
+import "../helpers/logging.dart";
 import "../helpers/xmpp.dart";
 
 import "package:test/test.dart";
@@ -42,17 +43,19 @@ XmppManagerAttributes mkAttributes(void Function(Stanza) callback) {
       useDirectTLS: true,
       allowPlainAuth: false,
     ),
-    isStreamFeatureSupported: (feat) => false,
     isFeatureSupported: (_) => false,
     getFullJID: () => JID.fromString("hallo@example.server/uwu"),
     getSocket: () => StubTCPSocket(play: []),
-    getConnection: () => XmppConnection(TestingReconnectionPolicy())
+    getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+    getNegotiatorById: (id) => null,
   );
 }
 
 XMLNode mkAck(int h) => XMLNode.xmlns(tag: "a", xmlns: "urn:xmpp:sm:3", attributes: { "h": h.toString() });
 
 void main() {
+  initLogger();
+
   final stanza = Stanza(
     to: "some.user@server.example",
     tag: "message"
@@ -64,8 +67,7 @@ void main() {
       manager.register(attributes);
 
       // [...]
-      // <enable />
-      // <enabled />
+      // <enable /> // <enabled />
       await manager.onXmppEvent(StreamManagementEnabledEvent(resource: "hallo"));
       expect(manager.state.c2s, 0);
       expect(manager.state.s2c, 0);
@@ -155,8 +157,6 @@ void main() {
   });
 
   group("Counting acks", () {
-      // TODO: These tests fail without logging enabled...
-      //       Why though
       test("Sending all pending acks at once", () async {
           final attributes = mkAttributes((_) {});
           final manager = StreamManagementManager();
@@ -167,11 +167,11 @@ void main() {
           for (int i = 0; i < 5; i++) {
             await runOutgoingStanzaHandlers(manager, stanza);
           }
-          expect(manager.getPendingAcks(), 5);
+          expect(await manager.getPendingAcks(), 5);
 
           // Ack all of them at once
           await manager.runNonzaHandlers(mkAck(5));
-          expect(manager.getPendingAcks(), 0);
+          expect(await manager.getPendingAcks(), 0);
       });
       test("Sending partial pending acks at once", () async {
           final attributes = mkAttributes((_) {});
@@ -183,11 +183,11 @@ void main() {
           for (int i = 0; i < 5; i++) {
             await runOutgoingStanzaHandlers(manager, stanza);
           }
-          expect(manager.getPendingAcks(), 5);
+          expect(await manager.getPendingAcks(), 5);
 
           // Ack only 3 of them at once
           await manager.runNonzaHandlers(mkAck(3));
-          expect(manager.getPendingAcks(), 2);
+          expect(await manager.getPendingAcks(), 2);
       });
 
   });

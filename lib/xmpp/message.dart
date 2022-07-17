@@ -12,6 +12,7 @@ import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0184.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0333.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0359.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0447.dart";
 
 class MessageDetails {
   final String to;
@@ -24,6 +25,7 @@ class MessageDetails {
   final String? quoteId;
   final String? quoteFrom;
   final ChatState? chatState;
+  final StatelessFileSharingData? sfs;
 
   const MessageDetails({
       required this.to,
@@ -35,7 +37,8 @@ class MessageDetails {
       this.quoteBody,
       this.quoteId,
       this.quoteFrom,
-      this.chatState
+      this.chatState,
+      this.sfs
   });
 }
 

@@ -364,9 +364,6 @@ class XmppService {
       // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
       // TODO: Maybe don't do this on mobile Internet
       //GetIt.I.get<AvatarService>().requestOwnAvatar();
-
-      // Either we get the cached version or we retrieve it for the first time
-      //GetIt.I.get<BlocklistService>().getBlocklist();
       
       if (_loginTriggeredFromUI) {
         // TODO: Trigger another event so the UI can see this aswell
@@ -701,6 +698,7 @@ class XmppService {
   }
 
   Future<void> _onServerDiscoDone(ServerDiscoDoneEvent event, { dynamic extra }) async {
-    // TODO: Notify the blocklist
+    // Either we get the cached version or we retrieve it for the first time
+    GetIt.I.get<BlocklistService>().getBlocklist();
   }
 }

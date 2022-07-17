@@ -3,7 +3,6 @@ import "dart:typed_data";
 
 import "package:moxxyv2/shared/avatar.dart";
 import "package:moxxyv2/ui/bloc/crop_bloc.dart";
-import "package:moxxyv2/xmpp/sasl/errors.dart";
 
 import "package:flutter/material.dart";
 import "package:file_picker/file_picker.dart";
@@ -118,15 +117,6 @@ Future<PickedAvatar?> pickAvatar(BuildContext context, String jid, String oldPat
   }
 
   return null;
-}
-
-/// Turn the SASL error into a string that a regular user could understand.
-String saslErrorToHumanReadable(String saslError) {
-  switch (saslError) {
-    case saslErrorNotAuthorized: return "Wrong XMPP address or password";
-  }
-
-  return "SASL error: " + saslError;
 }
 
 /// Turn [text] into a text that can be used with the [AvatarWrapper]'s alt.

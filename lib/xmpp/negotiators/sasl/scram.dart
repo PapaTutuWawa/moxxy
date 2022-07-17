@@ -1,19 +1,19 @@
 import "dart:convert";
 import "dart:math" show Random;
 
-import "package:moxxyv2/xmpp/types/result.dart";
+import "package:moxxyv2/xmpp/events.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/sasl/authenticator.dart";
-import "package:moxxyv2/xmpp/sasl/errors.dart";
-import "package:moxxyv2/xmpp/sasl/kv.dart";
-import "package:moxxyv2/xmpp/sasl/nonza.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/kv.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/negotiator.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/nonza.dart";
 
 import "package:cryptography/cryptography.dart";
 import "package:random_string/random_string.dart";
 import "package:saslprep/saslprep.dart";
-import "package:moxlib/moxlib.dart";
+import "package:logging/logging.dart";
 
 // NOTE: Inspired by https://github.com/vukoye/xmpp_dart/blob/3b1a0588562b9e591488c99d834088391840911d/lib/src/features/sasl/ScramSaslHandler.dart
 
@@ -40,6 +40,14 @@ String mechanismNameFromType(ScramHashType type) {
     case ScramHashType.sha1: return scramSha1Mechanism;
     case ScramHashType.sha256: return scramSha256Mechanism;
     case ScramHashType.sha512: return scramSha512Mechanism;
+  }
+}
+
+String namespaceFromType(ScramHashType type) {
+  switch (type) {
+    case ScramHashType.sha1: return saslScramSha1Negotiator;
+    case ScramHashType.sha256: return saslScramSha256Negotiator;
+    case ScramHashType.sha512: return saslScramSha512Negotiator;
   }
 }
 
@@ -70,31 +78,30 @@ enum ScramState {
 
 const gs2Header = "n,,";
 
-class SaslScramNegotiator extends AuthenticationNegotiator {
-  final ConnectionSettings settings;
+class SaslScramNegotiator extends SaslNegotiator {
   String? clientNonce;
   String initialMessageNoGS2;
   final ScramHashType hashType;
   final HashAlgorithm _hash;
   String _serverSignature;
-  final DeterministicFiniteAutomaton<ScramState, bool> _state;
 
-  void Function(XMLNode, { String? redact }) sendRawXML;
+  // The internal state for performing the negotiation
+  ScramState _scramState;
 
+  final Logger _log;
+  
   // NOTE: NEVER, and I mean, NEVER set clientNonce or initalMessageNoGS2. They are just there for testing
-  SaslScramNegotiator({
-      required this.settings,
-      required this.initialMessageNoGS2,
-      required this.sendRawXML,
-      required this.hashType,
-      this.clientNonce
-  }) :
+  SaslScramNegotiator(
+    int priority,
+    this.initialMessageNoGS2,
+    this.clientNonce,
+    this.hashType
+  ) :
     _hash = hashFromType(hashType),
     _serverSignature = "",
-    _state = DeterministicFiniteAutomaton(ScramState.preSent, trapState: ScramState.error) {
-      _state.addTransition(ScramState.preSent, true, ScramState.initialMessageSent);
-      _state.addTransition(ScramState.initialMessageSent, true, ScramState.challengeResponseSent);
-    }
+    _scramState = ScramState.preSent,
+    _log = Logger("SaslScramNegotiator(${mechanismNameFromType(hashType)})"),
+    super(priority, namespaceFromType(hashType), mechanismNameFromType(hashType));
 
   Future<List<int>> calculateSaltedPassword(String salt, int iterations) async {
     final pbkdf2 = Pbkdf2(
@@ -104,7 +111,9 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
     );
 
     final saltedPasswordRaw = await pbkdf2.deriveKey(
-      secretKey: SecretKey(utf8.encode(Saslprep.saslprep(settings.password))),
+      secretKey: SecretKey(
+        utf8.encode(Saslprep.saslprep(attributes.getConnectionSettings().password))
+      ),
       nonce: base64.decode(salt)
     );
     return await saltedPasswordRaw.extractBytes();
@@ -164,56 +173,89 @@ class SaslScramNegotiator extends AuthenticationNegotiator {
   }
 
   @override
-  Future<Result<AuthenticationResult, String>> next(XMLNode? nonza) async {
-    switch (_state.state) {
+  bool matchesFeature(List<XMLNode> features) {
+    if (super.matchesFeature(features)) {
+      if (!attributes.getSocket().isSecure()) {
+        _log.warning("Refusing to match SASL feature due to unsecured connection");
+        return false;
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+  
+  @override
+  Future<void> negotiate(XMLNode nonza) async {
+    switch (_scramState) {
       case ScramState.preSent:
         if (clientNonce == null || clientNonce == "") {
           clientNonce = randomAlphaNumeric(40, provider: CoreRandomProvider.from(Random.secure()));
         }
         
-        initialMessageNoGS2 = "n=" + settings.jid.local + ",r=$clientNonce";
+        initialMessageNoGS2 = "n=" + attributes.getConnectionSettings().jid.local + ",r=$clientNonce";
 
-        _state.onInput(true);
-        sendRawXML(
+        _scramState = ScramState.initialMessageSent;
+        attributes.sendNonza(
+          // TODO: Redact
           SaslScramAuthNonza(body: base64.encode(utf8.encode(gs2Header + initialMessageNoGS2)), type: hashType),
-          redact: SaslScramAuthNonza(body: "******", type: hashType).toXml()
         );
-        return Result(AuthenticationResult.notDone, "");
+        break;
       case ScramState.initialMessageSent:
-        if (nonza!.tag == "failure") {
-          _state.onInput(false);
-          return Result(AuthenticationResult.failure, getSaslError(nonza));
+        if (nonza.tag == "failure") {
+          final error = nonza.children.first.tag;
+          attributes.sendEvent(AuthenticationFailedEvent(error));
+
+          state = NegotiatorState.error;
+          _scramState = ScramState.error;
+          return;
         }
 
         final challengeBase64 = nonza.innerText();
         final response = await calculateChallengeResponse(challengeBase64);
         final responseBase64 = base64.encode(utf8.encode(response));
-        _state.onInput(true);
-        sendRawXML(
+        _scramState = ScramState.challengeResponseSent;
+        attributes.sendNonza(
+          // TODO: Redact
           SaslScramResponseNonza(body: responseBase64),
-          redact: SaslScramResponseNonza(body: "******").toXml()
         );
-        return Result(AuthenticationResult.notDone, "");
+        break;
       case ScramState.challengeResponseSent:
-        final tag = nonza!.tag;
+        final tag = nonza.tag;
 
         if (tag == "success") {
           // NOTE: This assumes that the string is always "v=..." and contains no other parameters
           final signature = parseKeyValue(utf8.decode(base64.decode(nonza.innerText())));
           if (signature["v"]! != _serverSignature) {
-            _state.onInput(false);
-            return Result(AuthenticationResult.failure, "Server signature mismatch");
+            // TODO: Notify of a signature mismatch
+            //final error = nonza.children.first.tag;
+            //attributes.sendEvent(AuthenticationFailedEvent(error));
+            _scramState = ScramState.error;
+            state = NegotiatorState.error;
+            return;
           }
 
-          
-          _state.onInput(true);
-          return Result(AuthenticationResult.success, "");
+          state = NegotiatorState.done;
+          return;
         }
-        
-        _state.onInput(false);
-        return Result(AuthenticationResult.failure, getSaslError(nonza));
+
+        // We assume it's a <failure />
+        final error = nonza.children.first.tag;
+        attributes.sendEvent(AuthenticationFailedEvent(error));
+        _scramState = ScramState.error;
+        state = NegotiatorState.error;
+        return;
       case ScramState.error:
-        return Result(AuthenticationResult.failure, "");   
+        state = NegotiatorState.error;
+        return;
     }
+  }
+
+  @override
+  void reset() {
+    _scramState = ScramState.preSent;
+
+    super.reset();
   }
 }

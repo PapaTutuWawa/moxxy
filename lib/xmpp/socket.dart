@@ -7,9 +7,6 @@ import "package:moxxyv2/xmpp/rfcs/rfc_2782.dart";
 import "package:logging/logging.dart";
 import "package:moxdns/moxdns.dart";
 
-// TODO: Remove once kDebugMode is no longer needed
-import "package:flutter/foundation.dart";
-
 // NOTE: https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids
 const xmppClientALPNId = "xmpp-client";
 

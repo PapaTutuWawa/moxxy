@@ -1,0 +1,65 @@
+import "package:moxxyv2/xmpp/stringxml.dart";
+import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
+import "package:logging/logging.dart";
+
+enum _StartTlsState {
+  ready,
+  requested
+}
+
+class StartTLSNonza extends XMLNode {
+  StartTLSNonza() : super.xmlns(
+    tag: "starttls",
+    xmlns: startTlsXmlns
+  );
+}
+
+class StartTlsNegotiator extends XmppFeatureNegotiatorBase {
+  _StartTlsState _state;
+
+  final Logger _log;
+  
+  StartTlsNegotiator()
+    : _state = _StartTlsState.ready,
+      _log = Logger("StartTlsNegotiator"),
+      super(10, true, startTlsXmlns, startTlsNegotiator);
+
+  @override
+  Future<void> negotiate(XMLNode nonza) async {
+    switch (_state) {
+      case _StartTlsState.ready:
+        _log.fine("StartTLS is available. Performing StartTLS upgrade...");
+        _state = _StartTlsState.requested;
+        attributes.sendNonza(StartTLSNonza());
+        break;
+      case _StartTlsState.requested:
+        if (nonza.tag != "proceed" || nonza.attributes["xmlns"] != startTlsXmlns) {
+          _log.severe("Failed to perform StartTLS negotiation");
+          state = NegotiatorState.error;
+          return;
+        }
+
+        _log.fine("Securing socket");
+        final result = await attributes.getSocket()
+          .secure(attributes.getConnectionSettings().jid.domain);
+        if (!result) {
+          _log.severe("Failed to secure stream");
+          state = NegotiatorState.error;
+          return;
+        }
+
+        _log.fine("Stream is now TLS secured");
+        state = NegotiatorState.done;
+        break;
+    }
+  }
+
+  @override
+  void reset() {
+    _state = _StartTlsState.ready;
+
+    super.reset();
+  }
+}

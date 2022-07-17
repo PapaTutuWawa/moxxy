@@ -32,7 +32,7 @@ class StreamErrorEvent extends XmppEvent {
 class AuthenticationFailedEvent extends XmppEvent {
   final String saslError;
 
-  AuthenticationFailedEvent({ required this.saslError });
+  AuthenticationFailedEvent(this.saslError);
 }
 
 /// Triggered when we want to ping the connection open

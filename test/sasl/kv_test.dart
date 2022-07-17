@@ -1,4 +1,4 @@
-import "package:moxxyv2/xmpp/sasl/kv.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/kv.dart";
 
 import "package:test/test.dart";
 

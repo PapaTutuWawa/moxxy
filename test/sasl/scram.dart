@@ -1,20 +1,45 @@
 import "package:moxxyv2/xmpp/settings.dart";
 import "package:moxxyv2/xmpp/jid.dart";
 import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/sasl/scram.dart";
-import "package:moxxyv2/xmpp/sasl/authenticator.dart";
+import "package:moxxyv2/xmpp/namespaces.dart";
+import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
+
+import "../helpers/xmpp.dart";
 
 import "package:test/test.dart";
 import "package:hex/hex.dart";
 
+final scramSha1StreamFeatures = XMLNode(
+  tag: "stream:features",
+  children: [
+    XMLNode.xmlns(
+      tag: "mechanisms",
+      xmlns: saslXmlns,
+      children: [
+        XMLNode(
+          tag: "mechanism",
+          text: "SCRAM-SHA1"
+        )
+      ]
+    )
+  ]
+);
+
 void main() {
+  final fakeSocket = StubTCPSocket(play: []);
   test("Test SASL SCRAM-SHA-1", () async {
-      final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
-        clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
-        initialMessageNoGS2: "n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        sendRawXML: (data, { String? redact }) {},
-        hashType: ScramHashType.sha1
+      final negotiator = SaslScramNegotiator(0, "n=user,r=fyko+d2lbbFgONRv9qkxdawL", "fyko+d2lbbFgONRv9qkxdawL", ScramHashType.sha1);
+      negotiator.register(
+        NegotiatorAttributes(
+          (XMLNode _) {},
+          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+          (_) async {},
+          (_) => null,
+          (_) => null,
+          () => JID.fromString("user@server"),
+          () => fakeSocket,
+        )
       );
 
       expect(
@@ -66,33 +91,43 @@ void main() {
   });
 
   test("Test a positive server signature check", () async {
-      final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
-        clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
-        initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        sendRawXML: (data, { String? redact }) {},
-        hashType: ScramHashType.sha1
+      final negotiator = SaslScramNegotiator(0, "n=user,r=fyko+d2lbbFgONRv9qkxdawL", "fyko+d2lbbFgONRv9qkxdawL", ScramHashType.sha1);
+      negotiator.register(
+        NegotiatorAttributes(
+          (XMLNode _) {},
+          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+          (_) async {},
+          (_) => null,
+          (_) => null,
+          () => JID.fromString("user@server"),
+          () => fakeSocket,
+        )
       );
 
-      await negotiator.next(null);
-      await negotiator.next(XMLNode.fromString("<challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng==</challenge>"));
-      final result = await negotiator.next(XMLNode.fromString("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj1ybUY5cHFWOFM3c3VBb1pXamE0ZEpSa0ZzS1E9</success>"));
+      await negotiator.negotiate(scramSha1StreamFeatures);
+      await negotiator.negotiate(XMLNode.fromString("<challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng==</challenge>"));
+      await negotiator.negotiate(XMLNode.fromString("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj1ybUY5cHFWOFM3c3VBb1pXamE0ZEpSa0ZzS1E9</success>"));
 
-      expect(result.getState(), AuthenticationResult.success, reason: result.getValue());
+      expect(negotiator.state, NegotiatorState.done);
   });
   test("Test a negative server signature check", () async {
-      final negotiator = SaslScramNegotiator(
-        settings: ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
-        clientNonce: "fyko+d2lbbFgONRv9qkxdawL",
-        initialMessageNoGS2: "n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL",
-        sendRawXML: (data, { String? redact }) {},
-        hashType: ScramHashType.sha1
+      final negotiator = SaslScramNegotiator(0, "n=user,r=fyko+d2lbbFgONRv9qkxdawL", "fyko+d2lbbFgONRv9qkxdawL", ScramHashType.sha1);
+      negotiator.register(
+        NegotiatorAttributes(
+          (XMLNode _) {},
+          () => ConnectionSettings(jid: JID.fromString("user@server"), password: "pencil", useDirectTLS: true, allowPlainAuth: true),
+          (_) async {},
+          (_) => null,
+          (_) => null,
+          () => JID.fromString("user@server"),
+          () => fakeSocket,
+        )
       );
 
-      await negotiator.next(null);
-      await negotiator.next(XMLNode.fromString("<challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng==</challenge>"));
-      final result = await negotiator.next(XMLNode.fromString("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj1zbUY5cHFWOFM3c3VBb1pXamE0ZEpSa0ZzS1E9</success>"));
+      await negotiator.negotiate(scramSha1StreamFeatures);
+      await negotiator.negotiate(XMLNode.fromString("<challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng==</challenge>"));
+      await negotiator.negotiate(XMLNode.fromString("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj1zbUY5cHFWOFM3c3VBb1pXamE0ZEpSa0ZzS1E9</success>"));
 
-      expect(result.getState(), AuthenticationResult.failure, reason: result.getValue());
+      expect(negotiator.state, NegotiatorState.error);
   });
 }

@@ -28,11 +28,11 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: false,
         ),
-        isStreamFeatureSupported: (feat) => false,
         isFeatureSupported: (_) => false,
         getFullJID: () => JID.fromString("bob@xmpp.example/uwu"),
         getSocket: () => StubTCPSocket(play: []),
-        getConnection: () => XmppConnection(TestingReconnectionPolicy())
+        getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+        getNegotiatorById: (id) => null,
       );
       final manager = CarbonsManager();
       manager.register(attributes);

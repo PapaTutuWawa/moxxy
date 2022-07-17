@@ -8,12 +8,19 @@ import "package:moxxyv2/xmpp/stanza.dart";
 import "package:moxxyv2/xmpp/presence.dart";
 import "package:moxxyv2/xmpp/roster.dart";
 import "package:moxxyv2/xmpp/events.dart";
+import "package:moxxyv2/xmpp/ping.dart";
 import "package:moxxyv2/xmpp/reconnect.dart";
 import "package:moxxyv2/xmpp/managers/attributes.dart";
 import "package:moxxyv2/xmpp/managers/data.dart";
+import "package:moxxyv2/xmpp/negotiators/resource_binding.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/plain.dart";
+import "package:moxxyv2/xmpp/negotiators/sasl/scram.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
 import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart";
+import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
 
+import "helpers/logging.dart";
 import "helpers/xmpp.dart";
 
 import "package:test/test.dart";
@@ -36,11 +43,12 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
         allowPlainAuth: false,
       ),
       getManagerById: (_) => null,
-      isStreamFeatureSupported: (_) => false,
       isFeatureSupported: (_) => false,
       getFullJID: () => JID.fromString("$bareJid/$resource"),
       getSocket: () => StubTCPSocket(play: []),
-      getConnection: () => XmppConnection(TestingReconnectionPolicy())
+      getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+      // TODO
+      getNegotiatorById: (id) => null,
   ));
 
   final stanza = Stanza.fromXMLNode(XMLNode.fromString(stanzaString));
@@ -52,6 +60,8 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
 }
 
 void main() {
+  initLogger();
+
   test("Test a successful login attempt with no SM", () async {
       final fakeSocket = StubTCPSocket(
         play: [
@@ -223,10 +233,22 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
-      conn.registerManager(DiscoCacheManager());
-      conn.registerManager(PresenceManager());
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          DiscoCacheManager(),
+          PingManager(),
+          StreamManagementManager(),
+      ]);
+      conn.registerFeatureNegotiators(
+        [
+          SaslPlainNegotiator(),
+          SaslScramNegotiator(10, "", "", ScramHashType.sha512),
+          ResourceBindingNegotiator(),
+          StreamManagementNegotiator(),
+        ]
+      );
 
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
@@ -297,19 +319,25 @@ void main() {
       bool receivedEvent = false;
       final XmppConnection conn = XmppConnection(TestingReconnectionPolicy(), socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
-          jid: JID.fromString("polynomdivision@test.server"),
-          password: "aaaa",
-          useDirectTLS: true,
-          allowPlainAuth: true
+        jid: JID.fromString("polynomdivision@test.server"),
+        password: "aaaa",
+        useDirectTLS: true,
+        allowPlainAuth: true
       ));
-      conn.registerManager(PresenceManager());
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
+      conn.registerManagers([
+        PresenceManager(),
+        RosterManager(),
+        DiscoManager(),
+        PingManager(),
+      ]);
+      conn.registerFeatureNegotiators([
+        SaslPlainNegotiator()
+      ]);
 
       conn.asBroadcastStream().listen((event) {
-          if (event is AuthenticationFailedEvent && event.saslError == "not-authorized") {
-            receivedEvent = true;
-          }
+        if (event is AuthenticationFailedEvent && event.saslError == "not-authorized") {
+          receivedEvent = true;
+        }
       });
 
       await conn.connect();
@@ -386,9 +414,15 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: true
       ));
-      conn.registerManager(PresenceManager());
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          PingManager(),
+      ]);
+      conn.registerFeatureNegotiators([
+        SaslPlainNegotiator()
+      ]);
 
       conn.asBroadcastStream().listen((event) {
           if (event is AuthenticationFailedEvent && event.saslError == "mechanism-too-weak") {
@@ -474,9 +508,16 @@ void main() {
           useDirectTLS: true,
           allowPlainAuth: false
       ));
-      conn.registerManager(RosterManager());
-      conn.registerManager(DiscoManager());
-      conn.registerManager(PresenceManager());
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          PingManager(),
+      ]);
+      conn.registerFeatureNegotiators([
+        SaslPlainNegotiator(),
+        SaslScramNegotiator(10, "", "", ScramHashType.sha1),
+      ]);
 
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
@@ -502,11 +543,11 @@ void main() {
                 allowPlainAuth: false,
               ),
               getManagerById: (_) => null,
-              isStreamFeatureSupported: (_) => false,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString("some.user@example.server/aaaaa"),
               getSocket: () => StubTCPSocket(play: []),
-              getConnection: () => XmppConnection(TestingReconnectionPolicy())
+              getConnection: () => XmppConnection(TestingReconnectionPolicy()),
+              getNegotiatorById: (_) => null,
           ));
 
           // NOTE: Based on https://gultsch.de/gajim_roster_push_and_message_interception.html

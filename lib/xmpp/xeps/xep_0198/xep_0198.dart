@@ -55,7 +55,15 @@ class StreamManagementManager extends XmppManagerBase {
   Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
 
   @visibleForTesting
-  int getPendingAcks() => _pendingAcks;
+  Future<int> getPendingAcks() async {
+    int acks = 0;
+
+    await _ackLock.synchronized(() async {
+      acks = _pendingAcks;
+    });
+
+    return acks;
+  }
 
   /// Returns the amount of stanzas waiting to get acked
   int getUnackedStanzaCount() => _unackedStanzas.length;
@@ -175,12 +183,12 @@ class StreamManagementManager extends XmppManagerBase {
   /// response has been more that [ackTimeout] in the past, declare the session dead.
   void _ackTimerCallback(Timer timer) {
     _ackLock.synchronized(() async {
-        final now = DateTime.now().millisecondsSinceEpoch;
+      final now = DateTime.now().millisecondsSinceEpoch;
 
-        if (now - _lastAckTimestamp >= ackTimeout.inMilliseconds && _pendingAcks > 0) {
-          getAttributes().sendEvent(AckRequestResponseTimeoutEvent());
-          _stopAckTimer();
-        }
+      if (now - _lastAckTimestamp >= ackTimeout.inMilliseconds && _pendingAcks > 0) {
+        getAttributes().sendEvent(AckRequestResponseTimeoutEvent());
+        _stopAckTimer();
+      }
     });
   }
 
@@ -188,19 +196,18 @@ class StreamManagementManager extends XmppManagerBase {
   Future<void> _sendAckRequest() async {
     logger.fine("_sendAckRequest: Waiting to acquire lock...");
     await _ackLock.synchronized(() async {
-        logger.fine("_sendAckRequest: Done...");
-        final now = DateTime.now().millisecondsSinceEpoch;
-        if (now <= _lastAckTimestamp) return;
+      logger.fine("_sendAckRequest: Done...");
+      final now = DateTime.now().millisecondsSinceEpoch;
 
-        _lastAckTimestamp = now;
-        _pendingAcks++;
-        _startAckTimer();
+      _lastAckTimestamp = now;
+      _pendingAcks++;
+      _startAckTimer();
 
-        logger.fine("_pendingAcks is now at $_pendingAcks");
-        
-        getAttributes().sendNonza(StreamManagementRequestNonza());
-        
-        logger.fine("_sendAckRequest: Releasing lock...");
+      logger.fine("_pendingAcks is now at $_pendingAcks");
+      
+      getAttributes().sendNonza(StreamManagementRequestNonza());
+      
+      logger.fine("_sendAckRequest: Releasing lock...");
     }); 
   }
   
@@ -236,17 +243,17 @@ class StreamManagementManager extends XmppManagerBase {
     final h = int.parse(nonza.attributes["h"]!);
 
     await _ackLock.synchronized(() async {
-        await _stateLock.synchronized(() async {
-            if (_pendingAcks > 0) {
-              // Prevent diff from becoming negative
-              final diff = max(_state.c2s - h, 0);
-              _pendingAcks = diff;
-            } else {
-              _stopAckTimer();
-            }
+      await _stateLock.synchronized(() async {
+        if (_pendingAcks > 0) {
+          // Prevent diff from becoming negative
+          final diff = max(_state.c2s - h, 0);
+          _pendingAcks = diff;
+        } else {
+          _stopAckTimer();
+        }
 
-            logger.fine("_pendingAcks is now at $_pendingAcks");
-        });
+        logger.fine("_pendingAcks is now at $_pendingAcks");
+      });
     });
     
     // Return early if we acked nothing.
@@ -323,6 +330,7 @@ class StreamManagementManager extends XmppManagerBase {
     _unackedStanzas[_state.c2s] = stanza;
     
     if (isStreamManagementEnabled() && !state.retransmitted) {
+      //logger.finest("Sending ack request");
       await _sendAckRequest();
     }
 
