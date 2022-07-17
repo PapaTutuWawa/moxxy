@@ -1,48 +1,48 @@
-part of "conversations_bloc.dart";
+part of 'conversations_bloc.dart';
 
 abstract class ConversationsEvent {}
 
 /// Triggered when we got the first data
 class ConversationsInitEvent extends ConversationsEvent {
-  final String displayName;
-  final String jid;
-  final String? avatarUrl;
-  final List<Conversation> conversations;
 
   ConversationsInitEvent(
     this.displayName,
     this.jid,
     this.conversations,
     {
-      this.avatarUrl
+      this.avatarUrl,
     }
   );
+  final String displayName;
+  final String jid;
+  final String? avatarUrl;
+  final List<Conversation> conversations;
 }
 
 /// Triggered when a conversation has been added.
 class ConversationsAddedEvent extends ConversationsEvent {
-  final Conversation conversation;
 
   ConversationsAddedEvent(this.conversation);
+  final Conversation conversation;
 }
 
 /// Triggered when a conversation got updated
 class ConversationsUpdatedEvent extends ConversationsEvent {
-  final Conversation conversation;
 
   ConversationsUpdatedEvent(this.conversation);
+  final Conversation conversation;
 }
 
 /// Triggered when the avatar of the logged-in user has changed
 class AvatarChangedEvent extends ConversationsEvent {
-  final String path;
 
   AvatarChangedEvent(this.path);
+  final String path;
 }
 
 /// Triggered by the UI when a conversation has been closed
 class ConversationClosedEvent extends ConversationsEvent {
-  final String jid;
 
   ConversationClosedEvent(this.jid);
+  final String jid;
 }

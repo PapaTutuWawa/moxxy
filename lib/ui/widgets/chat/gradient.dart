@@ -1,11 +1,11 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
 /// A widget providing a gradient slowly fading from the bottom to the top.
 /// Must be used inside a [Stack].
 class BottomGradient extends StatelessWidget {
-  final BorderRadius radius;
 
   const BottomGradient(this.radius, { Key? key }) : super(key: key);
+  final BorderRadius radius;
   
   @override
   Widget build(BuildContext context) {
@@ -25,10 +25,10 @@ class BottomGradient extends StatelessWidget {
               Colors.black.withAlpha(0),
               Colors.black12,
               Colors.black54
-            ]
-          )
-        )
-      )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

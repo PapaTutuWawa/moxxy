@@ -1,15 +1,15 @@
-import "package:moxxyv2/ui/widgets/chat/shared/media.dart";
-import "package:moxxyv2/ui/bloc/profile_bloc.dart";
-import "package:moxxyv2/ui/pages/profile/selfheader.dart";
-import "package:moxxyv2/ui/pages/profile/conversationheader.dart";
-
-import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
+import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/media.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({ Key? key }) : super(key: key);
-
-  static get route => MaterialPageRoute(builder: (_) => const ProfilePage());
+ 
+  // ignore: implicit_dynamic_type
+  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const ProfilePage());
   
   Widget _buildHeader(BuildContext context, ProfileState state) {
     if (state.isSelfProfile) {
@@ -20,8 +20,8 @@ class ProfilePage extends StatelessWidget {
         state.serverFeatures,
         state.streamManagementSupported,
         (path, hash) => context.read<ProfileBloc>().add(
-          AvatarSetEvent(path, hash)
-        )
+          AvatarSetEvent(path, hash),
+        ),
       );
     }
 
@@ -39,29 +39,29 @@ class ProfilePage extends StatelessWidget {
               ListView(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: _buildHeader(context, state)
+                    padding: const EdgeInsets.only(top: 8),
+                    child: _buildHeader(context, state),
                   ),
 
-                  // TODO: Maybe don't show this conditionally but always
+                  // TODO(Unknown): Maybe don't show this conditionally but always
                   Visibility(
                     visible: !state.isSelfProfile && state.conversation!.sharedMedia.isNotEmpty,
                     child: state.isSelfProfile ? const SizedBox() : SharedMediaDisplay(
                       state.conversation!.sharedMedia,
-                      state.conversation!.jid
-                    )
+                      state.conversation!.jid,
+                    ),
                   )
-                ]
+                ],
               ),
               const Positioned(
-                top: 8.0,
-                left: 8.0,
-                child: BackButton()
+                top: 8,
+                left: 8,
+                child: BackButton(),
               )
-            ]
-          )
-        )
-      )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

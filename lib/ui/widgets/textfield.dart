@@ -1,25 +1,7 @@
-import "package:moxxyv2/ui/constants.dart";
-
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 class CustomTextField extends StatelessWidget {
-  final double cornerRadius;
-  final String? errorText;
-  final String? labelText;
-  final String? hintText;
-  final Widget? suffix;
-  final String? suffixText;
-  final Widget? suffixIcon;
-  final Widget? topWidget;
-  final EdgeInsetsGeometry contentPadding;
-  final bool enabled;
-  final bool obscureText;
-  final bool isDense;
-  final bool enableIMEFeatures; // suggestions and autocorrect
-  final int maxLines;
-  final int minLines;
-  final TextEditingController? controller;
-  final ValueChanged<String>? onChanged;
 
   const CustomTextField({
       required this.cornerRadius,
@@ -39,8 +21,25 @@ class CustomTextField extends StatelessWidget {
       this.isDense = false,
       this.contentPadding = textfieldPaddingRegular,
       this.enableIMEFeatures = true,
-      Key? key
+      Key? key,
   }) : super(key: key);
+  final double cornerRadius;
+  final String? errorText;
+  final String? labelText;
+  final String? hintText;
+  final Widget? suffix;
+  final String? suffixText;
+  final Widget? suffixIcon;
+  final Widget? topWidget;
+  final EdgeInsetsGeometry contentPadding;
+  final bool enabled;
+  final bool obscureText;
+  final bool isDense;
+  final bool enableIMEFeatures; // suggestions and autocorrect
+  final int maxLines;
+  final int minLines;
+  final TextEditingController? controller;
+  final ValueChanged<String>? onChanged;
   
   @override
   Widget build(BuildContext context) {
@@ -50,14 +49,13 @@ class CustomTextField extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(cornerRadius),
             border: Border.all(
-              width: 1,
-              color: Colors.purple
-            )
+              color: Colors.purple,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ...(topWidget != null ? [ topWidget! ] : []),
+              ...topWidget != null ? [ topWidget! ] : [],
               TextField(
                 maxLines: maxLines,
                 minLines: minLines,
@@ -75,28 +73,28 @@ class CustomTextField extends StatelessWidget {
                   suffixIcon: suffixIcon,
                   suffix: suffix,
                   suffixText: suffixText,
-                  isDense: isDense
-                )
+                  isDense: isDense,
+                ),
               )
-            ]
-          )
+            ],
+          ),
         ),
         Visibility(
           visible: errorText != null,
           child: Padding(
-            padding: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(2),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                errorText ?? "",
+                errorText ?? '',
                 style: const TextStyle(
-                  color: Colors.red
-                )
-              )
-            )
-          )
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          ),
         ) 
-      ]
+      ],
     );
   }
 }

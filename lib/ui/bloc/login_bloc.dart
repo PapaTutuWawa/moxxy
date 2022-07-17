@@ -1,18 +1,18 @@
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/bloc/navigation_bloc.dart";
-import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
-import "package:get_it/get_it.dart";
-import "package:bloc/bloc.dart";
-import "package:freezed_annotation/freezed_annotation.dart";
-import "package:moxplatform/moxplatform.dart";
-
-part "login_state.dart";
-part "login_event.dart";
-part "login_bloc.freezed.dart";
+part 'login_bloc.freezed.dart';
+part 'login_event.dart';
+part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc() : super(LoginState()) {
@@ -31,26 +31,26 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _onPasswordVisibilityToggled(LoginPasswordVisibilityToggledEvent event, Emitter<LoginState> emit) async {
-    emit(state.copyWith(passwordVisible: !state.passwordVisible));
+    emit(state.copyWith(passwordVisible: !(state.passwordVisible as bool)));
   }
   
   Future<void> _onSubmitted(LoginSubmittedEvent event, Emitter<LoginState> emit) async {
-    final jidValidity = validateJidString(state.jid);
+    final jidValidity = validateJidString(state.jid as String);
     if (jidValidity != null) {
       return emit(
         state.copyWith(
           jidState: LoginFormState(false, error: jidValidity),
-          passwordState: const LoginFormState(true)
-        )
+          passwordState: const LoginFormState(true),
+        ),
       );
     }
 
-    if (state.password.isEmpty) {
+    if ((state.password as String).isEmpty) {
       return emit(
         state.copyWith(
           jidState: const LoginFormState(true),
-          passwordState: const LoginFormState(false, error: "Password cannot be empty")
-        )
+          passwordState: const LoginFormState(false, error: 'Password cannot be empty'),
+        ),
       );
     }
     
@@ -59,16 +59,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         working: true,
         passwordVisible: false,
         jidState: const LoginFormState(true),
-        passwordState: const LoginFormState(true)
-      )
+        passwordState: const LoginFormState(true),
+      ),
     );
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       LoginCommand(
-        jid: state.jid,
-        password: state.password,
-        useDirectTLS: true
-      )
+        jid: state.jid as String,
+        password: state.password as String,
+        useDirectTLS: true,
+      ),
     );
 
     if (result is LoginSuccessfulEvent) {
@@ -77,25 +77,25 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
           result.displayName,
-          state.jid,
-          // TODO
-          []
-        )
+          state.jid as String,
+          // TODO(Unknown): ???
+          <Conversation>[],
+        ),
       );
       GetIt.I.get<NavigationBloc>().add(
         PushedNamedAndRemoveUntilEvent(
           const NavigationDestination(
-            conversationsRoute
+            conversationsRoute,
           ),
-          (_) => false
-        )
+          (_) => false,
+        ),
       );
     } else if (result is LoginFailureEvent) {
       return emit(
         state.copyWith(
           working: false,
-          passwordState: LoginFormState(false, error: result.reason)
-        )
+          passwordState: LoginFormState(false, error: result.reason),
+        ),
       );
     }
   }

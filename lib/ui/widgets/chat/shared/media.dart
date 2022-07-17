@@ -1,20 +1,19 @@
-import "package:moxxyv2/shared/models/media.dart";
-import "package:moxxyv2/ui/widgets/chat/media/media.dart";
-import "package:moxxyv2/ui/widgets/chat/shared/summary.dart";
-
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/shared/models/media.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/summary.dart';
 
 class SharedMediaDisplay extends StatelessWidget {
-  final List<SharedMedium> sharedMedia;
-  final String jid;
 
   const SharedMediaDisplay(this.sharedMedia, this.jid, { Key? key }) : super(key: key);
+  final List<SharedMedium> sharedMedia;
+  final String jid;
 
   List<Widget> _renderItems() {
     final tmp = List<Widget>.empty(growable: true);
 
-    int clampedStartIndex = sharedMedia.length >= 8 ? sharedMedia.length - 7 : 0;
-    int clampedEndIndex = sharedMedia.length - 1;
+    final clampedStartIndex = sharedMedia.length >= 8 ? sharedMedia.length - 7 : 0;
+    final clampedEndIndex = sharedMedia.length - 1;
 
     for (var i = clampedEndIndex; i >= clampedStartIndex; i--) {
       tmp.add(buildSharedMediaWidget(sharedMedia[i], jid));
@@ -38,29 +37,28 @@ class SharedMediaDisplay extends StatelessWidget {
     final padding = 0.5 * (width - 15 - 300);
     
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-       children: [
+      children: [
         const Padding(
-          padding: EdgeInsets.only(top: 25.0),
+          padding: EdgeInsets.only(top: 25),
           child: Text(
-            "Shared Media",
+            'Shared Media',
             style: TextStyle(
-              fontSize: 25
-            )
-          )
+              fontSize: 25,
+            ),
+          ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 8.0, left: padding, right: padding),
+          padding: EdgeInsets.only(top: 8, left: padding, right: padding),
           child: Container(
             alignment: Alignment.topLeft,
             child: Wrap(
               spacing: 5,
               runSpacing: 5,
-              children: _renderItems()
-            )
-          )
+              children: _renderItems(),
+            ),
+          ),
         )
-      ]
+      ],
     );
   }
 }

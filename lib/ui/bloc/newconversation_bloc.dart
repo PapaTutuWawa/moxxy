@@ -1,19 +1,18 @@
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/models/roster.dart";
-import "package:moxxyv2/shared/models/conversation.dart";
-import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
-import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 
-import "package:bloc/bloc.dart";
-import "package:freezed_annotation/freezed_annotation.dart";
-import "package:get_it/get_it.dart";
-import "package:moxplatform/moxplatform.dart";
-
-part "newconversation_state.dart";
-part "newconversation_event.dart";
-part "newconversation_bloc.freezed.dart";
+part 'newconversation_bloc.freezed.dart';
+part 'newconversation_event.dart';
+part 'newconversation_state.dart';
 
 class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationState> {
   NewConversationBloc() : super(NewConversationState()) {
@@ -26,8 +25,8 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
   Future<void> _onInit(NewConversationInitEvent event, Emitter<NewConversationState> emit) async {
     return emit(
       state.copyWith(
-        roster: event.roster
-      )
+        roster: event.roster,
+      ),
     );
   }
 
@@ -41,8 +40,8 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
           event.jid,
           event.title,
           event.avatarUrl,
-          removeUntilConversations: true
-        )
+          removeUntilConversations: true,
+        ),
       );
       return;
     }
@@ -52,8 +51,8 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
         title: event.title,
         jid: event.jid,
         avatarUrl: event.avatarUrl,
-        lastMessageBody: ""
-      )
+        lastMessageBody: '',
+      ),
     );
     
     if (result is NoConversationModifiedEvent) {
@@ -69,8 +68,8 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
         event.jid,
         event.title,
         event.avatarUrl,
-        removeUntilConversations: true
-      )
+        removeUntilConversations: true,
+      ),
     );
   }
 
@@ -78,18 +77,21 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
     return emit(
       state.copyWith(
         roster: state.roster.where(
-          (item) => item.jid != event.jid
-        ).toList()
-      )
+          (item) => item.jid != event.jid,
+        ).toList(),
+      ),
     );
   }
 
   Future<void> _onRosterPushed(RosterPushedEvent event, Emitter<NewConversationState> emit) async {
-    // TODO: Should we guard against adding the same entries multiple times?
-    final roster = List<RosterItem>.from(event.added, growable: true);
+    // TODO(Unknown): Should we guard against adding the same entries multiple times?
+    final roster = List<RosterItem>.from(event.added);
 
     for (final item in state.roster) {
-      final modified = firstWhereOrNull(event.modified, (RosterItem i) => i.id == item.id);
+      final modified = firstWhereOrNull(
+        event.modified,
+        (RosterItem i) => i.id == item.id,
+      );
       if (modified != null) {
         roster.add(modified);
       } else {

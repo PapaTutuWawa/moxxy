@@ -1,10 +1,10 @@
-part of "addcontact_bloc.dart";
+part of 'addcontact_bloc.dart';
 
 @freezed
 class AddContactState with _$AddContactState {
   factory AddContactState({
-      @Default("") String jid,
+      @Default('') String jid,
       @Default(null) String? jidError,
-      @Default(false) bool working
+      @Default(false) bool working,
   }) = _AddContactState;
 }

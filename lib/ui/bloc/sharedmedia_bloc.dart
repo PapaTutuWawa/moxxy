@@ -1,11 +1,10 @@
-import "package:moxxyv2/shared/models/media.dart";
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 
-import "package:bloc/bloc.dart";
-import "package:freezed_annotation/freezed_annotation.dart";
-
-part "sharedmedia_event.dart";
-part "sharedmedia_state.dart";
-part "sharedmedia_bloc.freezed.dart";
+part 'sharedmedia_bloc.freezed.dart';
+part 'sharedmedia_event.dart';
+part 'sharedmedia_state.dart';
 
 class SharedMediaBloc extends Bloc<SharedMediaEvent, SharedMediaState> {
   SharedMediaBloc() : super(SharedMediaState()) {
@@ -18,8 +17,8 @@ class SharedMediaBloc extends Bloc<SharedMediaEvent, SharedMediaState> {
 
     emit(
       state.copyWith(
-        sharedMedia: event.sharedMedia
-      )
+        sharedMedia: event.sharedMedia,
+      ),
     );
   }
   
@@ -27,8 +26,8 @@ class SharedMediaBloc extends Bloc<SharedMediaEvent, SharedMediaState> {
     emit(
       state.copyWith(
         sharedMedia: event.sharedMedia,
-        title: event.title
-      )
+        title: event.title,
+      ),
     );
   }
 }

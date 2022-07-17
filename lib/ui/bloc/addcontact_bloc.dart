@@ -1,17 +1,16 @@
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/ui/bloc/conversations_bloc.dart";
-import "package:moxxyv2/ui/bloc/conversation_bloc.dart";
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 
-import "package:get_it/get_it.dart";
-import "package:bloc/bloc.dart";
-import "package:freezed_annotation/freezed_annotation.dart";
-import "package:moxplatform/moxplatform.dart";
-
-part "addcontact_state.dart";
-part "addcontact_event.dart";
-part "addcontact_bloc.freezed.dart";
+part 'addcontact_bloc.freezed.dart';
+part 'addcontact_event.dart';
+part 'addcontact_state.dart';
 
 class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
   AddContactBloc() : super(AddContactState()) {
@@ -20,7 +19,7 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
   }
 
   Future<void> _onContactAdded(AddedContactEvent event, Emitter<AddContactState> emit) async {
-    // TODO: Remove once we can disable the custom buttom
+    // TODO(Unknown): Remove once we can disable the custom buttom
     if (state.working) return;
 
     final validation = validateJidString(state.jid);
@@ -32,14 +31,15 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
     emit(
       state.copyWith(
         working: true,
-        jidError: null
-      )
+        jidError: null,
+      ),
     );
 
+    // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       AddContactCommand(
-        jid: state.jid
-      )
+        jid: state.jid,
+      ),
     ) as AddContactResultEvent;
 
     if (result.conversation != null) {
@@ -55,8 +55,8 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
         result.conversation!.jid,
         result.conversation!.title,
         result.conversation!.avatarUrl,
-        removeUntilConversations: true
-      )
+        removeUntilConversations: true,
+      ),
     );
   }
 

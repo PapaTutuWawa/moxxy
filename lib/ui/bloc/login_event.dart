@@ -1,4 +1,4 @@
-part of "login_bloc.dart";
+part of 'login_bloc.dart';
 
 abstract class LoginEvent {}
 
@@ -7,16 +7,16 @@ class LoginSubmittedEvent extends LoginEvent {}
 
 /// Triggered when the content of the JID textfield has changed.
 class LoginJidChangedEvent extends LoginEvent {
-  final String jid;
 
   LoginJidChangedEvent(this.jid);
+  final String jid;
 }
 
 /// Triggered when the content of the password textfield has changed.
 class LoginPasswordChangedEvent extends LoginEvent {
-  final String password;
 
   LoginPasswordChangedEvent(this.password);
+  final String password;
 }
 
 /// Triggered when the password visibility is to be toggled

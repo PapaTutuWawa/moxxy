@@ -1,26 +1,25 @@
-import "dart:async";
+import 'dart:async';
 
-import "package:moxxyv2/shared/eventhandler.dart";
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/ui/prestart.dart";
-import "package:moxxyv2/ui/bloc/blocklist_bloc.dart" as blocklist;
-import "package:moxxyv2/ui/bloc/conversation_bloc.dart" as conversation;
-import "package:moxxyv2/ui/bloc/conversations_bloc.dart" as conversations;
-import "package:moxxyv2/ui/bloc/newconversation_bloc.dart" as new_conversation;
-import "package:moxxyv2/ui/bloc/profile_bloc.dart" as profile;
-import "package:moxxyv2/ui/bloc/sharedmedia_bloc.dart" as sharedmedia;
-import "package:moxxyv2/ui/service/download.dart";
-
-import "package:logging/logging.dart";
-import "package:get_it/get_it.dart";
-import "package:moxplatform/moxplatform.dart";
-import "package:moxplatform/types.dart";
-import "package:moxlib/awaitabledatasender.dart";
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:moxlib/awaitabledatasender.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxplatform/types.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/eventhandler.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart' as blocklist;
+import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart' as conversations;
+import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
+import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
+import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart' as sharedmedia;
+import 'package:moxxyv2/ui/prestart.dart';
+import 'package:moxxyv2/ui/service/download.dart';
 
 void setupEventHandler() {
-  final handler = EventHandler();
-  handler.addMatchers([
+  final handler = EventHandler()
+    ..addMatchers(<EventTypeMatcher>[
       EventTypeMatcher<MessageAddedEvent>(onMessageAdded),
       EventTypeMatcher<MessageUpdatedEvent>(onMessageUpdated),
       EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),
@@ -39,64 +38,64 @@ void setupEventHandler() {
 Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
   final log = GetIt.I.get<Logger>();
   if (json == null) {
-    log.warning("Received null from the background service. Ignoring...");
+    log.warning('Received null from the background service. Ignoring...');
     return;
   }
   
   // NOTE: This feels dirty, but we gotta do it
-  final event = getEventFromJson(json["data"]!)!;
+  final event = getEventFromJson(json['data']! as Map<String, dynamic>)!;
   final data = DataWrapper<BackgroundEvent>(
-    json["id"]!,
-    event
+    json['id']! as String,
+    event,
   );
 
-  log.finest("S2F: " + event.toString());
+  log.finest('S2F: $event');
 
   // First attempt to deal with awaitables
-  bool found = false;
+  var found = false;
   found = await MoxplatformPlugin.handler.getDataSender().onData(data);
   if (found) return;
 
   // Then run the event handlers
-  found = GetIt.I.get<EventHandler>().run(event);
-  if (found) return;
+  found = await GetIt.I.get<EventHandler>().run(event);
+  if (found == true) return;
 
-  log.warning("Failed to match event");
+  log.warning('Failed to match event');
 }
 
 Future<void> onConversationAdded(ConversationAddedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
-    conversations.ConversationsAddedEvent(event.conversation)
+    conversations.ConversationsAddedEvent(event.conversation),
   );
 }
 
 Future<void> onConversationUpdated(ConversationUpdatedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
-    conversations.ConversationsUpdatedEvent(event.conversation)
+    conversations.ConversationsUpdatedEvent(event.conversation),
   );
   GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.ConversationUpdatedEvent(event.conversation)
+    conversation.ConversationUpdatedEvent(event.conversation),
   );
   GetIt.I.get<profile.ProfileBloc>().add(
-    profile.ConversationUpdatedEvent(event.conversation)
+    profile.ConversationUpdatedEvent(event.conversation),
   );
   GetIt.I.get<sharedmedia.SharedMediaBloc>().add(
     sharedmedia.UpdatedSharedMedia(
       event.conversation.jid,
-      event.conversation.sharedMedia
-    )
+      event.conversation.sharedMedia,
+    ),
   );
 }
 
 Future<void> onMessageAdded(MessageAddedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.MessageAddedEvent(event.message)
+    conversation.MessageAddedEvent(event.message),
   );
 }
 
 Future<void> onMessageUpdated(MessageUpdatedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.MessageUpdatedEvent(event.message)
+    conversation.MessageUpdatedEvent(event.message),
   );
 }
 
@@ -104,8 +103,8 @@ Future<void> onBlocklistPushed(BlocklistPushEvent event, { dynamic extra }) asyn
   GetIt.I.get<blocklist.BlocklistBloc>().add(
     blocklist.BlocklistPushedEvent(
       event.added,
-      event.removed
-    )
+      event.removed,
+    ),
   );
 }
 
@@ -114,8 +113,8 @@ Future<void> onRosterPush(RosterDiffEvent event, { dynamic extra }) async {
     new_conversation.RosterPushedEvent(
       event.added,
       event.modified,
-      event.removed
-    )
+      event.removed,
+    ),
   );
 }
 
@@ -125,19 +124,19 @@ Future<void> onDownloadProgress(DownloadProgressEvent event, { dynamic extra }) 
 
 Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
-    conversations.AvatarChangedEvent(event.path)
+    conversations.AvatarChangedEvent(event.path),
   );
   GetIt.I.get<profile.ProfileBloc>().add(
-    profile.AvatarSetEvent(event.path, event.hash)
+    profile.AvatarSetEvent(event.path, event.hash),
   );
 }
 
 Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
-  GetIt.I.get<Logger>().fine("onServiceReady: Waiting for UI future to resolve...");
+  GetIt.I.get<Logger>().fine('onServiceReady: Waiting for UI future to resolve...');
   await GetIt.I.get<Completer>().future;
-  GetIt.I.get<Logger>().fine("onServiceReady: Done");
-  MoxplatformPlugin.handler.getDataSender().sendData(
+  GetIt.I.get<Logger>().fine('onServiceReady: Done');
+  await MoxplatformPlugin.handler.getDataSender().sendData(
     PerformPreStartCommand(),
-    awaitable: false
+    awaitable: false,
   );
 }

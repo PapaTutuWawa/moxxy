@@ -1,4 +1,4 @@
-part of "addcontact_bloc.dart";
+part of 'addcontact_bloc.dart';
 
 abstract class AddContactEvent {}
 
@@ -7,7 +7,7 @@ class AddedContactEvent extends AddContactEvent {}
 
 /// Triggered by the UI when the JID input field is changed
 class JidChangedEvent extends AddContactEvent {
-  final String jid;
 
   JidChangedEvent(this.jid);
+  final String jid;
 }

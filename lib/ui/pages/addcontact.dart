@@ -1,76 +1,74 @@
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/helpers.dart";
-import "package:moxxyv2/ui/widgets/topbar.dart";
-import "package:moxxyv2/ui/widgets/textfield.dart";
-import "package:moxxyv2/ui/widgets/button.dart";
-import "package:moxxyv2/ui/bloc/addcontact_bloc.dart";
-
-import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/widgets/button.dart';
+import 'package:moxxyv2/ui/widgets/textfield.dart';
+import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class AddContactPage extends StatelessWidget {
   const AddContactPage({ Key? key }) : super(key: key);
 
-  static get route => MaterialPageRoute(builder: (_) => const AddContactPage());
+  // ignore: implicit_dynamic_type
+  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const AddContactPage());
   
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AddContactBloc, AddContactState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.simple("Add new contact"),
+        appBar: BorderlessTopbar.simple('Add new contact'),
         body: Column(
           children: [
             Visibility(
               visible: state.working,
-              child: const LinearProgressIndicator(value: null)
+              child: const LinearProgressIndicator(),
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
               child: CustomTextField(
-                maxLines: 1,
-                labelText: "XMPP-Address",
+                labelText: 'XMPP-Address',
                 onChanged: (value) => context.read<AddContactBloc>().add(
-                  JidChangedEvent(value)
+                  JidChangedEvent(value),
                 ),
                 enabled: !state.working,
                 cornerRadius: textfieldRadiusRegular,
-                contentPadding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 8.0, right: 8.0),
                 errorText: state.jidError,
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.qr_code),
                   onPressed: () {
-                    showNotImplementedDialog("QR-code scanning", context);
-                  }
-                )
-              )
+                    showNotImplementedDialog('QR-code scanning', context);
+                  },
+                ),
+              ),
             ),
 
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8.0)),
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
               child: const Text(
-                "You can add a contact either by typing in their XMPP address or by scanning their QR code"
-              )
+                'You can add a contact either by typing in their XMPP address or by scanning their QR code',
+              ),
             ),
             
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 32.0)),
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 32)),
               child: Row(
                 children: [
                   Expanded(
                     child: RoundedButton(
                       color: Colors.purple,
-                      child: const Text("Add to contacts"),
-                      cornerRadius: 32.0,
-                      onTap: () => context.read<AddContactBloc>().add(AddedContactEvent())
-                    )
+                      cornerRadius: 32,
+                      onTap: () => context.read<AddContactBloc>().add(AddedContactEvent()),
+                      child: const Text('Add to contacts'),
+                    ),
                   )
-                ]
-              )
+                ],
+              ),
             )
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 }

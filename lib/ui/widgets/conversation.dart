@@ -1,23 +1,14 @@
-import "dart:async";
+import 'dart:async';
 
-import "package:moxxyv2/ui/constants.dart";
-import "package:moxxyv2/ui/widgets/avatar.dart";
-import "package:moxxyv2/ui/widgets/chat/typing.dart";
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/constants.dart";
-
-import "package:flutter/material.dart";
-import "package:badges/badges.dart";
+import 'package:badges/badges.dart';
+import 'package:flutter/material.dart';
+import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 
 class ConversationsListRow extends StatefulWidget {
-  final String avatarUrl;
-  final String name;
-  final String lastMessageBody;
-  final int unreadCount;
-  final double maxTextWidth;
-  final int lastChangeTimestamp;
-  final bool update; // Should a timer run to update the timestamp
-  final bool typingIndicator;
   
   const ConversationsListRow(
     this.avatarUrl,
@@ -28,15 +19,23 @@ class ConversationsListRow extends StatefulWidget {
     this.lastChangeTimestamp,
     this.update, {
       this.typingIndicator = false,
-      Key? key
+      Key? key,
     }
   ) : super(key: key);
+  final String avatarUrl;
+  final String name;
+  final String lastMessageBody;
+  final int unreadCount;
+  final double maxTextWidth;
+  final int lastChangeTimestamp;
+  final bool update; // Should a timer run to update the timestamp
+  final bool typingIndicator;
 
   @override
-  _ConversationsListRowState createState() => _ConversationsListRowState();
+  ConversationsListRowState createState() => ConversationsListRowState();
 }
 
-class _ConversationsListRowState extends State<ConversationsListRow> {
+class ConversationsListRowState extends State<ConversationsListRow> {
   late String _timestampString;
   late Timer? _updateTimer;
 
@@ -48,7 +47,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
 
     _timestampString = formatConversationTimestamp(
       widget.lastChangeTimestamp,
-      _now
+      _now,
     );
 
     // NOTE: We could also check and run the timer hourly, but who has a messenger on the
@@ -59,7 +58,7 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
           setState(() {
               _timestampString = formatConversationTimestamp(
                 widget.lastChangeTimestamp,
-                now
+                now,
               );
           });
 
@@ -90,28 +89,28 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
     return Text(
       widget.lastMessageBody,
       maxLines: 1,
-      overflow: TextOverflow.ellipsis
+      overflow: TextOverflow.ellipsis,
     );
   }
   
   @override
   Widget build(BuildContext context) {
-    String badgeText = widget.unreadCount > 99 ? "99+" : widget.unreadCount.toString();
-    // TODO: Maybe turn this into an attribute of the widget to prevent calling this
-    //       for every conversation
+    final badgeText = widget.unreadCount > 99 ? '99+' : widget.unreadCount.toString();
+    // TODO(Unknown): Maybe turn this into an attribute of the widget to prevent calling this
+    //                for every conversation
     final width = MediaQuery.of(context).size.width;
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           AvatarWrapper(
-            radius: 35.0,
+            radius: 35,
             avatarUrl: widget.avatarUrl,
-            altText: widget.name
+            altText: widget.name,
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 8.0),
+            padding: const EdgeInsets.only(left: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -121,51 +120,51 @@ class _ConversationsListRowState extends State<ConversationsListRow> {
                     children: [
                       Container(
                         constraints: BoxConstraints(
-                          maxWidth: widget.maxTextWidth
+                          maxWidth: widget.maxTextWidth,
                         ),
                         child: Text(
                           widget.name,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis
-                        )
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const Spacer(),
                       Visibility(
                         visible: widget.lastChangeTimestamp != timestampNever,
-                        child: Text(_timestampString)
+                        child: Text(_timestampString),
                       )
-                    ]
-                  )
+                    ],
+                  ),
                 ),
                 SizedBox(
                   width: width - 70.0 - 16.0 - 8.0,
                   child: Row(
                     children: [
-                      // TODO: Change color and font size
+                      // TODO(Unknown): Change color and font size
                       Container(
                         constraints: BoxConstraints(
-                          maxWidth: widget.maxTextWidth
+                          maxWidth: widget.maxTextWidth,
                         ),
-                        // TODO: Colors
-                        child: _buildLastMessageBody()
+                        // TODO(Unknown): Colors
+                        child: _buildLastMessageBody(),
                       ),
                       const Spacer(),
                       Visibility(
                         visible: widget.unreadCount > 0,
                         child: Badge(
                           badgeContent: Text(badgeText),
-                          badgeColor: bubbleColorSent
-                        )
+                          badgeColor: bubbleColorSent,
+                        ),
                       )
-                    ]
-                  )
+                    ],
+                  ),
                 ),
-              ]
-            )
+              ],
+            ),
           ) 
-        ]
-      )
+        ],
+      ),
     );
   }
 }

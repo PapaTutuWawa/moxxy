@@ -1,4 +1,4 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
 /// A class for adding a shadow to Containers which even works if the
 /// Container is transparent.
@@ -6,12 +6,12 @@ import "package:flutter/material.dart";
 /// NOTE: https://stackoverflow.com/a/55833281; Thank you kind stranger
 class TransparentBoxShadow extends BoxShadow {
   const TransparentBoxShadow({
-      required double blurRadius
+      required double blurRadius,
   }) : super(blurRadius: blurRadius);
 
   @override
   Paint toPaint() {
-    final Paint result = Paint()
+    final result = Paint()
       ..color = color
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, blurSigma);
 
@@ -21,10 +21,10 @@ class TransparentBoxShadow extends BoxShadow {
 
 /// A widget to show a message that was sent within a chat or is about to be sent.
 class SharedMediaContainer extends StatelessWidget {
-  final Widget? child;
-  final void Function()? onTap;
 
   const SharedMediaContainer(this.child, { this.onTap, Key? key }) : super(key: key);
+  final Widget? child;
+  final void Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +34,10 @@ class SharedMediaContainer extends StatelessWidget {
         height: 75,
         width: 75,
         child: AspectRatio(
-          aspectRatio: 1.0,
-          child: child 
-        )
-      )
+          aspectRatio: 1,
+          child: child, 
+        ),
+      ),
     );
   }
 }

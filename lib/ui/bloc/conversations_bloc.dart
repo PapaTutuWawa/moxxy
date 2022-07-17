@@ -1,13 +1,12 @@
-import "package:moxxyv2/shared/commands.dart";
-import "package:moxxyv2/shared/models/conversation.dart";
+import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 
-import "package:bloc/bloc.dart";
-import "package:freezed_annotation/freezed_annotation.dart";
-import "package:moxplatform/moxplatform.dart";
-
-part "conversations_state.dart";
-part "conversations_event.dart";
-part "conversations_bloc.freezed.dart";
+part 'conversations_bloc.freezed.dart';
+part 'conversations_event.dart';
+part 'conversations_state.dart';
 
 class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   ConversationsBloc() : super(ConversationsState()) {
@@ -23,18 +22,19 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
       state.copyWith(
         displayName: event.displayName,
         jid: event.jid,
-        avatarUrl: event.avatarUrl ?? "",
-        conversations: event.conversations..sort(compareConversation)
-      )
+        avatarUrl: event.avatarUrl ?? '',
+        conversations: event.conversations..sort(compareConversation),
+      ),
     );
   }
 
   Future<void> _onConversationsAdded(ConversationsAddedEvent event, Emitter<ConversationsState> emit) async {
-    // TODO: Should we guard against adding the same conversation multiple times?
+    // TODO(Unknown): Should we guard against adding the same conversation multiple times?
     return emit(
       state.copyWith(
-        conversations: List.from([ ...state.conversations, event.conversation ])..sort(compareConversation)
-      )
+        conversations: List.from(<Conversation>[ ...state.conversations, event.conversation ])
+          ..sort(compareConversation),
+      ),
     );
   }
 
@@ -45,28 +45,28 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
             if (c.jid == event.conversation.jid) return event.conversation;
 
             return c;
-        }).toList()..sort(compareConversation))
-      )
+        }).toList()..sort(compareConversation),),
+      ),
     );
   }
 
   Future<void> _onAvatarChanged(AvatarChangedEvent event, Emitter<ConversationsState> emit) async {
     return emit(
       state.copyWith(
-        avatarUrl: event.path
-      )
+        avatarUrl: event.path,
+      ),
     );
   }
 
   Future<void> _onConversationClosed(ConversationClosedEvent event, Emitter<ConversationsState> emit) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      CloseConversationCommand(jid: event.jid)
+      CloseConversationCommand(jid: event.jid),
     );
 
     emit(
       state.copyWith(
-        conversations: state.conversations.where((c) => c.jid != event.jid).toList()
-      )
+        conversations: state.conversations.where((c) => c.jid != event.jid).toList(),
+      ),
     );
   }
 }
