@@ -29,13 +29,19 @@ class NegotiatorAttributes {
     this.getFullJID,
     this.getSocket,
   );
-  final void Function(XMLNode nonza) sendNonza;
+  /// Sends the nonza nonza and optionally redacts it in logs if redact is not null.
+  final void Function(XMLNode nonza, {String? redact}) sendNonza;
+  /// Returns the connection settings.
   final ConnectionSettings Function() getConnectionSettings;
+  /// Send an event event to the connection's event bus
   final Future<void> Function(XmppEvent event) sendEvent;
+  /// Returns the negotiator with id id of the connection or null.
   final XmppFeatureNegotiatorBase? Function(String id) getNegotiatorById;
+  /// Returns the manager with id id of the connection or null.
   final XmppManagerBase? Function(String id) getManagerById;
   /// Returns the full JID of the current account
   final JID Function() getFullJID;
+  /// Returns the socket the negotiator is attached to
   final BaseSocketWrapper Function() getSocket;
 }
 

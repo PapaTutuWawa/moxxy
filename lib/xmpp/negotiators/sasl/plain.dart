@@ -45,8 +45,8 @@ class SaslPlainNegotiator extends SaslNegotiator {
     if (!_authSent) {
       final settings = attributes.getConnectionSettings();
       attributes.sendNonza(
-        // TODO(Unknown): Redact
         SaslPlainAuthNonza(settings.jid.local, settings.password),
+        redact: SaslPlainAuthNonza('******', '******').toXml(),
       );
       _authSent = true;
     } else {

@@ -197,8 +197,8 @@ class SaslScramNegotiator extends SaslNegotiator {
 
         _scramState = ScramState.initialMessageSent;
         attributes.sendNonza(
-          // TODO(Unknown): Redact
           SaslScramAuthNonza(body: base64.encode(utf8.encode(gs2Header + initialMessageNoGS2)), type: hashType),
+          redact: SaslScramAuthNonza(body: '******', type: hashType).toXml(),
         );
         break;
       case ScramState.initialMessageSent:
@@ -216,8 +216,8 @@ class SaslScramNegotiator extends SaslNegotiator {
         final responseBase64 = base64.encode(utf8.encode(response));
         _scramState = ScramState.challengeResponseSent;
         attributes.sendNonza(
-          // TODO(Unknown): Redact
           SaslScramResponseNonza(body: responseBase64),
+          redact: SaslScramResponseNonza(body: '******').toXml(),
         );
         break;
       case ScramState.challengeResponseSent:
