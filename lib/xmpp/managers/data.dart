@@ -34,7 +34,7 @@ class StanzaHandlerData with _$StanzaHandlerData {
       @Default(false) bool isMarkable,
       // This is for stanza handlers that are not part of the XMPP library but still need
       // pass data around.
-      @Default({}) Map<String, dynamic> other,
+      @Default(<String, dynamic>{}) Map<String, dynamic> other,
     }
   ) = _StanzaHandlerData;
 }

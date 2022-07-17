@@ -4,7 +4,7 @@ import 'package:moxxyv2/xmpp/stringxml.dart';
 class StreamManagementEnableNonza extends XMLNode {
   StreamManagementEnableNonza() : super(
     tag: 'enable',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': smXmlns,
       'resume': 'true'
     },
@@ -14,7 +14,7 @@ class StreamManagementEnableNonza extends XMLNode {
 class StreamManagementResumeNonza extends XMLNode {
   StreamManagementResumeNonza(String id, int h) : super(
     tag: 'resume',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': smXmlns,
       'previd': id,
       'h': h.toString()
@@ -25,7 +25,7 @@ class StreamManagementResumeNonza extends XMLNode {
 class StreamManagementAckNonza extends XMLNode {
   StreamManagementAckNonza(int h) : super(
     tag: 'a',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': smXmlns,
       'h': h.toString()
     },
@@ -35,7 +35,7 @@ class StreamManagementAckNonza extends XMLNode {
 class StreamManagementRequestNonza extends XMLNode {
   StreamManagementRequestNonza() : super(
     tag: 'r',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': smXmlns,
     },
   );

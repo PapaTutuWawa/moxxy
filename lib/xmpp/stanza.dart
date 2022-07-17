@@ -5,12 +5,12 @@ class Stanza extends XMLNode {
 
   Stanza({ this.to, this.from, this.type, this.id, List<XMLNode> children = const [], required String tag, Map<String, String> attributes = const {} }) : super(
     tag: tag,
-    attributes: {
+    attributes: <String, dynamic>{
       ...attributes,
-      ...type != null ? { 'type': type } : {},
-      ...id != null ? { 'id': id } : {},
-      ...to != null ? { 'to': to } : {},
-      ...from != null ? { 'from': from } : {},
+      ...type != null ? <String, dynamic>{ 'type': type } : <String, dynamic>{},
+      ...id != null ? <String, dynamic>{ 'id': id } : <String, dynamic>{},
+      ...to != null ? <String, dynamic>{ 'to': to } : <String, dynamic>{},
+      ...from != null ? <String, dynamic>{ 'from': from } : <String, dynamic>{},
       'xmlns': stanzaXmlns
     },
     children: children,
@@ -23,7 +23,7 @@ class Stanza extends XMLNode {
       to: to,
       id: id,
       type: type,
-      attributes: {
+      attributes: <String, String>{
         ...attributes!,
         'xmlns': stanzaXmlns
       },
@@ -38,7 +38,7 @@ class Stanza extends XMLNode {
       to: to,
       id: id,
       type: type,
-      attributes: {
+      attributes: <String, String>{
         ...attributes!,
         'xmlns': stanzaXmlns
       },
@@ -52,7 +52,7 @@ class Stanza extends XMLNode {
       to: to,
       id: id,
       type: type,
-      attributes: {
+      attributes: <String, String>{
         ...attributes!,
         'xmlns': stanzaXmlns
       },
@@ -110,7 +110,7 @@ class Stanza extends XMLNode {
       children: [
         XMLNode(
           tag: 'error',
-          attributes: { 'type': type },
+          attributes: <String, dynamic>{ 'type': type },
           children: [
             XMLNode.xmlns(
               tag: condition,

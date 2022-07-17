@@ -44,10 +44,10 @@ class EventHandler {
   /// Calls the callback of the first [EventMatcher] for which matches returns true.
   /// Returns true in that case. Otherwise, returns false if no [EventMatcher] matches.
   /// If extra is provided, it will be passed down to the callback if it is called.
-  bool run(dynamic event, { dynamic extra }) {
+  Future<bool> run(dynamic event, { dynamic extra }) async {
     for (final matcher in _matchers) {
       if (matcher.matches(event)) {
-        matcher.call(event, extra);
+        await matcher.call(event, extra);
         return true;
       }
     }

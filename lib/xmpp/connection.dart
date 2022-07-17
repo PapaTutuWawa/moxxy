@@ -45,7 +45,7 @@ enum StanzaFromType {
 class StreamHeaderNonza extends XMLNode {
   StreamHeaderNonza(String serverDomain) : super(
       tag: 'stream:stream',
-      attributes: {
+      attributes: <String, String>{
         'xmlns': stanzaXmlns,
         'version': '1.0',
         'xmlns:stream': streamXmlns,
@@ -786,7 +786,7 @@ class XmppConnection {
     _socket.write(
       XMLNode(
         tag: 'xml',
-        attributes: {
+        attributes: <String, String>{
           'version': '1.0'
         },
         closeTag: false,

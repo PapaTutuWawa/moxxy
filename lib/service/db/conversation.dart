@@ -1,11 +1,10 @@
-import "package:moxxyv2/service/db/media.dart";
+import 'package:isar/isar.dart';
+import 'package:moxxyv2/service/db/media.dart';
 
-import "package:isar/isar.dart";
-
-part "conversation.g.dart";
+part 'conversation.g.dart';
 
 @Collection()
-@Name("Conversation")
+@Name('Conversation')
 class DBConversation {
   int? id;
 

@@ -4,9 +4,9 @@ import 'package:moxxyv2/xmpp/stringxml.dart';
 class SaslAuthNonza extends XMLNode {
   SaslAuthNonza(String mechanism, String body) : super(
     tag: 'auth',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': saslXmlns,
-      'mechanism': mechanism 
+      'mechanism': mechanism ,
     },
     text: body,
   );

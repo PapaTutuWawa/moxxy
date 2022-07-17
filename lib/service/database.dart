@@ -1,32 +1,34 @@
-import "dart:async";
+import 'dart:async';
 
-import "package:moxxyv2/shared/models/conversation.dart";
-import "package:moxxyv2/shared/models/message.dart";
-import "package:moxxyv2/shared/models/roster.dart";
-import "package:moxxyv2/shared/models/media.dart";
-import "package:moxxyv2/service/roster.dart";
-import "package:moxxyv2/service/db/conversation.dart";
-import "package:moxxyv2/service/db/message.dart";
-import "package:moxxyv2/service/db/roster.dart";
-import "package:moxxyv2/service/db/media.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
-
-import "package:isar/isar.dart";
-import "package:get_it/get_it.dart";
-import "package:path_provider/path_provider.dart";
-import "package:logging/logging.dart";
+import 'package:get_it/get_it.dart';
+import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
+import 'package:moxxyv2/service/db/conversation.dart';
+import 'package:moxxyv2/service/db/media.dart';
+import 'package:moxxyv2/service/db/message.dart';
+import 'package:moxxyv2/service/db/roster.dart';
+import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/media.dart';
+import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:path_provider/path_provider.dart';
 
 SharedMedium sharedMediumDbToModel(DBSharedMedium s) {
   return SharedMedium(
     s.id!,
     s.path,
     s.timestamp,
-    mime: s.mime
+    mime: s.mime,
   );
 }
 
 Conversation conversationDbToModel(DBConversation c, bool inRoster, String subscription, ChatState chatState) {
-  final media = c.sharedMedia.map(sharedMediumDbToModel).toList();
+  final media = c.sharedMedia
+    .map(sharedMediumDbToModel)
+    .toList();
+  // ignore: cascade_invocations
   media.sort((a, b) => a.timestamp.compareTo(b.timestamp));
 
   return Conversation(
@@ -41,7 +43,7 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster, String subsc
     c.open,
     inRoster,
     subscription,
-    chatState
+    chatState,
   );
 }
 
@@ -54,7 +56,7 @@ RosterItem rosterDbToModel(DBRosterItem i) {
     i.title,
     i.subscription,
     i.ask,
-    i.groups
+    i.groups,
   );
 }
 
@@ -77,16 +79,16 @@ Message messageDbToModel(DBMessage m) {
     thumbnailData: m.thumbnailData,
     thumbnailDimensions: m.thumbnailDimensions,
     srcUrl: m.srcUrl,
-    quotes: m.quotes.value != null ? messageDbToModel(m.quotes.value!) : null
+    quotes: m.quotes.value != null ? messageDbToModel(m.quotes.value!) : null,
   );
 }
 
 class DatabaseService {
+  
+  DatabaseService() : _log = Logger('DatabaseService');
   late Isar _isar;
   
   final Logger _log;
-  
-  DatabaseService() : _log = Logger("DatabaseService");
 
   Future<void> initialize() async {
     final dir = await getApplicationSupportDirectory();
@@ -97,10 +99,10 @@ class DatabaseService {
         DBMessageSchema,
         DBSharedMediumSchema
       ],
-      directory: dir.path
+      directory: dir.path,
     );
 
-    _log.finest("Database setup done");
+    _log.finest('Database setup done');
   }
   
   /// Loads all conversations from the database and adds them to the state and cache.
@@ -114,8 +116,8 @@ class DatabaseService {
       final conv = conversationDbToModel(
         c,
         rosterItem != null,
-        rosterItem?.subscription ?? "none",
-        ChatState.gone
+        rosterItem?.subscription ?? 'none',
+        ChatState.gone,
       );
       tmp.add(conv);
     }
@@ -126,7 +128,7 @@ class DatabaseService {
   /// Load messages for [jid] from the database.
   Future<List<Message>> loadMessagesForJid(String jid) async {
     final rawMessages = await _isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
-    final List<Message> messages = List.empty(growable: true);
+    final messages = List<Message>.empty(growable: true);
     for (final m in rawMessages) {
       await m.quotes.load();
 
@@ -145,7 +147,7 @@ class DatabaseService {
       int? unreadCounter,
       String? avatarUrl,
       DBSharedMedium? sharedMedium,
-      ChatState? chatState
+      ChatState? chatState,
     }
   ) async {
     final c = (await _isar.dBConversations.get(id))!;
@@ -175,7 +177,7 @@ class DatabaseService {
     });
 
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", chatState ?? ChatState.gone);
+    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? 'none', chatState ?? ChatState.gone);
     return conversation;
   }
 
@@ -189,7 +191,7 @@ class DatabaseService {
     int unreadCounter,
     int lastChangeTimestamp,
     List<DBSharedMedium> sharedMedia,
-    bool open
+    bool open,
   ) async {
     final c = DBConversation()
       ..jid = jid
@@ -207,7 +209,7 @@ class DatabaseService {
     }); 
 
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? "none", ChatState.gone); 
+    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? 'none', ChatState.gone); 
     return conversation;
   }
 
@@ -241,7 +243,7 @@ class DatabaseService {
       String? thumbnailData,
       String? thumbnailDimensions,
       String? originId,
-      String? quoteId
+      String? quoteId,
     }
   ) async {
     final m = DBMessage()
@@ -266,7 +268,7 @@ class DatabaseService {
       if (quotes != null) {
         m.quotes.value = quotes;
       } else {
-        _log.warning("Failed to add quote for message with id $quoteId");
+        _log.warning('Failed to add quote for message with id $quoteId');
       }
     }
 
@@ -279,13 +281,13 @@ class DatabaseService {
   }
 
   Future<DBMessage?> getMessageByXmppId(String id, String conversationJid) async {
-    return await _isar.dBMessages.filter()
+    return _isar.dBMessages.filter()
       .conversationJidEqualTo(conversationJid)
       .and()
       .group((q) => q
         .sidEqualTo(id)
         .or()
-        .originIdEqualTo(id)
+        .originIdEqualTo(id),
       ).findFirst();
   }
   
@@ -295,7 +297,7 @@ class DatabaseService {
       String? mediaType,
       bool? received,
       bool? displayed,
-      bool? acked
+      bool? acked,
   }) async {
     final i = (await _isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
@@ -345,7 +347,7 @@ class DatabaseService {
     String subscription,
     String ask,
     {
-      List<String> groups = const []
+      List<String> groups = const [],
     }
   ) async {
     final rosterItem = DBRosterItem()
@@ -373,7 +375,7 @@ class DatabaseService {
       String? title,
       String? subscription,
       String? ask,
-      List<String>? groups
+      List<String>? groups,
     }
   ) async {
     final i = (await _isar.dBRosterItems.get(id))!;

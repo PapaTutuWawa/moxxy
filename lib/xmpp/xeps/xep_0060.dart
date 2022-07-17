@@ -101,13 +101,13 @@ class PubSubManager extends XmppManagerBase {
             children: [
               XMLNode(
                 tag: 'subscribe',
-                attributes: {
+                attributes: <String, String>{
                   'node': node,
-                  'jid': attrs.getFullJID().toBare().toString()
+                  'jid': attrs.getFullJID().toBare().toString(),
                 },
-              )
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -136,13 +136,13 @@ class PubSubManager extends XmppManagerBase {
             children: [
               XMLNode(
                 tag: 'unsubscribe',
-                attributes: {
+                attributes: <String, String>{
                   'node': node,
-                  'jid': attrs.getFullJID().toBare().toString()
+                  'jid': attrs.getFullJID().toBare().toString(),
                 },
-              )
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -172,11 +172,11 @@ class PubSubManager extends XmppManagerBase {
             children: [
               XMLNode(
                 tag: 'publish',
-                attributes: { 'node': node },
+                attributes: <String, String>{ 'node': node },
                 children: [
                   XMLNode(
                     tag: 'item',
-                    attributes: id != null ? { 'id': id } : {},
+                    attributes: id != null ? <String, String>{ 'id': id } : <String, String>{},
                     children: [ payload ],
                   )
                 ],
@@ -213,7 +213,7 @@ class PubSubManager extends XmppManagerBase {
           XMLNode.xmlns(
             tag: 'pubsub',
             xmlns: pubsubXmlns,
-            children: [ XMLNode(tag: 'items', attributes: { 'node': node }) ],
+            children: [ XMLNode(tag: 'items', attributes: <String, String>{ 'node': node }) ],
           )
         ],
       ),

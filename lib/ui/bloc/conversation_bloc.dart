@@ -256,7 +256,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     emit(
       state.copyWith(
         messages: List.from(
-          state.messages.map((Message m) {
+          state.messages.map<dynamic>((Message m) {
             if (m.id == event.message.id) return event.message;
 
             return m;

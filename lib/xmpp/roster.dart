@@ -255,9 +255,9 @@ class RosterManager extends XmppManagerBase {
             children: [
               XMLNode(
                 tag: 'item',
-                attributes: {
+                attributes: <String, String>{
                   'jid': jid,
-                  ...title == jid.split('@')[0] ? {} : { 'name': title }
+                  ...title == jid.split('@')[0] ? <String, String>{} : <String, String>{ 'name': title }
                 },
                 children: (groups ?? []).map((group) => XMLNode(tag: 'group', text: group)).toList(),
               )
@@ -289,7 +289,7 @@ class RosterManager extends XmppManagerBase {
             children: [
               XMLNode(
                 tag: 'item',
-                attributes: {
+                attributes: <String, String>{
                   'jid': jid,
                   'subscription': 'remove'
                 },

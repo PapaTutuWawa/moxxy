@@ -1,11 +1,9 @@
-import "package:moxxyv2/shared/events.dart";
-import "package:moxxyv2/service/service.dart";
-import "package:moxxyv2/xmpp/connection.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0191.dart";
-
-import "package:logging/logging.dart";
-import "package:get_it/get_it.dart";
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/xmpp/connection.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
 
 enum BlockPushType {
   block,
@@ -13,20 +11,18 @@ enum BlockPushType {
 }
 
 class BlocklistService {
-  final List<String> _blocklistCache;
-  bool _requestedBlocklist;
-
-  final Logger _log;
   
   BlocklistService() :
     _blocklistCache = List.empty(growable: true),
-    _requestedBlocklist = false,
-    _log = Logger("BlocklistService");
+    _requestedBlocklist = false;
+  final List<String> _blocklistCache;
+  bool _requestedBlocklist;
 
   Future<List<String>> _requestBlocklist() async {
-    final manager = GetIt.I.get<XmppConnection>().getManagerById(blockingManager)! as BlockingManager;
-    _blocklistCache.clear();
-    _blocklistCache.addAll(await manager.getBlocklist());
+    final manager = GetIt.I.get<XmppConnection>().getManagerById<BlockingManager>(blockingManager)!;
+    _blocklistCache
+      ..clear()
+      ..addAll(await manager.getBlocklist());
     _requestedBlocklist = true;
     return _blocklistCache;
   }
@@ -34,8 +30,9 @@ class BlocklistService {
   /// Returns the blocklist from the database
   Future<List<String>> getBlocklist() async {
     if (!_requestedBlocklist) {
-      _blocklistCache.clear();
-      _blocklistCache.addAll(await _requestBlocklist());
+      _blocklistCache
+        ..clear()
+        ..addAll(await _requestBlocklist());
     }
    
     return _blocklistCache;
@@ -44,20 +41,19 @@ class BlocklistService {
   void onUnblockAllPush() {
     _blocklistCache.clear();
     sendEvent(
-      BlocklistUnblockAllEvent()
+      BlocklistUnblockAllEvent(),
     );
   }
   
   Future<void> onBlocklistPush(BlockPushType type, List<String> items) async {
     if (!_requestedBlocklist) await getBlocklist();
 
-    final List<String> newBlocks = List.empty(growable: true);
-    final List<String> removedBlocks = List.empty(growable: true);
+    final newBlocks = List<String>.empty(growable: true);
+    final removedBlocks = List<String>.empty(growable: true);
     for (final item in items) {
       switch (type) {
         case BlockPushType.block: {
           if (_blocklistCache.contains(item)) continue;
-
           _blocklistCache.add(item);
           newBlocks.add(item);
         }
@@ -73,23 +69,23 @@ class BlocklistService {
     sendEvent(
       BlocklistPushEvent(
         added: newBlocks,
-        removed: removedBlocks
-      )
+        removed: removedBlocks,
+      ),
     );
   }
 
   Future<bool> blockJid(String jid) async {
-    final manager = GetIt.I.get<XmppConnection>().getManagerById(blockingManager)! as BlockingManager;
-    return await manager.block([ jid ]);
+    final manager = GetIt.I.get<XmppConnection>().getManagerById<BlockingManager>(blockingManager)!;
+    return manager.block([ jid ]);
   }
 
   Future<bool> unblockJid(String jid) async {
-    final manager = GetIt.I.get<XmppConnection>().getManagerById(blockingManager)! as BlockingManager;
-    return await manager.unblock([ jid ]);
+    final manager = GetIt.I.get<XmppConnection>().getManagerById<BlockingManager>(blockingManager)!;
+    return manager.unblock([ jid ]);
   }
 
   Future<bool> unblockAll() async {
-    final manager = GetIt.I.get<XmppConnection>().getManagerById(blockingManager)! as BlockingManager;
-    return await manager.unblockAll();
+    final manager = GetIt.I.get<XmppConnection>().getManagerById<BlockingManager>(blockingManager)!;
+    return manager.unblockAll();
   }
 }

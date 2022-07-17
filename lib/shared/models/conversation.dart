@@ -13,8 +13,8 @@ class ConversationChatStateConverter implements JsonConverter<ChatState, Map<Str
   ChatState fromJson(Map<String, dynamic> json) => chatStateFromString(json['chatState'] as String);
   
   @override
-  Map<String, dynamic> toJson(ChatState state) => {
-    'chatState': chatStateToString(state)
+  Map<String, dynamic> toJson(ChatState state) => <String, String>{
+    'chatState': chatStateToString(state),
   };
 }
 

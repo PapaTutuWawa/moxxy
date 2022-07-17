@@ -80,7 +80,7 @@ class BlockingManager extends XmppManagerBase {
               .map((item) {
                 return XMLNode(
                   tag: 'item',
-                  attributes: { 'jid': item },
+                  attributes: <String, String>{ 'jid': item },
                 );
               })
               .toList(),
@@ -130,7 +130,7 @@ class BlockingManager extends XmppManagerBase {
             xmlns: blockingXmlns,
             children: items.map((item) => XMLNode(
                 tag: 'item',
-                attributes: { 'jid': item },
+                attributes: <String, String>{ 'jid': item },
             ),).toList(),
           )
         ],

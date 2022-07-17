@@ -33,13 +33,17 @@ List<int> compressData(List<int> payload) {
 
 /// Format a log message similarly as to how Monal does it.
 List<int> logToPayload(String line, int timestamp, String loglevel, int counter, { String? filename }) {
-  return utf8.encode(jsonEncode({
+  return utf8.encode(
+    jsonEncode(
+      <String, dynamic>{
         'formattedMessage': line,
         'timestamp': timestamp.toString(),
         'level': loglevel,
         '_counter': counter,
-        ...filename != null ? { 'filename': filename } : {}
-  }),);
+        ...filename != null ? <String, String>{ 'filename': filename } : <String, String>{}
+      },
+    ),
+  );
 }
 
 class UDPLogger {

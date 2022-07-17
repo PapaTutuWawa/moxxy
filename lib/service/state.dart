@@ -1,9 +1,8 @@
-import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/state.dart';
 
-import "package:freezed_annotation/freezed_annotation.dart";
-
-part "state.freezed.dart";
-part "state.g.dart";
+part 'state.freezed.dart';
+part 'state.g.dart';
 
 class StreamManagementStateConverter implements JsonConverter<StreamManagementState, Map<String, dynamic>> {
   const StreamManagementStateConverter();
@@ -25,9 +24,9 @@ class XmppState with _$XmppState {
       String? displayName,
       String? password,
       String? lastRosterVersion,
-      @Default("") avatarUrl,
-      @Default("") avatarHash,
-      @Default(false) bool askedStoragePermission
+      @Default('') String avatarUrl,
+      @Default('') String avatarHash,
+      @Default(false) bool askedStoragePermission,
   }) = _XmppState;
 
   // JSON serialization

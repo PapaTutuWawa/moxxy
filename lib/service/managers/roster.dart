@@ -1,16 +1,15 @@
-import "dart:async";
+import 'dart:async';
 
-import "package:moxxyv2/service/xmpp.dart";
-import "package:moxxyv2/xmpp/roster.dart";
-
-import "package:get_it/get_it.dart";
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/xmpp/roster.dart';
 
 class MoxxyRosterManager extends RosterManager {
   @override
   Future<void> commitLastRosterVersion(String version) async {
     await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-        lastRosterVersion: version
-    ));
+        lastRosterVersion: version,
+    ),);
   }
 
   @override

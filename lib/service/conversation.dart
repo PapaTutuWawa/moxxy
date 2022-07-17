@@ -1,25 +1,21 @@
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/shared/cache.dart";
-import "package:moxxyv2/shared/models/conversation.dart";
-import "package:moxxyv2/service/database.dart";
-import "package:moxxyv2/service/db/media.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0085.dart";
-
-import "package:logging/logging.dart";
-import "package:get_it/get_it.dart";
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/db/media.dart';
+import 'package:moxxyv2/shared/cache.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 class ConversationService {
-  final Logger _log;
+
+  ConversationService()
+    : _conversationCache = LRUCache(100),
+      _loadedConversations = false;
 
   final LRUCache<int, Conversation> _conversationCache;
   bool _loadedConversations;
 
-  ConversationService()
-    : _conversationCache = LRUCache(100),
-      _loadedConversations = false,
-      _log = Logger("ConversationService");
-
-  /// Wrapper around [DatabaseService]'s [loadConversations] that adds the loaded
+  /// Wrapper around DatabaseService's loadConversations that adds the loaded
   /// to the cache.
   Future<void> _loadConversations() async {
     final conversations = await GetIt.I.get<DatabaseService>().loadConversations();
@@ -36,9 +32,9 @@ class ConversationService {
     }
 
     return firstWhereOrNull(
-      // TODO: Maybe have it accept an iterable
+      // TODO(Unknown): Maybe have it accept an iterable
       _conversationCache.getValues(),
-      (Conversation c) => c.jid == jid
+      (Conversation c) => c.jid == jid,
     );
   }
 
@@ -66,7 +62,7 @@ class ConversationService {
       int? unreadCounter,
       String? avatarUrl,
       DBSharedMedium? sharedMedium,
-      ChatState? chatState
+      ChatState? chatState,
     }
   ) async {
     final conversation = await _getConversationById(id);
@@ -78,7 +74,7 @@ class ConversationService {
       unreadCounter: unreadCounter,
       avatarUrl: avatarUrl,
       sharedMedium: sharedMedium,
-      chatState: conversation?.chatState ?? ChatState.gone
+      chatState: conversation?.chatState ?? ChatState.gone,
     );
 
     _conversationCache.cache(id, newConversation);
@@ -94,7 +90,7 @@ class ConversationService {
     int unreadCounter,
     int lastChangeTimestamp,
     List<DBSharedMedium> sharedMedia,
-    bool open
+    bool open,
   ) async {
     final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
       title,
@@ -104,7 +100,7 @@ class ConversationService {
       unreadCounter,
       lastChangeTimestamp,
       sharedMedia,
-      open
+      open,
     );
 
     _conversationCache.cache(newConversation.id, newConversation);

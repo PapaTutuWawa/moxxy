@@ -123,7 +123,7 @@ class MessageManager extends XmppManagerBase {
             children: [
               XMLNode(
                 tag: 'body',
-                attributes: {
+                attributes: <String, String>{
                   'start': '0',
                   'end': '${fallback.length}'
                 },

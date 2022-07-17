@@ -1,80 +1,78 @@
-import "dart:convert";
+import 'dart:convert';
 
-import "package:moxxyv2/shared/preferences.dart";
-import "package:moxxyv2/shared/migrator.dart";
-
-import "package:flutter_secure_storage/flutter_secure_storage.dart";
-import "package:logging/logging.dart";
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:moxxyv2/shared/migrator.dart';
+import 'package:moxxyv2/shared/preferences.dart';
 
 const currentVersion = 7;
-const preferencesVersionKey = "prefs_version";
-const preferencesDataKey = "prefs_data";
+const preferencesVersionKey = 'prefs_version';
+const preferencesDataKey = 'prefs_data';
 
 class _PreferencesMigrator extends Migrator<PreferencesState> {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true)
-  );
 
   _PreferencesMigrator() : super(
     currentVersion,
     [
       Migration<PreferencesState>(1, (data) => PreferencesState(
-          sendChatMarkers: data["sendChatMarkers"]!,
-          sendChatStates: data["sendChatStates"]!,
-          showSubscriptionRequests: data["showSubscriptionRequests"]!
-      )),
+        sendChatMarkers: data['sendChatMarkers']! as bool,
+        sendChatStates: data['sendChatStates']! as bool,
+        showSubscriptionRequests: data['showSubscriptionRequests']! as bool,
+      ),),
       Migration<PreferencesState>(2, (data) => PreferencesState(
-          sendChatMarkers: data["sendChatMarkers"]!,
-          sendChatStates: data["sendChatStates"]!,
-          showSubscriptionRequests: data["showSubscriptionRequests"]!,
-          autoDownloadWifi: data["autoDownloadWifi"]!,
-          autoDownloadMobile: data["autoDownloadMobile"]!
-      )),
+          sendChatMarkers: data['sendChatMarkers']! as bool,
+          sendChatStates: data['sendChatStates']! as bool,
+          showSubscriptionRequests: data['showSubscriptionRequests']! as bool,
+          autoDownloadWifi: data['autoDownloadWifi']! as bool,
+          autoDownloadMobile: data['autoDownloadMobile']! as bool,
+      ),),
       Migration<PreferencesState>(3, (data) => PreferencesState(
-          sendChatMarkers: data["sendChatMarkers"]!,
-          sendChatStates: data["sendChatStates"]!,
-          showSubscriptionRequests: data["showSubscriptionRequests"]!,
-          autoDownloadWifi: data["autoDownloadWifi"]!,
-          autoDownloadMobile: data["autoDownloadMobile"]!,
-          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!
-      )),
+          sendChatMarkers: data['sendChatMarkers']! as bool,
+          sendChatStates: data['sendChatStates']! as bool,
+          showSubscriptionRequests: data['showSubscriptionRequests']! as bool,
+          autoDownloadWifi: data['autoDownloadWifi']! as bool,
+          autoDownloadMobile: data['autoDownloadMobile']! as bool,
+          maximumAutoDownloadSize: data['maximumAutoDownloadSize']! as int,
+      ),),
       Migration<PreferencesState>(4, (data) => PreferencesState(
-          sendChatMarkers: data["sendChatMarkers"]!,
-          sendChatStates: data["sendChatStates"]!,
-          showSubscriptionRequests: data["showSubscriptionRequests"]!,
-          autoDownloadWifi: data["autoDownloadWifi"]!,
-          autoDownloadMobile: data["autoDownloadMobile"]!,
-          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
-          backgroundPath: data["backgroundPath"]!
-      )),
+          sendChatMarkers: data['sendChatMarkers']! as bool,
+          sendChatStates: data['sendChatStates']! as bool,
+          showSubscriptionRequests: data['showSubscriptionRequests']! as bool,
+          autoDownloadWifi: data['autoDownloadWifi']! as bool,
+          autoDownloadMobile: data['autoDownloadMobile']! as bool,
+          maximumAutoDownloadSize: data['maximumAutoDownloadSize']! as int,
+          backgroundPath: data['backgroundPath']! as String,
+      ),),
       Migration<PreferencesState>(5, (data) => PreferencesState(
-          sendChatMarkers: data["sendChatMarkers"]!,
-          sendChatStates: data["sendChatStates"]!,
-          showSubscriptionRequests: data["showSubscriptionRequests"]!,
-          autoDownloadWifi: data["autoDownloadWifi"]!,
-          autoDownloadMobile: data["autoDownloadMobile"]!,
-          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
-          backgroundPath: data["backgroundPath"]!,
-          isAvatarPublic: data["isAvatarPublic"]!
-      )),
+          sendChatMarkers: data['sendChatMarkers']! as bool,
+          sendChatStates: data['sendChatStates']! as bool,
+          showSubscriptionRequests: data['showSubscriptionRequests']! as bool,
+          autoDownloadWifi: data['autoDownloadWifi']! as bool,
+          autoDownloadMobile: data['autoDownloadMobile']! as bool,
+          maximumAutoDownloadSize: data['maximumAutoDownloadSize']! as int,
+          backgroundPath: data['backgroundPath']! as String,
+          isAvatarPublic: data['isAvatarPublic']! as bool,
+      ),),
       Migration<PreferencesState>(6, (data) => PreferencesState(
-          sendChatMarkers: data["sendChatMarkers"]!,
-          sendChatStates: data["sendChatStates"]!,
-          showSubscriptionRequests: data["showSubscriptionRequests"]!,
-          autoDownloadWifi: data["autoDownloadWifi"]!,
-          autoDownloadMobile: data["autoDownloadMobile"]!,
-          maximumAutoDownloadSize: data["maximumAutoDownloadSize"]!,
-          backgroundPath: data["backgroundPath"]!,
-          isAvatarPublic: data["isAvatarPublic"]!,
-          autoAcceptSubscriptionRequests: data["autoAcceptSubscriptionRequests"]
-      ))
+          sendChatMarkers: data['sendChatMarkers']! as bool,
+          sendChatStates: data['sendChatStates']! as bool,
+          showSubscriptionRequests: data['showSubscriptionRequests']! as bool,
+          autoDownloadWifi: data['autoDownloadWifi']! as bool,
+          autoDownloadMobile: data['autoDownloadMobile']! as bool,
+          maximumAutoDownloadSize: data['maximumAutoDownloadSize']! as int,
+          backgroundPath: data['backgroundPath']! as String,
+          isAvatarPublic: data['isAvatarPublic']! as bool,
+          autoAcceptSubscriptionRequests: data['autoAcceptSubscriptionRequests']! as bool,
+      ),)
     ]
   );
+  final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
 
-  // TODO: Deduplicate with XmppService. Maybe a StorageService?
+  // TODO(Unknown): Deduplicate with XmppService. Maybe a StorageService?
   Future<String?> _readKeyOrNull(String key) async {
     if (await _storage.containsKey(key: key)) {
-      return await _storage.read(key: key);
+      return _storage.read(key: key);
     } else {
       return null;
     }
@@ -83,7 +81,7 @@ class _PreferencesMigrator extends Migrator<PreferencesState> {
   @override
   Future<Map<String, dynamic>?> loadRawData() async {
     final raw = await _readKeyOrNull(preferencesDataKey);
-    if (raw != null) return json.decode(raw);
+    if (raw != null) return json.decode(raw) as Map<String, dynamic>;
 
     return null;
   }
@@ -110,11 +108,10 @@ class _PreferencesMigrator extends Migrator<PreferencesState> {
 }
 
 class PreferencesService {
+
+  PreferencesService() : _migrator = _PreferencesMigrator();
   PreferencesState? _preferences;
   final _PreferencesMigrator _migrator;
-  final Logger _log;
-
-  PreferencesService() : _migrator = _PreferencesMigrator(), _log = Logger("PreferencesService");
   
   Future<void> _loadPreferences() async {
     _preferences = await _migrator.load();

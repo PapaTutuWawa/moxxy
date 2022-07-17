@@ -8,7 +8,7 @@ import 'package:moxxyv2/xmpp/stringxml.dart';
 class CSIActiveNonza extends XMLNode {
   CSIActiveNonza() : super(
     tag: 'active',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': csiXmlns
     },
   );
@@ -17,7 +17,7 @@ class CSIActiveNonza extends XMLNode {
 class CSIInactiveNonza extends XMLNode {
   CSIInactiveNonza() : super(
     tag: 'inactive',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': csiXmlns
     },
   );

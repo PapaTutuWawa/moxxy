@@ -4,7 +4,7 @@ class XMLNode {
 
   XMLNode({
       required this.tag,
-      this.attributes = const {},
+      this.attributes = const <String, dynamic>{},
       this.children = const [],
       this.closeTag = true,
       this.text,
@@ -13,11 +13,11 @@ class XMLNode {
   XMLNode.xmlns({
       required this.tag,
       required String xmlns,
-      Map<String, String> attributes = const {},
+      Map<String, String> attributes = const <String, String>{},
       this.children = const [],
       this.closeTag = true,
       this.text,
-  }) : attributes = { 'xmlns': xmlns, ...attributes }, isDeclaration = false;
+  }) : attributes = <String, String>{ 'xmlns': xmlns, ...attributes }, isDeclaration = false;
   /// Because this API is better ;)
   /// Don't use in production. Just for testing
   factory XMLNode.fromXmlElement(XmlElement element) {

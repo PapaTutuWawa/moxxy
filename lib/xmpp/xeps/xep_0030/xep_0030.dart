@@ -75,13 +75,13 @@ class DiscoManager extends XmppManagerBase {
                 tag: 'query',
                 // TODO(PapaTutuWawa): Why are we copying the xmlns?
                 xmlns: query.attributes['xmlns']! as String,
-                attributes: {
+                attributes: <String, String>{
                   'node': node
                 },
               ),
               XMLNode(
                 tag: 'error',
-                attributes: {
+                attributes: <String, String>{
                   'type': 'cancel'
                 },
                 children: [
@@ -110,9 +110,14 @@ class DiscoManager extends XmppManagerBase {
             },
             children: [
               ...getIdentities().map((identity) => identity.toXMLNode()).toList(),
-              ..._features.map((feat) => XMLNode(tag: 'feature', attributes: { 'var': feat })).toList()
+              ..._features.map((feat) {
+                return XMLNode(
+                  tag: 'feature',
+                  attributes: <String, dynamic>{ 'var': feat }
+                );
+              }).toList(),
             ],
-          )
+          ),
         ],
     ),);
 
@@ -136,13 +141,13 @@ class DiscoManager extends XmppManagerBase {
               tag: 'query',
               // TODO(PapaTutuWawa): Why copy the xmlns?
               xmlns: query.attributes['xmlns']! as String,
-              attributes: {
+              attributes: <String, String>{
                 'node': query.attributes['node']! as String,
               },
             ),
             XMLNode(
               tag: 'error',
-              attributes: {
+              attributes: <String, dynamic>{
                 'type': 'cancel'
               },
               children: [

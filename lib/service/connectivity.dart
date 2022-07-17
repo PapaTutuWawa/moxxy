@@ -1,23 +1,22 @@
-import "dart:io" show Platform;
+import 'dart:io' show Platform;
 
-import "package:moxxyv2/service/moxxmpp/reconnect.dart";
-
-import "package:logging/logging.dart";
-import "package:connectivity_plus/connectivity_plus.dart";
-import "package:get_it/get_it.dart";
-import "package:meta/meta.dart";
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
+import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 
 class ConnectivityService {
+
+  ConnectivityService() : _log = Logger('ConnectivityService');
   final Logger _log;
 
   /// Caches the current connectivity state
   late ConnectivityResult _connectivity;
 
-  ConnectivityService() : _log = Logger("ConnectivityService");
-
   @visibleForTesting
   void setConnectivity(ConnectivityResult result) {
-    _log.warning("Internal connectivity state changed by request originating from outside ConnectivityService");
+    _log.warning('Internal connectivity state changed by request originating from outside ConnectivityService');
     _connectivity = result;
   }
   
@@ -25,8 +24,8 @@ class ConnectivityService {
     final conn = Connectivity();
     _connectivity = await conn.checkConnectivity();
 
-    // TODO: At least on Android, the stream fires directly after listening although the
-    //       network does not change. So just skip it.
+    // TODO(Unknown): At least on Android, the stream fires directly after listening although the
+    //                network does not change. So just skip it.
     // See https://github.com/fluttercommunity/plus_plugins/issues/567
     final skipAmount = Platform.isAndroid ? 1 : 0;
     conn.onConnectivityChanged.skip(skipAmount).listen((ConnectivityResult result) {

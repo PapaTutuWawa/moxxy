@@ -61,7 +61,7 @@ class SaslScramAuthNonza extends SaslAuthNonza {
 class SaslScramResponseNonza extends XMLNode {
   SaslScramResponseNonza({ required String body }) : super(
     tag: 'response',
-    attributes: {
+    attributes: <String, String>{
       'xmlns': saslXmlns,
     },
     text: body,
