@@ -1,6 +1,5 @@
 import "package:moxxyv2/xmpp/stringxml.dart";
 import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
 import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
 import "package:logging/logging.dart";

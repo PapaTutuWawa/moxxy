@@ -169,7 +169,6 @@ class XmppConnection {
 
   /// Return the registered feature negotiator that has id [id]. Returns null if
   /// none can be found.
-  @visibleForTesting
   XmppFeatureNegotiatorBase? getNegotiatorById(String id) => _featureNegotiators[id];
   
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
