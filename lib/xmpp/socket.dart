@@ -87,9 +87,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
 
   /// Allow the socket to be destroyed by cancelling internal subscriptions.
   void destroy() {
-    if (_socketSubscription != null) {
-      _socketSubscription!.cancel();
-    }
+    _socketSubscription?.cancel();
   }
   
   bool _onBadCertificate(dynamic certificate, String domain) {
