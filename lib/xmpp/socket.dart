@@ -84,6 +84,13 @@ class TCPSocketWrapper extends BaseSocketWrapper {
 
   @override
   bool managesKeepalives() => false;
+
+  /// Allow the socket to be destroyed by cancelling internal subscriptions.
+  void destroy() {
+    if (_socketSubscription != null) {
+      _socketSubscription!.cancel();
+    }
+  }
   
   bool _onBadCertificate(dynamic certificate, String domain) {
     _log.fine('Bad certificate: ${certificate.toString()}');
