@@ -12,16 +12,16 @@ void main() {
     final buffer = XmlStreamBuffer();
     final controller = StreamController<String>();
 
-    await controller
-    .stream
-    .transform(buffer)
-    .forEach((node) {
-      if (node.tag == 'childa') {
-        childa = true;
-      } else if (node.tag == 'childb') {
-        childb = true;
-      }
-    });
+    controller
+      .stream
+      .transform(buffer)
+      .forEach((node) {
+        if (node.tag == 'childa') {
+          childa = true;
+        } else if (node.tag == 'childb') {
+          childb = true;
+        }
+      });
     controller.add('<childa /><childb />');
 
     await Future.delayed(const Duration(seconds: 2), () {
@@ -36,16 +36,16 @@ void main() {
     final buffer = XmlStreamBuffer();
     final controller = StreamController<String>();
 
-    await controller
-    .stream
-    .transform(buffer)
-    .forEach((node) {
-      if (node.tag == 'childa') {
-        childa = true;
-      } else if (node.tag == 'childb') {
-        childb = true;
-      }
-    });
+    controller
+      .stream
+      .transform(buffer)
+      .forEach((node) {
+        if (node.tag == 'childa') {
+          childa = true;
+        } else if (node.tag == 'childb') {
+          childb = true;
+        }
+      });
     controller.add('<childa');
     controller.add(' /><childb />');
 
@@ -62,16 +62,16 @@ void main() {
     final buffer = XmlStreamBuffer();
     final controller = StreamController<String>();
 
-    await controller
-    .stream
-    .transform(buffer)
-    .forEach((node) {
-      if (node.tag == 'childa') {
-        childa = true;
-      } else if (node.tag == 'childb') {
-        childb = true;
-      }
-    });
+    controller
+      .stream
+      .transform(buffer)
+      .forEach((node) {
+        if (node.tag == 'childa') {
+          childa = true;
+        } else if (node.tag == 'childb') {
+          childb = true;
+        }
+      });
     controller.add('<childa');
     controller.add(' /><childb />');
     controller.add('</stream:stream>');
