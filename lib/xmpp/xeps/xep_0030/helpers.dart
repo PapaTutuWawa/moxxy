@@ -1,67 +1,67 @@
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0004.dart";
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 
 class Identity {
+
+  const Identity({ required this.category, required this.type, this.name, this.lang });
   final String category;
   final String type;
   final String? name;
   final String? lang;
 
-  const Identity({ required this.category, required this.type, this.name, this.lang });
-
   XMLNode toXMLNode() {
     return XMLNode(
-      tag: "identity",
+      tag: 'identity',
       attributes: {
-        "category": category,
-        "type": type,
-        "name": name,
-        ...(lang == null ? {} : { "xml:lang": lang!})
-      }
+        'category': category,
+        'type': type,
+        'name': name,
+        ...lang == null ? {} : { 'xml:lang': lang }
+      },
     );
   }
 }
 
 class DiscoInfo {
+
+  const DiscoInfo({ required this.features, required this.identities, required this.extendedInfo });
   final List<String> features;
   final List<Identity> identities;
   final List<DataForm> extendedInfo;
-
-  const DiscoInfo({ required this.features, required this.identities, required this.extendedInfo });
 }
 
 class DiscoItem {
+
+  const DiscoItem({ required this.jid, this.node, this.name });
   final String jid;
   final String? node;
   final String? name;
-
-  const DiscoItem({ required this.jid, this.node, this.name });
 }
 
 DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
-  final query = stanza.firstTag("query");
+  final query = stanza.firstTag('query');
   if (query == null) return null;
 
-  final error = stanza.firstTag("error");
-  if (error != null && stanza.attributes["type"] == "error") {
+  final error = stanza.firstTag('error');
+  if (error != null && stanza.attributes['type'] == 'error') {
     //print("Disco Items error: " + error.toXml());
     return null;
   }
   
-  final List<String> features = List.empty(growable: true);
-  final List<Identity> identities = List.empty(growable: true);
+  final features = List<String>.empty(growable: true);
+  final identities = List<Identity>.empty(growable: true);
 
-  for (var element in query.children) {
-    if (element.tag == "feature") {
-      features.add(element.attributes["var"]!);
-    } else if (element.tag == "identity") {
+  for (final element in query.children) {
+    if (element.tag == 'feature') {
+      features.add(element.attributes['var']! as String);
+    } else if (element.tag == 'identity') {
       identities.add(Identity(
-          category: element.attributes["category"]!,
-          type: element.attributes["type"]!,
-          name: element.attributes["name"]
-      ));
+          category: element.attributes['category']! as String,
+          type: element.attributes['type']! as String,
+          name: element.attributes['name'] as String?,
+      ),);
     } else {
       //print("Unknown disco tag: " + element.tag);
     }
@@ -70,43 +70,43 @@ DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
   return DiscoInfo(
     features: features,
     identities: identities,
-    extendedInfo: query.findTags("x", xmlns: dataFormsXmlns).map((x) => parseDataForm(x)).toList()
+    extendedInfo: query.findTags('x', xmlns: dataFormsXmlns).map(parseDataForm).toList(),
   );
 }
 
 List<DiscoItem>? parseDiscoItemsResponse(Stanza stanza) {
-  final query = stanza.firstTag("query");
+  final query = stanza.firstTag('query');
   if (query == null) return null;
 
-  final error = stanza.firstTag("error");
-  if (error != null && stanza.type == "error") {
+  final error = stanza.firstTag('error');
+  if (error != null && stanza.type == 'error') {
     //print("Disco Items error: " + error.toXml());
     return null;
   }
 
-  return query.findTags("item").map((node) => DiscoItem(
-      jid: node.attributes["jid"]!,
-      node: node.attributes["node"],
-      name: node.attributes["name"]
-  )).toList();
+  return query.findTags('item').map((node) => DiscoItem(
+      jid: node.attributes['jid']! as String,
+      node: node.attributes['node'] as String?,
+      name: node.attributes['name'] as String?,
+  ),).toList();
 }
 
 Stanza buildDiscoInfoQueryStanza(String entity, String? node) {
-  return Stanza.iq(to: entity, type: "get", children: [
+  return Stanza.iq(to: entity, type: 'get', children: [
       XMLNode.xmlns(
-        tag: "query",
+        tag: 'query',
         xmlns: discoInfoXmlns,
-        attributes: node != null ? { "node": node } : {}
+        attributes: node != null ? { 'node': node } : {},
       )
-  ]);
+  ],);
 }
 
 Stanza buildDiscoItemsQueryStanza(String entity, { String? node }) {
-  return Stanza.iq(to: entity, type: "get", children: [
+  return Stanza.iq(to: entity, type: 'get', children: [
       XMLNode.xmlns(
-        tag: "query",
+        tag: 'query',
         xmlns: discoItemsXmlns,
-        attributes: node != null ? { "node": node } : {}
+        attributes: node != null ? { 'node': node } : {},
       )
-  ]);
+  ],);
 }

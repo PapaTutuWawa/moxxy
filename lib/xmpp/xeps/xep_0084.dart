@@ -1,16 +1,16 @@
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0060.dart";
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 
 class UserAvatar {
-  final String base64;
-  final String hash;
 
   const UserAvatar({ required this.base64, required this.hash });
+  final String base64;
+  final String hash;
 }
 
 /// NOTE: This class requires a PubSubManager
@@ -19,7 +19,7 @@ class UserAvatarManager extends XmppManagerBase {
   String getId() => userAvatarManager;
 
   @override
-  String getName() => "UserAvatarManager";
+  String getName() => 'UserAvatarManager';
 
   PubSubManager _getPubSubManager() => getAttributes().getManagerById(pubsubManager)! as PubSubManager;
   
@@ -30,8 +30,8 @@ class UserAvatarManager extends XmppManagerBase {
         AvatarUpdatedEvent(
           jid: event.from,
           base64: event.item.payload.innerText(),
-          hash: event.item.id
-        )
+          hash: event.item.id,
+        ),
       );
     }
   }
@@ -46,7 +46,7 @@ class UserAvatarManager extends XmppManagerBase {
     final item = results[0];
     return UserAvatar(
       base64: item.payload.innerText(),
-      hash: item.id
+      hash: item.id,
     );
   }
 
@@ -55,29 +55,29 @@ class UserAvatarManager extends XmppManagerBase {
   /// [base64] must be the base64-encoded version of the image data.
   Future<bool> publishUserAvatar(String base64, String hash, bool public) async {
     final pubsub = _getPubSubManager();
-    return await pubsub.publish(
+    return pubsub.publish(
       getAttributes().getFullJID().toBare().toString(),
       userAvatarDataXmlns,
       XMLNode.xmlns(
-        tag: "data",
+        tag: 'data',
         xmlns: userAvatarDataXmlns,
-        text: base64
+        text: base64,
       ),
       id: hash,
       options: PubSubPublishOptions(
-        accessModel: public ? "open" : "roster"
-      )
+        accessModel: public ? 'open' : 'roster',
+      ),
     );
   }
 
   /// Subscribe the data node of [jid].
   Future<bool> subscribe(String jid) async {
-    return await _getPubSubManager().subscribe(jid, userAvatarDataXmlns);
+    return _getPubSubManager().subscribe(jid, userAvatarDataXmlns);
   }
 
   /// Unsubscribe the data node of [jid].
   Future<bool> unsubscribe(String jid) async {
-    return await _getPubSubManager().unsubscribe(jid, userAvatarDataXmlns);
+    return _getPubSubManager().unsubscribe(jid, userAvatarDataXmlns);
   }
 
   /// Returns the PubSub Id of an avatar after doing a disco#items query.

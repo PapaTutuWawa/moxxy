@@ -1,32 +1,30 @@
-import "dart:async";
-
-import "package:moxxyv2/xmpp/socket.dart";
-import "package:moxxyv2/xmpp/buffer.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/routing.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/settings.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/iq.dart";
-import "package:moxxyv2/xmpp/presence.dart";
-import "package:moxxyv2/xmpp/roster.dart";
-import "package:moxxyv2/xmpp/reconnect.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/managers/attributes.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
-
-import "package:meta/meta.dart";
-import "package:uuid/uuid.dart";
-import "package:synchronized/synchronized.dart";
-import "package:logging/logging.dart";
+import 'dart:async';
+import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
+import 'package:moxxyv2/xmpp/buffer.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/iq.dart';
+import 'package:moxxyv2/xmpp/managers/attributes.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/managers/handlers.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
+import 'package:moxxyv2/xmpp/presence.dart';
+import 'package:moxxyv2/xmpp/reconnect.dart';
+import 'package:moxxyv2/xmpp/roster.dart';
+import 'package:moxxyv2/xmpp/routing.dart';
+import 'package:moxxyv2/xmpp/settings.dart';
+import 'package:moxxyv2/xmpp/socket.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
+import 'package:synchronized/synchronized.dart';
+import 'package:uuid/uuid.dart';
 
 enum XmppConnectionState {
   notConnected,
@@ -46,33 +44,75 @@ enum StanzaFromType {
 
 class StreamHeaderNonza extends XMLNode {
   StreamHeaderNonza(String serverDomain) : super(
-      tag: "stream:stream",
+      tag: 'stream:stream',
       attributes: {
-        "xmlns": stanzaXmlns,
-        "version": "1.0",
-        "xmlns:stream": streamXmlns,
-        "to": serverDomain,
-        "xml:lang": "en"
+        'xmlns': stanzaXmlns,
+        'version': '1.0',
+        'xmlns:stream': streamXmlns,
+        'to': serverDomain,
+        'xml:lang': 'en'
       },
       closeTag: false
     );
 }
 
 class XmppConnectionResult {
-  final bool success;
-  // NOTE: [reason] is not human-readable, but the type of SASL error.
-  //       See sasl/errors.dart
-  final String? reason;
-
   const XmppConnectionResult(
     this.success,
     {
       this.reason
     }
   );
+
+  final bool success;
+  // NOTE: [reason] is not human-readable, but the type of SASL error.
+  //       See sasl/errors.dart
+  final String? reason;
 }
 
 class XmppConnection {
+  /// [socket] is for debugging purposes.
+  /// [connectionPingDuration] is the duration after which a ping will be sent to keep
+  /// the connection open. Defaults to 15 minutes.
+  XmppConnection(
+    ReconnectionPolicy reconnectionPolicy,
+    {
+      BaseSocketWrapper? socket,
+      this.connectionPingDuration = const Duration(minutes: 5)
+    }
+  ) :
+    _connectionState = XmppConnectionState.notConnected,
+    _routingState = RoutingState.preConnection,
+    _eventStreamController = StreamController.broadcast(),
+    _resource = '',
+    _streamBuffer = XmlStreamBuffer(),
+    _resuming = true,
+    _performingStartTLS = false,
+    _disconnecting = false,
+    _uuid = const Uuid(),
+    _socket = socket ?? TCPSocketWrapper(),
+    _awaitingResponse = {},
+    _awaitingResponseLock = Lock(),
+    _xmppManagers = {},
+    _incomingStanzaHandlers = List.empty(growable: true),
+    _outgoingPreStanzaHandlers = List.empty(growable: true),
+    _outgoingPostStanzaHandlers = List.empty(growable: true),
+    _reconnectionPolicy = reconnectionPolicy,
+    _featureNegotiators = {},
+    _streamFeatures = List.empty(growable: true),
+    _log = Logger('XmppConnection') {
+      // Allow the reconnection policy to perform reconnections by itself
+      _reconnectionPolicy.register(
+        _attemptReconnection,
+        _onNetworkConnectionLost
+      );
+
+      _socketStream = _socket.getDataStream();
+      // TODO(Unknown): Handle on done
+      _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
+      _socket.getEventStream().listen(_handleSocketEvent);
+  }
+
   final StreamController<XmppEvent> _eventStreamController;
   final Map<String, Completer<XMLNode>> _awaitingResponse;
   final Lock _awaitingResponseLock;
@@ -95,11 +135,11 @@ class XmppConnection {
   /// UUID object to generate stanza and origin IDs
   final Uuid _uuid;
   /// The time between sending a ping to keep the connection open
-  // TODO: Only start the timer if we did not send a stanza after n seconds
+  // TODO(Unknown): Only start the timer if we did not send a stanza after n seconds
   final Duration connectionPingDuration;
   /// The current state of the connection handling state machine.
   RoutingState _routingState;
-  /// The currently bound resource or "" if none has been bound yet.
+  /// The currently bound resource or '' if none has been bound yet.
   String _resource;
   /// For indicating in a [ConnectionStateChangedEvent] that the event occured because we
   /// did a reconnection.
@@ -112,6 +152,7 @@ class XmppConnection {
   /// Timers for the keep-alive ping.
   Timer? _connectionPingTimer;
   /// Completers for certain actions
+  // ignore: use_late_for_private_fields_and_variables
   Completer<XmppConnectionResult>? _connectionCompleter;
 
   /// Negotiators
@@ -122,49 +163,6 @@ class XmppConnection {
   /// Misc
   final Logger _log;
   
-  /// [socket] is for debugging purposes.
-  /// [connectionPingDuration] is the duration after which a ping will be sent to keep
-  /// the connection open. Defaults to 15 minutes.
-  XmppConnection(
-    ReconnectionPolicy reconnectionPolicy,
-    {
-      BaseSocketWrapper? socket,
-      this.connectionPingDuration = const Duration(minutes: 5)
-    }
-  ) :
-    _connectionState = XmppConnectionState.notConnected,
-    _routingState = RoutingState.preConnection,
-    _eventStreamController = StreamController.broadcast(),
-    _resource = "",
-    _streamBuffer = XmlStreamBuffer(),
-    _resuming = true,
-    _performingStartTLS = false,
-    _disconnecting = false,
-    _uuid = const Uuid(),
-    // NOTE: For testing 
-    _socket = socket ?? TCPSocketWrapper(),
-    _awaitingResponse = {},
-    _awaitingResponseLock = Lock(),
-    _xmppManagers = {},
-    _incomingStanzaHandlers = List.empty(growable: true),
-    _outgoingPreStanzaHandlers = List.empty(growable: true),
-    _outgoingPostStanzaHandlers = List.empty(growable: true),
-    _reconnectionPolicy = reconnectionPolicy,
-    _featureNegotiators = {},
-    _streamFeatures = List.empty(growable: true),
-    _log = Logger("XmppConnection") {
-      // Allow the reconnection policy to perform reconnections by itself
-      _reconnectionPolicy.register(
-        _attemptReconnection,
-        _onNetworkConnectionLost
-      );
-
-      _socketStream = _socket.getDataStream();
-      // TODO: Handle on done
-      _socketStream.transform(_streamBuffer).forEach(handleXmlStream);
-      _socket.getEventStream().listen(_handleSocketEvent);
-  }
-
   List<String> get serverFeatures => _serverFeatures;
 
   /// Return the registered feature negotiator that has id [id]. Returns null if
@@ -176,7 +174,7 @@ class XmppConnection {
   /// should be set up. The only time this should be false is when called via
   /// [registerManagers].
   void registerManager(XmppManagerBase manager, { bool sortHandlers = true }) {
-    _log.finest("Registering ${manager.getId()}");
+    _log.finest('Registering ${manager.getId()}');
     manager.register(XmppManagerAttributes(
         sendStanza: sendStanza,
         sendNonza: sendRawXML,
@@ -184,7 +182,7 @@ class XmppConnection {
         sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
-        isFeatureSupported: (feature) => _serverFeatures.contains(feature),
+        isFeatureSupported: _serverFeatures.contains,
         getFullJID: () => _connectionSettings.jid.withResource(_resource),
         getSocket: () => _socket,
         getConnection: () => this,
@@ -197,11 +195,11 @@ class XmppConnection {
     if (id == discoManager) {
       // NOTE: It is intentional that we do not exclude the [DiscoManager] from this
       //       loop. It may also register features.
-      for (var man in _xmppManagers.values) {
-        (manager as DiscoManager).addDiscoFeatures(man.getDiscoFeatures());
+      for (final registeredManager in _xmppManagers.values) {
+        (manager as DiscoManager).addDiscoFeatures(registeredManager.getDiscoFeatures());
       }
     } else if (_xmppManagers.containsKey(discoManager)) {
-      (_xmppManagers[discoManager] as DiscoManager).addDiscoFeatures(manager.getDiscoFeatures());
+      (_xmppManagers[discoManager]! as DiscoManager).addDiscoFeatures(manager.getDiscoFeatures());
     }
 
     _incomingStanzaHandlers.addAll(manager.getIncomingStanzaHandlers());
@@ -272,7 +270,7 @@ class XmppConnection {
   /// A [PresenceManager] is required, so have a wrapper for getting it.
   /// Returns the registered [PresenceManager].
   PresenceManager getPresenceManager() {
-    assert(_xmppManagers.containsKey(presenceManager));
+    assert(_xmppManagers.containsKey(presenceManager), 'A PresenceManager is mandatory');
 
     return getManagerById(presenceManager)!;
   }
@@ -280,7 +278,7 @@ class XmppConnection {
   /// A [DiscoManager] is required so, have a wrapper for getting it.
   /// Returns the registered [DiscoManager].
   DiscoManager getDiscoManager() {
-    assert(_xmppManagers.containsKey(discoManager));
+    assert(_xmppManagers.containsKey(discoManager), 'A DiscoManager is mandatory');
 
     return getManagerById(discoManager)!;
   }
@@ -288,7 +286,7 @@ class XmppConnection {
   /// A [DiscoCacheManager] is required, so have a wrapper for getting it.
   /// Returns the registered [DiscoCacheManager].
   DiscoCacheManager getDiscoCacheManager() {
-    assert(_xmppManagers.containsKey(discoCacheManager));
+    assert(_xmppManagers.containsKey(discoCacheManager), 'A DiscoCacheManager is mandatory');
 
     return getManagerById(discoCacheManager)!;
   }
@@ -296,7 +294,7 @@ class XmppConnection {
   /// A [RosterManager] is required, so have a wrapper for getting it.
   /// Returns the registered [DiscoCacheManager].
   RosterManager getRosterManager() {
-    assert(_xmppManagers.containsKey(rosterManager));
+    assert(_xmppManagers.containsKey(rosterManager), 'A RosterManager is mandatory');
 
     return getManagerById(rosterManager)!;
   }
@@ -315,6 +313,7 @@ class XmppConnection {
   void setConnectionSettings(ConnectionSettings settings) {
     _connectionSettings = settings;
   }
+
   /// Returns the connection settings of this connection.
   ConnectionSettings getConnectionSettings() {
     return _connectionSettings;
@@ -330,12 +329,12 @@ class XmppConnection {
   /// Called when a stream ending error has occurred
   void handleError(Object? error) {
     if (error != null) {
-      _log.severe("handleError: $error");
+      _log.severe('handleError: $error');
     } else {
-      _log.severe("handleError: Called with null");
+      _log.severe('handleError: Called with null');
     } 
 
-    // TODO: This may be too harsh for every error
+    // TODO(Unknown): This may be too harsh for every error
     _reconnectionPolicy.onFailure();
   }
 
@@ -346,7 +345,7 @@ class XmppConnection {
     } else if (event is XmppSocketClosureEvent) {
       // Only reconnect if we didn't expect this
       if (!_disconnecting && !_performingStartTLS) {
-        _log.fine("Received XmppSocketClosureEvent, but _disconnecting is false. Reconnecting...");
+        _log.fine('Received XmppSocketClosureEvent, but _disconnecting is false. Reconnecting...');
         _attemptReconnection();
       }
     }
@@ -358,7 +357,7 @@ class XmppConnection {
     return _routingState;
   }
 
-  /// Returns the [ConnectionState] of the connection
+  /// Returns the ConnectionState of the connection
   XmppConnectionState getConnectionState() => _connectionState;
   
   /// Sends an [XMLNode] without any further processing to the server.
@@ -383,44 +382,46 @@ class XmppConnection {
   /// of the stanza is taken care of. Returns a Future that resolves when we receive a
   /// response to the stanza.
   ///
-  /// If addFrom is true, then a "from" attribute will be added to the stanza if
+  /// If addFrom is true, then a 'from' attribute will be added to the stanza if
   /// [stanza] has none.
-  /// If addId is true, then an "id" attribute will be added to the stanza if [stanza] has
+  /// If addId is true, then an 'id' attribute will be added to the stanza if [stanza] has
   /// none.
-  // TODO: if addId = false, the function crashes.
+  // TODO(Unknown): if addId = false, the function crashes.
   Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true, bool retransmitted = false }) async {
+    var stanza_ = stanza;
+    
     // Add extra data in case it was not set
-    if (addId && (stanza.id == null || stanza.id == "")) {
-      stanza = stanza.copyWith(id: generateId());
+    if (addId && (stanza_.id == null || stanza_.id == '')) {
+      stanza_ = stanza.copyWith(id: generateId());
     }
-    if (addFrom != StanzaFromType.none && (stanza.from == null || stanza.from == "")) {
+    if (addFrom != StanzaFromType.none && (stanza_.from == null || stanza_.from == '')) {
       switch (addFrom) {
         case StanzaFromType.full: {
-          stanza = stanza.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());
+          stanza_ = stanza_.copyWith(from: _connectionSettings.jid.withResource(_resource).toString());
         }
         break;
         case StanzaFromType.bare: {
-          stanza = stanza.copyWith(from: _connectionSettings.jid.toBare().toString());
+          stanza_ = stanza_.copyWith(from: _connectionSettings.jid.toBare().toString());
         }
         break;
         case StanzaFromType.none: break;
       }
     }
 
-    final stanzaString = stanza.toXml();
-    final id = stanza.id!;
+    final stanzaString = stanza_.toXml();
+    final id = stanza_.id!;
 
-    _log.fine("Attempting to acquire lock for $id...");
-    Future<XMLNode> future = Future.value(XMLNode(tag: "not-used"));
+    _log.fine('Attempting to acquire lock for $id...');
+    var future = Future.value(XMLNode(tag: 'not-used'));
     await _awaitingResponseLock.synchronized(() async {
-        _log.fine("Lock acquired for $id");
+        _log.fine('Lock acquired for $id');
         if (awaitable) {
           _awaitingResponse[id] = Completer();
         }
 
-        _log.fine("Running pre stanza handlers..");
-        await _runOutoingPreStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
-        _log.fine("Done");
+        _log.fine('Running pre stanza handlers..');
+        await _runOutoingPreStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_, retransmitted: retransmitted));
+        _log.fine('Done');
 
         // This uses the StreamManager to behave like a send queue
         final canSendData = _canSendData();
@@ -430,18 +431,18 @@ class XmppConnection {
           // Try to ack every stanza
           // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
         } else {
-          _log.fine("_canSendData() returned false since _connectionState == $_connectionState");
+          _log.fine('_canSendData() returned false since _connectionState == $_connectionState');
         }
 
-        _log.fine("Running post stanza handlers..");
-        await _runOutoingPostStanzaHandlers(stanza, initial: StanzaHandlerData(false, stanza, retransmitted: retransmitted));
-        _log.fine("Done");
+        _log.fine('Running post stanza handlers..');
+        await _runOutoingPostStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_, retransmitted: retransmitted));
+        _log.fine('Done');
 
         if (awaitable) {
           future = _awaitingResponse[id]!.future;
         }
 
-        _log.fine("Releasing lock for $id");
+        _log.fine('Releasing lock for $id');
     });
 
     return future;
@@ -450,7 +451,7 @@ class XmppConnection {
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
   void _setConnectionState(XmppConnectionState state) {
-    _log.finest("Updating _connectionState from $_connectionState to $state");
+    _log.finest('Updating _connectionState from $_connectionState to $state');
     _connectionState = state;
     _eventStreamController.add(ConnectionStateChangedEvent(state: state, resumed: _resuming));
 
@@ -466,7 +467,7 @@ class XmppConnection {
   
   /// Sets the routing state and logs the change
   void _updateRoutingState(RoutingState state) {
-    _log.finest("Updating _routingState from $_routingState to $state");
+    _log.finest('Updating _routingState from $_routingState to $state');
     _routingState = state;
   }
   
@@ -488,7 +489,7 @@ class XmppConnection {
   /// call its callback and end the processing if the callback returned true; continue
   /// if it returned false.
   Future<bool> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
-    StanzaHandlerData state = initial ?? StanzaHandlerData(false, stanza);
+    var state = initial ?? StanzaHandlerData(false, stanza);
     for (final handler in handlers) {
       if (handler.matches(state.stanza)) {
         state = await handler.callback(state.stanza, state);
@@ -500,20 +501,20 @@ class XmppConnection {
   }
 
   Future<bool> _runIncomingStanzaHandlers(Stanza stanza) async {
-    return await _runStanzaHandlers(
+    return _runStanzaHandlers(
       _incomingStanzaHandlers,
       stanza
     );
   }
   Future<bool> _runOutoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
-    return await _runStanzaHandlers(
+    return _runStanzaHandlers(
       _outgoingPreStanzaHandlers,
       stanza,
       initial: initial
     );
   }
   Future<bool> _runOutoingPostStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
-    return await _runStanzaHandlers(
+    return _runStanzaHandlers(
       _outgoingPostStanzaHandlers,
       stanza,
       initial: initial
@@ -523,8 +524,8 @@ class XmppConnection {
   /// Called whenever we receive a stanza after resource binding or stream resumption.
   Future<void> _handleStanza(XMLNode nonza) async {
     // Process nonzas separately
-    if (!["message", "iq", "presence"].contains(nonza.tag)) {
-      bool nonzaHandled = false;
+    if (!['message', 'iq', 'presence'].contains(nonza.tag)) {
+      var nonzaHandled = false;
       await Future.forEach(
         _xmppManagers.values,
         (XmppManagerBase manager) async {
@@ -535,21 +536,21 @@ class XmppConnection {
       );
 
       if (!nonzaHandled) {
-        _log.warning("Unhandled nonza received: " + nonza.toXml());
+        _log.warning('Unhandled nonza received: ${nonza.toXml()}');
       }
       return;
     }
 
     // See if we are waiting for this stanza
     final stanza = Stanza.fromXMLNode(nonza);
-    final id = stanza.attributes["id"];
-    bool awaited = false;
+    final id = stanza.attributes['id'] as String?;
+    var awaited = false;
     await _awaitingResponseLock.synchronized(() async {
-        if (id != null && _awaitingResponse.containsKey(id)) {
-          _awaitingResponse[id]!.complete(stanza);
-          _awaitingResponse.remove(id);
-          awaited = true;
-        }
+      if (id != null && _awaitingResponse.containsKey(id)) {
+        _awaitingResponse[id]!.complete(stanza);
+        _awaitingResponse.remove(id);
+        awaited = true;
+      }
     });
     if (awaited) {
       return;
@@ -568,7 +569,7 @@ class XmppConnection {
   bool _isMandatoryNegotiationDone(List<XMLNode> features) {
     return features.every(
       (XMLNode feature) {
-        return feature.firstTag("required") == null && feature.tag != "mechanisms";
+        return feature.firstTag('required') == null && feature.tag != 'mechanisms';
       }
     );
   }
@@ -607,30 +608,30 @@ class XmppConnection {
     final serverJid = _connectionSettings.jid.domain;
     final info = await discoCache.getInfoByJid(serverJid);
     if (info != null) {
-      _log.finest("Discovered supported server features: ${info.features}");
+      _log.finest('Discovered supported server features: ${info.features}');
       _serverFeatures.addAll(info.features);
       await _sendEvent(ServerDiscoDoneEvent());
     } else {
-      _log.warning("Failed to discover server features");
+      _log.warning('Failed to discover server features');
     }
 
     final items = await disco.discoItemsQuery(serverJid);
     if (items != null) {
-      _log.finest("Discovered disco items form $serverJid");
+      _log.finest('Discovered disco items form $serverJid');
 
       // Query all items
       for (final item in items) {
-        _log.finest("Querying info for ${item.jid}...");
+        _log.finest('Querying info for ${item.jid}...');
         final itemInfo = await discoCache.getInfoByJid(item.jid);
         if (itemInfo != null) {
-          _log.finest("Received info for ${item.jid}");
+          _log.finest('Received info for ${item.jid}');
           await _sendEvent(ServerItemDiscoEvent(info: itemInfo, jid: item.jid));
         } else {
-          _log.warning("Failed to discover info for ${item.jid}");
+          _log.warning('Failed to discover info for ${item.jid}');
         }
       }
     } else {
-      _log.warning("Failed to discover items of $serverJid");
+      _log.warning('Failed to discover items of $serverJid');
     }
   }
 
@@ -642,7 +643,7 @@ class XmppConnection {
     if (_serverFeatures.isEmpty) {
       await _performDiscoSweep();
     } else {
-      _log.info("Not performing disco sweep as _serverFeatures is not empty");
+      _log.info('Not performing disco sweep as _serverFeatures is not empty');
     }
   }
   
@@ -651,7 +652,7 @@ class XmppConnection {
   /// waits, depending on what the negotiator did.
   Future<void> _checkCurrentNegotiator() async {
     if (_currentNegotiator!.state == NegotiatorState.done) {
-      _log.finest("Negotiator ${_currentNegotiator!.id} done");
+      _log.finest('Negotiator ${_currentNegotiator!.id} done');
 
       if (_currentNegotiator!.sendStreamHeaderWhenDone) {
         _currentNegotiator = null;
@@ -661,21 +662,21 @@ class XmppConnection {
         // Track what features we still have
         _streamFeatures
           .removeWhere((node) {
-            return node.attributes["xmlns"] == _currentNegotiator!.negotiatingXmlns;
+            return node.attributes['xmlns'] == _currentNegotiator!.negotiatingXmlns;
           });
         _currentNegotiator = null;
 
         if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
-          _log.finest("Negotiations done!");
+          _log.finest('Negotiations done!');
           _updateRoutingState(RoutingState.handleStanzas);
 
           await _onNegotiationsDone();
         } else {
           _currentNegotiator = getNextNegotiator(_streamFeatures);
-          _log.finest("Chose ${_currentNegotiator!.id} as next negotiator");
+          _log.finest('Chose ${_currentNegotiator!.id} as next negotiator');
 
           final fakeStanza = XMLNode(
-            tag: "stream:features",
+            tag: 'stream:features',
             children: _streamFeatures,
           );
           await _currentNegotiator!.negotiate(fakeStanza);
@@ -695,9 +696,9 @@ class XmppConnection {
       } else {
         _log.finest('Picking new negotiator...');
         _currentNegotiator = getNextNegotiator(_streamFeatures);
-        _log.finest("Chose $_currentNegotiator as next negotiator");
+        _log.finest('Chose $_currentNegotiator as next negotiator');
         final fakeStanza = XMLNode(
-          tag: "stream:features",
+          tag: 'stream:features',
           children: _streamFeatures,
         );
         await _currentNegotiator!.negotiate(fakeStanza);
@@ -727,7 +728,7 @@ class XmppConnection {
             if (_isNegotiationPossible(node.children)) {// We can still negotiate features, so do that.
               _log.finest('All required stream features done! Continuing negotiation');
               _currentNegotiator = getNextNegotiator(node.children);
-              _log.finest("Chose $_currentNegotiator as next negotiator");
+              _log.finest('Chose $_currentNegotiator as next negotiator');
               await _currentNegotiator!.negotiate(node);
               await _checkCurrentNegotiator();
             } else {
@@ -736,13 +737,13 @@ class XmppConnection {
           } else {
             // There still are mandatory features
             if (!_isNegotiationPossible(node.children)) {
-              _log.severe("Mandatory negotiations not done but continuation not possible");
+              _log.severe('Mandatory negotiations not done but continuation not possible');
               _updateRoutingState(RoutingState.error);
               return;
             }
 
             _currentNegotiator = getNextNegotiator(node.children);
-            _log.finest("Chose $_currentNegotiator as next negotiator");
+            _log.finest('Chose $_currentNegotiator as next negotiator');
             await _currentNegotiator!.negotiate(node);
             await _checkCurrentNegotiator();
           }
@@ -753,27 +754,27 @@ class XmppConnection {
         break;
       case RoutingState.preConnection:
       case RoutingState.error:
-        _log.warning("Received data while in non-receiving state");
+        _log.warning('Received data while in non-receiving state');
         break;
     }
   }
   
   /// Sends an event to the connection's event stream.
   Future<void> _sendEvent(XmppEvent event) async {
-    _log.finest("Event: ${event.toString()}");
+    _log.finest('Event: ${event.toString()}');
 
     // Specific event handling
     if (event is AckRequestResponseTimeoutEvent) {
       _reconnectionPolicy.onFailure();
     } else if (event is ResourceBindingSuccessEvent) {
-      _log.finest("Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}");
+      _log.finest('Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}');
       _resource = event.resource;
 
-      _log.finest("Resetting _serverFeatures");
+      _log.finest('Resetting _serverFeatures');
       _serverFeatures.clear();
     }
     
-    for (var manager in _xmppManagers.values) {
+    for (final manager in _xmppManagers.values) {
       await manager.onXmppEvent(event);
     }
 
@@ -784,9 +785,9 @@ class XmppConnection {
   void _sendStreamHeader() {
     _socket.write(
       XMLNode(
-        tag: "xml",
+        tag: 'xml',
         attributes: {
-          "version": "1.0"
+          'version': '1.0'
         },
         closeTag: false,
         isDeclaration: true,
@@ -808,7 +809,7 @@ class XmppConnection {
     _reconnectionPolicy.setShouldReconnect(false);
     _disconnecting = true;
     getPresenceManager().sendUnavailablePresence();
-    sendRawString("</stream:stream>");
+    sendRawString('</stream:stream>');
     _setConnectionState(XmppConnectionState.notConnected);
     _socket.close();
 
@@ -818,10 +819,10 @@ class XmppConnection {
 
   /// Make sure that all required managers are registered
   void _runPreConnectionAssertions() {
-    assert(_xmppManagers.containsKey(presenceManager));
-    assert(_xmppManagers.containsKey(rosterManager));
-    assert(_xmppManagers.containsKey(discoManager));
-    assert(_xmppManagers.containsKey(pingManager));
+    assert(_xmppManagers.containsKey(presenceManager), 'A PresenceManager is mandatory');
+    assert(_xmppManagers.containsKey(rosterManager), 'A RosterManager is mandatory');
+    assert(_xmppManagers.containsKey(discoManager), 'A DiscoManager is mandatory');
+    assert(_xmppManagers.containsKey(pingManager), 'A PingManager is mandatory');
   }
   
   /// Like [connect] but the Future resolves when the resource binding is either done or
@@ -852,7 +853,7 @@ class XmppConnection {
     String? host;
     int? port;
     if (smManager?.state.streamResumptionLocation != null) {
-      // TODO: Maybe wrap this in a try catch?
+      // TODO(Unknown): Maybe wrap this in a try catch?
       final parsed = Uri.parse(smManager!.state.streamResumptionLocation!);
       host = parsed.host;
       port = parsed.port;
@@ -867,7 +868,7 @@ class XmppConnection {
       handleError(null);
     } else {
       _reconnectionPolicy.onSuccess();
-      _log.fine("Preparing the internal state for a connection attempt");
+      _log.fine('Preparing the internal state for a connection attempt');
       _performingStartTLS = false;
       _resetNegotiators();
       _setConnectionState(XmppConnectionState.connecting);

@@ -1,30 +1,27 @@
 class JID {
-  String _local;
-  String _domain;
-  String _resource;
 
   JID(this._local, this._domain, this._resource);
 
-  JID.fromString(String jid): _local = "", _domain = "", _resource = "" {
+  JID.fromString(String jid): _local = '', _domain = '', _resource = '' {
     // 0: Parsing either the local or domain part
     // 1: Parsing the domain part
     // 2: Parsing the resource
-    int state = 0;
-    String buffer = "";
+    var state = 0;
+    var buffer = '';
     
-    for (int i = 0; i < jid.length; i++) {
+    for (var i = 0; i < jid.length; i++) {
       final c = jid[i];
       final eol = i == jid.length - 1;
       
       switch (state) {
         case 0: {
-          if (c == "@") {
+          if (c == '@') {
             _local = buffer;
-            buffer = "";
+            buffer = '';
             state = 1;
-          } else if (c == "/") {
+          } else if (c == '/') {
             _domain = buffer;
-            buffer = "";
+            buffer = '';
             state = 2;
           } else if (eol) {
             _domain = buffer + c;
@@ -34,17 +31,17 @@ class JID {
         }
         break;
         case 1: {
-          if (c == "/") {
+          if (c == '/') {
             _domain = buffer;
-            buffer = "";
+            buffer = '';
             state = 2;
           } else if (eol) {
             _domain = buffer;
 
-            if (c != " ") {
+            if (c != ' ') {
               _domain = _domain + c;
             }
-          } else if (c != " ") {
+          } else if (c != ' ') {
             buffer += c;
           }
         }
@@ -53,16 +50,19 @@ class JID {
           if (eol) {
             _resource = buffer;
 
-            if (c != " ") {
+            if (c != ' ') {
               _resource = _resource + c;
             }
-          } else if (c != ""){
+          } else if (c != ''){
             buffer += c;
           }
         }
       }
     }
   }
+  String _local;
+  String _domain;
+  String _resource;
 
   String get local => _local;
   String get domain => _domain;
@@ -71,20 +71,20 @@ class JID {
   bool isBare() => resource.isEmpty;
   bool isFull() => resource.isNotEmpty;
 
-  JID toBare() => JID(_local, _domain, "");
+  JID toBare() => JID(_local, _domain, '');
   JID withResource(String resource) => JID(_local, _domain, resource);
   
   @override
   String toString() {
-    String result = "";
+    var result = '';
 
     if (local.isNotEmpty) {
-      result += "$local@$domain";
+      result += '$local@$domain';
     } else {
       result += domain;
     }
     if (isFull()) {
-      result += "/$resource";
+      result += '/$resource';
     }
 
     return result;
@@ -101,4 +101,8 @@ class JID {
 
     return false;
   }
+
+
+
+
 }

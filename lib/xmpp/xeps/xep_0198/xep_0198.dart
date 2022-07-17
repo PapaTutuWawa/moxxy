@@ -1,23 +1,33 @@
-import "dart:async";
-import "dart:math";
+import 'dart:async';
+import 'dart:math';
 
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
-
-import "package:synchronized/synchronized.dart";
-import "package:meta/meta.dart";
+import 'package:meta/meta.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/managers/handlers.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/state.dart';
+import 'package:synchronized/synchronized.dart';
 
 const xmlUintMax = 4294967296; // 2**32
 
 class StreamManagementManager extends XmppManagerBase {
+
+  StreamManagementManager({
+      this.ackTimeout = const Duration(seconds: 30),
+  })
+  : _state = StreamManagementState(0, 0),
+    _unackedStanzas = {},
+    _stateLock = Lock(),
+    _streamManagementEnabled = false,
+    _lastAckTimestamp = -1,
+    _pendingAcks = 0,
+    _ackLock = Lock();
   /// The queue of stanzas that are not (yet) acked
   final Map<int, Stanza> _unackedStanzas;
   /// Commitable state of the StreamManagementManager
@@ -39,24 +49,13 @@ class StreamManagementManager extends XmppManagerBase {
   /// Lock for both [_lastAckTimestamp] and [_pendingAcks].
   final Lock _ackLock;
 
-  StreamManagementManager({
-      this.ackTimeout = const Duration(seconds: 30)
-  })
-  : _state = StreamManagementState(0, 0),
-    _unackedStanzas = {},
-    _stateLock = Lock(),
-    _streamManagementEnabled = false,
-    _lastAckTimestamp = -1,
-    _pendingAcks = 0,
-    _ackLock = Lock();
-
   /// Functions for testing
   @visibleForTesting
   Map<int, Stanza> getUnackedStanzas() => _unackedStanzas;
 
   @visibleForTesting
   Future<int> getPendingAcks() async {
-    int acks = 0;
+    var acks = 0;
 
     await _ackLock.synchronized(() async {
       acks = _pendingAcks;
@@ -86,7 +85,7 @@ class StreamManagementManager extends XmppManagerBase {
             s2c: 0,
             streamResumptionLocation: null,
             streamResumptionId: null,
-        ));
+        ),);
         await commitState();
     });
   }
@@ -97,33 +96,33 @@ class StreamManagementManager extends XmppManagerBase {
   String getId() => smManager;
 
   @override
-  String getName() => "StreamManagementManager";
+  String getName() => 'StreamManagementManager';
 
   @override
   List<NonzaHandler> getNonzaHandlers() => [
     NonzaHandler(
-      nonzaTag: "r",
+      nonzaTag: 'r',
       nonzaXmlns: smXmlns,
-      callback: _handleAckRequest
+      callback: _handleAckRequest,
     ),
     NonzaHandler(
-      nonzaTag: "a",
+      nonzaTag: 'a',
       nonzaXmlns: smXmlns,
-      callback: _handleAckResponse
+      callback: _handleAckResponse,
     )
   ];
 
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
-      callback: _onServerStanzaReceived
+      callback: _onServerStanzaReceived,
     )
   ];
 
   @override
   List<StanzaHandler> getOutgoingPostStanzaHandlers() => [
     StanzaHandler(
-      callback: _onClientStanzaSent
+      callback: _onClientStanzaSent,
     )
   ];
   
@@ -149,8 +148,8 @@ class StreamManagementManager extends XmppManagerBase {
               0,
               0,
               streamResumptionId: event.id,
-              streamResumptionLocation: event.location
-          ));
+              streamResumptionLocation: event.location,
+          ),);
           await commitState();
       });
     } else if (event is ConnectingEvent) {
@@ -163,10 +162,10 @@ class StreamManagementManager extends XmppManagerBase {
   void _startAckTimer() {
     if (_ackTimer != null) return;
 
-    logger.fine("Starting ack timer");
+    logger.fine('Starting ack timer');
     _ackTimer = Timer.periodic(
       ackTimeout,
-      _ackTimerCallback
+      _ackTimerCallback,
     );
   }
 
@@ -174,7 +173,7 @@ class StreamManagementManager extends XmppManagerBase {
   void _stopAckTimer() {
     if (_ackTimer == null) return;
 
-    logger.fine("Stopping ack timer");
+    logger.fine('Stopping ack timer');
     _ackTimer!.cancel();
     _ackTimer = null;
   }
@@ -194,20 +193,20 @@ class StreamManagementManager extends XmppManagerBase {
 
   /// Wrapper around sending an <r /> nonza that starts the ack timeout timer.
   Future<void> _sendAckRequest() async {
-    logger.fine("_sendAckRequest: Waiting to acquire lock...");
+    logger.fine('_sendAckRequest: Waiting to acquire lock...');
     await _ackLock.synchronized(() async {
-      logger.fine("_sendAckRequest: Done...");
+      logger.fine('_sendAckRequest: Done...');
       final now = DateTime.now().millisecondsSinceEpoch;
 
       _lastAckTimestamp = now;
       _pendingAcks++;
       _startAckTimer();
 
-      logger.fine("_pendingAcks is now at $_pendingAcks");
+      logger.fine('_pendingAcks is now at $_pendingAcks');
       
       getAttributes().sendNonza(StreamManagementRequestNonza());
       
-      logger.fine("_sendAckRequest: Releasing lock...");
+      logger.fine('_sendAckRequest: Releasing lock...');
     }); 
   }
   
@@ -229,7 +228,7 @@ class StreamManagementManager extends XmppManagerBase {
   /// To be called when receiving a <a /> nonza.
   Future<bool> _handleAckRequest(XMLNode nonza) async {
     final attrs = getAttributes();
-    logger.finest("Sending ack response");
+    logger.finest('Sending ack response');
     await _stateLock.synchronized(() async {
         attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
     });
@@ -240,7 +239,7 @@ class StreamManagementManager extends XmppManagerBase {
   /// Called when we receive an <a /> nonza from the server.
   /// This is a response to the question "How many of my stanzas have you handled".
   Future<bool> _handleAckResponse(XMLNode nonza) async {
-    final h = int.parse(nonza.attributes["h"]!);
+    final h = int.parse(nonza.attributes['h']! as String);
 
     await _ackLock.synchronized(() async {
       await _stateLock.synchronized(() async {
@@ -252,17 +251,17 @@ class StreamManagementManager extends XmppManagerBase {
           _stopAckTimer();
         }
 
-        logger.fine("_pendingAcks is now at $_pendingAcks");
+        logger.fine('_pendingAcks is now at $_pendingAcks');
       });
     });
     
     // Return early if we acked nothing.
     // Taken from slixmpp's stream management code
-    logger.fine("_handleAckResponse: Waiting to aquire lock...");
+    logger.fine('_handleAckResponse: Waiting to aquire lock...');
     await _stateLock.synchronized(() async {
-        logger.fine("_handleAckResponse: Done...");
+        logger.fine('_handleAckResponse: Done...');
         if (h == _state.c2s && _unackedStanzas.isEmpty) {
-          logger.fine("_handleAckResponse: Releasing lock...");
+          logger.fine('_handleAckResponse: Releasing lock...');
           return;
         }
 
@@ -274,25 +273,26 @@ class StreamManagementManager extends XmppManagerBase {
 
           final stanza = _unackedStanzas[height]!;
           _unackedStanzas.remove(height);
-          if (stanza.tag == "message" && stanza.id != null) {
+          if (stanza.tag == 'message' && stanza.id != null) {
             attrs.sendEvent(
               MessageAckedEvent(
                 id: stanza.id!,
-                to: stanza.to!
-              )
+                to: stanza.to!,
+              ),
             );
           }
         }
 
         if (h > _state.c2s) {
-          logger.info("C2S height jumped from ${_state.c2s} (local) to $h (remote).");
-          logger.info("Proceeding with $h as local C2S counter.");
+          logger.info('C2S height jumped from ${_state.c2s} (local) to $h (remote).');
+          // ignore: cascade_invocations
+          logger.info('Proceeding with $h as local C2S counter.');
 
           _state = _state.copyWith(c2s: h);
           await commitState();
         }
 
-        logger.fine("_handleAckResponse: Releasing lock...");
+        logger.fine('_handleAckResponse: Releasing lock...');
     });
 
     return true;
@@ -300,21 +300,21 @@ class StreamManagementManager extends XmppManagerBase {
 
   // Just a helper function to not increment the counters above xmlUintMax
   Future<void> _incrementC2S() async {
-    logger.fine("_incrementC2S: Waiting to aquire lock...");
+    logger.fine('_incrementC2S: Waiting to aquire lock...');
     await _stateLock.synchronized(() async {
-        logger.fine("_incrementC2S: Done");
+        logger.fine('_incrementC2S: Done');
         _state = _state.copyWith(c2s: _state.c2s + 1 % xmlUintMax);
         await commitState();
-        logger.fine("_incrementC2S: Releasing lock...");
+        logger.fine('_incrementC2S: Releasing lock...');
     });
   }
   Future<void> _incrementS2C() async {
-    logger.fine("_incrementS2C: Waiting to aquire lock...");
+    logger.fine('_incrementS2C: Waiting to aquire lock...');
     await _stateLock.synchronized(() async {
-        logger.fine("_incrementS2C: Done");
+        logger.fine('_incrementS2C: Done');
         _state = _state.copyWith(s2c: _state.s2c + 1 % xmlUintMax);
         await commitState();
-        logger.fine("_incrementS2C: Releasing lock...");
+        logger.fine('_incrementS2C: Releasing lock...');
     });
   }
   
@@ -348,7 +348,7 @@ class StreamManagementManager extends XmppManagerBase {
     // Retransmit the rest of the queue
     final attrs = getAttributes();
     for (final stanza in stanzas) {
-      attrs.sendStanza(stanza, awaitable: false, retransmitted: true);
+      await attrs.sendStanza(stanza, awaitable: false, retransmitted: true);
     }
     sendAckRequestPing();
   }

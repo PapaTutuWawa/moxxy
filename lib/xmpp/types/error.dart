@@ -4,12 +4,12 @@
 /// specific - error codes that can be either handled by code or be translated into a
 /// localised error message for the user.
 class MayFail<T> {
-  T? result;
-  int? errorCode;
 
   MayFail({ this.result, this.errorCode });
   MayFail.success(this.result);
   MayFail.failure(this.errorCode);
+  T? result;
+  int? errorCode;
 
   bool isError() => result == null && errorCode != null;
 

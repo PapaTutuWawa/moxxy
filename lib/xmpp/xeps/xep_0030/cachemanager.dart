@@ -1,34 +1,34 @@
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart";
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 
 class CapabilityHashInfo {
+
+  const CapabilityHashInfo({ required this.ver, required this.node, required this.hash });
   final String ver;
   final String node;
   final String hash;
-
-  const CapabilityHashInfo({ required this.ver, required this.node, required this.hash });
 }
 
-// TODO: Keep track of which cap hashes we are requesting to prevent querying them multiple times
-// TODO: Verify the capability hashes
-class DiscoCacheManager extends XmppManagerBase {
-  final Map<String, CapabilityHashInfo> _capHashCache; // Map full JID to Capability hashes
-  final Map<String, DiscoInfo> _discoInfoCache; // Map capability hash to the disco info
-  final Map<String, DiscoInfo> _discoInfoNoCapsCache; // Map full JID to disco info in case they do not advertise Entity Capabilities
+// TODO(Unknown): Keep track of which cap hashes we are requesting to prevent querying them multiple times
+// TODO(Unknown): Verify the capability hashes
+class DiscoCacheManager extends XmppManagerBase { // Map full JID to disco info in case they do not advertise Entity Capabilities
 
   DiscoCacheManager(): _capHashCache = {}, _discoInfoCache = {}, _discoInfoNoCapsCache = {}, super();
+  final Map<String, CapabilityHashInfo> _capHashCache; // Map full JID to Capability hashes
+  final Map<String, DiscoInfo> _discoInfoCache; // Map capability hash to the disco info
+  final Map<String, DiscoInfo> _discoInfoNoCapsCache;
   
   @override
   String getId() => discoCacheManager;
 
   @override
-  String getName() => "DiscoCache";
+  String getName() => 'DiscoCache';
 
   @override
   Future<void> onXmppEvent(XmppEvent event) async {
@@ -39,7 +39,7 @@ class DiscoCacheManager extends XmppManagerBase {
 
   Future<void> _onPresence(JID from, Stanza presence) async {
     // We are only interested in presence that is just there to indicate its CapHash
-    if (presence.attributes["type"] != null) return;
+    if (presence.attributes['type'] != null) return;
 
     // We're not interested in presence from other clients connected to the account
     final attrs = getAttributes();
@@ -52,13 +52,13 @@ class DiscoCacheManager extends XmppManagerBase {
       final capHash = _capHashCache[from.toString()]!;
 
       if (!_discoInfoCache.containsKey(capHash.ver)) { 
-        logger.finest("Know the capability hash of ${from.toString()} but not what the hash stands for. Querying...");
+        logger.finest('Know the capability hash of ${from.toString()} but not what the hash stands for. Querying...');
         final info = await disco.discoInfoCapHashQuery(from.toString(), capHash.node, capHash.ver);
 
         if (info != null) {
           _discoInfoCache[capHash.ver] = info;
         } else {
-          logger.warning("Disco query for ${from.toString()} returned nothing.");
+          logger.warning('Disco query for ${from.toString()} returned nothing.');
         } 
       }
 
@@ -66,25 +66,25 @@ class DiscoCacheManager extends XmppManagerBase {
     }
     
     // Check if there is a capability hash
-    final c = presence.firstTag("c", xmlns: capsXmlns);
+    final c = presence.firstTag('c', xmlns: capsXmlns);
     if (c != null) {
-      final ver = c.attributes["ver"]!;
-      final node = c.attributes["node"]!;
+      final ver = c.attributes['ver']! as String;
+      final node = c.attributes['node']! as String;
 
       if (!_discoInfoCache.containsKey(ver)) {
         _capHashCache[from.toString()] = CapabilityHashInfo(
           ver: ver,
           node: node,
-          hash: c.attributes["hash"]!
+          hash: c.attributes['hash']! as String,
         );
 
-        logger.finest("Know the capability hash of ${from.toString()} but not what the hash stands for. Querying...");
+        logger.finest('Know the capability hash of ${from.toString()} but not what the hash stands for. Querying...');
         final info = await disco.discoInfoCapHashQuery(from.toString(), node, ver);
 
         if (info != null) {
           _discoInfoCache[ver] = info;
         } else {
-          logger.warning("Disco query for ${from.toString()} returned nothing.");
+          logger.warning('Disco query for ${from.toString()} returned nothing.');
         }
       }
 
@@ -93,19 +93,19 @@ class DiscoCacheManager extends XmppManagerBase {
 
     // Fallback: No caps available; do a raw query
     if (!_discoInfoNoCapsCache.containsKey(from.toString())) {
-      logger.fine("${from.toString()} does not specify a <c /> in their presence. Querying without Entity Capabilities...");
+      logger.fine('${from.toString()} does not specify a <c /> in their presence. Querying without Entity Capabilities...');
 
       final info = await disco.discoInfoQuery(from.toString());
       if (info != null) {
         _discoInfoNoCapsCache[from.toString()] = info;
       } else {
-        logger.warning("Disco query for ${from.toString()} returned nothing.");
+        logger.warning('Disco query for ${from.toString()} returned nothing.');
       }
     }
   }
 
-  // TODO: If we are already requesting a JID or a Capability Hash, return a [Completer]
-  //       that completes when the original request finishes.
+  // TODO(Unknown): If we are already requesting a JID or a Capability Hash, return a [Completer]
+  //                that completes when the original request finishes.
   Future<DiscoInfo?> getInfoByJid(String jid) async {
     if (_discoInfoNoCapsCache.containsKey(jid)) {
       return _discoInfoNoCapsCache[jid]!;
@@ -124,7 +124,7 @@ class DiscoCacheManager extends XmppManagerBase {
         _discoInfoCache[capHash.ver] = info;
         return info;
       } else {
-        logger.warning("Disco query for $jid returned nothing.");
+        logger.warning('Disco query for $jid returned nothing.');
         return null;
       }
     }
@@ -134,7 +134,7 @@ class DiscoCacheManager extends XmppManagerBase {
       _discoInfoNoCapsCache[jid] = info;
       return info;
     } else {
-      logger.warning("Disco query for $jid returned nothing.");
+      logger.warning('Disco query for $jid returned nothing.');
       return null;
     }
   }

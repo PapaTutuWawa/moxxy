@@ -96,6 +96,7 @@ dev_dependencies:
   json_serializable: 6.1.5
   freezed: 1.1.1
   meta: 1.7.0
+  very_good_analysis: 2.4.0
 
 extra_licenses:
   - name: undraw.co

@@ -1,43 +1,43 @@
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/stanza.dart";
-import "package:moxxyv2/xmpp/jid.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/managers/base.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/data.dart";
-import "package:moxxyv2/xmpp/managers/handlers.dart";
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
+import 'package:moxxyv2/xmpp/managers/handlers.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
-class vCardPhoto {
+class VCardPhoto {
+
+  const VCardPhoto({ this.binval });
   final String? binval;
-
-  const vCardPhoto({ this.binval });
 }
 
-class vCard {
+class VCard {
+
+  const VCard({ this.nickname, this.url, this.photo });
   final String? nickname;
   final String? url;
-  final vCardPhoto? photo;
-
-  const vCard({ this.nickname, this.url, this.photo });
+  final VCardPhoto? photo;
 }
 
-class vCardManager extends XmppManagerBase {
-  final Map<String, String> _lastHash;
+class VCardManager extends XmppManagerBase {
 
-  vCardManager() : _lastHash = {}, super();
+  VCardManager() : _lastHash = {}, super();
+  final Map<String, String> _lastHash;
   
   @override
   String getId() => vcardManager;
 
   @override
-  String getName() => "vCardManager";
+  String getName() => 'vCardManager';
 
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
-      stanzaTag: "presence",
-      tagName: "x",
+      stanzaTag: 'presence',
+      tagName: 'x',
       tagXmlns: vCardTempUpdate,
       callback: _onPresence,
     )
@@ -49,8 +49,8 @@ class vCardManager extends XmppManagerBase {
   }
   
   Future<StanzaHandlerData> _onPresence(Stanza presence, StanzaHandlerData state) async {
-    final x = presence.firstTag("x", xmlns: vCardTempUpdate)!;
-    final hash = x.firstTag("photo")!.innerText();
+    final x = presence.firstTag('x', xmlns: vCardTempUpdate)!;
+    final hash = x.firstTag('photo')!.innerText();
 
     final from = JID.fromString(presence.from!).toBare().toString();
     final lastHash = _lastHash[from];
@@ -63,51 +63,51 @@ class vCardManager extends XmppManagerBase {
         if (binval != null) {
           getAttributes().sendEvent(AvatarUpdatedEvent(jid: from, base64: binval, hash: hash));
         } else {
-          logger.warning("No avatar data found");
+          logger.warning('No avatar data found');
         }
       } else {
-        logger.warning("Failed to retrieve vCard for $from");
+        logger.warning('Failed to retrieve vCard for $from');
       }
     }
     
     return state.copyWith(done: true);
   }
   
-  vCardPhoto? _parseVCardPhoto(XMLNode? node) {
+  VCardPhoto? _parseVCardPhoto(XMLNode? node) {
     if (node == null) return null;
 
-    return vCardPhoto(
-      binval: node.firstTag("BINVAL")?.innerText()
+    return VCardPhoto(
+      binval: node.firstTag('BINVAL')?.innerText(),
     );
   }
   
-  vCard _parseVCard(XMLNode vcard) {
-    String? nickname = vcard.firstTag("NICKNAME")?.innerText();
-    String? url = vcard.firstTag("URL")?.innerText();
+  VCard _parseVCard(XMLNode vcard) {
+    final nickname = vcard.firstTag('NICKNAME')?.innerText();
+    final url = vcard.firstTag('URL')?.innerText();
     
-    return vCard(
+    return VCard(
       url: url,
       nickname: nickname,
-      photo: _parseVCardPhoto(vcard.firstTag("PHOTO"))
+      photo: _parseVCardPhoto(vcard.firstTag('PHOTO')),
     );
   }
   
-  Future<vCard?> requestVCard(String jid) async {
+  Future<VCard?> requestVCard(String jid) async {
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         to: jid,
-        type: "get",
+        type: 'get',
         children: [
           XMLNode.xmlns(
-            tag: "vCard",
-            xmlns: vCardTempXmlns
+            tag: 'vCard',
+            xmlns: vCardTempXmlns,
           )
-        ]
-      )
+        ],
+      ),
     );
 
-    if (result.attributes["type"] != "result") return null;
-    final vcard = result.firstTag("vCard", xmlns: vCardTempXmlns);
+    if (result.attributes['type'] != 'result') return null;
+    final vcard = result.firstTag('vCard', xmlns: vCardTempXmlns);
     if (vcard == null) return null;
     
     return _parseVCard(vcard);

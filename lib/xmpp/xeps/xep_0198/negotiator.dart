@@ -1,15 +1,15 @@
-import "package:moxxyv2/shared/helpers.dart";
-import "package:moxxyv2/xmpp/events.dart";
-import "package:moxxyv2/xmpp/stringxml.dart";
-import "package:moxxyv2/xmpp/namespaces.dart";
-import "package:moxxyv2/xmpp/managers/namespaces.dart";
-import "package:moxxyv2/xmpp/negotiators/namespaces.dart";
-import "package:moxxyv2/xmpp/negotiators/negotiator.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/state.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart";
-import "package:moxxyv2/xmpp/xeps/xep_0352.dart";
-import "package:logging/logging.dart";
+import 'package:logging/logging.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/state.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
 
 enum _StreamManagementNegotiatorState {
   // We have not done anything yet
@@ -21,19 +21,19 @@ enum _StreamManagementNegotiatorState {
 }
 
 class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
+  
+  StreamManagementNegotiator()
+    : _state = _StreamManagementNegotiatorState.ready,
+      _supported = false,
+      _log = Logger('StreamManagementNegotiator'),
+      super(10, false, smXmlns, streamManagementNegotiator);
   _StreamManagementNegotiatorState _state;
 
   final Logger _log;
 
   /// True if Stream Management is supported on this stream.
   bool _supported;
-  get isSupported => _supported;
-  
-  StreamManagementNegotiator()
-    : _state = _StreamManagementNegotiatorState.ready,
-      _supported = false,
-      _log = Logger("StreamManagementNegotiator"),
-      super(10, false, smXmlns, streamManagementNegotiator);
+  bool get isSupported => _supported;
 
   @override
   bool matchesFeature(List<XMLNode> features) {
@@ -42,13 +42,14 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
         // We have not done anything, so try to resume
         return firstWhereOrNull(
           features,
-          (XMLNode feature) => feature.attributes["xmlns"] == smXmlns
+          (XMLNode feature) => feature.attributes['xmlns'] == smXmlns,
         ) != null;
       case _StreamManagementNegotiatorState.resumeRequested:
         // Resume failed, so try to enable once we have bound a resource
         final bindResourceNegotiator = attributes.getNegotiatorById(resourceBindingNegotiator);
         return bindResourceNegotiator?.state == NegotiatorState.done;
-      default:
+      case _StreamManagementNegotiatorState.enableRequested:
+        // This should never happen
         return false;
     }
   }
@@ -69,37 +70,38 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
 
         // Attempt stream resumption first
         if (srid != null) {
-          _log.finest("Found stream resumption Id. Attempting to perform stream resumption");
+          _log.finest('Found stream resumption Id. Attempting to perform stream resumption');
           _state = _StreamManagementNegotiatorState.resumeRequested;
           attributes.sendNonza(StreamManagementResumeNonza(srid, h));
         } else {
-          _log.finest("Attempting to enable stream management");
+          _log.finest('Attempting to enable stream management');
           _state = _StreamManagementNegotiatorState.enableRequested;
           attributes.sendNonza(StreamManagementEnableNonza());
         }
         break;
         case _StreamManagementNegotiatorState.resumeRequested:
-          if (nonza.tag == "resumed") {
-            _log.finest("Stream Management resumption successful");
+          if (nonza.tag == 'resumed') {
+            _log.finest('Stream Management resumption successful');
 
-            assert(attributes.getFullJID().resource != "");
+            assert(attributes.getFullJID().resource != '', 'Resume only works when we already have a resource bound and know about it');
 
             final csi = attributes.getManagerById(csiManager) as CSIManager?;
             if (csi != null) {
               csi.restoreCSIState();
             }
 
-            final h = int.parse(nonza.attributes["h"]!);
+            final h = int.parse(nonza.attributes['h']! as String);
             await attributes.sendEvent(StreamResumedEvent(h: h));
 
             state = NegotiatorState.done;
           } else {
             // We assume it is <failed />
-            _log.info("Stream resumption failed. Proceeding with new stream...");
+            _log.info('Stream resumption failed. Proceeding with new stream...');
             final sm = attributes.getManagerById(smManager)! as StreamManagementManager;
 
             // We have to do this because we otherwise get a stanza stuck in the queue,
             // thus spamming the server on every <a /> nonza we receive.
+            // ignore: cascade_invocations
             sm.setState(StreamManagementState(0, 0));
             await sm.commitState();
 
@@ -107,26 +109,26 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
           }
         break;
       case _StreamManagementNegotiatorState.enableRequested:
-        if (nonza.tag == "enabled") {
-          _log.finest("Stream Management enabled");
+        if (nonza.tag == 'enabled') {
+          _log.finest('Stream Management enabled');
 
-          final id = nonza.attributes["id"];
-          if (id != null && ["true", "1"].contains(nonza.attributes["resume"])) {
-            _log.info("Stream Resumption available");
+          final id = nonza.attributes['id'] as String?;
+          if (id != null && ['true', '1'].contains(nonza.attributes['resume'])) {
+            _log.info('Stream Resumption available');
           }
 
-          attributes.sendEvent(
+          await attributes.sendEvent(
             StreamManagementEnabledEvent(
               resource: attributes.getFullJID().resource,
               id: id,
-              location: nonza.attributes["location"],
+              location: nonza.attributes['location'] as String?,
             ),
           );
 
           state = NegotiatorState.done;
         } else {
           // We assume a <failed />
-          _log.warning("Stream Management enablement failed");
+          _log.warning('Stream Management enablement failed');
           state = NegotiatorState.done;
         }
 

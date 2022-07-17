@@ -1,4 +1,4 @@
-import "package:moxdns/moxdns.dart";
+import 'package:moxdns/moxdns.dart';
 
 /// Sorts the SRV records according to priority and weight.
 int srvRecordSortComparator(SrvRecord a, SrvRecord b) {
