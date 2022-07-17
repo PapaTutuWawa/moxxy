@@ -50,9 +50,9 @@ class StreamHeaderNonza extends XMLNode {
         'version': '1.0',
         'xmlns:stream': streamXmlns,
         'to': serverDomain,
-        'xml:lang': 'en'
+        'xml:lang': 'en',
       },
-      closeTag: false
+      closeTag: false,
     );
 }
 
@@ -60,7 +60,7 @@ class XmppConnectionResult {
   const XmppConnectionResult(
     this.success,
     {
-      this.reason
+      this.reason,
     }
   );
 
@@ -78,7 +78,7 @@ class XmppConnection {
     ReconnectionPolicy reconnectionPolicy,
     {
       BaseSocketWrapper? socket,
-      this.connectionPingDuration = const Duration(minutes: 5)
+      this.connectionPingDuration = const Duration(minutes: 5),
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
@@ -104,7 +104,7 @@ class XmppConnection {
       // Allow the reconnection policy to perform reconnections by itself
       _reconnectionPolicy.register(
         _attemptReconnection,
-        _onNetworkConnectionLost
+        _onNetworkConnectionLost,
       );
 
       _socketStream = _socket.getDataStream();
@@ -175,7 +175,8 @@ class XmppConnection {
   /// [registerManagers].
   void registerManager(XmppManagerBase manager, { bool sortHandlers = true }) {
     _log.finest('Registering ${manager.getId()}');
-    manager.register(XmppManagerAttributes(
+    manager.register(
+      XmppManagerAttributes(
         sendStanza: sendStanza,
         sendNonza: sendRawXML,
         sendRawXml: _socket.write,
@@ -187,7 +188,8 @@ class XmppConnection {
         getSocket: () => _socket,
         getConnection: () => this,
         getNegotiatorById: getNegotiatorById,
-    ));
+      ),
+    );
 
     final id = manager.getId();
     _xmppManagers[id] = manager;
@@ -501,24 +503,15 @@ class XmppConnection {
   }
 
   Future<bool> _runIncomingStanzaHandlers(Stanza stanza) async {
-    return _runStanzaHandlers(
-      _incomingStanzaHandlers,
-      stanza
-    );
+    return _runStanzaHandlers(_incomingStanzaHandlers, stanza,);
   }
+
   Future<bool> _runOutoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
-    return _runStanzaHandlers(
-      _outgoingPreStanzaHandlers,
-      stanza,
-      initial: initial
-    );
+    return _runStanzaHandlers(_outgoingPreStanzaHandlers, stanza, initial: initial);
   }
+
   Future<bool> _runOutoingPostStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
-    return _runStanzaHandlers(
-      _outgoingPostStanzaHandlers,
-      stanza,
-      initial: initial
-    );
+    return _runStanzaHandlers(_outgoingPostStanzaHandlers, stanza, initial: initial);
   }
   
   /// Called whenever we receive a stanza after resource binding or stream resumption.
@@ -792,9 +785,9 @@ class XmppConnection {
         closeTag: false,
         isDeclaration: true,
         children: [
-          StreamHeaderNonza(_connectionSettings.jid.domain)
-        ]
-      ).toXml()
+          StreamHeaderNonza(_connectionSettings.jid.domain),
+        ],
+      ).toXml(),
     );
   }
 
@@ -862,7 +855,7 @@ class XmppConnection {
     final result = await _socket.connect(
       _connectionSettings.jid.domain,
       host: host,
-      port: port
+      port: port,
     );
     if (!result) {
       handleError(null);

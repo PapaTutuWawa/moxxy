@@ -13,7 +13,7 @@ class QuoteBaseWidget extends StatelessWidget {
     this.child,
     {
       this.resetQuotedMessage,
-      Key? key
+      Key? key,
     }
   ) : super(key: key);
   final Message message;
@@ -77,7 +77,7 @@ class QuoteBaseWidget extends StatelessWidget {
             ] : [],
             Padding(
               padding: padding,
-              child: child
+              child: child,
             ),
           ],
         ),

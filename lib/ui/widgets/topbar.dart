@@ -10,8 +10,8 @@ class TopbarTitleText extends StatelessWidget {
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 20
-      )
+        fontSize: 20,
+      ),
     );
   }
 }
@@ -25,7 +25,7 @@ class TopbarAvatarAndName extends StatelessWidget {
     {
       this.showBackButton = true,
       this.extra = const [],
-      Key? key
+      Key? key,
     }
   ) : super(key: key);
   final Widget title;
@@ -50,7 +50,7 @@ class TopbarAvatarAndName extends StatelessWidget {
                 avatar,
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: title
+                  child: title,
                 ),
               ],
             ),
@@ -119,9 +119,9 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(8),
-          child: child
-        )
-      )
+          child: child,
+        ),
+      ),
     );
   }
 }

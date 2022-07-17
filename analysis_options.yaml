@@ -4,7 +4,6 @@ linter:
     # TODO(PapaTutuWawa): Remove
     public_member_api_docs: false
     lines_longer_than_80_chars: false
-    require_trailing_commas: false
 
     # Keep
     use_setters_to_change_properties: false

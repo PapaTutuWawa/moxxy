@@ -113,7 +113,7 @@ class DiscoManager extends XmppManagerBase {
               ..._features.map((feat) {
                 return XMLNode(
                   tag: 'feature',
-                  attributes: <String, dynamic>{ 'var': feat }
+                  attributes: <String, dynamic>{ 'var': feat },
                 );
               }).toList(),
             ],
