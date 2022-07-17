@@ -1,4 +1,4 @@
-import "package:meta/meta.dart";
+import 'package:meta/meta.dart';
 
 /// Base class for a data cache with keys of type [K] and values of type [V].
 abstract class Cache<K, V> {
@@ -20,18 +20,18 @@ abstract class Cache<K, V> {
 }
 
 class _LRUCacheEntry<V> {
-  final int t;
-  final V value;
 
   const _LRUCacheEntry(this.value, this.t);
+  final int t;
+  final V value;
 }
 
 class LRUCache<K, V> extends Cache<K, V> {
+
+  LRUCache(this._maxSize) : _cache = {}, _t = 0;
   final Map<K, _LRUCacheEntry<V>> _cache;
   final int _maxSize;
   int _t;
-
-  LRUCache(this._maxSize) : _cache = {}, _t = 0;
 
   @override
   bool inCache(K key) => _cache.containsKey(key);
@@ -49,15 +49,16 @@ class LRUCache<K, V> extends Cache<K, V> {
     if (_cache.length + 1 <= _maxSize) {
       // Fall through
     } else {
-      K lowestKey = _cache.keys.first;
-      int t = _cache[lowestKey]!.t;
-      _cache.forEach((key, value) {
+      var lowestKey = _cache.keys.first;
+      var t = _cache[lowestKey]!.t;
+      _cache
+        ..forEach((key, value) {
           if (value.t < t) {
             lowestKey = key;
             t = value.t;
           }
-      });
-      _cache.remove(lowestKey);
+        })
+        ..remove(lowestKey);
     }
 
     _cache[key] = _LRUCacheEntry<V>(value, _t);

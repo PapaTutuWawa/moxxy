@@ -1,9 +1,9 @@
-import "package:freezed_annotation/freezed_annotation.dart";
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-part "preferences.freezed.dart";
-part "preferences.g.dart";
+part 'preferences.freezed.dart';
+part 'preferences.g.dart';
 
-// TODO: Move into the models directory
+// TODO(Unknown): Move into the models directory
 
 @freezed
 class PreferencesState with _$PreferencesState {
@@ -14,12 +14,12 @@ class PreferencesState with _$PreferencesState {
       @Default(true) bool autoDownloadWifi,
       @Default(false) bool autoDownloadMobile,
       @Default(15) int maximumAutoDownloadSize,
-      @Default("") String backgroundPath,
+      @Default('') String backgroundPath,
       @Default(true) bool isAvatarPublic,
       @Default(true) bool autoAcceptSubscriptionRequests,
       @Default(false) bool debugEnabled,
-      @Default("") String debugPassphrase,
-      @Default("") String debugIp,
+      @Default('') String debugPassphrase,
+      @Default('') String debugIp,
       @Default(-1) int debugPort,
   }) = _PreferencesState;
   

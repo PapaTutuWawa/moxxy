@@ -1,20 +1,20 @@
 class Migration<T> {
-  final int version;
-  /// Return a version that is upgraded to the newest version.
-  final Function(Map<String, dynamic>) migrationFunction;
 
   Migration(this.version, this.migrationFunction);
+  final int version;
+  /// Return a version that is upgraded to the newest version.
+  final T Function(Map<String, dynamic>) migrationFunction;
 
   bool canMigrate(int version) => version <= this.version;  
 }
 
 abstract class Migrator<T> {
-  final int latestVersion;
-  final List<Migration<T>> migrations;
 
   Migrator(this.latestVersion, this.migrations) {
     migrations.sort((a, b) => -1 * a.version.compareTo(b.version));
   }
+  final int latestVersion;
+  final List<Migration<T>> migrations;
 
   /// Override: Return the raw data or null if not set yet.
   Future<Map<String, dynamic>?> loadRawData();
