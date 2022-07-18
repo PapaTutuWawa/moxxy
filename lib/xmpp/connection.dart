@@ -637,11 +637,16 @@ class XmppConnection {
     }
   }
 
-  /// Called once all negotiations are done. Sends the initial presence and performs
-  /// a disco sweep.
+  /// Called once all negotiations are done. Sends the initial presence, performs
+  /// a disco sweep among other things.
   Future<void> _onNegotiationsDone() async {
+    // Set the connection state
+    _setConnectionState(XmppConnectionState.connected);
+
+    // Send out initial presence
     await getPresenceManager().sendInitialPresence();
 
+    // Perform a disco sweep if we have no data about our server
     if (_serverFeatures.isEmpty) {
       await _performDiscoSweep();
     } else {
