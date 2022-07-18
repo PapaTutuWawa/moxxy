@@ -17,16 +17,22 @@ class PingManager extends XmppManagerBase {
   @override
   Future<void> onXmppEvent(XmppEvent event) async {
     if (event is SendPingEvent) {
+      logger.finest('Received ping event.');
       final attrs = getAttributes();
       final socket = attrs.getSocket();
 
-      if (socket.managesKeepalives()) return;
+      if (socket.managesKeepalives()) {
+        logger.finest('Not sending ping as the socket manages it.');
+        return;
+      }
       
       final stream = attrs.getManagerById(smManager) as StreamManagementManager?;
       if (stream != null) {
         if (stream.isStreamManagementEnabled() /*&& stream.getUnackedStanzaCount() > 0*/) {
+          logger.finest('Sending an ack ping as Stream Management is enabled');
           stream.sendAckRequestPing();
         } else if (attrs.getSocket().whitespacePingAllowed()) {
+          logger.finest('Sending a whitespace ping as Stream Management is not enabled');
           attrs.sendRawXml('');
         } else {
           _logWarning();

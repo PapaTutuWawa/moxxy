@@ -461,9 +461,11 @@ class XmppConnection {
     _eventStreamController.add(ConnectionStateChangedEvent(state: state, resumed: _resuming));
 
     if (state == XmppConnectionState.connected) {
+      _log.finest('Starting _pingConnectionTimer');
       _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
     } else {
       if (_connectionPingTimer != null) {
+        _log.finest('Destroying _pingConnectionTimer');
         _connectionPingTimer!.cancel();
         _connectionPingTimer = null;
       }
@@ -485,8 +487,12 @@ class XmppConnection {
   void _pingConnectionOpen(Timer timer) {
     // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
     // send a whitespace ping
+    _log.finest('_pingConnectionTimer: Callback called.');
     if (_connectionState == XmppConnectionState.connected) {
+      _log.finest('_pingConnectionTimer: Connected. Triggering a ping event.');
       _sendEvent(SendPingEvent());
+    } else {
+      _log.finest('_pingConnectionTimer: Not connected. Not triggering an event.');
     }
   }
 
