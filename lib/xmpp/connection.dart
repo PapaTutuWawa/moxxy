@@ -169,7 +169,7 @@ class XmppConnection {
 
   /// Return the registered feature negotiator that has id [id]. Returns null if
   /// none can be found.
-  XmppFeatureNegotiatorBase? getNegotiatorById(String id) => _featureNegotiators[id];
+  T? getNegotiatorById<T extends XmppFeatureNegotiatorBase>(String id) => _featureNegotiators[id] as T?;
   
   /// Registers an [XmppManagerBase] sub-class as a manager on this connection.
   /// [sortHandlers] should NOT be touched. It specified if the handler priorities
@@ -263,14 +263,7 @@ class XmppConnection {
   }
   
   /// Returns the Manager with id [id] or null if such a manager is not registered.
-  T? getManagerById<T>(String id) {
-    final manager = _xmppManagers[id];
-    if (manager != null) {
-      return manager as T;
-    }
-
-    return null;
-  }
+  T? getManagerById<T extends XmppManagerBase>(String id) => _xmppManagers[id] as T?;
 
   /// A [PresenceManager] is required, so have a wrapper for getting it.
   /// Returns the registered [PresenceManager].

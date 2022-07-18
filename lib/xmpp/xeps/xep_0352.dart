@@ -60,7 +60,7 @@ class CSIManager extends XmppManagerBase {
   String getName() => 'CSIManager';
 
   bool _supported() {
-    return (getAttributes().getNegotiatorById(csiNegotiator)! as CSINegotiator).isSupported;
+    return getAttributes().getNegotiatorById<CSINegotiator>(csiNegotiator)!.isSupported;
   }
   
   /// To be called after a stream has been resumed as CSI does not

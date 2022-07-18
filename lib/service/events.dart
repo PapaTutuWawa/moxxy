@@ -384,7 +384,7 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
-  final smNegotiator = conn.getNegotiatorById(streamManagementNegotiator)! as StreamManagementNegotiator;
+  final smNegotiator = conn.getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!;
   sendEvent(
     GetFeaturesEvent(
       serverFeatures: conn.serverFeatures,

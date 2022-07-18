@@ -238,7 +238,7 @@ class RosterManager extends XmppManagerBase {
   }
 
   bool rosterVersioningAvailable() {
-    return (getAttributes().getNegotiatorById(rosterNegotiator)! as RosterFeatureNegotiator).isSupported;
+    return getAttributes().getNegotiatorById<RosterFeatureNegotiator>(rosterNegotiator)!.isSupported;
   }
   
   /// Attempts to add [jid] with a title of [title] and groups [groups] to the roster.

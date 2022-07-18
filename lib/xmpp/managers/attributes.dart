@@ -41,7 +41,7 @@ class XmppManagerAttributes {
   final ConnectionSettings Function() getConnectionSettings;
 
   /// (Maybe) Get a Manager attached to the connection by its Id.
-  final XmppManagerBase? Function(String) getManagerById;
+  final T? Function<T extends XmppManagerBase>(String) getManagerById;
 
   /// Returns true if a server feature is supported
   final bool Function(String) isFeatureSupported;
@@ -55,5 +55,5 @@ class XmppManagerAttributes {
   /// Return the [XmppConnection] the manager is registered against.
   final XmppConnection Function() getConnection;
 
-  final XmppFeatureNegotiatorBase? Function(String id) getNegotiatorById;
+  final T? Function<T extends XmppFeatureNegotiatorBase>(String) getNegotiatorById;
 }

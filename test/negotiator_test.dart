@@ -123,8 +123,8 @@ void main() {
   test('Test negotiating features with no stream restarts', () async {    
     await connection.connect();
     await Future.delayed(const Duration(seconds: 3), () {
-      final negotiator1 = connection.getNegotiatorById(exampleNamespace1) as StubNegotiator1?;
-      final negotiator2 = connection.getNegotiatorById(exampleNamespace2) as StubNegotiator2?;
+      final negotiator1 = connection.getNegotiatorById<StubNegotiator1>(exampleNamespace1);
+      final negotiator2 = connection.getNegotiatorById<StubNegotiator2>(exampleNamespace2);
       expect(negotiator1?.called, true);
       expect(negotiator2?.called, true);
     });
