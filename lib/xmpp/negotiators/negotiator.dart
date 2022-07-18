@@ -36,16 +36,16 @@ class NegotiatorAttributes {
   /// Send an event event to the connection's event bus
   final Future<void> Function(XmppEvent event) sendEvent;
   /// Returns the negotiator with id id of the connection or null.
-  final XmppFeatureNegotiatorBase? Function(String id) getNegotiatorById;
+  final T? Function<T extends XmppFeatureNegotiatorBase>(String) getNegotiatorById;
   /// Returns the manager with id id of the connection or null.
-  final XmppManagerBase? Function(String id) getManagerById;
+  final T? Function<T extends XmppManagerBase>(String) getManagerById;
   /// Returns the full JID of the current account
   final JID Function() getFullJID;
   /// Returns the socket the negotiator is attached to
   final BaseSocketWrapper Function() getSocket;
 }
 
-abstract class XmppFeatureNegotiatorBase {
+abstract class XmppFeatureNegotatorBase {
 
   XmppFeatureNegotiatorBase(this.priority, this.sendStreamHeaderWhenDone, this.negotiatingXmlns, this.id)
     : state = NegotiatorState.ready;

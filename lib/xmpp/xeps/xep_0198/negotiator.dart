@@ -37,20 +37,15 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
 
   @override
   bool matchesFeature(List<XMLNode> features) {
-    switch (_state) {
-      case _StreamManagementNegotiatorState.ready:
-        // We have not done anything, so try to resume
-        return firstWhereOrNull(
-          features,
-          (XMLNode feature) => feature.attributes['xmlns'] == smXmlns,
-        ) != null;
-      case _StreamManagementNegotiatorState.resumeRequested:
-        // Resume failed, so try to enable once we have bound a resource
-        final bindResourceNegotiator = attributes.getNegotiatorById(resourceBindingNegotiator);
-        return bindResourceNegotiator?.state == NegotiatorState.done;
-      case _StreamManagementNegotiatorState.enableRequested:
-        // This should never happen
-        return false;
+    final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
+
+    if (sm.state.streamResumptionId != null) {
+      // We could do Stream resumption
+      return super.matchesFeature(features);
+    } else {
+      // We cannot do a stream resumption
+      final br = attributes.getNegotiatorById(resourceBindingNegotiator);
+      return super.matchesFeature(features) && br?.state == NegotiatorState.done;
     }
   }
       
@@ -62,7 +57,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
 
     switch (_state) {
       case _StreamManagementNegotiatorState.ready:
-        final sm = attributes.getManagerById(smManager)! as StreamManagementManager;
+        final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
 
         await sm.loadState();
         final srid = sm.state.streamResumptionId;
@@ -97,7 +92,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
           } else {
             // We assume it is <failed />
             _log.info('Stream resumption failed. Proceeding with new stream...');
-            final sm = attributes.getManagerById(smManager)! as StreamManagementManager;
+            final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
 
             // We have to do this because we otherwise get a stanza stuck in the queue,
             // thus spamming the server on every <a /> nonza we receive.
