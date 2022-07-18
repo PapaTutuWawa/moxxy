@@ -162,6 +162,8 @@ class XmppConnection {
   
   /// Misc
   final Logger _log;
+
+  ReconnectionPolicy get reconnectionPolicy => _reconnectionPolicy;
   
   List<String> get serverFeatures => _serverFeatures;
 

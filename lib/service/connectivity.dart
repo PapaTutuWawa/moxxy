@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+import 'package:moxxyv2/xmpp/connection.dart';
 
 class ConnectivityService {
 
@@ -32,7 +33,8 @@ class ConnectivityService {
       _connectivity = result;
 
       // Notify other services
-      GetIt.I.get<MoxxyReconnectionPolicy>().onConnectivityChanged(result);
+      final policy = GetIt.I.get<XmppConnection>().reconnectionPolicy;
+      (policy as MoxxyReconnectionPolicy).onConnectivityChanged(result);
     });
   }
 
