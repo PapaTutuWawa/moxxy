@@ -1,32 +1,63 @@
 import 'dart:async';
 
+import 'package:moxxyv2/xmpp/managers/base.dart';
+import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
 import 'package:moxxyv2/xmpp/socket.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:test/test.dart';
 
 import 'xml.dart';
 
-// TODO: Turn this into multiple Expectation classes
-class Expectation {
+T? getNegotiatorNullStub<T extends XmppFeatureNegotiatorBase>(String id) {
+  return null;
+}
 
-  Expectation(this.expectation, this.response, { this.ignoreId = true, this.containsTag, this.justCheckAttributes });
-  final XMLNode expectation;
-  final XMLNode response;
+T? getManagerNullStub<T extends XmppManagerBase>(String id) {
+  return null;
+}
+
+abstract class ExpectationBase {
+
+  ExpectationBase(this.expectation, this.response);
+  final String expectation;
+  final String response;
+
+  /// Return true if [input] matches the expectation
+  bool matches(String input);
+}
+
+/// Literally compare the input with the expectation
+class StringExpectation extends ExpectationBase {
+  StringExpectation(String expectation, String response) : super(expectation, response);
+
+  @override
+  bool matches(String input) => input == expectation;
+}
+
+/// 
+class StanzaExpectation extends ExpectationBase {
+  StanzaExpectation(String expectation, String response, {this.ignoreId = false}) : super(expectation, response);
   final bool ignoreId;
-  final String? containsTag;
-  final Map<String, String>? justCheckAttributes;
+  
+  @override
+  bool matches(String input) {
+    final ex = XMLNode.fromString(expectation);
+    final recv = XMLNode.fromString(expectation);
+
+    return compareXMLNodes(recv, ex, ignoreId: ignoreId);
+  }
 }
 
 class StubTCPSocket extends BaseSocketWrapper { // Request -> Response(s)
 
-  StubTCPSocket({ required List<Expectation> play })
-  : _play = play,
-  _dataStream = StreamController<String>.broadcast(),
-  _eventStream = StreamController<XmppSocketEvent>.broadcast();
+  StubTCPSocket({ required List<ExpectationBase> play })
+    : _play = play,
+      _dataStream = StreamController<String>.broadcast(),
+      _eventStream = StreamController<XmppSocketEvent>.broadcast();
   int _state = 0;
   final StreamController<String> _dataStream;
   final StreamController<XmppSocketEvent> _eventStream;
-  final List<Expectation> _play;
+  final List<ExpectationBase> _play;
 
   @override
   bool isSecure() => true;
@@ -59,36 +90,19 @@ class StubTCPSocket extends BaseSocketWrapper { // Request -> Response(s)
       str = str.substring(21);
     }
 
-    if (str.startsWith('<stream:stream')) {
-      str = '$str</stream:stream>';
-    } else {
-      if (str.endsWith('</stream:stream>')) {
-        // TODO: Maybe prepend <stream:stream> so that we can detect it within
-        //       [XmppConnection]
-        str = str.substring(0, str.length - 16);
-      }
+    if (str.endsWith('</stream:stream>')) {
+      str = str.substring(0, str.length - 16);
     }
 
-    final recv = XMLNode.fromString(str);
-    if (expectation.justCheckAttributes != null) {
-      expectation.justCheckAttributes!.forEach((key, value) {
-          expect(recv.attributes[key] == value, true);
-      });
-    } else {
-      expect(
-        compareXMLNodes(recv, expectation.expectation, ignoreId: expectation.ignoreId),
-        true,
-        reason: 'Expected: ${expectation.expectation.toXml()}, Got: ${recv.toXml()}',
-      );
-
-      if (expectation.containsTag != null) {
-        expect(recv.firstTag(expectation.containsTag!) != null, true, reason: 'Tag ${expectation.containsTag!} not found');
-      }
+    if (!expectation.matches(str)) {
+      expect(true, false, reason: 'Expected ${expectation.expectation}, got $str');
     }
 
     // Make sure to only progress if everything passed so far
     _state++;
-    _dataStream.add(expectation.response.toXml());
+
+    print("<== ${expectation.response}");
+    _dataStream.add(expectation.response);
   }
 
   @override

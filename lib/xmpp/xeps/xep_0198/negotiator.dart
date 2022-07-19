@@ -1,5 +1,4 @@
 import 'package:logging/logging.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
@@ -25,10 +24,12 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
   StreamManagementNegotiator()
     : _state = _StreamManagementNegotiatorState.ready,
       _supported = false,
+      _resumeFailed = false,
       _log = Logger('StreamManagementNegotiator'),
       super(10, false, smXmlns, streamManagementNegotiator);
   _StreamManagementNegotiatorState _state;
-
+  bool _resumeFailed;
+ 
   final Logger _log;
 
   /// True if Stream Management is supported on this stream.
@@ -39,7 +40,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
   bool matchesFeature(List<XMLNode> features) {
     final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
 
-    if (sm.state.streamResumptionId != null) {
+    if (sm.state.streamResumptionId != null && !_resumeFailed) {
       // We could do Stream resumption
       return super.matchesFeature(features);
     } else {
@@ -100,6 +101,8 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
             sm.setState(StreamManagementState(0, 0));
             await sm.commitState();
 
+            _resumeFailed = true;
+            _state = _StreamManagementNegotiatorState.ready;
             state = NegotiatorState.retryLater;
           }
         break;
@@ -135,6 +138,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
   void reset() {
     _state = _StreamManagementNegotiatorState.ready;
     _supported = false;
+    _resumeFailed = false;
 
     super.reset();
   }

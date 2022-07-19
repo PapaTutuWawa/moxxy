@@ -45,7 +45,7 @@ class NegotiatorAttributes {
   final BaseSocketWrapper Function() getSocket;
 }
 
-abstract class XmppFeatureNegotatorBase {
+abstract class XmppFeatureNegotiatorBase {
 
   XmppFeatureNegotiatorBase(this.priority, this.sendStreamHeaderWhenDone, this.negotiatingXmlns, this.id)
     : state = NegotiatorState.ready;

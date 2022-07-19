@@ -215,11 +215,13 @@ class StreamManagementManager extends XmppManagerBase {
   /// stream management.
   void _disableStreamManagement() {
     _streamManagementEnabled = false;
+    logger.finest('Stream Management disabled');
   }
   
   /// Enables support for XEP-0198 stream management
   void _enableStreamManagement() {
     _streamManagementEnabled = true;
+    logger.finest('Stream Management enabled');
   }
   
   /// Returns whether XEP-0198 stream management is enabled
