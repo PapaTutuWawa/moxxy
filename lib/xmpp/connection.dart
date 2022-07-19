@@ -672,8 +672,6 @@ class XmppConnection {
           });
         _currentNegotiator = null;
 
-        _log.finest('Mandatory negotiation done: ${_isMandatoryNegotiationDone(_streamFeatures)}');
-        _log.finest('isNegotiationPossible: ${_isNegotiationPossible(_streamFeatures)}');
         if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
           _log.finest('Negotiations done!');
           _updateRoutingState(RoutingState.handleStanzas);
@@ -713,8 +711,7 @@ class XmppConnection {
         await _checkCurrentNegotiator();
       }
     } else if (_currentNegotiator!.state == NegotiatorState.skipRest) {
-      _log.finest('Negotiator wants to skip the remaining negotiation...');
-      _log.finest('Negotiations (assumed) done!');
+      _log.finest('Negotiator wants to skip the remaining negotiation... Negotiations (assumed) done!');
 
       _updateRoutingState(RoutingState.handleStanzas);
       await _onNegotiationsDone();
