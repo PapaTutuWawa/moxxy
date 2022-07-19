@@ -346,7 +346,7 @@ void main() {
       });
     });
 
-    test('Test failed stream resumption', () async {
+    test('Test a failed stream resumption', () async {
       final fakeSocket = StubTCPSocket(
         play: [
           StringExpectation(
@@ -402,6 +402,99 @@ void main() {
             "<enable xmlns='urn:xmpp:sm:3' resume='true' />",
             '<enabled xmlns="urn:xmpp:sm:3" id="id-2" resume="true" />'
           )
+        ]
+      );
+
+      final XmppConnection conn = XmppConnection(TestingReconnectionPolicy(), socket: fakeSocket);
+      conn.setConnectionSettings(ConnectionSettings(
+          jid: JID.fromString('polynomdivision@test.server'),
+          password: 'aaaa',
+          useDirectTLS: true,
+          allowPlainAuth: true,
+      ),);
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          DiscoCacheManager(),
+          PingManager(),
+          StreamManagementManager(),
+          DiscoCacheManager(),
+      ]);
+      conn.registerFeatureNegotiators(
+        [
+          SaslPlainNegotiator(),
+          ResourceBindingNegotiator(),
+          StreamManagementNegotiator(),
+        ]
+      );
+      conn.getManagerById<StreamManagementManager>(smManager)!
+        .setState(
+          StreamManagementState(
+            10,
+            10,
+            streamResumptionId: 'id-1',
+          ),
+        );
+
+      await conn.connect();
+      await Future.delayed(const Duration(seconds: 3), () {
+        expect(fakeSocket.getState(), 6);
+        expect(conn.getConnectionState(), XmppConnectionState.connected);
+        expect(
+          conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
+          true,
+        );
+      });
+    });
+
+    test('Test a successful stream resumption', () async {
+      final fakeSocket = StubTCPSocket(
+        play: [
+          StringExpectation(
+            "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='test.server' xml:lang='en'>",
+            '''
+<stream:stream
+    xmlns="jabber:client"
+    version="1.0"
+    xmlns:stream="http://etherx.jabber.org/streams"
+    from="test.server"
+    xml:lang="en">
+  <stream:features xmlns="http://etherx.jabber.org/streams">
+    <mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">
+      <mechanism>PLAIN</mechanism>
+    </mechanisms>
+  </stream:features>''',
+          ),
+          StringExpectation(
+            "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='PLAIN'>AHBvbHlub21kaXZpc2lvbgBhYWFh</auth>",
+            '<success xmlns="urn:ietf:params:xml:ns:xmpp-sasl" />'
+          ),
+          StringExpectation(
+            "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='test.server' xml:lang='en'>",
+            '''
+<stream:stream
+    xmlns="jabber:client"
+    version="1.0"
+    xmlns:stream="http://etherx.jabber.org/streams"
+    from="test.server"
+    xml:lang="en">
+  <stream:features xmlns="http://etherx.jabber.org/streams">
+    <bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">
+      <required/>
+    </bind>
+    <session xmlns="urn:ietf:params:xml:ns:xmpp-session">
+      <optional/>
+    </session>
+    <csi xmlns="urn:xmpp:csi:0"/>
+    <sm xmlns="urn:xmpp:sm:3"/>
+  </stream:features>
+''',
+          ),
+          StringExpectation(
+            "<resume xmlns='urn:xmpp:sm:3' previd='id-1' h='10' />",
+            "<resumed xmlns='urn:xmpp:sm:3' h='id-1' h='12' />",
+          ),
         ]
       );
 
