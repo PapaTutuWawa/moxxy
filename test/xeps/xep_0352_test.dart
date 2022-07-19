@@ -3,6 +3,7 @@ import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/attributes.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
 import 'package:moxxyv2/xmpp/reconnect.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
@@ -18,6 +19,22 @@ class MockedCSINegotiator extends CSINegotiator {
   
   @override
   bool get isSupported => _isSupported;
+}
+
+T? getSupportedCSINegotiator<T extends XmppFeatureNegotiatorBase>(String id) {
+  if (id == csiNegotiator) {
+    return MockedCSINegotiator(true) as T;
+  }
+
+  return null;
+}
+
+T? getUnsupportedCSINegotiator<T extends XmppFeatureNegotiatorBase>(String id) {
+  if (id == csiNegotiator) {
+    return MockedCSINegotiator(false) as T;
+  }
+
+  return null;
 }
 
 void main() {
@@ -38,12 +55,12 @@ void main() {
                 useDirectTLS: true,
                 allowPlainAuth: false,
               ),
-              getManagerById: (_) => null,
+              getManagerById: getManagerNullStub,
+              getNegotiatorById: getUnsupportedCSINegotiator,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString('some.user@example.server/aaaaa'),
               getSocket: () => StubTCPSocket(play: []),
               getConnection: () => XmppConnection(TestingReconnectionPolicy()),
-              getNegotiatorById: (id) => id == csiNegotiator ? MockedCSINegotiator(false) : null,
             ),
           );
 
@@ -67,12 +84,12 @@ void main() {
                 useDirectTLS: true,
                 allowPlainAuth: false,
               ),
-              getManagerById: (_) => null,
+              getManagerById: getManagerNullStub,
+              getNegotiatorById: getSupportedCSINegotiator,
               isFeatureSupported: (_) => false,
               getFullJID: () => JID.fromString('some.user@example.server/aaaaa'),
               getSocket: () => StubTCPSocket(play: []),
               getConnection: () => XmppConnection(TestingReconnectionPolicy()),
-              getNegotiatorById: (id) => id == csiNegotiator ? MockedCSINegotiator(true) : null,
           ),);
 
           csi.setActive();

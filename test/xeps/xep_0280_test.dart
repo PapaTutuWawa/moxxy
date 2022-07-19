@@ -20,7 +20,7 @@ void main() {
         sendNonza: (nonza) {},
         sendEvent: (event) {},
         sendRawXml: (raw) {},
-        getManagerById: (id) => null,
+        getManagerById: getManagerNullStub,
         getConnectionSettings: () => ConnectionSettings(
           jid: JID.fromString('bob@xmpp.example'),
           password: 'password',
@@ -31,7 +31,7 @@ void main() {
         getFullJID: () => JID.fromString('bob@xmpp.example/uwu'),
         getSocket: () => StubTCPSocket(play: []),
         getConnection: () => XmppConnection(TestingReconnectionPolicy()),
-        getNegotiatorById: (id) => null,
+        getNegotiatorById: getNegotiatorNullStub,
       );
       final manager = CarbonsManager();
       manager.register(attributes);

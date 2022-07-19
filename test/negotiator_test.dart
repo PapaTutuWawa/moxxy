@@ -48,45 +48,19 @@ void main() {
 
   final stubSocket = StubTCPSocket(
     play: [
-      Expectation(
-        XMLNode(
-          tag: 'stream:stream',
-          attributes: {
-            'xmlns': 'jabber:client',
-            'version': '1.0',
-            'xmlns:stream': 'http://etherx.jabber.org/streams',
-            'to': 'test.server',
-            'xml:lang': 'en'
-          },
-          closeTag: false,
-        ),
-        XMLNode(
-          tag: 'stream:stream',
-          attributes: {
-            'xmlns': 'jabber:client',
-            'version': '1.0',
-            'xmlns:stream': 'http://etherx.jabber.org/streams',
-            'from': 'test.server',
-            'xml:lang': 'en'
-          },
-          closeTag: false,
-          children: [
-            XMLNode.xmlns(
-              tag: 'stream:features',
-              xmlns: 'http://etherx.jabber.org/streams',
-              children: [
-                XMLNode.xmlns(
-                  tag: 'example1',
-                  xmlns: exampleXmlns1,
-                ),
-                XMLNode.xmlns(
-                  tag: 'example2',
-                  xmlns: exampleXmlns2,
-                )
-              ],
-            )
-          ],
-        ),
+      StringExpectation(
+        "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='test.server' xml:lang='en'>",
+        '''
+<stream:stream
+    xmlns="jabber:client"
+    version="1.0"
+    xmlns:stream="http://etherx.jabber.org/streams"
+    from="test.server"
+    xml:lang="en">
+  <stream:features xmlns="http://etherx.jabber.org/streams">
+    <example1 xmlns="im:moxxy:example1" />
+    <example2 xmlns="im:moxxy:example2" />
+  </stream:features>''',
       ),
     ],
   );
