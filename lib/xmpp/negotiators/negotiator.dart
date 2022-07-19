@@ -15,7 +15,10 @@ enum NegotiatorState {
   // Cancel the current attempt but we are not done
   retryLater,
   // The negotiator is in an error state
-  error
+  error,
+  // Skip the rest of the negotiation and assume the stream ready. Only use this when
+  // using stream restoration XEPs, like Stream Management.
+  skipRest,
 }
 
 class NegotiatorAttributes {

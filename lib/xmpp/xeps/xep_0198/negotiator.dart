@@ -89,7 +89,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
             final h = int.parse(nonza.attributes['h']! as String);
             await attributes.sendEvent(StreamResumedEvent(h: h));
 
-            state = NegotiatorState.done;
+            state = NegotiatorState.skipRest;
           } else {
             // We assume it is <failed />
             _log.info('Stream resumption failed. Proceeding with new stream...');

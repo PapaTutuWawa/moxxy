@@ -530,14 +530,13 @@ void main() {
           ),
         );
 
-      await conn.connect();
+      await conn.connect(lastResource: 'abc123');
       await Future.delayed(const Duration(seconds: 3), () {
-        expect(fakeSocket.getState(), 6);
+        expect(fakeSocket.getState(), 4);
         expect(conn.getConnectionState(), XmppConnectionState.connected);
-        expect(
-          conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
-          true,
-        );
+        final sm = conn.getManagerById<StreamManagementManager>(smManager)!;
+        expect(sm.isStreamManagementEnabled(), true);
+        expect(sm.streamResumed, true);
       });
     });
   });

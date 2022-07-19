@@ -2,13 +2,25 @@ import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
 import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
 
 class ResourceBindingNegotiator extends XmppFeatureNegotiatorBase {
 
   ResourceBindingNegotiator() : _requestSent = false, super(0, false, bindXmlns, resourceBindingNegotiator);
   bool _requestSent;
 
+  @override
+  bool matchesFeature(List<XMLNode> features) {
+    final sm = attributes.getManagerById<StreamManagementManager>(smManager);
+    if (sm != null) {
+      return super.matchesFeature(features) && !sm.streamResumed;
+    }
+
+    return super.matchesFeature(features);
+  }
+  
   @override
   Future<void> negotiate(XMLNode nonza) async {
     if (!_requestSent) {

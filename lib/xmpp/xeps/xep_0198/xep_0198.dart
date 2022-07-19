@@ -27,6 +27,7 @@ class StreamManagementManager extends XmppManagerBase {
     _streamManagementEnabled = false,
     _lastAckTimestamp = -1,
     _pendingAcks = 0,
+    _streamResumed = false,
     _ackLock = Lock();
   /// The queue of stanzas that are not (yet) acked
   final Map<int, Stanza> _unackedStanzas;
@@ -36,6 +37,8 @@ class StreamManagementManager extends XmppManagerBase {
   final Lock _stateLock;
   /// If the have enabled SM on the stream yet
   bool _streamManagementEnabled;
+  /// If the current stream has been resumed;
+  bool _streamResumed;
   /// The time in which the response to an ack is still valid. Counts as a timeout
   /// otherwise
   @internal
@@ -91,6 +94,8 @@ class StreamManagementManager extends XmppManagerBase {
   }
   
   StreamManagementState get state => _state;
+
+  bool get streamResumed => _streamResumed;
   
   @override
   String getId() => smManager;
@@ -154,6 +159,7 @@ class StreamManagementManager extends XmppManagerBase {
       });
     } else if (event is ConnectingEvent) {
       _disableStreamManagement();
+      _streamResumed = false;
     }
   }
 
@@ -342,6 +348,7 @@ class StreamManagementManager extends XmppManagerBase {
   /// To be called when the stream has been resumed
   @visibleForTesting
   Future<void> onStreamResumed(int h) async {
+    _streamResumed = true;
     await _handleAckResponse(StreamManagementAckNonza(h));
 
     final stanzas = _unackedStanzas.values.toList();

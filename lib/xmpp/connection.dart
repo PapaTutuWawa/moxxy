@@ -470,6 +470,12 @@ class XmppConnection {
     _log.finest('Updating _routingState from $_routingState to $state');
     _routingState = state;
   }
+
+  /// Sets the resource of the connection
+  void setResource(String resource) {
+    _log.finest('Updating _resource to $resource');
+    _resource = resource;
+  }
   
   /// Returns the connection's events as a stream.
   Stream<XmppEvent> asBroadcastStream() {
@@ -666,6 +672,8 @@ class XmppConnection {
           });
         _currentNegotiator = null;
 
+        _log.finest('Mandatory negotiation done: ${_isMandatoryNegotiationDone(_streamFeatures)}');
+        _log.finest('isNegotiationPossible: ${_isNegotiationPossible(_streamFeatures)}');
         if (_isMandatoryNegotiationDone(_streamFeatures) && !_isNegotiationPossible(_streamFeatures)) {
           _log.finest('Negotiations done!');
           _updateRoutingState(RoutingState.handleStanzas);
@@ -684,7 +692,7 @@ class XmppConnection {
         }
       }
     } else if (_currentNegotiator!.state == NegotiatorState.retryLater) {
-      _log.finest('Negotiator want to continue later. Picking new one...');
+      _log.finest('Negotiator wants to continue later. Picking new one...');
 
       _currentNegotiator!.state = NegotiatorState.ready;
 
@@ -704,6 +712,12 @@ class XmppConnection {
         await _currentNegotiator!.negotiate(fakeStanza);
         await _checkCurrentNegotiator();
       }
+    } else if (_currentNegotiator!.state == NegotiatorState.skipRest) {
+      _log.finest('Negotiator wants to skip the remaining negotiation...');
+      _log.finest('Negotiations (assumed) done!');
+
+      _updateRoutingState(RoutingState.handleStanzas);
+      await _onNegotiationsDone();
     }
   }
   
@@ -768,7 +782,7 @@ class XmppConnection {
       _reconnectionPolicy.onFailure();
     } else if (event is ResourceBindingSuccessEvent) {
       _log.finest('Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}');
-      _resource = event.resource;
+      setResource(event.resource);
 
       _log.finest('Resetting _serverFeatures');
       _serverFeatures.clear();
@@ -841,7 +855,7 @@ class XmppConnection {
     _disconnecting = false;
     
     if (lastResource != null) {
-      _resource = lastResource;
+      setResource(lastResource);
     }
 
     _reconnectionPolicy.reset();
