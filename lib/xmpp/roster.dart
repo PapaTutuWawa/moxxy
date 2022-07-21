@@ -46,7 +46,7 @@ class RosterPushEvent extends XmppEvent {
 
 /// A Stub feature negotiator for finding out whether roster versioning is supported.
 class RosterFeatureNegotiator extends XmppFeatureNegotiatorBase {
-  RosterFeatureNegotiator() : _supported = false, super(0, false, rosterNegotiator, rosterVersioningXmlns);
+  RosterFeatureNegotiator() : _supported = false, super(0, false, rosterVersioningXmlns, rosterNegotiator);
 
   /// True if rosterVersioning is supported. False otherwise.
   bool _supported;
