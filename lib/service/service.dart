@@ -35,6 +35,7 @@ import 'package:moxxyv2/xmpp/negotiators/sasl/scram.dart';
 import 'package:moxxyv2/xmpp/negotiators/starttls.dart';
 import 'package:moxxyv2/xmpp/ping.dart';
 import 'package:moxxyv2/xmpp/presence.dart';
+import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
@@ -202,6 +203,7 @@ Future<void> entrypoint() async {
       StartTlsNegotiator(),
       StreamManagementNegotiator(),
       CSINegotiator(),
+      RosterFeatureNegotiator(),
       SaslScramNegotiator(10, '', '', ScramHashType.sha512),
       SaslScramNegotiator(9, '', '', ScramHashType.sha256),
       SaslScramNegotiator(8, '', '', ScramHashType.sha1),
