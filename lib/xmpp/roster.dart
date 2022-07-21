@@ -152,7 +152,7 @@ class RosterManager extends XmppManagerBase {
         name: item.attributes['name'] as String?,
         jid: item.attributes['jid']! as String,
         subscription: item.attributes['subscription']! as String,
-        ask: item.attributes['ask'] as String,
+        ask: item.attributes['ask'] as String?,
         groups: item.findTags('group').map((groupNode) => groupNode.innerText()).toList(),
       ),).toList();
 

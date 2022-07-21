@@ -10,6 +10,7 @@ import 'package:moxxyv2/xmpp/managers/data.dart';
 import 'package:moxxyv2/xmpp/managers/handlers.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
 import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
 import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/reconnect.dart';
@@ -21,6 +22,7 @@ import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
 import 'package:synchronized/synchronized.dart';
@@ -86,7 +88,6 @@ class XmppConnection {
     _eventStreamController = StreamController.broadcast(),
     _resource = '',
     _streamBuffer = XmlStreamBuffer(),
-    _resuming = true,
     _performingStartTLS = false,
     _disconnecting = false,
     _uuid = const Uuid(),
@@ -141,9 +142,6 @@ class XmppConnection {
   RoutingState _routingState;
   /// The currently bound resource or '' if none has been bound yet.
   String _resource;
-  /// For indicating in a [ConnectionStateChangedEvent] that the event occured because we
-  /// did a reconnection.
-  bool _resuming;
   /// For indicating whether we expect the socket to close to prevent accidentally
   /// triggering a reconnection attempt when we don't want to.
   bool _disconnecting;
@@ -451,7 +449,14 @@ class XmppConnection {
   void _setConnectionState(XmppConnectionState state) {
     _log.finest('Updating _connectionState from $_connectionState to $state');
     _connectionState = state;
-    _eventStreamController.add(ConnectionStateChangedEvent(state: state, resumed: _resuming));
+
+    final sm = getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator);
+    _eventStreamController.add(
+      ConnectionStateChangedEvent(
+        state: state,
+        resumed: sm != null ? sm.isResumed : false,
+      ),
+    );
 
     if (state == XmppConnectionState.connected) {
       _log.finest('Starting _pingConnectionTimer');
@@ -857,7 +862,6 @@ class XmppConnection {
 
     _reconnectionPolicy.reset();
 
-    _resuming = true;
     await _sendEvent(ConnectingEvent());
 
     final smManager = getStreamManagementManager();

@@ -36,6 +36,9 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
   bool _supported;
   bool get isSupported => _supported;
 
+  /// True if the current stream is resumed. False if not.
+  bool get isResumed => !_resumeFailed;
+  
   @override
   bool matchesFeature(List<XMLNode> features) {
     final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
@@ -89,6 +92,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
             final h = int.parse(nonza.attributes['h']! as String);
             await attributes.sendEvent(StreamResumedEvent(h: h));
 
+            _resumeFailed = false;
             state = NegotiatorState.skipRest;
           } else {
             // We assume it is <failed />
