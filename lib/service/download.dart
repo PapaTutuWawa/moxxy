@@ -13,6 +13,7 @@ import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:path/path.dart' as path;
 
 class FileMetadata {
@@ -52,7 +53,19 @@ class DownloadService { // URL -> When to send the next update
       await dir.create(recursive: true);
     }
 
-    return path.join(fileDirectory, filename);
+    var i = 0;
+    while (true) {
+      final filenameSuffix = i == 0 ? '' : '($i)';
+      final suffixedFilename = filenameWithSuffix(filename, filenameSuffix);
+
+      final filePath = path.join(fileDirectory, suffixedFilename);
+      if (!File(filePath).existsSync()) {
+        return filePath;
+      }
+
+      _log.finest('$filePath causes collision. Incrementing suffix...');
+      i++;
+    }
   }
   
   /// Returns true if the request was successful based on [statusCode].

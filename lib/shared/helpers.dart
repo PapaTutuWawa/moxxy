@@ -191,3 +191,19 @@ ChatState chatStateFromString(String raw) {
 }
 
 String chatStateToString(ChatState state) => state.toString().split('.').last;
+
+/// Return a version of the filename [filename] with [suffix] attached to the file's
+/// name while keeping the extension in [filename] intact.
+String filenameWithSuffix(String filename, String suffix) {
+  final parts = filename.split('.');
+
+  // Handle the special case of no "." in filename
+  if (parts.length == 1) {
+    return '$filename$suffix';
+  }
+
+  final filenameWithoutExtension = parts
+    .take(parts.length - 1)
+    .join('.');
+  return '$filenameWithoutExtension$suffix.${parts.last}';
+}
