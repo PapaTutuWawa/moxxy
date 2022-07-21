@@ -30,7 +30,7 @@ class Login extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
-                  errorText: state.jidState.error as String,
+                  errorText: state.jidState.error as String?,
                   labelText: 'XMPP-Address',
                   enabled: !(state.working as bool),
                   cornerRadius: textfieldRadiusRegular,
@@ -42,7 +42,7 @@ class Login extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
-                  errorText: state.passwordState.error as String,
+                  errorText: state.passwordState.error as String?,
                   labelText: 'Password',
                   suffixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(end: 8),
