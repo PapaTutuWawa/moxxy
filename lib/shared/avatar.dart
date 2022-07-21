@@ -8,17 +8,16 @@ import 'package:path_provider/path_provider.dart';
 /// [cache directory] is provided by path_provider.
 Future<String> saveAvatarInCache(List<int> bytes, String hash, String jid, String oldPath) async {
   final cacheDir = (await getApplicationDocumentsDirectory()).path;
-  final usersDir = Directory(pathlib.join(cacheDir, 'users', jid));
-  await usersDir.create(recursive: true);
+  final avatarsDir = Directory(pathlib.join(cacheDir, 'avatars'));
+  await avatarsDir.create(recursive: true);
 
   if (oldPath.isNotEmpty) {
     final oldAvatar = File(oldPath);
     if (oldAvatar.existsSync()) await oldAvatar.delete();
   }
 
-  final avatarPath = pathlib.join(usersDir.path, 'avatar_$hash.png');
-  final avatarFile = File(avatarPath);
-  await avatarFile.writeAsBytes(bytes);
+  final avatarPath = pathlib.join(avatarsDir.path, '$hash.png');
+  await File(avatarPath).writeAsBytes(bytes);
 
   return avatarPath;
 }
@@ -27,5 +26,5 @@ Future<String> saveAvatarInCache(List<int> bytes, String hash, String jid, Strin
 /// the existence of an avatar.
 Future<String> getAvatarPath(String jid, String hash) async {
   final cacheDir = (await getApplicationDocumentsDirectory()).path;
-  return pathlib.join(cacheDir, 'users', jid, 'avatar_$hash.png');
+  return pathlib.join(cacheDir, 'avatars', '$hash.png');
 }
