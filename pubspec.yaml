@@ -23,7 +23,6 @@ dependencies:
   archive: 3.2.0
   badges: 2.0.2
   bloc: 8.0.0
-  blurhash: 1.0.0
   connectivity_plus: 2.2.0
   crop_your_image: 0.7.2
   cryptography: 2.0.5
@@ -35,6 +34,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: 8.0.0
+  flutter_blurhash: 0.7.0
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
   flutter_local_notifications: 9.3.2
