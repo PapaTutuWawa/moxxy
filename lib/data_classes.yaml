@@ -220,6 +220,13 @@ files:
           quotedMessage:
             type: Message?
             deserialise: true
+      - name: SendFileCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          path: String
       - name: BlockJidCommand
         extends: BackgroundCommand
         implements:

@@ -76,6 +76,9 @@ class HttpFileUploadManager extends XmppManagerBase {
   @override
   Future<void> onXmppEvent(XmppEvent event) async {
     if (event is ServerItemDiscoEvent) {
+      logger.info('Received ServerItemDiscoEvent');
+      logger.info(_containsFileUploadIdentity(event.info));
+      logger.info(event.info.features.contains(httpFileUploadXmlns));
       if (_containsFileUploadIdentity(event.info) && event.info.features.contains(httpFileUploadXmlns)) {
         logger.info('Discovered HTTP File Upload for ${event.jid}');
 

@@ -101,3 +101,9 @@ class AppStateChanged extends ConversationEvent {
   AppStateChanged(this.open);
   final bool open;
 }
+
+/// Triggered when a file has been selected for uploading
+class FileUploadRequestedEvent extends ConversationEvent {
+
+  FileUploadRequestedEvent();
+}

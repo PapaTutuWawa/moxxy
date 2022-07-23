@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/service/avatars.dart';
@@ -17,6 +18,7 @@ import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/service/upload.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -37,6 +39,8 @@ import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
+import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
 const currentXmppStateVersion = 1;
@@ -315,6 +319,65 @@ class XmppService {
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
   }
 
+  Future<void> sendFile(String path, String recipient) async {
+    // Create a new message
+    final ms = GetIt.I.get<MessageService>();
+    final us = GetIt.I.get<UploadService>();
+    final conn = GetIt.I.get<XmppConnection>();
+    final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
+    final sid = conn.generateId();
+    final originId = conn.generateId();
+
+    _log.finest('Requesting upload slot');
+    final stat = await File(path).stat();
+    final result = await httpManager.requestUploadSlot(pathlib.basename(path), stat.size);
+    if (result.isError()) {
+      _log.severe('Failed to request slot');
+      // TODO(PapaTutuWawa): Do not let it end here
+      return;
+    }
+
+    final slot = result.getValue();
+    final msg = await ms.addMessageFromData(
+      '',
+      DateTime.now().millisecondsSinceEpoch, 
+      conn.getConnectionSettings().jid.toString(),
+      recipient,
+      true,
+      true,
+      sid,
+      srcUrl: slot.getUrl,
+      mediaUrl: path,
+      mediaType: lookupMimeType(path),
+      originId: originId,
+    );
+    // Notify the UI
+    sendEvent(MessageAddedEvent(message: msg));
+
+    //msg.isUploading = true;
+    final uploadResult = await us.uploadFile(path, slot.putUrl, slot.headers);
+    //msg.isUploading = false;
+    sendEvent(MessageUpdatedEvent(message: msg));
+
+    if (!uploadResult) {
+      _log.severe('Upload failed');
+      // TODO(PapaTutuWawa): Do not abort here
+      return;
+    }
+
+    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+      MessageDetails(
+        to: recipient,
+        // TODO(PapaTutuWawa): Use SFS and OOB here
+        body: slot.getUrl,
+        requestDeliveryReceipt: true,
+        id: sid,
+        originId: originId,
+      ),
+    );
+    _log.finest('Sent message with file upload');
+  }
+  
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
     switch (event.state) {
       case XmppConnectionState.connected:
@@ -409,7 +472,6 @@ class XmppService {
         open: true,
         lastChangeTimestamp: timestamp,
       );
-
       sendEvent(ConversationUpdatedEvent(conversation: newConversation));
     } else {
       // TODO(Unknown): Make it configurable if this should happen

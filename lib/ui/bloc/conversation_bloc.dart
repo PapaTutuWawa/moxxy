@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
@@ -40,6 +41,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ConversationUpdatedEvent>(_onConversationUpdated);
     on<AppStateChanged>(_onAppStateChanged);
     on<BackgroundChangedEvent>(_onBackgroundChanged);
+    on<FileUploadRequestedEvent>(_onFileUploadRequested);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -285,5 +287,22 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onBackgroundChanged(BackgroundChangedEvent event, Emitter<ConversationState> emit) async {
     return emit(state.copyWith(backgroundPath: event.backgroundPath));
+  }
+
+  Future<void> _onFileUploadRequested(FileUploadRequestedEvent event, Emitter<ConversationState> emit) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: false,
+    );
+
+    if (result != null) {
+      await MoxplatformPlugin.handler.getDataSender().sendData(
+        SendFileCommand(
+          path: result.files.single.path!,
+          jid: state.conversation!.jid,
+        ),
+        awaitable: false,
+      );
+    }
   }
 }
