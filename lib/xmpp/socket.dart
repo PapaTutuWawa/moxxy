@@ -273,9 +273,9 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       _log.warning('Failed to close socket since _socket is null');
       return;
     }
-
-    _socket!.close();
+ 
     _socket!.flush();
+    _socket!.close();
   }
 
   @override
