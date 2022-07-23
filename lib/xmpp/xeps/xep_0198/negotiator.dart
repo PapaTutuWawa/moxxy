@@ -25,10 +25,12 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
     : _state = _StreamManagementNegotiatorState.ready,
       _supported = false,
       _resumeFailed = false,
+      _isResumed = false,
       _log = Logger('StreamManagementNegotiator'),
       super(10, false, smXmlns, streamManagementNegotiator);
   _StreamManagementNegotiatorState _state;
   bool _resumeFailed;
+  bool _isResumed;
  
   final Logger _log;
 
@@ -37,7 +39,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
   bool get isSupported => _supported;
 
   /// True if the current stream is resumed. False if not.
-  bool get isResumed => !_resumeFailed;
+  bool get isResumed => _isResumed;
   
   @override
   bool matchesFeature(List<XMLNode> features) {
@@ -93,6 +95,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
             await attributes.sendEvent(StreamResumedEvent(h: h));
 
             _resumeFailed = false;
+            _isResumed = true;
             state = NegotiatorState.skipRest;
           } else {
             // We assume it is <failed />
@@ -106,6 +109,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
             await sm.commitState();
 
             _resumeFailed = true;
+            _isResumed = false;
             _state = _StreamManagementNegotiatorState.ready;
             state = NegotiatorState.retryLater;
           }
@@ -143,6 +147,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
     _state = _StreamManagementNegotiatorState.ready;
     _supported = false;
     _resumeFailed = false;
+    _isResumed = false;
 
     super.reset();
   }
