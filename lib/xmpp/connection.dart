@@ -647,6 +647,10 @@ class XmppConnection {
     // Set the connection state
     _setConnectionState(XmppConnectionState.connected);
 
+    // Resolve the connection completion future
+    _connectionCompleter?.complete(XmppConnectionResult(true));
+    _connectionCompleter = null;
+    
     // Send out initial presence
     await getPresenceManager().sendInitialPresence();
 
@@ -755,6 +759,15 @@ class XmppConnection {
             if (!_isNegotiationPossible(node.children)) {
               _log.severe('Mandatory negotiations not done but continuation not possible');
               _updateRoutingState(RoutingState.error);
+
+              // Resolve the connection completion future
+              _connectionCompleter?.complete(
+                XmppConnectionResult(
+                  false,
+                  reason: 'Could not complete connection negotiations',
+                ),
+              );
+              _connectionCompleter = null;
               return;
             }
 
