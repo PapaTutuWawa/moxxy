@@ -254,6 +254,7 @@ class DatabaseService {
       ..sent = sent
       ..isMedia = isMedia
       ..mediaType = mediaType
+      ..mediaUrl = mediaUrl
       ..srcUrl = srcUrl
       ..sid = sid
       ..thumbnailData = thumbnailData
