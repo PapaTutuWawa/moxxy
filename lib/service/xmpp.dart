@@ -342,7 +342,7 @@ class XmppService {
 
     final slot = result.getValue();
     final fileMime = lookupMimeType(path);
-    final msg = await ms.addMessageFromData(
+    var msg = await ms.addMessageFromData(
       '',
       DateTime.now().millisecondsSinceEpoch, 
       conn.getConnectionSettings().jid.toString(),
@@ -356,11 +356,11 @@ class XmppService {
       originId: originId,
     );
     // Notify the UI
+    msg = msg.copyWith(isUploading: true);
     sendEvent(MessageAddedEvent(message: msg));
 
-    //msg.isUploading = true;
     final uploadResult = await us.uploadFile(path, slot.putUrl, slot.headers, msg.id);
-    //msg.isUploading = false;
+    msg = msg.copyWith(isUploading: false);
     sendEvent(MessageUpdatedEvent(message: msg));
 
     if (!uploadResult) {
