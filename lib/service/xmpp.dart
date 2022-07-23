@@ -324,6 +324,7 @@ class XmppService {
   Future<void> sendFile(String path, String recipient) async {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
+    final cs = GetIt.I.get<ConversationService>();
     final us = GetIt.I.get<UploadService>();
     final conn = GetIt.I.get<XmppConnection>();
     final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
@@ -368,6 +369,14 @@ class XmppService {
       return;
     }
 
+    final id = (await cs.getConversationByJid(recipient))!.id;
+    final updatedConversation = await cs.updateConversation(
+      id,
+      lastMessageBody: mimeTypeToConversationBody(fileMime),
+      lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+    );
+    sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
+    
     conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
       MessageDetails(
         to: recipient,
