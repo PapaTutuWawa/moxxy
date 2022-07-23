@@ -44,7 +44,7 @@ import 'package:moxxyv2/ui/pages/settings/settings.dart';
 import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
 import 'package:moxxyv2/ui/service/data.dart';
-import 'package:moxxyv2/ui/service/download.dart';
+import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -58,7 +58,7 @@ void setupLogging() {
 }
 
 Future<void> setupUIServices() async {
-  GetIt.I.registerSingleton<UIDownloadService>(UIDownloadService());
+  GetIt.I.registerSingleton<UIProgressService>(UIProgressService());
   GetIt.I.registerSingleton<UIDataService>(UIDataService());
   GetIt.I.registerSingleton<ThumbnailCacheService>(ThumbnailCacheService());
   await GetIt.I.get<UIDataService>().init();

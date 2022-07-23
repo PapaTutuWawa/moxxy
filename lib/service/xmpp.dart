@@ -358,7 +358,7 @@ class XmppService {
     sendEvent(MessageAddedEvent(message: msg));
 
     //msg.isUploading = true;
-    final uploadResult = await us.uploadFile(path, slot.putUrl, slot.headers);
+    final uploadResult = await us.uploadFile(path, slot.putUrl, slot.headers, msg.id);
     //msg.isUploading = false;
     sendEvent(MessageUpdatedEvent(message: msg));
 

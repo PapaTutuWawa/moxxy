@@ -1,17 +1,17 @@
 import 'package:logging/logging.dart';
 
-typedef UIDownloadCallback = void Function(double);
+typedef UIProgressCallback = void Function(double);
 
 /// This class handles download progress notifications from the backend and relays them
 /// to the correct ChatBubble instance so that it can update itself.
-class UIDownloadService {
-  UIDownloadService() : _callbacks = {}, _log = Logger('UIDownloadService');
+class UIProgressService {
+  UIProgressService() : _callbacks = {}, _log = Logger('UIProgressService');
 
   final Logger _log;
   // Database message id -> callback function
-  final Map<int, UIDownloadCallback> _callbacks;
+  final Map<int, UIProgressCallback> _callbacks;
 
-  void registerCallback(int id, UIDownloadCallback callback) {
+  void registerCallback(int id, UIProgressCallback callback) {
     _log.finest('Registering callback for $id');
     _callbacks[id] = callback;
   }

@@ -90,7 +90,7 @@ class DownloadService { // URL -> When to send the next update
         if (progress * 100 >= _rateLimits[url]!) {
           _log.finest('Limit: ${_rateLimits[url]!}');
           sendEvent(
-            DownloadProgressEvent(
+            ProgressEvent(
               id: mId,
               progress: progress == 1 ? 0.99 : progress,
             ),
