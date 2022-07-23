@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/shared/events.dart';
 
 // TODO(Unknown): Make this more reliable:
 //       - Retry if a download failed, e.g. because we lost internet connection
@@ -12,10 +14,12 @@ class UploadService {
   final Map<String, String> _tasks;
 
   /// Upload the file at [path] to the server after requesting a slot.
-  Future<bool> uploadFile(String path, String putUrl, Map<String, String> headers) async { 
+  Future<bool> uploadFile(String path, String putUrl, Map<String, String> headers, int mId) async {
     _log.finest('Beginning upload of $path');
     final data = await File(path).readAsBytes();
     final putUri = Uri.parse(putUrl);
+
+    var rateLimit = 0;
     final response = await Dio().putUri<dynamic>(
       putUri,
       options: Options(
@@ -25,8 +29,19 @@ class UploadService {
       ),
       data: data,
       onSendProgress: (count, total) {
-        // TODO(PapaTutuWawa): Create event
-        //_log.finest('Upload progress for $path: $count/$total');
+        final progress = count.toDouble() / total.toDouble();
+
+        // TODO(Unknown): Maybe rate limit harder
+        if (progress * 100 >= rateLimit) {
+          sendEvent(
+            ProgressEvent(
+              id: mId,
+              progress: progress == 1 ? 0.99 : progress,
+            ),
+          );
+
+          rateLimit = (progress * 10).round() * 10;
+        }
       }
     );
 
