@@ -353,6 +353,7 @@ class XmppService {
           password: settings.password,
       ),);
 
+      _log.finest('Connection connected. Is resumed? ${event.resumed}');
       if (!event.resumed) {
         // In section 5 of XEP-0198 it says that a client should not request the roster
         // in case of a stream resumption.
