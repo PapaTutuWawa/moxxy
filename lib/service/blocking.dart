@@ -46,7 +46,8 @@ class BlocklistService {
   }
   
   Future<void> onBlocklistPush(BlockPushType type, List<String> items) async {
-    if (!_requestedBlocklist) await getBlocklist();
+    // We will fetch it later when getBlocklist is called
+    if (!_requestedBlocklist) return;
 
     final newBlocks = List<String>.empty(growable: true);
     final removedBlocks = List<String>.empty(growable: true);
