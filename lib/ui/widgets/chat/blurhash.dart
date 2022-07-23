@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
-import 'package:logging/logging.dart';
 
 class BlurhashChatWidget extends StatelessWidget {
 
-  BlurhashChatWidget({
+  const BlurhashChatWidget({
     required this.borderRadius,
     this.child,
     required this.width,
     required this.height,
     required this.thumbnailData,
     Key? key,
-  })
-    : _log = Logger('BlurhashChatWidget'),
-      super(key: key);
+  }) : super(key: key);
   final BorderRadius borderRadius;
   final int width;
   final int height;
   final String thumbnailData;
-  final Logger _log;
   final Widget? child;
 
   @override

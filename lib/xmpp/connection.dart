@@ -648,7 +648,7 @@ class XmppConnection {
     _setConnectionState(XmppConnectionState.connected);
 
     // Resolve the connection completion future
-    _connectionCompleter?.complete(XmppConnectionResult(true));
+    _connectionCompleter?.complete(const XmppConnectionResult(true));
     _connectionCompleter = null;
     
     // Send out initial presence
@@ -762,7 +762,7 @@ class XmppConnection {
 
               // Resolve the connection completion future
               _connectionCompleter?.complete(
-                XmppConnectionResult(
+                const XmppConnectionResult(
                   false,
                   reason: 'Could not complete connection negotiations',
                 ),
