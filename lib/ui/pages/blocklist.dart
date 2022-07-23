@@ -15,7 +15,8 @@ class BlocklistPage extends StatelessWidget {
   static MaterialPageRoute get route => MaterialPageRoute<dynamic>(builder: (_) => const BlocklistPage());
   
   Widget _buildListView(BlocklistState state) {
-    if ((state.blocklist as List<String>).isEmpty) {
+    // ignore: non_bool_condition,avoid_dynamic_calls
+    if (state.blocklist.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(
@@ -36,7 +37,8 @@ class BlocklistPage extends StatelessWidget {
     return ListView.builder(
       itemCount: (state.blocklist as List<String>).length,
       itemBuilder: (BuildContext context, int index) {
-        final jid = (state.blocklist as List<String>)[index];
+        // ignore: avoid_dynamic_calls
+        final jid = state.blocklist[index] as String;
 
         return Padding(
           padding: const EdgeInsets.symmetric(
