@@ -4,6 +4,7 @@ import 'package:moxxyv2/xmpp/managers/handlers.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
 
 /// A data class representing the jabber:x:oob tag.
 class OOBData {
@@ -11,6 +12,23 @@ class OOBData {
   const OOBData({ this.url, this.desc });
   final String? url;
   final String? desc;
+}
+
+XMLNode constructOOBNode(OOBData data) {
+  final children = List<XMLNode>.empty(growable: true);
+
+  if (data.url != null) {
+    children.add(XMLNode(tag: 'url', text: data.url));
+  }
+  if (data.desc != null) {
+    children.add(XMLNode(tag: 'desc', text: data.desc));
+  }
+  
+  return XMLNode.xmlns(
+    tag: 'x',
+    xmlns: oobDataXmlns,
+    children: children,
+  );
 }
 
 class OOBManager extends XmppManagerBase {

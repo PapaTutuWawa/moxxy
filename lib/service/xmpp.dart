@@ -40,6 +40,8 @@ import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -329,7 +331,7 @@ class XmppService {
     final originId = conn.generateId();
 
     _log.finest('Requesting upload slot');
-    final stat = await File(path).stat();
+    final stat = File(path).statSync();
     final result = await httpManager.requestUploadSlot(pathlib.basename(path), stat.size);
     if (result.isError()) {
       _log.severe('Failed to request slot');
@@ -338,6 +340,7 @@ class XmppService {
     }
 
     final slot = result.getValue();
+    final fileMime = lookupMimeType(path);
     final msg = await ms.addMessageFromData(
       '',
       DateTime.now().millisecondsSinceEpoch, 
@@ -348,7 +351,7 @@ class XmppService {
       sid,
       srcUrl: slot.getUrl,
       mediaUrl: path,
-      mediaType: lookupMimeType(path),
+      mediaType: fileMime,
       originId: originId,
     );
     // Notify the UI
@@ -368,11 +371,19 @@ class XmppService {
     conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
       MessageDetails(
         to: recipient,
-        // TODO(PapaTutuWawa): Use SFS and OOB here
         body: slot.getUrl,
         requestDeliveryReceipt: true,
         id: sid,
         originId: originId,
+        sfs: StatelessFileSharingData(
+          url: slot.getUrl,
+          metadata: FileMetadataData(
+            mediaType: fileMime,
+            size: stat.size,
+            name: pathlib.basename(path),
+            thumbnails: [],
+          ),
+        ),
       ),
     );
     _log.finest('Sent message with file upload');

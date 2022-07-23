@@ -16,7 +16,7 @@ class UploadService {
     _log.finest('Beginning upload of $path');
     final data = await File(path).readAsBytes();
     final putUri = Uri.parse(putUrl);
-    final response = await Dio().putUri(
+    final response = await Dio().putUri<dynamic>(
       putUri,
       options: Options(
         headers: headers,

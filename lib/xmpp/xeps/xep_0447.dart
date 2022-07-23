@@ -29,6 +29,28 @@ StatelessFileSharingData parseSFSElement(XMLNode node) {
   );
 }
 
+XMLNode constructSFSElement(StatelessFileSharingData data) {
+  return XMLNode.xmlns(
+    tag: 'file-sharing',
+    xmlns: sfsXmlns,
+    children: [
+      constructFileMetadataElement(data.metadata),
+      XMLNode(
+        tag: 'sources',
+        children: [
+          XMLNode.xmlns(
+            tag: 'url-data',
+            xmlns: urlDataXmlns,
+            attributes: <String, String>{
+              'target': data.url,
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+}
+
 class SFSManager extends XmppManagerBase {
   @override
   String getName() => 'SFSManager';

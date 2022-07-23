@@ -67,6 +67,7 @@ XMLNode constructFileMetadataElement(FileMetadataData data) {
   final node = XMLNode.xmlns(
     tag: 'file',
     xmlns: fileMetadataXmlns,
+    children: List.empty(growable: true),
   );
 
   if (data.mediaType != null) node.addChild(XMLNode(tag: 'media-type', text: data.mediaType));
