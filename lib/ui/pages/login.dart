@@ -15,13 +15,13 @@ class Login extends StatelessWidget {
   @override Widget build(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (BuildContext context, LoginState state) => WillPopScope(
-        onWillPop: () async => !(state.working as bool),
+        onWillPop: () async => !state.working,
         child: Scaffold(
           appBar: BorderlessTopbar.simple('Login'),
           body: Column(
             children: [
               Visibility(
-                visible: state.working as bool,
+                visible: state.working,
                 child: const LinearProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                 ),
@@ -30,9 +30,9 @@ class Login extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
-                  errorText: state.jidState.error as String?,
+                  errorText: state.jidState.error,
                   labelText: 'XMPP-Address',
-                  enabled: !(state.working as bool),
+                  enabled: !state.working,
                   cornerRadius: textfieldRadiusRegular,
                   enableIMEFeatures: false,
                   onChanged: (value) => context.read<LoginBloc>().add(LoginJidChangedEvent(value)),
@@ -42,19 +42,19 @@ class Login extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
-                  errorText: state.passwordState.error as String?,
+                  errorText: state.passwordState.error,
                   labelText: 'Password',
                   suffixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(end: 8),
                     child: InkWell(
                       onTap: () => context.read<LoginBloc>().add(LoginPasswordVisibilityToggledEvent()),
                       child: Icon(
-                        state.passwordVisible as bool ? Icons.visibility : Icons.visibility_off,
+                        state.passwordVisible ? Icons.visibility : Icons.visibility_off,
                       ),
                     ),
                   ),
-                  enabled: !(state.working as bool),
-                  obscureText: !(state.passwordVisible as bool),
+                  enabled: !state.working,
+                  obscureText: !state.passwordVisible,
                   cornerRadius: textfieldRadiusRegular,
                   enableIMEFeatures: false,
                   onChanged: (value) => context.read<LoginBloc>().add(LoginPasswordChangedEvent(value)),
@@ -71,7 +71,7 @@ class Login extends StatelessWidget {
                           title: const Text('Create account on server'),
                           value: false,
                           // TODO(Unknown): Implement
-                          onChanged: state.working as bool ? null : (value) {},
+                          onChanged: state.working ? null : (value) {},
                         )
                       ],
                     )
@@ -86,7 +86,7 @@ class Login extends StatelessWidget {
                       child: RoundedButton(
                         color: Colors.purple,
                         cornerRadius: 32,
-                        onTap: state.working as bool ? null : () => context.read<LoginBloc>().add(LoginSubmittedEvent()),
+                        onTap: state.working ? null : () => context.read<LoginBloc>().add(LoginSubmittedEvent()),
                         child: const Text('Login'),
                       ),
                     )

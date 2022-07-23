@@ -97,13 +97,13 @@ class ConversationsPage extends StatelessWidget {
       builder: (BuildContext context, ConversationsState state) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(
           TopbarAvatarAndName(
-            TopbarTitleText(state.displayName as String),
+            TopbarTitleText(state.displayName),
             Hero(
               tag: 'self_profile_picture',
               child: Material(
                 child: AvatarWrapper(
                   radius: 20,
-                  avatarUrl: state.avatarUrl as String,
+                  avatarUrl: state.avatarUrl,
                   altIcon: Icons.person,
                 ),
               ),
@@ -111,9 +111,9 @@ class ConversationsPage extends StatelessWidget {
             () => GetIt.I.get<ProfileBloc>().add(
               ProfilePageRequestedEvent(
                 true,
-                jid: state.jid as String,
-                avatarUrl: state.avatarUrl as String,
-                displayName: state.displayName as String,
+                jid: state.jid,
+                avatarUrl: state.avatarUrl,
+                displayName: state.displayName,
               ),
             ),
             showBackButton: false,

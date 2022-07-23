@@ -290,10 +290,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onFileUploadRequested(FileUploadRequestedEvent event, Emitter<ConversationState> emit) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      withData: false,
-    );
+    final result = await FilePicker.platform.pickFiles(type: FileType.image);
 
     if (result != null) {
       await MoxplatformPlugin.handler.getDataSender().sendData(

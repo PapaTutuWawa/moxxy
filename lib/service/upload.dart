@@ -42,7 +42,7 @@ class UploadService {
 
           rateLimit = (progress * 10).round() * 10;
         }
-      }
+      },
     );
 
     if (response.statusCode != 201) {

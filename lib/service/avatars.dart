@@ -171,7 +171,7 @@ class AvatarService {
       base64Decode(data.base64),
       data.hash,
       jid,
-      state.avatarUrl as String,
+      state.avatarUrl,
     );
     await xmpp.modifyXmppState((state) => state.copyWith(
         avatarUrl: avatarPath,
