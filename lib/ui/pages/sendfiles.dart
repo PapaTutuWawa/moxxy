@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
@@ -53,7 +54,7 @@ class SendFilesPage extends StatelessWidget {
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 0,
+                bottom: 72,
                 child: SizedBox(
                   height: 96,
                   child: Container(
@@ -90,6 +91,32 @@ class SendFilesPage extends StatelessWidget {
                             );
                           }
                         },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 8,
+                bottom: 8,
+                child: SizedBox(
+                  height: 48,
+                  width: 48,
+                  child: FittedBox(
+                    // Without wrapping the button in a Material, the image will be drawn
+                    // over the button, partly or entirely hiding it.
+                    child: Material(
+                      color: Color.fromRGBO(0, 0, 0, 0),
+                      child: Ink(
+                        decoration: const ShapeDecoration(
+                          color: primaryColor,
+                          shape: CircleBorder(),
+                        ),
+                        child: IconButton(
+                          color: Colors.white,
+                          icon: const Icon(Icons.send),
+                          onPressed: () => context.read<SendFilesBloc>().add(FileSendingRequestedEvent()),
+                        ),
                       ),
                     ),
                   ),

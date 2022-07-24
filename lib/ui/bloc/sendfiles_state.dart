@@ -7,5 +7,7 @@ class SendFilesState with _$SendFilesState {
     @Default(<String>[]) List<String> files,
     // The currently selected path
     @Default(0) int index,
+    // The chat that is currently active
+    @Default(null) String? conversationJid,
   }) = _SendFilesState;
 }

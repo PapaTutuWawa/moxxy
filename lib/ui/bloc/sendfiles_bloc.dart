@@ -2,6 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
@@ -14,6 +16,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     on<SendFilesPageRequestedEvent>(_sendFilesRequested);
     on<IndexSetEvent>(_onIndexSet);
     on<AddFilesRequestedEvent>(_onAddFilesRequested);
+    on<FileSendingRequestedEvent>(_onFileSendingRequested);
   }
 
   Future<void> _sendFilesRequested(SendFilesPageRequestedEvent event, Emitter<SendFilesState> emit) async {
@@ -21,6 +24,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
       state.copyWith(
         files: event.files,
         index: 0,
+        conversationJid: event.jid,
       ),
     );
     GetIt.I.get<NavigationBloc>().add(
@@ -49,5 +53,18 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
         ),
       );
     }
+  }
+
+  Future<void> _onFileSendingRequested(FileSendingRequestedEvent event, Emitter<SendFilesState> emitter) async {
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      SendFilesCommand(
+        paths: state.files,
+        jid: state.conversationJid!,
+      ),
+      awaitable: false,
+    );
+
+    // Return to the last page
+    GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
 }

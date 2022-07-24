@@ -4,8 +4,9 @@ abstract class SendFilesEvent {}
 
 class SendFilesPageRequestedEvent extends SendFilesEvent {
 
-  SendFilesPageRequestedEvent(this.files);
+  SendFilesPageRequestedEvent(this.files, this.jid);
   final List<String> files;
+  final String jid;
 }
 
 class IndexSetEvent extends SendFilesEvent {
@@ -14,7 +15,6 @@ class IndexSetEvent extends SendFilesEvent {
   final int index;
 }
 
-class AddFilesRequestedEvent extends SendFilesEvent {
+class AddFilesRequestedEvent extends SendFilesEvent {}
 
-  AddFilesRequestedEvent();
-}
+class FileSendingRequestedEvent extends SendFilesEvent {}

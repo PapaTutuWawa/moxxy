@@ -294,19 +294,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: true);
 
     if (result != null) {
-      /*
-      await MoxplatformPlugin.handler.getDataSender().sendData(
-        SendFilesCommand(
-          paths: result.files.map((PlatformFile file) => file.path!).toList(),
-          jid: state.conversation!.jid,
-        ),
-        awaitable: false,
-      );
-      */
-
       GetIt.I.get<SendFilesBloc>().add(
         SendFilesPageRequestedEvent(
           result.files.map((PlatformFile file) => file.path!).toList(),
+          state.conversation!.jid,
         ),
       );
     }
