@@ -15,6 +15,7 @@ import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/text.dart';
+import 'package:open_file/open_file.dart';
 
 enum MessageType {
   text,
@@ -201,7 +202,9 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
 Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
   if (medium.mime == null) return SharedFileWidget(medium.path);
 
-  if (medium.mime!.startsWith('image/')) return SharedImageWidget(medium.path);
+  if (medium.mime!.startsWith('image/')) {
+    return SharedImageWidget(medium.path, () => OpenFile.open(medium.path));
+  }
   if (medium.mime!.startsWith('video/')) return SharedVideoWidget(medium.path, conversationJid);
   // TODO(Unknown): Audio
   //if (message.mime!.startsWith("audio/")) return const SizedBox();

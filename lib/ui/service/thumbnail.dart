@@ -20,7 +20,7 @@ Future<void> _generateVideoThumbnail(List<dynamic> values) async {
 
     port.send(data);
   } catch (_) {
-    port.send([]);
+    port.send(Uint8List(0));
   }
 }
 

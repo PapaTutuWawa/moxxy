@@ -13,6 +13,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
@@ -293,12 +294,20 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: true);
 
     if (result != null) {
+      /*
       await MoxplatformPlugin.handler.getDataSender().sendData(
         SendFilesCommand(
           paths: result.files.map((PlatformFile file) => file.path!).toList(),
           jid: state.conversation!.jid,
         ),
         awaitable: false,
+      );
+      */
+
+      GetIt.I.get<SendFilesBloc>().add(
+        SendFilesPageRequestedEvent(
+          result.files.map((PlatformFile file) => file.path!).toList(),
+        ),
       );
     }
   }

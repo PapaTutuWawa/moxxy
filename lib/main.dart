@@ -17,13 +17,13 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
 /*
 import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
-import "package:moxxyv2/ui/pages/sendfiles.dart";
 */
 import 'package:moxxyv2/ui/pages/addcontact.dart';
 import 'package:moxxyv2/ui/pages/blocklist.dart';
@@ -34,6 +34,7 @@ import 'package:moxxyv2/ui/pages/intro.dart';
 import 'package:moxxyv2/ui/pages/login.dart';
 import 'package:moxxyv2/ui/pages/newconversation.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
+import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
@@ -75,6 +76,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
   GetIt.I.registerSingleton<SharedMediaBloc>(SharedMediaBloc());
   GetIt.I.registerSingleton<CropBloc>(CropBloc());
+  GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -128,6 +130,9 @@ void main() async {
         ),
         BlocProvider<CropBloc>(
           create: (_) => GetIt.I.get<CropBloc>(),
+        ),
+        BlocProvider<SendFilesBloc>(
+          create: (_) => GetIt.I.get<SendFilesBloc>(),
         )
       ],
       child: MyApp(navKey),
@@ -237,6 +242,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case debuggingRoute: return DebuggingPage.route;
           case addContactRoute: return AddContactPage.route;
           case cropRoute: return CropPage.route;
+          case sendFilesRoute: return SendFilesPage.route;
         }
 
         return null;
