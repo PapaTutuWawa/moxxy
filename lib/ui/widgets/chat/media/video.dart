@@ -53,10 +53,12 @@ class VideoChatWidget extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.data != null) {
             return ImageBaseChatWidget(
-              message.mediaUrl,
-              radius,
               Image.memory(snapshot.data!),
               MessageBubbleBottom(message),
+              radius,
+              onTap: () {
+                OpenFile.open(message.mediaUrl);
+              },
               extra: const PlayButton(),
             );
           } else {
