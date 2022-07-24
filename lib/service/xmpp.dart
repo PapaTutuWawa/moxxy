@@ -321,81 +321,105 @@ class XmppService {
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
   }
 
-  Future<void> sendFile(String path, String recipient) async {
+  Future<void> sendFiles(List<String> paths, String recipient) async {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final us = GetIt.I.get<UploadService>();
     final conn = GetIt.I.get<XmppConnection>();
     final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
-    final sid = conn.generateId();
-    final originId = conn.generateId();
 
-    _log.finest('Requesting upload slot');
-    final stat = File(path).statSync();
-    final result = await httpManager.requestUploadSlot(pathlib.basename(path), stat.size);
-    if (result.isError()) {
-      _log.severe('Failed to request slot');
-      // TODO(PapaTutuWawa): Do not let it end here
-      return;
+    // Path -> Message
+    final messages = <String, Message>{};
+
+    // Create the messages
+    for (final path in paths) {
+      final msg = await ms.addMessageFromData(
+        '',
+        DateTime.now().millisecondsSinceEpoch, 
+        conn.getConnectionSettings().jid.toString(),
+        recipient,
+        true,
+        true,
+        conn.generateId(),
+        // TODO(Unknown): Maybe don't have the UI depend on srcUrl if we sent it.
+        srcUrl: 'https://server.example',
+        mediaUrl: path,
+        mediaType: lookupMimeType(path),
+        originId: conn.generateId(),
+      );
+      messages[path] = msg;
+      sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
     }
 
-    final slot = result.getValue();
-    final fileMime = lookupMimeType(path);
-    var msg = await ms.addMessageFromData(
-      '',
-      DateTime.now().millisecondsSinceEpoch, 
-      conn.getConnectionSettings().jid.toString(),
-      recipient,
-      true,
-      true,
-      sid,
-      srcUrl: slot.getUrl,
-      mediaUrl: path,
-      mediaType: fileMime,
-      originId: originId,
-    );
-    // Notify the UI
-    msg = msg.copyWith(isUploading: true);
-    sendEvent(MessageAddedEvent(message: msg));
+    // Requesting Upload slots and uploading
 
-    final uploadResult = await us.uploadFile(path, slot.putUrl, slot.headers, msg.id);
-    msg = msg.copyWith(isUploading: false);
-    sendEvent(MessageUpdatedEvent(message: msg));
+    final conversationId = (await cs.getConversationByJid(recipient))!.id;
+    for (final path in paths) {
+      _log.finest('Requesting upload slot for $path');
+      final stat = File(path).statSync();
+      final result = await httpManager.requestUploadSlot(pathlib.basename(path), stat.size);
+      if (result.isError()) {
+        _log.severe('Failed to request slot for $path!');
+        // TODO(PapaTutuWawa): Do not let it end here
+        return;
+      }
 
-    if (!uploadResult) {
-      _log.severe('Upload failed');
-      // TODO(PapaTutuWawa): Do not abort here
-      return;
-    }
+      final slot = result.getValue();
+      final fileMime = lookupMimeType(path);
 
-    final id = (await cs.getConversationByJid(recipient))!.id;
-    final updatedConversation = await cs.updateConversation(
-      id,
-      lastMessageBody: mimeTypeToConversationBody(fileMime),
-      lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
-    );
-    sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
-    
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-      MessageDetails(
-        to: recipient,
-        body: slot.getUrl,
-        requestDeliveryReceipt: true,
-        id: sid,
-        originId: originId,
-        sfs: StatelessFileSharingData(
-          url: slot.getUrl,
-          metadata: FileMetadataData(
-            mediaType: fileMime,
-            size: stat.size,
-            name: pathlib.basename(path),
-            thumbnails: [],
+      final uploadResult = await us.uploadFile(
+        path,
+        slot.putUrl,
+        slot.headers,
+        messages[path]!.id,
+      );
+
+      if (!uploadResult) {
+        _log.severe('Upload failed for $path!');
+        // TODO(PapaTutuWawa): Do not abort here
+        return;
+      }
+
+      // Notify UI of upload completion
+      sendEvent(
+        MessageUpdatedEvent(
+          message: messages[path]!.copyWith(isUploading: false),
+        ),
+      );
+
+      // Update conversation
+      final updatedConversation = await cs.updateConversation(
+        conversationId,
+        lastMessageBody: mimeTypeToConversationBody(fileMime),
+        lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+      sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
+
+      // Send the url to the recipient
+      final message = messages[path]!;
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+        MessageDetails(
+          to: recipient,
+          body: slot.getUrl,
+          requestDeliveryReceipt: true,
+          id: message.sid,
+          originId: message.originId,
+          sfs: StatelessFileSharingData(
+            url: slot.getUrl,
+            metadata: FileMetadataData(
+              mediaType: fileMime,
+              size: stat.size,
+              name: pathlib.basename(path),
+              thumbnails: [],
+            ),
           ),
         ),
-      ),
-    );
-    _log.finest('Sent message with file upload');
+      );
+      _log.finest('Sent message with file upload for $path');
+    }
+
+    _log.finest('File upload done');
   }
   
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {

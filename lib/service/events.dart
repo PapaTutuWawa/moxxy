@@ -49,7 +49,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SendChatStateCommand>(performSendChatState),
       EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
       EventTypeMatcher<SignOutCommand>(performSignOut),
-      EventTypeMatcher<SendFileCommand>(performSendFile),
+      EventTypeMatcher<SendFilesCommand>(performSendFiles),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -409,6 +409,6 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
   );
 }
 
-Future<void> performSendFile(SendFileCommand command, { dynamic extra }) async {
-  await GetIt.I.get<XmppService>().sendFile(command.path, command.jid);
+Future<void> performSendFiles(SendFilesCommand command, { dynamic extra }) async {
+  await GetIt.I.get<XmppService>().sendFiles(command.paths, command.jid);
 }
