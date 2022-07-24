@@ -6,12 +6,12 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:moxxyv2/ui/widgets/chat/blurhash.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
-import 'package:moxxyv2/ui/widgets/chat/download.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/filenotfound.dart';
 import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 import 'package:open_file/open_file.dart';
 
 class ImageBaseChatWidget extends StatelessWidget {
@@ -113,7 +113,7 @@ class ImageChatWidget extends StatelessWidget {
         height: thumbnailSize.height.toInt(),
         borderRadius: radius,
         thumbnailData: message.thumbnailData!,
-        child: DownloadProgress(id: message.id),
+        child: ProgressWidget(id: message.id),
       );
     }
 

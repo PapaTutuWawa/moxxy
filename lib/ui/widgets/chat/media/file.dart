@@ -6,7 +6,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
-import 'package:moxxyv2/ui/widgets/chat/download.dart';
+import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 import 'package:path/path.dart' as pathlib;
 
 class _FileChatBaseWidget extends StatelessWidget {
@@ -27,7 +27,7 @@ class _FileChatBaseWidget extends StatelessWidget {
   final bool showIcon;
 
   final Widget? extra;
-  final DownloadProgress? progress;
+  final ProgressWidget? progress;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class FileChatWidget extends StatelessWidget {
       message.srcUrl!,
       filenameFromUrl(message.srcUrl!),
       MessageBubbleBottom(message),
-      progress: DownloadProgress(id: message.id),
+      progress: ProgressWidget(id: message.id),
       showIcon: false,
     );
   }
