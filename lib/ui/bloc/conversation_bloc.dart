@@ -291,15 +291,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onFileUploadRequested(FileUploadRequestedEvent event, Emitter<ConversationState> emit) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: true);
-
-    if (result != null) {
-      GetIt.I.get<SendFilesBloc>().add(
-        SendFilesPageRequestedEvent(
-          result.files.map((PlatformFile file) => file.path!).toList(),
-          state.conversation!.jid,
-        ),
-      );
-    }
+    GetIt.I.get<SendFilesBloc>().add(
+      SendFilesPageRequestedEvent(state.conversation!.jid),
+    );
   }
 }

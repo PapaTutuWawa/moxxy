@@ -19,14 +19,29 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     on<FileSendingRequestedEvent>(_onFileSendingRequested);
   }
 
+  /// Pick files. Returns either a list of paths to attach or null if the process has
+  /// been cancelled.
+  Future<List<String>?> _pickFiles() async {
+    // TODO(PapaTutuWawa): Allow multiple file types
+    final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: true);
+
+    if (result == null) return null;
+
+    return result.files.map((PlatformFile file) => file.path!).toList();
+  }
+  
   Future<void> _sendFilesRequested(SendFilesPageRequestedEvent event, Emitter<SendFilesState> emit) async {
+    final files = await _pickFiles();
+    if (files == null) return;
+
     emit(
       state.copyWith(
-        files: event.files,
+        files: files,
         index: 0,
         conversationJid: event.jid,
       ),
     );
+
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
         const NavigationDestination(
@@ -41,18 +56,14 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   }
 
   Future<void> _onAddFilesRequested(AddFilesRequestedEvent event, Emitter<SendFilesState> emit) async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: true);
+    final files = await _pickFiles();
+    if (files == null) return;
 
-    if (result != null) {
-      emit(
-        state.copyWith(
-          files: List.from(state.files)
-            ..addAll(
-              result.files.map((PlatformFile file) => file.path!).toList(),
-            ),
-        ),
-      );
-    }
+    emit(
+      state.copyWith(
+        files: List.from(state.files)..addAll(files),
+      ),
+    );
   }
 
   Future<void> _onFileSendingRequested(FileSendingRequestedEvent event, Emitter<SendFilesState> emitter) async {
