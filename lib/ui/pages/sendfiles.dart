@@ -72,10 +72,26 @@ class SendFilesPage extends StatelessWidget {
                               padding: const EdgeInsets.only(right: 4),
                               child: SharedImageWidget(
                                 item,
-                                () => context.read<SendFilesBloc>().add(
-                                  IndexSetEvent(index),
-                                ),
+                                () {
+                                  if (index == state.index) {
+                                    // The trash can icon has been tapped
+                                    context.read<SendFilesBloc>().add(
+                                      ItemRemovedEvent(index),
+                                    );
+                                  } else {
+                                    // Another item has been tapped
+                                    context.read<SendFilesBloc>().add(
+                                      IndexSetEvent(index),
+                                    );
+                                  }
+                                },
                                 borderColor: index == state.index ? Colors.blue : null,
+                                child: index == state.index ? const Center(
+                                  child: Icon(
+                                    Icons.delete,
+                                    size: 32,
+                                  ),
+                                ) : null,
                               ),
                             );
                           } else {
@@ -106,7 +122,7 @@ class SendFilesPage extends StatelessWidget {
                     // Without wrapping the button in a Material, the image will be drawn
                     // over the button, partly or entirely hiding it.
                     child: Material(
-                      color: Color.fromRGBO(0, 0, 0, 0),
+                      color: const Color.fromRGBO(0, 0, 0, 0),
                       child: Ink(
                         decoration: const ShapeDecoration(
                           color: primaryColor,

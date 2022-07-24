@@ -17,3 +17,9 @@ class IndexSetEvent extends SendFilesEvent {
 class AddFilesRequestedEvent extends SendFilesEvent {}
 
 class FileSendingRequestedEvent extends SendFilesEvent {}
+
+class ItemRemovedEvent extends SendFilesEvent {
+
+  ItemRemovedEvent(this.index);
+  final int index;
+}

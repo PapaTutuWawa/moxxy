@@ -6,10 +6,11 @@ import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class SharedImageWidget extends StatelessWidget {
 
-  const SharedImageWidget(this.path, this.onTap, { this.borderColor, Key? key }) : super(key: key);
+  const SharedImageWidget(this.path, this.onTap, { this.borderColor, this.child, Key? key }) : super(key: key);
   final String path;
   final Color? borderColor;
   final void Function() onTap;
+  final Widget? child;
   
   @override
   Widget build(BuildContext context) {
@@ -31,6 +32,7 @@ class SharedImageWidget extends StatelessWidget {
                 ),
               ),
               clipBehavior: Clip.hardEdge,
+              child: child,
             );
           } else {
             return const Padding(

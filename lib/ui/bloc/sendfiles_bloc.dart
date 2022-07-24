@@ -17,6 +17,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     on<IndexSetEvent>(_onIndexSet);
     on<AddFilesRequestedEvent>(_onAddFilesRequested);
     on<FileSendingRequestedEvent>(_onFileSendingRequested);
+    on<ItemRemovedEvent>(_onItemRemoved);
   }
 
   /// Pick files. Returns either a list of paths to attach or null if the process has
@@ -77,5 +78,30 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
 
     // Return to the last page
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+  }
+
+  Future<void> _onItemRemoved(ItemRemovedEvent event, Emitter<SendFilesState> emit) async {
+    // Go to the last page if we would otherwise remove the last item on the 
+    if (state.files.length == 1) {
+      GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+      return;
+    }
+
+    final files = List<String>.from(state.files)
+      ..removeAt(event.index);
+
+    var index = state.index;
+    if (index == 0 || index != state.files.length - 1) {
+      // Do nothing to prevent out of bounds
+    } else {
+      index--;
+    }
+
+    emit(
+      state.copyWith(
+        files: files,
+        index: index,
+      ),
+    );
   }
 }
