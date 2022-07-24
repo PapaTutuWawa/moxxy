@@ -1,16 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
-//import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-//import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
-//import 'package:moxxyv2/ui/widgets/chat/filenotfound.dart';
 import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
+import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 import 'package:open_file/open_file.dart';
 
 /// A base container allowing to embed a child in a borderless ChatBubble. If onTap is
@@ -80,8 +78,10 @@ class ImageChatWidget extends StatelessWidget {
 
   Widget _buildUploading() {
     return ImageBaseChatWidget(
-      // TODO(PapaTutuWawa): Use the thumbnail service
-      Image.file(File(message.mediaUrl!)),
+      ImageThumbnailWidget(
+        message.mediaUrl!,
+        Image.memory,
+      ),
       MessageBubbleBottom(message),
       radius,
       extra: ProgressWidget(id: message.id),
@@ -115,8 +115,10 @@ class ImageChatWidget extends StatelessWidget {
   /// The image exists locally
   Widget _buildImage() {
     return ImageBaseChatWidget(
-      // TODO(PapaTutuWawa): Use the thumbnail service
-      Image.file(File(message.mediaUrl!)),
+      ImageThumbnailWidget(
+        message.mediaUrl!,
+        Image.memory,
+      ),
       MessageBubbleBottom(message),
       radius,
       onTap: () {
