@@ -181,7 +181,7 @@ class _ConversationBottomRow extends StatelessWidget {
     return BlocBuilder<ConversationBloc, ConversationState>(
       buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage,
       builder: (context, state) => Container(
-        color: Theme.of(context).backgroundColor,
+        color: Color.fromRGBO(0, 0, 0, 0),
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: Row(
