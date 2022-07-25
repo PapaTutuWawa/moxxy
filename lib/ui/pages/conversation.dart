@@ -239,12 +239,12 @@ class _ConversationBottomRow extends StatelessWidget {
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
                           foregroundColor: Colors.white,
-                          label: 'Send Image',
+                          label: 'Send Images',
                         ),
                         SpeedDialChild(
                           child: const Icon(Icons.photo_camera),
                           onTap: () {
-                            showNotImplementedDialog('sending files', context);
+                            showNotImplementedDialog('taking photos', context);
                           },
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
@@ -259,7 +259,7 @@ class _ConversationBottomRow extends StatelessWidget {
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
                           foregroundColor: Colors.white,
-                          label: 'Add file',
+                          label: 'Send files',
                         )
                       ],
                     ),
