@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -16,11 +16,11 @@ class SendFilesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    const barPadding = 8.0;
     
     // TODO(Unknown): Fix the typography
     return SafeArea(
       child: Scaffold(
-        // appBar: BorderlessTopbar.justBackButton(),
         body: BlocBuilder<SendFilesBloc, SendFilesState>(
           builder: (context, state) => Stack(
             children: [
@@ -46,13 +46,14 @@ class SendFilesPage extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: 72,
-                child: SizedBox(
-                  height: 96,
+                  child: SizedBox(
+                  height: sharedMediaContainerDimension + 2 * barPadding,
                   child: Container(
                     color: const Color.fromRGBO(0, 0, 0, 0.7),
                     child: Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(barPadding),
                       child: ListView.builder(
+                        shrinkWrap: true,
                         scrollDirection: Axis.horizontal,
                         itemCount: state.files.length + 1,
                         itemBuilder: (context, index) {
@@ -135,7 +136,7 @@ class SendFilesPage extends StatelessWidget {
                 child: IconButton(
                   color: Colors.white,
                   icon: const Icon(Icons.close),
-                  onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent())
+                  onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
                 ),
               ),
             ],
