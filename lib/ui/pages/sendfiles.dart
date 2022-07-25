@@ -6,6 +6,7 @@ import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 import 'package:path/path.dart' as pathlib;
 
@@ -23,6 +24,33 @@ class SendFilesPage extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.only(right: 4),
         child: SharedImageWidget(
+          path,
+          () {
+            if (selected) {
+              // The trash can icon has been tapped
+              context.read<SendFilesBloc>().add(
+                ItemRemovedEvent(index),
+              );
+            } else {
+              // Another item has been tapped
+              context.read<SendFilesBloc>().add(
+                IndexSetEvent(index),
+              );
+            }
+          },
+          borderColor: selected ? Colors.blue : null,
+          child: selected ? const Center(
+            child: Icon(
+              Icons.delete,
+              size: 32,
+            ),
+          ) : null,
+        ),
+      );
+    } else if (mime.startsWith('video/')) {
+      return Padding(
+        padding: const EdgeInsets.only(right: 4),
+        child: SharedVideoWidget(
           path,
           () {
             if (selected) {
@@ -88,6 +116,13 @@ class SendFilesPage extends StatelessWidget {
     if (mime.startsWith('image/')) {
       // Render the image
       return ImageThumbnailWidget(
+        path,
+        Image.memory,
+      );
+    } else if (mime.startsWith('video/')) {
+      // Render the video thumbnail
+      // TODO(PapaTutuWawa): Maybe allow playing the video back inline
+      return VideoThumbnailWidget(
         path,
         Image.memory,
       );

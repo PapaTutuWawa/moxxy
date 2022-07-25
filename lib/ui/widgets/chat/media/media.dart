@@ -200,12 +200,17 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
 }
 
 Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
-  if (medium.mime == null) return SharedFileWidget(medium.path);
-
-  if (medium.mime!.startsWith('image/')) {
+  if (medium.mime == null) {
+    return SharedFileWidget(medium.path);
+  } else if (medium.mime!.startsWith('image/')) {
     return SharedImageWidget(medium.path, () => OpenFile.open(medium.path));
+  } else if (medium.mime!.startsWith('video/')) {
+    return SharedVideoWidget(
+      medium.path,
+      () => OpenFile.open(medium.path),
+      child: const PlayButton(),
+    );
   }
-  if (medium.mime!.startsWith('video/')) return SharedVideoWidget(medium.path, conversationJid);
   // TODO(Unknown): Audio
   //if (message.mime!.startsWith("audio/")) return const SizedBox();
 
