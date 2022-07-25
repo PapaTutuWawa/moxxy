@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -11,11 +12,6 @@ class SendFilesPage extends StatelessWidget {
   const SendFilesPage({ Key? key }) : super(key: key);
 
   static MaterialPageRoute get route => MaterialPageRoute<dynamic>(builder: (context) => const SendFilesPage());
-  
-  void _sendFiles(BuildContext context) {
-    // TODO(PapaTutuWawa): Stubbed
-    Navigator.pop(context);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +24,6 @@ class SendFilesPage extends StatelessWidget {
         body: BlocBuilder<SendFilesBloc, SendFilesState>(
           builder: (context, state) => Stack(
             children: [
-              const Positioned(
-                top: 0,
-                left: 0,
-                child: BackButton(),
-              ),
               Positioned(
                 top: 0,
                 left: 0,
@@ -136,6 +127,15 @@ class SendFilesPage extends StatelessWidget {
                       ),
                     ),
                   ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                left: 8,
+                child: IconButton(
+                  color: Colors.white,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent())
                 ),
               ),
             ],
