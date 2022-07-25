@@ -16,3 +16,6 @@ class UpdatedSharedMedia extends SharedMediaEvent {
   final List<SharedMedium> sharedMedia;
   final String jid;
 }
+
+/// Triggered when the SharedMediaBloc should reject updates
+class JidRemovedEvent extends SharedMediaEvent {}

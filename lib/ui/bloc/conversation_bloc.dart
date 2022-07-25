@@ -125,7 +125,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         const NavigationDestination(conversationRoute),
       )
     );
-    
+
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
     // ignore: cast_nullable_to_non_nullable
@@ -219,6 +219,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
+    GetIt.I.get<SharedMediaBloc>().add(JidRemovedEvent());
     _updateChatState(ChatState.gone);
 
     await MoxplatformPlugin.handler.getDataSender().sendData(

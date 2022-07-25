@@ -10,8 +10,13 @@ class SharedMediaBloc extends Bloc<SharedMediaEvent, SharedMediaState> {
   SharedMediaBloc() : super(SharedMediaState()) {
     on<SetSharedMedia>(_onSetSharedMedia);
     on<UpdatedSharedMedia>(_onUpdatedSharedMedia);
+    on<JidRemovedEvent>(_onJidRemoved);
   }
 
+  Future<void> _onJidRemoved(JidRemovedEvent event, Emitter<SharedMediaState> emit) async {
+    emit(state.copyWith(jid: ''));
+  }
+  
   Future<void> _onUpdatedSharedMedia(UpdatedSharedMedia event, Emitter<SharedMediaState> emit) async {
     if (state.jid != event.jid) return;
 
@@ -27,6 +32,7 @@ class SharedMediaBloc extends Bloc<SharedMediaEvent, SharedMediaState> {
       state.copyWith(
         sharedMedia: event.sharedMedia,
         title: event.title,
+        jid: event.jid,
       ),
     );
   }

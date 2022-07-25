@@ -4,7 +4,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -108,8 +108,8 @@ class ConversationsPage extends StatelessWidget {
                 ),
               ),
             ),
-            () => GetIt.I.get<ProfileBloc>().add(
-              ProfilePageRequestedEvent(
+            () => GetIt.I.get<profile.ProfileBloc>().add(
+              profile.ProfilePageRequestedEvent(
                 true,
                 jid: state.jid,
                 avatarUrl: state.avatarUrl,
