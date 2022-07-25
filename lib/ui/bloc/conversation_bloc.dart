@@ -40,7 +40,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ConversationUpdatedEvent>(_onConversationUpdated);
     on<AppStateChanged>(_onAppStateChanged);
     on<BackgroundChangedEvent>(_onBackgroundChanged);
-    on<FileUploadRequestedEvent>(_onFileUploadRequested);
+    on<ImagePickerRequestedEvent>(_onImagePickerRequested);
+    on<FilePickerRequestedEvent>(_onFilePickerRequested);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -288,9 +289,15 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     return emit(state.copyWith(backgroundPath: event.backgroundPath));
   }
 
-  Future<void> _onFileUploadRequested(FileUploadRequestedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onImagePickerRequested(ImagePickerRequestedEvent event, Emitter<ConversationState> emit) async {
     GetIt.I.get<SendFilesBloc>().add(
-      SendFilesPageRequestedEvent(state.conversation!.jid),
+      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.image),
+    );
+  }
+
+  Future<void> _onFilePickerRequested(FilePickerRequestedEvent event, Emitter<ConversationState> emit) async {
+    GetIt.I.get<SendFilesBloc>().add(
+      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.generic),
     );
   }
 }

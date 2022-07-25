@@ -1,11 +1,17 @@
 part of 'sendfiles_bloc.dart';
 
+enum SendFilesType {
+  image,
+  generic,
+}
+
 abstract class SendFilesEvent {}
 
 class SendFilesPageRequestedEvent extends SendFilesEvent {
 
-  SendFilesPageRequestedEvent(this.jid);
+  SendFilesPageRequestedEvent(this.jid, this.type);
   final String jid;
+  final SendFilesType type;
 }
 
 class IndexSetEvent extends SendFilesEvent {

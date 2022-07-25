@@ -102,8 +102,8 @@ class AppStateChanged extends ConversationEvent {
   final bool open;
 }
 
-/// Triggered when a file has been selected for uploading
-class FileUploadRequestedEvent extends ConversationEvent {
+/// Triggered when the user wants to pick images and videos for sending
+class ImagePickerRequestedEvent extends ConversationEvent {}
 
-  FileUploadRequestedEvent();
-}
+/// Triggered when the user wants to pick generic files for sending
+class FilePickerRequestedEvent extends ConversationEvent {}

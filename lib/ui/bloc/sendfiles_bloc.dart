@@ -22,9 +22,9 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
 
   /// Pick files. Returns either a list of paths to attach or null if the process has
   /// been cancelled.
-  Future<List<String>?> _pickFiles() async {
-    // TODO(PapaTutuWawa): Allow multiple file types
-    final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: true);
+  Future<List<String>?> _pickFiles(SendFilesType type) async {
+    final fileType = type == SendFilesType.image ? FileType.image : FileType.any;
+    final result = await FilePicker.platform.pickFiles(type: fileType, allowMultiple: true);
 
     if (result == null) return null;
 
@@ -32,7 +32,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   }
   
   Future<void> _sendFilesRequested(SendFilesPageRequestedEvent event, Emitter<SendFilesState> emit) async {
-    final files = await _pickFiles();
+    final files = await _pickFiles(event.type);
     if (files == null) return;
 
     emit(
@@ -57,7 +57,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   }
 
   Future<void> _onAddFilesRequested(AddFilesRequestedEvent event, Emitter<SendFilesState> emit) async {
-    final files = await _pickFiles();
+    final files = await _pickFiles(SendFilesType.generic);
     if (files == null) return;
 
     emit(

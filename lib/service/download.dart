@@ -139,7 +139,7 @@ class DownloadService { // URL -> When to send the next update
     );
     final newConv = await GetIt.I.get<ConversationService>().updateConversation(
       conv.id,
-      sharedMedium: sharedMedium,
+      sharedMedia: [sharedMedium],
     );
     sendEvent(ConversationUpdatedEvent(conversation: newConv));
   }

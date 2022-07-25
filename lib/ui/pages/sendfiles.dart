@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mime/mime.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
+import 'package:path/path.dart' as pathlib;
 
 class SendFilesPage extends StatelessWidget {
  
@@ -13,6 +15,100 @@ class SendFilesPage extends StatelessWidget {
 
   static MaterialPageRoute get route => MaterialPageRoute<dynamic>(builder: (context) => const SendFilesPage());
 
+  Widget _renderPreview(BuildContext context, String path, bool selected, int index) {
+    final mime = lookupMimeType(path) ?? '';
+
+    if (mime.startsWith('image/')) {
+      // Render the image preview
+      return Padding(
+        padding: const EdgeInsets.only(right: 4),
+        child: SharedImageWidget(
+          path,
+          () {
+            if (selected) {
+              // The trash can icon has been tapped
+              context.read<SendFilesBloc>().add(
+                ItemRemovedEvent(index),
+              );
+            } else {
+              // Another item has been tapped
+              context.read<SendFilesBloc>().add(
+                IndexSetEvent(index),
+              );
+            }
+          },
+          borderColor: selected ? Colors.blue : null,
+          child: selected ? const Center(
+            child: Icon(
+              Icons.delete,
+              size: 32,
+            ),
+          ) : null,
+        ),
+      );
+    } else {
+      // Render a generic file
+      return Padding(
+        padding: const EdgeInsets.only(right: 4),
+        child: SharedMediaContainer(
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.black,
+              border: selected ? Border.all(
+                color: Colors.blue,
+                width: 4,
+              ) : null,
+            ),
+            child: selected
+              ? const Icon(Icons.delete, size: 32)
+              : const Icon(Icons.file_present),
+          ),
+          onTap: () {
+            if (selected) {
+              // The trash can icon has been tapped
+              context.read<SendFilesBloc>().add(
+                ItemRemovedEvent(index),
+              );
+            } else {
+              // Another item has been tapped
+              context.read<SendFilesBloc>().add(
+                IndexSetEvent(index),
+              );
+            }
+          },
+        ),
+      );
+    }
+  }
+
+  Widget _renderBackground(BuildContext context, String path) {
+    final mime = lookupMimeType(path) ?? '';
+
+    if (mime.startsWith('image/')) {
+      // Render the image
+      return ImageThumbnailWidget(
+        path,
+        Image.memory,
+      );
+    } else {
+      // Generic file
+      final width = MediaQuery.of(context).size.width;
+      return Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.file_present,
+              size: width / 2,
+            ),
+            // TODO(PapaTutuWawa): Truncate if the filename is too long
+            Text(pathlib.basename(path)),
+          ],
+        ),
+      );
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -33,10 +129,7 @@ class SendFilesPage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ImageThumbnailWidget(
-                        state.files[state.index],
-                        Image.memory,
-                      ),
+                      _renderBackground(context, state.files[state.index]),
                     ],
                   ),
                 ),
@@ -60,32 +153,7 @@ class SendFilesPage extends StatelessWidget {
                           if (index < state.files.length) {
                             final item = state.files[index];
 
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 4),
-                              child: SharedImageWidget(
-                                item,
-                                () {
-                                  if (index == state.index) {
-                                    // The trash can icon has been tapped
-                                    context.read<SendFilesBloc>().add(
-                                      ItemRemovedEvent(index),
-                                    );
-                                  } else {
-                                    // Another item has been tapped
-                                    context.read<SendFilesBloc>().add(
-                                      IndexSetEvent(index),
-                                    );
-                                  }
-                                },
-                                borderColor: index == state.index ? Colors.blue : null,
-                                child: index == state.index ? const Center(
-                                  child: Icon(
-                                    Icons.delete,
-                                    size: 32,
-                                  ),
-                                ) : null,
-                              ),
-                            );
+                            return _renderPreview(context, item, index == state.index, index);
                           } else {
                             return SharedMediaContainer(
                               Container(

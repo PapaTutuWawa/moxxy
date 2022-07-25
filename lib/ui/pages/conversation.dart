@@ -234,8 +234,7 @@ class _ConversationBottomRow extends StatelessWidget {
                         SpeedDialChild(
                           child: const Icon(Icons.image),
                           onTap: () {
-                            context.read<ConversationBloc>().add(FileUploadRequestedEvent());
-                            //Navigator.pushNamed(context, sendFilesRoute);
+                            context.read<ConversationBloc>().add(ImagePickerRequestedEvent());
                           },
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
@@ -255,7 +254,7 @@ class _ConversationBottomRow extends StatelessWidget {
                         SpeedDialChild(
                           child: const Icon(Icons.attach_file),
                           onTap: () {
-                            showNotImplementedDialog('sending files', context);
+                            context.read<ConversationBloc>().add(FilePickerRequestedEvent());
                           },
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
