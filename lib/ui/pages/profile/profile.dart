@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
@@ -53,11 +54,15 @@ class ProfilePage extends StatelessWidget {
                   )
                 ],
               ),
-              const Positioned(
+              Positioned(
                 top: 8,
                 left: 8,
-                child: BackButton(),
-              )
+                child: IconButton(
+                  color: Colors.white,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                ),
+              ),
             ],
           ),
         ),
