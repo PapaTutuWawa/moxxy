@@ -88,7 +88,6 @@ class XmppConnection {
     _eventStreamController = StreamController.broadcast(),
     _resource = '',
     _streamBuffer = XmlStreamBuffer(),
-    _performingStartTLS = false,
     _disconnecting = false,
     _uuid = const Uuid(),
     _socket = socket ?? TCPSocketWrapper(),
@@ -146,8 +145,6 @@ class XmppConnection {
   /// For indicating whether we expect the socket to close to prevent accidentally
   /// triggering a reconnection attempt when we don't want to.
   bool _disconnecting;
-  /// For indicating whether we expect a socket closure due to StartTLS.
-  bool _performingStartTLS;
   /// Timers for the keep-alive ping.
   Timer? _connectionPingTimer;
   /// Completers for certain actions
@@ -344,7 +341,7 @@ class XmppConnection {
       handleError(event.error);
     } else if (event is XmppSocketClosureEvent) {
       // Only reconnect if we didn't expect this
-      if (!_disconnecting && !_performingStartTLS) {
+      if (!_disconnecting) {
         _log.fine('Received XmppSocketClosureEvent, but _disconnecting is false. Reconnecting...');
         _attemptReconnection();
       }
@@ -923,7 +920,6 @@ class XmppConnection {
     } else {
       _reconnectionPolicy.onSuccess();
       _log.fine('Preparing the internal state for a connection attempt');
-      _performingStartTLS = false;
       _resetNegotiators();
       _setConnectionState(XmppConnectionState.connecting);
       _updateRoutingState(RoutingState.negotiating);
