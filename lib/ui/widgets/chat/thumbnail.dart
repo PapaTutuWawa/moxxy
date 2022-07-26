@@ -9,10 +9,11 @@ typedef ChildBuilderFunction = Widget Function(Uint8List);
 /// A widget that allows easy access to thumbnails using a pattern similar to that of
 /// the FutureBuilder.
 abstract class ThumbnailBaseWidget extends StatelessWidget {
-  const ThumbnailBaseWidget(this.path, this.builder, {Key? key}) : super(key: key);
 
+  const ThumbnailBaseWidget(this.path, this.builder, { this.showSpinner = true, Key? key}) : super(key: key);
   final String path;
   final ChildBuilderFunction builder;
+  final bool showSpinner;
 
   Future<Uint8List> getThumbnail();
 
@@ -28,10 +29,14 @@ abstract class ThumbnailBaseWidget extends StatelessWidget {
           case ConnectionState.none:
           case ConnectionState.waiting:
           case ConnectionState.active:
-            return const Padding(
-              padding: EdgeInsets.all(32),
-              child: CircularProgressIndicator(),
-            );
+            if (showSpinner) {
+              return const Padding(
+                padding: EdgeInsets.all(32),
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return Container();
+            }
         }
       },
     );
@@ -43,9 +48,10 @@ class ImageThumbnailWidget extends ThumbnailBaseWidget {
     String path,
     ChildBuilderFunction builder,
     {
+      bool showSpinner = true,
       Key? key,
     }
-  ) : super(path, builder, key: key);
+  ) : super(path, builder, showSpinner: showSpinner, key: key);
 
   @override
   Future<Uint8List> getThumbnail() {
@@ -60,7 +66,7 @@ class VideoThumbnailWidget extends ThumbnailBaseWidget {
     {
       Key? key,
     }
-  ) : super(path, builder, key: key);
+  ) : super(path, builder, showSpinner: true, key: key);
 
   @override
   Future<Uint8List> getThumbnail() {
