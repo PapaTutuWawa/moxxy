@@ -48,10 +48,8 @@ class CustomTextField extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(cornerRadius),
-            border: Border.all(
-              color: primaryColor,
-              width: 2,
-            ),
+            // TODO(Unknown): Test with light theme
+            color: Theme.of(context).backgroundColor,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
