@@ -36,7 +36,8 @@ class DownloadService { // URL -> When to send the next update
   final Map<String, int> _rateLimits;
 
   /// Calculates the path for a given file to be saved to and, if neccessary, create it.
-  Future<String> _getDownloadPath(String filename, String conversationJid, String? mime) async {
+  // TODO(PapaTutuWawa): Move somewhere else
+  static Future<String> getDownloadPath(String filename, String conversationJid, String? mime) async {
     String type;
     var prependMoxxy = true;
     if (mime != null && ['image/', 'video/'].any((e) => mime.startsWith(e))) {
@@ -63,7 +64,7 @@ class DownloadService { // URL -> When to send the next update
         return filePath;
       }
 
-      _log.finest('$filePath causes collision. Incrementing suffix...');
+      Logger('DownloadService').finest('$filePath causes collision. Incrementing suffix...');
       i++;
     }
   }
@@ -79,7 +80,7 @@ class DownloadService { // URL -> When to send the next update
     final uri = Uri.parse(url);
     final filename = uri.pathSegments.last;
 
-    final downloadedPath = await _getDownloadPath(filename, conversationJid, mimeGuess);
+    final downloadedPath = await getDownloadPath(filename, conversationJid, mimeGuess);
     final response = await Dio().downloadUri(
       uri,
       downloadedPath,
@@ -90,7 +91,7 @@ class DownloadService { // URL -> When to send the next update
         if (progress * 100 >= _rateLimits[url]!) {
           _log.finest('Limit: ${_rateLimits[url]!}');
           sendEvent(
-            DownloadProgressEvent(
+            ProgressEvent(
               id: mId,
               progress: progress == 1 ? 0.99 : progress,
             ),
@@ -139,7 +140,7 @@ class DownloadService { // URL -> When to send the next update
     );
     final newConv = await GetIt.I.get<ConversationService>().updateConversation(
       conv.id,
-      sharedMedium: sharedMedium,
+      sharedMedia: [sharedMedium],
     );
     sendEvent(ConversationUpdatedEvent(conversation: newConv));
   }

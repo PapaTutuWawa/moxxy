@@ -48,7 +48,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
       EventTypeMatcher<SendChatStateCommand>(performSendChatState),
       EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
-      EventTypeMatcher<SignOutCommand>(performSignOut)
+      EventTypeMatcher<SignOutCommand>(performSignOut),
+      EventTypeMatcher<SendFilesCommand>(performSendFiles),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -124,8 +125,8 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
         state: 'logged_in',
         jid: state.jid,
         displayName: state.displayName,
-        avatarUrl: state.avatarUrl as String,
-        avatarHash: state.avatarHash as String,
+        avatarUrl: state.avatarUrl,
+        avatarHash: state.avatarHash,
         permissionsToRequest: permissions,
         preferences: preferences,
         conversations: (await GetIt.I.get<DatabaseService>().loadConversations()).where((c) => c.open).toList(),
@@ -406,4 +407,8 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
     SignedOutEvent(),
     id: id,
   );
+}
+
+Future<void> performSendFiles(SendFilesCommand command, { dynamic extra }) async {
+  await GetIt.I.get<XmppService>().sendFiles(command.paths, command.jid);
 }

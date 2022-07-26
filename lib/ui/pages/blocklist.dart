@@ -35,10 +35,10 @@ class BlocklistPage extends StatelessWidget {
     }
 
     return ListView.builder(
-      itemCount: (state.blocklist as List<String>).length,
+      itemCount: state.blocklist.length,
       itemBuilder: (BuildContext context, int index) {
         // ignore: avoid_dynamic_calls
-        final jid = state.blocklist[index] as String;
+        final jid = state.blocklist[index];
 
         return Padding(
           padding: const EdgeInsets.symmetric(

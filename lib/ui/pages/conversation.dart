@@ -7,7 +7,7 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -113,10 +113,10 @@ class _ConversationTopbarWidget extends StatelessWidget {
               ),
             ),
           ),
-          () => GetIt.I.get<ProfileBloc>().add(
-            ProfilePageRequestedEvent(
+          () => GetIt.I.get<profile.ProfileBloc>().add(
+            profile.ProfilePageRequestedEvent(
               false,
-              conversation: state.conversation,
+              conversation: context.read<ConversationBloc>().state.conversation,
             ),
           ),
           extra: [
@@ -234,18 +234,17 @@ class _ConversationBottomRow extends StatelessWidget {
                         SpeedDialChild(
                           child: const Icon(Icons.image),
                           onTap: () {
-                            showNotImplementedDialog('sending files', context);
-                            //Navigator.pushNamed(context, sendFilesRoute);
+                            context.read<ConversationBloc>().add(ImagePickerRequestedEvent());
                           },
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
                           foregroundColor: Colors.white,
-                          label: 'Send Image',
+                          label: 'Send Images',
                         ),
                         SpeedDialChild(
                           child: const Icon(Icons.photo_camera),
                           onTap: () {
-                            showNotImplementedDialog('sending files', context);
+                            showNotImplementedDialog('taking photos', context);
                           },
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
@@ -255,12 +254,12 @@ class _ConversationBottomRow extends StatelessWidget {
                         SpeedDialChild(
                           child: const Icon(Icons.attach_file),
                           onTap: () {
-                            showNotImplementedDialog('sending files', context);
+                            context.read<ConversationBloc>().add(FilePickerRequestedEvent());
                           },
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
                           foregroundColor: Colors.white,
-                          label: 'Add file',
+                          label: 'Send files',
                         )
                       ],
                     ),

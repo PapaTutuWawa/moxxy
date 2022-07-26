@@ -8,6 +8,7 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
@@ -132,8 +133,13 @@ class MessageManager extends XmppManagerBase {
           ),
         );
     } else {
+      var body = details.body;
+      if (details.sfs != null) {
+        body = details.sfs!.url;
+      }
+
       stanza.addChild(
-        XMLNode(tag: 'body', text: details.body),
+        XMLNode(tag: 'body', text: body),
       );
     }
 
@@ -147,6 +153,13 @@ class MessageManager extends XmppManagerBase {
       stanza.addChild(makeOriginIdElement(details.originId!));
     }
 
+    if (details.sfs != null) {
+      stanza
+        ..addChild(constructSFSElement(details.sfs!))
+        // SFS recommends OOB as a fallback
+        ..addChild(constructOOBNode(OOBData(url: details.sfs!.url)),);
+    }
+    
     if (details.chatState != null) {
       stanza.addChild(
         // TODO(Unknown): Move this into xep_0085.dart

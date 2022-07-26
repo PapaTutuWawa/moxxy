@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -12,6 +11,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
@@ -40,6 +40,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ConversationUpdatedEvent>(_onConversationUpdated);
     on<AppStateChanged>(_onAppStateChanged);
     on<BackgroundChangedEvent>(_onBackgroundChanged);
+    on<ImagePickerRequestedEvent>(_onImagePickerRequested);
+    on<FilePickerRequestedEvent>(_onFilePickerRequested);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -123,7 +125,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         const NavigationDestination(conversationRoute),
       )
     );
-    
+
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
     // ignore: cast_nullable_to_non_nullable
@@ -217,6 +219,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
+    GetIt.I.get<SharedMediaBloc>().add(JidRemovedEvent());
     _updateChatState(ChatState.gone);
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -285,5 +288,17 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onBackgroundChanged(BackgroundChangedEvent event, Emitter<ConversationState> emit) async {
     return emit(state.copyWith(backgroundPath: event.backgroundPath));
+  }
+
+  Future<void> _onImagePickerRequested(ImagePickerRequestedEvent event, Emitter<ConversationState> emit) async {
+    GetIt.I.get<SendFilesBloc>().add(
+      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.image),
+    );
+  }
+
+  Future<void> _onFilePickerRequested(FilePickerRequestedEvent event, Emitter<ConversationState> emit) async {
+    GetIt.I.get<SendFilesBloc>().add(
+      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.generic),
+    );
   }
 }

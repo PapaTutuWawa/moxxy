@@ -21,6 +21,7 @@ class Message with _$Message {
     {
       String? mediaUrl,
       @Default(false) bool isDownloading,
+      @Default(false) bool isUploading,
       String? mediaType,
       String? thumbnailData,
       String? thumbnailDimensions,

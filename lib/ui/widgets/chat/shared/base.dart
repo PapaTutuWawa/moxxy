@@ -19,6 +19,8 @@ class TransparentBoxShadow extends BoxShadow {
   }
 }
 
+const sharedMediaContainerDimension = 75.0;
+
 /// A widget to show a message that was sent within a chat or is about to be sent.
 class SharedMediaContainer extends StatelessWidget {
 
@@ -31,8 +33,8 @@ class SharedMediaContainer extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: SizedBox(
-        height: 75,
-        width: 75,
+        height: sharedMediaContainerDimension,
+        width: sharedMediaContainerDimension,
         child: AspectRatio(
           aspectRatio: 1,
           child: child, 

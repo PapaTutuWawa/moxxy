@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/service/avatars.dart';
@@ -12,6 +13,7 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/db/media.dart';
 import 'package:moxxyv2/service/download.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
@@ -19,6 +21,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
+import 'package:moxxyv2/service/upload.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -37,6 +40,10 @@ import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
+import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
 const currentXmppStateVersion = 1;
@@ -315,6 +322,140 @@ class XmppService {
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
   }
 
+  Future<void> sendFiles(List<String> paths, String recipient) async {
+    // Create a new message
+    final ms = GetIt.I.get<MessageService>();
+    final cs = GetIt.I.get<ConversationService>();
+    final us = GetIt.I.get<UploadService>();
+    final conn = GetIt.I.get<XmppConnection>();
+    final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
+
+    // TODO(Unknown): This has a huge issue. The messages should get sent to the UI
+    //                as soon as possible to indicate to the user that we are working on
+    //                them. But if the files are big, then copying them might take a little
+    //                while. The solution might be to use the real path before copying as
+    //                the messages initial mediaUrl attribute and once the file has been
+    //                copied replace it with the new path. Meanwhile, the file can also be
+    //                uploaded from its original location.
+    
+    // Path -> Message
+    final messages = <String, Message>{};
+
+    // Create the messages and shared media entries
+    for (final path in paths) {
+      // Copy the file to the gallery if it is a image or video
+      final pathMime = lookupMimeType(path) ?? '';
+      var filePath = path;
+      if (pathMime.startsWith('image/') || pathMime.startsWith('video/')) {
+        filePath = await DownloadService.getDownloadPath(pathlib.basename(path), recipient, pathMime);
+
+        await File(path).copy(filePath);
+
+        // Let the media scanner index the file
+        MoxplatformPlugin.media.scanFile(filePath);
+      }
+      
+      final msg = await ms.addMessageFromData(
+        '',
+        DateTime.now().millisecondsSinceEpoch, 
+        conn.getConnectionSettings().jid.toString(),
+        recipient,
+        true,
+        true,
+        conn.generateId(),
+        // TODO(Unknown): Maybe don't have the UI depend on srcUrl if we sent it.
+        srcUrl: 'https://server.example',
+        mediaUrl: filePath,
+        mediaType: lookupMimeType(path),
+        originId: conn.generateId(),
+      );
+      messages[path] = msg;
+      sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
+    }
+
+    // Create the shared media entries
+    final sharedMedia = List<DBSharedMedium>.empty(growable: true);
+    for (final path in paths) {
+      sharedMedia.add(
+        await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
+          path,
+          DateTime.now().millisecondsSinceEpoch,
+          mime: lookupMimeType(path),
+        ),
+      );
+    }
+
+    // Update conversation
+    final lastFileMime = lookupMimeType(paths.last);
+    final conversationId = (await cs.getConversationByJid(recipient))!.id;
+    final updatedConversation = await cs.updateConversation(
+      conversationId,
+      lastMessageBody: mimeTypeToConversationBody(lastFileMime),
+      lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+      sharedMedia: sharedMedia,
+    );
+    sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
+
+    // Requesting Upload slots and uploading
+    for (final path in paths) {
+      _log.finest('Requesting upload slot for $path');
+      final stat = File(path).statSync();
+      final result = await httpManager.requestUploadSlot(pathlib.basename(path), stat.size);
+      if (result.isError()) {
+        _log.severe('Failed to request slot for $path!');
+        // TODO(PapaTutuWawa): Do not let it end here
+        return;
+      }
+
+      final slot = result.getValue();
+      final fileMime = lookupMimeType(path);
+
+      final uploadResult = await us.uploadFile(
+        path,
+        slot.putUrl,
+        slot.headers,
+        messages[path]!.id,
+      );
+
+      if (!uploadResult) {
+        _log.severe('Upload failed for $path!');
+        // TODO(PapaTutuWawa): Do not abort here
+        return;
+      }
+
+      // Notify UI of upload completion
+      sendEvent(
+        MessageUpdatedEvent(
+          message: messages[path]!.copyWith(isUploading: false),
+        ),
+      );
+
+      // Send the url to the recipient
+      final message = messages[path]!;
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+        MessageDetails(
+          to: recipient,
+          body: slot.getUrl,
+          requestDeliveryReceipt: true,
+          id: message.sid,
+          originId: message.originId,
+          sfs: StatelessFileSharingData(
+            url: slot.getUrl,
+            metadata: FileMetadataData(
+              mediaType: fileMime,
+              size: stat.size,
+              name: pathlib.basename(path),
+              thumbnails: [],
+            ),
+          ),
+        ),
+      );
+      _log.finest('Sent message with file upload for $path');
+    }
+
+    _log.finest('File upload done');
+  }
+  
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
     switch (event.state) {
       case XmppConnectionState.connected:
@@ -409,7 +550,6 @@ class XmppService {
         open: true,
         lastChangeTimestamp: timestamp,
       );
-
       sendEvent(ConversationUpdatedEvent(conversation: newConversation));
     } else {
       // TODO(Unknown): Make it configurable if this should happen

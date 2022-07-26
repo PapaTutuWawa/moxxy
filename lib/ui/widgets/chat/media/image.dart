@@ -1,52 +1,48 @@
-import 'dart:typed_data';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/service/thumbnail.dart';
-import 'package:moxxyv2/ui/widgets/chat/blurhash.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
-import 'package:moxxyv2/ui/widgets/chat/download.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
-import 'package:moxxyv2/ui/widgets/chat/filenotfound.dart';
 import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/progress.dart';
+import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 import 'package:open_file/open_file.dart';
 
+/// A base container allowing to embed a child in a borderless ChatBubble. If onTap is
+/// set, then it will be called as soon as the bubble is tapped. If extra is set, then
+/// it will be put on top of the bubble in the center.
 class ImageBaseChatWidget extends StatelessWidget {
 
   const ImageBaseChatWidget(
-    this.path,
-    this.radius,
-    this.child,
+    this.background,
     this.bottom,
+    this.radius,
     {
+      this.onTap,
       this.extra,
       Key? key,
     }
   ) : super(key: key);
-  final String? path;
-  final BorderRadius radius;
-  final Widget child;
+  final Widget background;
   final Widget? extra;
   final MessageBubbleBottom bottom;
+  final BorderRadius radius;
+  final void Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
     return IntrinsicWidth(
       child: InkResponse(
-        onTap: () {
-          if (path != null) {
-            OpenFile.open(path);
-          }
-        },
+        onTap: onTap,
         child: Stack(
           alignment: Alignment.center,
           children: [
             ClipRRect(
               borderRadius: radius,
-              child: child,
+              child: background,
             ),
             BottomGradient(radius),
             ...extra != null ? [ extra! ] : [],
@@ -73,102 +69,103 @@ class ImageChatWidget extends StatelessWidget {
     this.radius,
     this.maxWidth,
     {
-      this.extra,
       Key? key,
     }
   ) : super(key: key);
   final Message message;
   final BorderRadius radius;
   final double maxWidth;
-  final Widget? extra;
 
-  Widget _buildNonDownloaded() {
-    if (message.thumbnailData != null) {
-      final thumbnailSize = getThumbnailSize(message, maxWidth);
-      return BlurhashChatWidget(
-        width: thumbnailSize.width.toInt(),
-        height: thumbnailSize.height.toInt(),
-        borderRadius: radius,
-        thumbnailData: message.thumbnailData!,
-        child: DownloadButton(
-          onPressed: () => requestMediaDownload(message),
-        ),
-      );
-    }
-
-    return FileChatWidget(
-      message,
-      extra: ElevatedButton(
-        onPressed: () => requestMediaDownload(message),
-        child: const Text('Download'),
+  Widget _buildUploading() {
+    return ImageBaseChatWidget(
+      ImageThumbnailWidget(
+        message.mediaUrl!,
+        Image.memory,
       ),
+      MessageBubbleBottom(message),
+      radius,
+      extra: ProgressWidget(id: message.id),
     );
   }
 
   Widget _buildDownloading() {
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
-      return BlurhashChatWidget(
-        width: thumbnailSize.width.toInt(),
-        height: thumbnailSize.height.toInt(),
-        borderRadius: radius,
-        thumbnailData: message.thumbnailData!,
-        child: DownloadProgress(id: message.id),
-      );
-    }
 
-    return FileChatWidget(message);
+      return ImageBaseChatWidget(
+        SizedBox(
+          width: thumbnailSize.width,
+          height: thumbnailSize.height,
+          child: BlurHash(
+            hash: message.thumbnailData!,
+            decodingWidth: thumbnailSize.width.toInt(),
+            decodingHeight: thumbnailSize.height.toInt(),
+          ),
+        ),
+        MessageBubbleBottom(message),
+        radius,
+        extra: ProgressWidget(id: message.id),
+      );
+    } else {
+      // TODO(PapaTutuWawa): Do we need to set the ProgressWidget here?
+      return FileChatWidget(message);
+    }
   }
 
+  /// The image exists locally
   Widget _buildImage() {
-    final thumbnailSize = getThumbnailSize(message, maxWidth);
-
-    return FutureBuilder<Uint8List>(
-      future: GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(message.mediaUrl!),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.data != null) {
-            return Image.memory(
-              snapshot.data!,
-            );
-          } else if (message.thumbnailData != null) {
-            return BlurhashChatWidget(
-              width: thumbnailSize.width.toInt(),
-              height: thumbnailSize.height.toInt(),
-              borderRadius: radius,
-              thumbnailData: message.thumbnailData!,
-              child: const FileNotFound(),
-            );
-          } else {
-            return FileChatWidget(
-              message,
-              extra: const FileNotFound(),
-            );
-          }
-        } else {
-          return const Padding(
-            padding: EdgeInsets.all(32),
-            child: CircularProgressIndicator(),
-          );
-        }
+    return ImageBaseChatWidget(
+      ImageThumbnailWidget(
+        message.mediaUrl!,
+        Image.memory,
+      ),
+      MessageBubbleBottom(message),
+      radius,
+      onTap: () {
+        OpenFile.open(message.mediaUrl);
       },
     );
   }
-  
-  Widget _innerBuild() {
-    if (!message.isDownloading && message.mediaUrl != null) return _buildImage();
-    if (message.isDownloading) return _buildDownloading();
 
-    return _buildNonDownloaded();
+  Widget _buildDownloadable() {
+    if (message.thumbnailData != null) {
+      final thumbnailSize = getThumbnailSize(message, maxWidth);
+
+      return ImageBaseChatWidget(
+         SizedBox(
+          width: thumbnailSize.width,
+          height: thumbnailSize.height,
+          child: BlurHash(
+            hash: message.thumbnailData!,
+            decodingWidth: thumbnailSize.width.toInt(),
+            decodingHeight: thumbnailSize.height.toInt(),
+          ),
+        ),
+        MessageBubbleBottom(message),
+        radius,
+        extra: DownloadButton(
+          onPressed: () => requestMediaDownload(message),
+        ),
+      );
+    } else {
+      return FileChatWidget(
+        message,
+        extra: ElevatedButton(
+          onPressed: () => requestMediaDownload(message),
+          child: const Text('Download'),
+        ),
+      );
+    }
   }
   
   @override
   Widget build(BuildContext context) {
-    return ImageBaseChatWidget(
-      message.mediaUrl,
-      radius,
-      _innerBuild(),
-      MessageBubbleBottom(message),
-    );
+    if (message.isUploading) return _buildUploading();
+    if (message.isDownloading) return _buildDownloading();
+
+    // TODO(PapaTutuWawa): Maybe use an async builder
+    if (File(message.mediaUrl!).existsSync()) return _buildImage();
+
+    return _buildDownloadable();
   }
 }

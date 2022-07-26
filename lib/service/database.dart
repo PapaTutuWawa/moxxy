@@ -146,7 +146,7 @@ class DatabaseService {
       bool? open,
       int? unreadCounter,
       String? avatarUrl,
-      DBSharedMedium? sharedMedium,
+      List<DBSharedMedium>? sharedMedia,
       ChatState? chatState,
     }
   ) async {
@@ -167,8 +167,8 @@ class DatabaseService {
     if (avatarUrl != null) {
       c.avatarUrl = avatarUrl;
     }
-    if (sharedMedium != null) {
-      c.sharedMedia.add(sharedMedium);
+    if (sharedMedia != null) {
+      c.sharedMedia.addAll(sharedMedia);
     }
 
     await _isar.writeTxn((_isar) async {
@@ -254,6 +254,7 @@ class DatabaseService {
       ..sent = sent
       ..isMedia = isMedia
       ..mediaType = mediaType
+      ..mediaUrl = mediaUrl
       ..srcUrl = srcUrl
       ..sid = sid
       ..thumbnailData = thumbnailData

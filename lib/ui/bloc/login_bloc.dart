@@ -31,11 +31,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _onPasswordVisibilityToggled(LoginPasswordVisibilityToggledEvent event, Emitter<LoginState> emit) async {
-    emit(state.copyWith(passwordVisible: !(state.passwordVisible as bool)));
+    emit(state.copyWith(passwordVisible: !state.passwordVisible));
   }
   
   Future<void> _onSubmitted(LoginSubmittedEvent event, Emitter<LoginState> emit) async {
-    final jidValidity = validateJidString(state.jid as String);
+    final jidValidity = validateJidString(state.jid);
     if (jidValidity != null) {
       return emit(
         state.copyWith(
@@ -45,7 +45,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       );
     }
 
-    if ((state.password as String).isEmpty) {
+    if (state.password.isEmpty) {
       return emit(
         state.copyWith(
           jidState: const LoginFormState(true),
@@ -65,8 +65,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       LoginCommand(
-        jid: state.jid as String,
-        password: state.password as String,
+        jid: state.jid,
+        password: state.password,
         useDirectTLS: true,
       ),
     );
@@ -77,7 +77,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
           result.displayName,
-          state.jid as String,
+          state.jid,
           // TODO(Unknown): ???
           <Conversation>[],
         ),

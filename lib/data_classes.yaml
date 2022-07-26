@@ -102,8 +102,8 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
-      # Triggered by [DownloadService].
-      - name: DownloadProgressEvent
+      # Triggered by DownloadService or UploadService.
+      - name: ProgressEvent
         extends: BackgroundEvent
         implements:
           - JsonImplementation
@@ -220,6 +220,13 @@ files:
           quotedMessage:
             type: Message?
             deserialise: true
+      - name: SendFilesCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          paths: List<String>
       - name: BlockJidCommand
         extends: BackgroundCommand
         implements:

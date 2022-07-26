@@ -21,7 +21,7 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
       ),
     );
 
-    final blocklist = (state.blocklist as List<String>)
+    final blocklist = state.blocklist
       .where((String i) => i != event.jid)
       .toList();
     emit(state.copyWith(blocklist: blocklist));
@@ -38,8 +38,7 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onBlocklistPushed(BlocklistPushedEvent event, Emitter<BlocklistState> emit) async {
-    final blocklist = (state.blocklist as List<String>)
-      ..addAll(event.added);
+    final blocklist = state.blocklist..addAll(event.added);
     emit(
       state.copyWith(
         blocklist: blocklist.where((String i) => !event.removed.contains(i)).toList(),

@@ -61,7 +61,7 @@ class ConversationService {
       bool? open,
       int? unreadCounter,
       String? avatarUrl,
-      DBSharedMedium? sharedMedium,
+      List<DBSharedMedium>? sharedMedia,
       ChatState? chatState,
     }
   ) async {
@@ -73,7 +73,7 @@ class ConversationService {
       open: open,
       unreadCounter: unreadCounter,
       avatarUrl: avatarUrl,
-      sharedMedium: sharedMedium,
+      sharedMedia: sharedMedia,
       chatState: conversation?.chatState ?? ChatState.gone,
     );
 

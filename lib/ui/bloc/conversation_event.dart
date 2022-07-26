@@ -101,3 +101,9 @@ class AppStateChanged extends ConversationEvent {
   AppStateChanged(this.open);
   final bool open;
 }
+
+/// Triggered when the user wants to pick images and videos for sending
+class ImagePickerRequestedEvent extends ConversationEvent {}
+
+/// Triggered when the user wants to pick generic files for sending
+class FilePickerRequestedEvent extends ConversationEvent {}

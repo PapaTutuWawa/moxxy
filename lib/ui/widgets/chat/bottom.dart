@@ -53,21 +53,20 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
   }
 
   bool _showBlueCheckmarks() {
-    return widget.message.sent &&
-            widget.message.displayed as bool;
+    return widget.message.sent && widget.message.displayed;
   }
 
   bool _showCheckmarks() {
     return widget.message.sent &&
-            widget.message.received as bool &&
-            !(widget.message.displayed as bool);
+            widget.message.received &&
+            !widget.message.displayed;
   }
 
   bool _showCheckmark() {
     return widget.message.sent &&
-            widget.message.acked as bool &&
-            !(widget.message.received as bool) &&
-            !(widget.message.displayed as bool);
+            widget.message.acked &&
+            !widget.message.received &&
+            !widget.message.displayed;
   }
   
   @override

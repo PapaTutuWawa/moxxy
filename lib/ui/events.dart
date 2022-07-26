@@ -15,7 +15,7 @@ import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart' as sharedmedia;
 import 'package:moxxyv2/ui/prestart.dart';
-import 'package:moxxyv2/ui/service/download.dart';
+import 'package:moxxyv2/ui/service/progress.dart';
 
 void setupEventHandler() {
   final handler = EventHandler()
@@ -26,7 +26,7 @@ void setupEventHandler() {
       EventTypeMatcher<ConversationAddedEvent>(onConversationAdded),
       EventTypeMatcher<BlocklistPushEvent>(onBlocklistPushed),
       EventTypeMatcher<RosterDiffEvent>(onRosterPush),
-      EventTypeMatcher<DownloadProgressEvent>(onDownloadProgress),
+      EventTypeMatcher<ProgressEvent>(onProgress),
       EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged),
       EventTypeMatcher<PreStartDoneEvent>(preStartDone),
       EventTypeMatcher<ServiceReadyEvent>(onServiceReady)
@@ -118,8 +118,8 @@ Future<void> onRosterPush(RosterDiffEvent event, { dynamic extra }) async {
   );
 }
 
-Future<void> onDownloadProgress(DownloadProgressEvent event, { dynamic extra }) async {
-  GetIt.I.get<UIDownloadService>().onProgress(event.id, event.progress);
+Future<void> onProgress(ProgressEvent event, { dynamic extra }) async {
+  GetIt.I.get<UIProgressService>().onProgress(event.id, event.progress);
 }
 
 Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }) async {

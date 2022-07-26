@@ -11,12 +11,17 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 Future<void> _generateVideoThumbnail(List<dynamic> values) async {
   final port = values[0] as SendPort;
   final path = values[1] as String;
-  final data = await VideoThumbnail.thumbnailData(
-    video: path,
-    quality: 75,
-  );
 
-  port.send(data);
+  try {
+    final data = await VideoThumbnail.thumbnailData(
+      video: path,
+      quality: 75,
+    );
+
+    port.send(data);
+  } catch (_) {
+    port.send(Uint8List(0));
+  }
 }
 
 Future<void> _generateImageThumbnail(List<dynamic> values) async {

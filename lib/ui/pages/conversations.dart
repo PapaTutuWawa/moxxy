@@ -4,7 +4,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -97,23 +97,23 @@ class ConversationsPage extends StatelessWidget {
       builder: (BuildContext context, ConversationsState state) => Scaffold(
         appBar: BorderlessTopbar.avatarAndName(
           TopbarAvatarAndName(
-            TopbarTitleText(state.displayName as String),
+            TopbarTitleText(state.displayName),
             Hero(
               tag: 'self_profile_picture',
               child: Material(
                 child: AvatarWrapper(
                   radius: 20,
-                  avatarUrl: state.avatarUrl as String,
+                  avatarUrl: state.avatarUrl,
                   altIcon: Icons.person,
                 ),
               ),
             ),
-            () => GetIt.I.get<ProfileBloc>().add(
-              ProfilePageRequestedEvent(
+            () => GetIt.I.get<profile.ProfileBloc>().add(
+              profile.ProfilePageRequestedEvent(
                 true,
-                jid: state.jid as String,
-                avatarUrl: state.avatarUrl as String,
-                displayName: state.displayName as String,
+                jid: state.jid,
+                avatarUrl: state.avatarUrl,
+                displayName: state.displayName,
               ),
             ),
             showBackButton: false,

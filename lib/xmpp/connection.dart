@@ -616,6 +616,8 @@ class XmppConnection {
     if (info != null) {
       _log.finest('Discovered supported server features: ${info.features}');
       _serverFeatures.addAll(info.features);
+
+      await _sendEvent(ServerItemDiscoEvent(info: info, jid: serverJid));
       await _sendEvent(ServerDiscoDoneEvent());
     } else {
       _log.warning('Failed to discover server features');
