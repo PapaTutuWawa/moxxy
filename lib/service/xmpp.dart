@@ -330,11 +330,31 @@ class XmppService {
     final conn = GetIt.I.get<XmppConnection>();
     final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
 
+    // TODO(Unknown): This has a huge issue. The messages should get sent to the UI
+    //                as soon as possible to indicate to the user that we are working on
+    //                them. But if the files are big, then copying them might take a little
+    //                while. The solution might be to use the real path before copying as
+    //                the messages initial mediaUrl attribute and once the file has been
+    //                copied replace it with the new path. Meanwhile, the file can also be
+    //                uploaded from its original location.
+    
     // Path -> Message
     final messages = <String, Message>{};
 
     // Create the messages and shared media entries
     for (final path in paths) {
+      // Copy the file to the gallery if it is a image or video
+      final pathMime = lookupMimeType(path) ?? '';
+      var filePath = path;
+      if (pathMime.startsWith('image/') || pathMime.startsWith('video/')) {
+        filePath = await DownloadService.getDownloadPath(pathlib.basename(path), recipient, pathMime);
+
+        await File(path).copy(filePath);
+
+        // Let the media scanner index the file
+        MoxplatformPlugin.media.scanFile(filePath);
+      }
+      
       final msg = await ms.addMessageFromData(
         '',
         DateTime.now().millisecondsSinceEpoch, 
@@ -345,7 +365,7 @@ class XmppService {
         conn.generateId(),
         // TODO(Unknown): Maybe don't have the UI depend on srcUrl if we sent it.
         srcUrl: 'https://server.example',
-        mediaUrl: path,
+        mediaUrl: filePath,
         mediaType: lookupMimeType(path),
         originId: conn.generateId(),
       );
