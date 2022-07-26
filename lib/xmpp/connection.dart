@@ -797,6 +797,14 @@ class XmppConnection {
         });
         break;
       case RoutingState.handleStanzas:
+        // Check if we received a stream error
+        if (node.tag == 'stream:error') {
+          _log.severe('Received a stream error! Attempting reconnection');
+          handleError('Stream error');
+          
+          return;
+        }
+        
         await _handleStanza(node);
         break;
       case RoutingState.preConnection:
