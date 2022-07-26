@@ -447,6 +447,7 @@ class ConversationPageState extends State<ConversationPage> {
                       width: query.size.width,
                       height: query.size.height - query.padding.top,
                     ),
+                    showSpinner: false,
                   );
                 }
 
