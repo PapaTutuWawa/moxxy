@@ -67,7 +67,8 @@ class _ConversationTopbarWidget extends StatelessWidget {
     return prev.conversation?.title != next.conversation?.title
       || prev.conversation?.avatarUrl != next.conversation?.avatarUrl
       || prev.conversation?.chatState != next.conversation?.chatState
-      || prev.conversation?.jid != next.conversation?.jid;
+      || prev.conversation?.jid != next.conversation?.jid
+      || prev.conversation?.sharedMedia != next.conversation?.sharedMedia;
   }
 
   Widget _buildChatState(ChatState state) {
