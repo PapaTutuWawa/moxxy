@@ -101,6 +101,7 @@ class XmppConnection {
     _reconnectionPolicy = reconnectionPolicy,
     _featureNegotiators = {},
     _streamFeatures = List.empty(growable: true),
+    _negotiationLock = Lock(),
     _log = Logger('XmppConnection') {
       // Allow the reconnection policy to perform reconnections by itself
       _reconnectionPolicy.register(
@@ -157,6 +158,9 @@ class XmppConnection {
   final Map<String, XmppFeatureNegotiatorBase> _featureNegotiators;
   XmppFeatureNegotiatorBase? _currentNegotiator;
   final List<XMLNode> _streamFeatures;
+  /// Prevent data from being passed to _currentNegotiator.negotiator while the negotiator
+  /// is still running.
+  final Lock _negotiationLock;
   
   /// Misc
   final Logger _log;
@@ -733,52 +737,64 @@ class XmppConnection {
   Future<void> handleXmlStream(XMLNode node) async {
     switch (_routingState) {
       case RoutingState.negotiating:
-        if (_currentNegotiator != null) {
-          // If we already have a negotiator, just let it do its thing
-          _log.finest('Negotiator currently active...');
+        // Why lock here? The problem is that if we do stream resumption, then we might
+        // receive "<resumed .../><iq .../>...", which will all be fed into the negotiator,
+        // causing (a) the negotiator to become confused and (b) the stanzas/nonzas to be
+        // missed. This causes the data to wait while the negotiator is running and thus
+        // prevent this issue.
+        await _negotiationLock.synchronized(() async {
+          if (_routingState != RoutingState.negotiating) {
+            unawaited(handleXmlStream(node));
+            return;
+          }
 
-          await _currentNegotiator!.negotiate(node);
-          await _checkCurrentNegotiator();
-        } else {
-          _streamFeatures
+          if (_currentNegotiator != null) {
+            // If we already have a negotiator, just let it do its thing
+            _log.finest('Negotiator currently active...');
+
+            await _currentNegotiator!.negotiate(node);
+            await _checkCurrentNegotiator();
+          } else {
+            _streamFeatures
             ..clear()
             ..addAll(node.children);
 
-          // We need to pick a new one
-          if (_isMandatoryNegotiationDone(node.children)) {
-            // Mandatory features are done but can we still negotiate more?
-            if (_isNegotiationPossible(node.children)) {// We can still negotiate features, so do that.
-              _log.finest('All required stream features done! Continuing negotiation');
+            // We need to pick a new one
+            if (_isMandatoryNegotiationDone(node.children)) {
+              // Mandatory features are done but can we still negotiate more?
+              if (_isNegotiationPossible(node.children)) {// We can still negotiate features, so do that.
+                _log.finest('All required stream features done! Continuing negotiation');
+                _currentNegotiator = getNextNegotiator(node.children);
+                _log.finest('Chose $_currentNegotiator as next negotiator');
+                await _currentNegotiator!.negotiate(node);
+                await _checkCurrentNegotiator();
+              } else {
+                _updateRoutingState(RoutingState.handleStanzas);
+              }
+            } else {
+              // There still are mandatory features
+              if (!_isNegotiationPossible(node.children)) {
+                _log.severe('Mandatory negotiations not done but continuation not possible');
+                _updateRoutingState(RoutingState.error);
+
+                // Resolve the connection completion future
+                _connectionCompleter?.complete(
+                  const XmppConnectionResult(
+                    false,
+                    reason: 'Could not complete connection negotiations',
+                  ),
+                );
+                _connectionCompleter = null;
+                return;
+              }
+
               _currentNegotiator = getNextNegotiator(node.children);
               _log.finest('Chose $_currentNegotiator as next negotiator');
               await _currentNegotiator!.negotiate(node);
               await _checkCurrentNegotiator();
-            } else {
-              _updateRoutingState(RoutingState.handleStanzas);
             }
-          } else {
-            // There still are mandatory features
-            if (!_isNegotiationPossible(node.children)) {
-              _log.severe('Mandatory negotiations not done but continuation not possible');
-              _updateRoutingState(RoutingState.error);
-
-              // Resolve the connection completion future
-              _connectionCompleter?.complete(
-                const XmppConnectionResult(
-                  false,
-                  reason: 'Could not complete connection negotiations',
-                ),
-              );
-              _connectionCompleter = null;
-              return;
-            }
-
-            _currentNegotiator = getNextNegotiator(node.children);
-            _log.finest('Chose $_currentNegotiator as next negotiator');
-            await _currentNegotiator!.negotiate(node);
-            await _checkCurrentNegotiator();
           }
-        }
+        });
         break;
       case RoutingState.handleStanzas:
         await _handleStanza(node);

@@ -31,6 +31,7 @@ import 'package:moxxyv2/shared/logging.dart';
 import 'package:moxxyv2/ui/events.dart' as ui_events;
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/message.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/negotiators/resource_binding.dart';
 import 'package:moxxyv2/xmpp/negotiators/sasl/scram.dart';
 import 'package:moxxyv2/xmpp/negotiators/starttls.dart';
@@ -225,6 +226,7 @@ Future<void> entrypoint() async {
   if (settings != null) {
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
+    await connection.getManagerById<MoxxyStreamManagementManager>(smManager)!.loadState();
     await xmpp.connect(settings, false);
   } else {
     GetIt.I.get<BackgroundService>().setNotification(

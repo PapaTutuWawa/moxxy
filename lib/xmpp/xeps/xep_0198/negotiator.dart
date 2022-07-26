@@ -19,6 +19,9 @@ enum _StreamManagementNegotiatorState {
   enableRequested,
 }
 
+/// NOTE: The stream management negotiator requires that loadState has been called on the
+///       StreamManagementManager at least once before connecting, if stream resumption
+///       is wanted.
 class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
   
   StreamManagementNegotiator()
@@ -64,8 +67,6 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
     switch (_state) {
       case _StreamManagementNegotiatorState.ready:
         final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
-
-        await sm.loadState();
         final srid = sm.state.streamResumptionId;
         final h = sm.state.s2c;
 
@@ -99,7 +100,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
             state = NegotiatorState.skipRest;
           } else {
             // We assume it is <failed />
-            _log.info('Stream resumption failed. Proceeding with new stream...');
+            _log.info('Stream resumption failed. Expected <resumed />, got ${nonza.tag}, Proceeding with new stream...');
             final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
 
             // We have to do this because we otherwise get a stanza stuck in the queue,
