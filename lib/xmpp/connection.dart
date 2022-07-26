@@ -101,6 +101,7 @@ class XmppConnection {
     _featureNegotiators = {},
     _streamFeatures = List.empty(growable: true),
     _negotiationLock = Lock(),
+    _isAuthenticated = false,
     _log = Logger('XmppConnection') {
       // Allow the reconnection policy to perform reconnections by itself
       _reconnectionPolicy.register(
@@ -145,6 +146,8 @@ class XmppConnection {
   /// For indicating whether we expect the socket to close to prevent accidentally
   /// triggering a reconnection attempt when we don't want to.
   bool _disconnecting;
+  /// True if we are authenticated. False if not.
+  bool _isAuthenticated;
   /// Timers for the keep-alive ping.
   Timer? _connectionPingTimer;
   /// Completers for certain actions
@@ -166,6 +169,8 @@ class XmppConnection {
   
   List<String> get serverFeatures => _serverFeatures;
 
+  bool get isAuthenticated => _isAuthenticated;
+  
   /// Return the registered feature negotiator that has id [id]. Returns null if
   /// none can be found.
   T? getNegotiatorById<T extends XmppFeatureNegotiatorBase>(String id) => _featureNegotiators[id] as T?;
@@ -241,6 +246,7 @@ class XmppConnection {
           getManagerById,
           () => _connectionSettings.jid.withResource(_resource),
           () => _socket,
+          () => _isAuthenticated,
         ),
       );
       _featureNegotiators[negotiator.id] = negotiator;
@@ -254,6 +260,9 @@ class XmppConnection {
     for (final negotiator in _featureNegotiators.values) {
       negotiator.reset();
     }
+
+    // Prevent leaking the last active negotiator
+    _currentNegotiator = null;
   }
   
   /// Generate an Id suitable for an origin-id or stanza id
@@ -824,6 +833,9 @@ class XmppConnection {
 
       _log.finest('Resetting _serverFeatures');
       _serverFeatures.clear();
+    } else if (event is AuthenticationSuccessEvent) {
+      _log.finest('Received AuthenticationSuccessEvent. Setting _isAuthenticated to true');
+      _isAuthenticated = true;
     }
     
     for (final manager in _xmppManagers.values) {
@@ -923,6 +935,7 @@ class XmppConnection {
       _resetNegotiators();
       _setConnectionState(XmppConnectionState.connecting);
       _updateRoutingState(RoutingState.negotiating);
+      _isAuthenticated = false;
       _sendStreamHeader();
     }
   }

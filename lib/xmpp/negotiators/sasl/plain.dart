@@ -52,6 +52,7 @@ class SaslPlainNegotiator extends SaslNegotiator {
     } else {
       final tag = nonza.tag;
       if (tag == 'success') {
+        await attributes.sendEvent(AuthenticationSuccessEvent());
         state = NegotiatorState.done;
       } else {
         // We assume it's a <failure/>

@@ -50,11 +50,11 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
 
     if (sm.state.streamResumptionId != null && !_resumeFailed) {
       // We could do Stream resumption
-      return super.matchesFeature(features);
+      return super.matchesFeature(features) && attributes.isAuthenticated();
     } else {
       // We cannot do a stream resumption
       final br = attributes.getNegotiatorById(resourceBindingNegotiator);
-      return super.matchesFeature(features) && br?.state == NegotiatorState.done;
+      return super.matchesFeature(features) && br?.state == NegotiatorState.done && attributes.isAuthenticated();
     }
   }
       

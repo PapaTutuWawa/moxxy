@@ -235,6 +235,7 @@ class SaslScramNegotiator extends SaslNegotiator {
             return;
           }
 
+          await attributes.sendEvent(AuthenticationSuccessEvent());
           state = NegotiatorState.done;
           return;
         }

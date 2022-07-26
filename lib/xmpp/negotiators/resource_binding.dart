@@ -15,10 +15,10 @@ class ResourceBindingNegotiator extends XmppFeatureNegotiatorBase {
   bool matchesFeature(List<XMLNode> features) {
     final sm = attributes.getManagerById<StreamManagementManager>(smManager);
     if (sm != null) {
-      return super.matchesFeature(features) && !sm.streamResumed;
+      return super.matchesFeature(features) && !sm.streamResumed && attributes.isAuthenticated();
     }
 
-    return super.matchesFeature(features);
+    return super.matchesFeature(features) && attributes.isAuthenticated();
   }
   
   @override

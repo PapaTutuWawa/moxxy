@@ -31,6 +31,7 @@ class NegotiatorAttributes {
     this.getManagerById,
     this.getFullJID,
     this.getSocket,
+    this.isAuthenticated,
   );
   /// Sends the nonza nonza and optionally redacts it in logs if redact is not null.
   final void Function(XMLNode nonza, {String? redact}) sendNonza;
@@ -46,6 +47,8 @@ class NegotiatorAttributes {
   final JID Function() getFullJID;
   /// Returns the socket the negotiator is attached to
   final BaseSocketWrapper Function() getSocket;
+  /// Returns true if the stream is authenticated. Returns false if not.
+  final bool Function() isAuthenticated;
 }
 
 abstract class XmppFeatureNegotiatorBase {

@@ -35,6 +35,9 @@ class AuthenticationFailedEvent extends XmppEvent {
   final String saslError;
 }
 
+/// Triggered after the SASL authentication has succeeded.
+class AuthenticationSuccessEvent extends XmppEvent {}
+
 /// Triggered when we want to ping the connection open
 class SendPingEvent extends XmppEvent {}
 
