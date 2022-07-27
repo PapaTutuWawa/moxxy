@@ -457,6 +457,9 @@ class XmppConnection {
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
   void _setConnectionState(XmppConnectionState state) {
+    // Ignore changes that are not really changes.
+    if (state == _connectionState) return;
+    
     _log.finest('Updating _connectionState from $_connectionState to $state');
     _connectionState = state;
 
