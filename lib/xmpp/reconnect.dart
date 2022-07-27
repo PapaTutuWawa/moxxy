@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 
@@ -82,7 +81,9 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
       _timer!.cancel();
     }
 
-    _timer = Timer(Duration(seconds: pow(2, _counter).toInt()), _onTimerElapsed);
+    // Wait at max 80 seconds.
+    final seconds = min(pow(2, _counter).toInt(), 80);
+    _timer = Timer(Duration(seconds: seconds), _onTimerElapsed);
   }
 
   @override
