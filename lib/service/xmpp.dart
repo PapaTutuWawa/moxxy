@@ -120,7 +120,6 @@ class XmppService {
         EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
         EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
         EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
-        EventTypeMatcher<ServerDiscoDoneEvent>(_onServerDiscoDone)
       ]);
     }
   final Logger _log;
@@ -505,6 +504,8 @@ class XmppService {
         for (final item in roster) {
           await GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(item.jid, item.avatarHash);
         }
+
+        await GetIt.I.get<BlocklistService>().getBlocklist();
       }
       
       // Make sure we display our own avatar correctly.
@@ -841,10 +842,5 @@ class XmppService {
 
   Future<void> _onBlocklistUnblockAllPush(BlocklistUnblockAllPushEvent event, { dynamic extra }) async {
     GetIt.I.get<BlocklistService>().onUnblockAllPush();
-  }
-
-  Future<void> _onServerDiscoDone(ServerDiscoDoneEvent event, { dynamic extra }) async {
-    // Either we get the cached version or we retrieve it for the first time
-    await GetIt.I.get<BlocklistService>().getBlocklist();
   }
 }
