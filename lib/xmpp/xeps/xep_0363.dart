@@ -1,12 +1,13 @@
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/base.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/error.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
 
 const errorNoUploadServer = 1;
@@ -43,9 +44,11 @@ Map<String, String> prepareHeaders(Map<String, String> headers) {
 
 class HttpFileUploadManager extends XmppManagerBase {
 
-  HttpFileUploadManager() : super();
-  String? _entityJid;
+  HttpFileUploadManager() : _gotSupported = false, _supported = false, super();
+  JID? _entityJid;
   int? _maxUploadSize;
+  bool _gotSupported;
+  bool _supported;
 
   @override
   String getId() => httpFileUploadManager;
@@ -74,16 +77,30 @@ class HttpFileUploadManager extends XmppManagerBase {
   }
 
   @override
-  Future<void> onXmppEvent(XmppEvent event) async {
-    if (event is ServerItemDiscoEvent) {
-      if (_containsFileUploadIdentity(event.info) && event.info.features.contains(httpFileUploadXmlns)) {
-        logger.info('Discovered HTTP File Upload for ${event.jid}');
+  Future<bool> isSupported() async {
+    if (_gotSupported) return _supported;
+    
+    final infos = await getAttributes().getManagerById<DiscoCacheManager>(discoCacheManager)!.performDiscoSweep();
+    if (infos == null) {
+      _gotSupported = false;
+      _supported = false;
+      return false;
+    }
 
-        _entityJid = event.jid;
-        _maxUploadSize = _getMaxFileSize(event.info);
-        return;
+    
+    _gotSupported = true;
+    for (final info in infos) {
+      if (_containsFileUploadIdentity(info) && info.features.contains(httpFileUploadXmlns)) {
+         logger.info('Discovered HTTP File Upload for ${info.jid}');
+
+        _entityJid = info.jid;
+        _maxUploadSize = _getMaxFileSize(info);
+        _supported = true;
+        break;
       }
     }
+
+    return _supported;
   }
 
   /// Request a slot to upload a file to. [filename] is the file's name and [filesize] is
@@ -104,7 +121,7 @@ class HttpFileUploadManager extends XmppManagerBase {
     final attrs = getAttributes();
     final response = await attrs.sendStanza(
       Stanza.iq(
-        to: _entityJid,
+        to: _entityJid.toString(),
         type: 'get',
         children: [
           XMLNode.xmlns(

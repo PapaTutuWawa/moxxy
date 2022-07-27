@@ -53,6 +53,9 @@ class OOBManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
     final x = message.firstTag('x', xmlns: oobDataXmlns)!;
     final url = x.firstTag('url');

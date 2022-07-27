@@ -31,6 +31,9 @@ class DiscoCacheManager extends XmppManagerBase { // Map full JID to disco info 
   String getName() => 'DiscoCache';
 
   @override
+  Future<bool> isSupported() async => true;
+  
+  @override
   Future<void> onXmppEvent(XmppEvent event) async {
     if (event is PresenceReceivedEvent) {
       await _onPresence(event.jid, event.presence);
@@ -137,5 +140,45 @@ class DiscoCacheManager extends XmppManagerBase { // Map full JID to disco info 
       logger.warning('Disco query for $jid returned nothing.');
       return null;
     }
+  }
+
+  Future<List<DiscoInfo>?> performDiscoSweep() async {
+    final attrs = getAttributes();
+    final disco = attrs.getManagerById<DiscoManager>(discoManager)!;
+    final serverJid = attrs.getConnectionSettings().jid.domain;
+    final infoResults = List<DiscoInfo>.empty(growable: true);
+    final info = await getInfoByJid(serverJid);
+    if (info != null) {
+      logger.finest('Discovered supported server features: ${info.features}');
+      infoResults.add(info);
+
+      attrs.sendEvent(ServerItemDiscoEvent(info));
+      attrs.sendEvent(ServerDiscoDoneEvent());
+    } else {
+      logger.warning('Failed to discover server features');
+      return null;
+    }
+
+    final items = await disco.discoItemsQuery(serverJid);
+    if (items != null) {
+      logger.finest('Discovered disco items form $serverJid');
+
+      // Query all items
+      for (final item in items) {
+        logger.finest('Querying info for ${item.jid}...');
+        final itemInfo = await getInfoByJid(item.jid);
+        if (itemInfo != null) {
+          logger.finest('Received info for ${item.jid}');
+          infoResults.add(itemInfo);
+          attrs.sendEvent(ServerItemDiscoEvent(itemInfo));
+        } else {
+          logger.warning('Failed to discover info for ${item.jid}');
+        }
+      }
+    } else {
+      logger.warning('Failed to discover items of $serverJid');
+    }
+
+    return infoResults;
   }
 }

@@ -43,6 +43,9 @@ class VCardManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   /// In case we get the avatar hash some other way.
   void setLastHash(String jid, String hash) {
     _lastHash[jid] = hash;

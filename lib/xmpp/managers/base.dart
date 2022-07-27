@@ -50,6 +50,9 @@ abstract class XmppManagerBase {
   /// Called when XmppConnection triggers an event
   Future<void> onXmppEvent(XmppEvent event) async {}
 
+  /// Returns true if the XEP is supported on the server. If not, returns false
+  Future<bool> isSupported();
+  
   /// Runs all NonzaHandlers of this Manager which match the nonza. Resolves to true if
   /// the nonza has been handled by one of the handlers. Resolves to false otherwise.
   Future<bool> runNonzaHandlers(XMLNode nonza) async {

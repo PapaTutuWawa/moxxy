@@ -6,8 +6,13 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 
 class BlockingManager extends XmppManagerBase {
+  BlockingManager() : _supported = false, super();
+
+  bool _supported;
+
   @override
   String getId() => blockingManager;
 
@@ -30,7 +35,22 @@ class BlockingManager extends XmppManagerBase {
     )
   ];
 
-  bool _supportsBlocking() => getAttributes().isFeatureSupported(blockingXmlns);
+  @override
+  Future<bool> isSupported() async {
+    // Query the server
+    final cache = getAttributes().getManagerById<DiscoCacheManager>(discoCacheManager)!;
+    final result = await cache.getInfoByJid(
+      getAttributes().getConnectionSettings().jid.toBare().toString(),
+    );
+
+    if (result == null) {
+      _supported = false;
+    } else {
+      _supported = result.features.contains(blockingXmlns);
+    }
+
+    return _supported;
+  }
   
   Future<StanzaHandlerData> _blockPush(Stanza iq, StanzaHandlerData state) async {
     final block = iq.firstTag('block', xmlns: blockingXmlns)!;
@@ -64,11 +84,6 @@ class BlockingManager extends XmppManagerBase {
   }
   
   Future<bool> block(List<String> items) async {
-    if (!_supportsBlocking()) {
-      logger.warning('Attempted to block a JID but the server does not advertise $blockingXmlns');
-      return false;
-    }
-
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'set',
@@ -93,11 +108,6 @@ class BlockingManager extends XmppManagerBase {
   }
 
   Future<bool> unblockAll() async {
-    if (!_supportsBlocking()) {
-      logger.warning('Attempted to unblock all JIDs but the server does not advertise $blockingXmlns');
-      return false;
-    }
-
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'set',
@@ -114,11 +124,6 @@ class BlockingManager extends XmppManagerBase {
   }
   
   Future<bool> unblock(List<String> items) async {
-    if (!_supportsBlocking()) {
-      logger.warning('Attempted to unblock a JID but the server does not advertise $blockingXmlns');
-      return false;
-    }
-
     assert(items.isNotEmpty, 'The list of items to unblock must be non-empty');
 
     final result = await getAttributes().sendStanza(
@@ -141,11 +146,6 @@ class BlockingManager extends XmppManagerBase {
   }
 
   Future<List<String>> getBlocklist() async {
-    if (!_supportsBlocking()) {
-      logger.warning('Attempted to request the blocklist but the server does not advertise $blockingXmlns');
-      return [];
-    }
-
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'get',

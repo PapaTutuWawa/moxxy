@@ -39,6 +39,9 @@ class DiscoManager extends XmppManagerBase {
   @override
   List<String> getDiscoFeatures() => [ discoInfoXmlns, discoItemsXmlns ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   /// Adds a list of features to the possible disco info response.
   /// This function only adds features that are not already present in the disco features.
   void addDiscoFeatures(List<String> features) {

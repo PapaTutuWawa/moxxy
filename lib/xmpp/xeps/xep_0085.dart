@@ -35,6 +35,9 @@ class ChatStateManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onChatStateReceived(Stanza message, StanzaHandlerData state) async {
     final element = state.stanza.firstTagByXmlns(chatStateXmlns)!;
     ChatState? chatState;

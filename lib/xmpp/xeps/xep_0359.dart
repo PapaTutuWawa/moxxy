@@ -47,6 +47,9 @@ class StableIdManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
     final from = JID.fromString(message.attributes['from']! as String);
     String? originId;

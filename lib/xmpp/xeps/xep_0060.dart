@@ -70,6 +70,9 @@ class PubSubManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+
   Future<StanzaHandlerData> _onPubsubMessage(Stanza message, StanzaHandlerData state) async {
     logger.finest('Received PubSub event');
     final event = message.firstTag('event', xmlns: pubsubEventXmlns)!;

@@ -1,3 +1,4 @@
+import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
@@ -26,10 +27,16 @@ class Identity {
 
 class DiscoInfo {
 
-  const DiscoInfo({ required this.features, required this.identities, required this.extendedInfo });
+  const DiscoInfo(
+    this.features,
+    this.identities,
+    this.extendedInfo,
+    this.jid,
+  );
   final List<String> features;
   final List<Identity> identities;
   final List<DataForm> extendedInfo;
+  final JID jid;
 }
 
 class DiscoItem {
@@ -68,9 +75,10 @@ DiscoInfo? parseDiscoInfoResponse(XMLNode stanza) {
   }
 
   return DiscoInfo(
-    features: features,
-    identities: identities,
-    extendedInfo: query.findTags('x', xmlns: dataFormsXmlns).map(parseDataForm).toList(),
+    features,
+    identities,
+    query.findTags('x', xmlns: dataFormsXmlns).map(parseDataForm).toList(),
+    JID.fromString(stanza.attributes['from']! as String),
   );
 }
 

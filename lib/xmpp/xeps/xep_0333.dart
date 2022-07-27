@@ -45,6 +45,9 @@ class ChatMarkerManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
     final marker = message.firstTagByXmlns(chatMarkersXmlns)!;
 

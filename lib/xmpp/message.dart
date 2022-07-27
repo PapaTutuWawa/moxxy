@@ -58,6 +58,9 @@ class MessageManager extends XmppManagerBase {
       priority: -100,
     )
   ];
+
+  @override
+  Future<bool> isSupported() async => true;
   
   Future<StanzaHandlerData> _onMessage(Stanza _, StanzaHandlerData state) async {
     // First check if it's a carbon

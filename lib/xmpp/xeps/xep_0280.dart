@@ -8,13 +8,15 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0297.dart';
 
 
 class CarbonsManager extends XmppManagerBase {
 
-  CarbonsManager() : _isEnabled = false, super();
+  CarbonsManager() : _isEnabled = false, _supported = true, super();
   bool _isEnabled;
+  bool _supported;
   
   @override
   String getId() => carbonsManager;
@@ -42,6 +44,23 @@ class CarbonsManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async {
+    // Query the server
+    final cache = getAttributes().getManagerById<DiscoCacheManager>(discoCacheManager)!;
+    final result = await cache.getInfoByJid(
+      getAttributes().getConnectionSettings().jid.toBare().toString(),
+    );
+
+    if (result == null) {
+      _supported = false;
+    } else {
+      _supported = result.features.contains(carbonsXmlns);
+    }
+
+    return _supported;
+  }
+  
   Future<StanzaHandlerData> _onMessageReceived(Stanza message, StanzaHandlerData state) async {
     final from = JID.fromString(message.attributes['from']! as String);
     final received = message.firstTag('received', xmlns: carbonsXmlns)!;

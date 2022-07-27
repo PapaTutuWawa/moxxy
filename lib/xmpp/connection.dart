@@ -621,41 +621,6 @@ class XmppConnection {
     return matchingNegotiators.first;
   }
 
-  Future<void> _performDiscoSweep() async {
-    final disco = getDiscoManager();
-    final discoCache = getDiscoCacheManager();
-    final serverJid = _connectionSettings.jid.domain;
-    final info = await discoCache.getInfoByJid(serverJid);
-    if (info != null) {
-      _log.finest('Discovered supported server features: ${info.features}');
-      _serverFeatures.addAll(info.features);
-
-      await _sendEvent(ServerItemDiscoEvent(info: info, jid: serverJid));
-      await _sendEvent(ServerDiscoDoneEvent());
-    } else {
-      _log.warning('Failed to discover server features');
-    }
-
-    final items = await disco.discoItemsQuery(serverJid);
-    if (items != null) {
-      _log.finest('Discovered disco items form $serverJid');
-
-      // Query all items
-      for (final item in items) {
-        _log.finest('Querying info for ${item.jid}...');
-        final itemInfo = await discoCache.getInfoByJid(item.jid);
-        if (itemInfo != null) {
-          _log.finest('Received info for ${item.jid}');
-          await _sendEvent(ServerItemDiscoEvent(info: itemInfo, jid: item.jid));
-        } else {
-          _log.warning('Failed to discover info for ${item.jid}');
-        }
-      }
-    } else {
-      _log.warning('Failed to discover items of $serverJid');
-    }
-  }
-
   /// Called once all negotiations are done. Sends the initial presence, performs
   /// a disco sweep among other things.
   Future<void> _onNegotiationsDone() async {
@@ -668,13 +633,6 @@ class XmppConnection {
     
     // Send out initial presence
     await getPresenceManager().sendInitialPresence();
-
-    // Perform a disco sweep if we have no data about our server
-    if (_serverFeatures.isEmpty) {
-      await _performDiscoSweep();
-    } else {
-      _log.info('Not performing disco sweep as _serverFeatures is not empty');
-    }
   }
   
   /// To be called after _currentNegotiator!.negotiate(..) has been called. Checks the

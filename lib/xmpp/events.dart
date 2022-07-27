@@ -138,9 +138,8 @@ class ServerDiscoDoneEvent extends XmppEvent {}
 
 class ServerItemDiscoEvent extends XmppEvent {
 
-  ServerItemDiscoEvent({ required this.info, required this.jid });
+  ServerItemDiscoEvent(this.info);
   final DiscoInfo info;
-  final String jid;
 }
 
 /// Triggered when we receive a subscription request

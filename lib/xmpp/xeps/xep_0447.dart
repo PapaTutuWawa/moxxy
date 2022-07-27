@@ -70,6 +70,9 @@ class SFSManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
     final sfs = message.firstTag('file-sharing', xmlns: sfsXmlns)!;
 
