@@ -25,7 +25,7 @@ class CSIInactiveNonza extends XMLNode {
 
 /// A Stub negotiator that is just for "intercepting" the stream feature.
 class CSINegotiator extends XmppFeatureNegotiatorBase {
-  CSINegotiator() : _supported = false, super(0, false, csiXmlns, csiNegotiator);
+  CSINegotiator() : _supported = false, super(11, false, csiXmlns, csiNegotiator);
 
   /// True if CSI is supported. False otherwise.
   bool _supported;
