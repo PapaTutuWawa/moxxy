@@ -202,7 +202,7 @@ class SaslScramNegotiator extends SaslNegotiator {
         );
         break;
       case ScramState.initialMessageSent:
-        if (nonza.tag == 'failure') {
+        if (nonza.tag != 'challenge') {
           final error = nonza.children.first.tag;
           await attributes.sendEvent(AuthenticationFailedEvent(error));
 
@@ -219,32 +219,30 @@ class SaslScramNegotiator extends SaslNegotiator {
           SaslScramResponseNonza(body: responseBase64),
           redact: SaslScramResponseNonza(body: '******').toXml(),
         );
-        break;
+        return;
       case ScramState.challengeResponseSent:
-        final tag = nonza.tag;
-
-        if (tag == 'success') {
-          // NOTE: This assumes that the string is always "v=..." and contains no other parameters
-          final signature = parseKeyValue(utf8.decode(base64.decode(nonza.innerText())));
-          if (signature['v']! != _serverSignature) {
-            // TODO(Unknown): Notify of a signature mismatch
-            //final error = nonza.children.first.tag;
-            //attributes.sendEvent(AuthenticationFailedEvent(error));
-            _scramState = ScramState.error;
-            state = NegotiatorState.error;
-            return;
-          }
-
-          await attributes.sendEvent(AuthenticationSuccessEvent());
-          state = NegotiatorState.done;
+        if (nonza.tag != 'success') {
+          // We assume it's a <failure />
+          final error = nonza.children.first.tag;
+          await attributes.sendEvent(AuthenticationFailedEvent(error));
+          _scramState = ScramState.error;
+          state = NegotiatorState.error;
           return;
         }
 
-        // We assume it's a <failure />
-        final error = nonza.children.first.tag;
-        await attributes.sendEvent(AuthenticationFailedEvent(error));
-        _scramState = ScramState.error;
-        state = NegotiatorState.error;
+        // NOTE: This assumes that the string is always "v=..." and contains no other parameters
+        final signature = parseKeyValue(utf8.decode(base64.decode(nonza.innerText())));
+        if (signature['v']! != _serverSignature) {
+          // TODO(Unknown): Notify of a signature mismatch
+          //final error = nonza.children.first.tag;
+          //attributes.sendEvent(AuthenticationFailedEvent(error));
+          _scramState = ScramState.error;
+          state = NegotiatorState.error;
+          return;
+        }
+
+        await attributes.sendEvent(AuthenticationSuccessEvent());
+        state = NegotiatorState.done;
         return;
       case ScramState.error:
         state = NegotiatorState.error;
