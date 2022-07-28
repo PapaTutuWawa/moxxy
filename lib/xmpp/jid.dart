@@ -96,8 +96,6 @@ class JID {
 
   @override
   // ignore: hash_and_equals
-  // NOTE: I really don't want to implement my own hashCode. Just let [Object] do its
-  //       magic
   bool operator ==(Object other) {
     if (other is JID) {
       return other.local == local && other.domain == domain && other.resource == resource;
@@ -106,7 +104,6 @@ class JID {
     return false;
   }
 
-  /// I have no idea if that is correct.
   @override
-  int get hashCode => local.hashCode + domain.hashCode + resource.hashCode;
+  int get hashCode => local.hashCode ^ domain.hashCode ^ resource.hashCode;
 }
