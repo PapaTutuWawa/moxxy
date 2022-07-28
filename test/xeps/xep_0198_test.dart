@@ -14,7 +14,6 @@ import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/state.dart';
@@ -322,10 +321,8 @@ void main() {
           PresenceManager(),
           RosterManager(),
           DiscoManager(),
-          DiscoCacheManager(),
           PingManager(),
           StreamManagementManager(),
-          DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators(
         [
@@ -336,14 +333,14 @@ void main() {
       );
 
       await conn.connect();
-      await Future.delayed(const Duration(seconds: 3), () {
-        expect(fakeSocket.getState(), 5);
-        expect(conn.getConnectionState(), XmppConnectionState.connected);
-        expect(
-          conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
-          true,
-        );
-      });
+      await Future.delayed(const Duration(seconds: 3));
+
+      expect(fakeSocket.getState(), 6);
+      expect(conn.getConnectionState(), XmppConnectionState.connected);
+      expect(
+        conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
+        true,
+      );
     });
 
     test('Test a failed stream resumption', () async {
@@ -416,10 +413,8 @@ void main() {
           PresenceManager(),
           RosterManager(),
           DiscoManager(),
-          DiscoCacheManager(),
           PingManager(),
           StreamManagementManager(),
-          DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators(
         [
@@ -439,7 +434,7 @@ void main() {
 
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
-        expect(fakeSocket.getState(), 6);
+        expect(fakeSocket.getState(), 7);
         expect(conn.getConnectionState(), XmppConnectionState.connected);
         expect(
           conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
@@ -509,10 +504,8 @@ void main() {
           PresenceManager(),
           RosterManager(),
           DiscoManager(),
-          DiscoCacheManager(),
           PingManager(),
           StreamManagementManager(),
-          DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators(
         [
@@ -532,7 +525,7 @@ void main() {
 
       await conn.connect(lastResource: 'abc123');
       await Future.delayed(const Duration(seconds: 3), () {
-        expect(fakeSocket.getState(), 4);
+        expect(fakeSocket.getState(), 6);
         expect(conn.getConnectionState(), XmppConnectionState.connected);
         final sm = conn.getManagerById<StreamManagementManager>(smManager)!;
         expect(sm.isStreamManagementEnabled(), true);

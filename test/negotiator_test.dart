@@ -7,7 +7,6 @@ import 'package:moxxyv2/xmpp/reconnect.dart';
 import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:test/test.dart';
 
@@ -75,7 +74,6 @@ void main() {
       RosterManager(),
       DiscoManager(),
       PingManager(),
-      DiscoCacheManager(),
     ])
     ..setConnectionSettings(
       ConnectionSettings(

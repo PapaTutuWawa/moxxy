@@ -1,4 +1,5 @@
 import 'package:cryptography/cryptography.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
@@ -7,21 +8,22 @@ import 'package:test/test.dart';
 
 void main() {
   test('Test XEP example', () async {
-      const data = DiscoInfo(
-        features: [
+      final data = DiscoInfo(
+        [
           'http://jabber.org/protocol/caps',
           'http://jabber.org/protocol/disco#info',
           'http://jabber.org/protocol/disco#items',
           'http://jabber.org/protocol/muc'
         ],
-        identities: [
+        [
           Identity(
             category: 'client',
             type: 'pc',
             name: 'Exodus 0.9.1',
           )
         ],
-        extendedInfo: [],
+        [],
+        JID.fromString('some@user.local/test'),
       );
 
       final hash = await calculateCapabilityHash(data, Sha1());
@@ -31,7 +33,13 @@ void main() {
   test('Test complex generation example', () async {
       const extDiscoDataString = "<x xmlns='jabber:x:data' type='result'><field var='FORM_TYPE' type='hidden'><value>urn:xmpp:dataforms:softwareinfo</value></field><field var='ip_version' type='text-multi' ><value>ipv4</value><value>ipv6</value></field><field var='os'><value>Mac</value></field><field var='os_version'><value>10.5.1</value></field><field var='software'><value>Psi</value></field><field var='software_version'><value>0.11</value></field></x>";
       final data = DiscoInfo(
-        identities: [
+        [
+          'http://jabber.org/protocol/caps',
+          'http://jabber.org/protocol/disco#info',
+          'http://jabber.org/protocol/disco#items',
+          'http://jabber.org/protocol/muc'
+        ],
+        [
           const Identity(
             category: 'client',
             type: 'pc',
@@ -45,13 +53,8 @@ void main() {
             lang: 'el',
           ),
         ],
-        features: [
-          'http://jabber.org/protocol/caps',
-          'http://jabber.org/protocol/disco#info',
-          'http://jabber.org/protocol/disco#items',
-          'http://jabber.org/protocol/muc'
-        ],
-        extendedInfo: [ parseDataForm(XMLNode.fromString(extDiscoDataString)) ],
+        [ parseDataForm(XMLNode.fromString(extDiscoDataString)) ],
+        JID.fromString('some@user.local/test'),
       );
 
       final hash = await calculateCapabilityHash(data, Sha1());
@@ -118,8 +121,8 @@ void main() {
   });
 
   test('Test Conversations hash computation', () async {
-      const data = DiscoInfo(
-        features: [
+      final data = DiscoInfo(
+        [
           'eu.siacs.conversations.axolotl.devicelist+notify',
           'http://jabber.org/protocol/caps',
           'http://jabber.org/protocol/chatstates',
@@ -151,14 +154,15 @@ void main() {
           'urn:xmpp:receipts',
           'urn:xmpp:time'
         ],
-        identities: [
+        [
           Identity(
             category: 'client',
             type: 'phone',
             name: 'Conversations',
           )
         ],
-        extendedInfo: [],
+        [],
+        JID.fromString('user@server.local/test'),
       );
 
       final hash = await calculateCapabilityHash(data, Sha1());

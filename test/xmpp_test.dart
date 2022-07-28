@@ -15,7 +15,6 @@ import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
@@ -147,13 +146,11 @@ void main() {
           allowPlainAuth: true,
       ),);
       conn.registerManagers([
-          PresenceManager(),
-          RosterManager(),
-          DiscoManager(),
-          DiscoCacheManager(),
-          PingManager(),
-          StreamManagementManager(),
-          DiscoCacheManager(),
+        PresenceManager(),
+        RosterManager(),
+        DiscoManager(),
+        PingManager(),
+        StreamManagementManager(),
       ]);
       conn.registerFeatureNegotiators(
         [
@@ -166,7 +163,7 @@ void main() {
 
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () {
-          expect(fakeSocket.getState(), /*5*/ 4);
+          expect(fakeSocket.getState(), /*6*/ 5);
       });
   });
 
@@ -207,7 +204,6 @@ void main() {
         RosterManager(),
         DiscoManager(),
         PingManager(),
-        DiscoCacheManager(),
       ]);
       conn.registerFeatureNegotiators([
         SaslPlainNegotiator()
@@ -258,11 +254,10 @@ void main() {
           allowPlainAuth: true,
       ),);
       conn.registerManagers([
-          PresenceManager(),
-          RosterManager(),
-          DiscoManager(),
-          PingManager(),
-          DiscoCacheManager(),
+        PresenceManager(),
+        RosterManager(),
+        DiscoManager(),
+        PingManager(),
       ]);
       conn.registerFeatureNegotiators([
         SaslPlainNegotiator()
@@ -308,17 +303,16 @@ void main() {
       );
       final XmppConnection conn = XmppConnection(TestingReconnectionPolicy(), socket: fakeSocket);
       conn.setConnectionSettings(ConnectionSettings(
-          jid: JID.fromString('polynomdivision@test.server'),
-          password: 'aaaa',
-          useDirectTLS: true,
-          allowPlainAuth: false,
+        jid: JID.fromString('polynomdivision@test.server'),
+        password: 'aaaa',
+        useDirectTLS: true,
+        allowPlainAuth: false,
       ),);
       conn.registerManagers([
-          PresenceManager(),
-          RosterManager(),
-          DiscoManager(),
-          PingManager(),
-          DiscoCacheManager(),
+        PresenceManager(),
+        RosterManager(),
+        DiscoManager(),
+        PingManager(),
       ]);
       conn.registerFeatureNegotiators([
         SaslPlainNegotiator(),
