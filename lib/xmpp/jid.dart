@@ -95,7 +95,6 @@ class JID {
   }
 
   @override
-  // ignore: hash_and_equals
   bool operator ==(Object other) {
     if (other is JID) {
       return other.local == local && other.domain == domain && other.resource == resource;

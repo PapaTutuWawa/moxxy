@@ -36,8 +36,9 @@ class StringExpectation extends ExpectationBase {
 
 /// 
 class StanzaExpectation extends ExpectationBase {
-  StanzaExpectation(String expectation, String response, {this.ignoreId = false}) : super(expectation, response);
+  StanzaExpectation(String expectation, String response, {this.ignoreId = false, this.adjustId = false }) : super(expectation, response);
   final bool ignoreId;
+  final bool adjustId;
   
   @override
   bool matches(String input) {
@@ -58,6 +59,7 @@ class StubTCPSocket extends BaseSocketWrapper { // Request -> Response(s)
   final StreamController<String> _dataStream;
   final StreamController<XmppSocketEvent> _eventStream;
   final List<ExpectationBase> _play;
+  String? lastId;
 
   @override
   bool isSecure() => true;
@@ -73,6 +75,12 @@ class StubTCPSocket extends BaseSocketWrapper { // Request -> Response(s)
   @override
   Stream<XmppSocketEvent> getEventStream() => _eventStream.stream.asBroadcastStream();
 
+  /// Let the "connection" receive [data].
+  void injectRawXml(String data) {
+    print('<== $data');
+    _dataStream.add(data);
+  }
+  
   @override
   void write(Object? object, { String? redact }) {
     var str = object as String;
@@ -80,6 +88,7 @@ class StubTCPSocket extends BaseSocketWrapper { // Request -> Response(s)
     print('==> $str');
 
     if (_state >= _play.length) {
+      _state++;
       return;
     }
 
@@ -101,8 +110,21 @@ class StubTCPSocket extends BaseSocketWrapper { // Request -> Response(s)
     // Make sure to only progress if everything passed so far
     _state++;
 
-    print("<== ${expectation.response}");
-    _dataStream.add(expectation.response);
+    var response = expectation.response;
+    if (expectation is StanzaExpectation) {
+      final inputNode = XMLNode.fromString(str);
+      lastId = inputNode.attributes['id'];
+
+      if (expectation.adjustId) {
+        final outputNode = XMLNode.fromString(response);
+
+        outputNode.attributes['id'] = inputNode.attributes['id']!;
+        response = outputNode.toXml();
+      }
+    }
+    
+    print("<== $response");
+    _dataStream.add(response);
   }
 
   @override

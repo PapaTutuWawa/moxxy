@@ -53,6 +53,12 @@ class DiscoManager extends XmppManagerBase {
   final Map<DiscoCacheKey, List<Completer<DiscoInfo?>>> _runningInfoQueries;
   // Cache lock
   final Lock _cacheLock;
+
+  @visibleForTesting
+  bool hasInfoQueriesRunning() => !_runningInfoQueries.isEmpty;
+
+  @visibleForTesting
+  List<Completer<DiscoInfo?>> getRunningInfoQueries(DiscoCacheKey key) => _runningInfoQueries[key]!;
   
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
