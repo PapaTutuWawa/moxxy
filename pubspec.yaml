@@ -52,7 +52,7 @@ dependencies:
   mime: 1.0.1
   moxdns:
     hosted: https://pub.polynom.me
-    version: 0.1.1
+    version: 0.1.2
   moxlib:
     hosted: https://pub.polynom.me
     version: 0.1.3

@@ -638,28 +638,28 @@ packages:
       name: moxdns
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   moxdns_android:
     dependency: transitive
     description:
       name: moxdns_android
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   moxdns_linux:
     dependency: transitive
     description:
       name: moxdns_linux
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   moxdns_platform_interface:
     dependency: transitive
     description:
       name: moxdns_platform_interface
       url: "https://pub.polynom.me"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   moxlib:
     dependency: "direct main"
     description:
