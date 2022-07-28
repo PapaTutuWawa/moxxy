@@ -259,7 +259,7 @@ class XmppService {
   }
 
   Future<void> _acknowledgeMessage(MessageEvent event) async {
-    final info = await GetIt.I.get<XmppConnection>().getDiscoCacheManager().getInfoByJid(event.fromJid.toString());
+    final info = await GetIt.I.get<XmppConnection>().getDiscoManager().discoInfoQuery(event.fromJid.toString());
     if (info == null) return;
 
     if (event.isMarkable && info.features.contains(chatMarkersXmlns)) {

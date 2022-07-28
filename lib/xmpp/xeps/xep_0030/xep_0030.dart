@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'package:meta/meta.dart';
+import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/base.dart';
 import 'package:moxxyv2/xmpp/managers/data.dart';
 import 'package:moxxyv2/xmpp/managers/handlers.dart';
@@ -7,12 +11,56 @@ import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:synchronized/synchronized.dart';
+
+// TODO(PapaTutuWawa): Move to XEP-0115
+class CapabilityHashInfo {
+
+  const CapabilityHashInfo(this.ver, this.node, this.hash);
+  final String ver;
+  final String node;
+  final String hash;
+}
+
+@immutable
+class DiscoCacheKey {
+
+  const DiscoCacheKey(this.jid, this.node);
+  final String jid;
+  final String? node;
+
+  @override
+  bool operator ==(Object other) {
+    return other is DiscoCacheKey && jid == other.jid && node == other.node;
+  }
+  
+  @override
+  int get hashCode => jid.hashCode ^ node.hashCode;
+}
 
 class DiscoManager extends XmppManagerBase {
  
-  DiscoManager() : _features = List.empty(growable: true), super();
+  DiscoManager()
+    : _features = List.empty(growable: true),
+      _capHashCache = {},
+      _capHashInfoCache = {},
+      _discoInfoCache = {},
+      _runningInfoQueries = {},
+      _cacheLock = Lock(),
+      super();
   /// Our features
   final List<String> _features;
+
+  // Map full JID to Capability hashes
+  final Map<String, CapabilityHashInfo> _capHashCache;
+  // Map capability hash to the disco info
+  final Map<String, DiscoInfo> _capHashInfoCache;
+  // Map full JID to Disco Info
+  final Map<DiscoCacheKey, DiscoInfo> _discoInfoCache;
+  // Mapping the full JID to a list of running requests
+  final Map<DiscoCacheKey, List<Completer<DiscoInfo?>>> _runningInfoQueries;
+  // Cache lock
+  final Lock _cacheLock;
   
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
@@ -41,6 +89,13 @@ class DiscoManager extends XmppManagerBase {
 
   @override
   Future<bool> isSupported() async => true;
+
+  @override
+  Future<void> onXmppEvent(XmppEvent event) async {
+    if (event is PresenceReceivedEvent) {
+      await _onPresence(event.jid, event.presence);
+    }
+  }
   
   /// Adds a list of features to the possible disco info response.
   /// This function only adds features that are not already present in the disco features.
@@ -52,6 +107,36 @@ class DiscoManager extends XmppManagerBase {
     }
   }
 
+  Future<void> _onPresence(JID from, Stanza presence) async {
+    final c = presence.firstTag('c', xmlns: capsXmlns);
+    if (c == null) return;
+
+    final info = CapabilityHashInfo(
+      c.attributes['ver']! as String,
+      c.attributes['node']! as String,
+      c.attributes['hash']! as String,
+    );
+    
+    // Check if we already know of that cache
+    var cached = false;
+    await _cacheLock.synchronized(() async {
+      if (!_capHashCache.containsKey(info.ver)) {
+        cached = true;
+      }
+    });
+    if (cached) return;
+
+    // Request the cap hash
+    logger.finest("Received capability hash we don't know about. Requesting it...");
+    final result = await discoInfoQuery(from.toString(), node: '${info.node}#${info.ver}');
+    if (result == null) return;
+
+    await _cacheLock.synchronized(() async {
+      _capHashCache[from.toString()] = info;
+      _capHashInfoCache[info.ver] = result;
+    });
+  }
+  
   /// Returns the list of disco features registered.
   List<String> getRegisteredDiscoFeatures() => _features;
   
@@ -181,8 +266,51 @@ class DiscoManager extends XmppManagerBase {
 
   /// Sends a disco info query to the (full) jid [entity], optionally with node=[node].
   Future<DiscoInfo?> discoInfoQuery(String entity, { String? node}) async {
-    final stanza = await getAttributes().sendStanza(buildDiscoInfoQueryStanza(entity, node));
-    return parseDiscoInfoResponse(stanza);
+    final cacheKey = DiscoCacheKey(entity, node);
+    DiscoInfo? info;
+    Completer<DiscoInfo?>? completer;
+    await _cacheLock.synchronized(() async {
+      // Check if we already know what the JID supports
+      if (_discoInfoCache.containsKey(cacheKey)) {
+        info = _discoInfoCache[cacheKey];
+      } else {
+        // Is a request running?
+        if (_runningInfoQueries.containsKey(cacheKey)) {
+          completer = Completer();
+          _runningInfoQueries[cacheKey]!.add(completer!);
+        } else {
+          _runningInfoQueries[cacheKey] = List.from(<Completer<DiscoInfo?>>[]);
+        }
+      }
+    });
+
+    if (info != null) {
+      return info!;
+    } else if (completer != null) {
+      return completer!.future;
+    }
+
+    final stanza = await getAttributes().sendStanza(
+      buildDiscoInfoQueryStanza(entity, node),
+    );
+    final result = parseDiscoInfoResponse(stanza);
+
+    await _cacheLock.synchronized(() async {
+      // Complete all futures
+      for (final completer in _runningInfoQueries[cacheKey]!) {
+        completer.complete(result);
+      }
+
+      // Add to cache
+      if (result != null) {
+        _discoInfoCache[cacheKey] = result;
+      }
+      
+      // Remove from the cache
+      _runningInfoQueries.remove(cacheKey);
+    });
+    
+    return result;
   }
 
   /// Sends a disco items query to the (full) jid [entity], optionally with node=[node].
@@ -194,5 +322,44 @@ class DiscoManager extends XmppManagerBase {
   /// Queries information about a jid based on its node and capability hash.
   Future<DiscoInfo?> discoInfoCapHashQuery(String jid, String node, String ver) async {
     return discoInfoQuery(jid, node: '$node#$ver');
+  }
+
+  Future<List<DiscoInfo>?> performDiscoSweep() async {
+    final attrs = getAttributes();
+    final serverJid = attrs.getConnectionSettings().jid.domain;
+    final infoResults = List<DiscoInfo>.empty(growable: true);
+    final info = await discoInfoQuery(serverJid);
+    if (info != null) {
+      logger.finest('Discovered supported server features: ${info.features}');
+      infoResults.add(info);
+
+      attrs.sendEvent(ServerItemDiscoEvent(info));
+      attrs.sendEvent(ServerDiscoDoneEvent());
+    } else {
+      logger.warning('Failed to discover server features');
+      return null;
+    }
+
+    final items = await discoItemsQuery(serverJid);
+    if (items != null) {
+      logger.finest('Discovered disco items form $serverJid');
+
+      // Query all items
+      for (final item in items) {
+        logger.finest('Querying info for ${item.jid}...');
+        final itemInfo = await discoInfoQuery(item.jid);
+        if (itemInfo != null) {
+          logger.finest('Received info for ${item.jid}');
+          infoResults.add(itemInfo);
+          attrs.sendEvent(ServerItemDiscoEvent(itemInfo));
+        } else {
+          logger.warning('Failed to discover info for ${item.jid}');
+        }
+      }
+    } else {
+      logger.warning('Failed to discover items of $serverJid');
+    }
+
+    return infoResults;
   }
 }

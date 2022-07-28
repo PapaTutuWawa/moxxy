@@ -20,7 +20,6 @@ import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/socket.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
@@ -289,16 +288,8 @@ class XmppConnection {
     return getManagerById(discoManager)!;
   }
 
-  /// A [DiscoCacheManager] is required, so have a wrapper for getting it.
-  /// Returns the registered [DiscoCacheManager].
-  DiscoCacheManager getDiscoCacheManager() {
-    assert(_xmppManagers.containsKey(discoCacheManager), 'A DiscoCacheManager is mandatory');
-
-    return getManagerById(discoCacheManager)!;
-  }
-
   /// A [RosterManager] is required, so have a wrapper for getting it.
-  /// Returns the registered [DiscoCacheManager].
+  /// Returns the registered [RosterManager].
   RosterManager getRosterManager() {
     assert(_xmppManagers.containsKey(rosterManager), 'A RosterManager is mandatory');
 

@@ -7,8 +7,8 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/error.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 
 const errorNoUploadServer = 1;
 const errorFileTooBig = 2;
@@ -80,7 +80,7 @@ class HttpFileUploadManager extends XmppManagerBase {
   Future<bool> isSupported() async {
     if (_gotSupported) return _supported;
     
-    final infos = await getAttributes().getManagerById<DiscoCacheManager>(discoCacheManager)!.performDiscoSweep();
+    final infos = await getAttributes().getManagerById<DiscoManager>(discoManager)!.performDiscoSweep();
     if (infos == null) {
       _gotSupported = false;
       _supported = false;

@@ -8,7 +8,7 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0297.dart';
 
 
@@ -47,8 +47,8 @@ class CarbonsManager extends XmppManagerBase {
   @override
   Future<bool> isSupported() async {
     // Query the server
-    final cache = getAttributes().getManagerById<DiscoCacheManager>(discoCacheManager)!;
-    final result = await cache.getInfoByJid(
+    final disco = getAttributes().getManagerById<DiscoManager>(discoManager)!;
+    final result = await disco.discoInfoQuery(
       getAttributes().getConnectionSettings().jid.toBare().toString(),
     );
 
