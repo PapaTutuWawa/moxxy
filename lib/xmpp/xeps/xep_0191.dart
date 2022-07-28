@@ -9,9 +9,10 @@ import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 
 class BlockingManager extends XmppManagerBase {
-  BlockingManager() : _supported = false, super();
+  BlockingManager() : _supported = false, _gotSupported = false, super();
 
   bool _supported;
+  bool _gotSupported;
 
   @override
   String getId() => blockingManager;
@@ -37,12 +38,15 @@ class BlockingManager extends XmppManagerBase {
 
   @override
   Future<bool> isSupported() async {
+    if (_gotSupported) return _supported;
+
     // Query the server
     final disco = getAttributes().getManagerById<DiscoManager>(discoManager)!;
     final result = await disco.discoInfoQuery(
       getAttributes().getConnectionSettings().jid.toBare().toString(),
     );
 
+    _gotSupported = true;
     if (result == null) {
       _supported = false;
     } else {
@@ -50,6 +54,14 @@ class BlockingManager extends XmppManagerBase {
     }
 
     return _supported;
+  }
+
+  @override
+  Future<void> onXmppEvent(XmppEvent event) async {
+    if (event is StreamResumeFailedEvent) {
+      _gotSupported = false;
+      _supported = false;
+    }
   }
   
   Future<StanzaHandlerData> _blockPush(Stanza iq, StanzaHandlerData state) async {

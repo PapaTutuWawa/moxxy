@@ -14,9 +14,10 @@ import 'package:moxxyv2/xmpp/xeps/xep_0297.dart';
 
 class CarbonsManager extends XmppManagerBase {
 
-  CarbonsManager() : _isEnabled = false, _supported = true, super();
+  CarbonsManager() : _isEnabled = false, _supported = false, _gotSupported = false, super();
   bool _isEnabled;
   bool _supported;
+  bool _gotSupported;
   
   @override
   String getId() => carbonsManager;
@@ -46,12 +47,15 @@ class CarbonsManager extends XmppManagerBase {
 
   @override
   Future<bool> isSupported() async {
+    if (_gotSupported) return _supported;
+
     // Query the server
     final disco = getAttributes().getManagerById<DiscoManager>(discoManager)!;
     final result = await disco.discoInfoQuery(
       getAttributes().getConnectionSettings().jid.toBare().toString(),
     );
 
+    _gotSupported = true;
     if (result == null) {
       _supported = false;
     } else {
@@ -59,6 +63,24 @@ class CarbonsManager extends XmppManagerBase {
     }
 
     return _supported;
+  }
+
+  @override
+  Future<void> onXmppEvent(XmppEvent event) async {
+    if (event is ServerDiscoDoneEvent && !_isEnabled) {
+      final attrs = getAttributes();
+
+      if (attrs.isFeatureSupported(carbonsXmlns)) {
+        logger.finest('Message carbons supported. Enabling...');
+        await enableCarbons();
+        logger.finest('Message carbons enabled');
+      } else {
+        logger.info('Message carbons not supported.');
+      }
+    } else if (event is StreamResumeFailedEvent) {
+      _gotSupported = false;
+      _supported = false;
+    }
   }
   
   Future<StanzaHandlerData> _onMessageReceived(Stanza message, StanzaHandlerData state) async {
@@ -141,23 +163,6 @@ class CarbonsManager extends XmppManagerBase {
     
     _isEnabled = false;
     return true;
-  }
-
-  // TODO(Unknown): Reset _isEnabled if we fail stream resumption or otherwise need to assume a new
-  //                state.
-  @override
-  Future<void> onXmppEvent(XmppEvent event) async {
-    if (event is ServerDiscoDoneEvent && !_isEnabled) {
-      final attrs = getAttributes();
-
-      if (attrs.isFeatureSupported(carbonsXmlns)) {
-        logger.finest('Message carbons supported. Enabling...');
-        await enableCarbons();
-        logger.finest('Message carbons enabled');
-      } else {
-        logger.info('Message carbons not supported.');
-      }
-    }
   }
 
   bool isCarbonValid(JID senderJid) {
