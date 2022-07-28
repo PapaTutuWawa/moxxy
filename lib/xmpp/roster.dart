@@ -90,6 +90,9 @@ class RosterManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true; 
+  
   /// Override-able functions
   Future<void> commitLastRosterVersion(String version) async {}
   Future<void> loadLastRosterVersion() async {}

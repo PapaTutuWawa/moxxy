@@ -6,7 +6,7 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/cachemanager.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 
 /// Represents data provided by XEP-0359.
 /// NOTE: [StableStanzaId.stanzaId] must not be confused with the actual id attribute of
@@ -47,6 +47,9 @@ class StableIdManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
     final from = JID.fromString(message.attributes['from']! as String);
     String? originId;
@@ -57,25 +60,23 @@ class StableIdManager extends XmppManagerBase {
     if (originIdTag != null || stanzaIdTag != null) {
       logger.finest('Found Unique and Stable Stanza Id tag');
       final attrs = getAttributes();
-      final cache = attrs.getManagerById(discoCacheManager) as DiscoCacheManager?;
-      if (cache != null) {
-        final info = await cache.getInfoByJid(from.toString());
-        if (info != null) {
-          logger.finest('Got info for ${from.toString()}');
-          if (info.features.contains(stableIdXmlns)) {
-            logger.finest('${from.toString()} supports $stableIdXmlns.');
+      final disco = attrs.getManagerById<DiscoManager>(discoManager)!;
+      final info = await disco.discoInfoQuery(from.toString());
+      if (info != null) {
+        logger.finest('Got info for ${from.toString()}');
+        if (info.features.contains(stableIdXmlns)) {
+          logger.finest('${from.toString()} supports $stableIdXmlns.');
 
-            if (originIdTag != null) {
-              originId = originIdTag.attributes['id']! as String;
-            }
-
-            if (stanzaIdTag != null) {
-              stanzaId = stanzaIdTag.attributes['id']! as String;
-              stanzaIdBy = stanzaIdTag.attributes['by']! as String;
-            }
-          } else {
-            logger.finest('${from.toString()} does not support $stableIdXmlns. Ignoring... ');
+          if (originIdTag != null) {
+            originId = originIdTag.attributes['id']! as String;
           }
+
+          if (stanzaIdTag != null) {
+            stanzaId = stanzaIdTag.attributes['id']! as String;
+            stanzaIdBy = stanzaIdTag.attributes['by']! as String;
+          }
+        } else {
+          logger.finest('${from.toString()} does not support $stableIdXmlns. Ignoring... ');
         }
       }
     }

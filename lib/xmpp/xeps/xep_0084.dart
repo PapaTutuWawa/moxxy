@@ -36,6 +36,10 @@ class UserAvatarManager extends XmppManagerBase {
     }
   }
 
+  // TODO(PapaTutuWawa): Check for PEP support
+  @override
+  Future<bool> isSupported() async => true;
+  
   /// Requests the avatar from [jid]. Returns the avatar data if the request was
   /// successful. Null otherwise
   Future<UserAvatar?> getUserAvatar(String jid) async {

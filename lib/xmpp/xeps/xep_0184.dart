@@ -53,6 +53,9 @@ class MessageDeliveryReceiptManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onDeliveryRequestReceived(Stanza message, StanzaHandlerData state) async {
     return state.copyWith(deliveryReceiptRequested: true);
   }

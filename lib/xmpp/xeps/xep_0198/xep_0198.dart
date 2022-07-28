@@ -8,8 +8,10 @@ import 'package:moxxyv2/xmpp/managers/data.dart';
 import 'package:moxxyv2/xmpp/managers/handlers.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/nonzas.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/state.dart';
 import 'package:synchronized/synchronized.dart';
@@ -67,6 +69,11 @@ class StreamManagementManager extends XmppManagerBase {
     return acks;
   }
 
+  @override
+  Future<bool> isSupported() async {
+    return getAttributes().getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!.isSupported;
+  }
+  
   /// Returns the amount of stanzas waiting to get acked
   int getUnackedStanzaCount() => _unackedStanzas.length;
 

@@ -37,6 +37,9 @@ class MessageRepliesManager extends XmppManagerBase {
       priority: -99,
     )
   ];
+
+  @override
+  Future<bool> isSupported() async => true;
   
   Future<StanzaHandlerData> _onMessage(Stanza stanza, StanzaHandlerData state) async {
     final reply = stanza.firstTag('reply', xmlns: replyXmlns)!;

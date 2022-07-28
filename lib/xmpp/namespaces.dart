@@ -34,7 +34,7 @@ const userAvatarDataXmlns = 'urn:xmpp:avatar:data';
 // XEP-0085
 const chatStateXmlns = 'http://jabber.org/protocol/chatstates';
 
-// XEP-0152
+// XEP-0115
 const capsXmlns = 'http://jabber.org/protocol/caps';
 
 // XEP-0184

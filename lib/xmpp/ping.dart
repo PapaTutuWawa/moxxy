@@ -10,6 +10,9 @@ class PingManager extends XmppManagerBase {
   @override
   String getName() => 'PingManager';
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   void _logWarning() {
     logger.warning('Cannot send keepalives as SM is not available, the socket disallows whitespace pings and does not manage its own keepalives. Cannot guarantee that the connection survives.');
   }

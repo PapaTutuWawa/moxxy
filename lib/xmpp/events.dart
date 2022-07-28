@@ -48,6 +48,9 @@ class StreamResumedEvent extends XmppEvent {
   final int h;
 }
 
+/// Triggered when stream resumption failed
+class StreamResumeFailedEvent extends XmppEvent {}
+
 class MessageEvent extends XmppEvent {
 
   MessageEvent({
@@ -138,9 +141,8 @@ class ServerDiscoDoneEvent extends XmppEvent {}
 
 class ServerItemDiscoEvent extends XmppEvent {
 
-  ServerItemDiscoEvent({ required this.info, required this.jid });
+  ServerItemDiscoEvent(this.info);
   final DiscoInfo info;
-  final String jid;
 }
 
 /// Triggered when we receive a subscription request

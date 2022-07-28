@@ -101,6 +101,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
           } else {
             // We assume it is <failed />
             _log.info('Stream resumption failed. Expected <resumed />, got ${nonza.tag}, Proceeding with new stream...');
+            await attributes.sendEvent(StreamResumeFailedEvent());
             final sm = attributes.getManagerById<StreamManagementManager>(smManager)!;
 
             // We have to do this because we otherwise get a stanza stuck in the queue,

@@ -59,7 +59,8 @@ class CSIManager extends XmppManagerBase {
   @override
   String getName() => 'CSIManager';
 
-  bool _supported() {
+  @override
+  Future<bool> isSupported() async {
     return getAttributes().getNegotiatorById<CSINegotiator>(csiNegotiator)!.isSupported;
   }
   
@@ -74,21 +75,21 @@ class CSIManager extends XmppManagerBase {
   }
   
   /// Tells the server to top optimizing traffic
-  void setActive() {
+  Future<void> setActive() async {
     _isActive = true;
 
     final attrs = getAttributes();
-    if (_supported()) {
+    if (await isSupported()) {
       attrs.sendNonza(CSIActiveNonza());
     }
   }
 
   /// Tells the server to optimize traffic following XEP-0352
-  void setInactive() {
+  Future<void> setInactive() async {
     _isActive = false;
 
     final attrs = getAttributes();
-    if (_supported()) {
+    if (await isSupported()) {
       attrs.sendNonza(CSIInactiveNonza());
     }
   }

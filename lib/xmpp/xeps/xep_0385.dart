@@ -84,6 +84,9 @@ class SIMSManager extends XmppManagerBase {
     )
   ];
 
+  @override
+  Future<bool> isSupported() async => true;
+  
   Future<StanzaHandlerData> _onMessage(Stanza message, StanzaHandlerData state) async {
     final references = message.findTags('reference', xmlns: referenceXmlns);
     for (final ref in references) {

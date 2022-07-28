@@ -243,9 +243,9 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
   if (conn.getConnectionState() != XmppConnectionState.connected) return;
   final csi = conn.getManagerById<CSIManager>(csiManager)!;
   if (command.active) {
-    csi.setActive();
+    await csi.setActive();
   } else {
-    csi.setInactive();
+    await csi.setInactive();
   }
 }
 
