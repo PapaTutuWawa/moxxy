@@ -55,7 +55,7 @@ class DiscoManager extends XmppManagerBase {
   final Lock _cacheLock;
 
   @visibleForTesting
-  bool hasInfoQueriesRunning() => !_runningInfoQueries.isEmpty;
+  bool hasInfoQueriesRunning() => _runningInfoQueries.isNotEmpty;
 
   @visibleForTesting
   List<Completer<DiscoInfo?>> getRunningInfoQueries(DiscoCacheKey key) => _runningInfoQueries[key]!;
