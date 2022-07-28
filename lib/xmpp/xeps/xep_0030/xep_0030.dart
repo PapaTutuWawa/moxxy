@@ -11,16 +11,8 @@ import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0115.dart';
 import 'package:synchronized/synchronized.dart';
-
-// TODO(PapaTutuWawa): Move to XEP-0115
-class CapabilityHashInfo {
-
-  const CapabilityHashInfo(this.ver, this.node, this.hash);
-  final String ver;
-  final String node;
-  final String hash;
-}
 
 @immutable
 class DiscoCacheKey {

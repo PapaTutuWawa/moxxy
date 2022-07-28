@@ -1,8 +1,15 @@
 import 'dart:convert';
-
 import 'package:cryptography/cryptography.dart';
 import 'package:moxxyv2/xmpp/rfcs/rfc_4790.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+
+class CapabilityHashInfo {
+
+  const CapabilityHashInfo(this.ver, this.node, this.hash);
+  final String ver;
+  final String node;
+  final String hash;
+}
 
 /// Calculates the Entitiy Capability hash according to XEP-0115 based on the
 /// disco information.
