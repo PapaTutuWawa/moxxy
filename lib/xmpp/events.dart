@@ -48,6 +48,9 @@ class StreamResumedEvent extends XmppEvent {
   final int h;
 }
 
+/// Triggered when stream resumption failed
+class StreamResumeFailedEvent extends XmppEvent {}
+
 class MessageEvent extends XmppEvent {
 
   MessageEvent({

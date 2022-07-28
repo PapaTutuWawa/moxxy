@@ -94,6 +94,11 @@ class DiscoManager extends XmppManagerBase {
   Future<void> onXmppEvent(XmppEvent event) async {
     if (event is PresenceReceivedEvent) {
       await _onPresence(event.jid, event.presence);
+    } else if (event is StreamResumeFailedEvent) {
+      await _cacheLock.synchronized(() async {
+        // Clear the cache
+        _discoInfoCache.clear();
+      });
     }
   }
   

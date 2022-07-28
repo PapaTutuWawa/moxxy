@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/base.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
@@ -77,6 +78,16 @@ class HttpFileUploadManager extends XmppManagerBase {
   }
 
   @override
+  Future<void> onXmppEvent(XmppEvent event) async {
+    if (event is StreamResumeFailedEvent) {
+      _gotSupported = false;
+      _supported = false;
+      _entityJid = null;
+      _maxUploadSize = null;
+    }
+  }
+  
+  @override
   Future<bool> isSupported() async {
     if (_gotSupported) return _supported;
     
@@ -108,6 +119,8 @@ class HttpFileUploadManager extends XmppManagerBase {
   /// Mime type.
   /// Returns an [HttpFileUploadSlot] if the request was successful; null otherwise.
   Future<MayFail<HttpFileUploadSlot>> requestUploadSlot(String filename, int filesize, { String? contentType }) async {
+    if (!(await isSupported())) return MayFail.failure(errorNoUploadServer);
+
     if (_entityJid == null) {
       logger.warning('Attempted to request HTTP File Upload slot but no entity is known to send this request to.');
       return MayFail.failure(errorNoUploadServer);
