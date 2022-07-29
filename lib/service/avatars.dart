@@ -108,8 +108,14 @@ class AvatarService {
       if (vcard != null) {
         final binval = vcard.photo?.binval;
         if (binval != null) {
+          // Clean the raw data. Since this may arrive by chunks, those chunks may contain
+          // weird data pieces.
           base64 = binval;
-          final rawHash = await Sha1().hash(base64Decode(binval));
+          for (final char in ['\n', ' ']) {
+            base64 = base64.replaceAll(char, '');
+          }
+
+          final rawHash = await Sha1().hash(base64Decode(base64));
           hash = HEX.encode(rawHash.bytes);
 
           vm.setLastHash(jid, hash);
