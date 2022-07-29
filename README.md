@@ -29,6 +29,8 @@ by running `flutter test` afterwards. Also make sure that the code passes the li
 running `flutter analyze`. This project also uses [gitlint](https://github.com/jorisroovers/gitlint)
 to ensure uniform formatting of commit messages.
 
+Also, feel free to join the development chat at `moxxy@muc.moxxy.org`.
+
 ## A Bit of History
 
 This project is the successor of moxxyv1, which was written in *React Native* and abandoned
