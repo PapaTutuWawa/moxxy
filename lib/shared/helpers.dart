@@ -1,6 +1,6 @@
 import 'dart:core';
-
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:synchronized/synchronized.dart';
 
 /// Add a leading zero, if required, to ensure that an integer is rendered
 /// as a two "digit" string.
@@ -206,4 +206,17 @@ String filenameWithSuffix(String filename, String suffix) {
     .take(parts.length - 1)
     .join('.');
   return '$filenameWithoutExtension$suffix.${parts.last}';
+}
+
+extension ReturnFromCriticalSection on Lock {
+  /// Enter the critical section, await [criticalSection] and return its return value.
+  Future<T> withReturn<T>(Future<T> Function() criticalSection) async {
+    T? value;
+
+    await synchronized(() async {
+      value = await criticalSection();
+    });
+
+    return value!;
+  }
 }

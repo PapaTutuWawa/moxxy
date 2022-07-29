@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/xmpp/buffer.dart';
 import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/iq.dart';
@@ -83,6 +84,7 @@ class XmppConnection {
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
+    _connectionStateLock = Lock(),
     _routingState = RoutingState.preConnection,
     _eventStreamController = StreamController.broadcast(),
     _resource = '',
@@ -114,18 +116,30 @@ class XmppConnection {
       _socket.getEventStream().listen(_handleSocketEvent);
   }
 
-  final StreamController<XmppEvent> _eventStreamController;
+
+  /// Connection properties
+  ///
+  /// The state that the connection currently is in and its corresponding critical section
+  XmppConnectionState _connectionState;
+  final Lock _connectionStateLock;
+  /// The socket that we are using for the connection and its data stream
+  final BaseSocketWrapper _socket;
+  late final Stream<String> _socketStream;
+  /// Account settings
+  late ConnectionSettings _connectionSettings;
+  /// A policy on how to reconnect 
+  final ReconnectionPolicy _reconnectionPolicy;
+  /// A list of stanzas we are tracking with its corresponding critical section
   final Map<String, Completer<XMLNode>> _awaitingResponse;
   final Lock _awaitingResponseLock;
-  final Map<String, XmppManagerBase> _xmppManagers;
+  
+  /// Helpers
+  ///
   final List<StanzaHandler> _incomingStanzaHandlers;
   final List<StanzaHandler> _outgoingPreStanzaHandlers;
   final List<StanzaHandler> _outgoingPostStanzaHandlers;
-  final BaseSocketWrapper _socket;
-  XmppConnectionState _connectionState;
-  late final Stream<String> _socketStream;
-  late ConnectionSettings _connectionSettings;
-  final ReconnectionPolicy _reconnectionPolicy;
+  final StreamController<XmppEvent> _eventStreamController;
+  final Map<String, XmppManagerBase> _xmppManagers;
   
   /// Stream properties
   ///
@@ -355,7 +369,11 @@ class XmppConnection {
   }
 
   /// Returns the ConnectionState of the connection
-  XmppConnectionState getConnectionState() => _connectionState;
+  Future<XmppConnectionState> getConnectionState() async {
+    return _connectionStateLock.withReturn(
+      () async => _connectionState,
+    );
+  }
   
   /// Sends an [XMLNode] without any further processing to the server.
   void sendRawXML(XMLNode node, { String? redact }) {
@@ -368,11 +386,11 @@ class XmppConnection {
   }
   
   /// Returns true if we can send data through the socket.
-  bool _canSendData() {
+  Future<bool> _canSendData() async {
     return [
       XmppConnectionState.connected,
       XmppConnectionState.connecting
-    ].contains(_connectionState);
+    ].contains(await getConnectionState());
   }
   
   /// Sends a [stanza] to the server. If stream management is enabled, then keeping track
@@ -421,14 +439,13 @@ class XmppConnection {
         _log.fine('Done');
 
         // This uses the StreamManager to behave like a send queue
-        final canSendData = _canSendData();
-        if (canSendData) {
+        if (await _canSendData()) {
           _socket.write(stanzaString);
 
           // Try to ack every stanza
           // NOTE: Here we have send an Ack request nonza. This is now done by StreamManagementManager when receiving the StanzaSentEvent
         } else {
-          _log.fine('_canSendData() returned false since _connectionState == $_connectionState');
+          _log.fine('_canSendData() returned false.');
         }
 
         _log.fine('Running post stanza handlers..');
@@ -447,31 +464,33 @@ class XmppConnection {
 
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
-  void _setConnectionState(XmppConnectionState state) {
-    // Ignore changes that are not really changes.
-    if (state == _connectionState) return;
-    
-    _log.finest('Updating _connectionState from $_connectionState to $state');
-    _connectionState = state;
+  Future<void> _setConnectionState(XmppConnectionState state) async {
+    await _connectionStateLock.synchronized(() async {
+      // Ignore changes that are not really changes.
+      if (state == _connectionState) return;
+      
+      _log.finest('Updating _connectionState from $_connectionState to $state');
+      _connectionState = state;
 
-    final sm = getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator);
-    _eventStreamController.add(
-      ConnectionStateChangedEvent(
-        state: state,
-        resumed: sm != null ? sm.isResumed : false,
-      ),
-    );
+      final sm = getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator);
+      _eventStreamController.add(
+        ConnectionStateChangedEvent(
+          state: state,
+          resumed: sm != null ? sm.isResumed : false,
+        ),
+      );
 
-    if (state == XmppConnectionState.connected) {
-      _log.finest('Starting _pingConnectionTimer');
-      _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
-    } else {
-      if (_connectionPingTimer != null) {
-        _log.finest('Destroying _pingConnectionTimer');
-        _connectionPingTimer!.cancel();
-        _connectionPingTimer = null;
+      if (state == XmppConnectionState.connected) {
+        _log.finest('Starting _pingConnectionTimer');
+        _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
+      } else {
+        if (_connectionPingTimer != null) {
+          _log.finest('Destroying _pingConnectionTimer');
+          _connectionPingTimer!.cancel();
+          _connectionPingTimer = null;
+        }
       }
-    }
+    });
   }
   
   /// Sets the routing state and logs the change
@@ -492,16 +511,19 @@ class XmppConnection {
   }  
   
   /// Timer callback to prevent the connection from timing out.
-  void _pingConnectionOpen(Timer timer) {
+  Future<void> _pingConnectionOpen(Timer timer) async {
     // Follow the recommendation of XEP-0198 and just request an ack. If SM is not enabled,
     // send a whitespace ping
     _log.finest('_pingConnectionTimer: Callback called.');
-    if (_connectionState == XmppConnectionState.connected) {
-      _log.finest('_pingConnectionTimer: Connected. Triggering a ping event.');
-      _sendEvent(SendPingEvent());
-    } else {
-      _log.finest('_pingConnectionTimer: Not connected. Not triggering an event.');
-    }
+
+    await _connectionStateLock.synchronized(() async {
+      if (_connectionState == XmppConnectionState.connected) {
+        _log.finest('_pingConnectionTimer: Connected. Triggering a ping event.');
+        unawaited(_sendEvent(SendPingEvent()));
+      } else {
+        _log.finest('_pingConnectionTimer: Not connected. Not triggering an event.');
+      }
+    });
   }
 
   /// Iterate over [handlers] and check if the handler matches [stanza]. If it does,
@@ -616,7 +638,7 @@ class XmppConnection {
   /// a disco sweep among other things.
   Future<void> _onNegotiationsDone() async {
     // Set the connection state
-    _setConnectionState(XmppConnectionState.connected);
+    await _setConnectionState(XmppConnectionState.connected);
 
     // Resolve the connection completion future
     _connectionCompleter?.complete(const XmppConnectionResult(true));
@@ -826,7 +848,7 @@ class XmppConnection {
     _disconnecting = true;
     getPresenceManager().sendUnavailablePresence();
     sendRawString('</stream:stream>');
-    _setConnectionState(XmppConnectionState.notConnected);
+    await _setConnectionState(XmppConnectionState.notConnected);
     _socket.close();
 
     // Clear Stream Management state, if available
@@ -852,6 +874,14 @@ class XmppConnection {
  
   /// Start the connection process using the provided connection settings.
   Future<void> connect({ String? lastResource }) async {
+    final isConnecting = await _connectionStateLock.withReturn(
+      () async => _connectionState != XmppConnectionState.notConnected,
+    );
+    if (isConnecting) {
+      _log.fine('Cancelling this connection attempt as one appears to be already running.');
+      return;
+    }
+    
     _runPreConnectionAssertions();
     _reconnectionPolicy.setShouldReconnect(true);
     _disconnecting = false;
@@ -885,7 +915,7 @@ class XmppConnection {
       _reconnectionPolicy.onSuccess();
       _log.fine('Preparing the internal state for a connection attempt');
       _resetNegotiators();
-      _setConnectionState(XmppConnectionState.connecting);
+      await _setConnectionState(XmppConnectionState.connecting);
       _updateRoutingState(RoutingState.negotiating);
       _isAuthenticated = false;
       _sendStreamHeader();
