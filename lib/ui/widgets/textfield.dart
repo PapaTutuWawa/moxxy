@@ -21,6 +21,8 @@ class CustomTextField extends StatelessWidget {
       this.isDense = false,
       this.contentPadding = textfieldPaddingRegular,
       this.enableIMEFeatures = true,
+      this.backgroundColor,
+      this.textColor,
       Key? key,
   }) : super(key: key);
   final double cornerRadius;
@@ -38,18 +40,21 @@ class CustomTextField extends StatelessWidget {
   final bool enableIMEFeatures; // suggestions and autocorrect
   final int maxLines;
   final int minLines;
+  final Color? backgroundColor;
+  final Color? textColor;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
-  
+
   @override
   Widget build(BuildContext context) {
+    final style = textColor != null ? TextStyle(color: textColor) : null;
     return Column(
       children: [
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(cornerRadius),
-            // TODO(Unknown): Test with light theme
-            color: Theme.of(context).backgroundColor,
+            color: backgroundColor,
+            boxShadow: const [BoxShadow(blurRadius: 6)],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,6 +69,7 @@ class CustomTextField extends StatelessWidget {
                 onChanged: onChanged,
                 enableSuggestions: enableIMEFeatures,
                 autocorrect: enableIMEFeatures,
+                style: style,
                 decoration: InputDecoration(
                   labelText: labelText,
                   hintText: hintText,
@@ -73,6 +79,9 @@ class CustomTextField extends StatelessWidget {
                   suffix: suffix,
                   suffixText: suffixText,
                   isDense: isDense,
+                  labelStyle: style,
+                  suffixStyle: style,
+                  hintStyle: style,
                 ),
               )
             ],

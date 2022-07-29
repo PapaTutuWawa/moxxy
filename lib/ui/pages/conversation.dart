@@ -174,6 +174,15 @@ class _ConversationBottomRow extends StatelessWidget {
   const _ConversationBottomRow(this.controller, this.isSpeedDialOpen);
   final TextEditingController controller;
   final ValueNotifier<bool> isSpeedDialOpen;
+
+  Color _getTextColor(BuildContext context) {
+    // TODO(Unknown): Work on the colors
+    if (MediaQuery.of(context).platformBrightness == Brightness.dark) {
+      return Colors.white;
+    }
+
+    return Colors.black;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -187,6 +196,9 @@ class _ConversationBottomRow extends StatelessWidget {
             children: [
               Expanded(
                 child: CustomTextField(
+                  // TODO(Unknown): Work on the colors
+                  backgroundColor: Theme.of(context).backgroundColor,
+                  textColor: _getTextColor(context),
                   maxLines: 5,
                   hintText: 'Send a message...',
                   isDense: true,
