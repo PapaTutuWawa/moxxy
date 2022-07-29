@@ -199,6 +199,7 @@ class _ConversationBottomRow extends StatelessWidget {
                   // TODO(Unknown): Work on the colors
                   backgroundColor: Theme.of(context).backgroundColor,
                   textColor: _getTextColor(context),
+                  enableBoxShadow: true,
                   maxLines: 5,
                   hintText: 'Send a message...',
                   isDense: true,

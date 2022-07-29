@@ -23,6 +23,7 @@ class CustomTextField extends StatelessWidget {
       this.enableIMEFeatures = true,
       this.backgroundColor,
       this.textColor,
+      this.enableBoxShadow = false,
       Key? key,
   }) : super(key: key);
   final double cornerRadius;
@@ -38,6 +39,7 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final bool isDense;
   final bool enableIMEFeatures; // suggestions and autocorrect
+  final bool enableBoxShadow;
   final int maxLines;
   final int minLines;
   final Color? backgroundColor;
@@ -54,7 +56,7 @@ class CustomTextField extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(cornerRadius),
             color: backgroundColor,
-            boxShadow: const [BoxShadow(blurRadius: 6)],
+            boxShadow: enableBoxShadow ? const [BoxShadow(blurRadius: 6)] : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
