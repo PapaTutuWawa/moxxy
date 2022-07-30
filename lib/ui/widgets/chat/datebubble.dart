@@ -13,8 +13,7 @@ class DateBubble extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(12)),
-          color: Theme.of(context).backgroundColor.withAlpha(180),
-          boxShadow: const [BoxShadow(blurRadius: 6)],
+          color: Theme.of(context).backgroundColor.withAlpha(160),
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(
