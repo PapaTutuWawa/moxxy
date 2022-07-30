@@ -75,6 +75,76 @@ String formatMessageTimestamp(int timestamp, int now) {
   }
 }
 
+/// Turn [day], which is an integer between 1 and 7, into the name of the day of the week.
+String weekdayToStringAbbrev(int day) {
+  switch (day) {
+    case DateTime.monday:
+      return 'Mon';
+    case DateTime.tuesday:
+      return 'Tue';
+    case DateTime.wednesday:
+      return 'Wed';
+    case DateTime.thursday:
+      return 'Thu';
+    case DateTime.friday:
+      return 'Fri';
+    case DateTime.saturday:
+      return 'Sat';
+    case DateTime.sunday:
+      return 'Sun';
+  }
+
+  // Should not happen
+  throw Exception();
+}
+
+/// Turn [month], which is an integer between 1 and 12, into the name of the month.
+String monthToString(int month) {
+  switch (month) {
+    case DateTime.january:
+      return 'January';
+    case DateTime.february:
+      return 'February';
+    case DateTime.march:
+      return 'March';
+    case DateTime.april:
+      return 'April';
+    case DateTime.may:
+      return 'May';
+    case DateTime.june:
+      return 'June';
+    case DateTime.july:
+      return 'July';
+    case DateTime.august:
+      return 'August';
+    case DateTime.september:
+      return 'September';
+    case DateTime.october:
+      return 'October';
+    case DateTime.november:
+      return 'November';
+    case DateTime.december:
+      return 'December';
+  }
+
+  // Should not happen
+  throw Exception();
+}
+
+/// Format both the timestamp [dt] of the message and the current timestamp into a string
+/// like 'Today', 'Yesterday', 'Fri, 7. August' or '6. August 2022'.
+String formatDateBubble(DateTime dt, DateTime now) {
+  if (dt.day == now.day && dt.month == now.month && dt.year == now.year) {
+    return 'Today';
+  } else if (now.subtract(const Duration(days: 1)).day == now.day) {
+    return 'Yesterday';
+  } else if (dt.year == now.year) {
+    return '${weekdayToStringAbbrev(dt.weekday)}, ${dt.day}. ${monthToString(dt.month)}';
+  } else {
+    return '${dt.day}. ${monthToString(dt.month)} ${dt.year}';
+  }
+}
+
 enum JidFormatError {
   none,
   empty,

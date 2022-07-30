@@ -318,7 +318,8 @@ class ConversationPageState extends State<ConversationPage> {
     final start = index - 1 < 0 ? true : state.messages[index - 1].sent != item.sent;
     final end = index + 1 >= state.messages.length ? true : state.messages[index + 1].sent != item.sent;
     final between = !start && !end;
-
+    final lastMessageTimestamp = index > 0 ? state.messages[index - 1].timestamp : null;
+    
     return SwipeableTile.swipeToTrigger(
       direction: SwipeDirection.horizontal,
       swipeThreshold: 0.2,
@@ -384,6 +385,7 @@ class ConversationPageState extends State<ConversationPage> {
         end: end,
         between: between,
         maxWidth: maxWidth,
+        lastMessageTimestamp: lastMessageTimestamp,
       ),
     );
   }

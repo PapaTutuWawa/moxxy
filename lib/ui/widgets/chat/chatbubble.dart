@@ -1,8 +1,10 @@
 // TODO(Unknown): The timestamp may be too light
 // TODO(Unknown): The timestamp is too small
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -14,6 +16,7 @@ class ChatBubble extends StatelessWidget {
       required this.start,
       required this.end,
       required this.maxWidth,
+      required this.lastMessageTimestamp,
       Key? key,
   }) : super(key: key);
   final Message message;
@@ -23,6 +26,8 @@ class ChatBubble extends StatelessWidget {
   final bool start;
   final bool end;
   final double maxWidth;
+  //
+  final int? lastMessageTimestamp;
   
   BorderRadius _getBorderRadius() {
     return BorderRadius.only(
@@ -57,9 +62,8 @@ class ChatBubble extends StatelessWidget {
       return bubbleColorReceived;
     }
   }
-  
-  @override
-  Widget build(BuildContext context) {
+
+  Widget _buildBubble(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
         left: !sentBySelf ? 8.0 : 0.0,
@@ -85,5 +89,41 @@ class ChatBubble extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildWithDateBubble(Widget widget, String dateString) {
+    return IntrinsicHeight(
+      child: Column(
+        children: [
+          DateBubble(dateString),
+          widget,
+        ],
+      ),
+    );
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    // lastMessageTimestamp == null means that there is no previous message
+    final thisMessageDateTime = DateTime.fromMillisecondsSinceEpoch(message.timestamp);
+    if (lastMessageTimestamp == null) {
+      return _buildWithDateBubble(
+        _buildBubble(context),
+        formatDateBubble(thisMessageDateTime, DateTime.now()),
+      );
+    }
+
+    final lastMessageDateTime = DateTime.fromMillisecondsSinceEpoch(lastMessageTimestamp!);
+
+    if (lastMessageDateTime.day != thisMessageDateTime.day ||
+        lastMessageDateTime.month != thisMessageDateTime.month ||
+        lastMessageDateTime.year != thisMessageDateTime.year) {
+      return _buildWithDateBubble(
+        _buildBubble(context),
+        formatDateBubble(lastMessageDateTime, DateTime.now()),
+      );
+    }
+
+    return _buildBubble(context);
   }
 }
