@@ -24,6 +24,8 @@ class CustomTextField extends StatelessWidget {
       this.backgroundColor,
       this.textColor,
       this.enableBoxShadow = false,
+      this.borderColor,
+      this.borderWidth,
       Key? key,
   }) : super(key: key);
   final double cornerRadius;
@@ -44,6 +46,8 @@ class CustomTextField extends StatelessWidget {
   final int minLines;
   final Color? backgroundColor;
   final Color? textColor;
+  final double? borderWidth;
+  final Color? borderColor;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
 
@@ -57,6 +61,10 @@ class CustomTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(cornerRadius),
             color: backgroundColor,
             boxShadow: enableBoxShadow ? const [BoxShadow(blurRadius: 6)] : null,
+            border: borderWidth != null && borderColor != null ? Border.all(
+              color: borderColor!,
+              width: borderWidth!,
+            ) : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
