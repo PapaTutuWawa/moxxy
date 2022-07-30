@@ -1,14 +1,17 @@
 {
   description = "Moxxy v2";
   inputs = {
-    nixpkgs.url = "github:PapaTutuWawa/nixpkgs/nixos-unstable-flutter-2.13.0-0.1.pre";
+    nixpkgs.url = "github:NANASHI0X74/nixpkgs/flutter-3-0-0";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
   outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs {
       inherit system;
-      config.android_sdk.accept_license = true;
+      config = {
+        android_sdk.accept_license = true;
+        allowUnfree = true;
+      };
     };
     android = pkgs.androidenv.composeAndroidPackages {
       # TODO: Find a way to pin these
@@ -35,7 +38,7 @@
   in {
     devShell = pkgs.mkShell {
       buildInputs = with pkgs; [
-        flutterPackages.beta pinnedJDK android.platform-tools flutterPackages.dart-beta scrcpy # Flutter/Android
+        flutter pinnedJDK android.platform-tools dart scrcpy # Flutter/Android
 	      pythonEnv gnumake # Build scripts
 	      gitlint jq # Code hygiene
 	      ripgrep # General utilities

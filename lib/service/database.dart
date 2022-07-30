@@ -171,7 +171,7 @@ class DatabaseService {
       c.sharedMedia.addAll(sharedMedia);
     }
 
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBConversations.put(c);
         await c.sharedMedia.save();
     });
@@ -204,7 +204,7 @@ class DatabaseService {
 
     c.sharedMedia.addAll(sharedMedia);
 
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBConversations.put(c);
     }); 
 
@@ -220,7 +220,7 @@ class DatabaseService {
       ..mime = mime
       ..timestamp = timestamp;
 
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBSharedMediums.put(s);
     });
 
@@ -273,7 +273,7 @@ class DatabaseService {
       }
     }
 
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBMessages.put(m);
     });
 
@@ -317,7 +317,7 @@ class DatabaseService {
       i.acked = acked;
     }
 
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBMessages.put(i);
     });
     await i.quotes.load();
@@ -334,7 +334,7 @@ class DatabaseService {
 
   /// Removes a roster item from the database and cache
   Future<void> removeRosterItem(int id) async {
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBRosterItems.delete(id);
     });
   }
@@ -360,7 +360,7 @@ class DatabaseService {
       ..ask = ask
       ..groups = groups;
 
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBRosterItems.put(rosterItem);
     });
 
@@ -399,7 +399,7 @@ class DatabaseService {
       i.ask = ask;
     }
 
-    await _isar.writeTxn((_isar) async {
+    await _isar.writeTxn(() async {
         await _isar.dBRosterItems.put(i);
     });
 
