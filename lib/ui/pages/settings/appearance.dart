@@ -14,8 +14,7 @@ import 'package:path_provider/path_provider.dart';
 class AppearancePage extends StatelessWidget {
   const AppearancePage({ Key? key }): super(key: key);
 
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const AppearancePage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const AppearancePage());
   
   // TODO(Unknown): Move this somewhere else to not mix UI and application logic
   Future<String?> _pickBackgroundImage() async {

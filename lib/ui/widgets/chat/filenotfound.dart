@@ -5,7 +5,7 @@ class FileNotFound extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       // TODO(Unknown): Maybe make this prettier
       decoration: const BoxDecoration(
         color: Colors.black45,

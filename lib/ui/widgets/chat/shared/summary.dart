@@ -15,10 +15,8 @@ class SharedSummaryWidget extends StatelessWidget {
     return SharedMediaContainer(
       ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.black38,
-          ),
+        child: ColoredBox(
+          color: Colors.black38,
           child: Center(
             child: Text(
               '+$number',

@@ -56,7 +56,7 @@ class CustomTextField extends StatelessWidget {
     final style = textColor != null ? TextStyle(color: textColor) : null;
     return Column(
       children: [
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(cornerRadius),
             color: backgroundColor,

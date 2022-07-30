@@ -113,10 +113,8 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).backgroundColor,
-        ),
+      child: ColoredBox(
+        color: Theme.of(context).backgroundColor,
         child: Padding(
           padding: const EdgeInsets.all(8),
           child: child,

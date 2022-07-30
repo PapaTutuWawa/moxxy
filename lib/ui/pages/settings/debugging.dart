@@ -12,8 +12,7 @@ class DebuggingPage extends StatelessWidget {
   final TextEditingController _portController;
   final TextEditingController _passphraseController;
 
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => DebuggingPage());
+  static MaterialPageRoute <dynamic>get route => MaterialPageRoute<dynamic>(builder: (_) => DebuggingPage());
   
   @override
   Widget build(BuildContext context) {

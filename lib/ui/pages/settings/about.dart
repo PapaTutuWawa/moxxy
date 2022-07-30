@@ -8,11 +8,10 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsAboutPage extends StatelessWidget {
   const SettingsAboutPage({ Key? key }) : super(key: key);
 
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const SettingsAboutPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const SettingsAboutPage());
   
   Future<void> _openUrl(String url) async {
-    if (!await launch(url)) {
+    if (!await launchUrl(Uri.parse(url))) {
       // TODO(Unknown): Show a popup to copy the url
     }
   }

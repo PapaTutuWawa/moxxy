@@ -28,9 +28,9 @@ enum EncryptionOption {
   none
 }
 
-PopupMenuItem popupItemWithIcon(dynamic value, String text, IconData icon) {
+PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData icon) {
   // ignore: implicit_dynamic_type
-  return PopupMenuItem(
+  return PopupMenuItem<dynamic>(
     value: value,
     child: Row(
       children: [
@@ -188,7 +188,7 @@ class _ConversationBottomRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationBloc, ConversationState>(
       buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage,
-      builder: (context, state) => Container(
+      builder: (context, state) => ColoredBox(
         color: const Color.fromRGBO(0, 0, 0, 0),
         child: Padding(
           padding: const EdgeInsets.all(8),
@@ -289,7 +289,7 @@ class _ConversationBottomRow extends StatelessWidget {
 class ConversationPage extends StatefulWidget {
   const ConversationPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute get route => MaterialPageRoute<dynamic>(builder: (context) => const ConversationPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const ConversationPage());
   
   @override
   ConversationPageState createState() => ConversationPageState();
@@ -357,7 +357,7 @@ class ConversationPageState extends State<ConversationPage> {
                     ),
                   )
                   .value,
-                  child: Container(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.3),
                       shape: BoxShape.circle,
@@ -393,7 +393,7 @@ class ConversationPageState extends State<ConversationPage> {
   /// Render a widget that allows the user to either block the user or add them to their
   /// roster
   Widget _renderNotInRosterWidget(ConversationState state, BuildContext context) {
-    return Container(
+    return ColoredBox(
       color: Colors.black38,
       child: SizedBox(
         height: 64,
@@ -449,9 +449,7 @@ class ConversationPageState extends State<ConversationPage> {
             right: 0,
             top: 0,
             bottom: 0,
-            child: Container(
-              color: Theme.of(context).backgroundColor,
-            ),
+            child: ColoredBox(color: Theme.of(context).backgroundColor),
           ),
           Positioned(
             left: 0,
@@ -478,9 +476,7 @@ class ConversationPageState extends State<ConversationPage> {
                 return SizedBox(
                   width: query.size.width,
                   height: query.size.height,
-                  child: Container(
-                    color: Theme.of(context).backgroundColor,
-                  ),
+                  child: ColoredBox(color: Theme.of(context).backgroundColor),
                 );
               },
             ),

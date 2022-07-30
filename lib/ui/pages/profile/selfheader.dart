@@ -53,8 +53,7 @@ class SelfProfileHeader extends StatelessWidget {
   }
   
   Future<void> _showJidQRCode(BuildContext context) async {
-    // ignore: implicit_dynamic_function
-    await showDialog(
+    await showDialog<dynamic>(
       context: context,
       builder: (BuildContext context) => SimpleDialog(
         children: [

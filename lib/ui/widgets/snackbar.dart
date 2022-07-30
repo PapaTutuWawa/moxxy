@@ -48,7 +48,7 @@ class PermanentSnackBarState extends State<PermanentSnackBar> with TickerProvide
   Widget build(BuildContext context) {
     return SlideTransition(
       position: _animation!,
-      child: Container(
+      child: ColoredBox(
         color: primaryColor,
         child: Padding(
           padding: const EdgeInsets.all(8),

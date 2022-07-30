@@ -19,7 +19,7 @@ import 'package:moxxyv2/ui/service/progress.dart';
 
 void setupEventHandler() {
   final handler = EventHandler()
-    ..addMatchers(<EventTypeMatcher>[
+    ..addMatchers(<EventTypeMatcher<dynamic>>[
       EventTypeMatcher<MessageAddedEvent>(onMessageAdded),
       EventTypeMatcher<MessageUpdatedEvent>(onMessageUpdated),
       EventTypeMatcher<ConversationUpdatedEvent>(onConversationUpdated),

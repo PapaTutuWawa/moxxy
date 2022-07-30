@@ -7,8 +7,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class SharedMediaPage extends StatelessWidget {
   const SharedMediaPage({ Key? key }) : super(key: key);
 
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const SharedMediaPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const SharedMediaPage());
   
   @override
   Widget build(BuildContext context) {

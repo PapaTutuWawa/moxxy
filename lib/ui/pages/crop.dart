@@ -8,8 +8,7 @@ class CropPage extends StatelessWidget {
   CropPage({ Key? key }) : _controller = CropController(), super(key: key);
   final CropController _controller;
  
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => CropPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => CropPage());
   
   Widget _buildImageBody(BuildContext context, CropState state) {
     return Stack(

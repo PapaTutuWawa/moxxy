@@ -24,8 +24,7 @@ class NetworkPage extends StatelessWidget {
 
   const NetworkPage({ Key? key }): super(key: key);
 
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const NetworkPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const NetworkPage());
   
   Widget _buildFileSizeListItem(BuildContext context, String text, int value, bool selected) {
     final textTheme = Theme.of(context).textTheme.subtitle2;
@@ -95,8 +94,7 @@ class NetworkPage extends StatelessWidget {
                   subtitle: 'The maximum file size for a file to be automatically downloaded',
                   subtitleMaxLines: 2,
                   onPressed: (context) {
-                    // ignore: implicit_dynamic_function
-                    showModalBottomSheet(
+                    showModalBottomSheet<dynamic>(
                       context: context,
                       builder: (BuildContext context) {
                         return Padding(

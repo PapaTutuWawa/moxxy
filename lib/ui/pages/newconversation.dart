@@ -11,8 +11,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class NewConversationPage extends StatelessWidget {
   const NewConversationPage({ Key? key }) : super(key: key);
  
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const NewConversationPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const NewConversationPage());
   
   Widget _renderIconEntry(IconData icon, String text, void Function() onTap) {
     return InkWell(
@@ -68,7 +67,7 @@ class NewConversationPage extends StatelessWidget {
                   onDismissed: (_) => context.read<NewConversationBloc>().add(
                     NewConversationRosterItemRemovedEvent(item.jid),
                   ),
-                  background: Container(
+                  background: ColoredBox(
                     color: Colors.red,
                     child: Padding(
                       padding: const EdgeInsets.all(16),

@@ -14,7 +14,7 @@ class SendFilesPage extends StatelessWidget {
  
   const SendFilesPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute get route => MaterialPageRoute<dynamic>(builder: (context) => const SendFilesPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const SendFilesPage());
 
   Widget _renderPreview(BuildContext context, String path, bool selected, int index) {
     final mime = lookupMimeType(path) ?? '';
@@ -79,7 +79,7 @@ class SendFilesPage extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.only(right: 4),
         child: SharedMediaContainer(
-          Container(
+          DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: Colors.black,
@@ -176,7 +176,7 @@ class SendFilesPage extends StatelessWidget {
                 bottom: 72,
                   child: SizedBox(
                   height: sharedMediaContainerDimension + 2 * barPadding,
-                  child: Container(
+                  child: ColoredBox(
                     color: const Color.fromRGBO(0, 0, 0, 0.7),
                     child: Padding(
                       padding: const EdgeInsets.all(barPadding),
@@ -191,7 +191,7 @@ class SendFilesPage extends StatelessWidget {
                             return _renderPreview(context, item, index == state.index, index);
                           } else {
                             return SharedMediaContainer(
-                              Container(
+                              DecoratedBox(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
                                   color: Colors.grey,

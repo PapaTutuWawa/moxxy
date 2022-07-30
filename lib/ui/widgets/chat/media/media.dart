@@ -179,13 +179,11 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 child: Stack(
                   alignment: Alignment.center,
-                  children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white60,
-                      ),
+                  children: const [
+                    ColoredBox(
+                      color: Colors.white60,
                     ),
-                    const Icon(
+                    Icon(
                       Icons.file_present,
                     ),
                   ],

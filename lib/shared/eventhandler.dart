@@ -36,10 +36,10 @@ class EventTypeMatcher<T> extends EventMatcher<T> {
 class EventHandler {
 
   EventHandler() : _matchers = List.empty(growable: true);
-  final List<EventMatcher> _matchers;
+  final List<EventMatcher<dynamic>> _matchers;
 
-  void addMatchers(List<EventMatcher> matchers) => _matchers.addAll(matchers);
-  void addMatcher(EventMatcher matcher) => _matchers.add(matcher);
+  void addMatchers(List<EventMatcher<dynamic>> matchers) => _matchers.addAll(matchers);
+  void addMatcher(EventMatcher<dynamic> matcher) => _matchers.add(matcher);
 
   /// Calls the callback of the first [EventMatcher] for which matches returns true.
   /// Returns true in that case. Otherwise, returns false if no [EventMatcher] matches.

@@ -20,7 +20,7 @@ class ConversationsPage extends StatelessWidget {
   const ConversationsPage({ Key? key }) : super(key: key);
 
   // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (context) => const ConversationsPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const ConversationsPage());
   
   Widget _listWrapper(BuildContext context, ConversationsState state) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
@@ -35,7 +35,7 @@ class ConversationsPage extends StatelessWidget {
             onDismissed: (direction) => context.read<ConversationsBloc>().add(
               ConversationClosedEvent(item.jid),
             ),
-            background: Container(
+            background: ColoredBox(
               color: Colors.red,
               child: Padding(
                 padding: const EdgeInsets.all(16),

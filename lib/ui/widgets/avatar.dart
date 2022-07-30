@@ -51,7 +51,7 @@ class AvatarWrapper extends StatelessWidget {
         Positioned(
           bottom: 0,
           right: 0,
-          child: Container(
+          child: DecoratedBox(
             decoration: const BoxDecoration(
               color: Colors.black38,
               shape: BoxShape.circle,

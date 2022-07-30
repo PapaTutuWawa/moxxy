@@ -10,7 +10,7 @@ class SharedFileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SharedMediaContainer(
-      Container(
+      DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: Colors.white60,

@@ -18,7 +18,7 @@ class LicenseRow extends StatelessWidget {
   final Library library;
 
   Future<void> _openUrl() async {
-    if (!await launch(library.url)) {
+    if (!await launchUrl(Uri.parse(library.url))) {
       // TODO(Unknown): Show a popup to copy the url
     }
   }
@@ -36,8 +36,7 @@ class LicenseRow extends StatelessWidget {
 class SettingsLicensesPage extends StatelessWidget {
   const SettingsLicensesPage({ Key? key }) : super(key: key);
 
-  // ignore: implicit_dynamic_type
-  static MaterialPageRoute get route => MaterialPageRoute(builder: (_) => const SettingsLicensesPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const SettingsLicensesPage());
   
   @override
   Widget build(BuildContext context) {
