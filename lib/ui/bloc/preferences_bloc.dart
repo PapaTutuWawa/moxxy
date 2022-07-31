@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -6,6 +7,7 @@ import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/service/thumbnail.dart';
 
 part 'preferences_event.dart';
 
@@ -50,6 +52,14 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   }
 
   Future<void> _onBackgroundImageSet(BackgroundImageSetEvent event, Emitter<PreferencesState> emit) async {
+    if (state.backgroundPath.isNotEmpty) {
+      // Invalidate the old entry
+      await GetIt.I.get<ThumbnailCacheService>().invalidateEntry(state.backgroundPath);
+    }
+
+    // Cache the new entry
+    unawaited(GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(event.backgroundPath));
+    
     add(
       PreferencesChangedEvent(
         state.copyWith(backgroundPath: event.backgroundPath),

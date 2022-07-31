@@ -48,6 +48,13 @@ class ThumbnailCacheService {
   final LRUCache<String, Uint8List> _thumbnailCache;
   final Semaphore _cacheSemaphore;
 
+  Future<void> invalidateEntry(String path) async {
+    _log.fine('invalidateEntry: Waiting to aquire semaphore...');
+    await _cacheSemaphore.aquire();
+    _thumbnailCache.remove(path);
+    await _cacheSemaphore.release();
+  }
+  
   Future<Uint8List> getVideoThumbnail(String path) async {
     // Turning this into a critical section allows us to prevent multiple calls to the
     // isolate in case we generate thumbnails for the same path multiple times.

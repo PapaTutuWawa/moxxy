@@ -17,6 +17,10 @@ abstract class Cache<K, V> {
   /// Return all values that are cached
   @visibleForOverriding
   List<V> getValues();
+
+  /// Remove an item from the cache
+  @visibleForOverriding
+  void remove(K key);
 }
 
 class _LRUCacheEntry<V> {
@@ -63,5 +67,10 @@ class LRUCache<K, V> extends Cache<K, V> {
 
     _cache[key] = _LRUCacheEntry<V>(value, _t);
     _t++;
+  }
+
+  @override
+  void remove(K key) {
+    _cache.remove(key);
   }
 }
