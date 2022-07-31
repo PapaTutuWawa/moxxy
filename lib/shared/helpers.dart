@@ -136,7 +136,7 @@ String monthToString(int month) {
 String formatDateBubble(DateTime dt, DateTime now) {
   if (dt.day == now.day && dt.month == now.month && dt.year == now.year) {
     return 'Today';
-  } else if (now.subtract(const Duration(days: 1)).day == now.day) {
+  } else if (now.subtract(const Duration(days: 1)).day == dt.day) {
     return 'Yesterday';
   } else if (dt.year == now.year) {
     return '${weekdayToStringAbbrev(dt.weekday)}, ${dt.day}. ${monthToString(dt.month)}';

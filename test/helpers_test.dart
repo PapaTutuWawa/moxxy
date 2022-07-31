@@ -221,4 +221,38 @@ void main() {
       expect(filenameWithSuffix('test.png', ''), 'test.png');
     });
   });
+
+  test('formatDateBubble', () {
+    expect(
+      formatDateBubble(
+        DateTime(2022, 7, 31, 7, 26),
+        DateTime(2022, 7, 31, 11, 15),
+      ),
+      'Today',
+    );
+
+    expect(
+      formatDateBubble(
+        DateTime(2022, 7, 30, 22, 39),
+        DateTime(2022, 7, 31, 11, 15),
+      ),
+      'Yesterday',
+    );
+
+    expect(
+      formatDateBubble(
+        DateTime(2022, 7, 29, 7, 25),
+        DateTime(2022, 7, 31, 11, 15),
+      ),
+      'Fri, 29. July',
+    );
+
+    expect(
+      formatDateBubble(
+        DateTime(2019, 7, 29, 7, 25),
+        DateTime(2022, 7, 31, 11, 15),
+      ),
+      '29. July 2019',
+    );
+  });
 }
