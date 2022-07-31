@@ -1,12 +1,15 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -41,7 +44,10 @@ class AppearancePage extends StatelessWidget {
       await file.delete();
     }
     // TODO(Unknown): END
- 
+
+    // Remove from the cache
+    unawaited(GetIt.I.get<ThumbnailCacheService>().invalidateEntry(backgroundPath));
+    
     // ignore: use_build_context_synchronously
     context.read<PreferencesBloc>().add(
       PreferencesChangedEvent(
