@@ -528,7 +528,7 @@ packages:
     source: hosted
     version: "4.0.1"
   image:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: image
       url: "https://pub.dartlang.org"
@@ -987,6 +987,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.2"
+  stack_blur:
+    dependency: "direct main"
+    description:
+      name: stack_blur
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.2"
   stack_trace:
     dependency: transitive
     description:

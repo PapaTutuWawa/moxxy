@@ -12,6 +12,7 @@ import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
+import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
@@ -37,6 +38,7 @@ import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance.dart';
+import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
 import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
@@ -62,8 +64,7 @@ Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIProgressService>(UIProgressService());
   GetIt.I.registerSingleton<UIDataService>(UIDataService());
   GetIt.I.registerSingleton<ThumbnailCacheService>(ThumbnailCacheService());
-  await GetIt.I.get<UIDataService>().init();
-}
+  await GetIt.I.get<UIDataService>().init();}
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
@@ -77,6 +78,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<SharedMediaBloc>(SharedMediaBloc());
   GetIt.I.registerSingleton<CropBloc>(CropBloc());
   GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
+  GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -133,6 +135,9 @@ void main() async {
         ),
         BlocProvider<SendFilesBloc>(
           create: (_) => GetIt.I.get<SendFilesBloc>(),
+        ),
+        BlocProvider<CropBackgroundBloc>(
+          create: (_) => GetIt.I.get<CropBackgroundBloc>(),
         )
       ],
       child: MyApp(navKey),
@@ -243,6 +248,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case addContactRoute: return AddContactPage.route;
           case cropRoute: return CropPage.route;
           case sendFilesRoute: return SendFilesPage.route;
+          case backgroundCroppingRoute: return CropBackgroundPage.route;
         }
 
         return null;

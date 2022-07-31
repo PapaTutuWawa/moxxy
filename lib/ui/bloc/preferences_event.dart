@@ -16,3 +16,10 @@ class PreferencesChangedEvent extends PreferencesEvent {
 
 /// Triggered by the UI when signing out is requested
 class SignedOutEvent extends PreferencesEvent {}
+
+/// Triggered when a background image has been set
+class BackgroundImageSetEvent extends PreferencesEvent {
+
+  BackgroundImageSetEvent(this.backgroundPath);
+  final String backgroundPath;
+}

@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:moxxyv2/shared/preferences.dart';
+import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -29,26 +29,6 @@ class AppearancePage extends StatelessWidget {
     await File(result.files.single.path!).copy(backgroundPath);
 
     return backgroundPath;
-  }
-
-  Future<void> _setBackgroundImage(BuildContext context, PreferencesState state, String backgroundPath) async {
-    // TODO(Unknown): Handle this in the PreferencesBloc
-    final oldBackgroundImage = state.backgroundPath;
-    if (oldBackgroundImage.isNotEmpty) {
-      final file = File(oldBackgroundImage);
-
-      if (file.existsSync()) {
-        await file.delete();
-      }
-    }
-    // TODO(Unknown): END
-
-    // ignore: use_build_context_synchronously
-    context.read<PreferencesBloc>().add(
-      PreferencesChangedEvent(
-        state.copyWith(backgroundPath: backgroundPath),
-      ),
-    );
   }
 
   Future<void> _removeBackgroundImage(BuildContext context, PreferencesState state) async {
@@ -90,7 +70,9 @@ class AppearancePage extends StatelessWidget {
 
                     if (backgroundPath != null) {
                       // ignore: use_build_context_synchronously
-                      await _setBackgroundImage(context, state, backgroundPath);
+                      context.read<CropBackgroundBloc>().add(
+                        CropBackgroundRequestedEvent(backgroundPath),
+                      );
                     }
                   },
                 ),

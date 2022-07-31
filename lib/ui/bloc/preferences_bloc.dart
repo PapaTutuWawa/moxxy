@@ -13,6 +13,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   PreferencesBloc() : super(PreferencesState()) {
     on<PreferencesChangedEvent>(_onPreferencesChanged);
     on<SignedOutEvent>(_onSignedOut);
+    on<BackgroundImageSetEvent>(_onBackgroundImageSet);
   }
 
   Future<void> _onPreferencesChanged(PreferencesChangedEvent event, Emitter<PreferencesState> emit) async {
@@ -44,6 +45,14 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
       PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(loginRoute),
         (_) => true,
+      ),
+    );
+  }
+
+  Future<void> _onBackgroundImageSet(BackgroundImageSetEvent event, Emitter<PreferencesState> emit) async {
+    add(
+      PreferencesChangedEvent(
+        state.copyWith(backgroundPath: event.backgroundPath),
       ),
     );
   }
