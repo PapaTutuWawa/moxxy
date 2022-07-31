@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -16,7 +15,6 @@ import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
-import 'package:swipeable_tile/swipeable_tile.dart';
 
 enum ConversationOption {
   close,
@@ -29,7 +27,6 @@ enum EncryptionOption {
 }
 
 PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData icon) {
-  // ignore: implicit_dynamic_type
   return PopupMenuItem<dynamic>(
     value: value,
     child: Row(
@@ -320,73 +317,15 @@ class ConversationPageState extends State<ConversationPage> {
     final between = !start && !end;
     final lastMessageTimestamp = index > 0 ? state.messages[index - 1].timestamp : null;
     
-    return SwipeableTile.swipeToTrigger(
-      direction: SwipeDirection.horizontal,
-      swipeThreshold: 0.2,
-      onSwiped: (_) => context.read<ConversationBloc>().add(MessageQuotedEvent(item)),
-      backgroundBuilder: (_, direction, progress) {
-        // NOTE: Taken from https://github.com/watery-desert/swipeable_tile/blob/main/example/lib/main.dart#L240
-        //       and modified.
-        var vibrated = false;
-        return AnimatedBuilder(
-          animation: progress,
-          builder: (_, __) {
-            if (progress.value > 0.9999 && !vibrated) {
-              Vibrate.feedback(FeedbackType.light);
-              vibrated = true;
-            } else if (progress.value < 0.9999) {
-              vibrated = false;
-            }
-
-            return Container(
-              alignment: direction == SwipeDirection.endToStart ? Alignment.centerRight : Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: direction == SwipeDirection.endToStart ? 24.0 : 0.0,
-                  left: direction == SwipeDirection.startToEnd ? 24.0 : 0.0,
-                ),
-                child: Transform.scale(
-                  scale: Tween<double>(
-                    begin: 0,
-                    end: 1.2,
-                  )
-                  .animate(
-                    CurvedAnimation(
-                      parent: progress,
-                      curve: const Interval(0.5, 1,),
-                    ),
-                  )
-                  .value,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.reply,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-      isEelevated: false,
-      key: ValueKey('message;$item'),
-      child: ChatBubble(
-        message: item,
-        sentBySelf: item.sent,
-        start: start,
-        end: end,
-        between: between,
-        maxWidth: maxWidth,
-        lastMessageTimestamp: lastMessageTimestamp,
-      ),
+    return ChatBubble(
+      message: item,
+      sentBySelf: item.sent,
+      start: start,
+      end: end,
+      between: between,
+      maxWidth: maxWidth,
+      lastMessageTimestamp: lastMessageTimestamp,
+      onSwipedCallback: (_) => context.read<ConversationBloc>().add(MessageQuotedEvent(item)),
     );
   }
   
