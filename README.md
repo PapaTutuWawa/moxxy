@@ -13,8 +13,7 @@ The code is also available on [codeberg](https://codeberg.org/moxxy/moxxyv2).
 Clone using `git clone --recursive https://github.com/Polynomdivision/moxxyv2.git`.
 
 In order to build Moxxy, you need to have [Flutter](https://docs.flutter.dev/get-started/install) set
-up. Due to not yet merged code in Flutter, you are required to use a version of 2.13.0-0.1.pre or
-greater. If you are running NixOS or using Nix, you can also use the Flake at the root of the repository
+up. If you are running NixOS or using Nix, you can also use the Flake at the root of the repository
 by running `nix develop` to get a development shell including everything that is needed.
 
 Before building Moxxy, you need to generate all needed data classes. To do this, run
