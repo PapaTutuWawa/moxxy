@@ -6,5 +6,7 @@ class CropBackgroundState with _$CropBackgroundState {
     @Default('') String imagePath,
     @Default(null) Uint8List? image,
     @Default(false) bool blurEnabled,
+    @Default(0) int imageHeight,
+    @Default(0) int imageWidth,
   }) = _CropBackgroundState;
 }

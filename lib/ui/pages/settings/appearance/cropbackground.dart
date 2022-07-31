@@ -1,46 +1,80 @@
-import 'dart:typed_data';
-import 'package:crop_your_image/crop_your_image.dart';
+import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/button.dart';
 
 const cropperHeightFraction = 0.6;
 
-class CropBackgroundPage extends StatelessWidget {
+class CropBackgroundPage extends StatefulWidget {
 
-  CropBackgroundPage({ Key? key }) : _controller = CropController(), super(key: key);
-  final CropController _controller;
+  const CropBackgroundPage({ Key? key }) : super(key: key);
   
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => CropBackgroundPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const CropBackgroundPage());
 
-  Widget _buildImage(BuildContext context, Uint8List? bytes) {
+  @override
+  CropBackgroundPageState createState() => CropBackgroundPageState();
+}
+
+class CropBackgroundPageState extends State<CropBackgroundPage> {
+
+  CropBackgroundPageState() : _x = 0, _y = 0, _track = false, super();
+  double _x = 0;
+  double _y = 0;
+  bool _track = false;
+
+  double _scalingFactor(BuildContext context, CropBackgroundState state) {
     final size = MediaQuery.of(context).size;
 
-    if (bytes == null) {
-      return SizedBox(
-        width: size.width,
-        height: size.height * cropperHeightFraction,
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+    final q = size.height / state.imageHeight;
+    final delta = size.width - state.imageWidth * q;
+    if (delta > 0) {
+      return size.width / state.imageWidth;
+    } else {
+      return q;
+    }
+  }
+
+  Widget _buildImage(BuildContext context, CropBackgroundState state) {
+    if (state.image == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
       );
     }
 
-    return SizedBox(
-      width: size.width,
-      height: size.height * cropperHeightFraction,
-      child: Crop(
-        image: bytes,
-        controller: _controller,
-        onCropped: (image) {
-          context.read<CropBackgroundBloc>().add(BackgroundSetEvent(image));
-        },
-        aspectRatio: size.width / size.height,
-        initialSize: 0.8,
-        baseColor: Colors.black,
-      ),
-    );
+    final q = _scalingFactor(context, state);
+    if (state.blurEnabled) {
+      return Positioned(
+        top: _y,
+        left: _x,
+        child: ImageFiltered(
+          imageFilter: ImageFilter.blur(
+            sigmaX: 10,
+            sigmaY: 10,
+          ),
+          child: Image.memory(
+            state.image!,
+            width: state.imageWidth * q,
+            height: state.imageHeight * q,
+            fit: BoxFit.contain,
+          ),
+        ),
+      );
+    } else {
+      return Positioned(
+        top: _y,
+        left: _x,
+        child: Image.memory(
+          state.image!,
+          width: state.imageWidth * q,
+          height: state.imageHeight * q,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
   }
   
   @override
@@ -51,35 +85,105 @@ class CropBackgroundPage extends StatelessWidget {
           context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
           return true;
         },
-        child: Scaffold(
-          appBar: BorderlessTopbar.justBackButton(),
-          body: Column(
-            children: [
-              _buildImage(context, state.image),
-              IntrinsicWidth(
-                child: Row(
-                  children: [
-                    const Text('Blur image'),
-                    Switch(
-                      value: state.blurEnabled,
-                      onChanged: (_) {
-                        if (state.image == null) return;
-                        
-                        context.read<CropBackgroundBloc>().add(BlurToggledEvent());
-                      },
+        child: SafeArea(
+          child: Listener(
+            onPointerDown: (_) => _track = true,
+            onPointerUp: (_) => _track = false,
+            onPointerMove: (event) {
+              if (!_track) return;
+
+              final query = MediaQuery.of(context);
+              final q = _scalingFactor(context, state);
+              setState(() {
+                _x = min(
+                  max(
+                    _x + event.localDelta.dx,
+                    query.size.width - state.imageWidth * q,
+                  ),
+                  0,
+                );
+                _y = min(
+                  max(
+                    _y + event.localDelta.dy,
+                    query.size.height - state.imageHeight * q,
+                  ),
+                  0,
+                );
+              });
+            },
+            child: Stack(
+              children: [
+                _buildImage(context, state),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Material(
+                    color: const Color.fromRGBO(0, 0, 0, 0),
+                    child: IconButton(
+                      color: Colors.white,
+                      icon: const Icon(Icons.close),
+                      onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: ElevatedButton(
-                  onPressed: state.image != null ? _controller.crop : () {},
-                  child: const Text('Set as chat background'),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Material(
+                    color: const Color.fromRGBO(0, 0, 0, 0),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(0, 0, 0, 0.6),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: IntrinsicWidth(
+                        child: Row(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Text('Blur background'),
+                            ),
+                            Switch(
+                              value: state.blurEnabled,
+                              onChanged: (_) {
+                                context.read<CropBackgroundBloc>()
+                                .add(BlurToggledEvent());
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 8,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      RoundedButton(
+                      color: primaryColor,
+                      cornerRadius: 100,
+                      onTap: () {
+                        context.read<CropBackgroundBloc>().add(
+                          BackgroundSetEvent(
+                            _x,
+                            _y,
+                            _scalingFactor(context, state),
+                            MediaQuery.of(context).size.height,
+                            MediaQuery.of(context).size.width,
+                          ),
+                        );
+                      },
+                      child: const Text('Set as background image'),
+                    ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

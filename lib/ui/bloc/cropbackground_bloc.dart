@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:isolate';
 import 'dart:typed_data';
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -16,17 +15,6 @@ part 'cropbackground_bloc.freezed.dart';
 part 'cropbackground_event.dart';
 part 'cropbackground_state.dart';
 
-void _blurImage(List<dynamic> values) {
-  final port = values[0] as SendPort;
-  final bytes = values[1] as Uint8List;
-  
-  final image = decodeImage(bytes)!;
-  final pixels = image.data;
-  stackBlurRgba(pixels, image.width, image.height, 42);
-
-  port.send(Uint8List.fromList(encodePng(image)));
-}
-
 class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> {
 
   CropBackgroundBloc() : super(CropBackgroundState()) {
@@ -37,7 +25,15 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
   }
 
   void _resetState(Emitter<CropBackgroundState> emit) {
-    emit(state.copyWith(image: null, blurEnabled: false, imagePath: ''));
+    emit(
+      state.copyWith(
+        image: null,
+        blurEnabled: false,
+        imagePath: '',
+        imageHeight: 0,
+        imageWidth: 0,
+      ),
+    );
   }
   
   Future<void> _onRequested(CropBackgroundRequestedEvent event, Emitter<CropBackgroundState> emit) async {
@@ -47,7 +43,15 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
     );
 
     final data = await File(event.path).readAsBytes();
-    emit(state.copyWith(image: data, imagePath: event.path));
+    final image = decodeImage(data)!;
+    emit(
+      state.copyWith(
+        image: data,
+        imagePath: event.path,
+        imageWidth: image.width,
+        imageHeight: image.height,
+      ),
+    );
   }
 
   Future<void> _onReset(CropBackgroundResetEvent event, Emitter<CropBackgroundState> emit) async {
@@ -55,33 +59,37 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
   }
 
   Future<void> _onBlurToggled(BlurToggledEvent event, Emitter<CropBackgroundState> emit) async {
-    // Show the loading spinner
-    final bytes = state.image!;
-    final blurEnabled = state.blurEnabled;
-    emit(state.copyWith(image: null, blurEnabled: !state.blurEnabled));
-
-    if (blurEnabled) {
-      final data = await File(state.imagePath).readAsBytes();
-      emit(state.copyWith(image: data));
-    } else {
-      final port = ReceivePort();
-      await Isolate.spawn(_blurImage, [ port.sendPort, bytes ]);
-      final blurredData = await port.first as Uint8List;
-
-      emit(state.copyWith(image: blurredData));
-    }
+    emit(state.copyWith(blurEnabled: !state.blurEnabled));
   }
 
   Future<void> _onBackgroundSet(BackgroundSetEvent event, Emitter<CropBackgroundState> emit) async {
-    // Show loading spinner
-    _resetState(emit);
-
-    // Save the image
     final appDir = await getApplicationDocumentsDirectory();
-    final backgroundPath = path.join(appDir.path, 'background_image');
-    await File(backgroundPath).writeAsBytes(event.image);
+    final backgroundPath = path.join(appDir.path, 'background_image.png');
 
-    // TODO(Unknown): Already cache it
+    // TODO(PapaTutuWawa): Do this in a separate isolate
+    // Transform the values back down to the original image
+    final inverse = 1 / event.q;
+    final xp = (event.x.abs() * inverse).toInt();
+    final yp = (event.y.abs() * inverse).toInt();
+    final image = decodeImage(await File(state.imagePath).readAsBytes())!;
+    final cropped = copyCrop(
+      image,
+      xp,
+      yp,
+      (event.viewportWidth * inverse).toInt(),
+      (event.viewportHeight * inverse).toInt(),
+    );
+
+    // NOTE: Technically, ImageFilter.blur implements a Gaussian blur, but I would have
+    //       implement it myself...
+    if (state.blurEnabled) {
+      stackBlurRgba(cropped.data, cropped.width, cropped.height, 20);
+    }
+
+    // Save it
+    await File(backgroundPath).writeAsBytes(encodePng(cropped));
+
+    _resetState(emit);
 
     GetIt.I.get<PreferencesBloc>().add(BackgroundImageSetEvent(backgroundPath));
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
