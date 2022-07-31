@@ -338,7 +338,7 @@ class XmppConnection {
   }
   
   /// Called when a stream ending error has occurred
-  void handleError(Object? error) {
+  Future<void> handleError(Object? error) async {
     if (error != null) {
       _log.severe('handleError: $error');
     } else {
@@ -346,13 +346,14 @@ class XmppConnection {
     } 
 
     // TODO(Unknown): This may be too harsh for every error
+    await _setConnectionState(XmppConnectionState.notConnected);
     _reconnectionPolicy.onFailure();
   }
 
   /// Called whenever the socket creates an event
-  void _handleSocketEvent(XmppSocketEvent event) {
+  Future<void> _handleSocketEvent(XmppSocketEvent event) async {
     if (event is XmppSocketErrorEvent) {
-      handleError(event.error);
+      await handleError(event.error);
     } else if (event is XmppSocketClosureEvent) {
       // Only reconnect if we didn't expect this
       if (!_disconnecting) {
@@ -780,7 +781,7 @@ class XmppConnection {
         // Check if we received a stream error
         if (node.tag == 'stream:error') {
           _log.severe('Received a stream error! Attempting reconnection');
-          handleError('Stream error');
+          await handleError('Stream error');
           
           return;
         }
@@ -910,7 +911,7 @@ class XmppConnection {
       port: port,
     );
     if (!result) {
-      handleError(null);
+      await handleError(null);
     } else {
       _reconnectionPolicy.onSuccess();
       _log.fine('Preparing the internal state for a connection attempt');

@@ -48,7 +48,7 @@ class PingManager extends XmppManagerBase {
         }
       }
     } else if (event is AckRequestResponseTimeoutEvent) {
-      getAttributes().getConnection().handleError(event);
+      await getAttributes().getConnection().handleError(event);
     }
   }
 }
