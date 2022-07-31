@@ -8,5 +8,6 @@ class CropBackgroundState with _$CropBackgroundState {
     @Default(false) bool blurEnabled,
     @Default(0) int imageHeight,
     @Default(0) int imageWidth,
+    @Default(false) bool isWorking,
   }) = _CropBackgroundState;
 }

@@ -7,8 +7,6 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 
-const cropperHeightFraction = 0.6;
-
 class CropBackgroundPage extends StatefulWidget {
 
   const CropBackgroundPage({ Key? key }) : super(key: key);
@@ -38,6 +36,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
     }
   }
 
+  
   Widget _buildImage(BuildContext context, CropBackgroundState state) {
     if (state.image == null) {
       return const Center(
@@ -76,12 +75,22 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
       );
     }
   }
+
+  Widget _buildLoadingSpinner(CropBackgroundState state) {
+    if (state.isWorking) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return const SizedBox();
+  }
   
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CropBackgroundBloc, CropBackgroundState>(
       builder: (BuildContext context, CropBackgroundState state) => WillPopScope(
         onWillPop: () async {
+          if (state.isWorking) return false;
+
           context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
           return true;
         },
@@ -146,8 +155,10 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                             Switch(
                               value: state.blurEnabled,
                               onChanged: (_) {
+                                if (state.isWorking) return;
+                                
                                 context.read<CropBackgroundBloc>()
-                                .add(BlurToggledEvent());
+                                  .add(BlurToggledEvent());
                               },
                             ),
                           ],
@@ -167,6 +178,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                       color: primaryColor,
                       cornerRadius: 100,
                       onTap: () {
+                        if (state.isWorking) return;
+
                         context.read<CropBackgroundBloc>().add(
                           BackgroundSetEvent(
                             _x,
@@ -182,6 +195,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     ],
                   ),
                 ),
+                _buildLoadingSpinner(state),
               ],
             ),
           ),
