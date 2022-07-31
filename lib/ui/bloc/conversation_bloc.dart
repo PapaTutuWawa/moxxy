@@ -42,6 +42,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<BackgroundChangedEvent>(_onBackgroundChanged);
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
+    on<ScrollStateSetEvent>(_onScrollStateSet);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -300,5 +301,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     GetIt.I.get<SendFilesBloc>().add(
       SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.generic),
     );
+  }
+
+  Future<void> _onScrollStateSet(ScrollStateSetEvent event, Emitter<ConversationState> emit) async {
+    if (event.state == state.scrolledToBottom) return;
+
+    emit(state.copyWith(scrolledToBottom: event.state));
   }
 }

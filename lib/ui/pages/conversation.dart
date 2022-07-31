@@ -297,13 +297,24 @@ class ConversationPageState extends State<ConversationPage> {
   ConversationPageState() :
     _isSpeedDialOpen = ValueNotifier(false),
     _controller = TextEditingController(),
+    _scrollController = ScrollController(),
     super();
   final TextEditingController _controller;
   final ValueNotifier<bool> _isSpeedDialOpen;
+  final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
   
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
 
     super.dispose();
   }
@@ -370,6 +381,18 @@ class ConversationPageState extends State<ConversationPage> {
         ),
       ),
     );
+  }
+
+  /// Taken from https://bloclibrary.dev/#/flutterinfinitelisttutorial
+  bool _isScrolledToBottom() {
+    if (!_scrollController.hasClients) return false;
+
+    return _scrollController.offset <= 10;
+  }
+  
+  void _onScroll() {
+
+    GetIt.I.get<ConversationBloc>().add(ScrollStateSetEvent(_isScrolledToBottom()));
   }
   
   @override
@@ -449,6 +472,7 @@ class ConversationPageState extends State<ConversationPage> {
                         itemCount: state.messages.length,
                         itemBuilder: (context, index) => _renderBubble(state, context, index, maxWidth),
                         shrinkWrap: true,
+                        controller: _scrollController,
                       ),
                     ),
                   ),
@@ -458,8 +482,39 @@ class ConversationPageState extends State<ConversationPage> {
               ),
             ),
           ),
+
+          Positioned(
+            right: 8,
+            bottom: 96,
+            child: BlocBuilder<ConversationBloc, ConversationState>(
+              buildWhen: (prev, next) => prev.scrolledToBottom != next.scrolledToBottom,
+              builder: (_, state) => _renderScrollToBottom(context, !state.scrolledToBottom),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Widget _renderScrollToBottom(BuildContext context, bool visible) {
+    if (visible) {
+      return Material(
+        color: const Color.fromRGBO(0, 0, 0, 0),
+        child: Ink(
+          decoration: ShapeDecoration(
+            color: Theme.of(context).backgroundColor,
+            shape: const CircleBorder(),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_downward),
+            onPressed: () {
+              // TODO(Unknown): Implement jumping to the bottom of the list
+            },
+          ),
+        ),
+      );
+    } else {
+      return const SizedBox();
+    }
+  }  
 }

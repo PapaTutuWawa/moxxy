@@ -107,3 +107,10 @@ class ImagePickerRequestedEvent extends ConversationEvent {}
 
 /// Triggered when the user wants to pick generic files for sending
 class FilePickerRequestedEvent extends ConversationEvent {}
+
+/// Triggered when we are scrolling
+class ScrollStateSetEvent extends ConversationEvent {
+
+  ScrollStateSetEvent(this.state);
+  final bool state;
+}
