@@ -184,7 +184,7 @@ class ChatBubble extends StatelessWidget {
         lastMessageDateTime.year != thisMessageDateTime.year) {
       return _buildWithDateBubble(
         _buildBubble(context),
-        formatDateBubble(lastMessageDateTime, DateTime.now()),
+        formatDateBubble(thisMessageDateTime, DateTime.now()),
       );
     }
 
