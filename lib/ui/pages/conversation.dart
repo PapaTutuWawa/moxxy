@@ -508,7 +508,7 @@ class ConversationPageState extends State<ConversationPage> {
           child: IconButton(
             icon: const Icon(Icons.arrow_downward),
             onPressed: () {
-              // TODO(Unknown): Implement jumping to the bottom of the list
+              _scrollController.jumpTo(0);
             },
           ),
         ),
