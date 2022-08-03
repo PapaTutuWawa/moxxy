@@ -89,7 +89,7 @@ class XmppConnection {
     _eventStreamController = StreamController.broadcast(),
     _resource = '',
     _streamBuffer = XmlStreamBuffer(),
-    _disconnecting = false,
+    _expectSocketClosure = false,
     _uuid = const Uuid(),
     _socket = socket ?? TCPSocketWrapper(),
     _awaitingResponse = {},
@@ -158,7 +158,7 @@ class XmppConnection {
   String _resource;
   /// For indicating whether we expect the socket to close to prevent accidentally
   /// triggering a reconnection attempt when we don't want to.
-  bool _disconnecting;
+  bool _expectSocketClosure;
   /// True if we are authenticated. False if not.
   bool _isAuthenticated;
   /// Timers for the keep-alive ping.
@@ -260,6 +260,7 @@ class XmppConnection {
           () => _connectionSettings.jid.withResource(_resource),
           () => _socket,
           () => _isAuthenticated,
+          (bool value) => _expectSocketClosure = value,
         ),
       );
       _featureNegotiators[negotiator.id] = negotiator;
@@ -356,9 +357,12 @@ class XmppConnection {
       await handleError(event.error);
     } else if (event is XmppSocketClosureEvent) {
       // Only reconnect if we didn't expect this
-      if (!_disconnecting) {
-        _log.fine('Received XmppSocketClosureEvent, but _disconnecting is false. Reconnecting...');
+      if (!_expectSocketClosure) {
+        _log.fine('Received XmppSocketClosureEvent, but _expectSocketClosure is false. Reconnecting...');
         _attemptReconnection();
+      } else {
+        _log.fine('Received XmppSocketClosureEvent, but ignoring it since _expectSocketClosure is true. Setting _expectSocketClosure back to false');
+        _expectSocketClosure = false;
       }
     }
   }
@@ -846,7 +850,7 @@ class XmppConnection {
   /// Attempt to gracefully close the session
   Future<void> disconnect() async {
     _reconnectionPolicy.setShouldReconnect(false);
-    _disconnecting = true;
+    _expectSocketClosure = true;
     getPresenceManager().sendUnavailablePresence();
     sendRawString('</stream:stream>');
     await _setConnectionState(XmppConnectionState.notConnected);
@@ -885,7 +889,7 @@ class XmppConnection {
     
     _runPreConnectionAssertions();
     _reconnectionPolicy.setShouldReconnect(true);
-    _disconnecting = false;
+    _expectSocketClosure = false;
     
     if (lastResource != null) {
       setResource(lastResource);
