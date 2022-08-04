@@ -334,7 +334,15 @@ class XmppConnection {
   /// Attempts to reconnect to the server by following an exponential backoff.
   void _attemptReconnection() {
     _setConnectionState(XmppConnectionState.notConnected);
+
+    // Prevent the reconnection triggering another reconnection
+    _expectSocketClosure = true;
     _socket.close();
+
+    // Reset the state
+    _expectSocketClosure = false;
+
+    // Connect again
     connect();
   }
   
