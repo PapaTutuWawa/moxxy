@@ -332,18 +332,23 @@ class XmppConnection {
   }
 
   /// Attempts to reconnect to the server by following an exponential backoff.
-  void _attemptReconnection() {
-    _setConnectionState(XmppConnectionState.notConnected);
+  Future<void> _attemptReconnection() async {
+    if (await _reconnectionPolicy.isReconnectionRunning()) {
+      await _setConnectionState(XmppConnectionState.notConnected);
 
-    // Prevent the reconnection triggering another reconnection
-    _expectSocketClosure = true;
-    _socket.close();
+      // Prevent the reconnection triggering another reconnection
+      _expectSocketClosure = true;
+      _socket.close();
 
-    // Reset the state
-    _expectSocketClosure = false;
+      // Reset the state
+      _expectSocketClosure = false;
 
-    // Connect again
-    connect();
+      // Connect again
+      _log.finest('Calling connect() from _attemptReconnection');
+      await connect();
+    } else {
+      _log.finest('_attemptReconnection() has been called but _reconnectionPolicy is indicating that it is already reconnecting. Doing nothing...');
+    }
   }
   
   /// Called when a stream ending error has occurred
@@ -356,7 +361,7 @@ class XmppConnection {
 
     // TODO(Unknown): This may be too harsh for every error
     await _setConnectionState(XmppConnectionState.notConnected);
-    _reconnectionPolicy.onFailure();
+    await _reconnectionPolicy.onFailure();
   }
 
   /// Called whenever the socket creates an event
@@ -367,7 +372,7 @@ class XmppConnection {
       // Only reconnect if we didn't expect this
       if (!_expectSocketClosure) {
         _log.fine('Received XmppSocketClosureEvent, but _expectSocketClosure is false. Reconnecting...');
-        _attemptReconnection();
+        await _attemptReconnection();
       } else {
         _log.fine('Received XmppSocketClosureEvent, but ignoring it since _expectSocketClosure is true. Setting _expectSocketClosure back to false');
         _expectSocketClosure = false;
@@ -813,7 +818,7 @@ class XmppConnection {
 
     // Specific event handling
     if (event is AckRequestResponseTimeoutEvent) {
-      _reconnectionPolicy.onFailure();
+      await _reconnectionPolicy.onFailure();
     } else if (event is ResourceBindingSuccessEvent) {
       _log.finest('Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}');
       setResource(event.resource);
@@ -881,6 +886,7 @@ class XmppConnection {
   Future<XmppConnectionResult> connectAwaitable({ String? lastResource }) {
     _runPreConnectionAssertions();
     _connectionCompleter = Completer();
+    _log.finest('Calling connect() from connectAwaitable');
     connect(lastResource: lastResource);
     return _connectionCompleter!.future;
   }
@@ -903,7 +909,7 @@ class XmppConnection {
       setResource(lastResource);
     }
 
-    _reconnectionPolicy.reset();
+    await _reconnectionPolicy.reset();
 
     await _sendEvent(ConnectingEvent());
 
@@ -916,16 +922,18 @@ class XmppConnection {
       host = parsed.host;
       port = parsed.port;
     }
-    
+
+    _expectSocketClosure = true;
     final result = await _socket.connect(
       _connectionSettings.jid.domain,
       host: host,
       port: port,
     );
+    _expectSocketClosure = false;
     if (!result) {
       await handleError(null);
     } else {
-      _reconnectionPolicy.onSuccess();
+      await _reconnectionPolicy.onSuccess();
       _log.fine('Preparing the internal state for a connection attempt');
       _resetNegotiators();
       await _setConnectionState(XmppConnectionState.connecting);

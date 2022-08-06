@@ -2,43 +2,66 @@ import 'dart:async';
 import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:synchronized/synchronized.dart';
 
 abstract class ReconnectionPolicy {
 
-  ReconnectionPolicy() : _shouldAttemptReconnection = false;
+  ReconnectionPolicy()
+    : _shouldAttemptReconnection = false,
+      _isReconnecting = false,
+      _isReconnectingLock = Lock();
   /// Function provided by XmppConnection that allows the policy
   /// to perform a reconnection.
-  void Function()? performReconnect;
+  Future<void> Function()? performReconnect;
   /// Function provided by XmppConnection that allows the policy
   /// to say that we lost the connection.
   void Function()? triggerConnectionLost;
   /// Indicate if should try to reconnect.
   bool _shouldAttemptReconnection;
+  /// Indicate if a reconnection attempt is currently running.
+  bool _isReconnecting;
+  /// And the corresponding lock
+  final Lock _isReconnectingLock;
   
   /// Called by XmppConnection to register the policy.
-  void register(void Function() performReconnect, void Function() triggerConnectionLost) {
+  void register(Future<void> Function() performReconnect, void Function() triggerConnectionLost) {
     this.performReconnect = performReconnect;
     this.triggerConnectionLost = triggerConnectionLost;
 
-    reset();
+    unawaited(reset());
   }
   
   /// In case the policy depends on some internal state, this state must be reset
   /// to an initial state when reset is called. In case timers run, they must be
   /// terminated.
-  void reset();
+  Future<void> reset();
 
   /// Called by the XmppConnection when the reconnection failed.
-  void onFailure();
+  Future<void> onFailure();
 
   /// Caled by the XmppConnection when the reconnection was successful.
-  void onSuccess();
+  Future<void> onSuccess();
 
   bool get shouldReconnect => _shouldAttemptReconnection;
 
   /// Set whether a reconnection attempt should be made.
   void setShouldReconnect(bool value) {
     _shouldAttemptReconnection = value;
+  }
+
+  /// Returns true if the manager is currently triggering a reconnection. If not, returns
+  /// false.
+  Future<bool> isReconnectionRunning() async {
+    return _isReconnectingLock.withReturn(() async => _isReconnecting);
+  }
+
+  /// Set the _isReconnecting state to [value].
+  @protected
+  Future<void> setIsReconnecting(bool value) async {
+    await _isReconnectingLock.synchronized(() async {
+      _isReconnecting = value;
+    });
   }
 }
 
@@ -55,16 +78,23 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
   final Logger _log;
 
   /// Called when the backoff expired
-  void _onTimerElapsed() {
+  Future<void> _onTimerElapsed() async {
+    final isReconnecting = await isReconnectionRunning();
     if (shouldReconnect) {
-      performReconnect!();
+      if (!isReconnecting) {
+        await performReconnect!();
+      } else {
+        // Should never happen.
+        _log.fine('Backoff timer expired but reconnection is running, so doing nothing.');
+      }
     }
   }
   
   @override
-  void reset() {
+  Future<void> reset() async {
     _log.finest('Resetting internal state');
     _counter = 0;
+    await setIsReconnecting(false);
 
     if (_timer != null) {
       _timer!.cancel();
@@ -73,9 +103,10 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
   }
 
   @override
-  void onFailure() {
+  Future<void> onFailure() async {
     _log.finest('Failure occured. Starting exponential backoff');
     _counter++;
+    await setIsReconnecting(false);
 
     if (_timer != null) {
       _timer!.cancel();
@@ -87,8 +118,8 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
   }
 
   @override
-  void onSuccess() {
-    reset();
+  Future<void> onSuccess() async {
+    await reset();
   }
 }
 
@@ -98,11 +129,11 @@ class TestingReconnectionPolicy extends ReconnectionPolicy {
   TestingReconnectionPolicy() : super();
 
   @override
-  void onSuccess() {}
+  Future<void> onSuccess() async {}
 
   @override
-  void onFailure() {}
+  Future<void> onFailure() async {}
 
   @override
-  void reset() {}
+  Future<void> reset() async {}
 }

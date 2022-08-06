@@ -38,11 +38,11 @@ class MoxxyReconnectionPolicy extends ExponentialBackoffReconnectionPolicy {
   }
 
   @override
-  void onFailure() {
+  Future<void> onFailure() async {
     final state = GetIt.I.get<ConnectivityService>().currentState;
     if (state != ConnectivityResult.none) {
       _log.finest('Reconnection failed and connection available. Attempting again after backoff...');
-      super.onFailure();
+      await super.onFailure();
     } else {
       _log.finest('Reconnection failed and no connection available. Queuing reconnection attempt...');
       _failureQueued = true;
