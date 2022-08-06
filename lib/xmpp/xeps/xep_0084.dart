@@ -13,6 +13,26 @@ class UserAvatar {
   final String hash;
 }
 
+class UserAvatarMetadata {
+
+  const UserAvatarMetadata(
+    this.id,
+    this.length,
+    this.width,
+    this.height,
+    this.mime,
+  );
+  /// The amount of bytes in the file
+  final int length;
+  /// The identifier of the avatar
+  final String id;
+  /// Image proportions
+  final int width;
+  final int height;
+  /// The MIME type of the avatar
+  final String mime;
+}
+
 /// NOTE: This class requires a PubSubManager
 class UserAvatarManager extends XmppManagerBase {
   @override
@@ -74,14 +94,51 @@ class UserAvatarManager extends XmppManagerBase {
     );
   }
 
-  /// Subscribe the data node of [jid].
+  /// Publish avatar metadata [metadata] to the User Avatar's metadata node. If [public]
+  /// is true, then the node will be set to an 'open' access model. If [public] is false,
+  /// then the node will be set to an 'roster' access model.
+  Future<bool> publishUserAvatarMetadata(UserAvatarMetadata metadata, bool public) async {
+    final pubsub = _getPubSubManager();
+    return pubsub.publish(
+      getAttributes().getFullJID().toBare().toString(),
+      userAvatarMetadataXmlns,
+      XMLNode.xmlns(
+        tag: 'metadata',
+        xmlns: userAvatarMetadataXmlns,
+        children: [
+          XMLNode(
+            tag: 'info',
+            attributes: <String, String>{
+              'bytes': metadata.length.toString(),
+              'height': metadata.height.toString(),
+              'width': metadata.width.toString(),
+              'type': metadata.mime,
+              'id': metadata.id,
+            },
+          ),
+        ],
+      ),
+      id: metadata.id,
+      options: PubSubPublishOptions(
+        accessModel: public ? 'open' : 'roster',
+      ),
+    );
+  }
+  
+  /// Subscribe the data and metadata node of [jid].
   Future<bool> subscribe(String jid) async {
-    return _getPubSubManager().subscribe(jid, userAvatarDataXmlns);
+    await _getPubSubManager().subscribe(jid, userAvatarDataXmlns);
+    await _getPubSubManager().subscribe(jid, userAvatarMetadataXmlns);
+
+    return true;
   }
 
-  /// Unsubscribe the data node of [jid].
+  /// Unsubscribe the data and metadata node of [jid].
   Future<bool> unsubscribe(String jid) async {
-    return _getPubSubManager().unsubscribe(jid, userAvatarDataXmlns);
+    await _getPubSubManager().unsubscribe(jid, userAvatarDataXmlns);
+    await _getPubSubManager().subscribe(jid, userAvatarMetadataXmlns);
+
+    return true;
   }
 
   /// Returns the PubSub Id of an avatar after doing a disco#items query.

@@ -1,6 +1,5 @@
 import 'dart:isolate';
 import 'dart:typed_data';
-
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_isolate/flutter_isolate.dart';
 import 'package:logging/logging.dart';

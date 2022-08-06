@@ -30,6 +30,7 @@ const oobDataXmlns = 'jabber:x:oob';
 
 // XEP-0084
 const userAvatarDataXmlns = 'urn:xmpp:avatar:data';
+const userAvatarMetadataXmlns = 'urn:xmpp:avatar:metadata';
 
 // XEP-0085
 const chatStateXmlns = 'http://jabber.org/protocol/chatstates';

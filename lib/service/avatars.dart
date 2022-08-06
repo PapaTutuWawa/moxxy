@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
+import 'package:image/image.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -148,11 +148,31 @@ class AvatarService {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final public = prefs.isAvatarPublic;
 
-    return _getUserAvatarManager().publishUserAvatar(
+    // Read the image metadata
+    // TODO(PapaTutuWawa): I am unsure about how fast decodeImage is. If possible, just
+    //                     parse the header as we don't need more than that.
+    final image = decodeImage(bytes)!;
+    
+    // Publish data and metadata
+    final manager = _getUserAvatarManager();
+    await manager.publishUserAvatar(
       base64,
       hash,
       public,
     );
+    await manager.publishUserAvatarMetadata(
+      UserAvatarMetadata(
+        hash,
+        bytes.length,
+        image.width,
+        image.height,
+        // TODO(PapaTutuWawa): Maybe do a check here
+        'image/png',
+      ),
+      public,
+    );
+    
+    return true;
   }
 
   Future<void> requestOwnAvatar() async {
