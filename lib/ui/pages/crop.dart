@@ -2,13 +2,19 @@ import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 class CropPage extends StatelessWidget {
 
   CropPage({ Key? key }) : _controller = CropController(), super(key: key);
   final CropController _controller;
  
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => CropPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => CropPage(),
+    settings: const RouteSettings(
+      name: cropRoute,
+    ),
+  );
   
   Widget _buildImageBody(BuildContext context, CropState state) {
     return Stack(

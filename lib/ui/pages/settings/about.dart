@@ -8,7 +8,12 @@ import 'package:url_launcher/url_launcher.dart';
 class SettingsAboutPage extends StatelessWidget {
   const SettingsAboutPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const SettingsAboutPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const SettingsAboutPage(),
+    settings: const RouteSettings(
+      name: aboutRoute,
+    ),
+  );
   
   Future<void> _openUrl(String url) async {
     if (!await launchUrl(Uri.parse(url))) {

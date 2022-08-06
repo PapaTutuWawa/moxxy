@@ -286,7 +286,12 @@ class _ConversationBottomRow extends StatelessWidget {
 class ConversationPage extends StatefulWidget {
   const ConversationPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const ConversationPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (context) => const ConversationPage(),
+    settings: const RouteSettings(
+      name: conversationRoute,
+    ),
+  );
   
   @override
   ConversationPageState createState() => ConversationPageState();
@@ -398,7 +403,7 @@ class ConversationPageState extends State<ConversationPage> {
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
-    
+   
     return WillPopScope(
       onWillPop: () async {
         GetIt.I.get<ConversationBloc>().add(CurrentConversationResetEvent());

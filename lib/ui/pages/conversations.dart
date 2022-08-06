@@ -19,7 +19,12 @@ enum ConversationsOptions {
 class ConversationsPage extends StatelessWidget {
   const ConversationsPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const ConversationsPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (context) => const ConversationsPage(),
+    settings: const RouteSettings(
+      name: conversationsRoute,
+    ),
+  );
   
   Widget _listWrapper(BuildContext context, ConversationsState state) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;

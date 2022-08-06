@@ -11,7 +11,12 @@ class CropBackgroundPage extends StatefulWidget {
 
   const CropBackgroundPage({ Key? key }) : super(key: key);
   
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const CropBackgroundPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (context) => const CropBackgroundPage(),
+    settings: const RouteSettings(
+      name: backgroundCroppingRoute,
+    ),
+  );
 
   @override
   CropBackgroundPageState createState() => CropBackgroundPageState();

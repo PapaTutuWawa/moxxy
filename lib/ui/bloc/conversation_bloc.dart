@@ -50,7 +50,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   Timer? _composeTimer;
   /// The last time the text has been changed
   int _lastChangeTimestamp;
-
+  
   void _setLastChangeTimestamp() {
     _lastChangeTimestamp = DateTime.now().millisecondsSinceEpoch;
   }

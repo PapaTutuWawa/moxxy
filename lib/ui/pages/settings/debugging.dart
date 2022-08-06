@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class DebuggingPage extends StatelessWidget {
@@ -12,7 +13,12 @@ class DebuggingPage extends StatelessWidget {
   final TextEditingController _portController;
   final TextEditingController _passphraseController;
 
-  static MaterialPageRoute <dynamic>get route => MaterialPageRoute<dynamic>(builder: (_) => DebuggingPage());
+  static MaterialPageRoute <dynamic>get route => MaterialPageRoute<dynamic>(
+    builder: (_) => DebuggingPage(),
+    settings: const RouteSettings(
+      name: debuggingRoute,
+    ),
+  );
   
   @override
   Widget build(BuildContext context) {

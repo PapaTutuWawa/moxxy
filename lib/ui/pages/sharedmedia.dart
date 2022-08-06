@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class SharedMediaPage extends StatelessWidget {
   const SharedMediaPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const SharedMediaPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const SharedMediaPage(),
+    settings: const RouteSettings(
+      name: sharedMediaRoute,
+    ),
+  );
   
   @override
   Widget build(BuildContext context) {

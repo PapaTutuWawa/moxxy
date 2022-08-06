@@ -11,7 +11,12 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class NewConversationPage extends StatelessWidget {
   const NewConversationPage({ Key? key }) : super(key: key);
  
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const NewConversationPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const NewConversationPage(),
+    settings: const RouteSettings(
+      name: newConversationRoute,
+    ),
+  );
   
   Widget _renderIconEntry(IconData icon, String text, void Function() onTap) {
     return InkWell(

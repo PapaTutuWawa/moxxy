@@ -10,7 +10,12 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class AddContactPage extends StatelessWidget {
   const AddContactPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const AddContactPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const AddContactPage(),
+    settings: const RouteSettings(
+      name: addContactRoute,
+    ),
+  );
   
   @override
   Widget build(BuildContext context) {

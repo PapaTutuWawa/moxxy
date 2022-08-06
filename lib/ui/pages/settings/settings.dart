@@ -10,7 +10,12 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class SettingsPage extends StatelessWidget {
   const SettingsPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const SettingsPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const SettingsPage(),
+    settings: const RouteSettings(
+      name: settingsRoute,
+    ),
+  );
   
   @override
   Widget build(BuildContext context) {

@@ -9,7 +9,12 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class Login extends StatelessWidget {
   const Login({ Key? key }) : super(key: key);
  
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const Login());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const Login(),
+    settings: const RouteSettings(
+      name: loginRoute,
+    ),
+  );
   
   @override Widget build(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(

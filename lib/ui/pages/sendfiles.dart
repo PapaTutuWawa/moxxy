@@ -14,7 +14,12 @@ class SendFilesPage extends StatelessWidget {
  
   const SendFilesPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (context) => const SendFilesPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (context) => const SendFilesPage(),
+    settings: const RouteSettings(
+      name: sendFilesRoute,
+    ),
+  );
 
   Widget _renderPreview(BuildContext context, String path, bool selected, int index) {
     final mime = lookupMimeType(path) ?? '';

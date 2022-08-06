@@ -6,7 +6,12 @@ import 'package:moxxyv2/ui/widgets/button.dart';
 class Intro extends StatelessWidget {
   const Intro({ Key? key }) : super(key: key);
  
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const Intro());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const Intro(),
+    settings: const RouteSettings(
+      name: introRoute,
+    ),
+  );
   
   @override
   Widget build(BuildContext context) {

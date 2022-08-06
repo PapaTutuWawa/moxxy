@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -36,7 +37,12 @@ class LicenseRow extends StatelessWidget {
 class SettingsLicensesPage extends StatelessWidget {
   const SettingsLicensesPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const SettingsLicensesPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const SettingsLicensesPage(),
+    settings: const RouteSettings(
+      name: licensesRoute,
+    ),
+  );
   
   @override
   Widget build(BuildContext context) {

@@ -3,12 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class PrivacyPage extends StatelessWidget {
   const PrivacyPage({ Key? key }): super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const PrivacyPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const PrivacyPage(),
+    settings: const RouteSettings(
+      name: privacyRoute,
+    ),
+  );
   
   @override
   Widget build(BuildContext context) {

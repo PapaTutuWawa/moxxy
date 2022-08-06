@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -17,7 +18,12 @@ import 'package:path_provider/path_provider.dart';
 class AppearancePage extends StatelessWidget {
   const AppearancePage({ Key? key }): super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const AppearancePage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const AppearancePage(),
+    settings: const RouteSettings(
+      name: appearanceRoute,
+    ),
+  );
   
   // TODO(Unknown): Move this somewhere else to not mix UI and application logic
   Future<String?> _pickBackgroundImage() async {

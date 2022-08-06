@@ -12,7 +12,12 @@ enum BlocklistOptions {
 class BlocklistPage extends StatelessWidget {
   const BlocklistPage({ Key? key }) : super(key: key);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(builder: (_) => const BlocklistPage());
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+    builder: (_) => const BlocklistPage(),
+    settings: const RouteSettings(
+      name: blocklistRoute,
+    ),
+  );
   
   Widget _buildListView(BlocklistState state) {
     // ignore: non_bool_condition,avoid_dynamic_calls
