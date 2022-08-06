@@ -733,6 +733,14 @@ class XmppConnection {
   
   /// Called whenever we receive data that has been parsed as XML.
   Future<void> handleXmlStream(XMLNode node) async {
+    // Check if we received a stream error
+    if (node.tag == 'stream:error') {
+      _log.severe('Received a stream error! Attempting reconnection');
+      await handleError('Stream error');
+      
+      return;
+    }
+
     switch (_routingState) {
       case RoutingState.negotiating:
         // Why lock here? The problem is that if we do stream resumption, then we might
@@ -794,15 +802,7 @@ class XmppConnection {
           }
         });
         break;
-      case RoutingState.handleStanzas:
-        // Check if we received a stream error
-        if (node.tag == 'stream:error') {
-          _log.severe('Received a stream error! Attempting reconnection');
-          await handleError('Stream error');
-          
-          return;
-        }
-        
+      case RoutingState.handleStanzas:        
         await _handleStanza(node);
         break;
       case RoutingState.preConnection:
