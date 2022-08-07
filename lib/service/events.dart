@@ -23,8 +23,10 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
@@ -385,11 +387,16 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
-  final smNegotiator = conn.getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!;
+  final sm = conn.getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!;
+  final csi = conn.getNegotiatorById<CSINegotiator>(csiNegotiator)!;
+  final httpFileUpload = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
+  final userBlocking = conn.getManagerById<BlockingManager>(blockingManager)!;
   sendEvent(
     GetFeaturesEvent(
-      serverFeatures: conn.serverFeatures,
-      supportsStreamManagement: smNegotiator.isSupported,
+      supportsStreamManagement: sm.isSupported,
+      supportsCsi: csi.isSupported,
+      supportsHttpFileUpload: await httpFileUpload.isSupported(),
+      supportsUserBlocking: await userBlocking.isSupported(),
     ),
     id: id,
   );

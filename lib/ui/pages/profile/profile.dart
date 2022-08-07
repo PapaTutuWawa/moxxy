@@ -99,28 +99,37 @@ class ProfilePage extends StatelessWidget {
                                   TableRow(
                                     children: [
                                       const Text('Stream Management'),
-                                      Checkbox(value: state.streamManagementSupported, onChanged: (_) {}),
+                                      Checkbox(
+                                        value: state.streamManagementSupported,
+                                        onChanged: (_) {},
+                                      ),
                                     ],
                                   ),
                                   TableRow(
-                                    // TODO(PapaTutuWawa): Implement
                                     children: [
                                       const Text('HTTP File Upload'),
-                                      Checkbox(value: false, onChanged: (_) {}),
+                                      Checkbox(
+                                        value: state.httpFileUploadSupported,
+                                        onChanged: (_) {},
+                                      ),
                                     ],
                                   ),
                                   TableRow(
-                                    // TODO(PapaTutuWawa): Fix
                                     children: [
                                       const Text('User Blocking'),
-                                      Checkbox(value: false, onChanged: (_) {}),
+                                      Checkbox(
+                                        value: state.userBlockingSupported,
+                                        onChanged: (_) {},
+                                      ),
                                     ],
                                   ),
                                   TableRow(
-                                    // TODO(PapaTutuWawa): Implement
                                     children: [
                                       const Text('Client State Indication'),
-                                      Checkbox(value: false, onChanged: (_) {}),
+                                      Checkbox(
+                                        value: state.csiSupported,
+                                        onChanged: (_) {},
+                                      ),
                                     ],
                                   ),
                                 ],

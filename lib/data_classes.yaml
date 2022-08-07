@@ -159,7 +159,9 @@ files:
           - JsonImplementation
         attributes:
           supportsStreamManagement: bool
-          serverFeatures: List<String>
+          supportsCsi: bool
+          supportsUserBlocking: bool
+          supportsHttpFileUpload: bool
       # Returned by [SignOutCommand]
       - name: SignedOutEvent
         extends: BackgroundEvent

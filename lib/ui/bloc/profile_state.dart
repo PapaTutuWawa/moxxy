@@ -8,7 +8,9 @@ class ProfileState with _$ProfileState {
     @Default('') String jid,
     @Default('') String avatarUrl,
     @Default('') String displayName,
-    @Default(<String>[]) List<String> serverFeatures,
     @Default(false) bool streamManagementSupported,
+    @Default(false) bool userBlockingSupported,
+    @Default(false) bool httpFileUploadSupported,
+    @Default(false) bool csiSupported,
   }) = _ProfileState;
 }

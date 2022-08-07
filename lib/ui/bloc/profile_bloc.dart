@@ -56,8 +56,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       emit(
         state.copyWith(
-          serverFeatures: result.serverFeatures,
           streamManagementSupported: result.supportsStreamManagement,
+          csiSupported: result.supportsCsi,
+          httpFileUploadSupported: result.supportsHttpFileUpload,
+          userBlockingSupported: result.supportsUserBlocking,
         ),
       );
     }
