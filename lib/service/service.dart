@@ -207,8 +207,9 @@ Future<void> entrypoint() async {
       StreamManagementNegotiator(),
       CSINegotiator(),
       RosterFeatureNegotiator(),
-      SaslScramNegotiator(10, '', '', ScramHashType.sha512),
-      SaslScramNegotiator(9, '', '', ScramHashType.sha256),
+      // TODO(Unknown): These two may not work
+      //SaslScramNegotiator(10, '', '', ScramHashType.sha512),
+      //SaslScramNegotiator(9, '', '', ScramHashType.sha256),
       SaslScramNegotiator(8, '', '', ScramHashType.sha1),
     ]);
 
