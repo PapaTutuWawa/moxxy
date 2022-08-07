@@ -6,21 +6,6 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/media.dart';
-import 'package:moxxyv2/xmpp/namespaces.dart';
-
-Widget _buildFeatureSupportRow(String name, bool value) {
-  return IntrinsicWidth(
-    child: Row(
-      children: [
-        Text(name),
-        Checkbox(
-          value: value,
-          onChanged: (_) {},
-        )
-      ],
-    ),
-  );
-}
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({ Key? key }) : super(key: key);
@@ -94,45 +79,53 @@ class ProfilePage extends StatelessWidget {
                       showModalBottomSheet<dynamic>(
                         context: context,
                         builder: (context) {
-                          return IntrinsicHeight(
-                            child: Column(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 8),
-                                  child: Text(
-                                    'Server Information',
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                    ),
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                child: Text(
+                                  'Server Information',
+                                  style: TextStyle(
+                                    fontSize: 24,
                                   ),
                                 ),
+                              ),
 
-                                _buildFeatureSupportRow(
-                                  'Stream Management',
-                                  state.streamManagementSupported,
-                                ),
-                                // TODO(PapaTutuWawa): Implement
-                                _buildFeatureSupportRow(
-                                  'Client State Indication',
-                                  false,
-                                ),
-                                // TODO(PapaTutuWawa): Implement
-                                _buildFeatureSupportRow(
-                                  'HTTP File Upload',
-                                  false,
-                                ),
-                                // TODO(PapaTutuWawa): Implement
-                                _buildFeatureSupportRow(
-                                  'Message Carbons',
-                                  false,
-                                ),
-                                // TODO(PapaTutuWawa): Fix. This appears false
-                                _buildFeatureSupportRow(
-                                  'Blocklist',
-                                  state.serverFeatures.contains(blockingXmlns),
-                                ),
-                              ],
-                            ),
+                              Table(
+                                defaultColumnWidth: const IntrinsicColumnWidth(),
+                                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                                children: [
+                                  TableRow(
+                                    children: [
+                                      const Text('Stream Management'),
+                                      Checkbox(value: state.streamManagementSupported, onChanged: (_) {}),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    // TODO(PapaTutuWawa): Implement
+                                    children: [
+                                      const Text('HTTP File Upload'),
+                                      Checkbox(value: false, onChanged: (_) {}),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    // TODO(PapaTutuWawa): Fix
+                                    children: [
+                                      const Text('User Blocking'),
+                                      Checkbox(value: false, onChanged: (_) {}),
+                                    ],
+                                  ),
+                                  TableRow(
+                                    // TODO(PapaTutuWawa): Implement
+                                    children: [
+                                      const Text('Client State Indication'),
+                                      Checkbox(value: false, onChanged: (_) {}),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
                           );
                         },
                       );
