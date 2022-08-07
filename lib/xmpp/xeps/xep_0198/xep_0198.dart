@@ -90,13 +90,17 @@ class StreamManagementManager extends XmppManagerBase {
   /// a new session. Primarily useful for clearing the state after disconnecting
   Future<void> resetState() async {
     await _stateLock.synchronized(() async {
-        setState(_state.copyWith(
-            c2s: 0,
-            s2c: 0,
-            streamResumptionLocation: null,
-            streamResumptionId: null,
-        ),);
-        await commitState();
+      setState(_state.copyWith(
+          c2s: 0,
+          s2c: 0,
+          streamResumptionLocation: null,
+          streamResumptionId: null,
+      ),);
+      await commitState();
+    });
+
+    await _ackLock.synchronized(() async {
+      _pendingAcks = 0;
     });
   }
   
