@@ -6,6 +6,21 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/media.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+
+Widget _buildFeatureSupportRow(String name, bool value) {
+  return IntrinsicWidth(
+    child: Row(
+      children: [
+        Text(name),
+        Checkbox(
+          value: value,
+          onChanged: (_) {},
+        )
+      ],
+    ),
+  );
+}
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({ Key? key }) : super(key: key);
@@ -23,7 +38,6 @@ class ProfilePage extends StatelessWidget {
         state.jid,
         state.avatarUrl,
         state.displayName,
-        state.serverFeatures,
         state.streamManagementSupported,
         (path, hash) => context.read<ProfileBloc>().add(
           AvatarSetEvent(path, hash),
@@ -66,6 +80,64 @@ class ProfilePage extends StatelessWidget {
                   color: Colors.white,
                   icon: const Icon(Icons.close),
                   onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                ),
+              ),
+              Visibility(
+                visible: state.isSelfProfile,
+                child: Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    color: Colors.white,
+                    icon: const Icon(Icons.info_outline),
+                    onPressed: () {
+                      showModalBottomSheet<dynamic>(
+                        context: context,
+                        builder: (context) {
+                          return IntrinsicHeight(
+                            child: Column(
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  child: Text(
+                                    'Server Information',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                    ),
+                                  ),
+                                ),
+
+                                _buildFeatureSupportRow(
+                                  'Stream Management',
+                                  state.streamManagementSupported,
+                                ),
+                                // TODO(PapaTutuWawa): Implement
+                                _buildFeatureSupportRow(
+                                  'Client State Indication',
+                                  false,
+                                ),
+                                // TODO(PapaTutuWawa): Implement
+                                _buildFeatureSupportRow(
+                                  'HTTP File Upload',
+                                  false,
+                                ),
+                                // TODO(PapaTutuWawa): Implement
+                                _buildFeatureSupportRow(
+                                  'Message Carbons',
+                                  false,
+                                ),
+                                // TODO(PapaTutuWawa): Fix. This appears false
+                                _buildFeatureSupportRow(
+                                  'Blocklist',
+                                  state.serverFeatures.contains(blockingXmlns),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
             ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class SelfProfileHeader extends StatelessWidget {
@@ -10,7 +9,6 @@ class SelfProfileHeader extends StatelessWidget {
     this.jid,
     this.avatarUrl,
     this.displayName,
-    this.serverFeatures,
     this.streamManagementSupported,
     this.setAvatar,
     {
@@ -20,38 +18,9 @@ class SelfProfileHeader extends StatelessWidget {
   final String jid;
   final String avatarUrl;
   final String displayName;
-  final List<String> serverFeatures;
   final bool streamManagementSupported;
   final void Function(String, String) setAvatar;
 
-  Widget _buildServerCheck(String title, String namespace) {
-    return IntrinsicWidth(
-      child: Row(
-        children: [
-          Text(title),
-          Checkbox(
-            value: serverFeatures.contains(namespace),
-            onChanged: (_) {},
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStreamCheck(String title, String namespace) {
-    return IntrinsicWidth(
-      child: Row(
-        children: [
-          Text(title),
-          Checkbox(
-            value: streamManagementSupported,
-            onChanged: (_) {},
-          )
-        ],
-      ),
-    );
-  }
-  
   Future<void> _showJidQRCode(BuildContext context) async {
     await showDialog<dynamic>(
       context: context,
@@ -136,24 +105,6 @@ class SelfProfileHeader extends StatelessWidget {
             ],
           ),
         ),
-
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: ExpansionTile(
-            title: const Text('Server information'),
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildStreamCheck('StreamManagement', smXmlns),
-                  _buildServerCheck('Message Carbons', carbonsXmlns),
-                  _buildServerCheck('Blocklist', blockingXmlns),
-                  _buildServerCheck('HTTP File Upload', httpFileUploadXmlns),
-                ],
-              )
-            ],
-          ),
-        ) 
       ],
     );
   }
