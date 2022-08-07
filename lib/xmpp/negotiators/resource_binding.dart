@@ -5,6 +5,7 @@ import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
 import 'package:moxxyv2/xmpp/negotiators/negotiator.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
+import 'package:uuid/uuid.dart';
 
 class ResourceBindingNegotiator extends XmppFeatureNegotiatorBase {
 
@@ -27,7 +28,10 @@ class ResourceBindingNegotiator extends XmppFeatureNegotiatorBase {
       final stanza = XMLNode.xmlns(
         tag: 'iq',
         xmlns: stanzaXmlns,
-        attributes: { 'type': 'set' },
+        attributes: {
+          'type': 'set',
+          'id': const Uuid().v4(),
+        },
         children: [
           XMLNode.xmlns(
             tag: 'bind',
