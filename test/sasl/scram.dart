@@ -18,7 +18,22 @@ final scramSha1StreamFeatures = XMLNode(
       children: [
         XMLNode(
           tag: 'mechanism',
-          text: 'SCRAM-SHA1',
+          text: 'SCRAM-SHA-1',
+        )
+      ],
+    )
+  ],
+);
+final scramSha256StreamFeatures = XMLNode(
+  tag: 'stream:features',
+  children: [
+    XMLNode.xmlns(
+      tag: 'mechanisms',
+      xmlns: saslXmlns,
+      children: [
+        XMLNode(
+          tag: 'mechanism',
+          text: 'SCRAM-SHA-256',
         )
       ],
     )
@@ -38,6 +53,8 @@ void main() {
           getManagerNullStub,
           () => JID.fromString('user@server'),
           () => fakeSocket,
+          () => false,
+          (_) {},
         ),
       );
 
@@ -89,6 +106,29 @@ void main() {
       expect(await negotiator.calculateChallengeResponse('cj1meWtvK2QybGJiRmdPTlJ2OXFreGRhd0wzcmZjTkhZSlkxWlZ2V1ZzN2oscz1RU1hDUitRNnNlazhiZjkyLGk9NDA5Ng=='), 'c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=');
   });
 
+  test('Test SASL SCRAM-SHA-256', () async {
+      final negotiator = SaslScramNegotiator(0, 'n=user,r=rOprNGfwEbeRWgbNEkqO', 'rOprNGfwEbeRWgbNEkqO', ScramHashType.sha256);
+      negotiator.register(
+        NegotiatorAttributes(
+          (XMLNode _, {String? redact}) {},
+          () => ConnectionSettings(jid: JID.fromString('user@server'), password: 'pencil', useDirectTLS: true, allowPlainAuth: true),
+          (_) async {},
+          getNegotiatorNullStub,
+          getManagerNullStub,
+          () => JID.fromString('user@server'),
+          () => fakeSocket,
+          () => false,
+          (_) {},
+        ),
+      );
+
+      await negotiator.negotiate(scramSha256StreamFeatures);
+      await negotiator.negotiate(XMLNode.fromString("<challenge xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>cj1yT3ByTkdmd0ViZVJXZ2JORWtxTyVodllEcFdVYTJSYVRDQWZ1eEZJbGopaE5sRiRrMCxzPVcyMlphSjBTTlk3c29Fc1VFamI2Z1E9PSxpPTQwOTYK</challenge>"));
+      await negotiator.negotiate(XMLNode.fromString("<success xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>dj02cnJpVFJCaTIzV3BSUi93dHVwK21NaFVaVW4vZEI1bkxUSlJzamw5NUc0PQo=</success>"));
+
+      expect(negotiator.state, NegotiatorState.error);
+  });
+  
   test('Test a positive server signature check', () async {
       final negotiator = SaslScramNegotiator(0, 'n=user,r=fyko+d2lbbFgONRv9qkxdawL', 'fyko+d2lbbFgONRv9qkxdawL', ScramHashType.sha1);
       negotiator.register(
@@ -100,6 +140,8 @@ void main() {
           getManagerNullStub,
           () => JID.fromString('user@server'),
           () => fakeSocket,
+          () => false,
+          (_) {},
         ),
       );
 
@@ -121,6 +163,8 @@ void main() {
           getManagerNullStub,
           () => JID.fromString('user@server'),
           () => fakeSocket,
+          () => false,
+          (_) {},
         ),
       );
 
@@ -142,6 +186,8 @@ void main() {
           getManagerNullStub,
           () => JID.fromString('user@server'),
           () => fakeSocket,
+          () => false,
+          (_) {},
         ),
       );
 
