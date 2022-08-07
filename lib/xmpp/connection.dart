@@ -334,6 +334,8 @@ class XmppConnection {
   /// Attempts to reconnect to the server by following an exponential backoff.
   Future<void> _attemptReconnection() async {
     if (await _reconnectionPolicy.isReconnectionRunning()) {
+      _log.finest('_attemptReconnection() has been called but _reconnectionPolicy is indicating that it is already reconnecting. Doing nothing...');
+    } else {
       await _setConnectionState(XmppConnectionState.notConnected);
 
       // Prevent the reconnection triggering another reconnection
@@ -346,8 +348,6 @@ class XmppConnection {
       // Connect again
       _log.finest('Calling connect() from _attemptReconnection');
       await connect();
-    } else {
-      _log.finest('_attemptReconnection() has been called but _reconnectionPolicy is indicating that it is already reconnecting. Doing nothing...');
     }
   }
   
@@ -817,9 +817,7 @@ class XmppConnection {
     _log.finest('Event: ${event.toString()}');
 
     // Specific event handling
-    if (event is AckRequestResponseTimeoutEvent) {
-      await _reconnectionPolicy.onFailure();
-    } else if (event is ResourceBindingSuccessEvent) {
+    if (event is ResourceBindingSuccessEvent) {
       _log.finest('Received ResourceBindingSuccessEvent. Setting _resource to ${event.resource}');
       setResource(event.resource);
 

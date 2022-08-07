@@ -198,8 +198,8 @@ class StreamManagementManager extends XmppManagerBase {
       final now = DateTime.now().millisecondsSinceEpoch;
 
       if (now - _lastAckTimestamp >= ackTimeout.inMilliseconds && _pendingAcks > 0) {
-        getAttributes().sendEvent(AckRequestResponseTimeoutEvent());
         _stopAckTimer();
+        await getAttributes().getConnection().reconnectionPolicy.onFailure();
       }
     });
   }

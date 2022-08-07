@@ -195,8 +195,3 @@ class BlocklistUnblockPushEvent extends XmppEvent {
 class BlocklistUnblockAllPushEvent extends XmppEvent {
   BlocklistUnblockAllPushEvent();
 }
-
-/// Triggered when an XEP-0198 ack timed out
-class AckRequestResponseTimeoutEvent extends XmppEvent {
-  AckRequestResponseTimeoutEvent();
-}
