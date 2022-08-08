@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/button.dart';
 
 class CropPage extends StatelessWidget {
 
@@ -57,16 +58,12 @@ class CropPage extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Material(
-                color: const Color.fromRGBO(0, 0, 0, 0),
-                child: InkWell(
-                  onTap: _controller.crop,
-                  child: const Icon(
-                    Icons.check_circle_outline,
-                    size: 64,
-                  ),
-                ),
-              )
+              RoundedButton(
+                color: primaryColor,
+                cornerRadius: 100,
+                onTap: _controller.crop,
+                child: const Text('Set as profile picture'),
+              ),
             ],
           ),
         )
