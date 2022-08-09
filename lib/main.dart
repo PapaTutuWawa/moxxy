@@ -37,7 +37,7 @@ import 'package:moxxyv2/ui/pages/newconversation.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
-import 'package:moxxyv2/ui/pages/settings/appearance.dart';
+import 'package:moxxyv2/ui/pages/settings/appearance/appearance.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
 import 'package:moxxyv2/ui/pages/settings/licenses.dart';
