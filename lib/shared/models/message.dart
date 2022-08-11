@@ -19,6 +19,7 @@ class Message with _$Message {
     String conversationJid,
     bool isMedia,
     {
+      int? errorType,
       String? mediaUrl,
       @Default(false) bool isDownloading,
       @Default(false) bool isUploading,

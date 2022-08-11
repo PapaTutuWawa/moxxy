@@ -15,6 +15,7 @@ import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
@@ -39,7 +40,6 @@ class HttpFileTransferService {
   /// Queues for tracking up- and download tasks
   final Queue<FileDownloadJob> _downloadQueue;
   final Queue<FileUploadJob> _uploadQueue;
- 
   /// The currently running job and their lock
   FileUploadJob? _currentUploadJob;
   FileDownloadJob? _currentDownloadJob;
@@ -157,16 +157,37 @@ class HttpFileTransferService {
         },
       );
 
+      final ms = GetIt.I.get<MessageService>();
       if (response.statusCode != 201) {
         // TODO(PapaTutuWawa): Trigger event
         _log.severe('Upload failed');
+
+        // Notify UI of upload failure
+        final msg = await ms.updateMessage(
+          job.message.id,
+          errorType: fileUploadFailedError,
+        );
+        sendEvent(
+          MessageUpdatedEvent(
+            message: msg.copyWith(isUploading: false),
+          ),
+        );
       } else {
         _log.fine('Upload was successful');
 
         // Notify UI of upload completion
+        var msg = job.message;
+
+        // Reset a stored error, if there was one
+        if (msg.errorType != null) {
+          msg = await ms.updateMessage(
+            msg.id,
+            errorType: noError,
+          );
+        }
         sendEvent(
           MessageUpdatedEvent(
-            message: job.message.copyWith(isUploading: false),
+            message: msg.copyWith(isUploading: false),
           ),
         );
 
@@ -275,7 +296,9 @@ class HttpFileTransferService {
         sendEvent(ConversationUpdatedEvent(conversation: newConv));
       }
     } on dio.DioError catch(err) {
-      // TODO(PapaTutuWawa): Do something
+      // TODO(PapaTutuWawa): React if we received an error that is not related to the
+      //                     connection.
+      _log.finest('Error: $err');
     }
 
     // Free the download resources for the next one

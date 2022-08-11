@@ -78,6 +78,7 @@ class MessageService {
       bool? received,
       bool? displayed,
       bool? acked,
+      int? errorType,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -86,6 +87,7 @@ class MessageService {
       received: received,
       displayed: displayed,
       acked: acked,
+      errorType: errorType,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

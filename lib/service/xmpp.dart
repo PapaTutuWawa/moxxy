@@ -358,8 +358,6 @@ class XmppService {
         true,
         true,
         conn.generateId(),
-        // TODO(Unknown): Maybe don't have the UI depend on srcUrl if we sent it.
-        srcUrl: 'https://server.example',
         mediaUrl: filePath,
         mediaType: lookupMimeType(path),
         originId: conn.generateId(),
