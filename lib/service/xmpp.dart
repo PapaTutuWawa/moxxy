@@ -14,7 +14,9 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
 import 'package:moxxyv2/service/db/media.dart';
-import 'package:moxxyv2/service/download.dart';
+import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
+import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
+import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -346,7 +348,7 @@ class XmppService {
       final pathMime = lookupMimeType(path) ?? '';
       var filePath = path;
       if (pathMime.startsWith('image/') || pathMime.startsWith('video/')) {
-        filePath = await DownloadService.getDownloadPath(pathlib.basename(path), recipient, pathMime);
+        filePath = await getDownloadPath(pathlib.basename(path), recipient, pathMime);
 
         await File(path).copy(filePath);
 
@@ -725,8 +727,8 @@ class XmppService {
     
     // Attempt to auto-download the embedded file
     if (isFileEmbedded && shouldDownload) {
-      final ds = GetIt.I.get<DownloadService>();
-      final metadata = await ds.peekFile(embeddedFileUrl);
+      final fts = GetIt.I.get<HttpFileTransferService>();
+      final metadata = await peekFile(embeddedFileUrl);
 
       if (metadata.mime != null) mimeGuess = metadata.mime;
 
@@ -735,7 +737,14 @@ class XmppService {
       if (prefs.maximumAutoDownloadSize == -1
         || (metadata.size != null && metadata.size! < prefs.maximumAutoDownloadSize * 1000000)) {
         message = message.copyWith(isDownloading: true);
-        await ds.downloadFile(embeddedFileUrl, message.id, conversationJid, mimeGuess);
+        await fts.downloadFile(
+          FileDownloadJob(
+            embeddedFileUrl,
+            message.id,
+            conversationJid,
+            mimeGuess,
+          ),
+        );
       } else {
         // Make sure we create the notification
         shouldNotify = true;

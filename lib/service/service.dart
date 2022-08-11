@@ -12,8 +12,8 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
-import 'package:moxxyv2/service/download.dart';
 import 'package:moxxyv2/service/events.dart';
+import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/managers/disco.dart';
 import 'package:moxxyv2/service/managers/roster.dart';
 import 'package:moxxyv2/service/managers/stream.dart';
@@ -163,7 +163,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
   GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
   GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
-  GetIt.I.registerSingleton<DownloadService>(DownloadService());
+  GetIt.I.registerSingleton<HttpFileTransferService>(HttpFileTransferService());
   GetIt.I.registerSingleton<UploadService>(UploadService());
   GetIt.I.registerSingleton<AvatarService>(AvatarService());
   GetIt.I.registerSingleton<RosterService>(RosterService());

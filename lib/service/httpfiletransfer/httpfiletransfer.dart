@@ -217,8 +217,8 @@ class HttpFileTransferService {
         );
         sendEvent(ConversationUpdatedEvent(conversation: newConv));
       }
-    } on dio.DioError {
-      // TODO(PapaTutuWawa): Do
+    } on dio.DioError catch(err) {
+      // TODO(PapaTutuWawa): Do something
     }
 
     // Free the download resources for the next one
