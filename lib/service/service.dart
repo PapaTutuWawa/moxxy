@@ -22,7 +22,6 @@ import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
-import 'package:moxxyv2/service/upload.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -164,7 +163,6 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
   GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
   GetIt.I.registerSingleton<HttpFileTransferService>(HttpFileTransferService());
-  GetIt.I.registerSingleton<UploadService>(UploadService());
   GetIt.I.registerSingleton<AvatarService>(AvatarService());
   GetIt.I.registerSingleton<RosterService>(RosterService());
   GetIt.I.registerSingleton<ConversationService>(ConversationService());

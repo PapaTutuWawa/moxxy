@@ -16,6 +16,13 @@ import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/xmpp/connection.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/message.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
+import 'package:path/path.dart' as pathlib;
 import 'package:synchronized/synchronized.dart';
 
 /// This service is responsible for managing the up- and download of files using Http.
@@ -109,14 +116,32 @@ class HttpFileTransferService {
   /// Actually attempt to upload the file described by the job [job].
   Future<void> _performFileUpload(FileUploadJob job) async {
     _log.finest('Beginning upload of ${job.path}');
-    final data = await File(job.path).readAsBytes();
-    final putUri = Uri.parse(job.putUrl);
+    final file = File(job.path);
+    final data = await file.readAsBytes();
+    final stat = file.statSync();
 
+    // Request the upload slot
+    final conn = GetIt.I.get<XmppConnection>();
+    final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
+    final slotResult = await httpManager.requestUploadSlot(
+      pathlib.basename(job.path),
+      stat.size,
+    );
+
+    if (slotResult.isError()) {
+      _log.severe('Failed to request upload slot for ${job.path}!');
+      await _nextUploadJob();
+      return;
+    }
+
+    final slot = slotResult.getValue();
+    final fileMime = lookupMimeType(job.path);
+    
     try {
       final response = await dio.Dio().putUri<dynamic>(
-        putUri,
+        Uri.parse(slot.putUrl),
         options: dio.Options(
-          headers: job.headers,
+          headers: slot.headers,
           contentType: 'application/octet-stream',
           requestEncoder: (_, __) => data,
         ),
@@ -125,7 +150,7 @@ class HttpFileTransferService {
           final progress = count.toDouble() / total.toDouble();
           sendEvent(
             ProgressEvent(
-              id: job.mId,
+              id: job.message.id,
               progress: progress == 1 ? 0.99 : progress,
             ),
           );
@@ -136,8 +161,36 @@ class HttpFileTransferService {
         // TODO(PapaTutuWawa): Trigger event
         _log.severe('Upload failed');
       } else {
-        // TODO(PapaTutuWawa): Trigger event
         _log.fine('Upload was successful');
+
+        // Notify UI of upload completion
+        sendEvent(
+          MessageUpdatedEvent(
+            message: job.message.copyWith(isUploading: false),
+          ),
+        );
+
+        // Send the message to the recipient
+        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+          MessageDetails(
+            to: job.recipient,
+            body: slot.getUrl,
+            requestDeliveryReceipt: true,
+            id: job.message.sid,
+            originId: job.message.originId,
+            sfs: StatelessFileSharingData(
+              url: slot.getUrl,
+              metadata: FileMetadataData(
+                mediaType: fileMime,
+                size: stat.size,
+                name: pathlib.basename(job.path),
+                // TODO(Unknown): Add a thumbnail
+                thumbnails: [],
+              ),
+            ),
+          ),
+        );
+        _log.finest('Sent message with file upload for ${job.path}');
       }
     } on dio.DioError {
       // TODO(PapaTutuWawa): Check if this is a timeout
@@ -145,6 +198,10 @@ class HttpFileTransferService {
       return;
     }
 
+    await _nextUploadJob();
+  }
+
+  Future<void> _nextUploadJob() async {
     // Free the upload resources for the next one
     if (GetIt.I.get<ConnectivityService>().currentState == ConnectivityResult.none) return;
     await _uploadLock.synchronized(() async {
@@ -156,7 +213,7 @@ class HttpFileTransferService {
       }
     });
   }
-
+  
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
     _log.finest('Downloading ${job.url}');

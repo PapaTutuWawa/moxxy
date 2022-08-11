@@ -1,26 +1,25 @@
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 
 /// A job describing the download of a file.
 @immutable
 class FileUploadJob {
 
-  const FileUploadJob(this.path, this.putUrl, this.headers, this.mId);
+  const FileUploadJob(this.recipient, this.path, this.message);
   final String path;
-  final String putUrl;
-  final Map<String, String> headers;
-  final int mId;
+  final String recipient;
+  final Message message;
 
   @override
   bool operator ==(Object other) {
     return other is FileUploadJob &&
+      recipient == other.recipient &&
       path == other.path &&
-      putUrl == other.putUrl &&
-      headers == other.headers &&
-      mId == other.mId;
+      message == other.message;
   }
 
   @override
-  int get hashCode => path.hashCode ^ putUrl.hashCode ^ headers.hashCode ^ mId.hashCode;
+  int get hashCode => path.hashCode ^ recipient.hashCode ^ message.hashCode;
 }
 
 /// A job describing the upload of a file.

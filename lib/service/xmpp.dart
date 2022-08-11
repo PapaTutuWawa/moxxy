@@ -23,7 +23,6 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
-import 'package:moxxyv2/service/upload.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -42,9 +41,6 @@ import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -327,9 +323,6 @@ class XmppService {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
-    final us = GetIt.I.get<UploadService>();
-    final conn = GetIt.I.get<XmppConnection>();
-    final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
 
     // TODO(Unknown): This has a huge issue. The messages should get sent to the UI
     //                as soon as possible to indicate to the user that we are working on
@@ -343,6 +336,7 @@ class XmppService {
     final messages = <String, Message>{};
 
     // Create the messages and shared media entries
+    final conn = GetIt.I.get<XmppConnection>();
     for (final path in paths) {
       // Copy the file to the gallery if it is a image or video
       final pathMime = lookupMimeType(path) ?? '';
@@ -398,60 +392,15 @@ class XmppService {
     sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
 
     // Requesting Upload slots and uploading
+    final hfts = GetIt.I.get<HttpFileTransferService>();
     for (final path in paths) {
-      _log.finest('Requesting upload slot for $path');
-      final stat = File(path).statSync();
-      final result = await httpManager.requestUploadSlot(pathlib.basename(path), stat.size);
-      if (result.isError()) {
-        _log.severe('Failed to request slot for $path!');
-        // TODO(PapaTutuWawa): Do not let it end here
-        return;
-      }
-
-      final slot = result.getValue();
-      final fileMime = lookupMimeType(path);
-
-      final uploadResult = await us.uploadFile(
-        path,
-        slot.putUrl,
-        slot.headers,
-        messages[path]!.id,
-      );
-
-      if (!uploadResult) {
-        _log.severe('Upload failed for $path!');
-        // TODO(PapaTutuWawa): Do not abort here
-        return;
-      }
-
-      // Notify UI of upload completion
-      sendEvent(
-        MessageUpdatedEvent(
-          message: messages[path]!.copyWith(isUploading: false),
+      await hfts.uploadFile(
+        FileUploadJob(
+          recipient,
+          path,
+          messages[path]!,
         ),
       );
-
-      // Send the url to the recipient
-      final message = messages[path]!;
-      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-        MessageDetails(
-          to: recipient,
-          body: slot.getUrl,
-          requestDeliveryReceipt: true,
-          id: message.sid,
-          originId: message.originId,
-          sfs: StatelessFileSharingData(
-            url: slot.getUrl,
-            metadata: FileMetadataData(
-              mediaType: fileMime,
-              size: stat.size,
-              name: pathlib.basename(path),
-              thumbnails: [],
-            ),
-          ),
-        ),
-      );
-      _log.finest('Sent message with file upload for $path');
     }
 
     _log.finest('File upload done');
