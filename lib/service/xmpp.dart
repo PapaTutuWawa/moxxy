@@ -14,14 +14,15 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
 import 'package:moxxyv2/service/db/media.dart';
-import 'package:moxxyv2/service/download.dart';
+import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
+import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
+import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
-import 'package:moxxyv2/service/upload.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -40,9 +41,6 @@ import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -325,9 +323,6 @@ class XmppService {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
-    final us = GetIt.I.get<UploadService>();
-    final conn = GetIt.I.get<XmppConnection>();
-    final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
 
     // TODO(Unknown): This has a huge issue. The messages should get sent to the UI
     //                as soon as possible to indicate to the user that we are working on
@@ -341,12 +336,13 @@ class XmppService {
     final messages = <String, Message>{};
 
     // Create the messages and shared media entries
+    final conn = GetIt.I.get<XmppConnection>();
     for (final path in paths) {
       // Copy the file to the gallery if it is a image or video
       final pathMime = lookupMimeType(path) ?? '';
       var filePath = path;
       if (pathMime.startsWith('image/') || pathMime.startsWith('video/')) {
-        filePath = await DownloadService.getDownloadPath(pathlib.basename(path), recipient, pathMime);
+        filePath = await getDownloadPath(pathlib.basename(path), recipient, pathMime);
 
         await File(path).copy(filePath);
 
@@ -362,8 +358,6 @@ class XmppService {
         true,
         true,
         conn.generateId(),
-        // TODO(Unknown): Maybe don't have the UI depend on srcUrl if we sent it.
-        srcUrl: 'https://server.example',
         mediaUrl: filePath,
         mediaType: lookupMimeType(path),
         originId: conn.generateId(),
@@ -396,60 +390,15 @@ class XmppService {
     sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
 
     // Requesting Upload slots and uploading
+    final hfts = GetIt.I.get<HttpFileTransferService>();
     for (final path in paths) {
-      _log.finest('Requesting upload slot for $path');
-      final stat = File(path).statSync();
-      final result = await httpManager.requestUploadSlot(pathlib.basename(path), stat.size);
-      if (result.isError()) {
-        _log.severe('Failed to request slot for $path!');
-        // TODO(PapaTutuWawa): Do not let it end here
-        return;
-      }
-
-      final slot = result.getValue();
-      final fileMime = lookupMimeType(path);
-
-      final uploadResult = await us.uploadFile(
-        path,
-        slot.putUrl,
-        slot.headers,
-        messages[path]!.id,
-      );
-
-      if (!uploadResult) {
-        _log.severe('Upload failed for $path!');
-        // TODO(PapaTutuWawa): Do not abort here
-        return;
-      }
-
-      // Notify UI of upload completion
-      sendEvent(
-        MessageUpdatedEvent(
-          message: messages[path]!.copyWith(isUploading: false),
+      await hfts.uploadFile(
+        FileUploadJob(
+          recipient,
+          path,
+          messages[path]!,
         ),
       );
-
-      // Send the url to the recipient
-      final message = messages[path]!;
-      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-        MessageDetails(
-          to: recipient,
-          body: slot.getUrl,
-          requestDeliveryReceipt: true,
-          id: message.sid,
-          originId: message.originId,
-          sfs: StatelessFileSharingData(
-            url: slot.getUrl,
-            metadata: FileMetadataData(
-              mediaType: fileMime,
-              size: stat.size,
-              name: pathlib.basename(path),
-              thumbnails: [],
-            ),
-          ),
-        ),
-      );
-      _log.finest('Sent message with file upload for $path');
     }
 
     _log.finest('File upload done');
@@ -725,8 +674,8 @@ class XmppService {
     
     // Attempt to auto-download the embedded file
     if (isFileEmbedded && shouldDownload) {
-      final ds = GetIt.I.get<DownloadService>();
-      final metadata = await ds.peekFile(embeddedFileUrl);
+      final fts = GetIt.I.get<HttpFileTransferService>();
+      final metadata = await peekFile(embeddedFileUrl);
 
       if (metadata.mime != null) mimeGuess = metadata.mime;
 
@@ -735,7 +684,14 @@ class XmppService {
       if (prefs.maximumAutoDownloadSize == -1
         || (metadata.size != null && metadata.size! < prefs.maximumAutoDownloadSize * 1000000)) {
         message = message.copyWith(isDownloading: true);
-        await ds.downloadFile(embeddedFileUrl, message.id, conversationJid, mimeGuess);
+        await fts.downloadFile(
+          FileDownloadJob(
+            embeddedFileUrl,
+            message.id,
+            conversationJid,
+            mimeGuess,
+          ),
+        );
       } else {
         // Make sure we create the notification
         shouldNotify = true;

@@ -8,6 +8,7 @@ import 'package:moxxyv2/service/db/media.dart';
 import 'package:moxxyv2/service/db/message.dart';
 import 'package:moxxyv2/service/db/roster.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -80,6 +81,7 @@ Message messageDbToModel(DBMessage m) {
     thumbnailDimensions: m.thumbnailDimensions,
     srcUrl: m.srcUrl,
     quotes: m.quotes.value != null ? messageDbToModel(m.quotes.value!) : null,
+    errorType: m.errorType,
   );
 }
 
@@ -262,7 +264,8 @@ class DatabaseService {
       ..received = false
       ..displayed = false
       ..acked = false
-      ..originId = originId;
+      ..originId = originId
+      ..errorType = noError;
 
     if (quoteId != null) {
       final quotes = await getMessageByXmppId(quoteId, conversationJid);
@@ -274,7 +277,7 @@ class DatabaseService {
     }
 
     await _isar.writeTxn(() async {
-        await _isar.dBMessages.put(m);
+      await _isar.dBMessages.put(m);
     });
 
     final msg = messageDbToModel(m);
@@ -294,11 +297,12 @@ class DatabaseService {
   
   /// Updates the message item with id [id] inside the database.
   Future<Message> updateMessage(int id, {
-      String? mediaUrl,
-      String? mediaType,
-      bool? received,
-      bool? displayed,
-      bool? acked,
+    String? mediaUrl,
+    String? mediaType,
+    bool? received,
+    bool? displayed,
+    bool? acked,
+    int? errorType,
   }) async {
     final i = (await _isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
@@ -316,9 +320,12 @@ class DatabaseService {
     if (acked != null) {
       i.acked = acked;
     }
+    if (errorType != null) {
+      i.errorType = errorType;
+    }
 
     await _isar.writeTxn(() async {
-        await _isar.dBMessages.put(i);
+      await _isar.dBMessages.put(i);
     });
     await i.quotes.load();
     

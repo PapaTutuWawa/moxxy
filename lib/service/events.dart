@@ -6,7 +6,9 @@ import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
-import 'package:moxxyv2/service/download.dart';
+import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
+import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
+import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -304,8 +306,8 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
 Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic extra }) async {
   sendEvent(MessageUpdatedEvent(message: command.message.copyWith(isDownloading: true)));
 
-  final download = GetIt.I.get<DownloadService>();
-  final metadata = await download.peekFile(command.message.srcUrl!);
+  final srv = GetIt.I.get<HttpFileTransferService>();
+  final metadata = await peekFile(command.message.srcUrl!);
 
   // TODO(Unknown): Maybe deduplicate with the code in the xmpp service
   // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
@@ -313,11 +315,13 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
   final ext = command.message.srcUrl!.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
 
-  await download.downloadFile(
-    command.message.srcUrl!,
-    command.message.id,
-    command.message.conversationJid,
-    mimeGuess,
+  await srv.downloadFile(
+    FileDownloadJob(
+      command.message.srcUrl!,
+      command.message.id,
+      command.message.conversationJid,
+      mimeGuess,
+    ),
   );
 }
 

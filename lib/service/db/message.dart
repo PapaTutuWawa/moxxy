@@ -29,6 +29,10 @@ class DBMessage {
   late bool received;
   late bool displayed;
 
+  /// In case an error is related to the message, this stores an enum-like constant
+  /// that clearly identifies the error.
+  late int errorType;
+
   /// The message that this one quotes
   final quotes = IsarLink<DBMessage>();
   

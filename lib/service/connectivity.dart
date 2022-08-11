@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 
@@ -30,11 +31,15 @@ class ConnectivityService {
     // See https://github.com/fluttercommunity/plus_plugins/issues/567
     final skipAmount = Platform.isAndroid ? 1 : 0;
     conn.onConnectivityChanged.skip(skipAmount).listen((ConnectivityResult result) {
+      final regained = _connectivity == ConnectivityResult.none && result != ConnectivityResult.none;
       _connectivity = result;
 
+      // TODO(PapaTutuWawa): Should we use Streams?
       // Notify other services
       final policy = GetIt.I.get<XmppConnection>().reconnectionPolicy;
       (policy as MoxxyReconnectionPolicy).onConnectivityChanged(result);
+
+      GetIt.I.get<HttpFileTransferService>().onConnectivityChanged(regained);
     });
   }
 
