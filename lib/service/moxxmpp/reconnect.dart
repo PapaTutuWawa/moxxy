@@ -51,7 +51,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
     } else if (regained && shouldReconnect) {
       // We should reconnect
       _log.finest('Network regained. Attempting reconnection...');
-      await _attemptReconnection();
+      await _attemptReconnection(true);
     }
   }
 
@@ -62,14 +62,16 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
 
   @visibleForTesting
   Future<void> onTimerElapsed() async {
-    timer!.cancel();
-    timer = null;
+    if (timer != null) {
+      timer!.cancel();
+      timer = null;
+    }
 
     _log.finest('Performing reconnect');
     performReconnect!();
   }
 
-  Future<void> _attemptReconnection() async {
+  Future<void> _attemptReconnection(bool immediately) async {
     if (await testAndSetIsReconnecting()) {
       // Attempt reconnecting
       final seconds = _isTesting ? 9999 : Random().nextInt(15);
@@ -77,8 +79,13 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
         timer!.cancel();
       }
 
-      _log.finest('Started backoff timer with ${seconds}s backoff');
-      timer = Timer(Duration(seconds: seconds), onTimerElapsed);
+      if (immediately) {
+        _log.finest('Immediately attempting reconnection...');
+        await onTimerElapsed();
+      } else {
+        _log.finest('Started backoff timer with ${seconds}s backoff');
+        timer = Timer(Duration(seconds: seconds), onTimerElapsed);
+      }
     } else {
       // TODO(PapaTutuWawa): How to handle?
       _log.severe('_attemptReconnection called while reconnect is running!');
@@ -90,7 +97,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
     final state = GetIt.I.get<ConnectivityService>().currentState;
 
     if (state != ConnectivityResult.none) {
-      await _attemptReconnection();
+      await _attemptReconnection(false);
     } else {
       _log.fine('Failure occurred while no network connection is available. Waiting for connection...');
     }
