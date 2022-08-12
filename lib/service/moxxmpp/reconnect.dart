@@ -63,6 +63,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
     if (timer != null) {
       timer!.cancel();
       timer = null;
+      _log.finest('Destroying timer');
     }
 
     _log.finest('Performing reconnect');
@@ -75,6 +76,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
       final seconds = _isTesting ? 9999 : Random().nextInt(15);
       if (timer != null) {
         timer!.cancel();
+        _log.finest('Cancelling currently running timer');
       }
 
       if (immediately) {
