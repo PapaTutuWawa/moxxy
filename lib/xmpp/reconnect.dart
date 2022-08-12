@@ -60,7 +60,6 @@ abstract class ReconnectionPolicy {
   @protected
   Future<void> setIsReconnecting(bool value) async {
     await _isReconnectingLock.synchronized(() async {
-      print('_isReconnecting set to $value');
       _isReconnecting = value;
     });
   }

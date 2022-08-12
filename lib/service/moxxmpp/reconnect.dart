@@ -1,13 +1,11 @@
-import 'dart:math';
 import 'dart:async';
-import 'package:synchronized/synchronized.dart';
+import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/xmpp/reconnect.dart';
-import 'package:moxxyv2/shared/helpers.dart';
-import 'package:meta/meta.dart';
 
 /// This class implements a reconnection policy that is connectivity aware with a random
 /// backoff. This means that we perform the random backoff only as long as we are
@@ -68,7 +66,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
     }
 
     _log.finest('Performing reconnect');
-    performReconnect!();
+    await performReconnect!();
   }
 
   Future<void> _attemptReconnection(bool immediately) async {

@@ -37,8 +37,8 @@ class ConnectivityService {
 
       // TODO(PapaTutuWawa): Should we use Streams?
       // Notify other services
-      final policy = GetIt.I.get<XmppConnection>().reconnectionPolicy as MoxxyReconnectionPolicy;
-      policy.onConnectivityChanged(regained, lost);
+      (GetIt.I.get<XmppConnection>().reconnectionPolicy as MoxxyReconnectionPolicy)
+        .onConnectivityChanged(regained, lost);
 
       GetIt.I.get<HttpFileTransferService>().onConnectivityChanged(regained);
     });
