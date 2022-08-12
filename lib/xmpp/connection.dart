@@ -333,22 +333,18 @@ class XmppConnection {
 
   /// Attempts to reconnect to the server by following an exponential backoff.
   Future<void> _attemptReconnection() async {
-    if (await _reconnectionPolicy.isReconnectionRunning()) {
-      _log.finest('_attemptReconnection() has been called but _reconnectionPolicy is indicating that it is already reconnecting. Doing nothing...');
-    } else {
-      await _setConnectionState(XmppConnectionState.notConnected);
+    await _setConnectionState(XmppConnectionState.notConnected);
 
-      // Prevent the reconnection triggering another reconnection
-      _expectSocketClosure = true;
-      _socket.close();
+    // Prevent the reconnection triggering another reconnection
+    _expectSocketClosure = true;
+    _socket.close();
 
-      // Reset the state
-      _expectSocketClosure = false;
+    // Reset the state
+    _expectSocketClosure = false;
 
-      // Connect again
-      _log.finest('Calling connect() from _attemptReconnection');
-      await connect();
-    }
+    // Connect again
+    _log.finest('Calling connect() from _attemptReconnection');
+    await connect();
   }
   
   /// Called when a stream ending error has occurred
@@ -372,7 +368,7 @@ class XmppConnection {
       // Only reconnect if we didn't expect this
       if (!_expectSocketClosure) {
         _log.fine('Received XmppSocketClosureEvent, but _expectSocketClosure is false. Reconnecting...');
-        await _attemptReconnection();
+        await _reconnectionPolicy.onFailure();
       } else {
         _log.fine('Received XmppSocketClosureEvent, but ignoring it since _expectSocketClosure is true. Setting _expectSocketClosure back to false');
         _expectSocketClosure = false;

@@ -13,14 +13,14 @@ void main() {
     ..setConnectivity(ConnectivityResult.wifi);
   GetIt.I.registerSingleton<ConnectivityService>(service);
 
-  test('Test the network-connection-aware reconnection policy', () {
-    var performReconnectCalled = false;
+  test('Test the network-connection-aware reconnection policy', () async {
+    var performReconnectCalled = 0;
     var triggerConnectionLostCalled = false;
-    final policy = MoxxyReconnectionPolicy();
+    final policy = MoxxyReconnectionPolicy(isTesting: true);
     policy.register(
-      () {
+      () async {
         // performReconnect
-        performReconnectCalled = true;
+        performReconnectCalled++;
       },
       () {
         // triggerConnectionLost
@@ -30,16 +30,18 @@ void main() {
 
     // Test being connected and losing the connection
     policy.setShouldReconnect(true);
-    policy.onConnectivityChanged(ConnectivityResult.none);
+    await policy.onConnectivityChanged(false, true);
     expect(triggerConnectionLostCalled, true);
-    expect(performReconnectCalled, false);
+    expect(performReconnectCalled, 0);
     triggerConnectionLostCalled = false;
-    performReconnectCalled = false;
+    performReconnectCalled = 0;
     
     // Test regaining the connection
-    policy.onConnectivityChanged(ConnectivityResult.ethernet);
+    await policy.onConnectivityChanged(true, false);
     expect(triggerConnectionLostCalled, false);
-    // Handled by the [ExponentialBackoffReconnectionPolicy]
-    //expect(performReconnectCalled, true);
+    expect(policy.timer, isNot(equals(null)));
+    // Trigger the reconnect
+    await policy.onTimerElapsed();
+    expect(performReconnectCalled, 1);
   });
 }

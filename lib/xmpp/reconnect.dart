@@ -38,7 +38,7 @@ abstract class ReconnectionPolicy {
   Future<void> reset();
 
   /// Called by the XmppConnection when the reconnection failed.
-  Future<void> onFailure();
+  Future<void> onFailure() async {}
 
   /// Caled by the XmppConnection when the reconnection was successful.
   Future<void> onSuccess();
@@ -60,7 +60,20 @@ abstract class ReconnectionPolicy {
   @protected
   Future<void> setIsReconnecting(bool value) async {
     await _isReconnectingLock.synchronized(() async {
+      print('_isReconnecting set to $value');
       _isReconnecting = value;
+    });
+  }
+
+  @protected
+  Future<bool> testAndSetIsReconnecting() async {
+    return _isReconnectingLock.withReturn(() async {
+      if (_isReconnecting) {
+        return false;
+      } else {
+        _isReconnecting = true;
+        return true;
+      }
     });
   }
 }
@@ -106,7 +119,7 @@ class ExponentialBackoffReconnectionPolicy extends ReconnectionPolicy {
   Future<void> onFailure() async {
     _log.finest('Failure occured. Starting exponential backoff');
     _counter++;
-    await setIsReconnecting(false);
+    await setIsReconnecting(true);
 
     if (_timer != null) {
       _timer!.cancel();

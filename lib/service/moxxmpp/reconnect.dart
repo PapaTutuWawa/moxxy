@@ -1,51 +1,103 @@
+import 'dart:math';
+import 'dart:async';
+import 'package:synchronized/synchronized.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/xmpp/reconnect.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:meta/meta.dart';
 
-/// This class implements a reconnection policy that is a connectivity aware exponential
-/// backoff. This means that we perform the exponential backoff only as long as we are
+/// This class implements a reconnection policy that is connectivity aware with a random
+/// backoff. This means that we perform the random backoff only as long as we are
 /// connected. Otherwise, we idle until we have a connection again.
-// TODO(Unkown): Maybe add locks to prevent a race condition between the network state and a
-//               failure.
-class MoxxyReconnectionPolicy extends ExponentialBackoffReconnectionPolicy {
+class MoxxyReconnectionPolicy extends ReconnectionPolicy {
 
-  MoxxyReconnectionPolicy()
-  : _failureQueued = false,
+  MoxxyReconnectionPolicy({ bool isTesting = false })
+  : _isTesting = isTesting,
     _log = Logger('MoxxyReconnectionPolicy'),
     super();
-  bool _failureQueued;
   final Logger _log;
 
+  /// The backoff timer
+  @visibleForTesting
+  Timer? timer;
+
+  /// Just for testing purposes
+  final bool _isTesting;
+  
   /// To be called when the conectivity changes
-  void onConnectivityChanged(ConnectivityResult result) {
-    // Do nothing if we're not supposed to reconnect
-    if (!shouldReconnect) {
+  Future<void> onConnectivityChanged(bool regained, bool lost) async {
+    // Do nothing if we should not reconnect
+    if (!shouldReconnect && regained) {
       _log.finest('Connectivity changed but not attempting reconnection as shouldReconnect is false');
       return;
     }
-    
-    if (result != ConnectivityResult.none && _failureQueued) {
-      _log.finest('Failure queued and connection available. Attemping reconnection...');
-      _failureQueued = false;
-      super.onFailure();
-    } else if (result == ConnectivityResult.none) {
-      _log.finest('Connection lost and no connection available. Queuing failure.');
+
+    if (lost) {
+      // We just lost network connectivity
+      _log.finest('Lost network connectivity. Queueing failure...');
+
+      // Cancel the timer if it was running
+      if (timer != null) {
+        timer!.cancel();
+        timer = null;
+        _log.finest('Backoff timer destroyed');
+      }
+
+      await setIsReconnecting(false);
       triggerConnectionLost!();
-      onFailure();
+    } else if (regained && shouldReconnect) {
+      // We should reconnect
+      _log.finest('Network regained. Attempting reconnection...');
+      await _attemptReconnection();
     }
   }
 
   @override
+  Future<void> reset() async {
+    await setIsReconnecting(false);
+  }
+
+  @visibleForTesting
+  Future<void> onTimerElapsed() async {
+    timer!.cancel();
+    timer = null;
+
+    _log.finest('Performing reconnect');
+    performReconnect!();
+  }
+
+  Future<void> _attemptReconnection() async {
+    if (await testAndSetIsReconnecting()) {
+      // Attempt reconnecting
+      final seconds = _isTesting ? 9999 : Random().nextInt(15);
+      if (timer != null) {
+        timer!.cancel();
+      }
+
+      _log.finest('Started backoff timer with ${seconds}s backoff');
+      timer = Timer(Duration(seconds: seconds), onTimerElapsed);
+    } else {
+      // TODO(PapaTutuWawa): How to handle?
+      _log.severe('_attemptReconnection called while reconnect is running!');
+    }
+  }
+  
+  @override
   Future<void> onFailure() async {
     final state = GetIt.I.get<ConnectivityService>().currentState;
+
     if (state != ConnectivityResult.none) {
-      _log.finest('Reconnection failed and connection available. Attempting again after backoff...');
-      await super.onFailure();
+      await _attemptReconnection();
     } else {
-      _log.finest('Reconnection failed and no connection available. Queuing reconnection attempt...');
-      _failureQueued = true;
+      _log.fine('Failure occurred while no network connection is available. Waiting for connection...');
     }
+  }
+
+  @override
+  Future<void> onSuccess() async {
+    await reset();
   }
 }

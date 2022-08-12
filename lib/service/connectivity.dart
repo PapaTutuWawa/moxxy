@@ -32,12 +32,13 @@ class ConnectivityService {
     final skipAmount = Platform.isAndroid ? 1 : 0;
     conn.onConnectivityChanged.skip(skipAmount).listen((ConnectivityResult result) {
       final regained = _connectivity == ConnectivityResult.none && result != ConnectivityResult.none;
+      final lost = result == ConnectivityResult.none;
       _connectivity = result;
 
       // TODO(PapaTutuWawa): Should we use Streams?
       // Notify other services
-      final policy = GetIt.I.get<XmppConnection>().reconnectionPolicy;
-      (policy as MoxxyReconnectionPolicy).onConnectivityChanged(result);
+      final policy = GetIt.I.get<XmppConnection>().reconnectionPolicy as MoxxyReconnectionPolicy;
+      policy.onConnectivityChanged(regained, lost);
 
       GetIt.I.get<HttpFileTransferService>().onConnectivityChanged(regained);
     });
