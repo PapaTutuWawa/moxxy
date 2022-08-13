@@ -6,73 +6,10 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
+import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
-import 'package:path/path.dart' as pathlib;
-
-class _FileChatBaseWidget extends StatelessWidget {
-
-  const _FileChatBaseWidget(
-    this.url,
-    this.filename,
-    this.bottom,
-    {
-      this.extra,
-      this.progress,
-      this.showIcon = true,
-    }
-  );
-  final String url;
-  final String filename;
-  final MessageBubbleBottom bottom;
-  final bool showIcon;
-
-  final Widget? extra;
-  final ProgressWidget? progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: IntrinsicHeight(
-            child: Stack(
-              children: [
-                ...showIcon ? [
-                    const Icon(
-                      Icons.file_present,
-                      size: 128,
-                    )
-                  ] : [],
-                ...progress != null ?
-                  [
-                    Positioned.fill(
-                      child: Align(
-                        child: SizedBox(
-                          width: 64,
-                          height: 64,
-                          child: progress,
-                        ),
-                      ),
-                    )
-                  ] : []
-              ],
-            ),
-          ),
-        ),
-        Text(
-          filename,
-        ),
-
-        // e.g. download button
-        ...extra != null ? [ extra! ] : [],
-
-        // The bottom bar
-        bottom
-      ],
-    );
-  }
-}
+import 'package:open_file/open_file.dart';
 
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
@@ -89,41 +26,90 @@ class FileChatWidget extends StatelessWidget {
   final Widget? extra;
 
   Widget _buildNonDownloaded() {
-    return _FileChatBaseWidget(
-      message.srcUrl!,
-      filenameFromUrl(message.srcUrl!),
+    return ImageBaseChatWidget(
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.file_present,
+              size: 128,
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(filenameFromUrl(message.srcUrl!)),
+            ),
+          ],
+        ),
+      ),
       MessageBubbleBottom(message),
-      extra: ElevatedButton(
+      BorderRadius.circular(8),
+      gradient: false,
+      extra: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
             RequestDownloadCommand(message: message),
             awaitable: false,
           );
         },
-        child: const Text('Download'),
       ),
     );
   }
 
 
   Widget _buildDownloading() {
-    return _FileChatBaseWidget(
-      message.srcUrl!,
-      filenameFromUrl(message.srcUrl!),
+    return ImageBaseChatWidget(
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.file_present,
+              size: 128,
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(filenameFromUrl(message.srcUrl!)),
+            ),
+          ],
+        ),
+      ),
       MessageBubbleBottom(message),
-      progress: ProgressWidget(id: message.id),
-      showIcon: false,
+      BorderRadius.circular(8),
+      gradient: false,
+      extra: ProgressWidget(id: message.id),
     );
   }
 
   Widget _buildInner() {
-    final filename = pathlib.basename(message.mediaUrl!);
+    return ImageBaseChatWidget(
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.file_present,
+              size: 128,
+            ),
 
-    // TODO(Unknown): Make clickable
-    return _FileChatBaseWidget(
-      message.srcUrl!,
-      filename,
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(filenameFromUrl(message.srcUrl!)),
+            ),
+          ],
+        ),
+      ),
       MessageBubbleBottom(message),
+      BorderRadius.circular(8),
+      gradient: false,
+      onTap: () {
+        OpenFile.open(message.mediaUrl);
+      },
     );
   }
 

@@ -12,11 +12,17 @@ class DownloadButton extends StatelessWidget {
         color: Colors.black45,
         shape: CircleBorder(),
       ),
-      child: IconButton(
-        icon: const Icon(Icons.download),
-        iconSize: 64,
-        color: Colors.white,
-        onPressed: onPressed,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(100),
+          color: Colors.black.withAlpha(150),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.download),
+          iconSize: 64,
+          color: Colors.white,
+          onPressed: onPressed,
+        ),
       ),
     );
   }

@@ -23,6 +23,7 @@ class ImageBaseChatWidget extends StatelessWidget {
     {
       this.onTap,
       this.extra,
+      this.gradient = true,
       Key? key,
     }
   ) : super(key: key);
@@ -31,6 +32,7 @@ class ImageBaseChatWidget extends StatelessWidget {
   final MessageBubbleBottom bottom;
   final BorderRadius radius;
   final void Function()? onTap;
+  final bool gradient;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +46,7 @@ class ImageBaseChatWidget extends StatelessWidget {
               borderRadius: radius,
               child: background,
             ),
-            BottomGradient(radius),
+            ...gradient ? [BottomGradient(radius)] : [],
             ...extra != null ? [ extra! ] : [],
             Positioned(
               bottom: 0,
