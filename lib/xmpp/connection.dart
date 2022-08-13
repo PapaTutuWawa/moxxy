@@ -81,6 +81,7 @@ class XmppConnection {
     {
       BaseSocketWrapper? socket,
       this.connectionPingDuration = const Duration(minutes: 5),
+      this.connectingTimeout = const Duration(minutes: 2),
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
@@ -152,6 +153,8 @@ class XmppConnection {
   /// The time between sending a ping to keep the connection open
   // TODO(Unknown): Only start the timer if we did not send a stanza after n seconds
   final Duration connectionPingDuration;
+  /// The time that we may spent in the "connecting" state
+  final Duration connectingTimeout;
   /// The current state of the connection handling state machine.
   RoutingState _routingState;
   /// The currently bound resource or '' if none has been bound yet.
@@ -161,8 +164,10 @@ class XmppConnection {
   bool _expectSocketClosure;
   /// True if we are authenticated. False if not.
   bool _isAuthenticated;
-  /// Timers for the keep-alive ping.
+  /// Timer for the keep-alive ping.
   Timer? _connectionPingTimer;
+  /// Timer for the connecting timeout
+  Timer? _connectingTimeoutTimer;
   /// Completers for certain actions
   // ignore: use_late_for_private_fields_and_variables
   Completer<XmppConnectionResult>? _connectionCompleter;
@@ -476,6 +481,21 @@ class XmppConnection {
     return future;
   }
 
+  /// Called when we timeout during connecting
+  Future<void> _onConnectingTimeout() async {
+    _log.severe('Connection stuck in "connecting". Causing a reconnection...');
+    await handleError('Connecting timeout');
+  }
+
+  void _destroyConnectingTimer() {
+    if (_connectingTimeoutTimer != null) {
+      _connectingTimeoutTimer!.cancel();
+      _connectingTimeoutTimer = null;
+
+      _log.finest('Destroying connecting timeout timer...');
+    }
+  }
+  
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
   Future<void> _setConnectionState(XmppConnectionState state) async {
@@ -499,7 +519,21 @@ class XmppConnection {
       if (state == XmppConnectionState.connected) {
         _log.finest('Starting _pingConnectionTimer');
         _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
+
+        // We are connected, so the timer can stop.
+        _destroyConnectingTimer();
+      } else if (state == XmppConnectionState.connecting) {
+        // Make sure it is not running...
+        _destroyConnectingTimer();
+
+        // ...and start it.
+        _log.finest('Starting connecting timeout timer...');
+        _connectingTimeoutTimer = Timer(connectingTimeout, _onConnectingTimeout);
       } else {
+        // Just make sure the connecting timeout timer is not running
+        _destroyConnectingTimer();
+
+        // The ping timer makes no sense if we are not connected
         if (_connectionPingTimer != null) {
           _log.finest('Destroying _pingConnectionTimer');
           _connectionPingTimer!.cancel();
