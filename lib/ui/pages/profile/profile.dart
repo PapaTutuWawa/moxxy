@@ -67,79 +67,26 @@ class ProfilePage extends StatelessWidget {
                   onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
                 ),
               ),
-              Visibility(
-                visible: state.isSelfProfile,
-                child: Positioned(
-                  top: 8,
-                  right: 8,
-                  child: IconButton(
-                    color: Colors.white,
-                    icon: const Icon(Icons.info_outline),
-                    onPressed: () {
-                      showModalBottomSheet<dynamic>(
-                        context: context,
-                        builder: (context) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                child: Text(
-                                  'Server Information',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                  ),
-                                ),
-                              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  color: Colors.white,
+                  icon: state.isSelfProfile
+                    ? const Icon(Icons.info_outline)
+                    : const Icon(Icons.settings),
+                  onPressed: () {
+                    showModalBottomSheet<dynamic>(
+                      context: context,
+                      builder: (context) {
+                        if (state.isSelfProfile) {
+                          return buildServerInformationModal();
+                        }
 
-                              Table(
-                                defaultColumnWidth: const IntrinsicColumnWidth(),
-                                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                                children: [
-                                  TableRow(
-                                    children: [
-                                      const Text('Stream Management'),
-                                      Checkbox(
-                                        value: state.streamManagementSupported,
-                                        onChanged: (_) {},
-                                      ),
-                                    ],
-                                  ),
-                                  TableRow(
-                                    children: [
-                                      const Text('HTTP File Upload'),
-                                      Checkbox(
-                                        value: state.httpFileUploadSupported,
-                                        onChanged: (_) {},
-                                      ),
-                                    ],
-                                  ),
-                                  TableRow(
-                                    children: [
-                                      const Text('User Blocking'),
-                                      Checkbox(
-                                        value: state.userBlockingSupported,
-                                        onChanged: (_) {},
-                                      ),
-                                    ],
-                                  ),
-                                  TableRow(
-                                    children: [
-                                      const Text('Client State Indication'),
-                                      Checkbox(
-                                        value: state.csiSupported,
-                                        onChanged: (_) {},
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
+                        return buildConversationOptionsModal();
+                      },
+                    );
+                  },
                 ),
               ),
             ],
