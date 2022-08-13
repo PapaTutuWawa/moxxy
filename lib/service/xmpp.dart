@@ -11,6 +11,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
+import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
 import 'package:moxxyv2/service/db/media.dart';
@@ -431,6 +432,10 @@ class XmppService {
         );
       break;
     }
+
+    await GetIt.I.get<ConnectivityWatcherService>().onConnectionStateChanged(
+      event.before, event.state,
+    );
     
     if (event.state == XmppConnectionState.connected) {
       final connection = GetIt.I.get<XmppConnection>();

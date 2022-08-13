@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
@@ -41,6 +42,8 @@ class ConnectivityService {
         .onConnectivityChanged(regained, lost);
 
       GetIt.I.get<HttpFileTransferService>().onConnectivityChanged(regained);
+
+      GetIt.I.get<ConnectivityWatcherService>().onConnectivityChanged(regained);
     });
   }
 

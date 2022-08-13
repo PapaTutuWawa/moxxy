@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -55,6 +56,25 @@ class NotificationsService {
     final details = NotificationDetails(android: androidDetails);
     await GetIt.I.get<FlutterLocalNotificationsPlugin>().show(
       m.id, title, bodyToShow, details,
+    );
+  }
+
+  /// Show a notification with the highest priority that uses [title] as the title
+  /// and [body] as the body.
+  // TODO(Unknown): Use the warning icon as the notification icon
+  Future<void> showWarningNotification(String title, String body) async {
+    const androidDetails = AndroidNotificationDetails(
+      'warning_channel', 'Warnings',
+      channelDescription: 'Warnings related to Moxxy',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    const details = NotificationDetails(android: androidDetails);
+    await GetIt.I.get<FlutterLocalNotificationsPlugin>().show(
+      Random().nextInt(1 << 32),
+      title,
+      body,
+      details,
     );
   }
 }

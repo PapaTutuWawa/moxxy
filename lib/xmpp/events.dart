@@ -16,7 +16,8 @@ abstract class XmppEvent {}
 /// changed.
 class ConnectionStateChangedEvent extends XmppEvent {
 
-  ConnectionStateChangedEvent({ required this.state, required this.resumed });
+  ConnectionStateChangedEvent(this.state, this.before, this.resumed);
+  final XmppConnectionState before;
   final XmppConnectionState state;
   final bool resumed;
 }

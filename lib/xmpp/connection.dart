@@ -484,13 +484,15 @@ class XmppConnection {
       if (state == _connectionState) return;
       
       _log.finest('Updating _connectionState from $_connectionState to $state');
+      final oldState = _connectionState;
       _connectionState = state;
 
       final sm = getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator);
       _eventStreamController.add(
         ConnectionStateChangedEvent(
-          state: state,
-          resumed: sm != null ? sm.isResumed : false,
+          state,
+          oldState,
+          sm != null ? sm.isResumed : false,
         ),
       );
 

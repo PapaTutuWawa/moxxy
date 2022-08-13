@@ -10,6 +10,7 @@ import 'package:moxplatform/types.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
+import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
 import 'package:moxxyv2/service/events.dart';
@@ -212,6 +213,7 @@ Future<void> entrypoint() async {
     ]);
 
   GetIt.I.registerSingleton<XmppConnection>(connection);
+  GetIt.I.registerSingleton<ConnectivityWatcherService>(ConnectivityWatcherService());
   GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
   await GetIt.I.get<ConnectivityService>().initialize();
 
