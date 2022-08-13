@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/managers/base.dart';
 import 'package:moxxyv2/xmpp/managers/data.dart';
@@ -148,7 +148,7 @@ class StreamManagementManager extends XmppManagerBase {
       _enableStreamManagement();
 
       await _ackLock.synchronized(() async {
-          _pendingAcks = 0;
+        _pendingAcks = 0;
       });
 
       await onStreamResumed(event.h);
@@ -156,21 +156,26 @@ class StreamManagementManager extends XmppManagerBase {
       _enableStreamManagement();
 
       await _ackLock.synchronized(() async {
-          _pendingAcks = 0;
+        _pendingAcks = 0;
       });
 
       await _stateLock.synchronized(() async {
-          setState(StreamManagementState(
-              0,
-              0,
-              streamResumptionId: event.id,
-              streamResumptionLocation: event.location,
-          ),);
-          await commitState();
+        setState(StreamManagementState(
+          0,
+          0,
+          streamResumptionId: event.id,
+          streamResumptionLocation: event.location,
+        ),);
+        await commitState();
       });
     } else if (event is ConnectingEvent) {
       _disableStreamManagement();
       _streamResumed = false;
+    } else if (event is ConnectionStateChangedEvent) {
+      if (event.state == XmppConnectionState.connected) {
+        // Push out all pending stanzas
+        await onStreamResumed(0);
+      }
     }
   }
 

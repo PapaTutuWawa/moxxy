@@ -508,14 +508,14 @@ class XmppConnection {
       _connectionState = state;
 
       final sm = getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator);
-      _eventStreamController.add(
+      await _sendEvent(
         ConnectionStateChangedEvent(
           state,
           oldState,
           sm != null ? sm.isResumed : false,
         ),
       );
-
+      
       if (state == XmppConnectionState.connected) {
         _log.finest('Starting _pingConnectionTimer');
         _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
