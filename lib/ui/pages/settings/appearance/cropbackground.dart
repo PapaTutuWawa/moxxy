@@ -83,7 +83,18 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
 
   Widget _buildLoadingSpinner(CropBackgroundState state) {
     if (state.isWorking) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: backdropBlack,
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.all(12),
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
     }
 
     return const SizedBox();
