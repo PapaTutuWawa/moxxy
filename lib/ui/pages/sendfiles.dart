@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mime/mime.dart';
@@ -120,9 +121,8 @@ class SendFilesPage extends StatelessWidget {
 
     if (mime.startsWith('image/')) {
       // Render the image
-      return ImageThumbnailWidget(
-        path,
-        Image.memory,
+      return Image.file(
+        File(path),
       );
     } else if (mime.startsWith('video/')) {
       // Render the video thumbnail

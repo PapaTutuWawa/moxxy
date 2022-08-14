@@ -1,5 +1,5 @@
+import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -85,31 +85,9 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
               height: 48,
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
-                child: FutureBuilder<Uint8List>(
-                  future: GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(message.mediaUrl!),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      if (snapshot.data != null) {
-                        return Image.memory(
-                          snapshot.data!,
-                          fit: BoxFit.cover,
-                        );
-                      } else {
-                        return const Padding(
-                          padding: EdgeInsets.all(32),
-                          child: Icon(
-                            Icons.error_outline,
-                            size: 32,
-                          ),
-                        );
-                      }
-                    } else {
-                      return const CircularProgressIndicator();
-                    }
-                  },
-                ),
+                child: Image.file(File(message.mediaUrl!)),
               ),
-            )
+            ),
           ],
         ),
         resetQuotedMessage: resetQuote,

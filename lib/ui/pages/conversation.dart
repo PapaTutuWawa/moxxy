@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -10,7 +11,6 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
-import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -428,15 +428,11 @@ class ConversationPageState extends State<ConversationPage> {
                 final query = MediaQuery.of(context);
 
                 if (state.backgroundPath.isNotEmpty) {
-                  return ImageThumbnailWidget(
-                    state.backgroundPath,
-                    (data) => Image.memory(
-                      data,
-                      fit: BoxFit.cover,
-                      width: query.size.width,
-                      height: query.size.height - query.padding.top,
-                    ),
-                    showSpinner: false,
+                  return Image.file(
+                    File(state.backgroundPath),
+                    fit: BoxFit.cover,
+                    width: query.size.width,
+                    height: query.size.height - query.padding.top,
                   );
                 }
 

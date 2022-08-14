@@ -11,7 +11,6 @@ import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
-import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 import 'package:open_file/open_file.dart';
 
 class ImageChatWidget extends StatelessWidget {
@@ -30,10 +29,7 @@ class ImageChatWidget extends StatelessWidget {
 
   Widget _buildUploading() {
     return MediaBaseChatWidget(
-      ImageThumbnailWidget(
-        message.mediaUrl!,
-        Image.memory,
-      ),
+      Image.file(File(message.mediaUrl!)),
       MessageBubbleBottom(message),
       radius,
       extra: ProgressWidget(id: message.id),
@@ -72,10 +68,7 @@ class ImageChatWidget extends StatelessWidget {
   /// The image exists locally
   Widget _buildImage() {
     return MediaBaseChatWidget(
-      ImageThumbnailWidget(
-        message.mediaUrl!,
-        Image.memory,
-      ),
+      Image.file(File(message.mediaUrl!)),
       MessageBubbleBottom(message),
       radius,
       onTap: () {
