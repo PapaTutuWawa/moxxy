@@ -9,7 +9,6 @@ import 'package:moxxyv2/ui/widgets/avatar.dart';
 /// example disable sharing their online status with the contact.
 Widget buildConversationOptionsModal() {
   return BlocBuilder<ProfileBloc, ProfileState>(
-    // TODO(PapaTutuWawa): Put a loading spinner here or just preemptively change the value
     buildWhen: (prev, next) => prev.conversation?.subscription != next.conversation?.subscription,
     builder: (context, state) => Column(
       mainAxisSize: MainAxisSize.min,
