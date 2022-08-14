@@ -28,6 +28,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   double _x = 0;
   double _y = 0;
   bool _track = false;
+  double _scale = -1;
 
   double _scalingFactor(BuildContext context, CropBackgroundState state) {
     final size = MediaQuery.of(context).size;
@@ -49,7 +50,6 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
       );
     }
 
-    final q = _scalingFactor(context, state);
     if (state.blurEnabled) {
       return Positioned(
         top: _y,
@@ -61,8 +61,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
           ),
           child: Image.memory(
             state.image!,
-            width: state.imageWidth * q,
-            height: state.imageHeight * q,
+            width: state.imageWidth * _scale,
+            height: state.imageHeight * _scale,
             fit: BoxFit.contain,
           ),
         ),
@@ -73,8 +73,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
         left: _x,
         child: Image.memory(
           state.image!,
-          width: state.imageWidth * q,
-          height: state.imageHeight * q,
+          width: state.imageWidth * _scale,
+          height: state.imageHeight * _scale,
           fit: BoxFit.contain,
         ),
       );
@@ -102,123 +102,131 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   
   @override
   Widget build(BuildContext context) {
+    final query = MediaQuery.of(context);
     return BlocBuilder<CropBackgroundBloc, CropBackgroundState>(
-      builder: (BuildContext context, CropBackgroundState state) => WillPopScope(
-        onWillPop: () async {
-          if (state.isWorking) return false;
+      builder: (BuildContext context, CropBackgroundState state) {
+        if (_scale == -1) {
+          _scale = _scalingFactor(context, state);
+        }
 
-          context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
-          return true;
-        },
-        child: SafeArea(
-          child: GestureDetector(
-            onPanDown: (_) => _track = true,
-            onPanStart: (_) => _track = true,
-            onPanEnd: (_) => _track = false,
-            onPanCancel: () => _track = false,
-            onPanUpdate: (event) {
-              if (!_track) return;
+        return WillPopScope(
+          onWillPop: () async {
+            if (state.isWorking) return false;
 
-              final query = MediaQuery.of(context);
-              final q = _scalingFactor(context, state);
-              setState(() {
-                _x = min(
-                  max(
-                    _x + event.delta.dx,
-                    query.size.width - state.imageWidth * q,
-                  ),
-                  0,
-                );
-                _y = min(
-                  max(
-                    _y + event.delta.dy,
-                    query.size.height - state.imageHeight * q,
-                  ),
-                  0,
-                );
-              });
-            },
-            child: Stack(
-              children: [
-                _buildImage(context, state),
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Material(
-                    color: const Color.fromRGBO(0, 0, 0, 0),
-                    child: IconButton(
-                      color: Colors.white,
-                      icon: const Icon(Icons.close),
-                      onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
+            context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
+            return true;
+          },
+          child: SafeArea(
+            child: GestureDetector(
+              onScaleStart: (_) => _track = true,
+              onScaleEnd: (_) => _track = false,
+              onScaleUpdate: (event) {
+                if (!_track) return;
+                
+                setState(() {
+                    _x = min(
+                      max(
+                        _x + event.focalPointDelta.dx,
+                        query.size.width - state.imageWidth * _scale,
+                      ),
+                      0,
+                    );
+                    _y = min(
+                      max(
+                        _y + event.focalPointDelta.dy,
+                        query.size.height - state.imageHeight * _scale,
+                      ),
+                      0,
+                    );
+
+                    if (event.pointerCount == 2) {
+                      _scale = max(event.scale, _scalingFactor(context, state));
+                    }
+                });
+              },
+              child: Stack(
+                children: [
+                  _buildImage(context, state),
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Material(
+                      color: const Color.fromRGBO(0, 0, 0, 0),
+                      child: IconButton(
+                        color: Colors.white,
+                        icon: const Icon(Icons.close),
+                        onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Material(
-                    color: const Color.fromRGBO(0, 0, 0, 0),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color.fromRGBO(0, 0, 0, 0.6),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: IntrinsicWidth(
-                        child: Row(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Text('Blur background'),
-                            ),
-                            Switch(
-                              value: state.blurEnabled,
-                              onChanged: (_) {
-                                if (state.isWorking) return;
-                                
-                                context.read<CropBackgroundBloc>()
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: const Color.fromRGBO(0, 0, 0, 0),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: const Color.fromRGBO(0, 0, 0, 0.6),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: IntrinsicWidth(
+                          child: Row(
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(left: 8),
+                                child: Text('Blur background'),
+                              ),
+                              Switch(
+                                value: state.blurEnabled,
+                                onChanged: (_) {
+                                  if (state.isWorking) return;
+                                  
+                                  context.read<CropBackgroundBloc>()
                                   .add(BlurToggledEvent());
-                              },
-                            ),
-                          ],
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 8,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      RoundedButton(
-                        color: primaryColor,
-                        cornerRadius: 100,
-                        onTap: () {
-                          if (state.isWorking) return;
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 8,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        RoundedButton(
+                          color: primaryColor,
+                          cornerRadius: 100,
+                          onTap: () {
+                            if (state.isWorking) return;
 
-                          context.read<CropBackgroundBloc>().add(
-                            BackgroundSetEvent(
-                              _x,
-                              _y,
-                              _scalingFactor(context, state),
-                              MediaQuery.of(context).size.height,
-                              MediaQuery.of(context).size.width,
-                            ),
-                          );
-                        },
-                        child: const Text('Set as background image'),
-                      ),
-                    ],
+                            context.read<CropBackgroundBloc>().add(
+                              BackgroundSetEvent(
+                                _x,
+                                _y,
+                                //_scalingFactor(context, state),
+                                _scale,
+                                MediaQuery.of(context).size.height,
+                                MediaQuery.of(context).size.width,
+                              ),
+                            );
+                          },
+                          child: const Text('Set as background image'),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                _buildLoadingSpinner(state),
-              ],
+                  _buildLoadingSpinner(state),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
