@@ -41,7 +41,6 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
       return q;
     }
   }
-
   
   Widget _buildImage(BuildContext context, CropBackgroundState state) {
     if (state.image == null) {
