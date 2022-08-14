@@ -64,7 +64,7 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius)
     // TODO(Unknown): Implement audio
     //case MessageType.audio: return buildImageMessageWidget(message);
     case MessageType.file: {
-      return FileChatWidget(message);
+      return FileChatWidget(message, radius);
     }
   }
 }

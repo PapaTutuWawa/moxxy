@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
@@ -27,7 +30,7 @@ class VideoChatWidget extends StatelessWidget {
   final BorderRadius radius;
 
   Widget _buildUploading() {
-    return ImageBaseChatWidget(
+    return MediaBaseChatWidget(
       VideoThumbnailWidget(
         message.mediaUrl!,
         Image.memory,
@@ -42,7 +45,7 @@ class VideoChatWidget extends StatelessWidget {
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
 
-      return ImageBaseChatWidget(
+      return MediaBaseChatWidget(
         SizedBox(
           width: thumbnailSize.width,
           height: thumbnailSize.height,
@@ -57,14 +60,19 @@ class VideoChatWidget extends StatelessWidget {
         extra: ProgressWidget(id: message.id),
       );
     } else {
-      // TODO(PapaTutuWawa): Do we need to set the ProgressWidget here?
-      return FileChatWidget(message);
+      return FileChatBaseWidget(
+        message,
+        Icons.video_file_outlined,
+        filenameFromUrl(message.srcUrl!),
+        radius,
+        extra: ProgressWidget(id: message.id),
+      );
     }
   }
 
   /// The video exists locally
   Widget _buildVideo() {
-    return ImageBaseChatWidget(
+    return MediaBaseChatWidget(
       VideoThumbnailWidget(
         message.mediaUrl!,
         Image.memory,
@@ -82,7 +90,7 @@ class VideoChatWidget extends StatelessWidget {
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
 
-      return ImageBaseChatWidget(
+      return MediaBaseChatWidget(
          SizedBox(
           width: thumbnailSize.width,
           height: thumbnailSize.height,
@@ -99,11 +107,18 @@ class VideoChatWidget extends StatelessWidget {
         ),
       );
     } else {
-      return FileChatWidget(
+      return FileChatBaseWidget(
         message,
-        extra: ElevatedButton(
-          onPressed: () => requestMediaDownload(message),
-          child: const Text('Download'),
+        Icons.video_file_outlined,
+        filenameFromUrl(message.srcUrl!),
+        radius,
+        extra: DownloadButton(
+          onPressed: () {
+            MoxplatformPlugin.handler.getDataSender().sendData(
+              RequestDownloadCommand(message: message),
+              awaitable: false,
+            );
+          },
         ),
       );
     }

@@ -1,68 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
-import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 import 'package:open_file/open_file.dart';
-
-/// A base container allowing to embed a child in a borderless ChatBubble. If onTap is
-/// set, then it will be called as soon as the bubble is tapped. If extra is set, then
-/// it will be put on top of the bubble in the center.
-class ImageBaseChatWidget extends StatelessWidget {
-
-  const ImageBaseChatWidget(
-    this.background,
-    this.bottom,
-    this.radius,
-    {
-      this.onTap,
-      this.extra,
-      this.gradient = true,
-      Key? key,
-    }
-  ) : super(key: key);
-  final Widget background;
-  final Widget? extra;
-  final MessageBubbleBottom bottom;
-  final BorderRadius radius;
-  final void Function()? onTap;
-  final bool gradient;
-
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: InkResponse(
-        onTap: onTap,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: radius,
-              child: background,
-            ),
-            ...gradient ? [BottomGradient(radius)] : [],
-            ...extra != null ? [ extra! ] : [],
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 3, right: 6),
-                child: bottom,
-              ),
-            ) 
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class ImageChatWidget extends StatelessWidget {
 
@@ -79,7 +29,7 @@ class ImageChatWidget extends StatelessWidget {
   final double maxWidth;
 
   Widget _buildUploading() {
-    return ImageBaseChatWidget(
+    return MediaBaseChatWidget(
       ImageThumbnailWidget(
         message.mediaUrl!,
         Image.memory,
@@ -94,7 +44,7 @@ class ImageChatWidget extends StatelessWidget {
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
 
-      return ImageBaseChatWidget(
+      return MediaBaseChatWidget(
         SizedBox(
           width: thumbnailSize.width,
           height: thumbnailSize.height,
@@ -109,14 +59,19 @@ class ImageChatWidget extends StatelessWidget {
         extra: ProgressWidget(id: message.id),
       );
     } else {
-      // TODO(PapaTutuWawa): Do we need to set the ProgressWidget here?
-      return FileChatWidget(message);
+      return FileChatBaseWidget(
+        message,
+        Icons.image,
+        filenameFromUrl(message.srcUrl!),
+        radius,
+        extra: ProgressWidget(id: message.id),
+      );
     }
   }
 
   /// The image exists locally
   Widget _buildImage() {
-    return ImageBaseChatWidget(
+    return MediaBaseChatWidget(
       ImageThumbnailWidget(
         message.mediaUrl!,
         Image.memory,
@@ -133,7 +88,7 @@ class ImageChatWidget extends StatelessWidget {
     if (message.thumbnailData != null) {
       final thumbnailSize = getThumbnailSize(message, maxWidth);
 
-      return ImageBaseChatWidget(
+      return MediaBaseChatWidget(
          SizedBox(
           width: thumbnailSize.width,
           height: thumbnailSize.height,
@@ -150,11 +105,18 @@ class ImageChatWidget extends StatelessWidget {
         ),
       );
     } else {
-      return FileChatWidget(
+      return FileChatBaseWidget(
         message,
-        extra: ElevatedButton(
-          onPressed: () => requestMediaDownload(message),
-          child: const Text('Download'),
+        Icons.image,
+        filenameFromUrl(message.srcUrl!),
+        radius,
+        extra: DownloadButton(
+          onPressed: () {
+            MoxplatformPlugin.handler.getDataSender().sendData(
+              RequestDownloadCommand(message: message),
+              awaitable: false,
+            );
+          },
         ),
       );
     }

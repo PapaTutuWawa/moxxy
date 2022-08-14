@@ -7,9 +7,58 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 import 'package:open_file/open_file.dart';
+
+/// A base widget for sent/received files that cannot be displayed otherwise.
+class FileChatBaseWidget extends StatelessWidget {
+  const FileChatBaseWidget(
+    this.message,
+    this.icon,
+    this.filename,
+    this.radius,
+    {
+      this.extra,
+      this.onTap,
+      Key? key,
+    }
+  ) : super(key: key);
+  final Message message;
+  final IconData icon;
+  final String filename;
+  final BorderRadius radius;
+  final Widget? extra;
+  final void Function()? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return MediaBaseChatWidget(
+      Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 128,
+            ),
+
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(filename),
+            ),
+          ],
+        ),
+      ),
+      MessageBubbleBottom(message),
+      radius,
+      gradient: false,
+      extra: extra,
+      onTap: onTap,
+    );
+  }
+}
 
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
@@ -17,36 +66,22 @@ class FileChatWidget extends StatelessWidget {
 
   const FileChatWidget(
     this.message,
+    this.radius,
     {
       this.extra,
       Key? key,
     }
   ) : super(key: key);
   final Message message;
+  final BorderRadius radius;
   final Widget? extra;
 
   Widget _buildNonDownloaded() {
-    return ImageBaseChatWidget(
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.file_present,
-              size: 128,
-            ),
-
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(filenameFromUrl(message.srcUrl!)),
-            ),
-          ],
-        ),
-      ),
-      MessageBubbleBottom(message),
-      BorderRadius.circular(8),
-      gradient: false,
+    return FileChatBaseWidget(
+      message,
+      Icons.file_present,
+      filenameFromUrl(message.srcUrl!),
+      radius,
       extra: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
@@ -58,55 +93,22 @@ class FileChatWidget extends StatelessWidget {
     );
   }
 
-
   Widget _buildDownloading() {
-    return ImageBaseChatWidget(
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.file_present,
-              size: 128,
-            ),
-
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(filenameFromUrl(message.srcUrl!)),
-            ),
-          ],
-        ),
-      ),
-      MessageBubbleBottom(message),
-      BorderRadius.circular(8),
-      gradient: false,
+    return FileChatBaseWidget(
+      message,
+      Icons.file_present,
+      filenameFromUrl(message.srcUrl!),
+      radius,
       extra: ProgressWidget(id: message.id),
     );
   }
 
   Widget _buildInner() {
-    return ImageBaseChatWidget(
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.file_present,
-              size: 128,
-            ),
-
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(filenameFromUrl(message.srcUrl!)),
-            ),
-          ],
-        ),
-      ),
-      MessageBubbleBottom(message),
-      BorderRadius.circular(8),
-      gradient: false,
+    return FileChatBaseWidget(
+      message,
+      Icons.file_present,
+      filenameFromUrl(message.srcUrl!),
+      radius,
       onTap: () {
         OpenFile.open(message.mediaUrl);
       },
