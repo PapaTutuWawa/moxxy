@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 const Radius radiusLarge = Radius.circular(10);
 const Radius radiusSmall = Radius.circular(4);
@@ -23,6 +23,10 @@ const double fontsizeSubtitle = 25;
 const double fontsizeAppbar = 20;
 const double fontsizeBody = 15;
 const double fontsizeSubbody = 10;
+
+// The translucent black we use when we need to ensure good contrast, for example when
+// displaying the download progress indicator.
+final backdropBlack = Colors.black.withAlpha(150);
 
 // Navigation constants
 const String cropRoute = '/crop';

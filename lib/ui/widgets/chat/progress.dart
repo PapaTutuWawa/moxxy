@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 
 // NOTE: Why do this? The reason is that if we did that in the [ChatBubble] widget, then
@@ -51,7 +52,7 @@ class ProgressWidgetState extends State<ProgressWidget> {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(100),
-        color: Colors.black.withAlpha(150),
+        color: backdropBlack,
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),

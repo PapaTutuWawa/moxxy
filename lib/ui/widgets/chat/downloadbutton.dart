@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 class DownloadButton extends StatelessWidget {
 
@@ -15,7 +16,7 @@ class DownloadButton extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(100),
-          color: Colors.black.withAlpha(150),
+          color: backdropBlack,
         ),
         child: IconButton(
           icon: const Icon(Icons.download),
