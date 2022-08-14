@@ -7,7 +7,7 @@ line-length=72
 [title-trailing-punctuation]
 [title-hard-tab]
 [title-match-regex]
-regex=^(ui,service|service,xmpp|feat|test|refactor|xmpp|service|redux|ui|lint|style|docs|build|misc|flake|shared|meta|android|ios):.*$
+regex=^(ui,service|service,xmpp|feat|test|refactor|xmpp|service|redux|ui|lint|style|docs|build|misc|flake|shared|meta|android|ios|release):.*$
 
 
 [body-trailing-whitespace]
