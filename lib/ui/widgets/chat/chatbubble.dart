@@ -9,7 +9,7 @@ import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
-class ChatBubble extends StatelessWidget {
+class ChatBubble extends StatefulWidget {
 
   const ChatBubble({
       required this.message,
@@ -33,21 +33,31 @@ class ChatBubble extends StatelessWidget {
   final int? lastMessageTimestamp;
   // For acting on swiping
   final void Function(Message) onSwipedCallback;
-  
+
+  @override
+  ChatBubbleState createState() => ChatBubbleState();
+}
+
+class ChatBubbleState extends State<ChatBubble>
+  with AutomaticKeepAliveClientMixin<ChatBubble> {
+
+  @override
+  bool get wantKeepAlive => true;
+    
   BorderRadius _getBorderRadius() {
     return BorderRadius.only(
-      topLeft: !sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
-      topRight: sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
-      bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
-      bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
+      topLeft: !widget.sentBySelf && (widget.between || widget.end) && !(widget.start && widget.end) ? radiusSmall : radiusLarge,
+      topRight: widget.sentBySelf && (widget.between || widget.end) && !(widget.start && widget.end) ? radiusSmall : radiusLarge,
+      bottomLeft: !widget.sentBySelf && (widget.between || widget.start) && !(widget.start && widget.end) ? radiusSmall : radiusLarge,
+      bottomRight: widget.sentBySelf && (widget.between || widget.start) && !(widget.start && widget.end) ? radiusSmall : radiusLarge,
     );
   }
 
   /// Returns true if the mime type has a special widget which replaces the bubble.
   /// False otherwise.
   bool _isInlinedWidget() {
-    if (message.mediaType != null) {
-      return message.mediaType!.startsWith('image/');
+    if (widget.message.mediaType != null) {
+      return widget.message.mediaType!.startsWith('image/');
     }
 
     return false;
@@ -55,13 +65,13 @@ class ChatBubble extends StatelessWidget {
   
   /// Specified when the message bubble should not have color
   bool _shouldNotColorBubble() {
-    return message.isMedia && message.mediaUrl != null && _isInlinedWidget();
+    return widget.message.isMedia && widget.message.mediaUrl != null && _isInlinedWidget();
   }
 
   Color? _getBubbleColor(BuildContext context) {
     if (_shouldNotColorBubble()) return null;
 
-    if (sentBySelf) {
+    if (widget.sentBySelf) {
       return bubbleColorSent;
     } else {
       return bubbleColorReceived;
@@ -72,7 +82,7 @@ class ChatBubble extends StatelessWidget {
     return SwipeableTile.swipeToTrigger(
       direction: SwipeDirection.horizontal,
       swipeThreshold: 0.2,
-      onSwiped: (_) => onSwipedCallback(message),
+      onSwiped: (_) => widget.onSwipedCallback(widget.message),
       backgroundBuilder: (_, direction, progress) {
         // NOTE: Taken from https://github.com/watery-desert/swipeable_tile/blob/main/example/lib/main.dart#L240
         //       and modified.
@@ -126,18 +136,18 @@ class ChatBubble extends StatelessWidget {
         );
       },
       isEelevated: false,
-      key: ValueKey('message;$message'),
+      key: ValueKey('message;${widget.message}'),
       child: Padding(
         padding: EdgeInsets.only(
-          left: !sentBySelf ? 8.0 : 0.0,
-          right: sentBySelf ? 8.0 : 0.0,
+          left: !widget.sentBySelf ? 8.0 : 0.0,
+          right: widget.sentBySelf ? 8.0 : 0.0,
         ),
         child: Row(
-          mainAxisAlignment: sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
+          mainAxisAlignment: widget.sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
             Container(
               constraints: BoxConstraints(
-                maxWidth: maxWidth,
+                maxWidth: widget.maxWidth,
               ),
               decoration: BoxDecoration(
                 color: _getBubbleColor(context),
@@ -145,8 +155,8 @@ class ChatBubble extends StatelessWidget {
               ),
               child: Padding(
                 // NOTE: Images don't work well with padding here
-                padding: message.isMedia || message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
-                child: buildMessageWidget(message, maxWidth, _getBorderRadius()),
+                padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
+                child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius()),
               ),
             )
           ],
@@ -168,16 +178,17 @@ class ChatBubble extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     // lastMessageTimestamp == null means that there is no previous message
-    final thisMessageDateTime = DateTime.fromMillisecondsSinceEpoch(message.timestamp);
-    if (lastMessageTimestamp == null) {
+    final thisMessageDateTime = DateTime.fromMillisecondsSinceEpoch(widget.message.timestamp);
+    if (widget.lastMessageTimestamp == null) {
       return _buildWithDateBubble(
         _buildBubble(context),
         formatDateBubble(thisMessageDateTime, DateTime.now()),
       );
     }
 
-    final lastMessageDateTime = DateTime.fromMillisecondsSinceEpoch(lastMessageTimestamp!);
+    final lastMessageDateTime = DateTime.fromMillisecondsSinceEpoch(widget.lastMessageTimestamp!);
 
     if (lastMessageDateTime.day != thisMessageDateTime.day ||
         lastMessageDateTime.month != thisMessageDateTime.month ||
