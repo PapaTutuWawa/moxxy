@@ -48,6 +48,15 @@ class ProgressWidgetState extends State<ProgressWidget> {
   
   @override
   Widget build(BuildContext context) {
-    return CircularProgressIndicator(value: _progress);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(100),
+        color: Colors.black.withAlpha(150),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: CircularProgressIndicator(value: _progress),
+      ),
+    );
   }
 }
