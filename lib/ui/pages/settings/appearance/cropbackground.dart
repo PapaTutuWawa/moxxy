@@ -111,10 +111,12 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
           return true;
         },
         child: SafeArea(
-          child: Listener(
-            onPointerDown: (_) => _track = true,
-            onPointerUp: (_) => _track = false,
-            onPointerMove: (event) {
+          child: GestureDetector(
+            onPanDown: (_) => _track = true,
+            onPanStart: (_) => _track = true,
+            onPanEnd: (_) => _track = false,
+            onPanCancel: () => _track = false,
+            onPanUpdate: (event) {
               if (!_track) return;
 
               final query = MediaQuery.of(context);
@@ -122,14 +124,14 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
               setState(() {
                 _x = min(
                   max(
-                    _x + event.localDelta.dx,
+                    _x + event.delta.dx,
                     query.size.width - state.imageWidth * q,
                   ),
                   0,
                 );
                 _y = min(
                   max(
-                    _y + event.localDelta.dy,
+                    _y + event.delta.dy,
                     query.size.height - state.imageHeight * q,
                   ),
                   0,
