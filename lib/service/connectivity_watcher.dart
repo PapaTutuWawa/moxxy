@@ -36,14 +36,6 @@ class ConnectivityWatcherService {
     _stopTimer();
     _timer = Timer(const Duration(minutes: 30), _onTimerElapsed);
   }
-
-  /// Called when the network state changed
-  Future<void> onConnectivityChanged(bool regained) async {
-    if (regained) {
-      _log.finest('Regained network connection. Starting warning timer...');
-      _startTimer();
-    }
-  }
   
   /// Called when the XMPP connection state changed
   Future<void> onConnectionStateChanged(XmppConnectionState before, XmppConnectionState current) async {
