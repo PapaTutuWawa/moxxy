@@ -5,6 +5,8 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/models/message.dart' as model;
 
+const maxNotificationId = 2147483647;
+
 // TODO(Unknown): Add resolution dependent drawables for the notification icon
 class NotificationsService {
 
@@ -71,7 +73,7 @@ class NotificationsService {
     );
     const details = NotificationDetails(android: androidDetails);
     await GetIt.I.get<FlutterLocalNotificationsPlugin>().show(
-      Random().nextInt(1 << 32),
+      Random().nextInt(maxNotificationId),
       title,
       body,
       details,
