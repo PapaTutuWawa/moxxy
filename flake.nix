@@ -1,7 +1,7 @@
 {
   description = "Moxxy v2";
   inputs = {
-    nixpkgs.url = "github:NANASHI0X74/nixpkgs/flutter-3-0-0";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
