@@ -55,16 +55,21 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
 
   @override
   Future<void> reset() async {
+    _stopTimer();
     await setIsReconnecting(false);
   }
 
-  @visibleForTesting
-  Future<void> onTimerElapsed() async {
+  void _stopTimer() {
     if (timer != null) {
       timer!.cancel();
       timer = null;
       _log.finest('Destroying timer');
     }
+  }
+  
+  @visibleForTesting
+  Future<void> onTimerElapsed() async {
+    _stopTimer();
 
     _log.finest('Performing reconnect');
     await performReconnect!();
