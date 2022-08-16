@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -8,7 +11,6 @@ import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/service/thumbnail.dart';
 
 part 'preferences_event.dart';
 
@@ -57,11 +59,8 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
     if (state.backgroundPath.isNotEmpty) {
       // Invalidate the old entry
       _log.finest('Invalidating cache entry for ${state.backgroundPath}');
-      await GetIt.I.get<ThumbnailCacheService>().invalidateEntry(state.backgroundPath);
+      await FileImage(File(state.backgroundPath)).evict();
     }
-
-    // Cache the new entry
-    unawaited(GetIt.I.get<ThumbnailCacheService>().getImageThumbnail(event.backgroundPath));
     
     add(
       PreferencesChangedEvent(
