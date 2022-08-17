@@ -79,7 +79,7 @@ class XmppConnection {
     ReconnectionPolicy reconnectionPolicy,
     {
       BaseSocketWrapper? socket,
-      this.connectionPingDuration = const Duration(minutes: 5),
+      this.connectionPingDuration = const Duration(minutes: 3),
       this.connectingTimeout = const Duration(minutes: 2),
     }
   ) :
