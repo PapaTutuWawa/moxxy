@@ -452,7 +452,7 @@ class XmppConnection {
         }
 
         _log.fine('Running pre stanza handlers..');
-        await _runOutoingPreStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_, retransmitted: retransmitted));
+        await _runOutgoingPreStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_, retransmitted: retransmitted));
         _log.fine('Done');
 
         // This uses the StreamManager to behave like a send queue
@@ -466,7 +466,7 @@ class XmppConnection {
         }
 
         _log.fine('Running post stanza handlers..');
-        await _runOutoingPostStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_, retransmitted: retransmitted));
+        await _runOutgoingPostStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_, retransmitted: retransmitted));
         _log.fine('Done');
 
         if (awaitable) {
@@ -589,11 +589,11 @@ class XmppConnection {
     return _runStanzaHandlers(_incomingStanzaHandlers, stanza,);
   }
 
-  Future<bool> _runOutoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
+  Future<bool> _runOutgoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
     return _runStanzaHandlers(_outgoingPreStanzaHandlers, stanza, initial: initial);
   }
 
-  Future<bool> _runOutoingPostStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
+  Future<bool> _runOutgoingPostStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
     return _runStanzaHandlers(_outgoingPostStanzaHandlers, stanza, initial: initial);
   }
   
