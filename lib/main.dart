@@ -201,7 +201,21 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return MaterialApp(
       title: 'Moxxy',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            primary: primaryColor,
+            onPrimary: Colors.white,
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            primary: primaryColor,
+          ),
+        ),
+        // NOTE: Mainly for the SettingsSection
+        colorScheme: const ColorScheme.light(
+          secondary: primaryColor,
+        ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,

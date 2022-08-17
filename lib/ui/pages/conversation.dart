@@ -195,7 +195,7 @@ class _ConversationBottomRow extends StatelessWidget {
               Expanded(
                 child: CustomTextField(
                   // TODO(Unknown): Work on the colors
-                  backgroundColor: Theme.of(context).backgroundColor,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   textColor: _getTextColor(context),
                   enableBoxShadow: true,
                   maxLines: 5,
@@ -417,7 +417,7 @@ class ConversationPageState extends State<ConversationPage> {
             right: 0,
             top: 0,
             bottom: 0,
-            child: ColoredBox(color: Theme.of(context).backgroundColor),
+            child: ColoredBox(color: Theme.of(context).scaffoldBackgroundColor),
           ),
           Positioned(
             left: 0,
@@ -440,7 +440,7 @@ class ConversationPageState extends State<ConversationPage> {
                 return SizedBox(
                   width: query.size.width,
                   height: query.size.height,
-                  child: ColoredBox(color: Theme.of(context).backgroundColor),
+                  child: ColoredBox(color: Theme.of(context).scaffoldBackgroundColor),
                 );
               },
             ),
@@ -504,7 +504,7 @@ class ConversationPageState extends State<ConversationPage> {
         color: const Color.fromRGBO(0, 0, 0, 0),
         child: Ink(
           decoration: ShapeDecoration(
-            color: Theme.of(context).backgroundColor,
+            color: Theme.of(context).scaffoldBackgroundColor,
             shape: const CircleBorder(),
           ),
           child: IconButton(

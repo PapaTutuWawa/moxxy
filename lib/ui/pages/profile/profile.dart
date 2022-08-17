@@ -62,7 +62,6 @@ class ProfilePage extends StatelessWidget {
                 top: 8,
                 left: 8,
                 child: IconButton(
-                  color: Colors.white,
                   icon: const Icon(Icons.close),
                   onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
                 ),
