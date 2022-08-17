@@ -132,7 +132,7 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
       PreStartDoneEvent(
         state: 'logged_in',
         jid: state.jid,
-        displayName: state.displayName,
+        displayName: state.displayName ?? state.jid!.split('@').first,
         avatarUrl: state.avatarUrl,
         avatarHash: state.avatarHash,
         permissionsToRequest: permissions,
