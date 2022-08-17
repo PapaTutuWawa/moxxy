@@ -49,7 +49,7 @@ class AvatarService {
 
     // Clean the raw data. Since this may arrive by chunks, those chunks may contain
     // weird data pieces.
-    var base64Data = base64Decode(_cleanBase64String(base64));
+    final base64Data = base64Decode(_cleanBase64String(base64));
     if (originalConversation != null) {
       final avatarPath = await saveAvatarInCache(
         base64Data,
