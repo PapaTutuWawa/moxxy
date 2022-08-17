@@ -17,6 +17,7 @@ dependencies:
   crop_your_image: 0.7.2
   cryptography: 2.0.5
   #cupertino_icons: 1.0.2
+  decorated_icon: 1.2.1
   dio: 4.0.6
   equatable: 2.0.3
   external_path: 1.0.1

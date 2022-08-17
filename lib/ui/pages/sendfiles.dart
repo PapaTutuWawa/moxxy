@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mime/mime.dart';
@@ -10,6 +11,16 @@ import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 import 'package:path/path.dart' as pathlib;
+
+Widget _deleteIconWithShadow() {
+  return const Center(
+    child: DecoratedIcon(
+      Icons.delete,
+      size: 32,
+      shadows: [BoxShadow(blurRadius: 8)],
+    ),
+  );
+}
 
 class SendFilesPage extends StatelessWidget {
  
@@ -45,12 +56,7 @@ class SendFilesPage extends StatelessWidget {
             }
           },
           borderColor: selected ? Colors.blue : null,
-          child: selected ? const Center(
-            child: Icon(
-              Icons.delete,
-              size: 32,
-            ),
-          ) : null,
+          child: selected ? _deleteIconWithShadow() : null,
         ),
       );
     } else if (mime.startsWith('video/')) {
@@ -72,12 +78,7 @@ class SendFilesPage extends StatelessWidget {
             }
           },
           borderColor: selected ? Colors.blue : null,
-          child: selected ? const Center(
-            child: Icon(
-              Icons.delete,
-              size: 32,
-            ),
-          ) : null,
+          child: selected ? _deleteIconWithShadow(): null,
         ),
       );
     } else {
