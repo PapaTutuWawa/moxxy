@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/xmpp/buffer.dart';
 import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/iq.dart';
@@ -85,7 +84,6 @@ class XmppConnection {
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
-    _connectionStateLock = Lock(),
     _routingState = RoutingState.preConnection,
     _eventStreamController = StreamController.broadcast(),
     _resource = '',
@@ -120,9 +118,8 @@ class XmppConnection {
 
   /// Connection properties
   ///
-  /// The state that the connection currently is in and its corresponding critical section
+  /// The state that the connection currently is in
   XmppConnectionState _connectionState;
-  final Lock _connectionStateLock;
   /// The socket that we are using for the connection and its data stream
   final BaseSocketWrapper _socket;
   late final Stream<String> _socketStream;
@@ -338,11 +335,14 @@ class XmppConnection {
 
   /// Attempts to reconnect to the server by following an exponential backoff.
   Future<void> _attemptReconnection() async {
+    _log.finest('_attemptReconnection: Setting state to notConnected');
     await _setConnectionState(XmppConnectionState.notConnected);
+    _log.finest('_attemptReconnection: Done');
 
     // Prevent the reconnection triggering another reconnection
     _expectSocketClosure = true;
     _socket.close();
+    _log.finest('_attemptReconnection: Socket closed');
 
     // Reset the state
     _expectSocketClosure = false;
@@ -389,9 +389,7 @@ class XmppConnection {
 
   /// Returns the ConnectionState of the connection
   Future<XmppConnectionState> getConnectionState() async {
-    return _connectionStateLock.withReturn(
-      () async => _connectionState,
-    );
+    return _connectionState;
   }
   
   /// Sends an [XMLNode] without any further processing to the server.
@@ -499,48 +497,46 @@ class XmppConnection {
   /// Sets the connection state to [state] and triggers an event of type
   /// [ConnectionStateChangedEvent].
   Future<void> _setConnectionState(XmppConnectionState state) async {
-    await _connectionStateLock.synchronized(() async {
-      // Ignore changes that are not really changes.
-      if (state == _connectionState) return;
-      
-      _log.finest('Updating _connectionState from $_connectionState to $state');
-      final oldState = _connectionState;
-      _connectionState = state;
+    // Ignore changes that are not really changes.
+    if (state == _connectionState) return;
+    
+    _log.finest('Updating _connectionState from $_connectionState to $state');
+    final oldState = _connectionState;
+    _connectionState = state;
 
-      final sm = getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator);
-      await _sendEvent(
-        ConnectionStateChangedEvent(
-          state,
-          oldState,
-          sm != null ? sm.isResumed : false,
-        ),
-      );
-      
-      if (state == XmppConnectionState.connected) {
-        _log.finest('Starting _pingConnectionTimer');
-        _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
+    final sm = getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator);
+    await _sendEvent(
+      ConnectionStateChangedEvent(
+        state,
+        oldState,
+        sm?.isResumed ?? false,
+      ),
+    );
+    
+    if (state == XmppConnectionState.connected) {
+      _log.finest('Starting _pingConnectionTimer');
+      _connectionPingTimer = Timer.periodic(connectionPingDuration, _pingConnectionOpen);
 
-        // We are connected, so the timer can stop.
-        _destroyConnectingTimer();
-      } else if (state == XmppConnectionState.connecting) {
-        // Make sure it is not running...
-        _destroyConnectingTimer();
+      // We are connected, so the timer can stop.
+      _destroyConnectingTimer();
+    } else if (state == XmppConnectionState.connecting) {
+      // Make sure it is not running...
+      _destroyConnectingTimer();
 
-        // ...and start it.
-        _log.finest('Starting connecting timeout timer...');
-        _connectingTimeoutTimer = Timer(connectingTimeout, _onConnectingTimeout);
-      } else {
-        // Just make sure the connecting timeout timer is not running
-        _destroyConnectingTimer();
+      // ...and start it.
+      _log.finest('Starting connecting timeout timer...');
+      _connectingTimeoutTimer = Timer(connectingTimeout, _onConnectingTimeout);
+    } else {
+      // Just make sure the connecting timeout timer is not running
+      _destroyConnectingTimer();
 
-        // The ping timer makes no sense if we are not connected
-        if (_connectionPingTimer != null) {
-          _log.finest('Destroying _pingConnectionTimer');
-          _connectionPingTimer!.cancel();
-          _connectionPingTimer = null;
-        }
+      // The ping timer makes no sense if we are not connected
+      if (_connectionPingTimer != null) {
+        _log.finest('Destroying _pingConnectionTimer');
+        _connectionPingTimer!.cancel();
+        _connectionPingTimer = null;
       }
-    });
+    }
   }
   
   /// Sets the routing state and logs the change
@@ -566,14 +562,12 @@ class XmppConnection {
     // send a whitespace ping
     _log.finest('_pingConnectionTimer: Callback called.');
 
-    await _connectionStateLock.synchronized(() async {
-      if (_connectionState == XmppConnectionState.connected) {
-        _log.finest('_pingConnectionTimer: Connected. Triggering a ping event.');
-        unawaited(_sendEvent(SendPingEvent()));
-      } else {
-        _log.finest('_pingConnectionTimer: Not connected. Not triggering an event.');
-      }
-    });
+    if (_connectionState == XmppConnectionState.connected) {
+      _log.finest('_pingConnectionTimer: Connected. Triggering a ping event.');
+      unawaited(_sendEvent(SendPingEvent()));
+    } else {
+      _log.finest('_pingConnectionTimer: Not connected. Not triggering an event.');
+    }
   }
 
   /// Iterate over [handlers] and check if the handler matches [stanza]. If it does,
@@ -762,6 +756,11 @@ class XmppConnection {
       await _onNegotiationsDone();
     }
   }
+
+  void _closeSocket() {
+    _expectSocketClosure = true;
+    _socket.close();
+  }
   
   /// Called whenever we receive data that has been parsed as XML.
   Future<void> handleXmlStream(XMLNode node) async {
@@ -814,6 +813,7 @@ class XmppConnection {
               if (!_isNegotiationPossible(node.children)) {
                 _log.severe('Mandatory negotiations not done but continuation not possible');
                 _updateRoutingState(RoutingState.error);
+                await _setConnectionState(XmppConnectionState.error);
 
                 // Resolve the connection completion future
                 _connectionCompleter?.complete(
@@ -858,6 +858,20 @@ class XmppConnection {
     } else if (event is AuthenticationSuccessEvent) {
       _log.finest('Received AuthenticationSuccessEvent. Setting _isAuthenticated to true');
       _isAuthenticated = true;
+    } else if (event is AuthenticationFailedEvent) {
+      _log.finest('Failed authentication');
+      _updateRoutingState(RoutingState.error);
+      await _setConnectionState(XmppConnectionState.error);
+
+      // Resolve the connection completion future
+      _connectionCompleter?.complete(
+        XmppConnectionResult(
+          false,
+          reason: 'Authentication failed: ${event.saslError}',
+        ),
+      );
+      _connectionCompleter = null;
+      _closeSocket();
     }
     
     for (final manager in _xmppManagers.values) {
@@ -923,10 +937,7 @@ class XmppConnection {
  
   /// Start the connection process using the provided connection settings.
   Future<void> connect({ String? lastResource }) async {
-    final isConnecting = await _connectionStateLock.withReturn(
-      () async => _connectionState != XmppConnectionState.notConnected,
-    );
-    if (isConnecting) {
+    if (_connectionState != XmppConnectionState.notConnected && _connectionState != XmppConnectionState.error) {
       _log.fine('Cancelling this connection attempt as one appears to be already running.');
       return;
     }

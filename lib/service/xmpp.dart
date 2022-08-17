@@ -159,7 +159,7 @@ class XmppService {
       jid: JID.fromString(state.jid!),
       password: state.password!,
       useDirectTLS: true,
-      allowPlainAuth: false,
+      allowPlainAuth: true,
     );
   }
 

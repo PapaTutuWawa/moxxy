@@ -70,15 +70,15 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
       jid: JID.fromString(command.jid),
       password: command.password,
       useDirectTLS: command.useDirectTLS,
-      allowPlainAuth: false,
+      allowPlainAuth: true,
     ),
     true,
   );
   GetIt.I.get<Logger>().fine('Login done');
-  GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(true);
 
   // ignore: avoid_dynamic_calls
   if (result.success) {
+    GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(true);
     final settings = GetIt.I.get<XmppConnection>().getConnectionSettings();
     sendEvent(
       LoginSuccessfulEvent(
@@ -90,6 +90,7 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
 
     // TODO(Unknown): Send the data of the [PreStartDoneEvent]
   } else {
+    GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
     sendEvent(
       LoginFailureEvent(
         reason: result.reason!,
