@@ -5,21 +5,23 @@ import 'package:moxxyv2/shared/models/message.dart';
 @immutable
 class FileUploadJob {
 
-  const FileUploadJob(this.recipient, this.path, this.message);
+  const FileUploadJob(this.recipient, this.path, this.copyToPath, this.message);
   final String path;
   final String recipient;
   final Message message;
+  final String copyToPath;
 
   @override
   bool operator ==(Object other) {
     return other is FileUploadJob &&
       recipient == other.recipient &&
       path == other.path &&
-      message == other.message;
+      message == other.message &&
+      copyToPath == other.copyToPath;
   }
 
   @override
-  int get hashCode => path.hashCode ^ recipient.hashCode ^ message.hashCode;
+  int get hashCode => path.hashCode ^ recipient.hashCode ^ message.hashCode ^ copyToPath.hashCode;
 }
 
 /// A job describing the upload of a file.

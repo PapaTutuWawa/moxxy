@@ -113,6 +113,19 @@ class HttpFileTransferService {
     }
   }
 
+  Future<void> _copyFile(String fromPath, String toPath, int msgId) async {
+    await File(fromPath).copy(toPath);
+
+    // Let the media scanner index the file
+    MoxplatformPlugin.media.scanFile(toPath);
+
+    // Update the message
+    await GetIt.I.get<MessageService>().updateMessage(
+      msgId,
+      mediaUrl: toPath,
+    );
+  }
+  
   /// Actually attempt to upload the file described by the job [job].
   Future<void> _performFileUpload(FileUploadJob job) async {
     _log.finest('Beginning upload of ${job.path}');
@@ -212,6 +225,14 @@ class HttpFileTransferService {
           ),
         );
         _log.finest('Sent message with file upload for ${job.path}');
+
+        final isMultiMedia = fileMime != null ?
+          fileMime.startsWith('image/') || fileMime.startsWith('video/') :
+          false;
+        if (isMultiMedia) {
+          _log.finest('File appears to be either an image or a video. Copying it to the correct directory...');
+          unawaited(_copyFile(job.path, job.copyToPath, msg.id));
+        }
       }
     } on dio.DioError {
       // TODO(PapaTutuWawa): Check if this is a timeout

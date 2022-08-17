@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
@@ -339,18 +338,6 @@ class XmppService {
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
     for (final path in paths) {
-      // Copy the file to the gallery if it is a image or video
-      final pathMime = lookupMimeType(path) ?? '';
-      var filePath = path;
-      if (pathMime.startsWith('image/') || pathMime.startsWith('video/')) {
-        filePath = await getDownloadPath(pathlib.basename(path), recipient, pathMime);
-
-        await File(path).copy(filePath);
-
-        // Let the media scanner index the file
-        MoxplatformPlugin.media.scanFile(filePath);
-      }
-      
       final msg = await ms.addMessageFromData(
         '',
         DateTime.now().millisecondsSinceEpoch, 
@@ -359,7 +346,7 @@ class XmppService {
         true,
         true,
         conn.generateId(),
-        mediaUrl: filePath,
+        mediaUrl: path,
         mediaType: lookupMimeType(path),
         originId: conn.generateId(),
       );
@@ -393,10 +380,12 @@ class XmppService {
     // Requesting Upload slots and uploading
     final hfts = GetIt.I.get<HttpFileTransferService>();
     for (final path in paths) {
+      final pathMime = lookupMimeType(path);
       await hfts.uploadFile(
         FileUploadJob(
           recipient,
           path,
+          await getDownloadPath(pathlib.basename(path), recipient, pathMime),
           messages[path]!,
         ),
       );
