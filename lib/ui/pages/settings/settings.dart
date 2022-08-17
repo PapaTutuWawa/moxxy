@@ -41,7 +41,10 @@ class SettingsPage extends StatelessWidget {
                   'Sign Out',
                   'You are about to sign out. Proceed?',
                   context,
-                  () => GetIt.I.get<PreferencesBloc>().add(SignedOutEvent()),
+                  () async {
+                    GetIt.I.get<PreferencesBloc>().add(SignedOutEvent());
+                    Navigator.of(context).pop();
+                  },
                 ),
               )
             ],

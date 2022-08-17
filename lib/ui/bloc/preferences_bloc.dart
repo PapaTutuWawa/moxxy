@@ -50,7 +50,7 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(loginRoute),
-        (_) => true,
+        (_) => false,
       ),
     );
   }
