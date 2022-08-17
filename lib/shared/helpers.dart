@@ -278,15 +278,27 @@ String filenameWithSuffix(String filename, String suffix) {
   return '$filenameWithoutExtension$suffix.${parts.last}';
 }
 
-extension ReturnFromCriticalSection on Lock {
-  /// Enter the critical section, await [criticalSection] and return its return value.
-  Future<T> withReturn<T>(Future<T> Function() criticalSection) async {
-    T? value;
+extension ExceptionSafeLock on Lock {
+  /// Throwing an exception with synchronized is not safe as it will cause the lock to
+  /// not get released. This function wraps the call to [criticalSection], making sure
+  /// that it cannot deadlock everything depending on the lock. Throws the exception again
+  /// after the lock has been released.
+  /// With [log], one can control how the stack trace gets displayed. Defaults to print.
+  Future<void> safeSynchronized(Future<void> Function() criticalSection, { void Function(String) log = print }) async {
+    Object? ex;
 
     await synchronized(() async {
-      value = await criticalSection();
+      try {
+        await criticalSection();
+      } catch (err, stackTrace) {
+        ex = err;
+        log(stackTrace.toString());
+      }
     });
 
-    return value!;
+    if (ex != null) {
+      // ignore: only_throw_errors
+      throw ex!;
+    }
   }
 }

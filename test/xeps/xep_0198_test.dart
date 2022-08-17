@@ -335,7 +335,7 @@ void main() {
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3));
 
-      expect(fakeSocket.getState(), 6);
+      expect(fakeSocket.getState(), 7);
       expect(await conn.getConnectionState(), XmppConnectionState.connected);
       expect(
         conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
@@ -434,7 +434,7 @@ void main() {
 
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3), () async {
-        expect(fakeSocket.getState(), 7);
+        expect(fakeSocket.getState(), 8);
         expect(await conn.getConnectionState(), XmppConnectionState.connected);
         expect(
           conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
@@ -525,7 +525,7 @@ void main() {
 
       await conn.connect(lastResource: 'abc123');
       await Future.delayed(const Duration(seconds: 3), () async {
-        expect(fakeSocket.getState(), 6);
+        expect(fakeSocket.getState(), 7);
         expect(await conn.getConnectionState(), XmppConnectionState.connected);
         final sm = conn.getManagerById<StreamManagementManager>(smManager)!;
         expect(sm.isStreamManagementEnabled(), true);

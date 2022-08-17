@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:synchronized/synchronized.dart';
 
 abstract class ReconnectionPolicy {
@@ -53,7 +52,7 @@ abstract class ReconnectionPolicy {
   /// Returns true if the manager is currently triggering a reconnection. If not, returns
   /// false.
   Future<bool> isReconnectionRunning() async {
-    return _isReconnectingLock.withReturn(() async => _isReconnecting);
+    return _isReconnectingLock.synchronized(() => _isReconnecting);
   }
 
   /// Set the _isReconnecting state to [value].
@@ -66,7 +65,7 @@ abstract class ReconnectionPolicy {
 
   @protected
   Future<bool> testAndSetIsReconnecting() async {
-    return _isReconnectingLock.withReturn(() async {
+    return _isReconnectingLock.synchronized(() {
       if (_isReconnecting) {
         return false;
       } else {
