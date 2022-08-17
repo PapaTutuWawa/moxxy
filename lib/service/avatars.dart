@@ -21,6 +21,17 @@ import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';
 
+/// Removes line breaks and spaces from [original]. This might happen when we request the
+/// avatar data. Returns the cleaned version.
+String _cleanBase64String(String original) {
+  var ret = original;
+  for (final char in ['\n', ' ']) {
+    ret = ret.replaceAll(char, '');
+  }
+
+  return ret;
+}
+
 class AvatarService {
   
   AvatarService() : _log = Logger('AvatarService');
@@ -35,9 +46,13 @@ class AvatarService {
     final rs = GetIt.I.get<RosterService>();
     final originalConversation = await cs.getConversationByJid(jid);
     var saved = false;
+
+    // Clean the raw data. Since this may arrive by chunks, those chunks may contain
+    // weird data pieces.
+    var base64Data = base64Decode(_cleanBase64String(base64));
     if (originalConversation != null) {
       final avatarPath = await saveAvatarInCache(
-        base64Decode(base64),
+        base64Data,
         hash,
         jid,
         originalConversation.avatarUrl,
@@ -60,7 +75,7 @@ class AvatarService {
         avatarPath = await getAvatarPath(jid, hash);
       } else {
         avatarPath = await saveAvatarInCache(
-          base64Decode(base64),
+          base64Data,
           hash,
           jid,
           originalRoster.avatarUrl,
@@ -110,10 +125,7 @@ class AvatarService {
         if (binval != null) {
           // Clean the raw data. Since this may arrive by chunks, those chunks may contain
           // weird data pieces.
-          base64 = binval;
-          for (final char in ['\n', ' ']) {
-            base64 = base64.replaceAll(char, '');
-          }
+          base64 = _cleanBase64String(binval);
 
           final rawHash = await Sha1().hash(base64Decode(base64));
           hash = HEX.encode(rawHash.bytes);
