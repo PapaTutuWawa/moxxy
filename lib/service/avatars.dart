@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
-import 'package:image/image.dart';
+import 'package:image_size_getter/image_size_getter.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -161,9 +161,7 @@ class AvatarService {
     final public = prefs.isAvatarPublic;
 
     // Read the image metadata
-    // TODO(PapaTutuWawa): I am unsure about how fast decodeImage is. If possible, just
-    //                     parse the header as we don't need more than that.
-    final image = decodeImage(bytes)!;
+    final imageSize = ImageSizeGetter.getSize(MemoryInput(bytes));
     
     // Publish data and metadata
     final manager = _getUserAvatarManager();
@@ -176,8 +174,8 @@ class AvatarService {
       UserAvatarMetadata(
         hash,
         bytes.length,
-        image.width,
-        image.height,
+        imageSize.width,
+        imageSize.height,
         // TODO(PapaTutuWawa): Maybe do a check here
         'image/png',
       ),
@@ -206,14 +204,14 @@ class AvatarService {
     _log.info('Received data for our own avatar');
     
     final avatarPath = await saveAvatarInCache(
-      base64Decode(data.base64),
+      base64Decode(_cleanBase64String(data.base64)),
       data.hash,
       jid,
       state.avatarUrl,
     );
     await xmpp.modifyXmppState((state) => state.copyWith(
-        avatarUrl: avatarPath,
-        avatarHash: data.hash,
+      avatarUrl: avatarPath,
+      avatarHash: data.hash,
     ),);
 
     sendEvent(SelfAvatarChangedEvent(path: avatarPath, hash: data.hash));

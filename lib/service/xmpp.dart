@@ -465,15 +465,15 @@ class XmppService {
       // Make sure we display our own avatar correctly.
       // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
       // TODO(Unknown): Maybe don't do this on mobile Internet
-      //GetIt.I.get<AvatarService>().requestOwnAvatar();
+      unawaited(GetIt.I.get<AvatarService>().requestOwnAvatar());
       
       if (_loginTriggeredFromUI) {
         // TODO(Unknown): Trigger another event so the UI can see this aswell
         await modifyXmppState((state) => state.copyWith(
-            jid: connection.getConnectionSettings().jid.toString(),
-            displayName: connection.getConnectionSettings().jid.local,
-            avatarUrl: '',
-            avatarHash: '',
+          jid: connection.getConnectionSettings().jid.toString(),
+          displayName: connection.getConnectionSettings().jid.local,
+          avatarUrl: '',
+          avatarHash: '',
         ),);
       }
     }

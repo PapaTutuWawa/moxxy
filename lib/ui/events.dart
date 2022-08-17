@@ -1,5 +1,6 @@
 import 'dart:async';
-
+import 'dart:io';
+import 'package:flutter/painting.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/awaitabledatasender.dart';
@@ -123,6 +124,9 @@ Future<void> onProgress(ProgressEvent event, { dynamic extra }) async {
 }
 
 Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }) async {
+  // Evict the profile picture from the cache
+  await FileImage(File(event.path)).evict();
+
   GetIt.I.get<conversations.ConversationsBloc>().add(
     conversations.AvatarChangedEvent(event.path),
   );
