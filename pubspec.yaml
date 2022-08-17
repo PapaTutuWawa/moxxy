@@ -12,7 +12,7 @@ environment:
 dependencies:
   archive: 3.3.1
   badges: 2.0.3
-  bloc: 8.0.3
+  bloc: 8.1.0
   connectivity_plus: 2.3.6
   crop_your_image: 0.7.2
   cryptography: 2.0.5
@@ -23,7 +23,7 @@ dependencies:
   file_picker: 4.6.1
   flutter:
     sdk: flutter
-  flutter_bloc: 8.0.1
+  flutter_bloc: 8.1.1
   flutter_blurhash: 0.7.0
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
