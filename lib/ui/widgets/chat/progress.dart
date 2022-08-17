@@ -20,14 +20,14 @@ class ProgressWidget extends StatefulWidget {
 
 class ProgressWidgetState extends State<ProgressWidget> {
 
-  ProgressWidgetState({ required this.id }) : _progress = 0.0;
+  ProgressWidgetState({ required this.id });
   final int id;
 
-  double _progress;
+  double? _progress;
 
   void _onProgressUpdate(double progress) {
     setState(() {
-        _progress = progress;
+      _progress = progress;
     });
   }
   
