@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
@@ -242,9 +243,7 @@ class SendFilesPage extends StatelessWidget {
               Positioned(
                 top: 8,
                 left: 8,
-                child: IconButton(
-                  color: Colors.white,
-                  icon: const Icon(Icons.close),
+                child: CancelButton(
                   onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
                 ),
               ),

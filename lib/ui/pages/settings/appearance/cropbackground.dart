@@ -6,6 +6,7 @@ import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
+import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropBackgroundPage extends StatefulWidget {
 
@@ -151,9 +152,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     left: 8,
                     child: Material(
                       color: const Color.fromRGBO(0, 0, 0, 0),
-                      child: IconButton(
-                        color: Colors.white,
-                        icon: const Icon(Icons.close),
+                      child: CancelButton(
                         onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
                       ),
                     ),
