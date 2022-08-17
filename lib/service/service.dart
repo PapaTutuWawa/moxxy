@@ -33,6 +33,7 @@ import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/message.dart';
 import 'package:moxxyv2/xmpp/negotiators/resource_binding.dart';
+import 'package:moxxyv2/xmpp/negotiators/sasl/plain.dart';
 import 'package:moxxyv2/xmpp/negotiators/sasl/scram.dart';
 import 'package:moxxyv2/xmpp/negotiators/starttls.dart';
 import 'package:moxxyv2/xmpp/ping.dart';
@@ -176,7 +177,8 @@ Future<void> entrypoint() async {
   // Init the UDPLogger
   await initUDPLogger();
 
-  final connection = XmppConnection(MoxxyReconnectionPolicy())
+  GetIt.I.registerSingleton<MoxxyReconnectionPolicy>(MoxxyReconnectionPolicy());
+  final connection = XmppConnection(GetIt.I.get<MoxxyReconnectionPolicy>())
     ..registerManagers([
       MoxxyStreamManagementManager(),
       MoxxyDiscoManager(),
@@ -208,6 +210,7 @@ Future<void> entrypoint() async {
       RosterFeatureNegotiator(),
       // TODO(Unknown): This one may not work
       //SaslScramNegotiator(10, '', '', ScramHashType.sha512),
+      SaslPlainNegotiator(),
       SaslScramNegotiator(9, '', '', ScramHashType.sha256),
       SaslScramNegotiator(8, '', '', ScramHashType.sha1),
     ]);

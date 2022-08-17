@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
@@ -63,6 +64,7 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   GetIt.I.get<Logger>().fine('Performing login...');
+  GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
   final result = await GetIt.I.get<XmppService>().connectAwaitable(
     ConnectionSettings(
       jid: JID.fromString(command.jid),
@@ -73,6 +75,7 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
     true,
   );
   GetIt.I.get<Logger>().fine('Login done');
+  GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(true);
 
   // ignore: avoid_dynamic_calls
   if (result.success) {
