@@ -105,6 +105,7 @@ class ConversationsPage extends StatelessWidget {
             Hero(
               tag: 'self_profile_picture',
               child: Material(
+                color: const Color.fromRGBO(0, 0, 0, 0),
                 child: AvatarWrapper(
                   radius: 20,
                   avatarUrl: state.avatarUrl,

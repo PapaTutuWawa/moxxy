@@ -102,6 +102,7 @@ class _ConversationTopbarWidget extends StatelessWidget {
           Hero(
             tag: 'conversation_profile_picture',
             child: Material(
+              color: const Color.fromRGBO(0, 0, 0, 0),
               child: AvatarWrapper(
                 radius: 25,
                 avatarUrl: state.conversation!.avatarUrl,
