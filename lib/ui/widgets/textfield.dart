@@ -26,6 +26,8 @@ class CustomTextField extends StatelessWidget {
       this.enableBoxShadow = false,
       this.borderColor,
       this.borderWidth,
+      this.prefixIcon,
+      this.prefixIconConstraints,
       Key? key,
   }) : super(key: key);
   final double cornerRadius;
@@ -35,6 +37,8 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffix;
   final String? suffixText;
   final Widget? suffixIcon;
+  final Widget? prefixIcon;
+  final BoxConstraints? prefixIconConstraints;
   final Widget? topWidget;
   final EdgeInsetsGeometry contentPadding;
   final bool enabled;
@@ -92,6 +96,8 @@ class CustomTextField extends StatelessWidget {
                   labelStyle: style,
                   suffixStyle: style,
                   hintStyle: style,
+                  prefixIcon: prefixIcon,
+                  prefixIconConstraints: prefixIconConstraints,
                 ),
               )
             ],

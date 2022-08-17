@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -184,101 +185,139 @@ class _ConversationBottomRow extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ConversationBloc, ConversationState>(
-      buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage,
-      builder: (context, state) => ColoredBox(
-        color: const Color.fromRGBO(0, 0, 0, 0),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              Expanded(
-                child: CustomTextField(
-                  // TODO(Unknown): Work on the colors
-                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                  textColor: _getTextColor(context),
-                  enableBoxShadow: true,
-                  maxLines: 5,
-                  hintText: 'Send a message...',
-                  isDense: true,
-                  onChanged: (value) {
-                    context.read<ConversationBloc>().add(
-                      MessageTextChangedEvent(value),
-                    );
-                  },
-                  contentPadding: textfieldPaddingConversation,
-                  cornerRadius: textfieldRadiusConversation,
-                  controller: controller,
-                  topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(
-                    state.quotedMessage!,
-                    resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
-                  ) : null,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                // NOTE: https://stackoverflow.com/a/52786741
-                //       Thank you kind sir
-                child: SizedBox(
-                  height: 45,
-                  width: 45,
-                  child: FittedBox(
-                    child: SpeedDial(
-                      icon: state.showSendButton ? Icons.send : Icons.add,
-                      curve: Curves.bounceInOut,
-                      backgroundColor: primaryColor,
-                      // TODO(Unknown): Theme dependent?
-                      foregroundColor: Colors.white,
-                      openCloseDial: isSpeedDialOpen,
-                      onPress: () {
-                        if (state.showSendButton) {
-                          context.read<ConversationBloc>().add(
-                            MessageSentEvent(),
-                          );
-                          controller.text = '';
-                        } else {
-                          isSpeedDialOpen.value = true;
-                        }
+    return ColoredBox(
+      color: const Color.fromRGBO(0, 0, 0, 0),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: BlocBuilder<ConversationBloc, ConversationState>(
+              buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible,
+              builder: (context, state) => Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      // TODO(Unknown): Work on the colors
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                      textColor: _getTextColor(context),
+                      enableBoxShadow: true,
+                      maxLines: 5,
+                      hintText: 'Send a message...',
+                      isDense: true,
+                      onChanged: (value) {
+                        context.read<ConversationBloc>().add(
+                          MessageTextChangedEvent(value),
+                        );
                       },
-                      children: [
-                        SpeedDialChild(
-                          child: const Icon(Icons.image),
-                          onTap: () {
-                            context.read<ConversationBloc>().add(ImagePickerRequestedEvent());
-                          },
-                          backgroundColor: primaryColor,
-                          // TODO(Unknown): Theme dependent?
-                          foregroundColor: Colors.white,
-                          label: 'Send Images',
+                      contentPadding: textfieldPaddingConversation,
+                      cornerRadius: textfieldRadiusConversation,
+                      controller: controller,
+                      topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(
+                        state.quotedMessage!,
+                        resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
+                      ) : null,
+                      prefixIcon: InkWell(
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Icon(Icons.insert_emoticon, size: 24),
                         ),
-                        SpeedDialChild(
-                          child: const Icon(Icons.photo_camera),
-                          onTap: () {
-                            showNotImplementedDialog('taking photos', context);
-                          },
-                          backgroundColor: primaryColor,
-                          // TODO(Unknown): Theme dependent?
-                          foregroundColor: Colors.white,
-                          label: 'Take photo',
-                        ),
-                        SpeedDialChild(
-                          child: const Icon(Icons.attach_file),
-                          onTap: () {
-                            context.read<ConversationBloc>().add(FilePickerRequestedEvent());
-                          },
-                          backgroundColor: primaryColor,
-                          // TODO(Unknown): Theme dependent?
-                          foregroundColor: Colors.white,
-                          label: 'Send files',
-                        )
-                      ],
+                        onTap: () {
+                          if (!state.emojiPickerVisible) {
+                            dismissSoftKeyboard(context);
+                          }
+
+                          context.read<ConversationBloc>().add(EmojiPickerToggledEvent());
+                        },
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 24,
+                        minHeight: 24,
+                      ),
                     ),
                   ),
-                ),
-              )
-            ],
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    // NOTE: https://stackoverflow.com/a/52786741
+                    //       Thank you kind sir
+                    child: SizedBox(
+                      height: 45,
+                      width: 45,
+                      child: FittedBox(
+                        child: SpeedDial(
+                          icon: state.showSendButton ? Icons.send : Icons.add,
+                          curve: Curves.bounceInOut,
+                          backgroundColor: primaryColor,
+                          // TODO(Unknown): Theme dependent?
+                          foregroundColor: Colors.white,
+                          openCloseDial: isSpeedDialOpen,
+                          onPress: () {
+                            if (state.showSendButton) {
+                              context.read<ConversationBloc>().add(
+                                MessageSentEvent(),
+                              );
+                              controller.text = '';
+                            } else {
+                              isSpeedDialOpen.value = true;
+                            }
+                          },
+                          children: [
+                            SpeedDialChild(
+                              child: const Icon(Icons.image),
+                              onTap: () {
+                                context.read<ConversationBloc>().add(ImagePickerRequestedEvent());
+                              },
+                              backgroundColor: primaryColor,
+                              // TODO(Unknown): Theme dependent?
+                              foregroundColor: Colors.white,
+                              label: 'Send Images',
+                            ),
+                            SpeedDialChild(
+                              child: const Icon(Icons.photo_camera),
+                              onTap: () {
+                                showNotImplementedDialog('taking photos', context);
+                              },
+                              backgroundColor: primaryColor,
+                              // TODO(Unknown): Theme dependent?
+                              foregroundColor: Colors.white,
+                              label: 'Take photo',
+                            ),
+                            SpeedDialChild(
+                              child: const Icon(Icons.attach_file),
+                              onTap: () {
+                                context.read<ConversationBloc>().add(FilePickerRequestedEvent());
+                              },
+                              backgroundColor: primaryColor,
+                              // TODO(Unknown): Theme dependent?
+                              foregroundColor: Colors.white,
+                              label: 'Send files',
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
-        ),
+          BlocBuilder<ConversationBloc, ConversationState>(
+            buildWhen: (prev, next) => prev.emojiPickerVisible != next.emojiPickerVisible,
+            builder: (context, state) => Offstage(
+              offstage: !state.emojiPickerVisible,
+              child: SizedBox(
+                height: 250,
+                child: EmojiPicker(
+                  onEmojiSelected: (_, emoji) {
+
+                  },
+                  config: Config(
+                    bgColor: Theme.of(context).scaffoldBackgroundColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -407,8 +446,15 @@ class ConversationPageState extends State<ConversationPage> {
    
     return WillPopScope(
       onWillPop: () async {
-        GetIt.I.get<ConversationBloc>().add(CurrentConversationResetEvent());
-        return true;
+        final bloc = GetIt.I.get<ConversationBloc>();
+
+        if (bloc.state.emojiPickerVisible) {
+          bloc.add(EmojiPickerToggledEvent());
+          return false;
+        } else {
+          bloc.add(CurrentConversationResetEvent());
+          return true;
+        }
       },
       child: Stack(
         children: [

@@ -43,6 +43,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
     on<ScrollStateSetEvent>(_onScrollStateSet);
+    on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -307,5 +308,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     if (event.state == state.scrolledToBottom) return;
 
     emit(state.copyWith(scrolledToBottom: event.state));
+  }
+
+  Future<void> _onEmojiPickerToggled(EmojiPickerToggledEvent event, Emitter<ConversationState> emit) async {
+    emit(state.copyWith(emojiPickerVisible: !state.emojiPickerVisible));
   }
 }
