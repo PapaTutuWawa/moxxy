@@ -16,6 +16,7 @@ import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 enum ConversationOption {
   close,
@@ -216,18 +217,31 @@ class _ConversationBottomRow extends StatelessWidget {
                         state.quotedMessage!,
                         resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
                       ) : null,
-                      prefixIcon: InkWell(
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Icon(Icons.insert_emoticon, size: 24),
-                        ),
-                        onTap: () {
-                          if (!state.emojiPickerVisible) {
-                            dismissSoftKeyboard(context);
-                          }
+                      prefixIcon: IntrinsicWidth(
+                        child: Row(
+                          children: [
+                            InkWell(
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                child: Icon(Icons.insert_emoticon, size: 24),
+                              ),
+                              onTap: () {
+                                if (!state.emojiPickerVisible) {
+                                  dismissSoftKeyboard(context);
+                                }
 
-                          context.read<ConversationBloc>().add(EmojiPickerToggledEvent());
-                        },
+                                context.read<ConversationBloc>().add(EmojiPickerToggledEvent());
+                              },
+                            ),
+                            InkWell(
+                              child: const Padding(
+                                padding: EdgeInsets.only(right: 8),
+                                child: Icon(PhosphorIcons.stickerBold, size: 24),
+                              ),
+                              onTap: () {},
+                            ),
+                          ]
+                        ),
                       ),
                       prefixIconConstraints: const BoxConstraints(
                         minWidth: 24,
