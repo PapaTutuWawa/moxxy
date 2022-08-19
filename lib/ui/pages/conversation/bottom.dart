@@ -88,7 +88,9 @@ class ConversationBottomRow extends StatelessWidget {
                                     color: primaryColor,
                                   ),
                                 ),
-                                onTap: () {},
+                                onTap: () {
+                                  showNotImplementedDialog('stickers', context);
+                                },
                               ),
                             ),
                           ],
