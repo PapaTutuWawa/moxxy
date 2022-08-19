@@ -33,7 +33,7 @@ class ConversationBottomRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8),
             child: BlocBuilder<ConversationBloc, ConversationState>(
-              buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible,
+              buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible || prev.messageText != next.messageText,
               builder: (context, state) => Row(
                 children: [
                   Expanded(
@@ -63,7 +63,11 @@ class ConversationBottomRow extends StatelessWidget {
                             InkWell(
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 8),
-                                child: Icon(Icons.insert_emoticon, size: 24),
+                                child: Icon(
+                                  Icons.insert_emoticon,
+                                  color: primaryColor,
+                                  size: 24,
+                                ),
                               ),
                               onTap: () {
                                 if (!state.emojiPickerVisible) {
@@ -73,12 +77,19 @@ class ConversationBottomRow extends StatelessWidget {
                                 context.read<ConversationBloc>().add(EmojiPickerToggledEvent());
                               },
                             ),
-                            InkWell(
-                              child: const Padding(
-                                padding: EdgeInsets.only(right: 8),
-                                child: Icon(PhosphorIcons.stickerBold, size: 24),
+                            Visibility(
+                              visible: state.messageText.isEmpty,
+                              child: InkWell(
+                                child: const Padding(
+                                  padding: EdgeInsets.only(right: 8),
+                                  child: Icon(
+                                    PhosphorIcons.stickerBold,
+                                    size: 24,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                onTap: () {},
                               ),
-                              onTap: () {},
                             ),
                           ],
                         ),
@@ -106,9 +117,7 @@ class ConversationBottomRow extends StatelessWidget {
                           openCloseDial: isSpeedDialOpen,
                           onPress: () {
                             if (state.showSendButton) {
-                              context.read<ConversationBloc>().add(
-                                MessageSentEvent(),
-                              );
+                              context.read<ConversationBloc>().add(MessageSentEvent());
                               controller.text = '';
                             } else {
                               isSpeedDialOpen.value = true;
@@ -162,7 +171,12 @@ class ConversationBottomRow extends StatelessWidget {
                 height: 250,
                 child: EmojiPicker(
                   onEmojiSelected: (_, emoji) {
-
+                    // TODO(PapaTutuWawa): This needs to keep the cursor in mind
+                    // TODO(PapaTutuWawa): Also see here https://github.com/flutter/flutter/issues/16863#issuecomment-854340383
+                    final bloc = context.read<ConversationBloc>();
+                    final newText = '${bloc.state.messageText} ${emoji.emoji} ';
+                    bloc.add(MessageTextChangedEvent(newText));
+                    controller.text = newText;
                   },
                   config: Config(
                     bgColor: Theme.of(context).scaffoldBackgroundColor,

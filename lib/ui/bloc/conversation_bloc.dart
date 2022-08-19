@@ -186,6 +186,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageText: '',
         quotedMessage: null,
         showSendButton: false,
+        emojiPickerVisible: false,
       ),
     );
   }
