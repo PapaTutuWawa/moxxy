@@ -316,10 +316,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     final newState = !state.emojiPickerVisible;
     emit(state.copyWith(emojiPickerVisible: newState));
 
-    if (newState) {
-      await SystemChannels.textInput.invokeMethod('TextInput.hide');
-    } else {
-      await SystemChannels.textInput.invokeMethod('TextInput.show');
+    if (event.handleKeyboard) {
+      if (newState) {
+        await SystemChannels.textInput.invokeMethod('TextInput.hide');
+      } else {
+        await SystemChannels.textInput.invokeMethod('TextInput.show');
+      }
     }
   }
 }

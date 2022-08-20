@@ -116,4 +116,7 @@ class ScrollStateSetEvent extends ConversationEvent {
 }
 
 /// Triggered when the emoji button is pressed
-class EmojiPickerToggledEvent extends ConversationEvent {}
+class EmojiPickerToggledEvent extends ConversationEvent {
+  EmojiPickerToggledEvent({this.handleKeyboard = true});
+  final bool handleKeyboard;
+}

@@ -137,7 +137,7 @@ class ConversationPageState extends State<ConversationPage> {
         final bloc = GetIt.I.get<ConversationBloc>();
 
         if (bloc.state.emojiPickerVisible) {
-          bloc.add(EmojiPickerToggledEvent());
+          bloc.add(EmojiPickerToggledEvent(handleKeyboard: false));
           return false;
         } else {
           bloc.add(CurrentConversationResetEvent());
