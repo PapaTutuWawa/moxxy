@@ -22,6 +22,7 @@ const double fontsizeTitle = 40;
 const double fontsizeSubtitle = 25;
 const double fontsizeAppbar = 20;
 const double fontsizeBody = 15;
+const double fontsizeBodyOnlyEmojis = 30;
 const double fontsizeSubbody = 10;
 
 // The translucent black we use when we need to ensure good contrast, for example when
