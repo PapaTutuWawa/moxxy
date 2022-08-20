@@ -232,6 +232,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
+  dart_emoji:
+    dependency: "direct main"
+    description:
+      name: dart_emoji
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0+2"
   dart_pubspec_licenses:
     dependency: transitive
     description:
@@ -274,6 +281,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.6"
+  emoji_picker_flutter:
+    dependency: "direct main"
+    description:
+      name: emoji_picker_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.3.1"
   equatable:
     dependency: "direct main"
     description:
@@ -288,13 +302,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
-  fake_async:
-    dependency: transitive
-    description:
-      name: fake_async
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.3.0"
   ffi:
     dependency: transitive
     description:
@@ -325,9 +332,11 @@ packages:
     version: "1.0.1"
   flutter:
     dependency: "direct main"
-    description: flutter
-    source: sdk
-    version: "0.0.0"
+    description:
+      name: flutter
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
+    version: "3.0.1"
   flutter_bloc:
     dependency: "direct main"
     description:
@@ -454,11 +463,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.0.0"
-  flutter_test:
-    dependency: "direct dev"
-    description: flutter
-    source: sdk
-    version: "0.0.0"
   flutter_vibrate:
     dependency: "direct main"
     description:
@@ -687,28 +691,28 @@ packages:
       name: moxlib
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.3"
+    version: "0.1.4"
   moxplatform:
     dependency: "direct main"
     description:
       name: moxplatform
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.6"
+    version: "0.1.7"
   moxplatform_android:
     dependency: transitive
     description:
       name: moxplatform_android
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.6"
+    version: "0.1.7"
   moxplatform_platform_interface:
     dependency: transitive
     description:
       name: moxplatform_platform_interface
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.6"
+    version: "0.1.7"
   moxxyv2_builders:
     dependency: "direct main"
     description:
@@ -863,6 +867,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.0.0"
+  phosphor_flutter:
+    dependency: "direct main"
+    description:
+      name: phosphor_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.4.0"
   platform:
     dependency: transitive
     description:
@@ -940,6 +951,62 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
+  shared_preferences:
+    dependency: transitive
+    description:
+      name: shared_preferences
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.15"
+  shared_preferences_android:
+    dependency: transitive
+    description:
+      name: shared_preferences_android
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.12"
+  shared_preferences_ios:
+    dependency: transitive
+    description:
+      name: shared_preferences_ios
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
+  shared_preferences_linux:
+    dependency: transitive
+    description:
+      name: shared_preferences_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
+  shared_preferences_macos:
+    dependency: transitive
+    description:
+      name: shared_preferences_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.4"
+  shared_preferences_platform_interface:
+    dependency: transitive
+    description:
+      name: shared_preferences_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
+  shared_preferences_web:
+    dependency: transitive
+    description:
+      name: shared_preferences_web
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.4"
+  shared_preferences_windows:
+    dependency: transitive
+    description:
+      name: shared_preferences_windows
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
   shelf:
     dependency: transitive
     description:
@@ -1273,4 +1340,4 @@ packages:
     version: "3.1.0"
 sdks:
   dart: ">=2.17.0 <3.0.0"
-  flutter: ">=2.13.0-0.1"
+  flutter: ">=3.0.0"

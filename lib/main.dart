@@ -28,7 +28,7 @@ import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 */
 import 'package:moxxyv2/ui/pages/addcontact.dart';
 import 'package:moxxyv2/ui/pages/blocklist.dart';
-import 'package:moxxyv2/ui/pages/conversation.dart';
+import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
 import 'package:moxxyv2/ui/pages/conversations.dart';
 import 'package:moxxyv2/ui/pages/crop.dart';
 import 'package:moxxyv2/ui/pages/intro.dart';

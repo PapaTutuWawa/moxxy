@@ -26,6 +26,10 @@ class CustomTextField extends StatelessWidget {
       this.enableBoxShadow = false,
       this.borderColor,
       this.borderWidth,
+      this.prefixIcon,
+      this.prefixIconConstraints,
+      this.onTap,
+      this.shouldSummonKeyboard,
       Key? key,
   }) : super(key: key);
   final double cornerRadius;
@@ -35,6 +39,8 @@ class CustomTextField extends StatelessWidget {
   final Widget? suffix;
   final String? suffixText;
   final Widget? suffixIcon;
+  final Widget? prefixIcon;
+  final BoxConstraints? prefixIconConstraints;
   final Widget? topWidget;
   final EdgeInsetsGeometry contentPadding;
   final bool enabled;
@@ -50,6 +56,8 @@ class CustomTextField extends StatelessWidget {
   final Color? borderColor;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
+  final void Function()? onTap;
+  final bool Function()? shouldSummonKeyboard;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +88,8 @@ class CustomTextField extends StatelessWidget {
                 enableSuggestions: enableIMEFeatures,
                 autocorrect: enableIMEFeatures,
                 style: style,
+                onTap: onTap,
+                shouldSummonKeyboard: shouldSummonKeyboard,
                 decoration: InputDecoration(
                   labelText: labelText,
                   hintText: hintText,
@@ -92,6 +102,8 @@ class CustomTextField extends StatelessWidget {
                   labelStyle: style,
                   suffixStyle: style,
                   hintStyle: style,
+                  prefixIcon: prefixIcon,
+                  prefixIconConstraints: prefixIconConstraints,
                 ),
               )
             ],

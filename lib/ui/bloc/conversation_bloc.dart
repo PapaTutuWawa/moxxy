@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
@@ -43,6 +44,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
     on<ScrollStateSetEvent>(_onScrollStateSet);
+    on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -185,6 +187,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageText: '',
         quotedMessage: null,
         showSendButton: false,
+        emojiPickerVisible: false,
       ),
     );
   }
@@ -307,5 +310,18 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     if (event.state == state.scrolledToBottom) return;
 
     emit(state.copyWith(scrolledToBottom: event.state));
+  }
+
+  Future<void> _onEmojiPickerToggled(EmojiPickerToggledEvent event, Emitter<ConversationState> emit) async {
+    final newState = !state.emojiPickerVisible;
+    emit(state.copyWith(emojiPickerVisible: newState));
+
+    if (event.handleKeyboard) {
+      if (newState) {
+        await SystemChannels.textInput.invokeMethod('TextInput.hide');
+      } else {
+        await SystemChannels.textInput.invokeMethod('TextInput.show');
+      }
+    }
   }
 }

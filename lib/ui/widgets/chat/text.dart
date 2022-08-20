@@ -1,3 +1,4 @@
+import 'package:dart_emoji/dart_emoji.dart';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -19,6 +20,10 @@ class TextChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fontsize = EmojiUtil.hasOnlyEmojis(
+      message.body,
+      ignoreWhitespace: true,
+    ) ? fontsizeBodyOnlyEmojis : fontsizeBody;
     return IntrinsicWidth(child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -27,9 +32,9 @@ class TextChatWidget extends StatelessWidget {
             padding: topWidget != null ? const EdgeInsets.only(left: 8) : EdgeInsets.zero,
             child: Text(
               message.body,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: fontsizeBody,
+                fontSize: fontsize,
               ),
             ),
           ),
