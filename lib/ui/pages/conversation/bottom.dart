@@ -172,11 +172,7 @@ class ConversationBottomRow extends StatelessWidget {
                 height: 250,
                 child: EmojiPicker(
                   onEmojiSelected: (_, emoji) {
-                    // TODO(PapaTutuWawa): This needs to keep the cursor in mind
-                    // TODO(PapaTutuWawa): Also see here https://github.com/flutter/flutter/issues/16863#issuecomment-854340383
                     final bloc = context.read<ConversationBloc>();
-
-                    
                     final selection = controller.selection;
                     final prefix = bloc.state.messageText.substring(0, selection.baseOffset);
                     final suffix = bloc.state.messageText.substring(selection.extentOffset);
@@ -188,6 +184,29 @@ class ConversationBottomRow extends StatelessWidget {
                       ..selection = TextSelection(
                         baseOffset: newValue,
                         extentOffset: newValue,
+                      );
+                  },
+                  onBackspacePressed: () {
+                    // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
+                    final bloc = context.read<ConversationBloc>();
+                    final text = bloc.state.messageText;
+                    final selection = controller.selection;
+                    final cursorPosition = controller.selection.base.offset;
+
+                    if (cursorPosition < 0) {
+                      return;
+                    }
+
+                    final newTextBeforeCursor = selection
+                      .textBefore(text).characters
+                      .skipLast(1)
+                      .toString();
+
+                    bloc.add(MessageTextChangedEvent(newTextBeforeCursor));
+                    controller
+                      ..text = newTextBeforeCursor
+                      ..selection = TextSelection.fromPosition(
+                        TextPosition(offset: newTextBeforeCursor.length),
                       );
                   },
                   config: Config(
