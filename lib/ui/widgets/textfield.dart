@@ -89,7 +89,7 @@ class CustomTextField extends StatelessWidget {
                 autocorrect: enableIMEFeatures,
                 style: style,
                 onTap: onTap,
-                //shouldSummonKeyboardCallback: shouldSummonKeyboard,
+                shouldSummonKeyboard: shouldSummonKeyboard,
                 decoration: InputDecoration(
                   labelText: labelText,
                   hintText: hintText,

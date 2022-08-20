@@ -63,7 +63,7 @@ class ConversationBottomRow extends StatelessWidget {
                           children: [
                             InkWell(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
                                 child: Icon(
                                   state.emojiPickerVisible ? 
                                     Icons.keyboard :
