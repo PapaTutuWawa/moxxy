@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/xmpp/reconnect.dart';
+import 'package:synchronized/synchronized.dart';
 
 /// This class implements a reconnection policy that is connectivity aware with a random
 /// backoff. This means that we perform the random backoff only as long as we are
@@ -14,6 +15,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
 
   MoxxyReconnectionPolicy({ bool isTesting = false })
   : _isTesting = isTesting,
+    _timerLock = Lock(),
     _log = Logger('MoxxyReconnectionPolicy'),
     super();
   final Logger _log;
@@ -21,6 +23,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
   /// The backoff timer
   @visibleForTesting
   Timer? timer;
+  final Lock _timerLock;
 
   /// Just for testing purposes
   final bool _isTesting;
@@ -38,12 +41,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
       _log.finest('Lost network connectivity. Queueing failure...');
 
       // Cancel the timer if it was running
-      if (timer != null) {
-        timer!.cancel();
-        timer = null;
-        _log.finest('Backoff timer destroyed');
-      }
-
+      await _stopTimer();
       await setIsReconnecting(false);
       triggerConnectionLost!();
     } else if (regained && shouldReconnect) {
@@ -55,21 +53,23 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
 
   @override
   Future<void> reset() async {
-    _stopTimer();
+    await _stopTimer();
     await setIsReconnecting(false);
   }
 
-  void _stopTimer() {
-    if (timer != null) {
-      timer!.cancel();
-      timer = null;
-      _log.finest('Destroying timer');
-    }
+  Future<void> _stopTimer() async {
+    await _timerLock.synchronized(() {
+      if (timer != null) {
+        timer!.cancel();
+        timer = null;
+        _log.finest('Destroying timer');
+      }
+    });
   }
   
   @visibleForTesting
   Future<void> onTimerElapsed() async {
-    _stopTimer();
+    await _stopTimer();
 
     _log.finest('Performing reconnect');
     await performReconnect!();
@@ -79,20 +79,17 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
     if (await testAndSetIsReconnecting()) {
       // Attempt reconnecting
       final seconds = _isTesting ? 9999 : Random().nextInt(15);
-      if (timer != null) {
-        timer!.cancel();
-        _log.finest('Cancelling currently running timer');
-      }
-
+      await _stopTimer();
       if (immediately) {
         _log.finest('Immediately attempting reconnection...');
         await onTimerElapsed();
       } else {
         _log.finest('Started backoff timer with ${seconds}s backoff');
-        timer = Timer(Duration(seconds: seconds), onTimerElapsed);
+        await _timerLock.synchronized(() {
+          timer = Timer(Duration(seconds: seconds), onTimerElapsed);
+        }); 
       }
     } else {
-      // TODO(PapaTutuWawa): How to handle?
       _log.severe('_attemptReconnection called while reconnect is running!');
     }
   }
