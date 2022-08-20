@@ -57,6 +57,7 @@ class ConversationBottomRow extends StatelessWidget {
                         state.quotedMessage!,
                         resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
                       ) : null,
+                      shouldSummonKeyboard: () => !state.emojiPickerVisible,
                       prefixIcon: IntrinsicWidth(
                         child: Row(
                           children: [
@@ -70,10 +71,6 @@ class ConversationBottomRow extends StatelessWidget {
                                 ),
                               ),
                               onTap: () {
-                                if (!state.emojiPickerVisible) {
-                                  dismissSoftKeyboard(context);
-                                }
-
                                 context.read<ConversationBloc>().add(EmojiPickerToggledEvent());
                               },
                             ),
@@ -176,9 +173,20 @@ class ConversationBottomRow extends StatelessWidget {
                     // TODO(PapaTutuWawa): This needs to keep the cursor in mind
                     // TODO(PapaTutuWawa): Also see here https://github.com/flutter/flutter/issues/16863#issuecomment-854340383
                     final bloc = context.read<ConversationBloc>();
-                    final newText = '${bloc.state.messageText}${emoji.emoji}';
+
+                    
+                    final selection = controller.selection;
+                    final prefix = bloc.state.messageText.substring(0, selection.baseOffset);
+                    final suffix = bloc.state.messageText.substring(selection.extentOffset);
+                    final newText = '$prefix${emoji.emoji}$suffix';
+                    final newValue = selection.baseOffset + emoji.emoji.codeUnits.length;
                     bloc.add(MessageTextChangedEvent(newText));
-                    controller.text = newText;
+                    controller
+                      ..text = newText
+                      ..selection = TextSelection(
+                        baseOffset: newValue,
+                        extentOffset: newValue,
+                      );
                   },
                   config: Config(
                     bgColor: Theme.of(context).scaffoldBackgroundColor,

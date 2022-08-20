@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
@@ -312,6 +313,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onEmojiPickerToggled(EmojiPickerToggledEvent event, Emitter<ConversationState> emit) async {
-    emit(state.copyWith(emojiPickerVisible: !state.emojiPickerVisible));
+    final newState = !state.emojiPickerVisible;
+    emit(state.copyWith(emojiPickerVisible: newState));
+
+    if (newState) {
+      await SystemChannels.textInput.invokeMethod('TextInput.hide');
+    } else {
+      await SystemChannels.textInput.invokeMethod('TextInput.show');
+    }
   }
 }
