@@ -176,7 +176,7 @@ class ConversationBottomRow extends StatelessWidget {
                     // TODO(PapaTutuWawa): This needs to keep the cursor in mind
                     // TODO(PapaTutuWawa): Also see here https://github.com/flutter/flutter/issues/16863#issuecomment-854340383
                     final bloc = context.read<ConversationBloc>();
-                    final newText = '${bloc.state.messageText} ${emoji.emoji} ';
+                    final newText = '${bloc.state.messageText}${emoji.emoji}';
                     bloc.add(MessageTextChangedEvent(newText));
                     controller.text = newText;
                   },
