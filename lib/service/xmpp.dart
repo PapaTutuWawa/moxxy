@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
@@ -38,9 +39,11 @@ import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -352,6 +355,23 @@ class XmppService {
       );
       messages[path] = msg;
       sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
+
+      // Send an upload notification
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+        MessageDetails(
+          to: recipient,
+          fun: FileUploadNotificationData(
+            FileMetadataData(
+              // TODO(Unknown): Maybe add media type specific metadata
+              mediaType: lookupMimeType(path),
+              name: pathlib.basename(path),
+              size: File(path).statSync().size,
+              // TODO(Unknown): Implement thumbnails
+              thumbnails: [],
+            ),
+          ),
+        ),
+      );
     }
 
     // Create the shared media entries

@@ -8,6 +8,7 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
@@ -18,20 +19,21 @@ import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 class MessageDetails {
 
   const MessageDetails({
-      required this.to,
-      required this.body,
-      this.requestDeliveryReceipt = false,
-      this.requestChatMarkers = true,
-      this.id,
-      this.originId,
-      this.quoteBody,
-      this.quoteId,
-      this.quoteFrom,
-      this.chatState,
-      this.sfs,
+    required this.to,
+    this.body,
+    this.requestDeliveryReceipt = false,
+    this.requestChatMarkers = true,
+    this.id,
+    this.originId,
+    this.quoteBody,
+    this.quoteId,
+    this.quoteFrom,
+    this.chatState,
+    this.sfs,
+    this.fun,
   });
   final String to;
-  final String body;
+  final String? body;
   final bool requestDeliveryReceipt;
   final bool requestChatMarkers;
   final String? id;
@@ -41,6 +43,7 @@ class MessageDetails {
   final String? quoteFrom;
   final ChatState? chatState;
   final StatelessFileSharingData? sfs;
+  final FileUploadNotificationData? fun;
 }
 
 class MessageManager extends XmppManagerBase {
@@ -168,6 +171,10 @@ class MessageManager extends XmppManagerBase {
         // TODO(Unknown): Move this into xep_0085.dart
         XMLNode.xmlns(tag: chatStateToString(details.chatState!), xmlns: chatStateXmlns),
       );
+    }
+
+    if (details.fun != null) {
+      stanza.addChild(details.fun!.toXml());
     }
     
     getAttributes().sendStanza(stanza, awaitable: false);

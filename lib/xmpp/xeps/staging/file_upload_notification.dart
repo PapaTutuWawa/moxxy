@@ -9,31 +9,27 @@ const fileUploadNotificationXmlns = 'proto:urn:xmpp:fun:0';
 
 class FileUploadNotificationData {
 
-  const FileUploadNotificationData({ required this.metadata, required this.thumbnails });
+  const FileUploadNotificationData(this.metadata);
   final FileMetadataData metadata;
-  final List<Thumbnail> thumbnails;
-}
 
-XMLNode constructFileUploadNotification(FileMetadataData metadata, List<Thumbnail> thumbnails) {
-  final thumbnailNodes = thumbnails.map(constructFileThumbnailElement).toList();
-  return XMLNode.xmlns(
-    tag: 'file-upload',
-    xmlns: fileUploadNotificationXmlns,
-    children: [
-      constructFileMetadataElement(metadata),
-      ...thumbnailNodes
-    ],
-  );
+  XMLNode toXml() {
+    final thumbnailNodes = metadata.thumbnails.map(constructFileThumbnailElement).toList();
+    return XMLNode.xmlns(
+      tag: 'file-upload',
+      xmlns: fileUploadNotificationXmlns,
+      children: [
+        constructFileMetadataElement(metadata),
+        ...thumbnailNodes
+      ],
+    );
+  }
 }
 
 FileUploadNotificationData parseFileUploadNotification(XMLNode node) {
   assert(node.attributes['xmlns'] == fileUploadNotificationXmlns, 'Invalid element xmlns');
   assert(node.tag == 'file-upload', 'Invalid element name');
 
-  final thumbnails = node.findTags('thumbnail', xmlns: fileThumbnailsXmlns).map((t) => parseFileThumbnailElement(t)!).toList();
-  
   return FileUploadNotificationData(
-    metadata: parseFileMetadataElement(node.firstTag('file', xmlns: fileMetadataXmlns)!),
-    thumbnails: thumbnails,
+    parseFileMetadataElement(node.firstTag('file', xmlns: fileMetadataXmlns)!),
   );
 }
