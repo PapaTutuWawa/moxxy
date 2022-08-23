@@ -838,7 +838,6 @@ class XmppService {
             conversationJid,
             null,
             shouldShowNotification: false,
-            shouldUpdateConversation: false,
           ),
         );
       } else {

@@ -311,13 +311,11 @@ class HttpFileTransferService {
           msg.timestamp,
           mime: mime,
         );
-        if (job.shouldUpdateConversation) {
-          final newConv = await GetIt.I.get<ConversationService>().updateConversation(
-            conv.id,
-            sharedMedia: [sharedMedium],
-          );
-          sendEvent(ConversationUpdatedEvent(conversation: newConv));
-        }
+        final newConv = await GetIt.I.get<ConversationService>().updateConversation(
+          conv.id,
+          sharedMedia: [sharedMedium],
+        );
+        sendEvent(ConversationUpdatedEvent(conversation: newConv));
       }
     } on dio.DioError catch(err) {
       // TODO(PapaTutuWawa): React if we received an error that is not related to the
