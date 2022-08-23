@@ -121,7 +121,7 @@ class ImageChatWidget extends StatelessWidget {
     if (message.isFileUploadNotification || message.isDownloading) return _buildDownloading();
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (File(message.mediaUrl!).existsSync()) return _buildImage();
+    if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) return _buildImage();
 
     return _buildDownloadable();
   }

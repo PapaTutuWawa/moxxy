@@ -307,6 +307,7 @@ class DatabaseService {
     bool? acked,
     int? errorType,
     bool? isFileUploadNotification,
+    String? srcUrl,
   }) async {
     final i = (await _isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
@@ -329,6 +330,9 @@ class DatabaseService {
     }
     if (isFileUploadNotification != null) {
       i.isFileUploadNotification = isFileUploadNotification;
+    }
+    if (srcUrl != null) {
+      i.srcUrl = srcUrl;
     }
 
     await _isar.writeTxn(() async {

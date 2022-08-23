@@ -94,6 +94,7 @@ class MessageService {
     bool? acked,
     int? errorType,
     bool? isFileUploadNotification,
+    String? srcUrl,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -104,6 +105,7 @@ class MessageService {
       acked: acked,
       errorType: errorType,
       isFileUploadNotification: isFileUploadNotification,
+      srcUrl: srcUrl,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

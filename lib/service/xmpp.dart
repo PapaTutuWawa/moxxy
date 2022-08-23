@@ -828,20 +828,31 @@ class XmppService {
     // Is there even a file we can download?
     final isFileEmbedded = _isFileEmbedded(event, embeddedFileUrl);
 
-    if (isFileEmbedded && await _shouldDownloadFile(conversationJid)) {
-      message = message.copyWith(isDownloading: true);
-      await GetIt.I.get<HttpFileTransferService>().downloadFile(
-        FileDownloadJob(
-          embeddedFileUrl!,
+    if (isFileEmbedded) {
+      if (await _shouldDownloadFile(conversationJid)) {
+        message = message.copyWith(isDownloading: true);
+        await GetIt.I.get<HttpFileTransferService>().downloadFile(
+          FileDownloadJob(
+            embeddedFileUrl!,
+            message.id,
+            conversationJid,
+            null,
+            shouldShowNotification: false,
+            shouldUpdateConversation: false,
+          ),
+        );
+      } else {
+        message = await ms.updateMessage(
           message.id,
-          conversationJid,
-          null,
-          shouldShowNotification: false,
-          shouldUpdateConversation: false,
-        ),
-      );
+          srcUrl: embeddedFileUrl,
+          isFileUploadNotification: false,
+        );
+
+        // Tell the UI
+        sendEvent(MessageUpdatedEvent(message: message.copyWith(isDownloading: false)));
+      }
     } else {
-      // TODO(PapaTutuWawa): Update the message to make it downloadable
+      _log.warning('Received a File Upload Notification replacement but the replacement contains no file!');
     }
   }
   
