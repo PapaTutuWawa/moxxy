@@ -31,6 +31,7 @@ class MessageDetails {
     this.chatState,
     this.sfs,
     this.fun,
+    this.funReplacement,
   });
   final String to;
   final String? body;
@@ -44,6 +45,7 @@ class MessageDetails {
   final ChatState? chatState;
   final StatelessFileSharingData? sfs;
   final FileUploadNotificationData? fun;
+  final String? funReplacement;
 }
 
 class MessageManager extends XmppManagerBase {
@@ -66,9 +68,17 @@ class MessageManager extends XmppManagerBase {
   Future<bool> isSupported() async => true;
   
   Future<StanzaHandlerData> _onMessage(Stanza _, StanzaHandlerData state) async {
-    // First check if it's a carbon
     final message = state.stanza;
     final body = message.firstTag('body');
+
+    FileUploadNotificationData? fun;
+    if (FileUploadNotificationData.containsFileUploadNotification(state.stanza)) {
+      fun = FileUploadNotificationData.fromElement(
+        state.stanza.firstTag('file-upload', xmlns: fileUploadNotificationXmlns)!,
+      );
+    }
+
+    final funReplacement = state.stanza.firstTag('replaces', xmlns: fileUploadNotificationXmlns)?.attributes['id'] as String?;
     
     getAttributes().sendEvent(MessageEvent(
       body: body != null ? body.innerText() : '',
@@ -85,6 +95,8 @@ class MessageManager extends XmppManagerBase {
       sims: state.sims,
       reply: state.reply,
       chatState: state.chatState,
+      fun: fun,
+      funReplacement: funReplacement,
     ),);
 
     return state.copyWith(done: true);
@@ -175,6 +187,18 @@ class MessageManager extends XmppManagerBase {
 
     if (details.fun != null) {
       stanza.addChild(details.fun!.toXml());
+    }
+
+    if (details.funReplacement != null) {
+      stanza.addChild(
+        XMLNode.xmlns(
+          tag: 'replaces',
+          xmlns: fileUploadNotificationXmlns,
+          attributes: <String, String>{
+            'id': details.funReplacement!,
+          },
+        ),
+      );
     }
     
     getAttributes().sendStanza(stanza, awaitable: false);

@@ -10,6 +10,16 @@ const fileUploadNotificationXmlns = 'proto:urn:xmpp:fun:0';
 class FileUploadNotificationData {
 
   const FileUploadNotificationData(this.metadata);
+
+  factory FileUploadNotificationData.fromElement(XMLNode node) {
+    assert(node.attributes['xmlns'] == fileUploadNotificationXmlns, 'Invalid element xmlns');
+    assert(node.tag == 'file-upload', 'Invalid element name');
+
+    return FileUploadNotificationData(
+      parseFileMetadataElement(node.firstTag('file', xmlns: fileMetadataXmlns)!),
+    );
+  }
+
   final FileMetadataData metadata;
 
   XMLNode toXml() {
@@ -23,13 +33,16 @@ class FileUploadNotificationData {
       ],
     );
   }
-}
+  
+  /// Returns true if the message stanza [message] contains a File Upload Notification
+  /// element (<file-upload />). If not, returns false.
+  static bool containsFileUploadNotification(XMLNode message) {
+    return message.firstTag('file-upload', xmlns: fileUploadNotificationXmlns) != null;
+  }
 
-FileUploadNotificationData parseFileUploadNotification(XMLNode node) {
-  assert(node.attributes['xmlns'] == fileUploadNotificationXmlns, 'Invalid element xmlns');
-  assert(node.tag == 'file-upload', 'Invalid element name');
-
-  return FileUploadNotificationData(
-    parseFileMetadataElement(node.firstTag('file', xmlns: fileMetadataXmlns)!),
-  );
+  /// Returns true if the message stanza [message] contains a File Upload Notification
+  /// replacement element (<replaces />). If not, returns false.
+  static bool containsFileUploadNotificationReplace(XMLNode message) {
+    return message.firstTag('replaces', xmlns: fileUploadNotificationXmlns) != null;
+  }
 }

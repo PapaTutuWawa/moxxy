@@ -33,6 +33,10 @@ class DBMessage {
   /// that clearly identifies the error.
   late int errorType;
 
+  /// If true, then the message is currently a placeholder for a File Upload Notification
+  /// and may be replaced
+  late bool isFileUploadNotification;
+  
   /// The message that this one quotes
   final quotes = IsarLink<DBMessage>();
   

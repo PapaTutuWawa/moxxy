@@ -295,11 +295,12 @@ class HttpFileTransferService {
           job.mId,
           mediaUrl: downloadedPath,
           mediaType: mime,
+          isFileUploadNotification: false,
         );
 
         sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
 
-        if (notification.shouldShowNotification(msg.conversationJid)) {
+        if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
           _log.finest('Creating notification with bigPicture $downloadedPath');
           await notification.showNotification(msg, '');
         }
@@ -310,11 +311,13 @@ class HttpFileTransferService {
           msg.timestamp,
           mime: mime,
         );
-        final newConv = await GetIt.I.get<ConversationService>().updateConversation(
-          conv.id,
-          sharedMedia: [sharedMedium],
-        );
-        sendEvent(ConversationUpdatedEvent(conversation: newConv));
+        if (job.shouldUpdateConversation) {
+          final newConv = await GetIt.I.get<ConversationService>().updateConversation(
+            conv.id,
+            sharedMedia: [sharedMedium],
+          );
+          sendEvent(ConversationUpdatedEvent(conversation: newConv));
+        }
       }
     } on dio.DioError catch(err) {
       // TODO(PapaTutuWawa): React if we received an error that is not related to the

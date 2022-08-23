@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
 class MessageService {
@@ -35,6 +36,7 @@ class MessageService {
     bool sent,
     bool isMedia,
     String sid,
+    bool isFileUploadNotification,
     {
       String? srcUrl,
       String? mediaUrl,
@@ -53,6 +55,7 @@ class MessageService {
       sent,
       isMedia,
       sid,
+      isFileUploadNotification,
       srcUrl: srcUrl,
       mediaUrl: mediaUrl,
       mediaType: mediaType,
@@ -71,14 +74,26 @@ class MessageService {
     return msg;
   }
 
+  Future<Message?> getMessageByStanzaId(String conversationJid, String stanzaId) async {
+    if (_messageCache.containsKey(conversationJid)) {
+      await getMessagesForJid(conversationJid);
+    }
+
+    return firstWhereOrNull(
+      _messageCache[conversationJid]!,
+      (message) => message.sid == stanzaId,
+    );
+  }
+  
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
   Future<Message> updateMessage(int id, {
-      String? mediaUrl,
-      String? mediaType,
-      bool? received,
-      bool? displayed,
-      bool? acked,
-      int? errorType,
+    String? mediaUrl,
+    String? mediaType,
+    bool? received,
+    bool? displayed,
+    bool? acked,
+    int? errorType,
+    bool? isFileUploadNotification,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -88,6 +103,7 @@ class MessageService {
       displayed: displayed,
       acked: acked,
       errorType: errorType,
+      isFileUploadNotification: isFileUploadNotification,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

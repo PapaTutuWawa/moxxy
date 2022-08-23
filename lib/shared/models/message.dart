@@ -18,6 +18,7 @@ class Message with _$Message {
     int id,
     String conversationJid,
     bool isMedia,
+    bool isFileUploadNotification,
     {
       int? errorType,
       String? mediaUrl,

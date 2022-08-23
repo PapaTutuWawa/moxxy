@@ -28,11 +28,13 @@ class FileUploadJob {
 @immutable
 class FileDownloadJob {
 
-  const FileDownloadJob(this.url, this.mId, this.conversationJid, this.mimeGuess);
+  const FileDownloadJob(this.url, this.mId, this.conversationJid, this.mimeGuess, {this.shouldShowNotification = true, this.shouldUpdateConversation = true});
   final String url;
   final int mId;
   final String conversationJid;
   final String? mimeGuess;
+  final bool shouldShowNotification;
+  final bool shouldUpdateConversation;
   
   @override
   bool operator ==(Object other) {
@@ -40,8 +42,10 @@ class FileDownloadJob {
       url == other.url &&
       mId == other.mId &&
       conversationJid == other.conversationJid &&
-      mimeGuess == other.mimeGuess;
+      mimeGuess == other.mimeGuess &&
+      shouldShowNotification == other.shouldShowNotification &&
+      shouldUpdateConversation == other.shouldUpdateConversation;
   }
   @override
-  int get hashCode => url.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode;
+  int get hashCode => url.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode ^ shouldUpdateConversation.hashCode;
 }

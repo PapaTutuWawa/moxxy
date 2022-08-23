@@ -71,6 +71,7 @@ Message messageDbToModel(DBMessage m) {
     m.id!,
     m.conversationJid,
     m.isMedia,
+    m.isFileUploadNotification,
     originId: m.originId,
     received: m.received,
     displayed: m.displayed,
@@ -238,6 +239,7 @@ class DatabaseService {
     bool sent,
     bool isMedia,
     String sid,
+    bool isFileUploadNotification,
     {
       String? srcUrl,
       String? mediaUrl,
@@ -265,7 +267,8 @@ class DatabaseService {
       ..displayed = false
       ..acked = false
       ..originId = originId
-      ..errorType = noError;
+      ..errorType = noError
+      ..isFileUploadNotification = isFileUploadNotification;
 
     if (quoteId != null) {
       final quotes = await getMessageByXmppId(quoteId, conversationJid);
@@ -303,6 +306,7 @@ class DatabaseService {
     bool? displayed,
     bool? acked,
     int? errorType,
+    bool? isFileUploadNotification,
   }) async {
     final i = (await _isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
@@ -322,6 +326,9 @@ class DatabaseService {
     }
     if (errorType != null) {
       i.errorType = errorType;
+    }
+    if (isFileUploadNotification != null) {
+      i.isFileUploadNotification = isFileUploadNotification;
     }
 
     await _isar.writeTxn(() async {
