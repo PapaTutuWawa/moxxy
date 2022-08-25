@@ -39,7 +39,6 @@ import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
-import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
@@ -362,15 +361,13 @@ class XmppService {
       conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
         MessageDetails(
           to: recipient,
-          fun: FileUploadNotificationData(
-            FileMetadataData(
-              // TODO(Unknown): Maybe add media type specific metadata
-              mediaType: lookupMimeType(path),
-              name: pathlib.basename(path),
-              size: File(path).statSync().size,
-              // TODO(Unknown): Implement thumbnails
-              thumbnails: [],
-            ),
+          fun: FileMetadataData(
+            // TODO(Unknown): Maybe add media type specific metadata
+            mediaType: lookupMimeType(path),
+            name: pathlib.basename(path),
+            size: File(path).statSync().size,
+            // TODO(Unknown): Implement thumbnails
+            thumbnails: [],
           ),
         ),
       );
@@ -598,7 +595,7 @@ class XmppService {
     final thumbnails = firstNotNull([
         event.sfs?.metadata.thumbnails,
         event.sims?.thumbnails,
-        event.fun?.metadata.thumbnails,
+        event.fun?.thumbnails,
     ]) ?? [];
     for (final i in thumbnails) {
       if (i is BlurhashThumbnail) {
@@ -691,7 +688,8 @@ class XmppService {
     // download to happen automatically, then the notification should happen immediately.
     var shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
-    var mimeGuess = event.fun?.metadata.mediaType;
+    // TODO(PapaTutuWawa): Gues from SFS, SIMS and FUN
+    var mimeGuess = event.fun?.mediaType;
 
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
@@ -705,10 +703,10 @@ class XmppService {
       event.sid,
       event.fun != null,
       srcUrl: embeddedFileUrl,
-      mediaType: mimeGuess ?? event.fun?.metadata.mediaType,
+      mediaType: mimeGuess,
       thumbnailData: thumbnailData,
       // TODO(Unknown): What about SIMS?
-      thumbnailDimensions: event.sfs?.metadata.dimensions ?? event.fun?.metadata.dimensions,
+      thumbnailDimensions: event.sfs?.metadata.dimensions ?? event.fun?.dimensions,
       quoteId: replyId,
     );
     

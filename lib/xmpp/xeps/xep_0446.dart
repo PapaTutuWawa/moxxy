@@ -63,6 +63,7 @@ FileMetadataData parseFileMetadataElement(XMLNode node) {
   );
 }
 
+// TODO(PapaTutuWawa): Make this a method of FileMetadataData.
 XMLNode constructFileMetadataElement(FileMetadataData data) {
   final node = XMLNode.xmlns(
     tag: 'file',

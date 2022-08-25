@@ -14,6 +14,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 
 class MessageDetails {
@@ -32,6 +33,7 @@ class MessageDetails {
     this.sfs,
     this.fun,
     this.funReplacement,
+    this.funCancellation,
   });
   final String to;
   final String? body;
@@ -44,8 +46,9 @@ class MessageDetails {
   final String? quoteFrom;
   final ChatState? chatState;
   final StatelessFileSharingData? sfs;
-  final FileUploadNotificationData? fun;
+  final FileMetadataData? fun;
   final String? funReplacement;
+  final String? funCancellation;
 }
 
 class MessageManager extends XmppManagerBase {
@@ -71,15 +74,6 @@ class MessageManager extends XmppManagerBase {
     final message = state.stanza;
     final body = message.firstTag('body');
 
-    FileUploadNotificationData? fun;
-    if (FileUploadNotificationData.containsFileUploadNotification(state.stanza)) {
-      fun = FileUploadNotificationData.fromElement(
-        state.stanza.firstTag('file-upload', xmlns: fileUploadNotificationXmlns)!,
-      );
-    }
-
-    final funReplacement = state.stanza.firstTag('replaces', xmlns: fileUploadNotificationXmlns)?.attributes['id'] as String?;
-    
     getAttributes().sendEvent(MessageEvent(
       body: body != null ? body.innerText() : '',
       fromJid: JID.fromString(message.attributes['from']! as String),
@@ -95,8 +89,9 @@ class MessageManager extends XmppManagerBase {
       sims: state.sims,
       reply: state.reply,
       chatState: state.chatState,
-      fun: fun,
-      funReplacement: funReplacement,
+      fun: state.fun,
+      funReplacement: state.funReplacement,
+      funCancellation: state.funCancellation,
     ),);
 
     return state.copyWith(done: true);
@@ -186,7 +181,15 @@ class MessageManager extends XmppManagerBase {
     }
 
     if (details.fun != null) {
-      stanza.addChild(details.fun!.toXml());
+      stanza.addChild(
+        XMLNode.xmlns(
+          tag: 'file-upload',
+          xmlns: fileUploadNotificationXmlns,
+          children: [
+            constructFileMetadataElement(details.fun!),
+          ],
+        ),
+      );
     }
 
     if (details.funReplacement != null) {
