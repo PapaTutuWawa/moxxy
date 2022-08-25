@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:settings_ui/settings_ui.dart';
 
 class _AutoDownloadSizes {
 
@@ -70,16 +70,16 @@ class NetworkPage extends StatelessWidget {
       appBar: BorderlessTopbar.simple('Network'),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
-          darkBackgroundColor: const Color(0xff303030),
-          contentPadding: const EdgeInsets.all(16),
           sections: [
             SettingsSection(
-              title: 'Automatic Downloads',
+              title: const Text('Automatic Downloads'),
               tiles: [
-                SettingsTile(title: 'Moxxy will automatically download files on...'),
+                SettingsTile(
+                  title: const Text('Moxxy will automatically download files on...'),
+                ),
                 SettingsTile.switchTile(
-                  title: 'Wifi',
-                  switchValue: state.autoDownloadWifi,
+                  title: const Text('Wifi'),
+                  initialValue: state.autoDownloadWifi,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(autoDownloadWifi: value),
@@ -87,8 +87,8 @@ class NetworkPage extends StatelessWidget {
                   ),
                 ),
                 SettingsTile.switchTile(
-                  title: 'Mobile Data',
-                  switchValue: state.autoDownloadMobile,
+                  title: const Text('Mobile Data'),
+                  initialValue: state.autoDownloadMobile,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(autoDownloadMobile: value),
@@ -96,9 +96,8 @@ class NetworkPage extends StatelessWidget {
                   ),
                 ),
                 SettingsTile(
-                  title: 'Maximum Download Size',
-                  subtitle: 'The maximum file size for a file to be automatically downloaded',
-                  subtitleMaxLines: 2,
+                  title: const Text('Maximum Download Size'),
+                  description: const Text('The maximum file size for a file to be automatically downloaded'),
                   onPressed: (context) {
                     showModalBottomSheet<dynamic>(
                       context: context,

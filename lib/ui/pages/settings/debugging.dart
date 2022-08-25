@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:settings_ui/settings_ui.dart';
 
 class DebuggingPage extends StatelessWidget {
 
@@ -26,25 +26,22 @@ class DebuggingPage extends StatelessWidget {
       appBar: BorderlessTopbar.simple('Debugging'),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
-          darkBackgroundColor: const Color(0xff303030),
-          contentPadding: const EdgeInsets.all(16),
           sections: [
             SettingsSection(
-              title: 'General',
+              title: const Text('General'),
               tiles: [
                 SettingsTile.switchTile(
-                  title: 'Enable debugging',
+                  title: const Text('Enable debugging'),
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(debugEnabled: value),
                     ),
                   ),
-                  switchValue: state.debugEnabled,
+                  initialValue: state.debugEnabled,
                 ),
                 SettingsTile(
-                  title: 'Encryption password',
-                  subtitle: 'The logs may contain sensitive information so pick a strong passphrase',
-                  subtitleMaxLines: 2,
+                  title: const Text('Encryption password'),
+                  description: const Text('The logs may contain sensitive information so pick a strong passphrase'),
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
@@ -74,9 +71,8 @@ class DebuggingPage extends StatelessWidget {
                   },
                 ),
                 SettingsTile(
-                  title: 'Logging IP',
-                  subtitle: 'The IP the logs should be sent to',
-                  subtitleMaxLines: 2,
+                  title: const Text('Logging IP'),
+                  description: const Text('The IP the logs should be sent to'),
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
@@ -105,9 +101,8 @@ class DebuggingPage extends StatelessWidget {
                   },
                 ),
                 SettingsTile(
-                  title: 'Logging Port',
-                  subtitle: 'The Port the logs should be sent to',
-                  subtitleMaxLines: 2,
+                  title: const Text('Logging Port'),
+                  description: const Text('The Port the logs should be sent to'),
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,

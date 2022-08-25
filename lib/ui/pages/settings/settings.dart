@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:settings_ui/settings_ui.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({ Key? key }) : super(key: key);
@@ -22,20 +22,17 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: BorderlessTopbar.simple('Settings'),
       body: SettingsList(
-        // TODO(Unknown): Seems hacky
-        darkBackgroundColor: const Color(0xff303030),
-        contentPadding: const EdgeInsets.all(16),
         sections: [
           SettingsSection(
-            title: 'Account',
+            title: const Text('Account'),
             tiles: [
               SettingsTile(
-                title: 'Blocklist',
+                title: const Text('Blocklist'),
                 leading: const Icon(Icons.block),
                 onPressed: (context) => Navigator.pushNamed(context, blocklistRoute),
               ),
               SettingsTile(
-                title: 'Sign out',
+                title: const Text('Sign out'),
                 leading: const Icon(Icons.logout),
                 onPressed: (context) => showConfirmationDialog(
                   'Sign Out',
@@ -50,35 +47,35 @@ class SettingsPage extends StatelessWidget {
             ],
           ),
           SettingsSection(
-            title: 'Conversations',
+            title: const Text('Conversations'),
             tiles: [
               SettingsTile(
-                title: 'Appearance',
+                title: const Text('Appearance'),
                 leading: const Icon(Icons.brush),
                 onPressed: (context) => Navigator.pushNamed(context, appearanceRoute),
               ),
               SettingsTile(
-                title: 'Network',
+                title: const Text('Network'),
                 leading: const Icon(Icons.network_wifi),
                 onPressed: (context) => Navigator.pushNamed(context, networkRoute),
               ),
               SettingsTile(
-                title: 'Privacy',
+                title: const Text('Privacy'),
                 leading: const Icon(Icons.shield),
                 onPressed: (context) => Navigator.pushNamed(context, privacyRoute),
               )
             ],
           ),
           SettingsSection(
-            title: 'Miscellaneous',
+            title: const Text('Miscellaneous'),
             tiles: [
               SettingsTile(
-                title: 'About',
+                title: const Text('About'),
                 leading: const Icon(Icons.info),
                 onPressed: (context) => Navigator.pushNamed(context, aboutRoute),
               ),
               SettingsTile(
-                title: 'Open-Source licenses',
+                title: const Text('Open-Source licenses'),
                 leading: const Icon(Icons.description),
                 onPressed: (context) => Navigator.pushNamed(context, licensesRoute),
               )
@@ -87,10 +84,10 @@ class SettingsPage extends StatelessWidget {
           // TODO(Unknown): Maybe also have a switch somewhere
           ...kDebugMode ? [
               SettingsSection(
-                title: 'Debugging',
+                title: const Text('Debugging'),
                 tiles: [
                   SettingsTile(
-                    title: 'Debugging options',
+                    title: const Text('Debugging options'),
                     leading: const Icon(Icons.info),
                     onPressed: (context) => Navigator.pushNamed(context, debuggingRoute),
                   )

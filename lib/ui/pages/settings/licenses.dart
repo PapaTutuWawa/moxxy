@@ -19,7 +19,11 @@ class LicenseRow extends StatelessWidget {
   final Library library;
 
   Future<void> _openUrl() async {
-    if (!await launchUrl(Uri.parse(library.url))) {
+    final result = await launchUrl(
+      Uri.parse(library.url),
+      mode: LaunchMode.externalNonBrowserApplication,
+    );
+    if (!result) {
       // TODO(Unknown): Show a popup to copy the url
     }
   }

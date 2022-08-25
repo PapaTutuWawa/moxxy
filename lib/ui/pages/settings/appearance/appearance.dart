@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_settings_ui/flutter_settings_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
@@ -14,6 +13,7 @@ import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:settings_ui/settings_ui.dart';
 
 class AppearancePage extends StatelessWidget {
   const AppearancePage({ Key? key }): super(key: key);
@@ -68,15 +68,13 @@ class AppearancePage extends StatelessWidget {
       appBar: BorderlessTopbar.simple('Appearance'),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
-          darkBackgroundColor: const Color(0xff303030),
-          contentPadding: const EdgeInsets.all(16),
           sections: [
             SettingsSection(
-              title: 'Conversation Background',
+              title: const Text('Conversation Background'),
               tiles: [
                 SettingsTile(
-                  title: 'Select background image',
-                  subtitle: 'This image will be the background of all your chats',
+                  title: const Text('Select background image'),
+                  description: const Text('This image will be the background of all your chats'),
                   onPressed: (context) async {
                     final backgroundPath = await _pickBackgroundImage();
 
@@ -89,7 +87,7 @@ class AppearancePage extends StatelessWidget {
                   },
                 ),
                 SettingsTile(
-                  title: 'Remove background image',
+                  title: const Text('Remove background image'),
                   onPressed: (context) {
                     showConfirmationDialog(
                       'Are you sure?',
