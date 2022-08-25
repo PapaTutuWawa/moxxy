@@ -19,6 +19,7 @@ class ImageChatWidget extends StatelessWidget {
     this.message,
     this.radius,
     this.maxWidth,
+    this.sent,
     {
       Key? key,
     }
@@ -26,11 +27,12 @@ class ImageChatWidget extends StatelessWidget {
   final Message message;
   final BorderRadius radius;
   final double maxWidth;
+  final bool sent;
 
   Widget _buildUploading() {
     return MediaBaseChatWidget(
       Image.file(File(message.mediaUrl!)),
-      MessageBubbleBottom(message),
+      MessageBubbleBottom(message, sent),
       radius,
       extra: ProgressWidget(id: message.id),
     );
@@ -50,7 +52,7 @@ class ImageChatWidget extends StatelessWidget {
             decodingHeight: thumbnailSize.height.toInt(),
           ),
         ),
-        MessageBubbleBottom(message),
+        MessageBubbleBottom(message, sent),
         radius,
         extra: ProgressWidget(id: message.id),
       );
@@ -58,8 +60,9 @@ class ImageChatWidget extends StatelessWidget {
       return FileChatBaseWidget(
         message,
         Icons.image,
-        filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
+        sent,
         extra: ProgressWidget(id: message.id),
       );
     }
@@ -69,7 +72,7 @@ class ImageChatWidget extends StatelessWidget {
   Widget _buildImage() {
     return MediaBaseChatWidget(
       Image.file(File(message.mediaUrl!)),
-      MessageBubbleBottom(message),
+      MessageBubbleBottom(message, sent),
       radius,
       onTap: () {
         OpenFile.open(message.mediaUrl);
@@ -91,7 +94,7 @@ class ImageChatWidget extends StatelessWidget {
             decodingHeight: thumbnailSize.height.toInt(),
           ),
         ),
-        MessageBubbleBottom(message),
+        MessageBubbleBottom(message, sent),
         radius,
         extra: DownloadButton(
           onPressed: () => requestMediaDownload(message),
@@ -101,8 +104,9 @@ class ImageChatWidget extends StatelessWidget {
       return FileChatBaseWidget(
         message,
         Icons.image,
-        filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
+        sent,
         extra: DownloadButton(
           onPressed: () {
             MoxplatformPlugin.handler.getDataSender().sendData(
@@ -118,10 +122,10 @@ class ImageChatWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.isUploading) return _buildUploading();
-    if (message.isDownloading) return _buildDownloading();
+    if (message.isFileUploadNotification || message.isDownloading) return _buildDownloading();
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (File(message.mediaUrl!).existsSync()) return _buildImage();
+    if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) return _buildImage();
 
     return _buildDownloadable();
   }

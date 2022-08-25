@@ -8,30 +8,35 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 
 class MessageDetails {
 
   const MessageDetails({
-      required this.to,
-      required this.body,
-      this.requestDeliveryReceipt = false,
-      this.requestChatMarkers = true,
-      this.id,
-      this.originId,
-      this.quoteBody,
-      this.quoteId,
-      this.quoteFrom,
-      this.chatState,
-      this.sfs,
+    required this.to,
+    this.body,
+    this.requestDeliveryReceipt = false,
+    this.requestChatMarkers = true,
+    this.id,
+    this.originId,
+    this.quoteBody,
+    this.quoteId,
+    this.quoteFrom,
+    this.chatState,
+    this.sfs,
+    this.fun,
+    this.funReplacement,
+    this.funCancellation,
   });
   final String to;
-  final String body;
+  final String? body;
   final bool requestDeliveryReceipt;
   final bool requestChatMarkers;
   final String? id;
@@ -41,6 +46,9 @@ class MessageDetails {
   final String? quoteFrom;
   final ChatState? chatState;
   final StatelessFileSharingData? sfs;
+  final FileMetadataData? fun;
+  final String? funReplacement;
+  final String? funCancellation;
 }
 
 class MessageManager extends XmppManagerBase {
@@ -63,10 +71,9 @@ class MessageManager extends XmppManagerBase {
   Future<bool> isSupported() async => true;
   
   Future<StanzaHandlerData> _onMessage(Stanza _, StanzaHandlerData state) async {
-    // First check if it's a carbon
     final message = state.stanza;
     final body = message.firstTag('body');
-    
+
     getAttributes().sendEvent(MessageEvent(
       body: body != null ? body.innerText() : '',
       fromJid: JID.fromString(message.attributes['from']! as String),
@@ -82,6 +89,9 @@ class MessageManager extends XmppManagerBase {
       sims: state.sims,
       reply: state.reply,
       chatState: state.chatState,
+      fun: state.fun,
+      funReplacement: state.funReplacement,
+      funCancellation: state.funCancellation,
     ),);
 
     return state.copyWith(done: true);
@@ -158,7 +168,7 @@ class MessageManager extends XmppManagerBase {
 
     if (details.sfs != null) {
       stanza
-        ..addChild(constructSFSElement(details.sfs!))
+        ..addChild(details.sfs!.toXML())
         // SFS recommends OOB as a fallback
         ..addChild(constructOOBNode(OOBData(url: details.sfs!.url)),);
     }
@@ -167,6 +177,30 @@ class MessageManager extends XmppManagerBase {
       stanza.addChild(
         // TODO(Unknown): Move this into xep_0085.dart
         XMLNode.xmlns(tag: chatStateToString(details.chatState!), xmlns: chatStateXmlns),
+      );
+    }
+
+    if (details.fun != null) {
+      stanza.addChild(
+        XMLNode.xmlns(
+          tag: 'file-upload',
+          xmlns: fileUploadNotificationXmlns,
+          children: [
+            details.fun!.toXML(),
+          ],
+        ),
+      );
+    }
+
+    if (details.funReplacement != null) {
+      stanza.addChild(
+        XMLNode.xmlns(
+          tag: 'replaces',
+          xmlns: fileUploadNotificationXmlns,
+          attributes: <String, String>{
+            'id': details.funReplacement!,
+          },
+        ),
       );
     }
     

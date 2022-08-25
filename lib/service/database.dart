@@ -63,14 +63,14 @@ RosterItem rosterDbToModel(DBRosterItem i) {
 
 Message messageDbToModel(DBMessage m) {
   return Message(
-    m.from,
+    m.sender,
     m.body,
     m.timestamp,
-    m.sent,
     m.sid,
     m.id!,
     m.conversationJid,
     m.isMedia,
+    m.isFileUploadNotification,
     originId: m.originId,
     received: m.received,
     displayed: m.displayed,
@@ -82,6 +82,7 @@ Message messageDbToModel(DBMessage m) {
     srcUrl: m.srcUrl,
     quotes: m.quotes.value != null ? messageDbToModel(m.quotes.value!) : null,
     errorType: m.errorType,
+    filename: m.filename,
   );
 }
 
@@ -233,11 +234,11 @@ class DatabaseService {
   Future<Message> addMessageFromData(
     String body,
     int timestamp,
-    String from,
+    String sender,
     String conversationJid,
-    bool sent,
     bool isMedia,
     String sid,
+    bool isFileUploadNotification,
     {
       String? srcUrl,
       String? mediaUrl,
@@ -246,14 +247,14 @@ class DatabaseService {
       String? thumbnailDimensions,
       String? originId,
       String? quoteId,
+      String? filename,
     }
   ) async {
     final m = DBMessage()
-      ..from = from
       ..conversationJid = conversationJid
       ..timestamp = timestamp
       ..body = body
-      ..sent = sent
+      ..sender = sender
       ..isMedia = isMedia
       ..mediaType = mediaType
       ..mediaUrl = mediaUrl
@@ -265,7 +266,9 @@ class DatabaseService {
       ..displayed = false
       ..acked = false
       ..originId = originId
-      ..errorType = noError;
+      ..errorType = noError
+      ..isFileUploadNotification = isFileUploadNotification
+      ..filename = filename;
 
     if (quoteId != null) {
       final quotes = await getMessageByXmppId(quoteId, conversationJid);
@@ -303,6 +306,8 @@ class DatabaseService {
     bool? displayed,
     bool? acked,
     int? errorType,
+    bool? isFileUploadNotification,
+    String? srcUrl,
   }) async {
     final i = (await _isar.dBMessages.get(id))!;
     if (mediaUrl != null) {
@@ -322,6 +327,12 @@ class DatabaseService {
     }
     if (errorType != null) {
       i.errorType = errorType;
+    }
+    if (isFileUploadNotification != null) {
+      i.isFileUploadNotification = isFileUploadNotification;
+    }
+    if (srcUrl != null) {
+      i.srcUrl = srcUrl;
     }
 
     await _isar.writeTxn(() async {

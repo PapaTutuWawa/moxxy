@@ -10,14 +10,14 @@ class Message with _$Message {
   // NOTE: srcUrl is the Url that a file has been or can be downloaded from
   
   factory Message(
-    String from,
+    String sender,
     String body,
     int timestamp,
-    bool sent,
     String sid,
     int id,
     String conversationJid,
     bool isMedia,
+    bool isFileUploadNotification,
     {
       int? errorType,
       String? mediaUrl,
@@ -32,6 +32,7 @@ class Message with _$Message {
       @Default(false) bool acked,
       String? originId,
       Message? quotes,
+      String? filename,
     }
   ) = _Message;
 

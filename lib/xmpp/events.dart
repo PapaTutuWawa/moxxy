@@ -7,6 +7,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0385.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0461.dart';
 
@@ -55,20 +56,23 @@ class StreamResumeFailedEvent extends XmppEvent {}
 class MessageEvent extends XmppEvent {
 
   MessageEvent({
-      required this.body,
-      required this.fromJid,
-      required this.toJid,
-      required this.sid,
-      required this.stanzaId,
-      required this.isCarbon,
-      required this.deliveryReceiptRequested,
-      required this.isMarkable,
-      this.type,
-      this.oob,
-      this.sfs,
-      this.sims,
-      this.reply,
-      this.chatState,
+    required this.body,
+    required this.fromJid,
+    required this.toJid,
+    required this.sid,
+    required this.stanzaId,
+    required this.isCarbon,
+    required this.deliveryReceiptRequested,
+    required this.isMarkable,
+    this.type,
+    this.oob,
+    this.sfs,
+    this.sims,
+    this.reply,
+    this.chatState,
+    this.fun,
+    this.funReplacement,
+    this.funCancellation,
   });
   final String body;
   final JID fromJid;
@@ -84,6 +88,9 @@ class MessageEvent extends XmppEvent {
   final StatelessMediaSharingData? sims;
   final ReplyData? reply;
   final ChatState? chatState;
+  final FileMetadataData? fun;
+  final String? funReplacement;
+  final String? funCancellation;
 }
 
 /// Triggered when a client responds to our delivery receipt request

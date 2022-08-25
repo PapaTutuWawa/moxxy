@@ -47,33 +47,34 @@ MessageType getMessageType(Message message) {
 }
 
 /// Build an inlinable message widget
-Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius) {
+Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius, bool sent) {
   switch (getMessageType(message)) {
     case MessageType.text: {
       return TextChatWidget(
         message,
-        topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!) : null,
+        sent,
+        topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!, sent) : null,
       );
     }
     case MessageType.image: {
-      return ImageChatWidget(message, radius, maxWidth);
+      return ImageChatWidget(message, radius, maxWidth, sent);
     }
     case MessageType.video: {
-      return VideoChatWidget(message, radius, maxWidth);
+      return VideoChatWidget(message, radius, maxWidth, sent);
     }
     // TODO(Unknown): Implement audio
     //case MessageType.audio: return buildImageMessageWidget(message);
     case MessageType.file: {
-      return FileChatWidget(message, radius);
+      return FileChatWidget(message, radius, sent);
     }
   }
 }
 
 /// Build a widget that represents a quoted message within another bubble.
-Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) {
+Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? resetQuote}) {
   switch (getMessageType(message)) {
     case MessageType.text:
-      return QuoteBaseWidget(message, Text(message.body), resetQuotedMessage: resetQuote);
+      return QuoteBaseWidget(message, Text(message.body), sent, resetQuotedMessage: resetQuote);
     case MessageType.image:
       return QuoteBaseWidget(
         message,
@@ -90,6 +91,7 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
             ),
           ],
         ),
+        sent,
         resetQuotedMessage: resetQuote,
       );
     case MessageType.video:
@@ -136,6 +138,7 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
             )
           ],
         ),
+        sent,
         resetQuotedMessage: resetQuote,
       );
     // TODO(Unknown): Implement audio
@@ -170,6 +173,7 @@ Widget buildQuoteMessageWidget(Message message, { void Function()? resetQuote}) 
             )
           ],
         ),
+        sent,
         resetQuotedMessage: resetQuote,
       );
   }

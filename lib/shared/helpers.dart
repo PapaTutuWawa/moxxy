@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -301,4 +302,10 @@ extension ExceptionSafeLock on Lock {
       throw ex!;
     }
   }
+}
+
+/// Returns true if the message [message] was sent by us ([jid]). If not, returns false.
+bool isSent(Message message, String jid) {
+  // TODO(PapaTutuWawa): Does this work?
+  return message.sender.split('/').first == jid.split('/').first;
 }

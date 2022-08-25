@@ -120,3 +120,9 @@ class EmojiPickerToggledEvent extends ConversationEvent {
   EmojiPickerToggledEvent({this.handleKeyboard = true});
   final bool handleKeyboard;
 }
+
+/// Triggered when we received our own JID
+class OwnJidReceivedEvent extends ConversationEvent {
+  OwnJidReceivedEvent(this.jid);
+  final String jid;
+}

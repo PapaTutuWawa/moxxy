@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
 class MessageService {
@@ -30,11 +31,11 @@ class MessageService {
   Future<Message> addMessageFromData(
     String body,
     int timestamp,
-    String from,
+    String sender,
     String conversationJid,
-    bool sent,
     bool isMedia,
     String sid,
+    bool isFileUploadNotification,
     {
       String? srcUrl,
       String? mediaUrl,
@@ -43,16 +44,17 @@ class MessageService {
       String? thumbnailDimensions,
       String? originId,
       String? quoteId,
+      String? filename,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
       body,
       timestamp,
-      from,
+      sender,
       conversationJid,
-      sent,
       isMedia,
       sid,
+      isFileUploadNotification,
       srcUrl: srcUrl,
       mediaUrl: mediaUrl,
       mediaType: mediaType,
@@ -60,6 +62,7 @@ class MessageService {
       thumbnailDimensions: thumbnailDimensions,
       originId: originId,
       quoteId: quoteId,
+      filename: filename,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents
@@ -71,14 +74,27 @@ class MessageService {
     return msg;
   }
 
+  Future<Message?> getMessageByStanzaId(String conversationJid, String stanzaId) async {
+    if (_messageCache.containsKey(conversationJid)) {
+      await getMessagesForJid(conversationJid);
+    }
+
+    return firstWhereOrNull(
+      _messageCache[conversationJid]!,
+      (message) => message.sid == stanzaId,
+    );
+  }
+  
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
   Future<Message> updateMessage(int id, {
-      String? mediaUrl,
-      String? mediaType,
-      bool? received,
-      bool? displayed,
-      bool? acked,
-      int? errorType,
+    String? mediaUrl,
+    String? mediaType,
+    bool? received,
+    bool? displayed,
+    bool? acked,
+    int? errorType,
+    bool? isFileUploadNotification,
+    String? srcUrl,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -88,6 +104,8 @@ class MessageService {
       displayed: displayed,
       acked: acked,
       errorType: errorType,
+      isFileUploadNotification: isFileUploadNotification,
+      srcUrl: srcUrl,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

@@ -39,6 +39,7 @@ import 'package:moxxyv2/xmpp/negotiators/starttls.dart';
 import 'package:moxxyv2/xmpp/ping.dart';
 import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/roster.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
@@ -201,6 +202,7 @@ Future<void> entrypoint() async {
       BlockingManager(),
       ChatStateManager(),
       HttpFileUploadManager(),
+      FileUploadNotificationManager(),
     ])
     ..registerFeatureNegotiators([
       ResourceBindingNegotiator(),

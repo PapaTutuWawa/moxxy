@@ -11,6 +11,7 @@ class QuoteBaseWidget extends StatelessWidget {
   const QuoteBaseWidget(
     this.message,
     this.child,
+    this.sent,
     {
       this.resetQuotedMessage,
       Key? key,
@@ -18,10 +19,11 @@ class QuoteBaseWidget extends StatelessWidget {
   ) : super(key: key);
   final Message message;
   final Widget child;
+  final bool sent;
   final void Function()? resetQuotedMessage;
 
   Color _getColor() {
-    if (message.sent) {
+    if (sent) {
       return bubbleColorSentQuoted;
     } else {
       return bubbleColorReceivedQuoted;

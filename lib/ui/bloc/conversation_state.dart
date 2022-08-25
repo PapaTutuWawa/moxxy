@@ -3,6 +3,8 @@ part of 'conversation_bloc.dart';
 @freezed
 class ConversationState with _$ConversationState {
   factory ConversationState({
+    // Our own JID
+    @Default('') String jid,
     @Default('') String messageText,
     @Default(false) bool showSendButton,
     @Default(null) Message? quotedMessage,

@@ -45,6 +45,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
     on<ScrollStateSetEvent>(_onScrollStateSet);
     on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
+    on<OwnJidReceivedEvent>(_onOwnJidReceived);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -113,6 +114,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     emit(
       state.copyWith(
         conversation: conversation,
+        quotedMessage: null,
       ),
     );
 
@@ -323,5 +325,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         await SystemChannels.textInput.invokeMethod('TextInput.show');
       }
     }
+  }
+
+  Future<void> _onOwnJidReceived(OwnJidReceivedEvent event, Emitter<ConversationState> emit) async {
+    emit(state.copyWith(jid: event.jid));
   }
 }

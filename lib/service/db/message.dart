@@ -8,18 +8,15 @@ class DBMessage {
   int? id;
 
   @Index(caseSensitive: false)
-  late String from;
-
-  @Index(caseSensitive: false)
   late String conversationJid;
 
   late int timestamp;
 
   late String body;
 
-  // TODO(Unknown): Replace by just checking if sender == us
-  /// Indicate if the message was sent by the user (true) or received by the user (false)
-  late bool sent;
+  /// The full JID of the sender
+  @Index(caseSensitive: false)
+  late String sender;
 
   late String sid;
   String? originId;
@@ -33,6 +30,10 @@ class DBMessage {
   /// that clearly identifies the error.
   late int errorType;
 
+  /// If true, then the message is currently a placeholder for a File Upload Notification
+  /// and may be replaced
+  late bool isFileUploadNotification;
+  
   /// The message that this one quotes
   final quotes = IsarLink<DBMessage>();
   
@@ -49,4 +50,7 @@ class DBMessage {
   String? thumbnailData;
   /// The dimensions of the thumbnail
   String? thumbnailDimensions;
+
+  /// The filename of the file. Useful for when we don't have the full URL yet
+  String? filename;
 }

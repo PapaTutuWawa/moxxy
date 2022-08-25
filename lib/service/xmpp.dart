@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image/image.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
@@ -37,10 +40,11 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
-import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -204,9 +208,9 @@ class XmppService {
       timestamp,
       conn.getConnectionSettings().jid.toString(),
       jid,
-      true,
       false,
       sid,
+      false,
       originId: originId,
       quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
     );
@@ -226,7 +230,7 @@ class XmppService {
         id: sid,
         originId: originId,
         quoteBody: quotedMessage?.body,
-        quoteFrom: quotedMessage?.from,
+        quoteFrom: quotedMessage?.sender,
         quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
         chatState: chatState,
       ),
@@ -334,24 +338,52 @@ class XmppService {
     
     // Path -> Message
     final messages = <String, Message>{};
+    // Path -> Thumbnails
+    final thumbnails = <String, List<Thumbnail>>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
     for (final path in paths) {
+      final pathMime = lookupMimeType(path);
       final msg = await ms.addMessageFromData(
         '',
         DateTime.now().millisecondsSinceEpoch, 
         conn.getConnectionSettings().jid.toString(),
         recipient,
         true,
-        true,
         conn.generateId(),
+        false,
         mediaUrl: path,
-        mediaType: lookupMimeType(path),
+        mediaType: pathMime,
         originId: conn.generateId(),
       );
       messages[path] = msg;
       sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
+
+      // TODO(PapaTutuWawa): Do this for videos
+      // TODO(PapaTutuWawa): Maybe do this in a separate isolate
+      if ((pathMime ?? '').startsWith('image/')) {
+        final image = decodeImage((await File(path).readAsBytes()).toList());
+        if (image != null) {
+          thumbnails[path] = [BlurhashThumbnail(BlurHash.encode(image).hash)];
+        } else {
+          _log.warning('Failed to generate thumbnail for $path');
+        }
+      }
+
+      // Send an upload notification
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+        MessageDetails(
+          to: recipient,
+          fun: FileMetadataData(
+            // TODO(Unknown): Maybe add media type specific metadata
+            mediaType: lookupMimeType(path),
+            name: pathlib.basename(path),
+            size: File(path).statSync().size,
+            thumbnails: thumbnails[path] ?? [],
+          ),
+        ),
+      );
     }
 
     // Create the shared media entries
@@ -387,6 +419,7 @@ class XmppService {
           path,
           await getDownloadPath(pathlib.basename(path), recipient, pathMime),
           messages[path]!,
+          thumbnails[path] ?? [],
         ),
       );
     }
@@ -568,14 +601,15 @@ class XmppService {
 
   /// Return true if [event] describes a message that we want to display.
   bool _isMessageEventMessage(MessageEvent event) {
-    return event.body.isNotEmpty || event.sfs != null || event.sims != null;
+    return event.body.isNotEmpty || event.sfs != null || event.sims != null || event.fun != null;
   }
 
   /// Extract the thumbnail data from a message, if existent.
   String? _getThumbnailData(MessageEvent event) {
     final thumbnails = firstNotNull([
         event.sfs?.metadata.thumbnails,
-        event.sims?.thumbnails
+        event.sims?.thumbnails,
+        event.fun?.thumbnails,
     ]) ?? [];
     for (final i in thumbnails) {
       if (i is BlurhashThumbnail) {
@@ -584,6 +618,35 @@ class XmppService {
     }
 
     return null;
+  }
+
+  /// Extract the mime guess from a message, if existent.
+  String? _getMimeGuess(MessageEvent event) {
+    return firstNotNull([
+        event.sfs?.metadata.mediaType,
+        event.sims?.mediaType,
+        event.fun?.mediaType,
+    ]);
+  }
+  
+  /// Returns true if a file is embedded in [event]. If not, returns false.
+  /// [embeddedFileUrl] is the possible Url of the file. If no file is present, then
+  /// [embeddedFileUrl] is null.
+  bool _isFileEmbedded(MessageEvent event, String? embeddedFileUrl) {
+    // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
+    // that the message body and the OOB url are the same if the OOB url is not null.
+    return embeddedFileUrl != null
+      && Uri.parse(embeddedFileUrl).scheme == 'https'
+      && implies(event.oob != null, event.body == event.oob?.url);
+  }
+
+  /// Returns true if a file should be automatically downloaded. If it should not, it
+  /// returns false.
+  /// [conversationJid] refers to the JID of the conversation the message was received in.
+  Future<bool> _shouldDownloadFile(String conversationJid) async {
+    return (await Permission.storage.status).isGranted
+      && await _automaticFileDownloadAllowed()
+      && await GetIt.I.get<RosterService>().isInRoster(conversationJid);
   }
   
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
@@ -595,6 +658,12 @@ class XmppService {
     // Process the chat state update. Can also be attached to other messages
     if (event.chatState != null) await _onChatState(event.chatState!, conversationJid);
 
+    // Process File Upload Notifications replacements separately
+    if (event.funReplacement != null) {
+      await _handleFileUploadNotificationReplacement(event, conversationJid);
+      return;
+    }
+    
     // Stop the processing here if the event does not describe a displayable message
     if (!_isMessageEventMessage(event)) return;
 
@@ -631,13 +700,9 @@ class XmppService {
     final embeddedFileUrl = _getMessageSrcUrl(event);
     // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
     // that the message body and the OOB url are the same if the OOB url is not null.
-    final isFileEmbedded = embeddedFileUrl != null
-      && Uri.parse(embeddedFileUrl).scheme == 'https'
-      && implies(event.oob != null, event.body == event.oob?.url);
+    final isFileEmbedded = _isFileEmbedded(event, embeddedFileUrl);
     // Indicates if we should auto-download the file, if a file is specified in the message
-    final shouldDownload = (await Permission.storage.status).isGranted
-      && await _automaticFileDownloadAllowed()
-      && isInRoster;
+    final shouldDownload = await _shouldDownloadFile(conversationJid);
     // The thumbnail for the embedded file.
     final thumbnailData = _getThumbnailData(event);
     // Indicates if a notification should be created for the message.
@@ -646,7 +711,7 @@ class XmppService {
     // download to happen automatically, then the notification should happen immediately.
     var shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
-    String? mimeGuess;
+    var mimeGuess = _getMimeGuess(event);
 
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
@@ -655,21 +720,22 @@ class XmppService {
       messageTimestamp,
       event.fromJid.toString(),
       conversationJid,
-      sent,
-      isFileEmbedded,
+      isFileEmbedded || event.fun != null,
       event.sid,
+      event.fun != null,
       srcUrl: embeddedFileUrl,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
       // TODO(Unknown): What about SIMS?
-      thumbnailDimensions: event.sfs?.metadata.dimensions,
+      thumbnailDimensions: event.sfs?.metadata.dimensions ?? event.fun?.dimensions,
       quoteId: replyId,
+      filename: event.fun?.name,
     );
     
     // Attempt to auto-download the embedded file
     if (isFileEmbedded && shouldDownload) {
       final fts = GetIt.I.get<HttpFileTransferService>();
-      final metadata = await peekFile(embeddedFileUrl);
+      final metadata = await peekFile(embeddedFileUrl!);
 
       if (metadata.mime != null) mimeGuess = metadata.mime;
 
@@ -695,7 +761,7 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final ns = GetIt.I.get<NotificationsService>();
     // The body to be displayed in the conversations list
-    final conversationBody = isFileEmbedded ? mimeTypeToConversationBody(mimeGuess) : messageBody;
+    final conversationBody = isFileEmbedded || message.isFileUploadNotification ? mimeTypeToConversationBody(mimeGuess) : messageBody;
     // Specifies if we have the conversation this message goes to opened
     final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
     // The conversation we're about to modify, if it exists
@@ -754,7 +820,67 @@ class XmppService {
     }
 
     // Notify the UI of the message
-    sendEvent(MessageAddedEvent(message: message));
+    sendEvent(
+      MessageAddedEvent(
+        message: message.copyWith(
+          isDownloading: event.fun != null,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleFileUploadNotificationReplacement(MessageEvent event, String conversationJid) async {
+    final ms = GetIt.I.get<MessageService>();
+    var message = await ms.getMessageByStanzaId(conversationJid, event.funReplacement!);
+    if (message == null) {
+      _log.warning('Received a FileUploadNotification replacement for unknown message');
+      return;
+    }
+
+    // Check if we can even replace the message
+    if (!message.isFileUploadNotification) {
+      _log.warning('Received a FileUploadNotification replacement for message that is not marked as a FileUploadNotification');
+      return;
+    }
+
+    // Check if the Jid is allowed to do so
+    // TODO(Unknown): Maybe use the JID parser?
+    final bareSender = event.fromJid.toBare().toString();
+    if (message.sender.split('/').first != bareSender) {
+      _log.warning('Received a FileUploadNotification replacement by $bareSender for message that is not sent by $bareSender');
+      return;
+    }
+    
+    // The Url of the file embedded in the message, if there is one.
+    final embeddedFileUrl = _getMessageSrcUrl(event);
+    // Is there even a file we can download?
+    final isFileEmbedded = _isFileEmbedded(event, embeddedFileUrl);
+
+    if (isFileEmbedded) {
+      if (await _shouldDownloadFile(conversationJid)) {
+        message = message.copyWith(isDownloading: true);
+        await GetIt.I.get<HttpFileTransferService>().downloadFile(
+          FileDownloadJob(
+            embeddedFileUrl!,
+            message.id,
+            conversationJid,
+            null,
+            shouldShowNotification: false,
+          ),
+        );
+      } else {
+        message = await ms.updateMessage(
+          message.id,
+          srcUrl: embeddedFileUrl,
+          isFileUploadNotification: false,
+        );
+
+        // Tell the UI
+        sendEvent(MessageUpdatedEvent(message: message.copyWith(isDownloading: false)));
+      }
+    } else {
+      _log.warning('Received a File Upload Notification replacement but the replacement contains no file!');
+    }
   }
   
   Future<void> _onRosterPush(RosterPushEvent event, { dynamic extra }) async {

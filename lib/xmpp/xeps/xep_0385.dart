@@ -5,7 +5,7 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 
 class StatelessMediaSharingData {
 

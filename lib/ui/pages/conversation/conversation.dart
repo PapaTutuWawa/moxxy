@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -52,18 +53,22 @@ class ConversationPageState extends State<ConversationPage> {
     super.dispose();
   }
 
-  Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth) {
+  Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth, String jid) {
     // TODO(Unknown): Since we reverse the list: Fix start, end and between
     final index = state.messages.length - 1 - _index;
     final item = state.messages[index];
-    final start = index - 1 < 0 ? true : state.messages[index - 1].sent != item.sent;
-    final end = index + 1 >= state.messages.length ? true : state.messages[index + 1].sent != item.sent;
+    final start = index - 1 < 0 ?
+      true :
+      isSent(state.messages[index - 1], jid) != isSent(item, jid);
+    final end = index + 1 >= state.messages.length ?
+      true :
+      isSent(state.messages[index + 1], jid) != isSent(item, jid);
     final between = !start && !end;
     final lastMessageTimestamp = index > 0 ? state.messages[index - 1].timestamp : null;
     
     return ChatBubble(
       message: item,
-      sentBySelf: item.sent,
+      sentBySelf: isSent(item, jid),
       start: start,
       end: end,
       between: between,
@@ -201,12 +206,20 @@ class ConversationPageState extends State<ConversationPage> {
                   ),
 
                   BlocBuilder<ConversationBloc, ConversationState>(
+                    // NOTE: We don't need to update when the jid changes as it should
+                    //       be static over the entire lifetime of the BLoC.
                     buildWhen: (prev, next) => prev.messages != next.messages,
                     builder: (context, state) => Expanded(
                       child: ListView.builder(
                         reverse: true,
                         itemCount: state.messages.length,
-                        itemBuilder: (context, index) => _renderBubble(state, context, index, maxWidth),
+                        itemBuilder: (context, index) => _renderBubble(
+                          state,
+                          context,
+                          index,
+                          maxWidth,
+                          state.jid,
+                        ),
                         shrinkWrap: true,
                         controller: _scrollController,
                       ),

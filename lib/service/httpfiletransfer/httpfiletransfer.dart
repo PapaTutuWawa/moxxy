@@ -213,14 +213,13 @@ class HttpFileTransferService {
             id: job.message.sid,
             originId: job.message.originId,
             sfs: StatelessFileSharingData(
-              url: slot.getUrl,
-              metadata: FileMetadataData(
+              FileMetadataData(
                 mediaType: fileMime,
                 size: stat.size,
                 name: pathlib.basename(job.path),
-                // TODO(Unknown): Add a thumbnail
-                thumbnails: [],
+                thumbnails: job.thumbnails,
               ),
+              slot.getUrl,
             ),
           ),
         );
@@ -295,11 +294,12 @@ class HttpFileTransferService {
           job.mId,
           mediaUrl: downloadedPath,
           mediaType: mime,
+          isFileUploadNotification: false,
         );
 
         sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
 
-        if (notification.shouldShowNotification(msg.conversationJid)) {
+        if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
           _log.finest('Creating notification with bigPicture $downloadedPath');
           await notification.showNotification(msg, '');
         }

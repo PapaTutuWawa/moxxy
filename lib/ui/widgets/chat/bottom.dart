@@ -8,8 +8,9 @@ import 'package:moxxyv2/ui/constants.dart';
 
 class MessageBubbleBottom extends StatefulWidget {
 
-  const MessageBubbleBottom(this.message, { Key? key }): super(key: key);
+  const MessageBubbleBottom(this.message, this.sent, { Key? key }): super(key: key);
   final Message message;
+  final bool sent;
 
   @override
   MessageBubbleBottomState createState() => MessageBubbleBottomState();
@@ -54,17 +55,17 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
   }
 
   bool _showBlueCheckmarks() {
-    return widget.message.sent && widget.message.displayed;
+    return widget.sent && widget.message.displayed;
   }
 
   bool _showCheckmarks() {
-    return widget.message.sent &&
+    return widget.sent &&
             widget.message.received &&
             !widget.message.displayed;
   }
 
   bool _showCheckmark() {
-    return widget.message.sent &&
+    return widget.sent &&
             widget.message.acked &&
             !widget.message.received &&
             !widget.message.displayed;
