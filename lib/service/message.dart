@@ -75,10 +75,10 @@ class MessageService {
   }
 
   Future<Message?> getMessageByStanzaId(String conversationJid, String stanzaId) async {
-    if (_messageCache.containsKey(conversationJid)) {
+    if (!_messageCache.containsKey(conversationJid)) {
       await getMessagesForJid(conversationJid);
     }
-
+    
     return firstWhereOrNull(
       _messageCache[conversationJid]!,
       (message) => message.sid == stanzaId,
