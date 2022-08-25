@@ -213,14 +213,14 @@ class HttpFileTransferService {
             id: job.message.sid,
             originId: job.message.originId,
             sfs: StatelessFileSharingData(
-              url: slot.getUrl,
-              metadata: FileMetadataData(
+              FileMetadataData(
                 mediaType: fileMime,
                 size: stat.size,
                 name: pathlib.basename(job.path),
                 // TODO(Unknown): Add a thumbnail
                 thumbnails: [],
               ),
+              slot.getUrl,
             ),
           ),
         );

@@ -168,7 +168,7 @@ class MessageManager extends XmppManagerBase {
 
     if (details.sfs != null) {
       stanza
-        ..addChild(constructSFSElement(details.sfs!))
+        ..addChild(details.sfs!.toXML())
         // SFS recommends OOB as a fallback
         ..addChild(constructOOBNode(OOBData(url: details.sfs!.url)),);
     }
