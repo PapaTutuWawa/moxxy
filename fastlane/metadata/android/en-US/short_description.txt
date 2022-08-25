@@ -1,0 +1,1 @@
+Moxxy is an experimental XMPP client that aims to be modern and easy to use.

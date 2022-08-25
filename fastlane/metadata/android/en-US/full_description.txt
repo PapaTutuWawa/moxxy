@@ -1,0 +1,22 @@
+Moxxy is an experimental XMPP client that aims to be modern and easy to use.
+
+Moxxy is currently alpha software. This means that there will be bugs and issues along
+the way. Please do not use Moxxy for anything important at this moment.
+
+Currently supported features include:
+<ul>
+  <li>Sending and receiving files and images</li>
+  <li>Setting your profile picture</li>
+  <li>Typing indicators and message markers</li>
+  <li>Chat backgrounds</li>
+  <li>Runs in the background without Push Notifications</li>
+</ul>
+
+For the best experience, I recommend a server that:
+<ul>
+  <li>Supports direct TLS/StartTLS on the same domain as in the Jid</li>
+  <li>Supports SCRAM-SHA-1 or SCRAM-SHA-256</li>
+  <li>Supports HTTP File Upload</li>
+  <li>Supports Stream Management</li>
+  <li>Supports Client State Indication</li>
+</ul>
