@@ -32,6 +32,7 @@ dependencies:
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
   flutter_local_notifications: 9.7.0
+  flutter_parsed_text: 2.2.1
   flutter_secure_storage: 5.0.2
   flutter_settings_ui: 2.0.1
   flutter_speed_dial: 6.0.0
