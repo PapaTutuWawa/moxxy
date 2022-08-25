@@ -827,6 +827,14 @@ class XmppService {
       return;
     }
 
+    // Check if the Jid is allowed to do so
+    // TODO(Unknown): Maybe use the JID parser?
+    final bareSender = event.fromJid.toBare().toString();
+    if (message.sender.split('/').first != bareSender) {
+      _log.warning('Received a FileUploadNotification replacement by $bareSender for message that is not sent by $bareSender');
+      return;
+    }
+    
     // The Url of the file embedded in the message, if there is one.
     final embeddedFileUrl = _getMessageSrcUrl(event);
     // Is there even a file we can download?
