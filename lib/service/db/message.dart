@@ -8,18 +8,15 @@ class DBMessage {
   int? id;
 
   @Index(caseSensitive: false)
-  late String from;
-
-  @Index(caseSensitive: false)
   late String conversationJid;
 
   late int timestamp;
 
   late String body;
 
-  // TODO(Unknown): Replace by just checking if sender == us
-  /// Indicate if the message was sent by the user (true) or received by the user (false)
-  late bool sent;
+  /// The full JID of the sender
+  @Index(caseSensitive: false)
+  late String sender;
 
   late String sid;
   String? originId;

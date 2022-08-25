@@ -10,12 +10,14 @@ class TextChatWidget extends StatelessWidget {
 
   const TextChatWidget(
     this.message,
+    this.sent,
     {
       this.topWidget,
       Key? key,
     }
   ) : super(key: key);
   final Message message;
+  final bool sent;
   final Widget? topWidget;
 
   @override
@@ -40,7 +42,7 @@ class TextChatWidget extends StatelessWidget {
           ),
           Padding(
             padding: topWidget != null ? const EdgeInsets.only(left: 8, right: 8, bottom: 8) : EdgeInsets.zero,
-            child: MessageBubbleBottom(message),
+            child: MessageBubbleBottom(message, sent),
           )
         ],
       ),

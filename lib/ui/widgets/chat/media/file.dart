@@ -18,6 +18,7 @@ class FileChatBaseWidget extends StatelessWidget {
     this.icon,
     this.filename,
     this.radius,
+    this.sent,
     {
       this.extra,
       this.onTap,
@@ -29,6 +30,7 @@ class FileChatBaseWidget extends StatelessWidget {
   final String filename;
   final BorderRadius radius;
   final Widget? extra;
+  final bool sent;
   final void Function()? onTap;
 
   @override
@@ -51,7 +53,7 @@ class FileChatBaseWidget extends StatelessWidget {
           ],
         ),
       ),
-      MessageBubbleBottom(message),
+      MessageBubbleBottom(message, sent),
       radius,
       gradient: false,
       extra: extra,
@@ -67,6 +69,7 @@ class FileChatWidget extends StatelessWidget {
   const FileChatWidget(
     this.message,
     this.radius,
+    this.sent,
     {
       this.extra,
       Key? key,
@@ -74,6 +77,7 @@ class FileChatWidget extends StatelessWidget {
   ) : super(key: key);
   final Message message;
   final BorderRadius radius;
+  final bool sent;
   final Widget? extra;
 
   Widget _buildNonDownloaded() {
@@ -82,6 +86,7 @@ class FileChatWidget extends StatelessWidget {
       Icons.file_present,
       message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
+      sent,
       extra: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
@@ -99,6 +104,7 @@ class FileChatWidget extends StatelessWidget {
       Icons.file_present,
       message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
+      sent,
       extra: ProgressWidget(id: message.id),
     );
   }
@@ -109,6 +115,7 @@ class FileChatWidget extends StatelessWidget {
       Icons.file_present,
       message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
+      sent,
       onTap: () {
         OpenFile.open(message.mediaUrl);
       },

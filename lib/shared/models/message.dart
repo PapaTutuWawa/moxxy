@@ -10,10 +10,9 @@ class Message with _$Message {
   // NOTE: srcUrl is the Url that a file has been or can be downloaded from
   
   factory Message(
-    String from,
+    String sender,
     String body,
     int timestamp,
-    bool sent,
     String sid,
     int id,
     String conversationJid,

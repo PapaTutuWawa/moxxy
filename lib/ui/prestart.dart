@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
@@ -33,6 +34,7 @@ Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
         result.roster!,
       ),
     );
+    GetIt.I.get<ConversationBloc>().add(OwnJidReceivedEvent(result.jid!));
 
     GetIt.I.get<Logger>().finest('Navigating to conversations');
     GetIt.I.get<NavigationBloc>().add(

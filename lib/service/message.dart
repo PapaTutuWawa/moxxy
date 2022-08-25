@@ -31,9 +31,8 @@ class MessageService {
   Future<Message> addMessageFromData(
     String body,
     int timestamp,
-    String from,
+    String sender,
     String conversationJid,
-    bool sent,
     bool isMedia,
     String sid,
     bool isFileUploadNotification,
@@ -51,9 +50,8 @@ class MessageService {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
       body,
       timestamp,
-      from,
+      sender,
       conversationJid,
-      sent,
       isMedia,
       sid,
       isFileUploadNotification,

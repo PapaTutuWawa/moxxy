@@ -156,7 +156,7 @@ class ChatBubbleState extends State<ChatBubble>
               child: Padding(
                 // NOTE: Images don't work well with padding here
                 padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
-                child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius()),
+                child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius(), widget.sentBySelf),
               ),
             )
           ],

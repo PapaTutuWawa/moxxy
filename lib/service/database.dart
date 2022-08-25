@@ -63,10 +63,9 @@ RosterItem rosterDbToModel(DBRosterItem i) {
 
 Message messageDbToModel(DBMessage m) {
   return Message(
-    m.from,
+    m.sender,
     m.body,
     m.timestamp,
-    m.sent,
     m.sid,
     m.id!,
     m.conversationJid,
@@ -235,9 +234,8 @@ class DatabaseService {
   Future<Message> addMessageFromData(
     String body,
     int timestamp,
-    String from,
+    String sender,
     String conversationJid,
-    bool sent,
     bool isMedia,
     String sid,
     bool isFileUploadNotification,
@@ -253,11 +251,10 @@ class DatabaseService {
     }
   ) async {
     final m = DBMessage()
-      ..from = from
       ..conversationJid = conversationJid
       ..timestamp = timestamp
       ..body = body
-      ..sent = sent
+      ..sender = sender
       ..isMedia = isMedia
       ..mediaType = mediaType
       ..mediaUrl = mediaUrl

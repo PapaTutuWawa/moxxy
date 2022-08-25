@@ -2,6 +2,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -55,6 +56,7 @@ class ConversationBottomRow extends StatelessWidget {
                       controller: controller,
                       topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(
                         state.quotedMessage!,
+                        isSent(state.quotedMessage!, state.jid),
                         resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
                       ) : null,
                       shouldSummonKeyboard: () => !state.emojiPickerVisible,
