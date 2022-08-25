@@ -63,7 +63,7 @@ class VideoChatWidget extends StatelessWidget {
       return FileChatBaseWidget(
         message,
         Icons.video_file_outlined,
-        filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
         extra: ProgressWidget(id: message.id),
       );
@@ -110,7 +110,7 @@ class VideoChatWidget extends StatelessWidget {
       return FileChatBaseWidget(
         message,
         Icons.video_file_outlined,
-        filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
         extra: DownloadButton(
           onPressed: () {
@@ -127,10 +127,10 @@ class VideoChatWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.isUploading) return _buildUploading();
-    if (message.isDownloading) return _buildDownloading();
+    if (message.isFileUploadNotification || message.isDownloading) return _buildDownloading();
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (File(message.mediaUrl!).existsSync()) return _buildVideo();
+    if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) return _buildVideo();
 
     return _buildDownloadable();
   }

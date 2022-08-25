@@ -708,6 +708,7 @@ class XmppService {
       // TODO(Unknown): What about SIMS?
       thumbnailDimensions: event.sfs?.metadata.dimensions ?? event.fun?.dimensions,
       quoteId: replyId,
+      filename: event.fun?.name,
     );
     
     // Attempt to auto-download the embedded file

@@ -53,4 +53,7 @@ class DBMessage {
   String? thumbnailData;
   /// The dimensions of the thumbnail
   String? thumbnailDimensions;
+
+  /// The filename of the file. Useful for when we don't have the full URL yet
+  String? filename;
 }

@@ -33,6 +33,7 @@ class Message with _$Message {
       @Default(false) bool acked,
       String? originId,
       Message? quotes,
+      String? filename,
     }
   ) = _Message;
 

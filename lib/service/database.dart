@@ -83,6 +83,7 @@ Message messageDbToModel(DBMessage m) {
     srcUrl: m.srcUrl,
     quotes: m.quotes.value != null ? messageDbToModel(m.quotes.value!) : null,
     errorType: m.errorType,
+    filename: m.filename,
   );
 }
 
@@ -248,6 +249,7 @@ class DatabaseService {
       String? thumbnailDimensions,
       String? originId,
       String? quoteId,
+      String? filename,
     }
   ) async {
     final m = DBMessage()
@@ -268,7 +270,8 @@ class DatabaseService {
       ..acked = false
       ..originId = originId
       ..errorType = noError
-      ..isFileUploadNotification = isFileUploadNotification;
+      ..isFileUploadNotification = isFileUploadNotification
+      ..filename = filename;
 
     if (quoteId != null) {
       final quotes = await getMessageByXmppId(quoteId, conversationJid);

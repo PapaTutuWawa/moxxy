@@ -80,7 +80,7 @@ class FileChatWidget extends StatelessWidget {
     return FileChatBaseWidget(
       message,
       Icons.file_present,
-      filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
       extra: DownloadButton(
         onPressed: () {
@@ -97,7 +97,7 @@ class FileChatWidget extends StatelessWidget {
     return FileChatBaseWidget(
       message,
       Icons.file_present,
-      filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
       extra: ProgressWidget(id: message.id),
     );
@@ -107,7 +107,7 @@ class FileChatWidget extends StatelessWidget {
     return FileChatBaseWidget(
       message,
       Icons.file_present,
-      filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
       onTap: () {
         OpenFile.open(message.mediaUrl);
@@ -117,7 +117,7 @@ class FileChatWidget extends StatelessWidget {
 
   Widget _buildWrapper() {
     if (!message.isDownloading && message.mediaUrl != null) return _buildInner();
-    if (message.isDownloading) return _buildDownloading();
+    if (message.isFileUploadNotification || message.isDownloading) return _buildDownloading();
 
     return _buildNonDownloaded();
   }

@@ -58,7 +58,7 @@ class ImageChatWidget extends StatelessWidget {
       return FileChatBaseWidget(
         message,
         Icons.image,
-        message.isFileUploadNotification ? '' : filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
         extra: ProgressWidget(id: message.id),
       );
@@ -101,7 +101,7 @@ class ImageChatWidget extends StatelessWidget {
       return FileChatBaseWidget(
         message,
         Icons.image,
-        filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
         extra: DownloadButton(
           onPressed: () {
