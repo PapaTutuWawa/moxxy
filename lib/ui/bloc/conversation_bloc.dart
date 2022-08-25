@@ -113,6 +113,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     emit(
       state.copyWith(
         conversation: conversation,
+        quotedMessage: null,
       ),
     );
 
