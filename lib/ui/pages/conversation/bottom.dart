@@ -101,6 +101,25 @@ class ConversationBottomRow extends StatelessWidget {
                         minWidth: 24,
                         minHeight: 24,
                       ),
+                      suffixIcon: state.messageText.isEmpty ?
+                        InkWell(
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Icon(
+                              Icons.mic_rounded,
+                              color: primaryColor,
+                              size: 24,
+                            ),
+                          ),
+                          onTap: () {
+                            showNotImplementedDialog('audio recording', context);
+                          },
+                        ) :
+                        null,
+                      suffixIconConstraints: const BoxConstraints(
+                        minWidth: 24,
+                        minHeight: 24,
+                      ),
                     ),
                   ),
                   Padding(

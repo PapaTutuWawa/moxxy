@@ -10,7 +10,6 @@ class CustomTextField extends StatelessWidget {
       this.hintText,
       this.suffix,
       this.suffixText,
-      this.suffixIcon,
       this.topWidget,
       this.enabled = true,
       this.obscureText = false,
@@ -28,6 +27,8 @@ class CustomTextField extends StatelessWidget {
       this.borderWidth,
       this.prefixIcon,
       this.prefixIconConstraints,
+      this.suffixIcon,
+      this.suffixIconConstraints,
       this.onTap,
       this.shouldSummonKeyboard,
       Key? key,
@@ -38,9 +39,10 @@ class CustomTextField extends StatelessWidget {
   final String? hintText;
   final Widget? suffix;
   final String? suffixText;
-  final Widget? suffixIcon;
   final Widget? prefixIcon;
   final BoxConstraints? prefixIconConstraints;
+  final Widget? suffixIcon;
+  final BoxConstraints? suffixIconConstraints;
   final Widget? topWidget;
   final EdgeInsetsGeometry contentPadding;
   final bool enabled;
@@ -104,6 +106,7 @@ class CustomTextField extends StatelessWidget {
                   hintStyle: style,
                   prefixIcon: prefixIcon,
                   prefixIconConstraints: prefixIconConstraints,
+                  suffixIconConstraints: suffixIconConstraints,
                 ),
               )
             ],
