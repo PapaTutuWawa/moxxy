@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image/image.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
@@ -336,10 +338,13 @@ class XmppService {
     
     // Path -> Message
     final messages = <String, Message>{};
+    // Path -> Thumbnails
+    final thumbnails = <String, List<Thumbnail>>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
     for (final path in paths) {
+      final pathMime = lookupMimeType(path);
       final msg = await ms.addMessageFromData(
         '',
         DateTime.now().millisecondsSinceEpoch, 
@@ -349,11 +354,22 @@ class XmppService {
         conn.generateId(),
         false,
         mediaUrl: path,
-        mediaType: lookupMimeType(path),
+        mediaType: pathMime,
         originId: conn.generateId(),
       );
       messages[path] = msg;
       sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
+
+      // TODO(PapaTutuWawa): Do this for videos
+      // TODO(PapaTutuWawa): Maybe do this in a separate isolate
+      if ((pathMime ?? '').startsWith('image/')) {
+        final image = decodeImage((await File(path).readAsBytes()).toList());
+        if (image != null) {
+          thumbnails[path] = [BlurhashThumbnail(BlurHash.encode(image).hash)];
+        } else {
+          _log.warning('Failed to generate thumbnail for $path');
+        }
+      }
 
       // Send an upload notification
       conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
@@ -364,8 +380,7 @@ class XmppService {
             mediaType: lookupMimeType(path),
             name: pathlib.basename(path),
             size: File(path).statSync().size,
-            // TODO(Unknown): Implement thumbnails
-            thumbnails: [],
+            thumbnails: thumbnails[path] ?? [],
           ),
         ),
       );
@@ -404,6 +419,7 @@ class XmppService {
           path,
           await getDownloadPath(pathlib.basename(path), recipient, pathMime),
           messages[path]!,
+          thumbnails[path] ?? [],
         ),
       );
     }

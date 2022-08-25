@@ -9,7 +9,7 @@ abstract class Thumbnail {}
 
 class BlurhashThumbnail extends Thumbnail {
 
-  BlurhashThumbnail({ required this.hash });
+  BlurhashThumbnail(this.hash);
   final String hash;
 }
 
@@ -20,7 +20,7 @@ Thumbnail? parseFileThumbnailElement(XMLNode node) {
   switch (node.attributes['type']!) {
     case blurhashThumbnailType: {
       final hash = node.firstTag('blurhash')!.innerText();
-      return BlurhashThumbnail(hash: hash);
+      return BlurhashThumbnail(hash);
     }
   }
 

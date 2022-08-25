@@ -217,8 +217,7 @@ class HttpFileTransferService {
                 mediaType: fileMime,
                 size: stat.size,
                 name: pathlib.basename(job.path),
-                // TODO(Unknown): Add a thumbnail
-                thumbnails: [],
+                thumbnails: job.thumbnails,
               ),
               slot.getUrl,
             ),

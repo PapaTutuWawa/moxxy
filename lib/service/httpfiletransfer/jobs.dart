@@ -1,15 +1,17 @@
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 
 /// A job describing the download of a file.
 @immutable
 class FileUploadJob {
 
-  const FileUploadJob(this.recipient, this.path, this.copyToPath, this.message);
+  const FileUploadJob(this.recipient, this.path, this.copyToPath, this.message, this.thumbnails);
   final String path;
   final String recipient;
   final Message message;
   final String copyToPath;
+  final List<Thumbnail> thumbnails;
 
   @override
   bool operator ==(Object other) {
@@ -17,11 +19,12 @@ class FileUploadJob {
       recipient == other.recipient &&
       path == other.path &&
       message == other.message &&
-      copyToPath == other.copyToPath;
+      copyToPath == other.copyToPath &&
+      thumbnails == other.thumbnails;
   }
 
   @override
-  int get hashCode => path.hashCode ^ recipient.hashCode ^ message.hashCode ^ copyToPath.hashCode;
+  int get hashCode => path.hashCode ^ recipient.hashCode ^ message.hashCode ^ copyToPath.hashCode ^ thumbnails.hashCode;
 }
 
 /// A job describing the upload of a file.
