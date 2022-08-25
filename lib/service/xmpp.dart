@@ -38,7 +38,7 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
-import 'package:moxxyv2/xmpp/xeps/staging/file_thumbnails.dart';
+import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';

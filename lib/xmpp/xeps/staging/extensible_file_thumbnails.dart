@@ -1,9 +1,9 @@
 import 'package:moxxyv2/xmpp/stringxml.dart';
 
-/// NOTE: Specified by https://github.com/PapaTutuWawa/custom-xeps/blob/master/xep-xxxx-file-thumbnails.md
+/// NOTE: Specified by https://codeberg.org/moxxy/custom-xeps/src/branch/master/xep-xxxx-extensible-file-thumbnails.md
 
-const fileThumbnailsXmlns = 'proto:urn:xmpp:file-thumbnails:0';
-const blurhashThumbnailType = 'blurhash';
+const fileThumbnailsXmlns = 'proto:urn:xmpp:eft:0';
+const blurhashThumbnailType = '$fileThumbnailsXmlns:blurhash';
 
 abstract class Thumbnail {}
 
@@ -42,7 +42,7 @@ XMLNode constructFileThumbnailElement(Thumbnail thumbnail) {
   final node = _fromThumbnail(thumbnail)!;
   var type = '';
   if (thumbnail is BlurhashThumbnail) {
-    type = 'blurhash';
+    type = blurhashThumbnailType;
   }
 
   return XMLNode.xmlns(
