@@ -606,6 +606,15 @@ class XmppService {
     return null;
   }
 
+  /// Extract the mime guess from a message, if existent.
+  String? _getMimeGuess(MessageEvent event) {
+    return firstNotNull([
+        event.sfs?.metadata.mediaType,
+        event.sims?.mediaType,
+        event.fun?.mediaType,
+    ]);
+  }
+  
   /// Returns true if a file is embedded in [event]. If not, returns false.
   /// [embeddedFileUrl] is the possible Url of the file. If no file is present, then
   /// [embeddedFileUrl] is null.
@@ -688,8 +697,7 @@ class XmppService {
     // download to happen automatically, then the notification should happen immediately.
     var shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
-    // TODO(PapaTutuWawa): Gues from SFS, SIMS and FUN
-    var mimeGuess = event.fun?.mediaType;
+    var mimeGuess = _getMimeGuess(event);
 
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
