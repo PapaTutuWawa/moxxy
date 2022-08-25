@@ -186,7 +186,7 @@ class MessageManager extends XmppManagerBase {
           tag: 'file-upload',
           xmlns: fileUploadNotificationXmlns,
           children: [
-            constructFileMetadataElement(details.fun!),
+            details.fun!.toXML(),
           ],
         ),
       );

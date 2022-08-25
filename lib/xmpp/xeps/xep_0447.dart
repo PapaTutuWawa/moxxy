@@ -18,13 +18,12 @@ StatelessFileSharingData parseSFSElement(XMLNode node) {
   assert(node.attributes['xmlns'] == sfsXmlns, 'Invalid element xmlns');
   assert(node.tag == 'file-sharing', 'Invalid element name');
 
-  final metadata = parseFileMetadataElement(node.firstTag('file')!);
   final sources = node.firstTag('sources')!;
   final urldata = sources.firstTag('url-data', xmlns: urlDataXmlns);
   final url = urldata!.attributes['target']! as String;
 
   return StatelessFileSharingData(
-    metadata: metadata,
+    metadata: FileMetadataData.fromXML(node.firstTag('file')!),
     url: url,
   );
 }
@@ -34,7 +33,7 @@ XMLNode constructSFSElement(StatelessFileSharingData data) {
     tag: 'file-sharing',
     xmlns: sfsXmlns,
     children: [
-      constructFileMetadataElement(data.metadata),
+      data.metadata.toXML(),
       XMLNode(
         tag: 'sources',
         children: [

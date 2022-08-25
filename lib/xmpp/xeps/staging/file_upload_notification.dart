@@ -47,7 +47,9 @@ class FileUploadNotificationManager extends XmppManagerBase {
   Future<StanzaHandlerData> _onFileUploadNotificationReceived(Stanza message, StanzaHandlerData state) async {
     final funElement = message.firstTag('file-upload', xmlns: fileUploadNotificationXmlns)!;
     return state.copyWith(
-      fun: parseFileMetadataElement(funElement.firstTag('file', xmlns: fileMetadataXmlns)!),
+      fun: FileMetadataData.fromXML(
+        funElement.firstTag('file', xmlns: fileMetadataXmlns)!,
+      ),
     );
   }
 
