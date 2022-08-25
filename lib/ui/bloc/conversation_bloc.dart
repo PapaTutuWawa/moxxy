@@ -195,7 +195,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onMessageQuoted(MessageQuotedEvent event, Emitter<ConversationState> emit) async {
-    return emit(
+    // Ignore File Upload Notifications
+    if (event.message.isFileUploadNotification) return;
+
+    emit(
       state.copyWith(
         quotedMessage: event.message,
       ),
