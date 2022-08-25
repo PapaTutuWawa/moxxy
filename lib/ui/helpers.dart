@@ -59,6 +59,24 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
   );
 }
 
+/// Shows a dialog giving the user a very simple information with an "Okay" button.
+Future<void> showInfoDialog(String title, String body, BuildContext context) async {
+  await showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        TextButton(
+          onPressed: Navigator.of(context).pop,
+          child: const Text('Okay'),
+        )
+      ],
+    ),
+  );
+}
+
 /// Dismissed the softkeyboard.
 void dismissSoftKeyboard(BuildContext context) {
   // NOTE: Thank you, https://flutterigniter.com/dismiss-keyboard-form-lose-focus/

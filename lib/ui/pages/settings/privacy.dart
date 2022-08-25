@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:settings_ui/settings_ui.dart';
 
-class PrivacyPage extends StatelessWidget {
+class PrivacyPage extends StatefulWidget {
   const PrivacyPage({ Key? key }): super(key: key);
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
@@ -15,6 +17,21 @@ class PrivacyPage extends StatelessWidget {
       name: privacyRoute,
     ),
   );
+
+  @override
+  PrivacyPageState createState() => PrivacyPageState();
+}
+
+class PrivacyPageState extends State<PrivacyPage> {
+
+  PrivacyPageState() : _controller = TextEditingController();
+  TextEditingController _controller;
+  String? errorText;
+
+  bool _validateUrl() {
+    final value = _controller.text;
+    return value.isNotEmpty && Uri.tryParse(value) != null;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -81,6 +98,92 @@ class PrivacyPage extends StatelessWidget {
                     ),
                   ),
                 )
+              ],
+            ),
+            SettingsSection(
+              title: Text('Redirects'),
+              tiles: [
+                SettingsTile(
+                  title: Text('Youtube Redirect'),
+                  description: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: const Text('This will redirect Youtube links that you tap to a proxy service, e.g. Invidious'),
+                      ),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text('Currently selected: ${state.youtubeRedirect}'),
+                      ),
+                    ],
+                  ),
+                  onPressed: (context) {
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (BuildContext context) => AlertDialog(
+                        title: Text('Youtube Redirect'),
+                        content: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CustomTextField(
+                                cornerRadius: textfieldRadiusRegular,
+                                borderColor: primaryColor,
+                                borderWidth: 1,
+                                enableIMEFeatures: false,
+                                controller: _controller,
+                                errorText: errorText,
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            child: const Text('Okay'),
+                            onPressed: () {
+                              if (_validateUrl()) {
+                                // TODO(PapaTutuWawa): Change settings
+                                Navigator.of(context).pop();
+                                return;
+                              }
+
+                              // TODO(PapaTutuWawa): Manage this via a BLoC
+                              setState(() {
+                                errorText = 'Invalid Url';
+                                print('lol');
+                              });
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('Less okay'),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  trailing: Switch(
+                    value: state.enableYoutubeRedirect,
+                    onChanged: (value) {
+                      if (state.youtubeRedirect.isEmpty) {
+                        showInfoDialog(
+                          'Cannot enable Youtube redirects',
+                          'You must first set a proxy service to redirect to. To do so, tap the field next to the switch.',
+                          context,
+                        );
+                        return;
+                      }
+
+                      context.read<PreferencesBloc>().add(
+                        PreferencesChangedEvent(
+                          state.copyWith(enableYoutubeRedirect: value),
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ],
             ),
           ],

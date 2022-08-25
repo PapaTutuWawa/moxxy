@@ -49,8 +49,16 @@ class TextChatWidget extends StatelessWidget {
                   ),
                   onTap: (url) async {
                     // TODO(PapaTutuWawa): Implement privacy redirects
+                    var uri = Uri.parse(url);
+
+                    print('Before: ${uri.host}');
+                    if (uri.host == 'www.youtube.com') {
+                      uri = uri.replace(host: 'piped.kavin.rocks');
+                    }
+                    print('After: ${uri.host}');
+
                     await launchUrl(
-                      Uri.parse(url),
+                      uri,
                       mode: LaunchMode.externalNonBrowserApplication,
                     );
                   },
