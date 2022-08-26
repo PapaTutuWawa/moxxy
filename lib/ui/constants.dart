@@ -51,3 +51,4 @@ const String networkRoute = '$settingsRoute/network';
 const String appearanceRoute = '$settingsRoute/appearance';
 const String backgroundCroppingRoute = '$settingsRoute/appearance/background';
 const String blocklistRoute = '/blocklist';
+const String shareSelectionRoute = '/share_selection';

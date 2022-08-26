@@ -19,6 +19,7 @@ import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
@@ -44,6 +45,7 @@ import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/privacy.dart';
 import 'package:moxxyv2/ui/pages/settings/settings.dart';
+import 'package:moxxyv2/ui/pages/share_selection.dart';
 import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
 import 'package:moxxyv2/ui/service/data.dart';
@@ -80,6 +82,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<CropBloc>(CropBloc());
   GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
   GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
+  GetIt.I.registerSingleton<ShareSelectionBloc>(ShareSelectionBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -139,7 +142,10 @@ void main() async {
         ),
         BlocProvider<CropBackgroundBloc>(
           create: (_) => GetIt.I.get<CropBackgroundBloc>(),
-        )
+        ),
+        BlocProvider<ShareSelectionBloc>(
+          create: (_) => GetIt.I.get<ShareSelectionBloc>(),
+        ),
       ],
       child: MyApp(navKey),
     ),
@@ -186,6 +192,11 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     
     handler.sharedMediaStream.listen((SharedMedia media) async {
       final attachments = media.attachments ?? [];
+      GetIt.I.get<ShareSelectionBloc>().add(
+        ShareSelectionRequestedEvent(
+          attachments.map((a) => a!.path).toList(),
+        ),
+      );
       print('==============================0');
       for (final attachment in attachments) {
         print('Attachment: ${attachment?.path} (${attachment?.type})');
@@ -292,6 +303,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case cropRoute: return CropPage.route;
           case sendFilesRoute: return SendFilesPage.route;
           case backgroundCroppingRoute: return CropBackgroundPage.route;
+          case shareSelectionRoute: return ShareSelectionPage.route;
         }
 
         return null;

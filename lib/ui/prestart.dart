@@ -8,6 +8,7 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 /// Handler for when we received a [PreStartDoneEvent].
@@ -41,6 +42,13 @@ Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
       PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(conversationsRoute),
         (_) => false,
+      ),
+    );
+
+    GetIt.I.get<ShareSelectionBloc>().add(
+      ShareSelectionInitEvent(
+        result.conversations!,
+        result.roster!,
       ),
     );
   } else if (result.state == preStartNotLoggedInState) {

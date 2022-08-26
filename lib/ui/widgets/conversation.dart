@@ -19,6 +19,7 @@ class ConversationsListRow extends StatefulWidget {
     this.lastChangeTimestamp,
     this.update, {
       this.typingIndicator = false,
+      this.extra,
       Key? key,
     }
   ) : super(key: key);
@@ -30,6 +31,7 @@ class ConversationsListRow extends StatefulWidget {
   final int lastChangeTimestamp;
   final bool update; // Should a timer run to update the timestamp
   final bool typingIndicator;
+  final Widget? extra;
 
   @override
   ConversationsListRowState createState() => ConversationsListRowState();
@@ -54,18 +56,18 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     //       conversation screen open for hours on end?
     if (widget.update && widget.lastChangeTimestamp > -1 && _now - widget.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
       _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-          final now = DateTime.now().millisecondsSinceEpoch;
-          setState(() {
-              _timestampString = formatConversationTimestamp(
-                widget.lastChangeTimestamp,
-                now,
-              );
-          });
+        final now = DateTime.now().millisecondsSinceEpoch;
+        setState(() {
+          _timestampString = formatConversationTimestamp(
+            widget.lastChangeTimestamp,
+            now,
+          );
+        });
 
-          if (now - widget.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
-            _updateTimer!.cancel();
-            _updateTimer = null;
-          }
+        if (now - widget.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+          _updateTimer!.cancel();
+          _updateTimer = null;
+        }
       });
     } else {
       _updateTimer = null;
@@ -98,8 +100,10 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final badgeText = widget.unreadCount > 99 ? '99+' : widget.unreadCount.toString();
     // TODO(Unknown): Maybe turn this into an attribute of the widget to prevent calling this
     //                for every conversation
-    final width = MediaQuery.of(context).size.width;
+    final width = MediaQuery.of(context).size.width - 24 - 70;
 
+    final showTimestamp = widget.lastChangeTimestamp != timestampNever;
+    final showBadge = widget.unreadCount > 0;
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(
@@ -111,58 +115,57 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: width - 70.0 - 16.0 - 8.0,
-                  child: Row(
+            child: LimitedBox(
+              maxWidth: width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        constraints: BoxConstraints(
-                          maxWidth: widget.maxTextWidth,
-                        ),
-                        child: Text(
-                          widget.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Text(
+                        widget.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const Spacer(),
                       Visibility(
-                        visible: widget.lastChangeTimestamp != timestampNever,
+                        visible: showTimestamp,
+                        child: const Spacer(),
+                      ),
+                      Visibility(
+                        visible: showTimestamp,
                         child: Text(_timestampString),
-                      )
+                      ),
                     ],
                   ),
-                ),
-                SizedBox(
-                  width: width - 70.0 - 16.0 - 8.0,
-                  child: Row(
+
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // TODO(Unknown): Change color and font size
-                      Container(
-                        constraints: BoxConstraints(
-                          maxWidth: widget.maxTextWidth,
-                        ),
-                        // TODO(Unknown): Colors
-                        child: _buildLastMessageBody(),
+                      _buildLastMessageBody(),
+                      Visibility(
+                        visible: showBadge,
+                        child: const Spacer(),
                       ),
-                      const Spacer(),
                       Visibility(
                         visible: widget.unreadCount > 0,
                         child: Badge(
                           badgeContent: Text(badgeText),
                           badgeColor: bubbleColorSent,
                         ),
-                      )
+                      ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ) 
+          ),
+          Visibility(
+            visible: widget.extra != null,
+            child: const Spacer(),
+          ),
+          ...widget.extra != null ? [widget.extra!] : [],
         ],
       ),
     );
