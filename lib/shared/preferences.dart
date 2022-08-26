@@ -21,6 +21,10 @@ class PreferencesState with _$PreferencesState {
       @Default('') String debugPassphrase,
       @Default('') String debugIp,
       @Default(-1) int debugPort,
+      @Default('') String twitterRedirect,
+      @Default('') String youtubeRedirect,
+      @Default(false) bool enableTwitterRedirect,
+      @Default(false) bool enableYoutubeRedirect,
   }) = _PreferencesState;
   
   // JSON serialization

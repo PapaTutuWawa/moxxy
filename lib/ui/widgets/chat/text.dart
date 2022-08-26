@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/redirects.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -48,9 +49,8 @@ class TextChatWidget extends StatelessWidget {
                     color: Colors.blue,
                   ),
                   onTap: (url) async {
-                    // TODO(PapaTutuWawa): Implement privacy redirects
                     await launchUrl(
-                      Uri.parse(url),
+                      redirectUrl(Uri.parse(url)),
                       mode: LaunchMode.externalNonBrowserApplication,
                     );
                   },

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/pages/settings/privacy/tile.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:settings_ui/settings_ui.dart';
 
@@ -81,6 +82,27 @@ class PrivacyPage extends StatelessWidget {
                     ),
                   ),
                 )
+              ],
+            ),
+            SettingsSection(
+              title: const Text('Redirects'),
+              tiles: [
+                RedirectSettingsTile(
+                  'Youtube',
+                  'Invidious',
+                  (state) => state.youtubeRedirect,
+                  (state, value) => state.copyWith(youtubeRedirect: value),
+                  (state) => state.enableYoutubeRedirect,
+                  (state, value) => state.copyWith(enableYoutubeRedirect: value), 
+                ),
+                RedirectSettingsTile(
+                  'Twitter',
+                  'Nitter',
+                  (state) => state.twitterRedirect,
+                  (state, value) => state.copyWith(twitterRedirect: value),
+                  (state) => state.enableTwitterRedirect,
+                  (state, value) => state.copyWith(enableTwitterRedirect: value), 
+                ),
               ],
             ),
           ],
