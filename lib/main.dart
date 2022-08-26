@@ -42,7 +42,7 @@ import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
 import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
-import 'package:moxxyv2/ui/pages/settings/privacy.dart';
+import 'package:moxxyv2/ui/pages/settings/privacy/privacy.dart';
 import 'package:moxxyv2/ui/pages/settings/settings.dart';
 import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
