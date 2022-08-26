@@ -50,6 +50,7 @@ import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:share_handler/share_handler.dart';
 
 void setupLogging() {
   Logger.root.level = Level.ALL;
@@ -164,6 +165,34 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     // Lift the UI block
     GetIt.I.get<Completer<void>>().complete();
+
+    _setupSharingHandler();
+  }
+
+  Future<void> _setupSharingHandler() async {
+    final handler = ShareHandlerPlatform.instance;
+    final media = await handler.getInitialSharedMedia();
+
+    if (media != null) {
+      final attachments = media.attachments ?? [];
+      print('==============================0');
+      for (final attachment in attachments) {
+        print('Attachment: ${attachment?.path} (${attachment?.type})');
+      }
+      print('==============================0');
+
+      await handler.resetInitialSharedMedia();
+    }
+    
+    handler.sharedMediaStream.listen((SharedMedia media) async {
+      final attachments = media.attachments ?? [];
+      print('==============================0');
+      for (final attachment in attachments) {
+        print('Attachment: ${attachment?.path} (${attachment?.type})');
+      }
+      print('==============================0');
+      await handler.resetInitialSharedMedia();
+    });
   }
   
   @override
