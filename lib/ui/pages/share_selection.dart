@@ -64,7 +64,11 @@ class ShareSelectionPage extends StatelessWidget {
                   false,
                   extra: Checkbox(
                     value: isSelected,
-                    onChanged: (_) {},
+                    onChanged: (_) {
+                      context.read<ShareSelectionBloc>().add(
+                        SelectionToggledEvent(index),
+                      );
+                    },
                   ),
                 ),
               );
