@@ -100,7 +100,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final badgeText = widget.unreadCount > 99 ? '99+' : widget.unreadCount.toString();
     // TODO(Unknown): Maybe turn this into an attribute of the widget to prevent calling this
     //                for every conversation
-    final width = MediaQuery.of(context).size.width - 24 - 70;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final width = screenWidth - 24 - 70;
+    final textWidth = screenWidth * 0.6;
 
     final showTimestamp = widget.lastChangeTimestamp != timestampNever;
     final showBadge = widget.unreadCount > 0;
@@ -143,7 +145,10 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildLastMessageBody(),
+                      LimitedBox(
+                        maxWidth: textWidth,
+                        child: _buildLastMessageBody(),
+                      ),
                       Visibility(
                         visible: showBadge,
                         child: const Spacer(),
