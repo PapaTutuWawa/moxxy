@@ -180,6 +180,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     GetIt.I.get<ShareSelectionBloc>().add(
       ShareSelectionRequestedEvent(
         attachments.map((a) => a!.path).toList(),
+        media.content,
+        media.content != null ? ShareSelectionType.text : ShareSelectionType.media,
       ),
     );
   }

@@ -189,10 +189,10 @@ class XmppService {
   /// Returns the JID of the chat that is currently opened. Null, if none is open.
   String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
   
-  /// Sends a message to [jid] with the body of [body].
+  /// Sends a message to JIDs in [recipients] with the body of [body].
   Future<void> sendMessage({
       required String body,
-      required String jid,
+      required List<String> recipients,
       Message? quotedMessage,
       String? commandId,
       ChatState? chatState,
@@ -201,51 +201,53 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final sid = conn.generateId();
-    final originId = conn.generateId();
-    final message = await ms.addMessageFromData(
-      body,
-      timestamp,
-      conn.getConnectionSettings().jid.toString(),
-      jid,
-      false,
-      sid,
-      false,
-      originId: originId,
-      quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
-    );
 
-    if (commandId != null) {
+    for (final recipient in recipients) {
+      final sid = conn.generateId();
+      final originId = conn.generateId();
+      final message = await ms.addMessageFromData(
+        body,
+        timestamp,
+        conn.getConnectionSettings().jid.toString(),
+        recipient,
+        false,
+        sid,
+        false,
+        originId: originId,
+        quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+      );
+
+      // Using the same ID should be fine.
       sendEvent(
         MessageAddedEvent(message: message),
         id: commandId,
       );
+      
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+        MessageDetails(
+          to: recipient,
+          body: body,
+          requestDeliveryReceipt: true,
+          id: sid,
+          originId: originId,
+          quoteBody: quotedMessage?.body,
+          quoteFrom: quotedMessage?.sender,
+          quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+          chatState: chatState,
+        ),
+      );
+
+      final conversation = await cs.getConversationByJid(recipient);
+      final newConversation = await cs.updateConversation(
+        conversation!.id,
+        lastMessageBody: body,
+        lastChangeTimestamp: timestamp,
+      );
+
+      sendEvent(
+        ConversationUpdatedEvent(conversation: newConversation),
+      );
     }
-    
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-      MessageDetails(
-        to: jid,
-        body: body,
-        requestDeliveryReceipt: true,
-        id: sid,
-        originId: originId,
-        quoteBody: quotedMessage?.body,
-        quoteFrom: quotedMessage?.sender,
-        quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
-        chatState: chatState,
-      ),
-    );
-
-    final conversation = await cs.getConversationByJid(jid);
-    final newConversation = await cs.updateConversation(
-      conversation!.id,
-      lastMessageBody: body,
-      lastChangeTimestamp: timestamp,
-    );
-
-    sendEvent(
-      ConversationUpdatedEvent(conversation: newConversation),
-    );
   }
 
   String? _getMessageSrcUrl(MessageEvent event) {

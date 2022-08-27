@@ -216,7 +216,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          jid: String
+          recipients: List<String>
           body: String
           chatState: String
           quotedMessage:

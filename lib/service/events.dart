@@ -220,7 +220,7 @@ Future<void> performSetOpenConversation(SetOpenConversationCommand command, { dy
 Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) async {
   await GetIt.I.get<XmppService>().sendMessage(
     body: command.body,
-    jid: command.jid,
+    recipients: command.recipients,
     chatState: command.chatState.isNotEmpty
       ? chatStateFromString(command.chatState)
       : null,

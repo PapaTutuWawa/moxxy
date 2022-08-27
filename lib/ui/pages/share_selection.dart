@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:move_to_background/move_to_background.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as navigation;
-import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
@@ -75,19 +74,7 @@ class ShareSelectionPage extends StatelessWidget {
             visible: state.selection.isNotEmpty,
             child: FloatingActionButton(
               onPressed: () {
-                GetIt.I.get<SendFilesBloc>().add(
-                  SendFilesPageRequestedEvent(
-                    state.selection
-                      .map((i) => state.items[i].jid)
-                      .toList(),
-                    // TODO(PapaTutuWawa): Fix
-                    SendFilesType.image,
-                    paths: state.paths,
-                    popEntireStack: true,
-                  ),
-                );
-
-                context.read<ShareSelectionBloc>().add(ResetEvent());
+                context.read<ShareSelectionBloc>().add(SubmittedEvent());
               },
               child: const Icon(
                 Icons.send,
