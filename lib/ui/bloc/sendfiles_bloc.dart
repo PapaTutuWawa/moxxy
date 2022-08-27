@@ -94,18 +94,19 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
 
     // Return to the last page
     final bloc = GetIt.I.get<NavigationBloc>();
+    final canPop = bloc.canPop();
     NavigationEvent navEvent;
-    if (bloc.canPop()) {
+    if (canPop) {
       navEvent = PoppedRouteEvent();
     } else {
       navEvent = PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(conversationsRoute),
         (_) => false,
       );
-      await MoveToBackground.moveTaskToBack();
     }
 
     bloc.add(navEvent);
+    if (!canPop) await MoveToBackground.moveTaskToBack();
   }
 
   Future<void> _onItemRemoved(ItemRemovedEvent event, Emitter<SendFilesState> emit) async {
