@@ -86,6 +86,8 @@ class ShareSelectionPage extends StatelessWidget {
                     popEntireStack: true,
                   ),
                 );
+
+                context.read<ShareSelectionBloc>().add(ResetEvent());
               },
               child: const Icon(
                 Icons.send,
