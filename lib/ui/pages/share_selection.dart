@@ -28,15 +28,15 @@ class ShareSelectionPage extends StatelessWidget {
       onWillPop: () async {
         GetIt.I.get<ShareSelectionBloc>().add(ResetEvent());
 
-        // Put the app back into the background...
-        await MoveToBackground.moveTaskToBack();
-        // ...and navigate to the conversations page
+        // Navigate to the conversations page...
         GetIt.I.get<navigation.NavigationBloc>().add(
           navigation.PushedNamedAndRemoveUntilEvent(
             const navigation.NavigationDestination(conversationsRoute),
             (_) => false,
           ),
         );
+        // ...and put the app back into the background
+        await MoveToBackground.moveTaskToBack();
 
         return false;
       },
@@ -63,13 +63,10 @@ class ShareSelectionPage extends StatelessWidget {
                   maxTextWidth,
                   timestampNever,
                   false,
-                  extra: isSelected ?
-                  Radio(
-                    value: true,
-                    groupValue: true,
+                  extra: Checkbox(
+                    value: isSelected,
                     onChanged: (_) {},
-                  ) :
-                  null,
+                  ),
                 ),
               );
             },
