@@ -19,6 +19,16 @@ class ShareSelectionPage extends StatelessWidget {
     ),
   );
 
+  bool _buildWhen(ShareSelectionState prev, ShareSelectionState next) {
+    // Prevent rebuilding when items changes. This prevents us from having to deal with
+    // a roster update coming in while we are selecting JIDs to share to.
+    // TODO(Unknown): But does it work?
+    return prev.selection != next.selection ||
+      prev.paths != next.paths ||
+      prev.text != next.text ||
+      prev.type != next.type;
+  }
+  
   @override
   Widget build(BuildContext context) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
@@ -40,6 +50,7 @@ class ShareSelectionPage extends StatelessWidget {
         return false;
       },
       child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
+        buildWhen: _buildWhen, 
         builder: (context, state) => Scaffold(
           appBar: BorderlessTopbar.simple('Share with...'),
           body: ListView.builder(

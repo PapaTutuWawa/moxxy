@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 
 part 'conversations_bloc.freezed.dart';
 part 'conversations_event.dart';
@@ -30,16 +32,21 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
 
   Future<void> _onConversationsAdded(ConversationsAddedEvent event, Emitter<ConversationsState> emit) async {
     // TODO(Unknown): Should we guard against adding the same conversation multiple times?
-    return emit(
+    emit(
       state.copyWith(
         conversations: List.from(<Conversation>[ ...state.conversations, event.conversation ])
           ..sort(compareConversation),
       ),
     );
+
+    // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
+    GetIt.I.get<ShareSelectionBloc>().add(
+      ConversationsModified(state.conversations),
+    );
   }
 
   Future<void> _onConversationsUpdated(ConversationsUpdatedEvent event, Emitter<ConversationsState> emit) async {
-    return emit(
+    emit(
       state.copyWith(
         conversations: List.from(state.conversations.map((c) {
             if (c.jid == event.conversation.jid) return event.conversation;
@@ -47,6 +54,11 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
             return c;
         }).toList()..sort(compareConversation),),
       ),
+    );
+
+    // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
+    GetIt.I.get<ShareSelectionBloc>().add(
+      ConversationsModified(state.conversations),
     );
   }
 

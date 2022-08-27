@@ -24,6 +24,18 @@ class SelectionToggledEvent extends ShareSelectionEvent {
   final int index;
 }
 
+/// Triggered when a conversation gets added or removed
+class ConversationsModified extends ShareSelectionEvent {
+  ConversationsModified(this.conversations);
+  final List<Conversation> conversations;
+}
+
+/// Triggered when the roster gets modified
+class RosterModifiedEvent extends ShareSelectionEvent {
+  RosterModifiedEvent(this.rosterItems);
+  final List<RosterItem> rosterItems;
+}
+
 /// Triggered when the user confirms their selection.
 class SubmittedEvent extends ShareSelectionEvent {}
 

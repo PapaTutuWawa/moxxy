@@ -7,7 +7,9 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
@@ -34,6 +36,8 @@ class ShareListItem {
 class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> {
   ShareSelectionBloc() : super(ShareSelectionState()) {
     on<ShareSelectionInitEvent>(_onShareSelectionInit);
+    on<ConversationsModified>(_onConversationsModified);
+    on<RosterModifiedEvent>(_onRosterModified);
     on<ShareSelectionRequestedEvent>(_onRequested);
     on<SelectionToggledEvent>(_onSelectionToggled);
     on<SubmittedEvent>(_onSubmit);
@@ -51,11 +55,11 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
       .map((i) => state.items[i].jid)
       .toList();
   }
-  
-  Future<void> _onShareSelectionInit(ShareSelectionInitEvent event, Emitter<ShareSelectionState> emit) async {
+
+  void _updateItems(List<Conversation> conversations, List<RosterItem> rosterItems, Emitter<ShareSelectionState> emit) {
     // Use all conversations as a base
     final items = List<ShareListItem>.from(
-      event.conversations.map((c) {
+      conversations.map((c) {
         return ShareListItem(
           c.avatarUrl,
           c.jid,
@@ -66,8 +70,10 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
     );
 
     // Only add roster items with a JID which we don't already have in items.
-    for (final rosterItem in event.rosterItems) {
-      if (!listContains(items, (ShareListItem e) => e.jid == rosterItem.jid)) {
+    for (final rosterItem in rosterItems) {
+      // We look for the index because this way we can update the roster items
+      final index = items.lastIndexWhere((ShareListItem e) => e.jid == rosterItem.jid);
+      if (index == -1) {
         items.add(
           ShareListItem(
             rosterItem.avatarUrl,
@@ -76,10 +82,21 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
             false,
           ),
         );
+      } else {
+        items[index] = ShareListItem(
+          rosterItem.avatarUrl,
+          rosterItem.jid,
+          rosterItem.title,
+          false,
+        );
       }
     }
 
     emit(state.copyWith(items: items));
+  }
+  
+  Future<void> _onShareSelectionInit(ShareSelectionInitEvent event, Emitter<ShareSelectionState> emit) async {
+    _updateItems(event.conversations, event.rosterItems, emit);
   }
   
   Future<void> _onRequested(ShareSelectionRequestedEvent event, Emitter<ShareSelectionState> emit) async {
@@ -93,6 +110,22 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
     );
   }
 
+  Future<void> _onConversationsModified(ConversationsModified event, Emitter<ShareSelectionState> emit) async {
+    _updateItems(
+      event.conversations,
+      GetIt.I.get<NewConversationBloc>().state.roster,
+      emit,
+    );
+  }
+
+  Future<void> _onRosterModified(RosterModifiedEvent event, Emitter<ShareSelectionState> emit) async {
+    _updateItems(
+      GetIt.I.get<ConversationsBloc>().state.conversations,
+      event.rosterItems,
+      emit,
+    );
+  }
+  
   Future<void> _onSubmit(SubmittedEvent event, Emitter<ShareSelectionState> emit) async {
     if (state.type == ShareSelectionType.text) {
       await MoxplatformPlugin.handler.getDataSender().sendData(
