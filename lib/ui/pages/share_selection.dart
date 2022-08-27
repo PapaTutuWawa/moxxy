@@ -74,9 +74,8 @@ class ShareSelectionPage extends StatelessWidget {
               );
             },
           ),
-          floatingActionButton: Visibility(
-            visible: state.selection.isNotEmpty,
-            child: FloatingActionButton(
+          floatingActionButton: state.selection.isNotEmpty ?
+            FloatingActionButton(
               onPressed: () {
                 context.read<ShareSelectionBloc>().add(SubmittedEvent());
               },
@@ -84,8 +83,8 @@ class ShareSelectionPage extends StatelessWidget {
                 Icons.send,
                 color: Colors.white,
               ),
-            ),
-          ),
+            ) :
+            null,
         ),
       ),
     );
