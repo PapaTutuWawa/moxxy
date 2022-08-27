@@ -358,34 +358,6 @@ class XmppService {
         }
 
         sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
-
-        // TODO(PapaTutuWawa): Do this for videos
-        // TODO(PapaTutuWawa): Maybe do this in a separate isolate
-        if ((pathMime ?? '').startsWith('image/')) {
-          // Generate a thumbnail only when we have to
-          if (!thumbnails.containsKey(path)) {
-            final image = decodeImage((await File(path).readAsBytes()).toList());
-            if (image != null) {
-              thumbnails[path] = [BlurhashThumbnail(BlurHash.encode(image).hash)];
-            } else {
-              _log.warning('Failed to generate thumbnail for $path');
-            }
-          }
-        }
-
-        // Send an upload notification
-        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-          MessageDetails(
-            to: recipient,
-            fun: FileMetadataData(
-              // TODO(Unknown): Maybe add media type specific metadata
-              mediaType: lookupMimeType(path),
-              name: pathlib.basename(path),
-              size: File(path).statSync().size,
-              thumbnails: thumbnails[path] ?? [],
-            ),
-          ),
-        );
       }
     }
 
@@ -444,6 +416,37 @@ class XmppService {
     final hfts = GetIt.I.get<HttpFileTransferService>();
     for (final path in paths) {
       final pathMime = lookupMimeType(path);
+
+      for (final recipient in recipients) {
+        // TODO(PapaTutuWawa): Do this for videos
+        // TODO(PapaTutuWawa): Maybe do this in a separate isolate
+        if ((pathMime ?? '').startsWith('image/')) {
+          // Generate a thumbnail only when we have to
+          if (!thumbnails.containsKey(path)) {
+            final image = decodeImage((await File(path).readAsBytes()).toList());
+            if (image != null) {
+              thumbnails[path] = [BlurhashThumbnail(BlurHash.encode(image).hash)];
+            } else {
+              _log.warning('Failed to generate thumbnail for $path');
+            }
+          }
+        }
+
+        // Send an upload notification
+        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+          MessageDetails(
+            to: recipient,
+            fun: FileMetadataData(
+              // TODO(Unknown): Maybe add media type specific metadata
+              mediaType: lookupMimeType(path),
+              name: pathlib.basename(path),
+              size: File(path).statSync().size,
+              thumbnails: thumbnails[path] ?? [],
+            ),
+          ),
+        );
+      }
+
       await hfts.uploadFile(
         FileUploadJob(
           recipients,
