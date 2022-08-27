@@ -62,8 +62,9 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
     emit(state.copyWith(paths: event.paths));
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
+      PushedNamedAndRemoveUntilEvent(
         const NavigationDestination(shareSelectionRoute),
+        (_) => false,
       ),
     );
   }

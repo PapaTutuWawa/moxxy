@@ -41,4 +41,8 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   Future<void> _onPoppedRoute(PoppedRouteEvent event, Emitter<NavigationState> emit) async {
     navigationKey.currentState!.pop();
   }
+
+  bool canPop() {
+    return navigationKey.currentState!.canPop();
+  }
 }

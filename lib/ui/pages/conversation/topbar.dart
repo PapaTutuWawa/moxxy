@@ -38,6 +38,7 @@ PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData ic
 
 /// A custom version of the Topbar NameAndAvatar style to integrate with
 /// bloc.
+// TODO(Unknown): If the display name is too long, then it will cause an overflow.
 class ConversationTopbarWidget extends StatelessWidget {
   const ConversationTopbarWidget({ Key? key }) : super(key: key);
 

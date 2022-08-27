@@ -301,13 +301,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onImagePickerRequested(ImagePickerRequestedEvent event, Emitter<ConversationState> emit) async {
     GetIt.I.get<SendFilesBloc>().add(
-      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.image),
+      SendFilesPageRequestedEvent([state.conversation!.jid], SendFilesType.image),
     );
   }
 
   Future<void> _onFilePickerRequested(FilePickerRequestedEvent event, Emitter<ConversationState> emit) async {
     GetIt.I.get<SendFilesBloc>().add(
-      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.generic),
+      SendFilesPageRequestedEvent([state.conversation!.jid], SendFilesType.generic),
     );
   }
 

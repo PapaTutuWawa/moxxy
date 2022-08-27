@@ -175,33 +175,28 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _setupSharingHandler();
   }
 
+  Future<void> _handleSharedMedia(SharedMedia media) async {
+    final attachments = media.attachments ?? [];
+    GetIt.I.get<ShareSelectionBloc>().add(
+      ShareSelectionRequestedEvent(
+        attachments.map((a) => a!.path).toList(),
+      ),
+    );
+  }
+  
   Future<void> _setupSharingHandler() async {
     final handler = ShareHandlerPlatform.instance;
     final media = await handler.getInitialSharedMedia();
 
+    // Shared while the app was closed
     if (media != null) {
-      final attachments = media.attachments ?? [];
-      print('==============================0');
-      for (final attachment in attachments) {
-        print('Attachment: ${attachment?.path} (${attachment?.type})');
-      }
-      print('==============================0');
-
+      await _handleSharedMedia(media);
       await handler.resetInitialSharedMedia();
     }
-    
+
+    // Shared while the app is stil running
     handler.sharedMediaStream.listen((SharedMedia media) async {
-      final attachments = media.attachments ?? [];
-      GetIt.I.get<ShareSelectionBloc>().add(
-        ShareSelectionRequestedEvent(
-          attachments.map((a) => a!.path).toList(),
-        ),
-      );
-      print('==============================0');
-      for (final attachment in attachments) {
-        print('Attachment: ${attachment?.path} (${attachment?.type})');
-      }
-      print('==============================0');
+      await _handleSharedMedia(media);
       await handler.resetInitialSharedMedia();
     });
   }

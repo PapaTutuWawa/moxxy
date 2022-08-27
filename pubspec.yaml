@@ -46,6 +46,10 @@ dependencies:
   json_annotation: 4.6.0
   logging: 1.0.2
   mime: 1.0.2
+  move_to_background:
+    git:
+      url: https://github.com/ViliusP/move_to_background.git
+      ref: e5cc2eefd1667e8ef22f21f41b0ef012b060be6c
   moxdns:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.3

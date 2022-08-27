@@ -8,6 +8,6 @@ class SendFilesState with _$SendFilesState {
     // The currently selected path
     @Default(0) int index,
     // The chat that is currently active
-    @Default(null) String? conversationJid,
+    @Default(<String>[]) List<String> recipients,
   }) = _SendFilesState;
 }

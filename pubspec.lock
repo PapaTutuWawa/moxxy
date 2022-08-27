@@ -664,6 +664,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
+  move_to_background:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: e5cc2eefd1667e8ef22f21f41b0ef012b060be6c
+      resolved-ref: e5cc2eefd1667e8ef22f21f41b0ef012b060be6c
+      url: "https://github.com/ViliusP/move_to_background.git"
+    source: git
+    version: "2.0.0"
   moxdns:
     dependency: "direct main"
     description:

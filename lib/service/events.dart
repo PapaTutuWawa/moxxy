@@ -425,5 +425,5 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
 }
 
 Future<void> performSendFiles(SendFilesCommand command, { dynamic extra }) async {
-  await GetIt.I.get<XmppService>().sendFiles(command.paths, command.jid);
+  await GetIt.I.get<XmppService>().sendFiles(command.paths, command.recipients);
 }
