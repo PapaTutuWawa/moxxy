@@ -67,7 +67,7 @@ Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIProgressService>(UIProgressService());
   GetIt.I.registerSingleton<UIDataService>(UIDataService());
   GetIt.I.registerSingleton<ThumbnailCacheService>(ThumbnailCacheService());
-  await GetIt.I.get<UIDataService>().init();}
+}
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
@@ -190,13 +190,19 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
     // Shared while the app was closed
     if (media != null) {
-      await _handleSharedMedia(media);
+      if (GetIt.I.get<UIDataService>().isLoggedIn) {
+        await _handleSharedMedia(media);
+      }
+
       await handler.resetInitialSharedMedia();
     }
 
     // Shared while the app is stil running
     handler.sharedMediaStream.listen((SharedMedia media) async {
-      await _handleSharedMedia(media);
+      if (GetIt.I.get<UIDataService>().isLoggedIn) {
+        await _handleSharedMedia(media);
+      }
+
       await handler.resetInitialSharedMedia();
     });
   }
