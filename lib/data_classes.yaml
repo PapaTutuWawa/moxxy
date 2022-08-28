@@ -216,7 +216,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          jid: String
+          recipients: List<String>
           body: String
           chatState: String
           quotedMessage:
@@ -227,7 +227,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          jid: String
+          recipients: List<String>
           paths: List<String>
       - name: BlockJidCommand
         extends: BackgroundCommand

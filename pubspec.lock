@@ -664,6 +664,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
+  move_to_background:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: e5cc2eefd1667e8ef22f21f41b0ef012b060be6c
+      resolved-ref: e5cc2eefd1667e8ef22f21f41b0ef012b060be6c
+      url: "https://github.com/ViliusP/move_to_background.git"
+    source: git
+    version: "2.0.0"
   moxdns:
     dependency: "direct main"
     description:
@@ -965,6 +974,34 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.2"
+  share_handler:
+    dependency: "direct main"
+    description:
+      name: share_handler
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.16"
+  share_handler_android:
+    dependency: transitive
+    description:
+      name: share_handler_android
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.6"
+  share_handler_ios:
+    dependency: transitive
+    description:
+      name: share_handler_ios
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.9"
+  share_handler_platform_interface:
+    dependency: transitive
+    description:
+      name: share_handler_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.5"
   shared_preferences:
     dependency: transitive
     description:

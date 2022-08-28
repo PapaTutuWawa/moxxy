@@ -189,10 +189,10 @@ class XmppService {
   /// Returns the JID of the chat that is currently opened. Null, if none is open.
   String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
   
-  /// Sends a message to [jid] with the body of [body].
+  /// Sends a message to JIDs in [recipients] with the body of [body].
   Future<void> sendMessage({
       required String body,
-      required String jid,
+      required List<String> recipients,
       Message? quotedMessage,
       String? commandId,
       ChatState? chatState,
@@ -201,51 +201,53 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final sid = conn.generateId();
-    final originId = conn.generateId();
-    final message = await ms.addMessageFromData(
-      body,
-      timestamp,
-      conn.getConnectionSettings().jid.toString(),
-      jid,
-      false,
-      sid,
-      false,
-      originId: originId,
-      quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
-    );
 
-    if (commandId != null) {
+    for (final recipient in recipients) {
+      final sid = conn.generateId();
+      final originId = conn.generateId();
+      final message = await ms.addMessageFromData(
+        body,
+        timestamp,
+        conn.getConnectionSettings().jid.toString(),
+        recipient,
+        false,
+        sid,
+        false,
+        originId: originId,
+        quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+      );
+
+      // Using the same ID should be fine.
       sendEvent(
         MessageAddedEvent(message: message),
         id: commandId,
       );
+      
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+        MessageDetails(
+          to: recipient,
+          body: body,
+          requestDeliveryReceipt: true,
+          id: sid,
+          originId: originId,
+          quoteBody: quotedMessage?.body,
+          quoteFrom: quotedMessage?.sender,
+          quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+          chatState: chatState,
+        ),
+      );
+
+      final conversation = await cs.getConversationByJid(recipient);
+      final newConversation = await cs.updateConversation(
+        conversation!.id,
+        lastMessageBody: body,
+        lastChangeTimestamp: timestamp,
+      );
+
+      sendEvent(
+        ConversationUpdatedEvent(conversation: newConversation),
+      );
     }
-    
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-      MessageDetails(
-        to: jid,
-        body: body,
-        requestDeliveryReceipt: true,
-        id: sid,
-        originId: originId,
-        quoteBody: quotedMessage?.body,
-        quoteFrom: quotedMessage?.sender,
-        quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
-        chatState: chatState,
-      ),
-    );
-
-    final conversation = await cs.getConversationByJid(jid);
-    final newConversation = await cs.updateConversation(
-      conversation!.id,
-      lastMessageBody: body,
-      lastChangeTimestamp: timestamp,
-    );
-
-    sendEvent(
-      ConversationUpdatedEvent(conversation: newConversation),
-    );
   }
 
   String? _getMessageSrcUrl(MessageEvent event) {
@@ -323,21 +325,13 @@ class XmppService {
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
   }
 
-  Future<void> sendFiles(List<String> paths, String recipient) async {
+  Future<void> sendFiles(List<String> paths, List<String> recipients) async {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
 
-    // TODO(Unknown): This has a huge issue. The messages should get sent to the UI
-    //                as soon as possible to indicate to the user that we are working on
-    //                them. But if the files are big, then copying them might take a little
-    //                while. The solution might be to use the real path before copying as
-    //                the messages initial mediaUrl attribute and once the file has been
-    //                copied replace it with the new path. Meanwhile, the file can also be
-    //                uploaded from its original location.
-    
-    // Path -> Message
-    final messages = <String, Message>{};
+    // Path -> Recipient -> Message
+    final messages = <String, Map<String, Message>>{};
     // Path -> Thumbnails
     final thumbnails = <String, List<Thumbnail>>{};
 
@@ -345,79 +339,121 @@ class XmppService {
     final conn = GetIt.I.get<XmppConnection>();
     for (final path in paths) {
       final pathMime = lookupMimeType(path);
-      final msg = await ms.addMessageFromData(
-        '',
-        DateTime.now().millisecondsSinceEpoch, 
-        conn.getConnectionSettings().jid.toString(),
-        recipient,
-        true,
-        conn.generateId(),
-        false,
-        mediaUrl: path,
-        mediaType: pathMime,
-        originId: conn.generateId(),
-      );
-      messages[path] = msg;
-      sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
 
-      // TODO(PapaTutuWawa): Do this for videos
-      // TODO(PapaTutuWawa): Maybe do this in a separate isolate
-      if ((pathMime ?? '').startsWith('image/')) {
-        final image = decodeImage((await File(path).readAsBytes()).toList());
-        if (image != null) {
-          thumbnails[path] = [BlurhashThumbnail(BlurHash.encode(image).hash)];
+      for (final recipient in recipients) {
+        final msg = await ms.addMessageFromData(
+          '',
+          DateTime.now().millisecondsSinceEpoch, 
+          conn.getConnectionSettings().jid.toString(),
+          recipient,
+          true,
+          conn.generateId(),
+          false,
+          mediaUrl: path,
+          mediaType: pathMime,
+          originId: conn.generateId(),
+        );
+        if (messages.containsKey(path)) {
+          messages[path]![recipient] = msg;
         } else {
-          _log.warning('Failed to generate thumbnail for $path');
+          messages[path] = { recipient: msg };
         }
-      }
 
-      // Send an upload notification
-      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-        MessageDetails(
-          to: recipient,
-          fun: FileMetadataData(
-            // TODO(Unknown): Maybe add media type specific metadata
-            mediaType: lookupMimeType(path),
-            name: pathlib.basename(path),
-            size: File(path).statSync().size,
-            thumbnails: thumbnails[path] ?? [],
-          ),
-        ),
-      );
+        sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
+      }
     }
 
     // Create the shared media entries
-    final sharedMedia = List<DBSharedMedium>.empty(growable: true);
-    for (final path in paths) {
-      sharedMedia.add(
-        await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
+    // Recipient -> [Shared Medium]
+    final sharedMediaMap = <String, List<DBSharedMedium>>{};
+    final rs = GetIt.I.get<RosterService>();
+    for (final recipient in recipients) {
+      for (final path in paths) {
+        final medium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
           path,
           DateTime.now().millisecondsSinceEpoch,
           mime: lookupMimeType(path),
-        ),
-      );
-    }
+        );
 
-    // Update conversation
-    final lastFileMime = lookupMimeType(paths.last);
-    final conversationId = (await cs.getConversationByJid(recipient))!.id;
-    final updatedConversation = await cs.updateConversation(
-      conversationId,
-      lastMessageBody: mimeTypeToConversationBody(lastFileMime),
-      lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
-      sharedMedia: sharedMedia,
-    );
-    sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
+        if (sharedMediaMap.containsKey(recipient)) {
+          sharedMediaMap[recipient]!.add(medium);
+        } else {
+          sharedMediaMap[recipient] = List<DBSharedMedium>.from([medium]);
+        }
+      }
+
+      final lastFileMime = lookupMimeType(paths.last);
+      final conversation = await cs.getConversationByJid(recipient);
+      if (conversation != null) {
+        // Update conversation
+        final updatedConversation = await cs.updateConversation(
+          conversation.id,
+          lastMessageBody: mimeTypeToConversationBody(lastFileMime),
+          lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+          sharedMedia: sharedMediaMap[recipient],
+          open: true,
+        );
+        sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
+      } else {
+        // Create conversation
+        final rosterItem = await rs.getRosterItemByJid(recipient);
+        final newConversation = await cs.addConversationFromData(
+          // TODO(Unknown): Should we use the JID parser?
+          rosterItem?.title ?? recipient.split('@').first,
+          mimeTypeToConversationBody(lastFileMime),
+          rosterItem?.avatarUrl ?? '',
+          recipient,
+          0,
+          DateTime.now().millisecondsSinceEpoch,
+          sharedMediaMap[recipient]!,
+          true,
+        );
+
+        // Notify the UI
+        sendEvent(ConversationAddedEvent(conversation: newConversation));
+      }
+    }
 
     // Requesting Upload slots and uploading
     final hfts = GetIt.I.get<HttpFileTransferService>();
     for (final path in paths) {
       final pathMime = lookupMimeType(path);
+
+      for (final recipient in recipients) {
+        // TODO(PapaTutuWawa): Do this for videos
+        // TODO(PapaTutuWawa): Maybe do this in a separate isolate
+        if ((pathMime ?? '').startsWith('image/')) {
+          // Generate a thumbnail only when we have to
+          if (!thumbnails.containsKey(path)) {
+            final image = decodeImage((await File(path).readAsBytes()).toList());
+            if (image != null) {
+              thumbnails[path] = [BlurhashThumbnail(BlurHash.encode(image).hash)];
+            } else {
+              _log.warning('Failed to generate thumbnail for $path');
+            }
+          }
+        }
+
+        // Send an upload notification
+        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+          MessageDetails(
+            to: recipient,
+            fun: FileMetadataData(
+              // TODO(Unknown): Maybe add media type specific metadata
+              mediaType: lookupMimeType(path),
+              name: pathlib.basename(path),
+              size: File(path).statSync().size,
+              thumbnails: thumbnails[path] ?? [],
+            ),
+          ),
+        );
+      }
+
       await hfts.uploadFile(
         FileUploadJob(
-          recipient,
+          recipients,
           path,
-          await getDownloadPath(pathlib.basename(path), recipient, pathMime),
+          pathMime,
           messages[path]!,
           thumbnails[path] ?? [],
         ),

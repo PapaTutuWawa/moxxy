@@ -38,15 +38,14 @@ class TextChatWidget extends StatelessWidget {
             child: ParsedText(
               text: message.body,
               style: TextStyle(
-                color: Colors.white,
+                color: const Color(0xf9ebffff),
                 fontSize: fontsize,
               ),
               parse: [
                 MatchText(
                   type: ParsedType.URL,
                   style: const TextStyle(
-                    // TODO(Unknown): Work on the color
-                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
                   ),
                   onTap: (url) async {
                     await launchUrl(

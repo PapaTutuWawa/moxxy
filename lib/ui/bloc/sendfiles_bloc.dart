@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:move_to_background/move_to_background.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
@@ -32,24 +33,39 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   }
   
   Future<void> _sendFilesRequested(SendFilesPageRequestedEvent event, Emitter<SendFilesState> emit) async {
-    final files = await _pickFiles(event.type);
-    if (files == null) return;
+    List<String> files;
+    if (event.paths != null) {
+      files = event.paths!;
+    } else {
+      final pickedFiles = await _pickFiles(event.type);
+      if (pickedFiles == null) return;
+
+      files = pickedFiles;
+    }
 
     emit(
       state.copyWith(
         files: files,
         index: 0,
-        conversationJid: event.jid,
+        recipients: event.recipients,
       ),
     );
 
-    GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
+    NavigationEvent navEvent;
+    if (event.popEntireStack) {
+      navEvent = PushedNamedAndRemoveUntilEvent(
+        const NavigationDestination(sendFilesRoute),
+        (_) => false,
+      );
+    } else {
+      navEvent = PushedNamedEvent(
         const NavigationDestination(
           sendFilesRoute,
         ),
-      ),
-    );
+      );
+    }
+    
+    GetIt.I.get<NavigationBloc>().add(navEvent);
   }
 
   Future<void> _onIndexSet(IndexSetEvent event, Emitter<SendFilesState> emit) async {
@@ -71,13 +87,26 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SendFilesCommand(
         paths: state.files,
-        jid: state.conversationJid!,
+        recipients: state.recipients,
       ),
       awaitable: false,
     );
 
     // Return to the last page
-    GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+    final bloc = GetIt.I.get<NavigationBloc>();
+    final canPop = bloc.canPop();
+    NavigationEvent navEvent;
+    if (canPop) {
+      navEvent = PoppedRouteEvent();
+    } else {
+      navEvent = PushedNamedAndRemoveUntilEvent(
+        const NavigationDestination(conversationsRoute),
+        (_) => false,
+      );
+    }
+
+    bloc.add(navEvent);
+    if (!canPop) await MoveToBackground.moveTaskToBack();
   }
 
   Future<void> _onItemRemoved(ItemRemovedEvent event, Emitter<SendFilesState> emit) async {

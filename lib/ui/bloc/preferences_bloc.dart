@@ -11,6 +11,7 @@ import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 
 part 'preferences_event.dart';
 
@@ -43,6 +44,8 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   }
 
   Future<void> _onSignedOut(SignedOutEvent event, Emitter<PreferencesState> emit) async {
+    GetIt.I.get<UIDataService>().isLoggedIn = false;
+
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SignOutCommand(),
     );

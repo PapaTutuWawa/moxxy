@@ -113,17 +113,25 @@ class HttpFileTransferService {
     }
   }
 
-  Future<void> _copyFile(String fromPath, String toPath, int msgId) async {
-    await File(fromPath).copy(toPath);
+  Future<void> _copyFile(FileUploadJob job) async {
+    for (final recipient in job.recipients) {
+      final newPath = await getDownloadPath(
+        pathlib.basename(job.path),
+        recipient,
+        job.mime,
+      );
 
-    // Let the media scanner index the file
-    MoxplatformPlugin.media.scanFile(toPath);
+      await File(job.path).copy(newPath);
 
-    // Update the message
-    await GetIt.I.get<MessageService>().updateMessage(
-      msgId,
-      mediaUrl: toPath,
-    );
+      // Let the media scanner index the file
+      MoxplatformPlugin.media.scanFile(newPath);
+
+      // Update the message
+      await GetIt.I.get<MessageService>().updateMessage(
+        job.messageMap[recipient]!.id,
+        mediaUrl: newPath,
+      );
+    }
   }
   
   /// Actually attempt to upload the file described by the job [job].
@@ -148,8 +156,6 @@ class HttpFileTransferService {
     }
 
     final slot = slotResult.getValue();
-    final fileMime = lookupMimeType(job.path);
-    
     try {
       final response = await dio.Dio().putUri<dynamic>(
         Uri.parse(slot.putUrl),
@@ -160,13 +166,17 @@ class HttpFileTransferService {
         ),
         data: data,
         onSendProgress: (count, total) {
-          final progress = count.toDouble() / total.toDouble();
-          sendEvent(
-            ProgressEvent(
-              id: job.message.id,
-              progress: progress == 1 ? 0.99 : progress,
-            ),
-          );
+          // TODO(PapaTutuWawa): Make this smarter by also checking if one of those chats
+          //                     is open.
+          if (job.recipients.length == 1) {
+            final progress = count.toDouble() / total.toDouble();
+            sendEvent(
+              ProgressEvent(
+                id: job.messageMap.values.first.id,
+                progress: progress == 1 ? 0.99 : progress,
+              ),
+            );
+          }
         },
       );
 
@@ -176,61 +186,63 @@ class HttpFileTransferService {
         _log.severe('Upload failed');
 
         // Notify UI of upload failure
-        final msg = await ms.updateMessage(
-          job.message.id,
-          errorType: fileUploadFailedError,
-        );
-        sendEvent(
-          MessageUpdatedEvent(
-            message: msg.copyWith(isUploading: false),
-          ),
-        );
+        for (final recipient in job.recipients) {
+          final msg = await ms.updateMessage(
+            job.messageMap[recipient]!.id,
+            errorType: fileUploadFailedError,
+          );
+          sendEvent(
+            MessageUpdatedEvent(
+              message: msg.copyWith(isUploading: false),
+            ),
+          );
+        }
       } else {
         _log.fine('Upload was successful');
 
-        // Notify UI of upload completion
-        var msg = job.message;
+        for (final recipient in job.recipients) {
+          // Notify UI of upload completion
+          var msg = job.messageMap[recipient]!;
 
-        // Reset a stored error, if there was one
-        if (msg.errorType != null) {
-          msg = await ms.updateMessage(
-            msg.id,
-            errorType: noError,
-          );
-        }
-        sendEvent(
-          MessageUpdatedEvent(
-            message: msg.copyWith(isUploading: false),
-          ),
-        );
-
-        // Send the message to the recipient
-        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-          MessageDetails(
-            to: job.recipient,
-            body: slot.getUrl,
-            requestDeliveryReceipt: true,
-            id: job.message.sid,
-            originId: job.message.originId,
-            sfs: StatelessFileSharingData(
-              FileMetadataData(
-                mediaType: fileMime,
-                size: stat.size,
-                name: pathlib.basename(job.path),
-                thumbnails: job.thumbnails,
-              ),
-              slot.getUrl,
+          // Reset a stored error, if there was one
+          if (msg.errorType != null) {
+            msg = await ms.updateMessage(
+              msg.id,
+              errorType: noError,
+            );
+          }
+          sendEvent(
+            MessageUpdatedEvent(
+              message: msg.copyWith(isUploading: false),
             ),
-          ),
-        );
-        _log.finest('Sent message with file upload for ${job.path}');
+          );
 
-        final isMultiMedia = fileMime != null ?
-          fileMime.startsWith('image/') || fileMime.startsWith('video/') :
-          false;
-        if (isMultiMedia) {
-          _log.finest('File appears to be either an image or a video. Copying it to the correct directory...');
-          unawaited(_copyFile(job.path, job.copyToPath, msg.id));
+          // Send the message to the recipient
+          conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+            MessageDetails(
+              to: recipient,
+              body: slot.getUrl,
+              requestDeliveryReceipt: true,
+              id: msg.sid,
+              originId: msg.originId,
+              sfs: StatelessFileSharingData(
+                FileMetadataData(
+                  mediaType: job.mime,
+                  size: stat.size,
+                  name: pathlib.basename(job.path),
+                  thumbnails: job.thumbnails,
+                ),
+                slot.getUrl,
+              ),
+            ),
+          );
+          _log.finest('Sent message with file upload for ${job.path} to $recipient');
+
+          final isMultiMedia = job.mime?.startsWith('image/') == true || job.mime?.startsWith('video/') == true;
+          if (isMultiMedia) {
+            _log.finest('File appears to be either an image or a video. Copying it to the correct directory...');
+            unawaited(_copyFile(job));
+          }
         }
       }
     } on dio.DioError {

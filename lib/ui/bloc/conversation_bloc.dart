@@ -176,7 +176,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       SendMessageCommand(
-        jid: state.conversation!.jid,
+        recipients: [state.conversation!.jid],
         body: state.messageText,
         quotedMessage: state.quotedMessage,
         chatState: chatStateToString(ChatState.active),
@@ -301,13 +301,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onImagePickerRequested(ImagePickerRequestedEvent event, Emitter<ConversationState> emit) async {
     GetIt.I.get<SendFilesBloc>().add(
-      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.image),
+      SendFilesPageRequestedEvent([state.conversation!.jid], SendFilesType.image),
     );
   }
 
   Future<void> _onFilePickerRequested(FilePickerRequestedEvent event, Emitter<ConversationState> emit) async {
     GetIt.I.get<SendFilesBloc>().add(
-      SendFilesPageRequestedEvent(state.conversation!.jid, SendFilesType.generic),
+      SendFilesPageRequestedEvent([state.conversation!.jid], SendFilesType.generic),
     );
   }
 
