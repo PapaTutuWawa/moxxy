@@ -43,7 +43,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "me.polynom.moxxyv2"
+        applicationId "org.moxxy.moxxyv2"
 
 	// TODO: Remove once https://github.com/fluttercommunity/flutter_launcher_icons/pull/313 is merged
 	minSdkVersion 23
