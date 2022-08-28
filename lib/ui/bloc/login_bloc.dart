@@ -76,6 +76,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       GetIt.I.get<UIDataService>().isLoggedIn = true;
       emit(state.copyWith(working: false));
 
+      GetIt.I.get<UIDataService>().ownJid = state.jid;
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
           result.displayName,
