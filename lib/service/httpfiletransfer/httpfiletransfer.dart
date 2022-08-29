@@ -223,7 +223,6 @@ class HttpFileTransferService {
               to: recipient,
               body: slot.getUrl,
               requestDeliveryReceipt: true,
-              id: msg.sid,
               originId: msg.originId,
               sfs: StatelessFileSharingData(
                 FileMetadataData(
@@ -234,6 +233,7 @@ class HttpFileTransferService {
                 ),
                 slot.getUrl,
               ),
+              funReplacement: msg.sid,
             ),
           );
           _log.finest('Sent message with file upload for ${job.path} to $recipient');

@@ -438,6 +438,7 @@ class XmppService {
         conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
           MessageDetails(
             to: recipient,
+            id: messages[path]![recipient]!.sid,
             fun: FileMetadataData(
               // TODO(Unknown): Maybe add media type specific metadata
               mediaType: lookupMimeType(path),
