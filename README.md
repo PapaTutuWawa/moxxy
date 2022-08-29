@@ -8,8 +8,8 @@ The code is also available on [codeberg](https://codeberg.org/moxxy/moxxyv2).
 
 ## Screenshots
 
-[<img src="https://codeberg.org/moxxy/moxxyv2/raw/branch/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="45%"></img>](./fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
-[<img src="https://codeberg.org/moxxy/moxxyv2/raw/branch/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="45%"></img>](./fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
+[<img src="https://codeberg.org/moxxy/moxxyv2/raw/branch/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="20%"></img>](./fastlane/metadata/android/en-US/images/phoneScreenshots/1.png)
+[<img src="https://codeberg.org/moxxy/moxxyv2/raw/branch/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="20%"></img>](./fastlane/metadata/android/en-US/images/phoneScreenshots/2.png)
 
 ## Developing and Building
 
