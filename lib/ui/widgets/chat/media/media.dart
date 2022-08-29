@@ -86,7 +86,16 @@ Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? re
               height: 48,
               child: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
-                child: Image.file(File(message.mediaUrl!)),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: FileImage(File(message.mediaUrl!)),
+                    ),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                ),
               ),
             ),
           ],
@@ -111,6 +120,9 @@ Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? re
                     FutureBuilder<Uint8List>(
                       future: GetIt.I.get<ThumbnailCacheService>().getVideoThumbnail(message.mediaUrl!),
                       builder: (context, snapshot) {
+                        // TODO(PapaTutuWawa): Fix the thumbnail being weirdly put in there
+                        //                     instead of being put in a squircle. See
+                        //                     the MessageType.image version for guidance.
                         if (snapshot.connectionState == ConnectionState.done) {
                           if (snapshot.data != null) {
                             return Image.memory(
