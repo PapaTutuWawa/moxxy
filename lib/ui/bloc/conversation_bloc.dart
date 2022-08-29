@@ -115,6 +115,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         conversation: conversation,
         quotedMessage: null,
+        scrolledToBottom: true,
       ),
     );
 
