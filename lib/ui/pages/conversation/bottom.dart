@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -195,10 +196,12 @@ class ConversationBottomRow extends StatelessWidget {
                   onEmojiSelected: (_, emoji) {
                     final bloc = context.read<ConversationBloc>();
                     final selection = controller.selection;
-                    final prefix = bloc.state.messageText.substring(0, selection.baseOffset);
-                    final suffix = bloc.state.messageText.substring(selection.extentOffset);
+                    final baseOffset = max(selection.baseOffset, 0);
+                    final extentOffset = max(selection.extentOffset, 0);
+                    final prefix = bloc.state.messageText.substring(0, baseOffset);
+                    final suffix = bloc.state.messageText.substring(extentOffset);
                     final newText = '$prefix${emoji.emoji}$suffix';
-                    final newValue = selection.baseOffset + emoji.emoji.codeUnits.length;
+                    final newValue = baseOffset + emoji.emoji.codeUnits.length;
                     bloc.add(MessageTextChangedEvent(newText));
                     controller
                       ..text = newText
