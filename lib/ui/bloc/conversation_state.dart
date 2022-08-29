@@ -11,7 +11,6 @@ class ConversationState with _$ConversationState {
     @Default(<Message>[]) List<Message> messages,
     @Default(null) Conversation? conversation,
     @Default('') String backgroundPath,
-    @Default(true) bool scrolledToBottom,
     @Default(false) bool emojiPickerVisible,
   }) = _ConversationState;
 }

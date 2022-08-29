@@ -43,7 +43,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<BackgroundChangedEvent>(_onBackgroundChanged);
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
-    on<ScrollStateSetEvent>(_onScrollStateSet);
     on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
     on<OwnJidReceivedEvent>(_onOwnJidReceived);
   }
@@ -115,7 +114,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         conversation: conversation,
         quotedMessage: null,
-        scrolledToBottom: true,
       ),
     );
 
@@ -310,12 +308,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     GetIt.I.get<SendFilesBloc>().add(
       SendFilesPageRequestedEvent([state.conversation!.jid], SendFilesType.generic),
     );
-  }
-
-  Future<void> _onScrollStateSet(ScrollStateSetEvent event, Emitter<ConversationState> emit) async {
-    if (event.state == state.scrolledToBottom) return;
-
-    emit(state.copyWith(scrolledToBottom: event.state));
   }
 
   Future<void> _onEmojiPickerToggled(EmojiPickerToggledEvent event, Emitter<ConversationState> emit) async {

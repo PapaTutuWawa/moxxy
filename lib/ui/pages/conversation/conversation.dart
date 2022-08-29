@@ -26,21 +26,35 @@ class ConversationPage extends StatefulWidget {
   ConversationPageState createState() => ConversationPageState();
 }
 
-class ConversationPageState extends State<ConversationPage> {
+class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
 
   ConversationPageState() :
     _isSpeedDialOpen = ValueNotifier(false),
     _controller = TextEditingController(),
     _scrollController = ScrollController(),
+    _scrolledToBottomState = true,
     super();
   final TextEditingController _controller;
   final ValueNotifier<bool> _isSpeedDialOpen;
   final ScrollController _scrollController;
+  late final AnimationController _animationController;
+  late final Animation<double> _scrollToBottom;
+  bool _scrolledToBottomState;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+
+    // Values taken from here: https://stackoverflow.com/questions/45539395/flutter-float-action-button-hiding-the-visibility-of-items#45598028
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+    );
+    _scrollToBottom = CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.5, 1),
+    );
   }
   
   @override
@@ -49,7 +63,8 @@ class ConversationPageState extends State<ConversationPage> {
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
-
+    _animationController.dispose();
+      
     super.dispose();
   }
 
@@ -129,8 +144,14 @@ class ConversationPageState extends State<ConversationPage> {
   }
   
   void _onScroll() {
+    final isScrolledToBottom = _isScrolledToBottom();
+    if (isScrolledToBottom && !_scrolledToBottomState) {
+      _animationController.reverse();
+    } else if (!isScrolledToBottom && _scrolledToBottomState) {
+      _animationController.forward();
+    }
 
-    GetIt.I.get<ConversationBloc>().add(ScrollStateSetEvent(_isScrolledToBottom()));
+    _scrolledToBottomState = isScrolledToBottom;
   }
   
   @override
@@ -234,36 +255,29 @@ class ConversationPageState extends State<ConversationPage> {
 
           Positioned(
             right: 8,
-            bottom: 96,
-            child: BlocBuilder<ConversationBloc, ConversationState>(
-              buildWhen: (prev, next) => prev.scrolledToBottom != next.scrolledToBottom,
-              builder: (_, state) => _renderScrollToBottom(context, !state.scrolledToBottom),
+            bottom: 80,
+            child: Material(
+              color: const Color.fromRGBO(0, 0, 0, 0),
+              child: ScaleTransition(
+                scale: _scrollToBottom,
+                alignment: FractionalOffset.center,
+                child: Ink(
+                  decoration: ShapeDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    shape: const CircleBorder(),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_downward),
+                    onPressed: () {
+                      _scrollController.jumpTo(0);
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _renderScrollToBottom(BuildContext context, bool visible) {
-    if (visible) {
-      return Material(
-        color: const Color.fromRGBO(0, 0, 0, 0),
-        child: Ink(
-          decoration: ShapeDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            shape: const CircleBorder(),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_downward),
-            onPressed: () {
-              _scrollController.jumpTo(0);
-            },
-          ),
-        ),
-      );
-    } else {
-      return const SizedBox();
-    }
-  }  
 }
