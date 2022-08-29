@@ -4,7 +4,7 @@ An experimental XMPP client that tries to be as easy, modern and beautiful as po
 
 The code is also available on [codeberg](https://codeberg.org/moxxy/moxxyv2).
 
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80" />](https://apt.izzysoft.de/fdroid/index/apk/me.polynom.moxxyv2)
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80" />](https://apt.izzysoft.de/fdroid/index/apk/org.moxxy.moxxyv2)
 
 ## Screenshots
 
