@@ -16,7 +16,7 @@ class PreferencesState with _$PreferencesState {
       @Default(15) int maximumAutoDownloadSize,
       @Default('') String backgroundPath,
       @Default(true) bool isAvatarPublic,
-      @Default(true) bool autoAcceptSubscriptionRequests,
+      @Default(false) bool autoAcceptSubscriptionRequests,
       @Default(false) bool debugEnabled,
       @Default('') String debugPassphrase,
       @Default('') String debugIp,
