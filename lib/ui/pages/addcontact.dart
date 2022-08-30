@@ -38,6 +38,8 @@ class AddContactPage extends StatelessWidget {
                 ),
                 enabled: !state.working,
                 cornerRadius: textfieldRadiusRegular,
+                borderColor: primaryColor,
+                borderWidth: 1,
                 errorText: state.jidError,
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.qr_code),
