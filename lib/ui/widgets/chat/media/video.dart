@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -13,7 +14,6 @@ import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
-import 'package:open_file/open_file.dart';
 
 class VideoChatWidget extends StatelessWidget {
 

@@ -1,6 +1,6 @@
+import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
-import 'package:open_file/open_file.dart';
 
 class SharedFileWidget extends StatelessWidget {
 

@@ -5,7 +5,7 @@ part 'message.g.dart';
 @Collection()
 @Name('Message')
 class DBMessage {
-  int? id;
+  Id? id;
 
   @Index(caseSensitive: false)
   late String conversationJid;

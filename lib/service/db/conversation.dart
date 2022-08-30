@@ -6,7 +6,7 @@ part 'conversation.g.dart';
 @Collection()
 @Name('Conversation')
 class DBConversation {
-  int? id;
+  Id? id;
 
   @Index(caseSensitive: false)
   late String jid;

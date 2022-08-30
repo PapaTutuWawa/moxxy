@@ -1,5 +1,6 @@
 import 'dart:core';
 
+import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -9,7 +10,6 @@ import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
-import 'package:open_file/open_file.dart';
 
 /// A base widget for sent/received files that cannot be displayed otherwise.
 class FileChatBaseWidget extends StatelessWidget {

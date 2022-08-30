@@ -96,7 +96,7 @@ class DatabaseService {
   Future<void> initialize() async {
     final dir = await getApplicationSupportDirectory();
     _isar = await Isar.open(
-      schemas: [
+      [
         DBConversationSchema,
         DBRosterItemSchema,
         DBMessageSchema,

@@ -5,7 +5,7 @@ part 'roster.g.dart';
 @Collection()
 @Name('RosterItem')
 class DBRosterItem {
-  int? id;
+  Id? id;
 
   late String jid;
 

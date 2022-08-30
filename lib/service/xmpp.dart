@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:blurhash_dart/blurhash_dart.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
-import 'package:image/image.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
@@ -17,6 +15,7 @@ import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database.dart';
 import 'package:moxxyv2/service/db/media.dart';
+import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
@@ -425,9 +424,9 @@ class XmppService {
         if ((pathMime ?? '').startsWith('image/')) {
           // Generate a thumbnail only when we have to
           if (!thumbnails.containsKey(path)) {
-            final image = decodeImage((await File(path).readAsBytes()).toList());
-            if (image != null) {
-              thumbnails[path] = [BlurhashThumbnail(BlurHash.encode(image).hash)];
+            final thumbnail = await generateBlurhashThumbnail(path);
+            if (thumbnail != null) {
+              thumbnails[path] = [BlurhashThumbnail(thumbnail)];
             } else {
               _log.warning('Failed to generate thumbnail for $path');
             }

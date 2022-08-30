@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -15,7 +16,6 @@ import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/text.dart';
-import 'package:open_file/open_file.dart';
 
 enum MessageType {
   text,

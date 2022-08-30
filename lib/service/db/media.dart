@@ -5,7 +5,7 @@ part 'media.g.dart';
 @Collection()
 @Name('SharedMedium')
 class DBSharedMedium {
-  int? id;
+  Id? id;
 
   @Index(caseSensitive: true)
   late String path;
