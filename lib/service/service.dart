@@ -147,6 +147,7 @@ Future<void> initUDPLogger() async {
 }
 
 /// The entrypoint for all platforms after the platform specific initilization is done.
+@pragma('vm:entry-point')
 Future<void> entrypoint() async {
   // Register the lock
   GetIt.I.registerSingleton<Completer<void>>(Completer());
