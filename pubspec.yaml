@@ -58,7 +58,7 @@ dependencies:
     version: 0.1.4
   moxplatform:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.10
+    version: 0.1.11
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.0
@@ -115,7 +115,7 @@ dependency_overrides:
   flutter:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 3.0.1
-  
+ 
 extra_licenses:
   - name: undraw.co
     license: "custom license"
