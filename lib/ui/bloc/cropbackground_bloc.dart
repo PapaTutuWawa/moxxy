@@ -65,8 +65,8 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
         image: null,
         blurEnabled: false,
         imagePath: '',
-        imageHeight: 0,
-        imageWidth: 0,
+        imageHeight: 1,
+        imageWidth: 1,
         isWorking: false,
       ),
     );
