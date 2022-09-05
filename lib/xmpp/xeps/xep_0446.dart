@@ -7,7 +7,8 @@ class FileMetadataData {
 
   const FileMetadataData({
       this.mediaType,
-      this.dimensions,
+      this.width,
+      this.height,
       this.desc,
       this.length,
       this.name,
@@ -39,10 +40,23 @@ class FileMetadataData {
         thumbnails.add(thumbnail);
       }
     }
+
+    // Length and height
+    final widthString = node.firstTag('length');
+    final heightString = node.firstTag('height');
+    int? width;
+    int? height;
+    if (widthString != null) {
+      width = int.parse(widthString.innerText());
+    }
+    if (heightString != null) {
+      height = int.parse(heightString.innerText());
+    }
     
     return FileMetadataData(
       mediaType: node.firstTag('media-type')?.innerText(),
-      dimensions: node.firstTag('dimensions')?.innerText(),
+      width: width,
+      height: height,
       desc: node.firstTag('desc')?.innerText(),
       hashes: hashes,
       length: length,
@@ -53,10 +67,8 @@ class FileMetadataData {
   }
 
   final String? mediaType;
-
-  // TODO(Unknown): Maybe create a special type for this
-  final String? dimensions;
-
+  final int? width;
+  final int? height;
   final List<Thumbnail> thumbnails;
   final String? desc;
   final Map<String, String> hashes;
@@ -72,7 +84,8 @@ class FileMetadataData {
     );
 
     if (mediaType != null) node.addChild(XMLNode(tag: 'media-type', text: mediaType));
-    if (dimensions != null) node.addChild(XMLNode(tag: 'dimensions', text: dimensions));
+    if (width != null) node.addChild(XMLNode(tag: 'width', text: '$width'));
+    if (height != null) node.addChild(XMLNode(tag: 'height', text: '$height'));
     if (desc != null) node.addChild(XMLNode(tag: 'desc', text: desc));
     if (length != null) node.addChild(XMLNode(tag: 'length', text: length.toString()));
     if (name != null) node.addChild(XMLNode(tag: 'name', text: name));

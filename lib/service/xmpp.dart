@@ -664,6 +664,18 @@ class XmppService {
         event.fun?.mediaType,
     ]);
   }
+
+  /// Extract the dimensions, if existent.
+  /// TODO(PapaTutuWawa): Once we rework the database, remove this and just store the dimensions directly.
+  String? _getDimensions(MessageEvent event) {
+    if (event.sfs != null && event.sfs?.metadata.width != null && event.sfs?.metadata.height != null) {
+      return '${event.sfs!.metadata.width!}x${event.sfs!.metadata.height!}';
+    } else if (event.fun != null && event.fun?.width != null && event.fun?.height != null) {
+      return '${event.fun!.width!}x${event.fun!.height!}';
+    }
+
+    return null;
+  }
   
   /// Returns true if a file is embedded in [event]. If not, returns false.
   /// [embeddedFileUrl] is the possible Url of the file. If no file is present, then
@@ -763,7 +775,7 @@ class XmppService {
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
       // TODO(Unknown): What about SIMS?
-      thumbnailDimensions: event.sfs?.metadata.dimensions ?? event.fun?.dimensions,
+      thumbnailDimensions: _getDimensions(event),
       quoteId: replyId,
       filename: event.fun?.name,
     );
