@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
@@ -23,7 +24,6 @@ class ProfilePage extends StatelessWidget {
         state.jid,
         state.avatarUrl,
         state.displayName,
-        state.streamManagementSupported,
         (path, hash) => context.read<ProfileBloc>().add(
           AvatarSetEvent(path, hash),
         ),
@@ -75,12 +75,14 @@ class ProfilePage extends StatelessWidget {
                     ? const Icon(Icons.info_outline)
                     : const Icon(Icons.settings),
                   onPressed: () {
+                    if (state.isSelfProfile) {
+                      context.read<ServerInfoBloc>().add(ServerInfoPageRequested());
+                      return;
+                    }
+
                     showModalBottomSheet<dynamic>(
                       context: context,
                       builder: (context) {
-                        if (state.isSelfProfile) {
-                          return buildServerInformationModal();
-                        }
 
                         return buildConversationOptionsModal();
                       },

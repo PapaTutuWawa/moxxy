@@ -3,7 +3,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
@@ -47,22 +46,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ),
       ),
     );
-
-    if (event.isSelfProfile) {
-      // ignore: cast_nullable_to_non_nullable
-      final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-        GetFeaturesCommand(),
-      ) as GetFeaturesEvent;
-
-      emit(
-        state.copyWith(
-          streamManagementSupported: result.supportsStreamManagement,
-          csiSupported: result.supportsCsi,
-          httpFileUploadSupported: result.supportsHttpFileUpload,
-          userBlockingSupported: result.supportsUserBlocking,
-        ),
-      );
-    }
   }
 
   Future<void> _onConversationUpdated(ConversationUpdatedEvent event, Emitter<ProfileState> emit) async {

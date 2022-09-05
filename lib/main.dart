@@ -19,6 +19,7 @@ import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
+import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -37,6 +38,7 @@ import 'package:moxxyv2/ui/pages/login.dart';
 import 'package:moxxyv2/ui/pages/newconversation.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
+import 'package:moxxyv2/ui/pages/server_info.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/appearance.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
@@ -83,6 +85,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
   GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
   GetIt.I.registerSingleton<ShareSelectionBloc>(ShareSelectionBloc());
+  GetIt.I.registerSingleton<ServerInfoBloc>(ServerInfoBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -145,6 +148,9 @@ void main() async {
         ),
         BlocProvider<ShareSelectionBloc>(
           create: (_) => GetIt.I.get<ShareSelectionBloc>(),
+        ),
+        BlocProvider<ServerInfoBloc>(
+          create: (_) => GetIt.I.get<ServerInfoBloc>(),
         ),
       ],
       child: MyApp(navKey),
@@ -307,6 +313,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case sendFilesRoute: return SendFilesPage.route;
           case backgroundCroppingRoute: return CropBackgroundPage.route;
           case shareSelectionRoute: return ShareSelectionPage.route;
+          case serverInfoRoute: return ServerInfoPage.route;
         }
 
         return null;
