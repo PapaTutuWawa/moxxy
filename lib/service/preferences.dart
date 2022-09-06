@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moxxyv2/shared/migrator.dart';
 import 'package:moxxyv2/shared/preferences.dart';
 
-const currentVersion = 7;
+const currentVersion = 8;
 const preferencesVersionKey = 'prefs_version';
 const preferencesDataKey = 'prefs_data';
 
@@ -77,6 +77,22 @@ class _PreferencesMigrator extends Migrator<PreferencesState> {
         youtubeRedirect: data['youtubeRedirect']! as String,
         enableTwitterRedirect: data['enableTwitterRedirect']! as bool,
         enableYoutubeRedirect: data['enableYoutubeRedirect']! as bool,
+      ),),
+      Migration<PreferencesState>(8, (data) => PreferencesState(
+        sendChatMarkers: data['sendChatMarkers']! as bool,
+        sendChatStates: data['sendChatStates']! as bool,
+        showSubscriptionRequests: data['showSubscriptionRequests']! as bool,
+        autoDownloadWifi: data['autoDownloadWifi']! as bool,
+        autoDownloadMobile: data['autoDownloadMobile']! as bool,
+        maximumAutoDownloadSize: data['maximumAutoDownloadSize']! as int,
+        backgroundPath: data['backgroundPath']! as String,
+        isAvatarPublic: data['isAvatarPublic']! as bool,
+        autoAcceptSubscriptionRequests: data['autoAcceptSubscriptionRequests']! as bool,
+        twitterRedirect: data['twitterRedirect']! as String,
+        youtubeRedirect: data['youtubeRedirect']! as String,
+        enableTwitterRedirect: data['enableTwitterRedirect']! as bool,
+        enableYoutubeRedirect: data['enableYoutubeRedirect']! as bool,
+        defaultMuteState: data['defaultMuteState'] as bool? ?? false,
       ),)
     ]
   );

@@ -308,6 +308,13 @@ files:
         extends: BackgroundCommand
         implements:
           - JsonImplementation
+      - name: SetConversationMuteStatusCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          muted: bool
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

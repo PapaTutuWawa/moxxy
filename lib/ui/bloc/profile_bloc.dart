@@ -18,6 +18,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<ConversationUpdatedEvent>(_onConversationUpdated);
     on<AvatarSetEvent>(_onAvatarSet);
     on<SetSubscriptionStateEvent>(_onSetSubscriptionState);
+    on<MuteStateSetEvent>(_onMuteStateSet);
   }
 
   Future<void> _onProfileRequested(ProfilePageRequestedEvent event, Emitter<ProfileState> emit) async {
@@ -85,6 +86,20 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
+      awaitable: false,
+    );
+  }
+
+  Future<void> _onMuteStateSet(MuteStateSetEvent event, Emitter<ProfileState> emit) async {
+    emit(
+      state.copyWith(
+        conversation: state.conversation!.copyWith(
+          muted: event.muted,
+        ),
+      ),
+    );
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      SetConversationMuteStatusCommand(jid: event.jid, muted: event.muted),
       awaitable: false,
     );
   }

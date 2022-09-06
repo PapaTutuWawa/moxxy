@@ -24,6 +24,31 @@ class SettingsPage extends StatelessWidget {
       body: SettingsList(
         sections: [
           SettingsSection(
+            title: const Text('Conversations'),
+            tiles: [
+              SettingsTile(
+                title: const Text('Conversation'),
+                leading: const Icon(Icons.chat_bubble),
+                onPressed: (context) => Navigator.pushNamed(context, conversationSettingsRoute),
+              ),
+              SettingsTile(
+                title: const Text('Appearance'),
+                leading: const Icon(Icons.brush),
+                onPressed: (context) => Navigator.pushNamed(context, appearanceRoute),
+              ),
+              SettingsTile(
+                title: const Text('Network'),
+                leading: const Icon(Icons.network_wifi),
+                onPressed: (context) => Navigator.pushNamed(context, networkRoute),
+              ),
+              SettingsTile(
+                title: const Text('Privacy'),
+                leading: const Icon(Icons.shield),
+                onPressed: (context) => Navigator.pushNamed(context, privacyRoute),
+              )
+            ],
+          ),
+          SettingsSection(
             title: const Text('Account'),
             tiles: [
               SettingsTile(
@@ -43,26 +68,6 @@ class SettingsPage extends StatelessWidget {
                     Navigator.of(context).pop();
                   },
                 ),
-              )
-            ],
-          ),
-          SettingsSection(
-            title: const Text('Conversations'),
-            tiles: [
-              SettingsTile(
-                title: const Text('Appearance'),
-                leading: const Icon(Icons.brush),
-                onPressed: (context) => Navigator.pushNamed(context, appearanceRoute),
-              ),
-              SettingsTile(
-                title: const Text('Network'),
-                leading: const Icon(Icons.network_wifi),
-                onPressed: (context) => Navigator.pushNamed(context, networkRoute),
-              ),
-              SettingsTile(
-                title: const Text('Privacy'),
-                leading: const Icon(Icons.shield),
-                onPressed: (context) => Navigator.pushNamed(context, privacyRoute),
               )
             ],
           ),

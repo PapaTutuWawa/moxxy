@@ -63,6 +63,7 @@ class ConversationService {
       String? avatarUrl,
       List<DBSharedMedium>? sharedMedia,
       ChatState? chatState,
+      bool? muted,
     }
   ) async {
     final conversation = await _getConversationById(id);
@@ -75,6 +76,7 @@ class ConversationService {
       avatarUrl: avatarUrl,
       sharedMedia: sharedMedia,
       chatState: conversation?.chatState ?? ChatState.gone,
+      muted: muted,
     );
 
     _conversationCache.cache(id, newConversation);
@@ -91,6 +93,7 @@ class ConversationService {
     int lastChangeTimestamp,
     List<DBSharedMedium> sharedMedia,
     bool open,
+    bool muted,
   ) async {
     final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
       title,
@@ -101,6 +104,7 @@ class ConversationService {
       lastChangeTimestamp,
       sharedMedia,
       open,
+      muted,
     );
 
     _conversationCache.cache(newConversation.id, newConversation);

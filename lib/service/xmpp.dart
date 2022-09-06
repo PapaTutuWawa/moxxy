@@ -328,6 +328,7 @@ class XmppService {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
     // Path -> Recipient -> Message
     final messages = <String, Map<String, Message>>{};
@@ -406,6 +407,7 @@ class XmppService {
           DateTime.now().millisecondsSinceEpoch,
           sharedMediaMap[recipient]!,
           true,
+          prefs.defaultMuteState,
         );
 
         // Notify the UI
@@ -576,6 +578,7 @@ class XmppService {
         timestamp,
         [],
         true,
+        prefs.defaultMuteState,
       );
 
       sendEvent(ConversationAddedEvent(conversation: conv));
@@ -666,7 +669,7 @@ class XmppService {
   }
 
   /// Extract the dimensions, if existent.
-  /// TODO(PapaTutuWawa): Once we rework the database, remove this and just store the dimensions directly.
+  // TODO(PapaTutuWawa): Once we rework the database, remove this and just store the dimensions directly.
   String? _getDimensions(MessageEvent event) {
     if (event.sfs != null && event.sfs?.metadata.width != null && event.sfs?.metadata.height != null) {
       return '${event.sfs!.metadata.width!}x${event.sfs!.metadata.height!}';
@@ -814,8 +817,10 @@ class XmppService {
     final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
     // The conversation we're about to modify, if it exists
     final conversation = await cs.getConversationByJid(conversationJid);
+    // If the conversation is muted
+    final isMuted = conversation != null ? conversation.muted : prefs.defaultMuteState;
     // Whether to send the notification
-    final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen);
+    final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen) && !isMuted;
     if (conversation != null) {
       // The conversation exists, so we can just update it
       final newConversation = await cs.updateConversation(
@@ -852,6 +857,7 @@ class XmppService {
         messageTimestamp,
         [],
         true,
+        prefs.defaultMuteState,
       );
 
       // Notify the UI

@@ -44,6 +44,7 @@ Conversation conversationDbToModel(DBConversation c, bool inRoster, String subsc
     c.open,
     inRoster,
     subscription,
+    c.muted,
     chatState,
   );
 }
@@ -151,6 +152,7 @@ class DatabaseService {
       String? avatarUrl,
       List<DBSharedMedium>? sharedMedia,
       ChatState? chatState,
+      bool? muted,
     }
   ) async {
     final c = (await _isar.dBConversations.get(id))!;
@@ -173,10 +175,13 @@ class DatabaseService {
     if (sharedMedia != null) {
       c.sharedMedia.addAll(sharedMedia);
     }
+    if (muted != null) {
+      c.muted = muted;
+    }
 
     await _isar.writeTxn(() async {
-        await _isar.dBConversations.put(c);
-        await c.sharedMedia.save();
+      await _isar.dBConversations.put(c);
+      await c.sharedMedia.save();
     });
 
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
@@ -195,6 +200,7 @@ class DatabaseService {
     int lastChangeTimestamp,
     List<DBSharedMedium> sharedMedia,
     bool open,
+    bool muted,
   ) async {
     final c = DBConversation()
       ..jid = jid
@@ -203,7 +209,8 @@ class DatabaseService {
       ..lastChangeTimestamp = lastChangeTimestamp
       ..unreadCounter = unreadCounter
       ..lastMessageBody = lastMessageBody
-      ..open = open;
+      ..open = open
+      ..muted = muted;
 
     c.sharedMedia.addAll(sharedMedia);
 

@@ -1,53 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
-
-/// Builds the widget that will be put into the modal BottomSheet where the user can, for
-/// example disable sharing their online status with the contact.
-Widget buildConversationOptionsModal() {
-  return BlocBuilder<ProfileBloc, ProfileState>(
-    buildWhen: (prev, next) => prev.conversation?.subscription != next.conversation?.subscription,
-    builder: (context, state) => Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: Text(
-            'Contact Options',
-            style: TextStyle(
-              fontSize: 24,
-            ),
-          ),
-        ),
-
-        Table(
-          defaultColumnWidth: const IntrinsicColumnWidth(),
-          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-          children: [
-            TableRow(
-              children: [
-                const Text('Share online status'),
-                Switch(
-                  value: state.conversation!.subscription == 'to' ||
-                         state.conversation!.subscription == 'both',
-                  onChanged: (value) => GetIt.I.get<ProfileBloc>().add(
-                    SetSubscriptionStateEvent(
-                      state.conversation!.jid,
-                      value,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
+//import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
 
@@ -56,6 +15,8 @@ class ConversationProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //final subscribed = conversation.subscription == 'both' || conversation.subscription == 'to';
+    
     return Column(
       children: [
         Hero(
@@ -84,6 +45,104 @@ class ConversationProfileHeader extends StatelessWidget {
             style: const TextStyle(
               fontSize: 15,
             ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Row(
+            //mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Tooltip(
+                message: conversation.muted ?
+                  'Unmute chat' :
+                  'Mute chat',
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SharedMediaContainer(
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: ColoredBox(
+                          color: getTileColor(context),
+                          child: Icon(
+                            conversation.muted ?
+                            Icons.do_not_disturb_on :
+                            Icons.do_not_disturb_off,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        GetIt.I.get<ProfileBloc>().add(
+                          MuteStateSetEvent(
+                            conversation.jid,
+                            !conversation.muted,
+                          ),
+                        );
+                      },
+                    ),
+                    Text(
+                      conversation.muted ?
+                        'Unmute' :
+                        'Mute',
+                      style: const TextStyle(
+                        fontSize: fontsizeAppbar,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // TODO(Unknown): How to integrate this into the UI?
+              /* 
+              Tooltip(
+                message: subscribed ?
+                  'Unsubscribe' :
+                  'Subscribe',
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SharedMediaContainer(
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: ColoredBox(
+                          color: getTileColor(context),
+                          child: Icon(
+                            subscribed ?
+                              PhosphorIcons.link :
+                              PhosphorIcons.linkBreak,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        GetIt.I.get<ProfileBloc>().add(
+                          SetSubscriptionStateEvent(
+                            conversation.jid,
+                            !subscribed,
+                          ),
+                        );
+                      },
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          subscribed ?
+                          'Unsubscribe' :
+                          'Subscribe',
+                          style: TextStyle(
+                            fontSize: fontsizeAppbar,
+                          ),
+                        ),
+
+                        Icon(Icons.info),
+                      ],
+                    ),
+                  ],
+                ),
+              ),*/
+            ],
           ),
         ),
       ],

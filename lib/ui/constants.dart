@@ -18,6 +18,9 @@ const Color bubbleColorReceivedQuoted = bubbleColorReceived;
 
 const double paddingVeryLarge = 64;
 
+const Color tileColorDark = Color(0xff5c5c5c);
+const Color tileColorLight = Color(0xffcbcbcb);
+
 const double fontsizeTitle = 40;
 const double fontsizeSubtitle = 25;
 const double fontsizeAppbar = 20;
@@ -50,6 +53,7 @@ const String privacyRoute = '$settingsRoute/privacy';
 const String networkRoute = '$settingsRoute/network';
 const String appearanceRoute = '$settingsRoute/appearance';
 const String backgroundCroppingRoute = '$settingsRoute/appearance/background';
+const String conversationSettingsRoute = '$settingsRoute/conversation';
 const String blocklistRoute = '/blocklist';
 const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';

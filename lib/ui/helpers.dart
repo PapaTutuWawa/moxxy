@@ -9,6 +9,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action.
@@ -143,4 +144,13 @@ String avatarAltText(String text) {
   if (text.length == 1) return text[0].toUpperCase();
 
   return (text[0] + text[1]).toUpperCase();
+}
+
+/// Return the color used for tiles depending on the system brightness.
+Color getTileColor(BuildContext context) {
+  final theme = Theme.of(context);
+  switch (theme.brightness) {
+    case Brightness.light: return tileColorLight;
+    case Brightness.dark: return tileColorDark;
+  }
 }
