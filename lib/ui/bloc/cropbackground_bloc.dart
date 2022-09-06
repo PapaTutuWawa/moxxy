@@ -65,8 +65,8 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
         image: null,
         blurEnabled: false,
         imagePath: '',
-        imageHeight: 1,
-        imageWidth: 1,
+        imageHeight: 0,
+        imageWidth: 0,
         isWorking: false,
       ),
     );
@@ -74,10 +74,12 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
   
   Future<void> _onRequested(CropBackgroundRequestedEvent event, Emitter<CropBackgroundState> emit) async {
     // Navigate to the page
+    _resetState(emit);
+
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(const NavigationDestination(backgroundCroppingRoute)),
     );
-
+    
     final data = await File(event.path).readAsBytes();
     final imageSize = ImageSizeGetter.getSize(MemoryInput(data));
     emit(

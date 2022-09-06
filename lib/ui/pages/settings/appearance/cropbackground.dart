@@ -32,12 +32,14 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   double _scale = -1;
 
   double _scalingFactor(BuildContext context, CropBackgroundState state) {
-    final size = MediaQuery.of(context).size;
+    final query = MediaQuery.of(context);
+    final width = query.size.width;// * query.devicePixelRatio;
+    final height = query.size.height;// * query.devicePixelRatio;
 
-    final q = size.height / state.imageHeight;
-    final delta = size.width - state.imageWidth * q;
+    final q = height / state.imageHeight;
+    final delta = width - state.imageWidth * q;
     if (delta > 0) {
-      return size.width / state.imageWidth;
+      return width / state.imageWidth;
     } else {
       return q;
     }
@@ -105,7 +107,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
     final query = MediaQuery.of(context);
     return BlocBuilder<CropBackgroundBloc, CropBackgroundState>(
       builder: (BuildContext context, CropBackgroundState state) {
-        if (_scale == -1) {
+        if (_scale == -1 && state.imageWidth != 0 && state.imageHeight != 0) {
           _scale = _scalingFactor(context, state);
         }
 
@@ -122,7 +124,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
               onScaleEnd: (_) => _track = false,
               onScaleUpdate: (event) {
                 if (!_track) return;
-                
+
                 setState(() {
                     _x = min(
                       max(
@@ -146,14 +148,20 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
               },
               child: Stack(
                 children: [
-                  _buildImage(context, state),
+                  // ignore: prefer_if_elements_to_conditional_expressions
+                  state.imageHeight != 0 && state.imageWidth != 0 ?
+                    _buildImage(context, state) :
+                    const SizedBox(),
                   Positioned(
                     top: 8,
                     left: 8,
                     child: Material(
                       color: const Color.fromRGBO(0, 0, 0, 0),
                       child: CancelButton(
-                        onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                        onPressed: () {
+                          context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
+                          context.read<NavigationBloc>().add(PoppedRouteEvent());
+                        },
                       ),
                     ),
                   ),
@@ -206,7 +214,6 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                               BackgroundSetEvent(
                                 _x,
                                 _y,
-                                //_scalingFactor(context, state),
                                 _scale,
                                 MediaQuery.of(context).size.height,
                                 MediaQuery.of(context).size.width,
