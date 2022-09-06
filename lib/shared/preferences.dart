@@ -25,6 +25,7 @@ class PreferencesState with _$PreferencesState {
       @Default('') String youtubeRedirect,
       @Default(false) bool enableTwitterRedirect,
       @Default(false) bool enableYoutubeRedirect,
+      @Default(false) bool defaultMuteState,
   }) = _PreferencesState;
   
   // JSON serialization

@@ -328,6 +328,7 @@ class XmppService {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
     // Path -> Recipient -> Message
     final messages = <String, Map<String, Message>>{};
@@ -406,8 +407,7 @@ class XmppService {
           DateTime.now().millisecondsSinceEpoch,
           sharedMediaMap[recipient]!,
           true,
-          // TODO(PapaTutuWawa): Set using the preferences
-          false,
+          prefs.defaultMuteState,
         );
 
         // Notify the UI
@@ -578,8 +578,7 @@ class XmppService {
         timestamp,
         [],
         true,
-        // TODO(PapaTutuWawa): Set using the preferences,
-        false,
+        prefs.defaultMuteState,
       );
 
       sendEvent(ConversationAddedEvent(conversation: conv));
@@ -819,8 +818,7 @@ class XmppService {
     // The conversation we're about to modify, if it exists
     final conversation = await cs.getConversationByJid(conversationJid);
     // If the conversation is muted
-    // TODO(PapaTutuWawa): Use the preferences for this.
-    final isMuted = conversation != null ? conversation.muted : false;
+    final isMuted = conversation != null ? conversation.muted : prefs.defaultMuteState;
     // Whether to send the notification
     final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen) && !isMuted;
     if (conversation != null) {
@@ -859,8 +857,7 @@ class XmppService {
         messageTimestamp,
         [],
         true,
-        // TODO(PapaTutuWawa): Use the preferences
-        false,
+        prefs.defaultMuteState,
       );
 
       // Notify the UI
