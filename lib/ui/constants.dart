@@ -18,6 +18,9 @@ const Color bubbleColorReceivedQuoted = bubbleColorReceived;
 
 const double paddingVeryLarge = 64;
 
+const Color tileColorDark = Color(0xff5c5c5c);
+const Color tileColorLight = Color(0xffcbcbcb);
+
 const double fontsizeTitle = 40;
 const double fontsizeSubtitle = 25;
 const double fontsizeAppbar = 20;

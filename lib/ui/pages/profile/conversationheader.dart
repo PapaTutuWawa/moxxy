@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -57,7 +59,7 @@ class ConversationProfileHeader extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: ColoredBox(
-                      color: Color(0xff5c5c5c),
+                      color: getTileColor(context),
                       child: Icon(
                         conversation.muted ?
                           Icons.do_not_disturb_on :
@@ -82,7 +84,7 @@ class ConversationProfileHeader extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: ColoredBox(
-                      color: Color(0xff5c5c5c),
+                      color: getTileColor(context),
                       child: Icon(
                         conversation.subscription == 'both' || conversation.subscription == 'to' ?
                           PhosphorIcons.link :
