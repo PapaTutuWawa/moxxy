@@ -24,29 +24,6 @@ class SettingsPage extends StatelessWidget {
       body: SettingsList(
         sections: [
           SettingsSection(
-            title: const Text('Account'),
-            tiles: [
-              SettingsTile(
-                title: const Text('Blocklist'),
-                leading: const Icon(Icons.block),
-                onPressed: (context) => Navigator.pushNamed(context, blocklistRoute),
-              ),
-              SettingsTile(
-                title: const Text('Sign out'),
-                leading: const Icon(Icons.logout),
-                onPressed: (context) => showConfirmationDialog(
-                  'Sign Out',
-                  'You are about to sign out. Proceed?',
-                  context,
-                  () async {
-                    GetIt.I.get<PreferencesBloc>().add(SignedOutEvent());
-                    Navigator.of(context).pop();
-                  },
-                ),
-              )
-            ],
-          ),
-          SettingsSection(
             title: const Text('Conversations'),
             tiles: [
               SettingsTile(
@@ -68,6 +45,29 @@ class SettingsPage extends StatelessWidget {
                 title: const Text('Privacy'),
                 leading: const Icon(Icons.shield),
                 onPressed: (context) => Navigator.pushNamed(context, privacyRoute),
+              )
+            ],
+          ),
+          SettingsSection(
+            title: const Text('Account'),
+            tiles: [
+              SettingsTile(
+                title: const Text('Blocklist'),
+                leading: const Icon(Icons.block),
+                onPressed: (context) => Navigator.pushNamed(context, blocklistRoute),
+              ),
+              SettingsTile(
+                title: const Text('Sign out'),
+                leading: const Icon(Icons.logout),
+                onPressed: (context) => showConfirmationDialog(
+                  'Sign Out',
+                  'You are about to sign out. Proceed?',
+                  context,
+                  () async {
+                    GetIt.I.get<PreferencesBloc>().add(SignedOutEvent());
+                    Navigator.of(context).pop();
+                  },
+                ),
               )
             ],
           ),
