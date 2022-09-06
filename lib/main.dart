@@ -42,6 +42,7 @@ import 'package:moxxyv2/ui/pages/server_info.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/appearance.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
+import 'package:moxxyv2/ui/pages/settings/conversation.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
 import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
@@ -314,6 +315,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case backgroundCroppingRoute: return CropBackgroundPage.route;
           case shareSelectionRoute: return ShareSelectionPage.route;
           case serverInfoRoute: return ServerInfoPage.route;
+          case conversationSettingsRoute: return ConversationSettingsPage.route;
         }
 
         return null;

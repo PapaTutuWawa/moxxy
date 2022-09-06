@@ -50,6 +50,7 @@ const String privacyRoute = '$settingsRoute/privacy';
 const String networkRoute = '$settingsRoute/network';
 const String appearanceRoute = '$settingsRoute/appearance';
 const String backgroundCroppingRoute = '$settingsRoute/appearance/background';
+const String conversationSettingsRoute = '$settingsRoute/conversation';
 const String blocklistRoute = '/blocklist';
 const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';

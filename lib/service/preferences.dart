@@ -92,7 +92,7 @@ class _PreferencesMigrator extends Migrator<PreferencesState> {
         youtubeRedirect: data['youtubeRedirect']! as String,
         enableTwitterRedirect: data['enableTwitterRedirect']! as bool,
         enableYoutubeRedirect: data['enableYoutubeRedirect']! as bool,
-        defaultMuteState: data['defaultMuteState']! as bool,
+        defaultMuteState: data['defaultMuteState'] as bool? ?? false,
       ),)
     ]
   );
