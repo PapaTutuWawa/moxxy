@@ -818,8 +818,11 @@ class XmppService {
     final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
     // The conversation we're about to modify, if it exists
     final conversation = await cs.getConversationByJid(conversationJid);
+    // If the conversation is muted
+    // TODO(PapaTutuWawa): Use the preferences for this.
+    final isMuted = conversation != null ? conversation.muted : false;
     // Whether to send the notification
-    final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen);
+    final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen) && !isMuted;
     if (conversation != null) {
       // The conversation exists, so we can just update it
       final newConversation = await cs.updateConversation(
