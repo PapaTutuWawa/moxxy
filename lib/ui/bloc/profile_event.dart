@@ -43,3 +43,11 @@ class SetSubscriptionStateEvent extends ProfileEvent {
   final String jid;
   final bool shareStatus;
 }
+
+/// Triggered by the UI when we change the mute status of a chat
+class MuteStateSetEvent extends ProfileEvent {
+
+  MuteStateSetEvent(this.jid, this.muted);
+  final String jid;
+  final bool muted;
+}

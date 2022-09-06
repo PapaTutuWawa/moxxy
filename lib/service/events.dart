@@ -55,6 +55,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
       EventTypeMatcher<SignOutCommand>(performSignOut),
       EventTypeMatcher<SendFilesCommand>(performSendFiles),
+      EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -191,6 +192,8 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       -1,
       const [],
       true,
+      // TODO(PapaTutuWawa): Take as an argument
+      false,
     );
 
     sendEvent(
@@ -293,6 +296,8 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       -1,
       [],
       true,
+      // TODO(PapaTutuWawa): Take as an argument
+      false,
     );
     sendEvent(
       AddContactResultEvent(conversation: c, added: true),
@@ -426,4 +431,15 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
 
 Future<void> performSendFiles(SendFilesCommand command, { dynamic extra }) async {
   await GetIt.I.get<XmppService>().sendFiles(command.paths, command.recipients);
+}
+
+Future<void> performSetMuteState(SetConversationMuteStatusCommand command, { dynamic extra }) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(command.jid);
+  final newConversation = await cs.updateConversation(
+    conversation!.id,
+    muted: command.muted,
+  );
+
+  sendEvent(ConversationUpdatedEvent(conversation: newConversation));
 }

@@ -406,6 +406,8 @@ class XmppService {
           DateTime.now().millisecondsSinceEpoch,
           sharedMediaMap[recipient]!,
           true,
+          // TODO(PapaTutuWawa): Set using the preferences
+          false,
         );
 
         // Notify the UI
@@ -576,6 +578,8 @@ class XmppService {
         timestamp,
         [],
         true,
+        // TODO(PapaTutuWawa): Set using the preferences,
+        false,
       );
 
       sendEvent(ConversationAddedEvent(conversation: conv));
@@ -666,7 +670,7 @@ class XmppService {
   }
 
   /// Extract the dimensions, if existent.
-  /// TODO(PapaTutuWawa): Once we rework the database, remove this and just store the dimensions directly.
+  // TODO(PapaTutuWawa): Once we rework the database, remove this and just store the dimensions directly.
   String? _getDimensions(MessageEvent event) {
     if (event.sfs != null && event.sfs?.metadata.width != null && event.sfs?.metadata.height != null) {
       return '${event.sfs!.metadata.width!}x${event.sfs!.metadata.height!}';
@@ -852,6 +856,8 @@ class XmppService {
         messageTimestamp,
         [],
         true,
+        // TODO(PapaTutuWawa): Use the preferences
+        false,
       );
 
       // Notify the UI

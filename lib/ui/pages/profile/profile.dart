@@ -69,25 +69,15 @@ class ProfilePage extends StatelessWidget {
               Positioned(
                 top: 8,
                 right: 8,
-                child: IconButton(
-                  color: Colors.white,
-                  icon: state.isSelfProfile
-                    ? const Icon(Icons.info_outline)
-                    : const Icon(Icons.settings),
-                  onPressed: () {
-                    if (state.isSelfProfile) {
+                child: Visibility(
+                  visible: state.isSelfProfile,
+                  child: IconButton(
+                    color: Colors.white,
+                    icon: const Icon(Icons.info_outline),
+                    onPressed: () {
                       context.read<ServerInfoBloc>().add(ServerInfoPageRequested());
-                      return;
-                    }
-
-                    showModalBottomSheet<dynamic>(
-                      context: context,
-                      builder: (context) {
-
-                        return buildConversationOptionsModal();
-                      },
-                    );
-                  },
+                    },
+                  ),
                 ),
               ),
             ],

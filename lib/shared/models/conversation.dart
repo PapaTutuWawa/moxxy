@@ -36,6 +36,8 @@ class Conversation with _$Conversation {
     bool inRoster,
     // The subscription state of the roster item
     String subscription,
+    // Whether the chat is muted (true = muted, false = not muted)
+    bool muted,
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState,
   ) = _Conversation;

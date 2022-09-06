@@ -23,5 +23,7 @@ class DBConversation {
 
   late bool open;
 
+  late bool muted;
+  
   final sharedMedia = IsarLinks<DBSharedMedium>();
 }
