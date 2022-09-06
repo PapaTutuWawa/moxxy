@@ -36,13 +36,9 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
     final width = query.size.width;// * query.devicePixelRatio;
     final height = query.size.height;// * query.devicePixelRatio;
 
-    print('width: $width, height: $height');
     final q = height / state.imageHeight;
-    print('(q) $height / ${state.imageHeight}: $q');
     final delta = width - state.imageWidth * q;
-    print('(delta) $width - ${state.imageWidth} * $q: $delta');
     if (delta > 0) {
-      print('(delta > 0) $width / ${state.imageWidth}: ${width / state.imageWidth}');
       return width / state.imageWidth;
     } else {
       return q;
@@ -74,10 +70,6 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
         ),
       );
     } else {
-      print('_y: $_y');
-      print('_x: $_x');
-      print('width: ${state.imageWidth} * $_scale: ${state.imageWidth * _scale}');
-      print('height: ${state.imageHeight} * $_scale: ${state.imageHeight * _scale}');
       return Positioned(
         top: _y,
         left: _x,
@@ -156,9 +148,10 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
               },
               child: Stack(
                 children: [
+                  // ignore: prefer_if_elements_to_conditional_expressions
                   state.imageHeight != 0 && state.imageWidth != 0 ?
                     _buildImage(context, state) :
-                    SizedBox(),
+                    const SizedBox(),
                   Positioned(
                     top: 8,
                     left: 8,
@@ -168,7 +161,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                         onPressed: () {
                           context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
                           context.read<NavigationBloc>().add(PoppedRouteEvent());
-                        }
+                        },
                       ),
                     ),
                   ),

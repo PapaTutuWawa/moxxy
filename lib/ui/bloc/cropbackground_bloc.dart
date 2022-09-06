@@ -79,9 +79,6 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(const NavigationDestination(backgroundCroppingRoute)),
     );
-
-    print('(pre) imageWidth: ${state.imageWidth}');
-    print('(pre) imageHeight: ${state.imageHeight}');
     
     final data = await File(event.path).readAsBytes();
     final imageSize = ImageSizeGetter.getSize(MemoryInput(data));
@@ -93,13 +90,9 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
         imageHeight: imageSize.height,
       ),
     );
-
-    print('(post) imageWidth: ${state.imageWidth}');
-    print('(post) imageHeight: ${state.imageHeight}');
   }
 
   Future<void> _onReset(CropBackgroundResetEvent event, Emitter<CropBackgroundState> emit) async {
-    print('RESET');
     _resetState(emit);
   }
 
