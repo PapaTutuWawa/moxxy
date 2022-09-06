@@ -44,13 +44,15 @@ class ConversationProfileHeader extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Row(
             //mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Tooltip(
-                message: 'Mute chat',
+                message: conversation.muted ?
+                  'Unmute chat' :
+                  'Mute chat',
                 child: SharedMediaContainer(
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
