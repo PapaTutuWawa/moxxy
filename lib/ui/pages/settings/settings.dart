@@ -27,14 +27,9 @@ class SettingsPage extends StatelessWidget {
             title: const Text('Conversations'),
             tiles: [
               SettingsTile(
-                title: const Text('Conversation'),
+                title: const Text('Chat'),
                 leading: const Icon(Icons.chat_bubble),
                 onPressed: (context) => Navigator.pushNamed(context, conversationSettingsRoute),
-              ),
-              SettingsTile(
-                title: const Text('Appearance'),
-                leading: const Icon(Icons.brush),
-                onPressed: (context) => Navigator.pushNamed(context, appearanceRoute),
               ),
               SettingsTile(
                 title: const Text('Network'),

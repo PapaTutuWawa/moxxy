@@ -40,7 +40,6 @@ import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/server_info.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
-import 'package:moxxyv2/ui/pages/settings/appearance/appearance.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
 import 'package:moxxyv2/ui/pages/settings/conversation.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
@@ -305,7 +304,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case settingsRoute: return SettingsPage.route;
           case aboutRoute: return SettingsAboutPage.route;
           case licensesRoute: return SettingsLicensesPage.route;
-          case appearanceRoute: return AppearancePage.route;
           case networkRoute: return NetworkPage.route;
           case privacyRoute: return PrivacyPage.route;
           case debuggingRoute: return DebuggingPage.route;
