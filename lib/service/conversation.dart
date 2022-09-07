@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/db/media.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/helpers.dart';

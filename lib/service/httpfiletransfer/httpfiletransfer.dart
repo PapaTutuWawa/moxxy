@@ -9,7 +9,7 @@ import 'package:mime/mime.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';

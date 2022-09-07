@@ -74,6 +74,7 @@ dependencies:
   saslprep: 1.0.2
   settings_ui: 2.0.2
   share_handler: 0.0.16
+  sqflite_sqlcipher: 2.1.1
   #scrollable_positioned_list: 0.2.3
   stack_blur: 0.2.2
   swipeable_tile:

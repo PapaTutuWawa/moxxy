@@ -13,7 +13,7 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/db/media.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
