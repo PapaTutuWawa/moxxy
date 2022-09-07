@@ -14,7 +14,6 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
-import 'package:moxxyv2/service/db/media.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -29,6 +28,7 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/migrator.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/events.dart';
@@ -365,7 +365,7 @@ class XmppService {
 
     // Create the shared media entries
     // Recipient -> [Shared Medium]
-    final sharedMediaMap = <String, List<DBSharedMedium>>{};
+    final sharedMediaMap = <String, List<SharedMedium>>{};
     final rs = GetIt.I.get<RosterService>();
     for (final recipient in recipients) {
       for (final path in paths) {
@@ -378,7 +378,7 @@ class XmppService {
         if (sharedMediaMap.containsKey(recipient)) {
           sharedMediaMap[recipient]!.add(medium);
         } else {
-          sharedMediaMap[recipient] = List<DBSharedMedium>.from([medium]);
+          sharedMediaMap[recipient] = List<SharedMedium>.from([medium]);
         }
       }
 
@@ -596,7 +596,7 @@ class XmppService {
     }
     
     final msg = await ms.updateMessage(
-      dbMsg.id!,
+      dbMsg.id,
       received: true,
     );
 
@@ -616,7 +616,7 @@ class XmppService {
     }
     
     final msg = await ms.updateMessage(
-      dbMsg.id!,
+      dbMsg.id,
       received: dbMsg.received || event.type == 'received' || event.type == 'displayed',
       displayed: dbMsg.displayed || event.type == 'displayed',
     );
@@ -956,7 +956,7 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     final msg = await db.getMessageByXmppId(event.id, jid);
     if (msg != null) {
-      await ms.updateMessage(msg.id!, acked: true);
+      await ms.updateMessage(msg.id, acked: true);
     } else {
       _log.finest('Wanted to mark message as acked but did not find the message to ack');
     }

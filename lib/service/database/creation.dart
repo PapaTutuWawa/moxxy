@@ -14,23 +14,23 @@ Future<void> createDatabase(Database db, int version) async {
       body TEXT,
       timestamp INTEGER NOT NULL,
       sid TEXT NOT NULL,
-      conversation_jid TEXT NOT NULL,
-      is_media INTEGER NOT NULL,
-      is_file_upload_notification INTEGER NOT NULL,
-      error_type INTEGER,
-      media_url TEXT,
-      media_type TEXT,
-      thumbnail_data TEXT,
-      thumbnail_dimensions TEXT,
+      conversationJid TEXT NOT NULL,
+      isMedia INTEGER NOT NULL,
+      isFileUploadNotification INTEGER NOT NULL,
+      errorType INTEGER,
+      mediaUrl TEXT,
+      mediaType TEXT,
+      thumbnailData TEXT,
+      thumbnailDimensions TEXT,
       dimensions TEXT,
-      src_url TEXT,
+      srcUrl TEXT,
       received INTEGER,
       displayed INTEGER,
       acked INTEGER,
-      origin_id TEXT,
+      originId TEXT,
       quote_id INTEGER,
       filename TEXT,
-      FOREIGN KEY (quote_id) REFERENCES Messages (id),
+      FOREIGN KEY (quote_id) REFERENCES Messages (id)
     )''',
   );
 
@@ -41,12 +41,12 @@ Future<void> createDatabase(Database db, int version) async {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       jid TEXT NOT NULL,
       title TEXT NOT NULL,
-      avatar_url TEXT NOT NULL,
-      last_change_timestamp INTEGER NOT NULL,
-      unread_counter INTEGER NOT NULL,
-      last_message_body TEXT NOT NULL,
+      avatarUrl TEXT NOT NULL,
+      lastChangeTimestamp INTEGER NOT NULL,
+      unreadCounter INTEGER NOT NULL,
+      lastMessageBody TEXT NOT NULL,
       open INTEGER NOT NULL,
-      muted INTEGER NOT NULL,
+      muted INTEGER NOT NULL
     )''',
   );
 
@@ -59,7 +59,7 @@ Future<void> createDatabase(Database db, int version) async {
       mime TEXT,
       timestamp INTEGER NOT NULL,
       conversation_id INTEGER NOT NULL,
-      FOREIGN KEY (conversation_id) REFERENCES Conversations (id),
+      FOREIGN KEY (conversation_id) REFERENCES Conversations (id)
     )''',
   );
 
@@ -70,9 +70,10 @@ Future<void> createDatabase(Database db, int version) async {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       jid TEXT NOT NULL,
       title TEXT NOT NULL,
-      avatar_hash TEXT NOT NULL,
+      avatarUrl TEXT NOT NULL,
+      avatarHash TEXT NOT NULL,
       subscription TEXT NOT NULL,
-      ask TEXT NOT NULL,
+      ask TEXT NOT NULL
     )''',
   );
 }

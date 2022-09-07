@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxxyv2/service/database/conversion.dart';
 import 'package:moxxyv2/service/database/creation.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -39,38 +39,83 @@ class DatabaseService {
   
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<List<Conversation>> loadConversations() async {
-    final conversationsRaw = await _isar.dBConversations.where().findAll();
+    final conversationsRaw = await _db.query('Conversations',
+      orderBy: 'lastChangeTimestamp DESC',
+    );
 
+    _log.finest('Conversations: ${conversationsRaw.length}');
+    
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
-      await c.sharedMedia.load();
-      final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
-      final conv = conversationDbToModel(
-        c,
-        rosterItem != null,
-        rosterItem?.subscription ?? 'none',
-        ChatState.gone,
+      final id = c['id']! as int;
+
+      final sharedMediaRaw = await _db.query(
+        'SharedMedia',
+        where: 'conversation_id = ?',
+        whereArgs: [id],
+        orderBy: 'timestamp DESC',
       );
-      tmp.add(conv);
+      final sharedMedia = sharedMediaRaw
+        .map(SharedMedium.fromJson)
+        .toList();
+      final rosterItem = await GetIt.I.get<RosterService>()
+        .getRosterItemByJid(c['jid']! as String);
+
+      tmp.add(
+        Conversation.fromJson({
+          ...c,
+          'muted': intToBool(c['muted']! as int),
+          'open': intToBool(c['open']! as int),
+          'sharedMedia': sharedMedia,
+          'inRoster': rosterItem != null,
+          'subscription': rosterItem?.subscription ?? 'none',
+          'chatState': ConversationChatStateConverter().toJson(ChatState.gone),
+        }),
+      );
     }
 
+    _log.finest(tmp.toString());
+    
     return tmp;
   }
 
   /// Load messages for [jid] from the database.
   Future<List<Message>> loadMessagesForJid(String jid) async {
-    final rawMessages = await _isar.dBMessages.where().conversationJidEqualTo(jid).findAll();
+    final rawMessages = await _db.query(
+      'Messages',
+      where: 'conversationJid = ?',
+      whereArgs: [jid],
+      orderBy: 'timestamp DESC',
+    );
+
     final messages = List<Message>.empty(growable: true);
     for (final m in rawMessages) {
-      await m.quotes.load();
+      Message? quotes;
+      if (m['quote_id'] != null) {
+        final rawQuote = await _db.query(
+          'Messages',
+          where: 'conversationJid = ?, id = ?',
+          whereArgs: [jid, m['id']! as int],
+        );
+        quotes = Message.fromJson(rawQuote.first);
+      }
 
-      final msg = messageDbToModel(m);
-      messages.add(msg);
+      messages.add(
+        Message.fromJson({
+          ...m,
+          'quotes': quotes,
+          'received': intToBool(m['received']! as int),
+          'displayed': intToBool(m['displayed']! as int),
+          'acked': intToBool(m['acked']! as int),
+          'isMedia': intToBool(m['isMedia']! as int),
+          'isFileUploadNotification': intToBool(m['isFileUploadNotification']! as int),
+        }),
+      );
     }
 
     return messages;
   }
-
+  
   /// Updates the conversation with id [id] inside the database.
   Future<Conversation> updateConversation(int id, {
       String? lastMessageBody,
@@ -78,43 +123,60 @@ class DatabaseService {
       bool? open,
       int? unreadCounter,
       String? avatarUrl,
-      List<DBSharedMedium>? sharedMedia,
+      List<SharedMedium>? sharedMedia,
       ChatState? chatState,
       bool? muted,
     }
   ) async {
-    final c = (await _isar.dBConversations.get(id))!;
-    await c.sharedMedia.load();
+    final cd = (await _db.query(
+      'Conversations',
+      where: 'id = ?',
+      whereArgs: [id],
+    )).first;
+    final c = Map<String, dynamic>.from(cd);
+
+    //await c.sharedMedia.load();
     if (lastMessageBody != null) {
-      c.lastMessageBody = lastMessageBody;
+      c['lastMessageBody'] = lastMessageBody;
     }
     if (lastChangeTimestamp != null) {
-      c.lastChangeTimestamp = lastChangeTimestamp;
+      c['lastChangeTimestamp'] = lastChangeTimestamp;
     }
     if (open != null) {
-      c.open = open;
+      c['open'] = boolToInt(open);
     }
     if (unreadCounter != null) {
-      c.unreadCounter = unreadCounter;
+      c['unreadCounter'] = unreadCounter;
     }
     if (avatarUrl != null) {
-      c.avatarUrl = avatarUrl;
+      c['avatarUrl'] = avatarUrl;
     }
     if (sharedMedia != null) {
-      c.sharedMedia.addAll(sharedMedia);
+      // TODO(PapaTutuWawa): Implement
+      //c.sharedMedia.addAll(sharedMedia);
     }
     if (muted != null) {
-      c.muted = muted;
+      c['muted'] = muted;
     }
 
-    await _isar.writeTxn(() async {
-      await _isar.dBConversations.put(c);
-      await c.sharedMedia.save();
-    });
+    await _db.update(
+      'Conversations',
+      c,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
 
-    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? 'none', chatState ?? ChatState.gone);
-    return conversation;
+    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c['jid']! as String);
+    return Conversation.fromJson({
+      ...c,
+      'muted': intToBool(c['muted']! as int),
+      'open': intToBool(c['open']! as int),
+      // TODO(PapaTutuWawa): Implement
+      'sharedMedia': <SharedMedium>[],
+      'inRoster': rosterItem != null,
+      'subscription': rosterItem?.subscription ?? 'none',
+      'chatState': ConversationChatStateConverter().toJson(ChatState.gone),
+    });
   }
 
   /// Creates a [Conversation] inside the database given the data. This is so that the
@@ -126,43 +188,67 @@ class DatabaseService {
     String jid,
     int unreadCounter,
     int lastChangeTimestamp,
-    List<DBSharedMedium> sharedMedia,
+    List<SharedMedium> sharedMedia,
     bool open,
     bool muted,
   ) async {
-    final c = DBConversation()
-      ..jid = jid
-      ..title = title
-      ..avatarUrl = avatarUrl
-      ..lastChangeTimestamp = lastChangeTimestamp
-      ..unreadCounter = unreadCounter
-      ..lastMessageBody = lastMessageBody
-      ..open = open
-      ..muted = muted;
+    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
+    final conversation = Conversation(
+      title,
+      lastMessageBody,
+      avatarUrl,
+      jid,
+      unreadCounter,
+      lastChangeTimestamp,
+      sharedMedia,
+      -1,
+      open,
+      rosterItem != null,
+      rosterItem?.subscription ?? 'none',
+      muted,
+      ChatState.gone,
+    );
 
-    c.sharedMedia.addAll(sharedMedia);
+    // TODO(PapaTutuWawa): Handle shared media
+    //c.sharedMedia.addAll(sharedMedia);
 
-    await _isar.writeTxn(() async {
-        await _isar.dBConversations.put(c);
-    }); 
-
-    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c.jid);
-    final conversation = conversationDbToModel(c, rosterItem != null, rosterItem?.subscription ?? 'none', ChatState.gone); 
-    return conversation;
+    final map = conversation
+      .toJson()
+      ..remove('id')
+      ..remove('chatState')
+      ..remove('sharedMedia')
+      ..remove('inRoster')
+      ..remove('subscription');
+    return conversation.copyWith(
+      id: await _db.insert(
+        'Conversations',
+        {
+          ...map,
+          'open': boolToInt(conversation.open),
+          'muted': boolToInt(conversation.muted),
+        },
+      ),
+    );
   }
 
   /// Like [addConversationFromData] but for [SharedMedium].
-  Future<DBSharedMedium> addSharedMediumFromData(String path, int timestamp, { String? mime }) async {
-    final s = DBSharedMedium()
-      ..path = path
-      ..mime = mime
-      ..timestamp = timestamp;
+  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, { String? mime }) async {
+    final s = SharedMedium(
+      -1,
+      path,
+      timestamp,
+      mime: mime,
+    );
 
-    await _isar.writeTxn(() async {
-        await _isar.dBSharedMediums.put(s);
-    });
-
-    return s;
+    final map = s
+      .toJson()
+      ..remove('id');
+    return s.copyWith(
+      id: await _db.insert(
+        'SharedMedia',
+        map,
+      ),
+    );
   }
   
   /// Same as [addConversationFromData] but for a [Message].
@@ -185,26 +271,30 @@ class DatabaseService {
       String? filename,
     }
   ) async {
-    final m = DBMessage()
-      ..conversationJid = conversationJid
-      ..timestamp = timestamp
-      ..body = body
-      ..sender = sender
-      ..isMedia = isMedia
-      ..mediaType = mediaType
-      ..mediaUrl = mediaUrl
-      ..srcUrl = srcUrl
-      ..sid = sid
-      ..thumbnailData = thumbnailData
-      ..thumbnailDimensions = thumbnailDimensions
-      ..received = false
-      ..displayed = false
-      ..acked = false
-      ..originId = originId
-      ..errorType = noError
-      ..isFileUploadNotification = isFileUploadNotification
-      ..filename = filename;
+    final m = Message(
+      sender,
+      body,
+      timestamp,
+      sid,
+      -1,
+      conversationJid,
+      isMedia,
+      isFileUploadNotification,
+      errorType: noError,
+      mediaUrl: mediaUrl,
+      mediaType: mediaType,
+      thumbnailData: thumbnailData,
+      thumbnailDimensions: thumbnailDimensions,
+      srcUrl: srcUrl,
+      received: false,
+      displayed: false,
+      acked: false,
+      originId: originId,
+      filename: filename,
+    );
 
+    // TODO(PapaTutuWawa): Handle quotes
+    /*
     if (quoteId != null) {
       final quotes = await getMessageByXmppId(quoteId, conversationJid);
       if (quotes != null) {
@@ -213,24 +303,63 @@ class DatabaseService {
         _log.warning('Failed to add quote for message with id $quoteId');
       }
     }
+    */
 
-    await _isar.writeTxn(() async {
-      await _isar.dBMessages.put(m);
-    });
+    final map = m
+      .toJson()
+      ..remove('id')
+      ..remove('quotes')
+      ..remove('isDownloading')
+      ..remove('isUploading');
 
-    final msg = messageDbToModel(m);
-    return msg;
+    Message? quotes;
+    if (quoteId != null) {
+      quotes = await getMessageByXmppId(quoteId, conversationJid);
+      if (quotes != null) {
+        map['quote_id'] = quoteId;
+      } else {
+        _log.warning('Failed to add quote for message with id $quoteId');
+      }
+    }
+
+    return m.copyWith(
+      id: await _db.insert(
+        'Messages',
+        {
+          ...map,
+
+          'isMedia': boolToInt(m.isMedia),
+          'isFileUploadNotification': boolToInt(m.isFileUploadNotification),
+          'received': boolToInt(m.received),
+          'displayed': boolToInt(m.displayed),
+          'acked': boolToInt(m.acked),
+        },
+      ),
+      quotes: quotes,
+    );
   }
 
-  Future<DBMessage?> getMessageByXmppId(String id, String conversationJid) async {
-    return _isar.dBMessages.filter()
-      .conversationJidEqualTo(conversationJid)
-      .and()
-      .group((q) => q
-        .sidEqualTo(id)
-        .or()
-        .originIdEqualTo(id),
-      ).findFirst();
+  Future<Message?> getMessageByXmppId(String id, String conversationJid) async {
+    _log.finest('id: $id, conversationJid: $conversationJid');
+    final messagesRaw = await _db.query(
+      'Messages',
+      where: 'conversationJid = ? AND (sid = ? or originId = ?)',
+      whereArgs: [conversationJid, id, id],
+      limit: 1,
+    );
+
+    if (messagesRaw.isEmpty) return null;
+
+    // TODO(PapaTutuWawa): Load the quoted message
+    final msg = messagesRaw.first;
+    return Message.fromJson({
+      ...msg,
+      'isMedia': intToBool(msg['isMedia']! as int),
+      'isFileUploadNotification': intToBool(msg['isFileUploadNotification']! as int),
+      'received': intToBool(msg['received']! as int),
+      'displayed': intToBool(msg['displayed']! as int),
+      'acked': intToBool(msg['acked']! as int),
+    });
   }
   
   /// Updates the message item with id [id] inside the database.
@@ -244,52 +373,73 @@ class DatabaseService {
     bool? isFileUploadNotification,
     String? srcUrl,
   }) async {
-    final i = (await _isar.dBMessages.get(id))!;
+    final md = (await _db.query(
+      'Messages',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    )).first;
+    final m = Map<String, dynamic>.from(md);
+
     if (mediaUrl != null) {
-      i.mediaUrl = mediaUrl;
+      m['mediaUrl'] = mediaUrl;
     }
     if (mediaType != null) {
-      i.mediaType = mediaType;
+      m['mediaType'] = mediaType;
     }
     if (received != null) {
-      i.received = received;
+      m['received'] = boolToInt(received);
     }
     if (displayed != null) {
-      i.displayed = displayed;
+      m['displayed'] = boolToInt(displayed);
     }
     if (acked != null) {
-      i.acked = acked;
+      m['acked'] = boolToInt(acked);
     }
     if (errorType != null) {
-      i.errorType = errorType;
+      m['errorType'] = errorType;
     }
     if (isFileUploadNotification != null) {
-      i.isFileUploadNotification = isFileUploadNotification;
+      m['isFileUploadNotification'] = boolToInt(isFileUploadNotification);
     }
     if (srcUrl != null) {
-      i.srcUrl = srcUrl;
+      m['srcUrl'] = srcUrl;
     }
 
-    await _isar.writeTxn(() async {
-      await _isar.dBMessages.put(i);
-    });
-    await i.quotes.load();
+    await _db.update(
+      'Messages',
+      m,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     
-    final msg = messageDbToModel(i);
-    return msg;
+    return Message.fromJson({
+      ...m,
+      'isMedia': intToBool(m['isMedia']! as int),
+      'isFileUploadNotification': intToBool(m['isFileUploadNotification']! as int),
+      'received': intToBool(m['received']! as int),
+      'displayed': intToBool(m['displayed']! as int),
+      'acked': intToBool(m['acked']! as int),
+    });
   }
   
   /// Loads roster items from the database
   Future<List<RosterItem>> loadRosterItems() async {
-    final roster = await _isar.dBRosterItems.where().findAll();
-    return roster.map(rosterDbToModel).toList();
+    final items = await _db.query('RosterItems');
+
+    return items.map((item) {
+      item['groups'] = <String>[];
+      return RosterItem.fromJson(item);
+    }).toList();
   }
 
   /// Removes a roster item from the database and cache
   Future<void> removeRosterItem(int id) async {
-    await _isar.writeTxn(() async {
-        await _isar.dBRosterItems.delete(id);
-    });
+    await _db.delete(
+      'RosterItems',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   /// Create a roster item from data
@@ -304,21 +454,28 @@ class DatabaseService {
       List<String> groups = const [],
     }
   ) async {
-    final rosterItem = DBRosterItem()
-      ..jid = jid
-      ..title = title
-      ..avatarUrl = avatarUrl
-      ..avatarHash = avatarHash
-      ..subscription = subscription
-      ..ask = ask
-      ..groups = groups;
+    // TODO(PapaTutuWawa): Handle groups
+    final i = RosterItem(
+      -1,
+      avatarUrl,
+      avatarHash,
+      jid,
+      title,
+      subscription,
+      ask,
+      <String>[],
+    );
 
-    await _isar.writeTxn(() async {
-        await _isar.dBRosterItems.put(rosterItem);
-    });
-
-    final item = rosterDbToModel(rosterItem);
-    return item;
+    final map = i
+      .toJson()
+      ..remove('id');
+    
+    return i.copyWith(
+      id: await _db.insert(
+        'RosterItems',
+        map,
+      ),
+    );
   }
 
   /// Updates the roster item with id [id] inside the database.
@@ -332,31 +489,41 @@ class DatabaseService {
       List<String>? groups,
     }
   ) async {
-    final i = (await _isar.dBRosterItems.get(id))!;
+    final id_ = (await _db.query(
+      'RosterItems',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    )).first;
+    final i = Map<String, dynamic>.from(id_);
+
     if (avatarUrl != null) {
-      i.avatarUrl = avatarUrl;
+      i['avatarUrl'] = avatarUrl;
     }
     if (avatarHash != null) {
-      i.avatarHash = avatarHash;
+      i['avatarHash'] = avatarHash;
     }
     if (title != null) {
-      i.title = title;
+      i['title'] = title;
     }
+    /*
     if (groups != null) {
       i.groups = groups;
     }
+    */
     if (subscription != null) {
-      i.subscription = subscription;
+      i['subscription'] = subscription;
     }
     if (ask != null) {
-      i.ask = ask;
+      i['ask'] = ask;
     }
 
-    await _isar.writeTxn(() async {
-        await _isar.dBRosterItems.put(i);
-    });
-
-    final item = rosterDbToModel(i);
-    return item;
+    await _db.update(
+      'RosterItems',
+      i,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    return RosterItem.fromJson(i);
   }
 }

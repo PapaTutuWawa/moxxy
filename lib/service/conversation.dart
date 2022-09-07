@@ -1,9 +1,9 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/database.dart';
-import 'package:moxxyv2/service/db/media.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 class ConversationService {
@@ -61,7 +61,7 @@ class ConversationService {
       bool? open,
       int? unreadCounter,
       String? avatarUrl,
-      List<DBSharedMedium>? sharedMedia,
+      List<SharedMedium>? sharedMedia,
       ChatState? chatState,
       bool? muted,
     }
@@ -91,7 +91,7 @@ class ConversationService {
     String jid,
     int unreadCounter,
     int lastChangeTimestamp,
-    List<DBSharedMedium> sharedMedia,
+    List<SharedMedium> sharedMedia,
     bool open,
     bool muted,
   ) async {
