@@ -213,7 +213,7 @@ class XmppService {
         sid,
         false,
         originId: originId,
-        quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+        quoteId: quotedMessage?.sid,
       );
 
       // Using the same ID should be fine.
@@ -231,7 +231,7 @@ class XmppService {
           originId: originId,
           quoteBody: quotedMessage?.body,
           quoteFrom: quotedMessage?.sender,
-          quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+          quoteId: quotedMessage?.sid,
           chatState: chatState,
         ),
       );
