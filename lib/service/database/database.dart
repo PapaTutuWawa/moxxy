@@ -1,13 +1,8 @@
 import 'dart:async';
-
 import 'package:get_it/get_it.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/conversion.dart';
-import 'package:moxxyv2/service/db/conversation.dart';
-import 'package:moxxyv2/service/db/media.dart';
-import 'package:moxxyv2/service/db/message.dart';
-import 'package:moxxyv2/service/db/roster.dart';
+import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -15,25 +10,28 @@ import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
+import 'package:sqflite_sqlcipher/sqflite.dart';
 
 class DatabaseService {
   
   DatabaseService() : _log = Logger('DatabaseService');
-  late Isar _isar;
+  late Database _db;
   
   final Logger _log;
 
   Future<void> initialize() async {
-    final dir = await getApplicationSupportDirectory();
-    _isar = await Isar.open(
-      [
-        DBConversationSchema,
-        DBRosterItemSchema,
-        DBMessageSchema,
-        DBSharedMediumSchema
-      ],
-      directory: dir.path,
+    final dbPath = path.join(
+      await getDatabasesPath(),
+      'moxxy.db',
+    );
+
+    // TODO(PapaTutuWawa): Set a password and use it
+    _db = await openDatabase(
+      dbPath,
+      version: 1,
+      onCreate: createDatabase,
+      onConfigure: configureDatabase,
     );
 
     _log.finest('Database setup done');
