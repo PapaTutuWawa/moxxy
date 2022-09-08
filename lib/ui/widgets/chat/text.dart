@@ -34,7 +34,7 @@ class TextChatWidget extends StatelessWidget {
         children: [
           ...topWidget != null ? [ topWidget! ] : [],
           Padding(
-            padding: topWidget != null ? const EdgeInsets.only(left: 8) : EdgeInsets.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ParsedText(
               text: message.body,
               style: TextStyle(
