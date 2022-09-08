@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/constants.dart';
@@ -13,13 +15,19 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:path/path.dart' as path;
+import 'package:random_string/random_string.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
+
+const databasePasswordKey = 'database_encryption_password';
 
 class DatabaseService {
   
   DatabaseService() : _log = Logger('DatabaseService');
   late Database _db;
-  
+  final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    // TODO(Unknown): Set other options
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  ); 
   final Logger _log;
 
   Future<void> initialize() async {
@@ -28,9 +36,20 @@ class DatabaseService {
       'moxxy.db',
     );
 
-    // TODO(PapaTutuWawa): Set a password and use it
+    String key;
+    if (await _storage.containsKey(key: databasePasswordKey)) {
+      _log.finest('Database encryption key found');
+      key = (await _storage.read(key: databasePasswordKey))!;
+    } else {
+      _log.finest('Database encryption not key found. Generating it...');
+      key = randomAlphaNumeric(40, provider: CoreRandomProvider.from(Random.secure()));
+      await _storage.write(key: databasePasswordKey, value: key);
+      _log.finest('Key generation done...');
+    }
+    
     _db = await openDatabase(
       dbPath,
+      password: key,
       version: 1,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
