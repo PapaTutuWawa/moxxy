@@ -736,8 +736,10 @@ class XmppService {
 
     final state = await getXmppState();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    // The (portential) roster item of the chat partner
+    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(conversationJid);
     // Is the conversation partner in our roster
-    final isInRoster = await GetIt.I.get<RosterService>().isInRoster(conversationJid);
+    final isInRoster = rosterItem != null;
     // True if the message was sent by us (via a Carbon)
     final sent = event.isCarbon && event.fromJid.toBare().toString() == state.jid;
     // The timestamp at which we received the message
@@ -865,9 +867,9 @@ class XmppService {
     } else {
       // The conversation does not exist, so we must create it
       final newConversation = await cs.addConversationFromData(
-        conversationJid.split('@')[0], // TODO(Unknown): Check with the roster and User Nickname
+        rosterItem?.title ?? conversationJid.split('@')[0],
         conversationBody,
-        '', // TODO(Unknown): Check if we know the avatar url already, e.g. from the roster
+        rosterItem?.avatarUrl ?? '',
         conversationJid,
         sent ? 0 : 1,
         messageTimestamp,
