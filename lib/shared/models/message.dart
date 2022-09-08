@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 
 part 'message.freezed.dart';
 part 'message.g.dart';
@@ -8,7 +9,7 @@ class Message with _$Message {
   // NOTE: id is the database id of the message
   // NOTE: isMedia is for telling the UI that this message contains the URL for media but the path is not yet available
   // NOTE: srcUrl is the Url that a file has been or can be downloaded from
-  
+ 
   factory Message(
     String sender,
     String body,
@@ -36,6 +37,37 @@ class Message with _$Message {
     }
   ) = _Message;
 
-  // JSON
+  const Message._();
+  
+  /// JSON
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
+
+  factory Message.fromDatabaseJson(Map<String, dynamic> json, Message? quotes) {
+    return Message.fromJson({
+      ...json,
+      'received': intToBool(json['received']! as int),
+      'displayed': intToBool(json['displayed']! as int),
+      'acked': intToBool(json['acked']! as int),
+      'isMedia': intToBool(json['isMedia']! as int),
+      'isFileUploadNotification': intToBool(json['isFileUploadNotification']! as int),
+    }).copyWith(quotes: quotes);
+  }
+  
+  Map<String, dynamic> toDatabaseJson(int? quoteId) {
+    final map = toJson()
+      ..remove('id')
+      ..remove('quotes')
+      ..remove('isDownloading')
+      ..remove('isUploading');
+
+    return {
+      ...map,
+      'isMedia': boolToInt(isMedia),
+      'isFileUploadNotification': boolToInt(isFileUploadNotification),
+      'received': boolToInt(received),
+      'displayed': boolToInt(displayed),
+      'acked': boolToInt(acked),
+      'quote_id': quoteId,
+    };
+  }
 }

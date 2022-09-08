@@ -42,8 +42,6 @@ class DatabaseService {
     final conversationsRaw = await _db.query('Conversations',
       orderBy: 'lastChangeTimestamp DESC',
     );
-
-    _log.finest('Conversations: ${conversationsRaw.length}');
     
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
@@ -55,22 +53,16 @@ class DatabaseService {
         whereArgs: [id],
         orderBy: 'timestamp DESC',
       );
-      final sharedMedia = sharedMediaRaw
-        .map(SharedMedium.fromJson)
-        .toList();
       final rosterItem = await GetIt.I.get<RosterService>()
         .getRosterItemByJid(c['jid']! as String);
 
       tmp.add(
-        Conversation.fromJson({
-          ...c,
-          'muted': intToBool(c['muted']! as int),
-          'open': intToBool(c['open']! as int),
-          'sharedMedia': sharedMedia,
-          'inRoster': rosterItem != null,
-          'subscription': rosterItem?.subscription ?? 'none',
-          'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
-        }),
+        Conversation.fromDatabaseJson(
+          c,
+          rosterItem != null,
+          rosterItem?.subscription ?? 'none',
+          sharedMediaRaw,
+        ),
       );
     }
 
@@ -97,27 +89,10 @@ class DatabaseService {
           where: 'conversationJid = ? AND id = ?',
           whereArgs: [jid, m['id']! as int],
         )).first;
-        quotes = Message.fromJson({
-          ...rawQuote,
-
-          'isMedia': intToBool(rawQuote['isMedia']! as int),
-          'isFileUploadNotification': intToBool(rawQuote['isFileUploadNotification']! as int),
-          'received': intToBool(rawQuote['received']! as int),
-          'displayed': intToBool(rawQuote['displayed']! as int),
-          'acked': intToBool(rawQuote['acked']! as int),
-        });
+        quotes = Message.fromDatabaseJson(rawQuote, null);
       }
 
-      final msg = Message.fromJson({
-        ...m,
-        'received': intToBool(m['received']! as int),
-        'displayed': intToBool(m['displayed']! as int),
-        'acked': intToBool(m['acked']! as int),
-        'isMedia': intToBool(m['isMedia']! as int),
-        'isFileUploadNotification': intToBool(m['isFileUploadNotification']! as int),
-      });
-
-      messages.add(msg.copyWith(quotes: quotes));
+      messages.add(Message.fromDatabaseJson(m, quotes));
     }
 
     return messages;
@@ -174,16 +149,13 @@ class DatabaseService {
     );
 
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c['jid']! as String);
-    return Conversation.fromJson({
-      ...c,
-      'muted': intToBool(c['muted']! as int),
-      'open': intToBool(c['open']! as int),
+    return Conversation.fromDatabaseJson(
+      c,
+      rosterItem != null,
+      rosterItem?.subscription ?? 'none',
       // TODO(PapaTutuWawa): Implement
-      'sharedMedia': <SharedMedium>[],
-      'inRoster': rosterItem != null,
-      'subscription': rosterItem?.subscription ?? 'none',
-      'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
-    });
+      <Map<String, dynamic>>[],
+    );
   }
 
   /// Creates a [Conversation] inside the database given the data. This is so that the
@@ -219,22 +191,8 @@ class DatabaseService {
     // TODO(PapaTutuWawa): Handle shared media
     //c.sharedMedia.addAll(sharedMedia);
 
-    final map = conversation
-      .toJson()
-      ..remove('id')
-      ..remove('chatState')
-      ..remove('sharedMedia')
-      ..remove('inRoster')
-      ..remove('subscription');
     return conversation.copyWith(
-      id: await _db.insert(
-        'Conversations',
-        {
-          ...map,
-          'open': boolToInt(conversation.open),
-          'muted': boolToInt(conversation.muted),
-        },
-      ),
+      id: await _db.insert('Conversations', conversation.toDatabaseJson()),
     );
   }
 
@@ -247,14 +205,8 @@ class DatabaseService {
       mime: mime,
     );
 
-    final map = s
-      .toJson()
-      ..remove('id');
     return s.copyWith(
-      id: await _db.insert(
-        'SharedMedia',
-        map,
-      ),
+      id: await _db.insert('SharedMedia', s.toDatabaseJson()),
     );
   }
   
@@ -300,37 +252,16 @@ class DatabaseService {
       filename: filename,
     );
 
-    final map = m
-      .toJson()
-      ..remove('id')
-      ..remove('quotes')
-      ..remove('isDownloading')
-      ..remove('isUploading');
-
-    _log.finest('quoteId: $quoteId');
     Message? quotes;
     if (quoteId != null) {
       quotes = await getMessageByXmppId(quoteId, conversationJid);
-      if (quotes != null) {
-        map['quote_id'] = quotes.id;
-      } else {
+      if (quotes == null) {
         _log.warning('Failed to add quote for message with id $quoteId');
       }
     }
 
     return m.copyWith(
-      id: await _db.insert(
-        'Messages',
-        {
-          ...map,
-
-          'isMedia': boolToInt(m.isMedia),
-          'isFileUploadNotification': boolToInt(m.isFileUploadNotification),
-          'received': boolToInt(m.received),
-          'displayed': boolToInt(m.displayed),
-          'acked': boolToInt(m.acked),
-        },
-      ),
+      id: await _db.insert('Messages', m.toDatabaseJson(quotes?.id)),
       quotes: quotes,
     );
   }
@@ -347,14 +278,7 @@ class DatabaseService {
 
     // TODO(PapaTutuWawa): Load the quoted message
     final msg = messagesRaw.first;
-    return Message.fromJson({
-      ...msg,
-      'isMedia': intToBool(msg['isMedia']! as int),
-      'isFileUploadNotification': intToBool(msg['isFileUploadNotification']! as int),
-      'received': intToBool(msg['received']! as int),
-      'displayed': intToBool(msg['displayed']! as int),
-      'acked': intToBool(msg['acked']! as int),
-    });
+    return Message.fromDatabaseJson(msg, null);
   }
   
   Future<Message?> getMessageByXmppId(String id, String conversationJid) async {
@@ -369,14 +293,7 @@ class DatabaseService {
 
     // TODO(PapaTutuWawa): Load the quoted message
     final msg = messagesRaw.first;
-    return Message.fromJson({
-      ...msg,
-      'isMedia': intToBool(msg['isMedia']! as int),
-      'isFileUploadNotification': intToBool(msg['isFileUploadNotification']! as int),
-      'received': intToBool(msg['received']! as int),
-      'displayed': intToBool(msg['displayed']! as int),
-      'acked': intToBool(msg['acked']! as int),
-    });
+    return Message.fromDatabaseJson(msg, null);
   }
   
   /// Updates the message item with id [id] inside the database.
@@ -435,26 +352,14 @@ class DatabaseService {
       quotes = await getMessageById(m['quote_id']! as int);
     }
     
-    return Message.fromJson({
-      ...m,
-      'isMedia': intToBool(m['isMedia']! as int),
-      'isFileUploadNotification': intToBool(m['isFileUploadNotification']! as int),
-      'received': intToBool(m['received']! as int),
-      'displayed': intToBool(m['displayed']! as int),
-      'acked': intToBool(m['acked']! as int),
-    }).copyWith(quotes: quotes);
+    return Message.fromDatabaseJson(m, quotes);
   }
   
   /// Loads roster items from the database
   Future<List<RosterItem>> loadRosterItems() async {
     final items = await _db.query('RosterItems');
 
-    return items.map((item) {
-      return RosterItem.fromJson({
-        ...item,
-        'groups': <String>[],
-      });
-    }).toList();
+    return items.map(RosterItem.fromDatabaseJson).toList();
   }
 
   /// Removes a roster item from the database and cache
@@ -490,16 +395,8 @@ class DatabaseService {
       <String>[],
     );
 
-    final map = i
-      .toJson()
-      ..remove('id')
-      ..remove('groups');
-    
     return i.copyWith(
-      id: await _db.insert(
-        'RosterItems',
-        map,
-      ),
+      id: await _db.insert('RosterItems', i.toDatabaseJson()),
     );
   }
 
@@ -549,9 +446,6 @@ class DatabaseService {
       where: 'id = ?',
       whereArgs: [id],
     );
-    return RosterItem.fromJson({
-      ...i,
-      'groups': <String>[],
-    });
+    return RosterItem.fromDatabaseJson(i);
   }
 }

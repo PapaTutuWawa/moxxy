@@ -12,6 +12,17 @@ class SharedMedium with _$SharedMedium {
     { String? mime, }
   ) = _SharedMedia;
 
+  const SharedMedium._();
+  
   // JSON
   factory SharedMedium.fromJson(Map<String, dynamic> json) => _$SharedMediumFromJson(json);
+
+  factory SharedMedium.fromDatabaseJson(Map<String, dynamic> json) {
+    return SharedMedium.fromJson(json);
+  }
+
+  Map<String, dynamic> toDatabaseJson() {
+    return toJson()
+      ..remove('id');
+  }
 }

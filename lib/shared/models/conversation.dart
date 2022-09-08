@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
@@ -42,8 +43,37 @@ class Conversation with _$Conversation {
     @ConversationChatStateConverter() ChatState chatState,
   ) = _Conversation;
 
-  // JSON
+  const Conversation._();
+  
+  /// JSON
   factory Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
+
+  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<Map<String, dynamic>> sharedMedia) {
+    return Conversation.fromJson({
+      ...json,
+      'muted': intToBool(json['muted']! as int),
+      'open': intToBool(json['open']! as int),
+      'sharedMedia': sharedMedia,
+      'inRoster': inRoster,
+      'subscription': subscription,
+      'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
+    });
+  }
+  
+  Map<String, dynamic> toDatabaseJson() {
+    final map = toJson()
+      ..remove('id')
+      ..remove('chatState')
+      ..remove('sharedMedia')
+      ..remove('inRoster')
+      ..remove('subscription');
+
+    return {
+      ...map,
+      'open': boolToInt(open),
+      'muted': boolToInt(muted),
+    };
+  }
 }
 
 /// Sorts conversations in descending order by their last change timestamp.
