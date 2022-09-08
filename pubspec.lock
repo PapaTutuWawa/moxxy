@@ -260,13 +260,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.3"
-  dartx:
-    dependency: transitive
-    description:
-      name: dartx
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.0"
   dbus:
     dependency: transitive
     description:
@@ -573,27 +566,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.3"
-  isar:
-    dependency: "direct main"
-    description:
-      name: isar
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.0-dev.13"
-  isar_flutter_libs:
-    dependency: "direct main"
-    description:
-      name: isar_flutter_libs
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.0-dev.13"
-  isar_generator:
-    dependency: "direct dev"
-    description:
-      name: isar_generator
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.0-dev.13"
   js:
     dependency: transitive
     description:
@@ -1126,6 +1098,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.2"
+  sqflite_common:
+    dependency: transitive
+    description:
+      name: sqflite_common
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.2.1+1"
+  sqflite_sqlcipher:
+    dependency: "direct main"
+    description:
+      name: sqflite_sqlcipher
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
   stack_blur:
     dependency: "direct main"
     description:
@@ -1205,13 +1191,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.13"
-  time:
-    dependency: transitive
-    description:
-      name: time
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.1"
   timezone:
     dependency: transitive
     description:
@@ -1382,13 +1361,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.0"
-  xxh3:
-    dependency: transitive
-    description:
-      name: xxh3
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.1"
   yaml:
     dependency: transitive
     description:

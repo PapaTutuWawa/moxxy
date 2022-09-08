@@ -13,8 +13,7 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database.dart';
-import 'package:moxxyv2/service/db/media.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -29,6 +28,7 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/migrator.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/events.dart';
@@ -213,7 +213,7 @@ class XmppService {
         sid,
         false,
         originId: originId,
-        quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+        quoteId: quotedMessage?.sid,
       );
 
       // Using the same ID should be fine.
@@ -231,7 +231,7 @@ class XmppService {
           originId: originId,
           quoteBody: quotedMessage?.body,
           quoteFrom: quotedMessage?.sender,
-          quoteId: quotedMessage?.originId ?? quotedMessage?.sid,
+          quoteId: quotedMessage?.sid,
           chatState: chatState,
         ),
       );
@@ -324,6 +324,21 @@ class XmppService {
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
   }
 
+  Future<List<SharedMedium>> _createSharedMedia(List<String> paths, int conversationId) async {
+    final sharedMedia = List<SharedMedium>.empty(growable: true);
+    for (final path in paths) {
+      sharedMedia.add(
+        await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
+          path,
+          DateTime.now().millisecondsSinceEpoch,
+          conversationId,
+          mime: lookupMimeType(path),
+        ),
+      );
+    }
+    return sharedMedia;
+  }
+  
   Future<void> sendFiles(List<String> paths, List<String> recipients) async {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
@@ -365,23 +380,9 @@ class XmppService {
 
     // Create the shared media entries
     // Recipient -> [Shared Medium]
-    final sharedMediaMap = <String, List<DBSharedMedium>>{};
+    final sharedMediaMap = <String, List<SharedMedium>>{};
     final rs = GetIt.I.get<RosterService>();
     for (final recipient in recipients) {
-      for (final path in paths) {
-        final medium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
-          path,
-          DateTime.now().millisecondsSinceEpoch,
-          mime: lookupMimeType(path),
-        );
-
-        if (sharedMediaMap.containsKey(recipient)) {
-          sharedMediaMap[recipient]!.add(medium);
-        } else {
-          sharedMediaMap[recipient] = List<DBSharedMedium>.from([medium]);
-        }
-      }
-
       final lastFileMime = lookupMimeType(paths.last);
       final conversation = await cs.getConversationByJid(recipient);
       if (conversation != null) {
@@ -390,10 +391,20 @@ class XmppService {
           conversation.id,
           lastMessageBody: mimeTypeToConversationBody(lastFileMime),
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
-          sharedMedia: sharedMediaMap[recipient],
           open: true,
         );
-        sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
+
+        sharedMediaMap[recipient] = await _createSharedMedia(paths, conversation.id);
+        sendEvent(
+          ConversationUpdatedEvent(
+            conversation: updatedConversation.copyWith(
+              sharedMedia: [
+                ...sharedMediaMap[recipient]!,
+                ...conversation.sharedMedia,
+              ],
+            ),
+          ),
+        );
       } else {
         // Create conversation
         final rosterItem = await rs.getRosterItemByJid(recipient);
@@ -405,13 +416,19 @@ class XmppService {
           recipient,
           0,
           DateTime.now().millisecondsSinceEpoch,
-          sharedMediaMap[recipient]!,
           true,
           prefs.defaultMuteState,
         );
 
         // Notify the UI
-        sendEvent(ConversationAddedEvent(conversation: newConversation));
+        sharedMediaMap[recipient] = await _createSharedMedia(paths, newConversation.id);
+        sendEvent(
+          ConversationAddedEvent(
+            conversation: newConversation.copyWith(
+              sharedMedia: sharedMediaMap[recipient]!,
+            ),
+          ),
+        );
       }
     }
 
@@ -576,7 +593,6 @@ class XmppService {
         bare.toString(),
         0,
         timestamp,
-        [],
         true,
         prefs.defaultMuteState,
       );
@@ -596,7 +612,7 @@ class XmppService {
     }
     
     final msg = await ms.updateMessage(
-      dbMsg.id!,
+      dbMsg.id,
       received: true,
     );
 
@@ -616,7 +632,7 @@ class XmppService {
     }
     
     final msg = await ms.updateMessage(
-      dbMsg.id!,
+      dbMsg.id,
       received: dbMsg.received || event.type == 'received' || event.type == 'displayed',
       displayed: dbMsg.displayed || event.type == 'displayed',
     );
@@ -855,7 +871,6 @@ class XmppService {
         conversationJid,
         sent ? 0 : 1,
         messageTimestamp,
-        [],
         true,
         prefs.defaultMuteState,
       );
@@ -956,7 +971,7 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     final msg = await db.getMessageByXmppId(event.id, jid);
     if (msg != null) {
-      await ms.updateMessage(msg.id!, acked: true);
+      await ms.updateMessage(msg.id, acked: true);
     } else {
       _log.finest('Wanted to mark message as acked but did not find the message to ack');
     }

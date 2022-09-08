@@ -16,6 +16,23 @@ class RosterItem with _$RosterItem {
     List<String> groups,
   ) = _RosterItem;
 
-  // JSON
+  const RosterItem._();
+  
+  /// JSON
   factory RosterItem.fromJson(Map<String, dynamic> json) => _$RosterItemFromJson(json);
+
+  factory RosterItem.fromDatabaseJson(Map<String, dynamic> json) {
+    return RosterItem.fromJson({
+      ...json,
+      // TODO(PapaTutuWawa): Fix
+      'groups': <String>[],
+    });
+  }
+
+  Map<String, dynamic> toDatabaseJson() {
+    return toJson()
+      ..remove('id')
+      // TODO(PapaTutuWawa): Fix
+      ..remove('groups');
+  }
 }

@@ -5,7 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
@@ -190,7 +190,6 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       command.jid,
       0,
       -1,
-      const [],
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,
@@ -294,7 +293,6 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       jid,
       0,
       -1,
-      [],
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,

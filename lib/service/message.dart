@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxxyv2/service/database.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 

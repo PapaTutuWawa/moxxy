@@ -1,6 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/service/database.dart';
-import 'package:moxxyv2/service/db/media.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -61,7 +60,6 @@ class ConversationService {
       bool? open,
       int? unreadCounter,
       String? avatarUrl,
-      List<DBSharedMedium>? sharedMedia,
       ChatState? chatState,
       bool? muted,
     }
@@ -74,7 +72,6 @@ class ConversationService {
       open: open,
       unreadCounter: unreadCounter,
       avatarUrl: avatarUrl,
-      sharedMedia: sharedMedia,
       chatState: conversation?.chatState ?? ChatState.gone,
       muted: muted,
     );
@@ -91,7 +88,6 @@ class ConversationService {
     String jid,
     int unreadCounter,
     int lastChangeTimestamp,
-    List<DBSharedMedium> sharedMedia,
     bool open,
     bool muted,
   ) async {
@@ -102,7 +98,6 @@ class ConversationService {
       jid,
       unreadCounter,
       lastChangeTimestamp,
-      sharedMedia,
       open,
       muted,
     );
