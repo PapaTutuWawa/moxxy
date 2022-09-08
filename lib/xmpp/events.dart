@@ -177,12 +177,11 @@ class PubSubNotificationEvent extends XmppEvent {
   final String from;
 }
 
-/// Triggered by the StreamManagementManager if a message stanza has been acked
-class MessageAckedEvent extends XmppEvent {
+/// Triggered by the StreamManagementManager if a stanza has been acked
+class StanzaAckedEvent extends XmppEvent {
 
-  MessageAckedEvent({ required this.id, required this.to });
-  final String id;
-  final String to;
+  StanzaAckedEvent(this.stanza);
+  final Stanza stanza;
 }
 
 /// Triggered when receiving a push of the blocklist
@@ -201,5 +200,6 @@ class BlocklistUnblockPushEvent extends XmppEvent {
 
 /// Triggered when receiving a push of the blocklist
 class BlocklistUnblockAllPushEvent extends XmppEvent {
+
   BlocklistUnblockAllPushEvent();
 }

@@ -116,7 +116,7 @@ class XmppService {
         EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
         EventTypeMatcher<RosterPushEvent>(_onRosterPush),
         EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
-        EventTypeMatcher<MessageAckedEvent>(_onMessageAcked),
+        EventTypeMatcher<StanzaAckedEvent>(_onStanzaAcked),
         EventTypeMatcher<MessageEvent>(_onMessage),
         EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
         EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
@@ -967,10 +967,10 @@ class XmppService {
     );
   }
   
-  Future<void> _onMessageAcked(MessageAckedEvent event, { dynamic extra }) async {
-    final jid = JID.fromString(event.to).toBare().toString();
+  Future<void> _onStanzaAcked(StanzaAckedEvent event, { dynamic extra }) async {
+    final jid = JID.fromString(event.stanza.to!).toBare().toString();
     final ms = GetIt.I.get<MessageService>();
-    final msg = await ms.getMessageByStanzaId(jid, event.id);
+    final msg = await ms.getMessageByStanzaId(jid, event.stanza.id!);
     if (msg != null) {
       final newMsg = await ms.updateMessage(msg.id, acked: true);
 

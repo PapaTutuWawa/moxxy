@@ -18,10 +18,12 @@ import 'package:synchronized/synchronized.dart';
 
 const xmlUintMax = 4294967296; // 2**32
 
+typedef StanzaAckedCallback = bool Function(Stanza stanza);
+
 class StreamManagementManager extends XmppManagerBase {
 
   StreamManagementManager({
-      this.ackTimeout = const Duration(seconds: 30),
+    this.ackTimeout = const Duration(seconds: 30),
   })
   : _state = StreamManagementState(0, 0),
     _unackedStanzas = {},
@@ -69,6 +71,15 @@ class StreamManagementManager extends XmppManagerBase {
     return acks;
   }
 
+  /// Called when a stanza has been acked to decide whether we should trigger a
+  /// StanzaAckedEvent.
+  ///
+  /// Return true when the stanza should trigger this event. Return false if not.
+  @visibleForOverriding
+  bool shouldTriggerAckedEvent(Stanza stanza) {
+    return false;
+  }
+  
   @override
   Future<bool> isSupported() async {
     return getAttributes().getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!.isSupported;
@@ -297,13 +308,10 @@ class StreamManagementManager extends XmppManagerBase {
 
           final stanza = _unackedStanzas[height]!;
           _unackedStanzas.remove(height);
-          if (stanza.tag == 'message' && stanza.id != null) {
-            attrs.sendEvent(
-              MessageAckedEvent(
-                id: stanza.id!,
-                to: stanza.to!,
-              ),
-            );
+
+          // Create a StanzaAckedEvent if the stanza is correct
+          if (shouldTriggerAckedEvent(stanza)) {
+            attrs.sendEvent(StanzaAckedEvent(stanza));
           }
         }
 
