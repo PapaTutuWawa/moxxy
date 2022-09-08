@@ -969,11 +969,12 @@ class XmppService {
   
   Future<void> _onMessageAcked(MessageAckedEvent event, { dynamic extra }) async {
     final jid = JID.fromString(event.to).toBare().toString();
-    final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
-    final msg = await db.getMessageByXmppId(event.id, jid);
+    final msg = await ms.getMessageByStanzaId(jid, event.id);
     if (msg != null) {
-      await ms.updateMessage(msg.id, acked: true);
+      final newMsg = await ms.updateMessage(msg.id, acked: true);
+
+      sendEvent(MessageUpdatedEvent(message: newMsg));
     } else {
       _log.finest('Wanted to mark message as acked but did not find the message to ack');
     }
