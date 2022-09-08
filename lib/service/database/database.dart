@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -9,6 +10,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:moxxyv2/shared/preferences.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -444,5 +446,67 @@ class DatabaseService {
       whereArgs: [id],
     );
     return RosterItem.fromDatabaseJson(i);
+  }
+
+  Future<PreferencesState> getPreferences() async {
+    final preferencesRaw = (await _db.query(preferenceTable))
+      .map((preference) {
+        switch (preference['type']! as int) {
+          case typeInt: return {
+            ...preference,
+            'value': stringToInt(preference['value']! as String),
+          };
+          case typeBool: return {
+            ...preference,
+            'value': stringToBool(preference['value']! as String),
+          };
+          case typeString:
+          default: return preference;
+        }
+      }).toList();
+    final json = <String, dynamic>{};
+    for (final preference in preferencesRaw) {
+      json[preference['key']! as String] = preference['value'];
+    }
+
+    return PreferencesState.fromJson(json);
+  }
+
+  Future<void> savePreferences(PreferencesState state) async {
+    final stateJson = state.toJson();
+    final preferences = stateJson.keys
+      .map((key) {
+        int type;
+        String value;
+        if (stateJson[key] is int) {
+          type = typeInt;
+          value = intToString(stateJson[key]! as int);
+        } else if (stateJson[key] is bool) {
+          type = typeBool;
+          value = boolToString(stateJson[key]! as bool);
+        } else {
+          type = typeString;
+          value = stateJson[key]! as String;
+        }
+
+        return {
+          'key': key,
+          'type': type,
+          'value': value,
+        };
+      });
+
+    final batch = _db.batch();
+
+    for (final preference in preferences) {
+      batch.update(
+        preferenceTable,
+        preference,
+        where: 'key = ?',
+        whereArgs: [preference['key']],
+      );
+    }
+    
+    await batch.commit();
   }
 }
