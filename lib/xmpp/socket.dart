@@ -57,6 +57,10 @@ abstract class BaseSocketWrapper {
 
   /// Returns true if it manages its own keepalive pings, like websockets. False if not.
   bool managesKeepalives();
+
+  /// Brings the socket into a state that allows it to close without triggering any errors
+  /// to the XmppConnection.
+  void prepareDisconnect() {}
 }
 
 /// TCP socket implementation for XmppConnection
@@ -66,8 +70,10 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   : _log = Logger('TCPSocketWrapper'),
     _dataStream = StreamController.broadcast(),
     _eventStream = StreamController.broadcast(),
-    _secure = false;
+    _secure = false,
+    _ignoreSocketClosure = false;
   Socket? _socket;
+  bool _ignoreSocketClosure;
   final StreamController<String> _dataStream;
   final StreamController<XmppSocketEvent> _eventStream;
   StreamSubscription<dynamic>? _socketSubscription;
@@ -109,6 +115,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     for (final srv in results) {
       try {
         _log.finest('Attempting secure connection to ${srv.target}:${srv.port}...');
+        _ignoreSocketClosure = true;
         _socket = await SecureSocket.connect(
           srv.target,
           srv.port,
@@ -117,11 +124,13 @@ class TCPSocketWrapper extends BaseSocketWrapper {
           onBadCertificate: (cert) => _onBadCertificate(cert, domain),
         );
 
+        _ignoreSocketClosure = false;
         _secure = true;
         _log.finest('Success!');
         return true;
       } on SocketException catch(e) {
         _log.finest('Failure! $e');
+        _ignoreSocketClosure = false;
       }
     }
 
@@ -136,15 +145,19 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     for (final srv in results) {
       try {
         _log.finest('Attempting connection to ${srv.target}:${srv.port}...');
+        _ignoreSocketClosure = true;
         _socket = await Socket.connect(
           srv.target,
           srv.port,
           timeout: const Duration(seconds: 5),
         );
+
+        _ignoreSocketClosure = false;
         _log.finest('Success!');
         return true;
       } on SocketException catch(e) {
         _log.finest('Failure! $e');
+        _ignoreSocketClosure = false;
         continue;
       }
     }
@@ -158,6 +171,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   Future<bool> _hostPortConnect(String host, int port) async {
     try {
       _log.finest('Attempting fallback connection to $host:$port...');
+      _ignoreSocketClosure = true;
       _socket = await Socket.connect(
         host,
         port,
@@ -167,6 +181,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       return true;
     } on SocketException catch(e) {
       _log.finest('Failure! $e');
+      _ignoreSocketClosure = false;
       return false;
     }
   }
@@ -191,6 +206,8 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       _log.severe('Failed to secure socket since _socket is null');
       return false;
     }
+
+    _ignoreSocketClosure = true;
     
     try {
       _socket = await SecureSocket.secure(
@@ -200,9 +217,11 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       );
 
       _secure = true;
+      _ignoreSocketClosure = false;
       _setupStreams();
       return true;
     } on SocketException {
+      _ignoreSocketClosure = false;
       return false;
     }
   }
@@ -226,12 +245,15 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     );
     // ignore: implicit_dynamic_parameter
     _socket!.done.then((_) {
+      if (!_ignoreSocketClosure) {
         _eventStream.add(XmppSocketClosureEvent());
+      }
     });
   }
   
   @override
   Future<bool> connect(String domain, { String? host, int? port }) async {
+    _ignoreSocketClosure = false;
     _secure = false;
 
     // Connection order:
@@ -274,11 +296,13 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       return;
     }
 
+    _ignoreSocketClosure = true;
     try {
       _socket!.close();
     } catch(e) {
       _log.warning('Closing socket threw exception: $e');
     }
+    _ignoreSocketClosure = false;
   }
 
   @override
@@ -308,5 +332,10 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       _log.severe(e);
       _eventStream.add(XmppSocketErrorEvent(e));
     }
+  }
+
+  @override
+  void prepareDisconnect() {
+    _ignoreSocketClosure = true;
   }
 }

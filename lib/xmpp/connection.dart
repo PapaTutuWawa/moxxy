@@ -88,7 +88,6 @@ class XmppConnection {
     _eventStreamController = StreamController.broadcast(),
     _resource = '',
     _streamBuffer = XmlStreamBuffer(),
-    _expectSocketClosure = false,
     _uuid = const Uuid(),
     _socket = socket ?? TCPSocketWrapper(),
     _awaitingResponse = {},
@@ -156,9 +155,6 @@ class XmppConnection {
   RoutingState _routingState;
   /// The currently bound resource or '' if none has been bound yet.
   String _resource;
-  /// For indicating whether we expect the socket to close to prevent accidentally
-  /// triggering a reconnection attempt when we don't want to.
-  bool _expectSocketClosure;
   /// True if we are authenticated. False if not.
   bool _isAuthenticated;
   /// Timer for the keep-alive ping.
@@ -262,7 +258,6 @@ class XmppConnection {
           () => _connectionSettings.jid.withResource(_resource),
           () => _socket,
           () => _isAuthenticated,
-          (bool value) => _expectSocketClosure = value,
         ),
       );
       _featureNegotiators[negotiator.id] = negotiator;
@@ -340,14 +335,11 @@ class XmppConnection {
     _log.finest('_attemptReconnection: Done');
 
     // Prevent the reconnection triggering another reconnection
-    _expectSocketClosure = true;
     _socket.close();
     _log.finest('_attemptReconnection: Socket closed');
 
-    // Reset the state
-    _expectSocketClosure = false;
-
     // Connect again
+    // ignore: cascade_invocations
     _log.finest('Calling connect() from _attemptReconnection');
     await connect();
   }
@@ -370,14 +362,8 @@ class XmppConnection {
     if (event is XmppSocketErrorEvent) {
       await handleError(event.error);
     } else if (event is XmppSocketClosureEvent) {
-      // Only reconnect if we didn't expect this
-      if (!_expectSocketClosure) {
-        _log.fine('Received XmppSocketClosureEvent, but _expectSocketClosure is false. Reconnecting...');
-        await _reconnectionPolicy.onFailure();
-      } else {
-        _log.fine('Received XmppSocketClosureEvent, but ignoring it since _expectSocketClosure is true. Setting _expectSocketClosure back to false');
-        _expectSocketClosure = false;
-      }
+      _log.fine('Received XmppSocketClosureEvent. Reconnecting...');
+      await _reconnectionPolicy.onFailure();
     }
   }
 
@@ -758,7 +744,6 @@ class XmppConnection {
   }
 
   void _closeSocket() {
-    _expectSocketClosure = true;
     _socket.close();
   }
   
@@ -907,8 +892,8 @@ class XmppConnection {
   /// Attempt to gracefully close the session
   Future<void> disconnect() async {
     _reconnectionPolicy.setShouldReconnect(false);
-    _expectSocketClosure = true;
     getPresenceManager().sendUnavailablePresence();
+    _socket.prepareDisconnect();
     sendRawString('</stream:stream>');
     await _setConnectionState(XmppConnectionState.notConnected);
     _socket.close();
@@ -944,7 +929,6 @@ class XmppConnection {
     
     _runPreConnectionAssertions();
     _reconnectionPolicy.setShouldReconnect(true);
-    _expectSocketClosure = false;
     
     if (lastResource != null) {
       setResource(lastResource);
@@ -964,13 +948,11 @@ class XmppConnection {
       port = parsed.port;
     }
 
-    _expectSocketClosure = true;
     final result = await _socket.connect(
       _connectionSettings.jid.domain,
       host: host,
       port: port,
     );
-    _expectSocketClosure = false;
     if (!result) {
       await handleError(null);
     } else {

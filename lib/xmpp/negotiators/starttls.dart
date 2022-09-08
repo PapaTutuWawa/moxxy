@@ -41,9 +41,6 @@ class StartTlsNegotiator extends XmppFeatureNegotiatorBase {
           return;
         }
 
-        _log.fine('Telling the connection to expect a socket closure');
-        attributes.setExpectSocketClosure(true);
-        
         _log.fine('Securing socket');
         final result = await attributes.getSocket()
           .secure(attributes.getConnectionSettings().jid.domain);
@@ -55,9 +52,6 @@ class StartTlsNegotiator extends XmppFeatureNegotiatorBase {
 
         _log.fine('Stream is now TLS secured');
         state = NegotiatorState.done;
-
-        _log.fine('Telling the connection to not expect a socket closure anymore');
-        attributes.setExpectSocketClosure(false);
         break;
     }
   }

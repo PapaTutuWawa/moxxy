@@ -32,7 +32,6 @@ class NegotiatorAttributes {
     this.getFullJID,
     this.getSocket,
     this.isAuthenticated,
-    this.setExpectSocketClosure,
   );
   /// Sends the nonza nonza and optionally redacts it in logs if redact is not null.
   final void Function(XMLNode nonza, {String? redact}) sendNonza;
@@ -50,8 +49,6 @@ class NegotiatorAttributes {
   final BaseSocketWrapper Function() getSocket;
   /// Returns true if the stream is authenticated. Returns false if not.
   final bool Function() isAuthenticated;
-  /// Tells the connection whether to expect a socket closure or not.
-  final void Function(bool value) setExpectSocketClosure;
 }
 
 abstract class XmppFeatureNegotiatorBase {
