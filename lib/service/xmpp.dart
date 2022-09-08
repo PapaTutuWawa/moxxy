@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_size_getter/file_input.dart';
+import 'package:image_size_getter/image_size_getter.dart' as image_size;
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
@@ -349,6 +352,8 @@ class XmppService {
     final messages = <String, Map<String, Message>>{};
     // Path -> Thumbnails
     final thumbnails = <String, List<Thumbnail>>{};
+    // Path -> Dimensions
+    final dimensions = <String, Size>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -356,6 +361,15 @@ class XmppService {
       final pathMime = lookupMimeType(path);
 
       for (final recipient in recipients) {
+        // TODO(Unknown): Do the same for videos
+        if (pathMime != null && pathMime.startsWith('image/')) {
+          final imageSize = image_size.ImageSizeGetter.getSize(FileInput(File(path)));
+          dimensions[path] = Size(
+            imageSize.width.toDouble(),
+            imageSize.height.toDouble(),
+          );
+        }
+
         final msg = await ms.addMessageFromData(
           '',
           DateTime.now().millisecondsSinceEpoch, 
@@ -367,6 +381,8 @@ class XmppService {
           mediaUrl: path,
           mediaType: pathMime,
           originId: conn.generateId(),
+          mediaWidth: dimensions[path]?.width.toInt(),
+          mediaHeight: dimensions[path]?.height.toInt(),
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
@@ -684,13 +700,18 @@ class XmppService {
     ]);
   }
 
-  /// Extract the dimensions, if existent.
-  // TODO(PapaTutuWawa): Once we rework the database, remove this and just store the dimensions directly.
-  String? _getDimensions(MessageEvent event) {
+  /// Extract the embedded dimensions, if existent.
+  Size? _getDimensions(MessageEvent event) {
     if (event.sfs != null && event.sfs?.metadata.width != null && event.sfs?.metadata.height != null) {
-      return '${event.sfs!.metadata.width!}x${event.sfs!.metadata.height!}';
+      return Size(
+        event.sfs!.metadata.width!.toDouble(),
+        event.sfs!.metadata.height!.toDouble(),
+      );
     } else if (event.fun != null && event.fun?.width != null && event.fun?.height != null) {
-      return '${event.fun!.width!}x${event.fun!.height!}';
+      return Size(
+        event.fun!.width!.toDouble(),
+        event.fun!.height!.toDouble(),
+      );
     }
 
     return null;
@@ -784,6 +805,7 @@ class XmppService {
 
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
+    final dimensions = _getDimensions(event);
     var message = await ms.addMessageFromData(
       messageBody,
       messageTimestamp,
@@ -795,8 +817,8 @@ class XmppService {
       srcUrl: embeddedFileUrl,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
-      // TODO(Unknown): What about SIMS?
-      thumbnailDimensions: _getDimensions(event),
+      mediaWidth: dimensions?.width.toInt(),
+      mediaHeight: dimensions?.height.toInt(),
       quoteId: replyId,
       filename: event.fun?.name,
     );

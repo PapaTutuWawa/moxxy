@@ -41,7 +41,8 @@ class MessageService {
       String? mediaUrl,
       String? mediaType,
       String? thumbnailData,
-      String? thumbnailDimensions,
+      int? mediaWidth,
+      int? mediaHeight,
       String? originId,
       String? quoteId,
       String? filename,
@@ -59,7 +60,8 @@ class MessageService {
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       thumbnailData: thumbnailData,
-      thumbnailDimensions: thumbnailDimensions,
+      mediaWidth: mediaWidth,
+      mediaHeight: mediaHeight,
       originId: originId,
       quoteId: quoteId,
       filename: filename,
@@ -95,6 +97,8 @@ class MessageService {
     int? errorType,
     bool? isFileUploadNotification,
     String? srcUrl,
+    int? mediaWidth,
+    int? mediaHeight,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -106,6 +110,8 @@ class MessageService {
       errorType: errorType,
       isFileUploadNotification: isFileUploadNotification,
       srcUrl: srcUrl,
+      mediaWidth: mediaWidth,
+      mediaHeight: mediaHeight,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

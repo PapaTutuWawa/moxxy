@@ -5,16 +5,17 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
-/// Extract the size of the thumbnail from a message
-Size getThumbnailSize(Message message, double maxWidth) {
-  final size = message.thumbnailDimensions?.split('x');
+/// Calculate the transformed size of a media message based on its stored
+/// dimensions.
+Size getMediaSize(Message message, double maxWidth) {
+  final mediaWidth = message.mediaWidth?.toDouble();
+  final mediaHeight = message.mediaHeight?.toDouble();
+  
   var width = maxWidth;
   var height = maxWidth;
-  if (size != null) {
-    final dimWidth = int.parse(size[0]).toDouble();
-    final dimHeight = int.parse(size[1]).toDouble();
-    width = min(dimWidth, maxWidth);
-    height = (width / dimWidth) * dimHeight;
+  if (mediaWidth != null && mediaHeight != null) {
+    width = min(mediaWidth, maxWidth);
+    height = (width / mediaWidth) * mediaHeight;
   }
 
   return Size(width, height);

@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:get_it/get_it.dart';
+import 'package:image_size_getter/file_input.dart';
+import 'package:image_size_getter/image_size_getter.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -299,14 +301,31 @@ class HttpFileTransferService {
         final notification = GetIt.I.get<NotificationsService>();
         final mime = job.mimeGuess ?? lookupMimeType(downloadedPath);
 
-        if (mime != null && ['image/', 'video/', 'audio/'].any(mime.startsWith)) {
-          MoxplatformPlugin.media.scanFile(downloadedPath);
-        }
+        int? mediaWidth;
+        int? mediaHeight;
+        if (mime != null) {
+          if (mime.startsWith('image/')) {
+            MoxplatformPlugin.media.scanFile(downloadedPath);
 
+            // Find out the dimensions
+            // TODO(Unknown): Restrict to the library's supported file types
+            final size = ImageSizeGetter.getSize(FileInput(File(downloadedPath)));
+            mediaWidth = size.width;
+            mediaHeight = size.height;
+          } else if (mime.startsWith('video/')) {
+            // TODO(Unknown): Also figure out the thumbnail size here
+            MoxplatformPlugin.media.scanFile(downloadedPath);
+          } else if (mime.startsWith('audio/')) {
+            MoxplatformPlugin.media.scanFile(downloadedPath);
+          }
+        }
+        
         final msg = await GetIt.I.get<MessageService>().updateMessage(
           job.mId,
           mediaUrl: downloadedPath,
           mediaType: mime,
+          mediaWidth: mediaWidth,
+          mediaHeight: mediaHeight,
           isFileUploadNotification: false,
         );
 

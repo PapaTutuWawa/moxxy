@@ -45,16 +45,16 @@ class VideoChatWidget extends StatelessWidget {
 
   Widget _buildDownloading() {
     if (message.thumbnailData != null) {
-      final thumbnailSize = getThumbnailSize(message, maxWidth);
+      final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
         SizedBox(
-          width: thumbnailSize.width,
-          height: thumbnailSize.height,
+          width: size.width,
+          height: size.height,
           child: BlurHash(
             hash: message.thumbnailData!,
-            decodingWidth: thumbnailSize.width.toInt(),
-            decodingHeight: thumbnailSize.height.toInt(),
+            decodingWidth: size.width.toInt(),
+            decodingHeight: size.height.toInt(),
           ),
         ),
         MessageBubbleBottom(message, sent),
@@ -91,16 +91,16 @@ class VideoChatWidget extends StatelessWidget {
 
   Widget _buildDownloadable() {
     if (message.thumbnailData != null) {
-      final thumbnailSize = getThumbnailSize(message, maxWidth);
+      final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
          SizedBox(
-          width: thumbnailSize.width,
-          height: thumbnailSize.height,
+          width: size.width,
+          height: size.height,
           child: BlurHash(
             hash: message.thumbnailData!,
-            decodingWidth: thumbnailSize.width.toInt(),
-            decodingHeight: thumbnailSize.height.toInt(),
+            decodingWidth: size.width.toInt(),
+            decodingHeight: size.height.toInt(),
           ),
         ),
         MessageBubbleBottom(message, sent),

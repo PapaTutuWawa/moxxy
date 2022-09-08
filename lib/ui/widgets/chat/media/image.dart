@@ -40,16 +40,16 @@ class ImageChatWidget extends StatelessWidget {
 
   Widget _buildDownloading() {
     if (message.thumbnailData != null) {
-      final thumbnailSize = getThumbnailSize(message, maxWidth);
+      final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
         SizedBox(
-          width: thumbnailSize.width,
-          height: thumbnailSize.height,
+          width: size.width,
+          height: size.height,
           child: BlurHash(
             hash: message.thumbnailData!,
-            decodingWidth: thumbnailSize.width.toInt(),
-            decodingHeight: thumbnailSize.height.toInt(),
+            decodingWidth: size.width.toInt(),
+            decodingHeight: size.height.toInt(),
           ),
         ),
         MessageBubbleBottom(message, sent),
@@ -70,8 +70,21 @@ class ImageChatWidget extends StatelessWidget {
 
   /// The image exists locally
   Widget _buildImage() {
+    final size = getMediaSize(message, maxWidth);
+
+    Widget image;
+    if (message.mediaWidth != null && message.mediaHeight != null) {
+      image = SizedBox(
+        width: size.width,
+        height: size.height,
+        child: Image.file(File(message.mediaUrl!)),
+      );
+    } else {
+      image = Image.file(File(message.mediaUrl!));
+    }
+
     return MediaBaseChatWidget(
-      Image.file(File(message.mediaUrl!)),
+      image,
       MessageBubbleBottom(message, sent),
       radius,
       onTap: () {
@@ -82,16 +95,16 @@ class ImageChatWidget extends StatelessWidget {
 
   Widget _buildDownloadable() {
     if (message.thumbnailData != null) {
-      final thumbnailSize = getThumbnailSize(message, maxWidth);
+      final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
          SizedBox(
-          width: thumbnailSize.width,
-          height: thumbnailSize.height,
+          width: size.width,
+          height: size.height,
           child: BlurHash(
             hash: message.thumbnailData!,
-            decodingWidth: thumbnailSize.width.toInt(),
-            decodingHeight: thumbnailSize.height.toInt(),
+            decodingWidth: size.width.toInt(),
+            decodingHeight: size.height.toInt(),
           ),
         ),
         MessageBubbleBottom(message, sent),

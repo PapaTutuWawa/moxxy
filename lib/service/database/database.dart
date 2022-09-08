@@ -242,7 +242,8 @@ class DatabaseService {
       String? mediaUrl,
       String? mediaType,
       String? thumbnailData,
-      String? thumbnailDimensions,
+      int? mediaWidth,
+      int? mediaHeight,
       String? originId,
       String? quoteId,
       String? filename,
@@ -261,7 +262,8 @@ class DatabaseService {
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       thumbnailData: thumbnailData,
-      thumbnailDimensions: thumbnailDimensions,
+      mediaWidth: mediaWidth,
+      mediaHeight: mediaHeight,
       srcUrl: srcUrl,
       received: false,
       displayed: false,
@@ -324,6 +326,8 @@ class DatabaseService {
     int? errorType,
     bool? isFileUploadNotification,
     String? srcUrl,
+    int? mediaWidth,
+    int? mediaHeight,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -356,6 +360,12 @@ class DatabaseService {
     }
     if (srcUrl != null) {
       m['srcUrl'] = srcUrl;
+    }
+    if (mediaWidth != null) {
+      m['mediaWidth'] = mediaWidth;
+    }
+    if (mediaHeight != null) {
+      m['mediaHeight'] = mediaHeight;
     }
 
     await _db.update(
