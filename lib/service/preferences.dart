@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/database.dart';
-import 'package:moxxyv2/shared/preferences.dart';
+import 'package:moxxyv2/shared/models/preferences.dart';
 
 class PreferencesService {
   PreferencesState? _preferences;
