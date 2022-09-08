@@ -353,8 +353,7 @@ class StreamManagementManager extends XmppManagerBase {
     await _incrementC2S();
     _unackedStanzas[_state.c2s] = stanza;
     
-    if (isStreamManagementEnabled() && !state.retransmitted) {
-      //logger.finest("Sending ack request");
+    if (isStreamManagementEnabled()) {
       await _sendAckRequest();
     }
 
@@ -373,9 +372,8 @@ class StreamManagementManager extends XmppManagerBase {
     // Retransmit the rest of the queue
     final attrs = getAttributes();
     for (final stanza in stanzas) {
-      await attrs.sendStanza(stanza, awaitable: false, retransmitted: true);
+      await attrs.sendStanza(stanza, awaitable: false);
     }
-    sendAckRequestPing();
   }
 
   /// Pings the connection open by send an ack request

@@ -26,7 +26,7 @@ class XmppManagerAttributes {
     required this.getNegotiatorById,
   });
   /// Send a stanza whose response can be awaited.
-  final Future<XMLNode> Function(Stanza stanza, { StanzaFromType addFrom, bool addId, bool awaitable, bool retransmitted}) sendStanza;
+  final Future<XMLNode> Function(Stanza stanza, { StanzaFromType addFrom, bool addId, bool awaitable}) sendStanza;
 
   /// Send a nonza.
   final void Function(XMLNode) sendNonza;
