@@ -17,6 +17,7 @@ import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/message.dart';
@@ -320,11 +321,11 @@ class HttpFileTransferService {
         final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
           downloadedPath,
           msg.timestamp,
+          conv.id,
           mime: mime,
         );
-        final newConv = await GetIt.I.get<ConversationService>().updateConversation(
-          conv.id,
-          sharedMedia: [sharedMedium],
+        final newConv = conv.copyWith(
+          sharedMedia: List<SharedMedium>.from(conv.sharedMedia)..add(sharedMedium),
         );
         sendEvent(ConversationUpdatedEvent(conversation: newConv));
       }

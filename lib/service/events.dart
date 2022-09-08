@@ -190,7 +190,6 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       command.jid,
       0,
       -1,
-      const [],
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,
@@ -294,7 +293,6 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       jid,
       0,
       -1,
-      [],
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,

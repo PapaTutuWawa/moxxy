@@ -105,7 +105,6 @@ class DatabaseService {
       bool? open,
       int? unreadCounter,
       String? avatarUrl,
-      List<SharedMedium>? sharedMedia,
       ChatState? chatState,
       bool? muted,
     }
@@ -117,6 +116,13 @@ class DatabaseService {
     )).first;
     final c = Map<String, dynamic>.from(cd);
 
+    final sharedMedia = (await _db.query(
+      'SharedMedia',
+      where: 'conversation_id = ?',
+      whereArgs: [id],
+      orderBy: 'timestamp DESC',
+    )).map(SharedMedium.fromDatabaseJson);
+    
     //await c.sharedMedia.load();
     if (lastMessageBody != null) {
       c['lastMessageBody'] = lastMessageBody;
@@ -132,10 +138,6 @@ class DatabaseService {
     }
     if (avatarUrl != null) {
       c['avatarUrl'] = avatarUrl;
-    }
-    if (sharedMedia != null) {
-      // TODO(PapaTutuWawa): Implement
-      //c.sharedMedia.addAll(sharedMedia);
     }
     if (muted != null) {
       c['muted'] = muted;
@@ -153,8 +155,7 @@ class DatabaseService {
       c,
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
-      // TODO(PapaTutuWawa): Implement
-      <Map<String, dynamic>>[],
+      sharedMedia.map((m) => m.toJson()).toList(),
     );
   }
 
@@ -167,7 +168,6 @@ class DatabaseService {
     String jid,
     int unreadCounter,
     int lastChangeTimestamp,
-    List<SharedMedium> sharedMedia,
     bool open,
     bool muted,
   ) async {
@@ -179,7 +179,7 @@ class DatabaseService {
       jid,
       unreadCounter,
       lastChangeTimestamp,
-      sharedMedia,
+      <SharedMedium>[],
       -1,
       open,
       rosterItem != null,
@@ -188,16 +188,13 @@ class DatabaseService {
       ChatState.gone,
     );
 
-    // TODO(PapaTutuWawa): Handle shared media
-    //c.sharedMedia.addAll(sharedMedia);
-
     return conversation.copyWith(
       id: await _db.insert('Conversations', conversation.toDatabaseJson()),
     );
   }
 
   /// Like [addConversationFromData] but for [SharedMedium].
-  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, { String? mime }) async {
+  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, int conversationId, { String? mime }) async {
     final s = SharedMedium(
       -1,
       path,
@@ -206,7 +203,7 @@ class DatabaseService {
     );
 
     return s.copyWith(
-      id: await _db.insert('SharedMedia', s.toDatabaseJson()),
+      id: await _db.insert('SharedMedia', s.toDatabaseJson(conversationId)),
     );
   }
   

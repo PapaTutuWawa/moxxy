@@ -14,15 +14,18 @@ class SharedMedium with _$SharedMedium {
 
   const SharedMedium._();
   
-  // JSON
+  /// JSON
   factory SharedMedium.fromJson(Map<String, dynamic> json) => _$SharedMediumFromJson(json);
 
   factory SharedMedium.fromDatabaseJson(Map<String, dynamic> json) {
     return SharedMedium.fromJson(json);
   }
 
-  Map<String, dynamic> toDatabaseJson() {
-    return toJson()
-      ..remove('id');
+  Map<String, dynamic> toDatabaseJson(int conversationId) {
+    return {
+      ...toJson()
+        ..remove('id'),
+      'conversation_id': conversationId,
+    };
   }
 }
