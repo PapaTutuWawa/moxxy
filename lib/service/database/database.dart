@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
@@ -6,6 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/omemo.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -14,6 +16,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as path;
 import 'package:random_string/random_string.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -537,5 +540,37 @@ class DatabaseService {
     }
     
     await batch.commit();
+  }
+
+  Future<void> saveRatchet(OmemoDoubleRatchetWrapper ratchet) async {
+    final json = await ratchet.ratchet.toJson();
+    await _db.insert(
+      omemoTable,
+      {
+        ...json,
+        'mkskipped': jsonEncode(json['mkskipped']! as Map<String, dynamic>),
+        'acknowledged': boolToInt(json['acknowledged']! as bool),
+        'jid': ratchet.jid,
+        'id': ratchet.id,
+      },
+    );
+  }
+
+  Future<List<OmemoDoubleRatchetWrapper>> loadRatchets() async {
+    final results = await _db.query(omemoTable);
+
+    return results.map((ratchet) {
+      return OmemoDoubleRatchetWrapper(
+        OmemoDoubleRatchet.fromJson(
+          {
+            ...ratchet,
+            'acknowledged': intToBool(ratchet['acknowledged']! as int),
+            'mkskipped': jsonDecode(ratchet['mkskipped']! as String) as Map<String, dynamic>,
+          },
+        ),
+        ratchet['id']! as int,
+        ratchet['jid']! as String,
+      );
+    }).toList();
   }
 }

@@ -22,7 +22,9 @@ import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/notifications.dart';
+import 'package:moxxyv2/service/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
@@ -540,6 +542,15 @@ class XmppService {
           password: settings.password,
       ),);
 
+      // TODO(Unknown): This might be a race condition
+      final omemo = GetIt.I.get<OmemoService>();
+      if (!omemo.initialized) {
+        await omemo.initialize(settings.jid.toBare().toString());
+        GetIt.I.get<XmppConnection>().registerManager(
+          MoxxyOmemoManager(GetIt.I.get<OmemoService>().omemoState),
+        );
+      }
+      
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
       if (!event.resumed) {
         // In section 5 of XEP-0198 it says that a client should not request the roster
