@@ -74,6 +74,11 @@ const httpFileUploadXmlns = 'urn:xmpp:http:upload:0';
 // XEP-0372
 const referenceXmlns = 'urn:xmpp:reference:0';
 
+// XEP-0384
+const omemoXmlns = 'urn:xmpp:omemo:2';
+const omemoDevicesXmlns = 'urn:xmpp:omemo:2:devices';
+const omemoBundlesXmlns = 'urn:xmpp:omemo:2:bundles';
+
 // XEP-0385
 const simsXmlns = 'urn:xmpp:sims:1';
 

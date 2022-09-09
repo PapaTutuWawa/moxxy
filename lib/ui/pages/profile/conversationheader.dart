@@ -94,6 +94,7 @@ class ConversationProfileHeader extends StatelessWidget {
                   ],
                 ),
               ),
+              // TODO(PapaTutuWawa): Only show when the chat partner has OMEMO keys
               Tooltip(
                 message: 'Keys',
                 child: Column(
