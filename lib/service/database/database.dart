@@ -161,7 +161,7 @@ class DatabaseService {
       c['avatarUrl'] = avatarUrl;
     }
     if (muted != null) {
-      c['muted'] = muted;
+      c['muted'] = boolToInt(muted);
     }
 
     await _db.update(
