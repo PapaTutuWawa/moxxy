@@ -216,7 +216,9 @@ class PubSubManager extends XmppManagerBase {
           XMLNode.xmlns(
             tag: 'pubsub',
             xmlns: pubsubXmlns,
-            children: [ XMLNode(tag: 'items', attributes: <String, String>{ 'node': node }) ],
+            children: [
+              XMLNode(tag: 'items', attributes: <String, String>{ 'node': node }),
+            ],
           )
         ],
       ),
@@ -237,5 +239,44 @@ class PubSubManager extends XmppManagerBase {
         );
       })
       .toList();
+  }
+
+  Future<PubSubItem?> getItem(String jid, String node, String id) async {
+    final result = await getAttributes().sendStanza(
+      Stanza.iq(
+        type: 'get',
+        to: jid,
+        children: [
+          XMLNode.xmlns(
+            tag: 'pubsub',
+            xmlns: pubsubXmlns,
+            children: [
+              XMLNode(
+                tag: 'items',
+                attributes: <String, String>{ 'node': node },
+                children: [
+                  XMLNode(
+                    tag: 'item',
+                    attributes: <String, String>{ 'id': id },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (result.attributes['type'] != 'result') return null;
+
+    final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
+    if (pubsub == null) return null;
+
+    final item = pubsub.firstTag('items')!.firstTag('item')!;
+    return PubSubItem(
+      id: item.attributes['id']! as String,
+      payload: item.children[0],
+      node: node,
+    );
   }
 }
