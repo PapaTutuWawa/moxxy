@@ -79,6 +79,28 @@ Future<void> createDatabase(Database db, int version) async {
     )''',
   );
 
+  // OMEMO
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTable (
+      id         INTEGER PRIMARY KEY,
+      jid        TEXT NOT NULL,
+      dhs        TEXT NOT NULL,
+      dhs_pub    TEXT NOT NULL,
+      dhr        TEXT NOT NULL,
+      rk         TEXT NOT NULL,
+      cks        TEXT,
+      ckr        TEXT,
+      ns         INTEGER NOT NULL,
+      nr         INTEGER NOT NULL,
+      pn         INTEGER NOT NULL,
+      ik_pub     TEXT NOT NULL,
+      session_ad TEXT NOT NULL,
+      acknowledged INTEGER NOT NULL,
+      mkskipped  TEXT NOT NULL
+    )''',
+  );
+  
   // Settings
   await db.execute(
     '''

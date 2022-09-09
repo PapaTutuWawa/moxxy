@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -19,8 +18,10 @@ import 'package:moxxyv2/service/managers/disco.dart';
 import 'package:moxxyv2/service/managers/roster.dart';
 import 'package:moxxyv2/service/managers/stream.dart';
 import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/notifications.dart';
+import 'package:moxxyv2/service/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/xmpp.dart';
@@ -171,6 +172,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<RosterService>(RosterService());
   GetIt.I.registerSingleton<ConversationService>(ConversationService());
   GetIt.I.registerSingleton<MessageService>(MessageService());
+  GetIt.I.registerSingleton<OmemoService>(OmemoService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
@@ -178,7 +180,7 @@ Future<void> entrypoint() async {
   
   // Init the UDPLogger
   await initUDPLogger();
-
+  
   GetIt.I.registerSingleton<MoxxyReconnectionPolicy>(MoxxyReconnectionPolicy());
   final connection = XmppConnection(GetIt.I.get<MoxxyReconnectionPolicy>())
     ..registerManagers([
@@ -229,6 +231,11 @@ Future<void> entrypoint() async {
 
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
+    await GetIt.I.get<OmemoService>().initialize(settings.jid.toBare().toString());
+    GetIt.I.get<XmppConnection>().registerManager(
+      MoxxyOmemoManager(GetIt.I.get<OmemoService>().omemoState),
+    );
+
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
     await connection.getManagerById<MoxxyStreamManagementManager>(smManager)!.loadState();
