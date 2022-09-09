@@ -1,11 +1,8 @@
-import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class KeysPage extends StatelessWidget {
@@ -17,23 +14,25 @@ class KeysPage extends StatelessWidget {
       name: keysRoute,
     ),
   );
-
+  
   Widget _buildBody(KeysState state) {
     if (state.working) {
-      return Center(
+      return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
+    final hasVerifiedKeys = state.keys.any((item) => item.verified);
     return ListView.builder(
       itemCount: state.keys.length,
       itemBuilder: (context, index) {
-        var item = state.keys[index].fingerprint;
+        final item = state.keys[index];
+        var fingerprint = item.fingerprint;
 
         final parts = List<String>.empty(growable: true);
         for (var i = 0; i < 8; i++) {
-          final part = item.substring(0, 8);
-          item = item.substring(8);
+          final part = fingerprint.substring(0, 8);
+          fingerprint = fingerprint.substring(8);
           parts.add(part);
         }
         
@@ -43,8 +42,9 @@ class KeysPage extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(textfieldRadiusRegular),
             ),
+            color: !item.verified && hasVerifiedKeys ? Colors.red : null,
             child: Padding(
-              padding: EdgeInsets.all(8),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,11 +54,11 @@ class KeysPage extends StatelessWidget {
                     children: parts
                     .map((part_) => Text(
                       part_,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'RobotoMono',
                         fontSize: 18,
                       ),
-                    )).toList(),
+                    ),).toList(),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -68,51 +68,23 @@ class KeysPage extends StatelessWidget {
                         onChanged: (_) {},
                       ),
                       IconButton(
-                        icon: Icon(Icons.qr_code_scanner),
+                        icon: Icon(
+                          item.verified ?
+                            Icons.verified_user :
+                            Icons.qr_code_scanner,
+                        ),
                         onPressed: () {
-                          print('lol');
-                        }
+                          if (item.verified) return;
+
+                          // TODO(PapaTutuWawa): Implement
+                          showNotImplementedDialog('verification feature', context);
+                        },
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            /*child: ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Wrap(
-                  spacing: 6,
-                  children: parts
-                  .map((part_) => Text(
-                      part_,
-                      style: TextStyle(
-                        fontFamily: 'RobotoMono',
-                        fontSize: 16,
-                      ),
-                  )).toList(),
-                ),
-              ),
-              subtitle: const Padding(
-                padding: EdgeInsets.only(
-                  left: 8,
-                  top: 2,
-                  bottom: 2,
-                ),
-                child: Text('OMEMO'),
-              ),
-              trailing: Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: InkWell(
-                  child: Icon(Icons.qr_code_scanner),
-                  onTap: () {
-                    print('lol');
-                  }
-                ),
-              ),
-            ),*/
           ),
         );
       },

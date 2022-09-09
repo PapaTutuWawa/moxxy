@@ -32,8 +32,14 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
       state.copyWith(
         working: false,
         keys: <OmemoKey>[
-          OmemoKey('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-          OmemoKey('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'),
+          OmemoKey(
+            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            false,
+          ),
+          OmemoKey(
+            'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+            true,
+          ),
         ],
       ),
     );
