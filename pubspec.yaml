@@ -61,6 +61,12 @@ dependencies:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.0
   native_imaging: 0.1.0
+  omemo_dart:
+    git:
+      url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
+      ref: d530358359cdc1dc0eec3b6b9b7ff7da1e21abd1
+   #hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
+   #version: 0.2.1
   page_transition: 2.0.9
   path: 1.8.1
   path_provider: 2.0.11
@@ -79,7 +85,7 @@ dependencies:
     git:
       url: https://github.com/PapaTutuWawa/swipeable_tile.git
       ref: bfab5e28f1f1ea624232002f0d05481cb2bd9997
-  synchronized: 3.0.0
+  synchronized: 3.0.0+2
   udp: 5.0.3
   url_launcher: 6.1.5
   #unifiedpush: 3.0.1
