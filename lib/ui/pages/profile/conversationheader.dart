@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -87,6 +88,35 @@ class ConversationProfileHeader extends StatelessWidget {
                         'Unmute' :
                         'Mute',
                       style: const TextStyle(
+                        fontSize: fontsizeAppbar,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Tooltip(
+                message: 'Keys',
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    SharedMediaContainer(
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: ColoredBox(
+                          color: getTileColor(context),
+                          child: const Icon(
+                            Icons.key,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        GetIt.I.get<KeysBloc>().add(KeysRequestedEvent(conversation.jid));
+                      },
+                    ),
+                    const Text(
+                      'Keys',
+                      style: TextStyle(
                         fontSize: fontsizeAppbar,
                       ),
                     ),

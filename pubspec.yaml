@@ -125,6 +125,10 @@ extra_licenses:
  
 flutter:
   uses-material-design: true
+  fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
   assets:
     - assets/images/logo.png
     - assets/images/begin_chat.png

@@ -13,6 +13,7 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
+import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
 import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
@@ -36,6 +37,7 @@ import 'package:moxxyv2/ui/pages/crop.dart';
 import 'package:moxxyv2/ui/pages/intro.dart';
 import 'package:moxxyv2/ui/pages/login.dart';
 import 'package:moxxyv2/ui/pages/newconversation.dart';
+import 'package:moxxyv2/ui/pages/profile/keys.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/server_info.dart';
@@ -86,6 +88,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
   GetIt.I.registerSingleton<ShareSelectionBloc>(ShareSelectionBloc());
   GetIt.I.registerSingleton<ServerInfoBloc>(ServerInfoBloc());
+  GetIt.I.registerSingleton<KeysBloc>(KeysBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -151,6 +154,9 @@ void main() async {
         ),
         BlocProvider<ServerInfoBloc>(
           create: (_) => GetIt.I.get<ServerInfoBloc>(),
+        ),
+        BlocProvider<KeysBloc>(
+          create: (_) => GetIt.I.get<KeysBloc>(),
         ),
       ],
       child: MyApp(navKey),
@@ -314,6 +320,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case shareSelectionRoute: return ShareSelectionPage.route;
           case serverInfoRoute: return ServerInfoPage.route;
           case conversationSettingsRoute: return ConversationSettingsPage.route;
+          case keysRoute: return KeysPage.route;
         }
 
         return null;
