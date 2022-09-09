@@ -105,7 +105,7 @@ class ConversationProfileHeader extends StatelessWidget {
                         child: ColoredBox(
                           color: getTileColor(context),
                           child: const Icon(
-                            Icons.key,
+                            Icons.security_outlined,
                             size: 32,
                           ),
                         ),
@@ -115,7 +115,7 @@ class ConversationProfileHeader extends StatelessWidget {
                       },
                     ),
                     const Text(
-                      'Keys',
+                      'Devices',
                       style: TextStyle(
                         fontSize: fontsizeAppbar,
                       ),
