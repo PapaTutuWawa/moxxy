@@ -80,12 +80,12 @@ class PubSubManager extends XmppManagerBase {
     final item = items.firstTag('item')!;
 
     getAttributes().sendEvent(PubSubNotificationEvent(
-        item: PubSubItem(
-          id: item.attributes['id']! as String,
-          node: items.attributes['node']! as String,
-          payload: item.children[0],
-        ),
-        from: message.attributes['from']! as String,
+      item: PubSubItem(
+        id: item.attributes['id']! as String,
+        node: items.attributes['node']! as String,
+        payload: item.children[0],
+      ),
+      from: message.attributes['from']! as String,
     ),);
     
     return state.copyWith(done: true);
