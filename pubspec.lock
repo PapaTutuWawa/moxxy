@@ -736,6 +736,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  omemo_dart:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: d530358359cdc1dc0eec3b6b9b7ff7da1e21abd1
+      resolved-ref: d530358359cdc1dc0eec3b6b9b7ff7da1e21abd1
+      url: "https://codeberg.org/PapaTutuWawa/omemo_dart.git"
+    source: git
+    version: "0.2.1"
   package_config:
     dependency: transitive
     description:
@@ -862,6 +871,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.4.0"
+  pinenacl:
+    dependency: transitive
+    description:
+      name: pinenacl
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.1"
   platform:
     dependency: transitive
     description:
@@ -1162,7 +1178,7 @@ packages:
       name: synchronized
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.0+2"
   term_glyph:
     dependency: transitive
     description:
