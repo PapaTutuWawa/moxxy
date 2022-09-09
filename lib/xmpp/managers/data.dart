@@ -40,6 +40,8 @@ class StanzaHandlerData with _$StanzaHandlerData {
       String? funReplacement,
       // The stanza id this cancels
       String? funCancellation,
+      // Whether the stanza was received encrypted
+      @Default(false) bool encrypted,
       // This is for stanza handlers that are not part of the XMPP library but still need
       // pass data around.
       @Default(<String, dynamic>{}) Map<String, dynamic> other,
