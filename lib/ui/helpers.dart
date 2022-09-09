@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:typed_data';
-
 import 'package:cryptography/cryptography.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -14,11 +13,14 @@ import 'package:moxxyv2/ui/constants.dart';
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action.
 Future<void> showConfirmationDialog(String title, String body, BuildContext context, void Function() callback) async {
-  await showDialog<dynamic>(
+  await showDialog<void>(
     context: context,
     barrierDismissible: false,
     builder: (context) => AlertDialog(
       title: Text(title),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
+      ),
       content: Text(body),
       actions: [
         TextButton(
@@ -42,6 +44,9 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
     builder: (BuildContext context) {
       return AlertDialog(
         title: const Text('Not Implemented'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(textfieldRadiusRegular),
+        ),
         content: SingleChildScrollView(
           child: ListBody(
             children: [
@@ -67,6 +72,9 @@ Future<void> showInfoDialog(String title, String body, BuildContext context) asy
     barrierDismissible: false,
     builder: (context) => AlertDialog(
       title: Text(title),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
+      ),
       content: Text(body),
       actions: [
         TextButton(
