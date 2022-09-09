@@ -11,9 +11,11 @@ import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 class PubSubPublishOptions {
 
   const PubSubPublishOptions({
-      this.accessModel,
+    this.accessModel,
+    this.maxItems,
   });
   final String? accessModel;
+  final String? maxItems;
   
   XMLNode toXml() {
     return DataForm(
@@ -36,7 +38,15 @@ class PubSubPublishOptions {
               values: [ accessModel! ],
               varAttr: 'pubsub#access_model',
             )
-          ] : []
+          ] : [],
+        ...maxItems != null ? [
+          DataFormField(
+            options: [],
+            isRequired: false,
+            values: [maxItems! ],
+            varAttr: 'pubsub#max_items',
+          ),
+        ] : [],
       ],
     ).toXml();
   }
