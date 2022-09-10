@@ -13,37 +13,21 @@ import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/crypto.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384/types.dart';
 import 'package:omemo_dart/omemo_dart.dart';
-
-class _DoNotEncrypt {
-
-  const _DoNotEncrypt(this.tag, this.xmlns);
-  final String tag;
-  final String xmlns;
-}
 
 const _doNotEncryptList = [
   // XEP-0033
-  _DoNotEncrypt('addresses', extendedAddressingXmlns),
+  DoNotEncrypt('addresses', extendedAddressingXmlns),
   // XEP-0334
-  _DoNotEncrypt('no-permanent-store', messageProcessingHintsXmlns),
-  _DoNotEncrypt('no-store', messageProcessingHintsXmlns),
-  _DoNotEncrypt('no-copy', messageProcessingHintsXmlns),
-  _DoNotEncrypt('store', messageProcessingHintsXmlns),
+  DoNotEncrypt('no-permanent-store', messageProcessingHintsXmlns),
+  DoNotEncrypt('no-store', messageProcessingHintsXmlns),
+  DoNotEncrypt('no-copy', messageProcessingHintsXmlns),
+  DoNotEncrypt('store', messageProcessingHintsXmlns),
   // XEP-0359
-  _DoNotEncrypt('origin-id', stableIdXmlns),
-  _DoNotEncrypt('stanza-id', stableIdXmlns),
+  DoNotEncrypt('origin-id', stableIdXmlns),
+  DoNotEncrypt('stanza-id', stableIdXmlns),
 ];
-
-bool shouldEncrypt(XMLNode node) {
-  for (final ignore in _doNotEncryptList) {
-    if (node.tag == ignore.tag && (node.attributes['xmlns'] ?? '') == ignore.xmlns) {
-      return false;
-    }
-  }
-
-  return true;
-}
 
 class OmemoManager extends XmppManagerBase {
 
@@ -131,6 +115,26 @@ class OmemoManager extends XmppManagerBase {
   /// Commit the device to storage, if wanted.
   @visibleForOverriding
   Future<void> commitDevice(Device device) async {}
+
+  /// Determines what child elements of a stanza should be encrypted. If shouldEncrypt
+  /// returns true for [element], then [element] will be encrypted. If shouldEncrypt
+  /// returns false, then [element] won't be encrypted.
+  ///
+  /// The default implementation ignores all elements that are mentioned in XEP-0420, i.e.:
+  /// - XEP-0033 elements (<addresses />)
+  /// - XEP-0334 elements (<store/>, <no-copy/>, <no-store/>, <no-permanent-store/>)
+  /// - XEP-0359 elements (<origin-id />, <stanza-id />)
+  @visibleForOverriding
+  bool shouldEncrypt(XMLNode element) {
+    for (final ignore in _doNotEncryptList) {
+      final xmlns = element.attributes['xmlns'] ?? '';
+      if (element.tag == ignore.tag && xmlns == ignore.xmlns) {
+        return false;
+      }
+    }
+
+    return true;
+  }
   
   /// Encrypt [children] using OMEMO. This either produces an <encrypted /> element with
   /// an attached payload, if [children] is not null, or an empty OMEMO message if
