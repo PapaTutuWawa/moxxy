@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
@@ -105,6 +106,8 @@ class OmemoService {
     );
   }
 
+  /// Requests our device list and checks if the current device is in it. If not, then
+  /// it will be published.
   Future<void> publishDeviceIfNeeded() async {
     final conn = GetIt.I.get<XmppConnection>();
     final omemo = conn.getManagerById<OmemoManager>(omemoManager)!;
@@ -114,5 +117,22 @@ class OmemoService {
     if (!ids.contains(device.id)) {
       await omemo.publishBundle(await device.toBundle());
     }
+  }
+
+  Future<List<OmemoKey>> getOmemoKeysForJid(String jid) async {
+    final fingerprints = await omemoState.getHexFingerprintsForJid(jid);
+    final keys = List<OmemoKey>.empty(growable: true);
+    for (final fp in fingerprints) {
+      keys.add(
+        OmemoKey(
+          fp.fingerprint,
+          await omemoState.trustManager.isTrusted(jid, fp.deviceId),
+          // TODO(Unknown): Allow verifying OMEMO keys
+          false,
+        ),
+      );
+    }
+
+    return keys;
   }
 }
