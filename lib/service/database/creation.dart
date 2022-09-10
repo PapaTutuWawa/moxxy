@@ -87,7 +87,7 @@ Future<void> createDatabase(Database db, int version) async {
       jid        TEXT NOT NULL,
       dhs        TEXT NOT NULL,
       dhs_pub    TEXT NOT NULL,
-      dhr        TEXT NOT NULL,
+      dhr        TEXT,
       rk         TEXT NOT NULL,
       cks        TEXT,
       ckr        TEXT,
