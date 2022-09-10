@@ -10,6 +10,8 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384/crypto.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/helpers.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
@@ -297,8 +299,6 @@ class OmemoManager extends XmppManagerBase {
       return state;
     }
     
-    final attrs = getAttributes();
-    final bareJid = attrs.getFullJID().toBare();
     final toJid = JID.fromString(stanza.to!).toBare();
 
     final newSessions = List<OmemoBundle>.empty(growable: true);
@@ -387,6 +387,7 @@ class OmemoManager extends XmppManagerBase {
     }
 
     final fromJid = JID.fromString(stanza.from!).toBare().toString();
+    final ourJid = getAttributes().getFullJID();
     final sid = int.parse(header.attributes['sid']! as String);
 
     String? decrypted;
@@ -433,13 +434,16 @@ class OmemoManager extends XmppManagerBase {
         );
 
         final envelope = XMLNode.fromString(decrypted);
-        // TODO(PapaTutuWawa): Check affix elements
-
         final children = stanza.children.where(
           (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
         ).toList()
-        ..addAll(envelope.firstTag('content')!.children);
-        
+          ..addAll(envelope.firstTag('content')!.children);
+
+        final other = Map<String, dynamic>.from(state.other);
+        if (!checkAffixElements(envelope, stanza.from!, ourJid)) {
+          other['encryption_error'] = InvalidAffixElementsException();
+        }
+          
         return state.copyWith(
           encrypted: true,
           stanza: Stanza(
@@ -451,6 +455,7 @@ class OmemoManager extends XmppManagerBase {
             tag: stanza.tag,
             attributes: Map<String, String>.from(stanza.attributes),
           ),
+          other: other,
         );
       } else {
         logger.info('Received empty OMEMO message for unacked ratchet. Marking $fromJid:$sid as acked');
@@ -461,12 +466,16 @@ class OmemoManager extends XmppManagerBase {
       // The ratchet that decrypted the message was acked
       if (decrypted != null) {
         final envelope = XMLNode.fromString(decrypted);
-        // TODO(PapaTutuWawa): Check affix elements
 
         final children = stanza.children.where(
           (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
         ).toList()
         ..addAll(envelope.firstTag('content')!.children);
+
+        final other = Map<String, dynamic>.from(state.other);
+        if (!checkAffixElements(envelope, stanza.from!, ourJid)) {
+          other['encryption_error'] = InvalidAffixElementsException();
+        }
         
         return state.copyWith(
           encrypted: true,
@@ -479,6 +488,7 @@ class OmemoManager extends XmppManagerBase {
             tag: stanza.tag,
             attributes: Map<String, String>.from(stanza.attributes),
           ),
+          other: other,
         );
       } else {
         logger.info('Received empty OMEMO message on acked ratchet. Doing nothing');

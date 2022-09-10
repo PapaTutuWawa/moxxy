@@ -1,0 +1,19 @@
+import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/stringxml.dart';
+
+/// Checks the OMEMO affix elements. [envelope] refers to the  <envelope /> element we get
+/// after decrypting the payload. [sender] refers to the "to" attribute of the stanza.
+/// [ourJid] is our current full Jid.
+///
+/// Returns true if the affix elements are all valid and as expected. Returns false if not.
+bool checkAffixElements(XMLNode envelope, String sender, JID ourJid) {
+  final encSender = JID.fromString(
+    envelope.firstTag('from')!.attributes['jid']! as String,
+  );
+  final encReceiver = JID.fromString(
+    envelope.firstTag('to')!.attributes['jid']! as String,
+  );
+
+  return encSender.toBare().toString() == sender &&
+    encReceiver.toBare().toString() == ourJid.toBare().toString();
+}
