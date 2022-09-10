@@ -65,6 +65,7 @@ class MessageEvent extends XmppEvent {
     required this.deliveryReceiptRequested,
     required this.isMarkable,
     required this.encrypted,
+    required this.other,
     this.type,
     this.oob,
     this.sfs,
@@ -93,6 +94,7 @@ class MessageEvent extends XmppEvent {
   final String? funReplacement;
   final String? funCancellation;
   final bool encrypted;
+  final Map<String, dynamic> other;
 }
 
 /// Triggered when a client responds to our delivery receipt request
@@ -106,9 +108,9 @@ class DeliveryReceiptReceivedEvent extends XmppEvent {
 class ChatMarkerEvent extends XmppEvent {
 
   ChatMarkerEvent({
-      required this.type,
-      required this.from,
-      required this.id,
+    required this.type,
+    required this.from,
+    required this.id,
   });
   final JID from;
   final String type;

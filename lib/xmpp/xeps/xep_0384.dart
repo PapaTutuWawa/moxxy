@@ -179,6 +179,8 @@ class OmemoManager extends XmppManagerBase {
   @visibleForOverriding
   Future<void> commitState() async {}
 
+  /// Parses
+  
   /// Encrypt [payload] using OMEMO. This either produces an <encrypted /> element with
   /// an attached payload, if [payload] is not null, or an empty OMEMO message if [payload]
   /// is null.
@@ -304,23 +306,31 @@ class OmemoManager extends XmppManagerBase {
       ],
     );
 
-    logger.finest('Encrypting stanza');
-    final encrypted = await _encryptPayload(
-      envelopeElement,
-      [ 
-        JID.fromString(stanza.to!).toBare().toString(),
-        //bareJid.toString(),
-      ],
-      newSessions
-    );
-    logger.finest('Encryption done');
+    try {
+      logger.finest('Encrypting stanza');
+      final encrypted = await _encryptPayload(
+        envelopeElement,
+        [ 
+          JID.fromString(stanza.to!).toBare().toString(),
+          //bareJid.toString(),
+        ],
+        newSessions
+      );
+      logger.finest('Encryption done');
 
-    final newStanza = state.stanza.copyWith(
-      children: children..add(encrypted),
-    );
-    return state.copyWith(
-      stanza: newStanza,
-    );
+      return state.copyWith(
+        stanza: state.stanza.copyWith(
+          children: children..add(encrypted),
+        ),
+      );
+    } catch (ex) {
+      return state.copyWith(
+        other: {
+          ...state.other,
+          'encryption_error': ex,
+        },
+      );
+    }
   }
 
 
@@ -346,15 +356,25 @@ class OmemoManager extends XmppManagerBase {
     final fromJid = JID.fromString(stanza.from!).toBare().toString();
     final sid = int.parse(header.attributes['sid']! as String);
 
-    final decrypted = await omemoState.decryptMessage(
-      payloadElement != null ? base64.decode(payloadElement.innerText()) : null,
-      fromJid,
-      sid,
-      keys,
-    );
+    String? decrypted;
+    try {
+      decrypted = await omemoState.decryptMessage(
+        payloadElement != null ? base64.decode(payloadElement.innerText()) : null,
+        fromJid,
+        sid,
+        keys,
+      );
+    } catch (ex) {
+      return state.copyWith(
+        other: {
+          ...state.other,
+          'encryption_error': ex,
+        },
+      );
+    }
 
     final isAcked = await omemoState.isRatchetAcknowledged(fromJid, sid);
-    if (!isAcked && payloadElement != null) {
+    if (!isAcked && decrypted != null) {
       logger.finest('Encrypting empty OMEMO message');
       final empty = await _encryptPayload(
         null,
@@ -374,8 +394,8 @@ class OmemoManager extends XmppManagerBase {
       );
     }
     
-    if (payloadElement != null) {
-      final envelope = XMLNode.fromString(decrypted!);
+    if (decrypted != null) {
+      final envelope = XMLNode.fromString(decrypted);
       // TODO(PapaTutuWawa): Check affix elements
 
       final children = stanza.children.where(

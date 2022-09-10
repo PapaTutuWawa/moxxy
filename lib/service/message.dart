@@ -47,6 +47,7 @@ class MessageService {
       String? originId,
       String? quoteId,
       String? filename,
+      int? errorType,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -67,6 +68,7 @@ class MessageService {
       originId: originId,
       quoteId: quoteId,
       filename: filename,
+      errorType: errorType,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents
