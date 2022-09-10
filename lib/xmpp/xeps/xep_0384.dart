@@ -181,14 +181,31 @@ class OmemoManager extends XmppManagerBase {
 
   /// Parses
   
-  /// Encrypt [payload] using OMEMO. This either produces an <encrypted /> element with
-  /// an attached payload, if [payload] is not null, or an empty OMEMO message if [payload]
-  /// is null.
+  /// Encrypt [children] using OMEMO. This either produces an <encrypted /> element with
+  /// an attached payload, if [children] is not null, or an empty OMEMO message if
+  /// [children] is null. This function takes care of creating the affix elements as
+  /// specified by both XEP-0420 and XEP-0384.
   /// [jids] is the list of JIDs the payload should be encrypted for.
-  Future<XMLNode> _encryptPayload(XMLNode? payload, List<String> jids, List<OmemoBundle> newSessions) async {
+  Future<XMLNode> _encryptChildren(List<XMLNode>? children, List<String> jids, String toJid, List<OmemoBundle> newSessions) async {
+    XMLNode? payload;
+    if (children != null) {
+      payload = XMLNode.xmlns(
+        tag: 'envelope',
+        xmlns: sceXmlns,
+        children: [
+          XMLNode(
+            tag: 'content',
+            children: children,
+          ),
+
+          // TODO(PapaTutuWawa): Affix elements
+        ],
+      );
+    }
+
     final encryptedEnvelope = await omemoState.encryptToJids(
       jids,
-      payload != null ? payload.toXml() : null,
+      payload?.toXml(),
       newSessions: newSessions,
     );
 
@@ -255,9 +272,6 @@ class OmemoManager extends XmppManagerBase {
     if (state.encrypted) {
       return state;
     }
-
-    logger.finest('Before encrypting');
-    logger.finest(stanza.toXml());
     
     final attrs = getAttributes();
     final bareJid = attrs.getFullJID().toBare();
@@ -267,8 +281,7 @@ class OmemoManager extends XmppManagerBase {
     final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
     final sessionAvailable = (await omemoState.getDeviceMap()).containsKey(toJid.toString());
     if (!sessionAvailable) {
-      logger.finest('No session for $toJid.');
-      logger.finest('Retrieving bundles for $toJid to build a new session.');
+      logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
       newSessions.addAll((await retrieveDeviceBundles(toJid))!);
     } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
       logger.finest('Got unacked ratchets');
@@ -301,28 +314,16 @@ class OmemoManager extends XmppManagerBase {
       }
     }
 
-    final envelopeElement = XMLNode.xmlns(
-      tag: 'envelope',
-      xmlns: sceXmlns,
-      children: [
-        XMLNode(
-          tag: 'content',
-          children: toEncrypt,
-        ),
-
-        // TODO(PapaTutuWawa): Affix elements
-      ],
-    );
-
     try {
       logger.finest('Encrypting stanza');
-      final encrypted = await _encryptPayload(
-        envelopeElement,
+      final encrypted = await _encryptChildren(
+        toEncrypt,
         [ 
           JID.fromString(stanza.to!).toBare().toString(),
           //bareJid.toString(),
         ],
-        newSessions
+        stanza.to!,
+        newSessions,
       );
       logger.finest('Encryption done');
 
@@ -388,9 +389,10 @@ class OmemoManager extends XmppManagerBase {
       if (decrypted != null) {
         // The message is not empty, i.e. contains content
         logger.finest('Received non-empty OMEMO encrypted message for unacked ratchet. Acking with empty OMEMO message.');
-        final empty = await _encryptPayload(
+        final empty = await _encryptChildren(
           null,
           [fromJid],
+          fromJid,
           [],
         );
         logger.finest('Done.');
@@ -523,7 +525,7 @@ class OmemoManager extends XmppManagerBase {
             'id': '${bundle.id}',
           },
         ),
-      ]
+      ],
     );
     
     final deviceListPublish = await pm.publish(
