@@ -245,6 +245,11 @@ class OmemoManager extends XmppManagerBase {
       ],
     );
   }
+
+  Future<void> _ackRatchet(String jid, int deviceId) async {
+    logger.finest('Acking ratchet $jid:$deviceId');
+    await omemoState.ratchetAcknowledged(jid, deviceId);
+  }
   
   Future<StanzaHandlerData> _onOutgoingStanza(Stanza stanza, StanzaHandlerData state) async {
     if (state.encrypted) {
@@ -260,8 +265,10 @@ class OmemoManager extends XmppManagerBase {
 
     final newSessions = List<OmemoBundle>.empty(growable: true);
     final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
-    if (!(await omemoState.getDeviceMap()).containsKey(toJid.toString())) {
-      logger.finest('Retrieving bundles for $toJid');
+    final sessionAvailable = (await omemoState.getDeviceMap()).containsKey(toJid.toString());
+    if (!sessionAvailable) {
+      logger.finest('No session for $toJid.');
+      logger.finest('Retrieving bundles for $toJid to build a new session.');
       newSessions.addAll((await retrieveDeviceBundles(toJid))!);
     } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
       logger.finest('Got unacked ratchets');
@@ -274,6 +281,7 @@ class OmemoManager extends XmppManagerBase {
       final devices = map[toJid.toString()]!;
       final ratchetSessions = (await getDeviceList(toJid))!;
       if (devices.length != ratchetSessions.length) {
+        logger.finest('Mismatch between devices we have a session with and published devices');
         for (final id in devices) {
           if (ratchetSessions.contains(id)) continue;
 
@@ -365,6 +373,7 @@ class OmemoManager extends XmppManagerBase {
         keys,
       );
     } catch (ex) {
+      logger.warning('Error occurred during message decryption: $ex');
       return state.copyWith(
         other: {
           ...state.other,
@@ -374,55 +383,82 @@ class OmemoManager extends XmppManagerBase {
     }
 
     final isAcked = await omemoState.isRatchetAcknowledged(fromJid, sid);
-    if (!isAcked && decrypted != null) {
-      logger.finest('Encrypting empty OMEMO message');
-      final empty = await _encryptPayload(
-        null,
-        [fromJid],
-        [],
-      );
-      logger.finest('Done.');
+    if (!isAcked) {
+      // Unacked ratchet decrypted this message
+      if (decrypted != null) {
+        // The message is not empty, i.e. contains content
+        logger.finest('Received non-empty OMEMO encrypted message for unacked ratchet. Acking with empty OMEMO message.');
+        final empty = await _encryptPayload(
+          null,
+          [fromJid],
+          [],
+        );
+        logger.finest('Done.');
 
-      await getAttributes().sendStanza(
-        Stanza.message(
-          to: fromJid,
-          type: 'chat',
-          children: [empty],
-        ),
-        awaitable: false,
-        encrypted: true,
-      );
+        await _ackRatchet(fromJid, sid);
+        await getAttributes().sendStanza(
+          Stanza.message(
+            to: fromJid,
+            type: 'chat',
+            children: [empty],
+          ),
+          awaitable: false,
+          encrypted: true,
+        );
+
+        final envelope = XMLNode.fromString(decrypted);
+        // TODO(PapaTutuWawa): Check affix elements
+
+        final children = stanza.children.where(
+          (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
+        ).toList()
+        ..addAll(envelope.firstTag('content')!.children);
+        
+        return state.copyWith(
+          encrypted: true,
+          stanza: Stanza(
+            to: stanza.to,
+            from: stanza.from,
+            id: stanza.id,
+            type: stanza.type,
+            children: children,
+            tag: stanza.tag,
+            attributes: Map<String, String>.from(stanza.attributes),
+          ),
+        );
+      } else {
+        logger.info('Received empty OMEMO message for unacked ratchet. Marking $fromJid:$sid as acked');
+        await _ackRatchet(fromJid, sid);
+        return state;
+      }
+    } else {
+      // The ratchet that decrypted the message was acked
+      if (decrypted != null) {
+        final envelope = XMLNode.fromString(decrypted);
+        // TODO(PapaTutuWawa): Check affix elements
+
+        final children = stanza.children.where(
+          (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
+        ).toList()
+        ..addAll(envelope.firstTag('content')!.children);
+        
+        return state.copyWith(
+          encrypted: true,
+          stanza: Stanza(
+            to: stanza.to,
+            from: stanza.from,
+            id: stanza.id,
+            type: stanza.type,
+            children: children,
+            tag: stanza.tag,
+            attributes: Map<String, String>.from(stanza.attributes),
+          ),
+        );
+      } else {
+        logger.info('Received empty OMEMO message on acked ratchet. Doing nothing');
+        return state;
+      }
     }
-    
-    if (decrypted != null) {
-      final envelope = XMLNode.fromString(decrypted);
-      // TODO(PapaTutuWawa): Check affix elements
-
-      final children = stanza.children.where(
-        (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
-      ).toList()
-      ..addAll(envelope.firstTag('content')!.children);
-      
-      return state.copyWith(
-        encrypted: true,
-        stanza: Stanza(
-          to: stanza.to,
-          from: stanza.from,
-          id: stanza.id,
-          type: stanza.type,
-          children: children,
-          tag: stanza.tag,
-          attributes: Map<String, String>.from(stanza.attributes),
-        ),
-      );
-    }
-
-    logger.finest('Acking ratchet $fromJid:$sid');
-    await omemoState.ratchetAcknowledged(fromJid, sid);
-    
-    return state.copyWith(
-      encrypted: true,
-    );
   }
 
   Future<XMLNode?> _retrieveDeviceListPayload(JID jid) async {
