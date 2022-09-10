@@ -240,6 +240,7 @@ class DatabaseService {
     bool isMedia,
     String sid,
     bool isFileUploadNotification,
+    bool encrypted,
     {
       String? srcUrl,
       String? mediaUrl,
@@ -261,6 +262,7 @@ class DatabaseService {
       conversationJid,
       isMedia,
       isFileUploadNotification,
+      encrypted,
       errorType: noError,
       mediaUrl: mediaUrl,
       mediaType: mediaType,

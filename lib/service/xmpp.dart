@@ -217,6 +217,8 @@ class XmppService {
         false,
         sid,
         false,
+        // TODO(PapaTutuWawa): Set this depending on the conversation settings
+        true,
         originId: originId,
         quoteId: quotedMessage?.sid,
       );
@@ -380,6 +382,8 @@ class XmppService {
           true,
           conn.generateId(),
           false,
+          // TODO(PapaTutuWawa): Set this depending on the conversation settings
+          true,
           mediaUrl: path,
           mediaType: pathMime,
           originId: conn.generateId(),
@@ -827,6 +831,8 @@ class XmppService {
       isFileEmbedded || event.fun != null,
       event.sid,
       event.fun != null,
+      // TODO(PapaTutuWawa): Set this depending on the conversation settings
+      true,
       srcUrl: embeddedFileUrl,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
