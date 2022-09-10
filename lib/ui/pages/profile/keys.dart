@@ -64,7 +64,7 @@ class KeysPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Switch(
-                        value: true,
+                        value: item.trusted,
                         onChanged: (_) {},
                       ),
                       IconButton(

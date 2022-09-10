@@ -11,6 +11,7 @@ import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+import 'package:moxxyv2/service/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
@@ -56,6 +57,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SignOutCommand>(performSignOut),
       EventTypeMatcher<SendFilesCommand>(performSendFiles),
       EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
+      EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(performGetOmemoFingerprints),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -440,4 +442,16 @@ Future<void> performSetMuteState(SetConversationMuteStatusCommand command, { dyn
   );
 
   sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+}
+
+Future<void> performGetOmemoFingerprints(GetConversationOmemoFingerprintsCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final omemo = GetIt.I.get<OmemoService>();
+  sendEvent(
+    GetConversationOmemoFingerprintsResult(
+      fingerprints: await omemo.getOmemoKeysForJid(command.jid),
+    ),
+    id: id,
+  );
 }

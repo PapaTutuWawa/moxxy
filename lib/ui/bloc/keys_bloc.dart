@@ -27,20 +27,17 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
         const NavigationDestination(keysRoute),
       ),
     );
+
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+      GetConversationOmemoFingerprintsCommand(
+        jid: event.jid,
+      ),
+    ) as GetConversationOmemoFingerprintsResult;
     
     emit(
       state.copyWith(
         working: false,
-        keys: <OmemoKey>[
-          OmemoKey(
-            'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-            false,
-          ),
-          OmemoKey(
-            'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-            true,
-          ),
-        ],
+        keys: result.fingerprints,
       ),
     );
   }

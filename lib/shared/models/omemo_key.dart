@@ -8,6 +8,7 @@ part 'omemo_key.g.dart';
 class OmemoKey with _$OmemoKey {
   factory OmemoKey(
     String fingerprint,
+    bool trusted,
     bool verified,
   ) = _OmemoKey;
 

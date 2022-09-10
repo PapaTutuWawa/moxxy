@@ -172,6 +172,14 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
+      - name: GetConversationOmemoFingerprintsResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          fingerprints:
+            type: List<OmemoKey>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -315,6 +323,12 @@ files:
         attributes:
           jid: String
           muted: bool
+      - name: GetConversationOmemoFingerprintsCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
