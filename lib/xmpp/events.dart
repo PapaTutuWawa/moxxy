@@ -64,6 +64,7 @@ class MessageEvent extends XmppEvent {
     required this.isCarbon,
     required this.deliveryReceiptRequested,
     required this.isMarkable,
+    required this.encrypted,
     this.type,
     this.oob,
     this.sfs,
@@ -91,6 +92,7 @@ class MessageEvent extends XmppEvent {
   final FileMetadataData? fun;
   final String? funReplacement;
   final String? funCancellation;
+  final bool encrypted;
 }
 
 /// Triggered when a client responds to our delivery receipt request

@@ -92,6 +92,7 @@ class MessageManager extends XmppManagerBase {
       fun: state.fun,
       funReplacement: state.funReplacement,
       funCancellation: state.funCancellation,
+      encrypted: state.encrypted,
     ),);
 
     return state.copyWith(done: true);

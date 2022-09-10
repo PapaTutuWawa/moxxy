@@ -831,8 +831,7 @@ class XmppService {
       isFileEmbedded || event.fun != null,
       event.sid,
       event.fun != null,
-      // TODO(PapaTutuWawa): Set this depending on the conversation settings
-      true,
+      event.encrypted,
       srcUrl: embeddedFileUrl,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
