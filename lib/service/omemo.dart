@@ -5,7 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0384.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
 class OmemoDoubleRatchetWrapper {
