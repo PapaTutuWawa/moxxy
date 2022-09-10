@@ -36,6 +36,7 @@ class MessageService {
     bool isMedia,
     String sid,
     bool isFileUploadNotification,
+    bool encrypted,
     {
       String? srcUrl,
       String? mediaUrl,
@@ -56,6 +57,7 @@ class MessageService {
       isMedia,
       sid,
       isFileUploadNotification,
+      encrypted,
       srcUrl: srcUrl,
       mediaUrl: mediaUrl,
       mediaType: mediaType,

@@ -19,6 +19,7 @@ class Message with _$Message {
     String conversationJid,
     bool isMedia,
     bool isFileUploadNotification,
+    bool encrypted,
     {
       int? errorType,
       String? mediaUrl,
@@ -51,6 +52,7 @@ class Message with _$Message {
       'acked': intToBool(json['acked']! as int),
       'isMedia': intToBool(json['isMedia']! as int),
       'isFileUploadNotification': intToBool(json['isFileUploadNotification']! as int),
+      'encrypted': intToBool(json['encrypted']! as int),
     }).copyWith(quotes: quotes);
   }
   
@@ -68,6 +70,7 @@ class Message with _$Message {
       'received': boolToInt(received),
       'displayed': boolToInt(displayed),
       'acked': boolToInt(acked),
+      'encrypted': boolToInt(encrypted),
       'quote_id': quoteId,
     };
   }

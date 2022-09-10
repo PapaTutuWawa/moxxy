@@ -86,6 +86,15 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ),
+        ...widget.message.encrypted ? [
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.lock,
+              size: fontsizeSubbody * 2,
+            ),
+          ),
+        ] : [],
         ...widget.message.errorType != noError ? [
           const Padding(
             padding: EdgeInsets.only(left: 3),

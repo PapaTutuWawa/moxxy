@@ -19,6 +19,7 @@ Future<void> createDatabase(Database db, int version) async {
       conversationJid TEXT NOT NULL,
       isMedia INTEGER NOT NULL,
       isFileUploadNotification INTEGER NOT NULL,
+      encrypted INTEGER NOT NULL,
       errorType INTEGER,
       mediaUrl TEXT,
       mediaType TEXT,
