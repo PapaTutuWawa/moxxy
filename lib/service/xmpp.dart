@@ -552,11 +552,13 @@ class XmppService {
       }
       
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
+      await GetIt.I.get<OmemoService>().publishDeviceIfNeeded();
+
       if (!event.resumed) {
         // In section 5 of XEP-0198 it says that a client should not request the roster
         // in case of a stream resumption.
         await GetIt.I.get<RosterService>().requestRoster();
-
+ 
         // TODO(Unknown): Once groupchats come into the equation, this gets trickier
         final roster = await GetIt.I.get<RosterService>().getRoster();
         for (final item in roster) {

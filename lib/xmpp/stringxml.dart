@@ -3,12 +3,12 @@ import 'package:xml/xml.dart';
 class XMLNode {
 
   XMLNode({
-      required this.tag,
-      this.attributes = const <String, dynamic>{},
-      this.children = const [],
-      this.closeTag = true,
-      this.text,
-      this.isDeclaration = false,
+    required this.tag,
+    this.attributes = const <String, dynamic>{},
+    this.children = const [],
+    this.closeTag = true,
+    this.text,
+    this.isDeclaration = false,
   });
   XMLNode.xmlns({
       required this.tag,

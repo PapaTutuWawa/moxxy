@@ -17,6 +17,9 @@ const dataFormsXmlns = 'jabber:x:data';
 const discoInfoXmlns = 'http://jabber.org/protocol/disco#info';
 const discoItemsXmlns = 'http://jabber.org/protocol/disco#items';
 
+// XEP-0033
+const extendedAddressingXmlns = 'http://jabber.org/protocol/address';
+
 // XEP-0054
 const vCardTempXmlns = 'vcard-temp';
 const vCardTempUpdate = 'vcard-temp:x:update';
@@ -62,6 +65,9 @@ const hashXmlns = 'urn:xmpp:hashes:2';
 // XEP-0333
 const chatMarkersXmlns = 'urn:xmpp:chat-markers:0';
 
+// XEP-0334
+const messageProcessingHintsXmlns = 'urn:xmpp:hints';
+
 // XEP-0352
 const csiXmlns = 'urn:xmpp:csi:0';
 
@@ -81,6 +87,9 @@ const omemoBundlesXmlns = 'urn:xmpp:omemo:2:bundles';
 
 // XEP-0385
 const simsXmlns = 'urn:xmpp:sims:1';
+
+// XEP-0420
+const sceXmlns = 'urn:xmpp:sce:1';
 
 // XEP-0446
 const fileMetadataXmlns = 'urn:xmpp:file:metadata:0';

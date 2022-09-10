@@ -3,6 +3,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/xmpp/connection.dart';
+import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
 class OmemoDoubleRatchetWrapper {
@@ -55,13 +58,15 @@ class OmemoService {
       // NOTE: We need to do this because Dart otherwise complains about not being able
       //       to cast dynamic to List<int>.
       // ignore: avoid_dynamic_calls
-      deviceJson['opks'] = deviceJson['opks']!.map<Map<String, dynamic>>(
-        (Map<String, dynamic> opk) => {
+      final opks = List<Map<String, dynamic>>.empty(growable: true);
+      for (final opk in deviceJson['opks']!) {
+        opks.add(<String, dynamic>{
           'id': opk['id']! as int,
           'public': opk['public']! as String,
           'private': opk['private']! as String,
-        },
-      ).toList();
+        });
+      }
+      deviceJson['opks'] = opks;
       final device = Device.fromJson(deviceJson);
 
       final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
@@ -99,5 +104,16 @@ class OmemoService {
       key: _omemoStorageDevice,
       value: jsonEncode(await device.toJson()),
     );
+  }
+
+  Future<void> publishDeviceIfNeeded() async {
+    final conn = GetIt.I.get<XmppConnection>();
+    final omemo = conn.getManagerById<OmemoManager>(omemoManager)!;
+    final bareJid = conn.getConnectionSettings().jid.toBare();
+    final ids = (await omemo.getDeviceList(bareJid)) ?? [];
+    final device = await omemoState.getDevice();
+    if (!ids.contains(device.id)) {
+      await omemo.publishBundle(await device.toBundle());
+    }
   }
 }

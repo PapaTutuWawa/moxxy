@@ -13,13 +13,42 @@ import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
+class _DoNotEncrypt {
+
+  const _DoNotEncrypt(this.tag, this.xmlns);
+  final String tag;
+  final String xmlns;
+}
+
+const _doNotEncryptList = [
+  // XEP-0033
+  _DoNotEncrypt('addresses', extendedAddressingXmlns),
+  // XEP-0334
+  _DoNotEncrypt('no-permanent-store', messageProcessingHintsXmlns),
+  _DoNotEncrypt('no-store', messageProcessingHintsXmlns),
+  _DoNotEncrypt('no-copy', messageProcessingHintsXmlns),
+  _DoNotEncrypt('store', messageProcessingHintsXmlns),
+  // XEP-0359
+  _DoNotEncrypt('origin-id', stableIdXmlns),
+  _DoNotEncrypt('stanza-id', stableIdXmlns),
+];
+
+bool shouldEncrypt(XMLNode node) {
+  for (final ignore in _doNotEncryptList) {
+    if (node.tag == ignore.tag && (node.attributes['xmlns'] ?? '') == ignore.xmlns) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 XMLNode bundleToXML(OmemoBundle bundle) {
   final prekeys = List<XMLNode>.empty(growable: true);
   for (final pk in bundle.opksEncoded.entries) {
     prekeys.add(
       XMLNode(
-        tag: 'pk',
-        attributes: <String, String>{
+        tag: 'pk', attributes: <String, String>{
           'id': '${pk.key}',
         },
         text: pk.value,
@@ -86,6 +115,8 @@ class OmemoManager extends XmppManagerBase {
 
   @protected
   final OmemoSessionManager omemoState;
+
+  final Map<JID, List<int>> _deviceMap = {};
   
   @override
   String getId() => omemoManager;
@@ -99,12 +130,12 @@ class OmemoManager extends XmppManagerBase {
 
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
-    StanzaHandler(
+    /*StanzaHandler(
       stanzaTag: 'iq',
       tagXmlns: omemoXmlns,
       tagName: 'encrypted',
       callback: _onIncomingStanza,
-    ),
+    ),*/
     StanzaHandler(
       stanzaTag: 'message',
       tagXmlns: omemoXmlns,
@@ -115,12 +146,12 @@ class OmemoManager extends XmppManagerBase {
 
   @override
   List<StanzaHandler> getOutgoingPreStanzaHandlers() => [
-    StanzaHandler(
+    /*StanzaHandler(
       stanzaTag: 'iq',
       tagXmlns: omemoXmlns,
       tagName: 'encrypted',
       callback: _onOutgoingStanza,
-    ),
+    ),*/
     StanzaHandler(
       stanzaTag: 'message',
       tagXmlns: omemoXmlns,
@@ -128,6 +159,17 @@ class OmemoManager extends XmppManagerBase {
       callback: _onOutgoingStanza,
     ),
   ];
+
+  @override
+  Future<void> onXmppEvent(XmppEvent event) async {
+    if (event is PubSubNotificationEvent) {
+      if (event.item.node != omemoDevicesXmlns) return;
+
+      _deviceMap[JID.fromString(event.from)] = event.item.payload.children
+        .map((child) => int.parse(child.attributes['id']! as String))
+        .toList();
+    }
+  }
   
   /// Commit the OMEMO ratchet to persistent storage, if wanted.
   @visibleForOverriding
@@ -138,7 +180,118 @@ class OmemoManager extends XmppManagerBase {
   Future<void> commitState() async {}
 
   Future<StanzaHandlerData> _onOutgoingStanza(Stanza stanza, StanzaHandlerData state) async {
-    return state;
+    if (!state.encrypted) {
+      return state;
+    }
+
+    final attrs = getAttributes();
+    final bareJid = attrs.getFullJID().toBare();
+    final toJid = JID.fromString(stanza.to!).toBare();
+
+    final newSessions = List<OmemoBundle>.empty(growable: true);
+    final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
+    if ((await omemoState.getDeviceMap()).containsKey(toJid.toString())) {
+      newSessions.addAll((await retrieveDeviceBundles(toJid))!);
+    } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
+      for (final id in unackedRatchets) {
+        newSessions.add((await retrieveDeviceBundle(toJid, id))!);
+      }
+    } else {
+      final map = await omemoState.getDeviceMap();
+      final devices = map[toJid.toString()]!;
+      final ratchetSessions = (await getDeviceList(toJid))!;
+      if (devices.length != ratchetSessions.length) {
+        for (final id in devices) {
+          if (ratchetSessions.contains(id)) continue;
+
+          newSessions.add((await retrieveDeviceBundle(toJid, id))!);
+        }
+      }
+    }
+    
+    final toEncrypt = List<XMLNode>.empty(growable: true);
+    final children = List<XMLNode>.empty(growable: true);
+    for (final child in stanza.children) {
+      if (!shouldEncrypt(child)) {
+        children.add(child);
+      } else {
+        toEncrypt.add(child);
+      }
+    }
+
+    final envelopeElement = XMLNode.xmlns(
+      tag: 'envelope',
+      xmlns: sceXmlns,
+      children: [
+        XMLNode(
+          tag: 'content',
+          children: toEncrypt,
+        ),
+
+        // TODO(PapaTutuWawa): Affix elements
+      ],
+    );
+    final encryptedEnvelope = await omemoState.encryptToJids(
+      [
+        JID.fromString(stanza.to!).toBare().toString(),
+        bareJid.toString(),
+      ],
+      envelopeElement.toXml(),
+      newSessions: newSessions,
+    );
+    final keyElements = <String, List<XMLNode>>{};
+    for (final key in encryptedEnvelope.encryptedKeys) {
+      final keyElement = XMLNode(
+        tag: 'key',
+        attributes: <String, String>{
+          'rid': '${key.rid}',
+          'kex': key.kex ? 'true' : 'false',
+        },
+        text: key.value,
+      );
+
+      if (keyElements.containsKey(key.jid)) {
+        keyElements[key.jid]!.add(keyElement);
+      } else {
+        keyElements[key.jid] = [keyElement];
+      }
+    }
+
+    final keysElements = keyElements.entries.map((entry) {
+      return XMLNode(
+        tag: 'keys',
+        attributes: <String, String>{
+          'jid': entry.key,
+        },
+        children: entry.value,
+      );
+    }).toList();
+    
+    final encrypted = XMLNode.xmlns(
+      tag: 'encrypted',
+      xmlns: omemoXmlns,
+      children: [
+        XMLNode(
+          tag: 'payload',
+          text: base64.encode(encryptedEnvelope.ciphertext!),
+        ),
+        XMLNode(
+          tag: 'header',
+          attributes: <String, String>{
+            'sid': '',
+          },
+          children: keysElements,
+        ),
+      ],
+    );
+
+    children.add(encrypted);
+      
+    return state.copyWith(
+      stanza: state.stanza.copyWith(
+        children: children,
+      ),
+    );
   }
 
 
@@ -196,15 +349,29 @@ class OmemoManager extends XmppManagerBase {
   }
   
   /// Retrieves the OMEMO device list from [jid].
-  Future<List<int>?> retrieveDeviceList(JID jid) async {
+  Future<List<int>?> getDeviceList(JID jid) async {
+    if (_deviceMap.containsKey(jid)) return _deviceMap[jid]!;
+
     final items = await _retrieveDeviceListPayload(jid);
     if (items == null) return null;
 
-    return items.children
+    final ids = items.children
       .map((child) => int.parse(child.attributes['id']! as String))
       .toList();
+    _deviceMap[jid] = ids;
+    return ids;
   }
 
+  Future<List<OmemoBundle>?> retrieveDeviceBundles(JID jid) async {
+    final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
+    // TODO(PapaTutuWawa): Error handling
+    final bundles = (await pm.getItems(jid.toString(), omemoBundlesXmlns))!;
+
+    return bundles.map(
+      (bundle) => bundleFromXML(jid, int.parse(bundle.id), bundle.payload),
+    ).toList();
+  }
+  
   /// Retrieves a bundle from entity [jid] with the device id [deviceId].
   Future<OmemoBundle?> retrieveDeviceBundle(JID jid, int deviceId) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
@@ -212,24 +379,7 @@ class OmemoManager extends XmppManagerBase {
     final item = await pm.getItem(bareJid, omemoBundlesXmlns, '$deviceId');
     if (item == null) return null;
 
-    final spk = item.payload.firstTag('spk')!;
-    final spks = item.payload.firstTag('spks')!;
-    final ik = item.payload.firstTag('ik')!;
-    final prekeysElement = item.payload.firstTag('prekeys')!;
-    final prekeys = <int, String>{};
-    for (final prekey in prekeysElement.children) {
-      prekeys[int.parse(prekey.attributes['id']! as String)] = prekey.innerText();
-    }
-    
-    return OmemoBundle(
-      bareJid,
-      deviceId,
-      spk.innerText(),
-      int.parse(spk.attributes['id']! as String),
-      spks.innerText(),
-      ik.innerText(),
-      prekeys,
-    );
+    return bundleFromXML(jid, deviceId, item.payload);
   }
 
   Future<bool> publishBundle(OmemoBundle bundle) async {
@@ -237,23 +387,34 @@ class OmemoManager extends XmppManagerBase {
     final pm = attrs.getManagerById<PubSubManager>(pubsubManager)!;
     final bareJid = attrs.getFullJID().toBare();
 
-    final deviceList = await _retrieveDeviceListPayload(bareJid);
-    if (deviceList == null) return false;
+    var deviceList = await _retrieveDeviceListPayload(bareJid);
+    deviceList ??= XMLNode.xmlns(
+      tag: 'devices',
+      xmlns: omemoDevicesXmlns,
+    );
 
-    deviceList.addChild(
-      XMLNode(
-        tag: 'device',
-        attributes: <String, String>{
-          'id': '${bundle.id}',
-        },
-      ),
+    final newDeviceList = XMLNode.xmlns(
+      tag: 'devices',
+      xmlns: omemoDevicesXmlns,
+      children: [
+        ...deviceList.children,
+        XMLNode(
+          tag: 'device',
+          attributes: <String, String>{
+            'id': '${bundle.id}',
+          },
+        ),
+      ]
     );
     
     final deviceListPublish = await pm.publish(
       bareJid.toString(),
       omemoDevicesXmlns,
-      deviceList,
-      id: '${bundle.id}',
+      newDeviceList,
+      id: 'current',
+      options: const PubSubPublishOptions(
+        accessModel: 'open',
+      ),
     );
     if (!deviceListPublish) return false;
 
