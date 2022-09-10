@@ -8,11 +8,20 @@ class MoxxyOmemoManager extends OmemoManager {
 
   MoxxyOmemoManager(OmemoSessionManager omemoState) : super(omemoState);
 
-  // TODO(PapaTutuWawa): Override the storage related methods
   @override
   Future<void> commitRatchet(OmemoDoubleRatchet ratchet, String jid, int deviceId) async {
     await GetIt.I.get<DatabaseService>().saveRatchet(
       OmemoDoubleRatchetWrapper(ratchet, deviceId, jid),
     );
+  }
+
+  @override
+  Future<void> commitDeviceMap(Map<String, List<int>> map) async {
+    await GetIt.I.get<OmemoService>().commitDeviceMap(map);
+  }
+
+  @override
+  Future<void> commitDevice(Device device) async {
+    await GetIt.I.get<OmemoService>().commitDevice(device);
   }
 }

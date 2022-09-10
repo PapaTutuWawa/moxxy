@@ -111,6 +111,13 @@ class OmemoManager extends XmppManagerBase {
     omemoState.eventStream.listen((event) async {
       if (event is RatchetModifiedEvent) {
         await commitRatchet(event.ratchet, event.jid, event.deviceId);
+      } else if (event is DeviceMapModifiedEvent) {
+        await commitDeviceMap(event.map);
+      } else if (event is DeviceModifiedEvent) {
+        await commitDevice(event.device);
+
+        // Publish it
+        await publishBundle(await event.device.toBundle());
       }
     });
   }
@@ -177,11 +184,13 @@ class OmemoManager extends XmppManagerBase {
   @visibleForOverriding
   Future<void> commitRatchet(OmemoDoubleRatchet ratchet, String jid, int deviceId) async {}
 
-  /// Commit the session manager to storage, if wanted.
+  /// Commit the session manager's device map to storage, if wanted.
   @visibleForOverriding
-  Future<void> commitState() async {}
+  Future<void> commitDeviceMap(Map<String, List<int>> map) async {}
 
-  /// Parses
+  /// Commit the device to storage, if wanted.
+  @visibleForOverriding
+  Future<void> commitDevice(Device device) async {}
   
   /// Encrypt [children] using OMEMO. This either produces an <encrypted /> element with
   /// an attached payload, if [children] is not null, or an empty OMEMO message if

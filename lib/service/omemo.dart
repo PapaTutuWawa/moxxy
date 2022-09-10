@@ -40,17 +40,9 @@ class OmemoService {
         MemoryBTBVTrustManager(),
       );
 
-      final device = await omemoState.getDevice();
-      
       await _storage.write(key: _omemoStorageMarker, value: 'true');
-      await _storage.write(
-        key: _omemoStorageDevice,
-        value: jsonEncode(await device.toJson()),
-      );
-      await _storage.write(
-        key: _omemoStorageDeviceMap,
-        value: '{}',
-      );
+      await commitDevice(await omemoState.getDevice());
+      await commitDeviceMap(<String, List<int>>{});
     } else {
       _log.info('OMEMO marker found. Restoring OMEMO state...');
       final deviceString = await _storage.read(key: _omemoStorageDevice);
