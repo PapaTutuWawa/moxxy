@@ -9,8 +9,8 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384/helpers.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
 class _DoNotEncrypt {
@@ -198,7 +198,31 @@ class OmemoManager extends XmppManagerBase {
             children: children,
           ),
 
-          // TODO(PapaTutuWawa): Affix elements
+          XMLNode(
+            tag: 'rpad',
+            text: generateRpad(),
+          ),
+          XMLNode(
+            tag: 'to',
+            attributes: <String, String>{
+              'jid': toJid,
+            },
+          ),
+          XMLNode(
+            tag: 'from',
+            attributes: <String, String>{
+              'jid': getAttributes().getFullJID().toString(),
+            },
+          ),
+          /*
+          XMLNode(
+            tag: 'time',
+            // TODO(Unknown): Implement
+            attributes: <String, String>{
+              'stamp': '',
+            },
+          ),
+          */
         ],
       );
     }
@@ -237,7 +261,7 @@ class OmemoManager extends XmppManagerBase {
       );
     }).toList();
 
-    List<XMLNode> payloadElement = [];
+    var payloadElement = <XMLNode>[];
     if (payload != null) {
       payloadElement = [
         XMLNode(
@@ -382,7 +406,7 @@ class OmemoManager extends XmppManagerBase {
         },
       );
     }
-
+    
     final isAcked = await omemoState.isRatchetAcknowledged(fromJid, sid);
     if (!isAcked) {
       // Unacked ratchet decrypted this message
