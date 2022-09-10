@@ -7,12 +7,13 @@ import 'package:moxxyv2/xmpp/stringxml.dart';
 ///
 /// Returns true if the affix elements are all valid and as expected. Returns false if not.
 bool checkAffixElements(XMLNode envelope, String sender, JID ourJid) {
-  final encSender = JID.fromString(
-    envelope.firstTag('from')!.attributes['jid']! as String,
-  );
-  final encReceiver = JID.fromString(
-    envelope.firstTag('to')!.attributes['jid']! as String,
-  );
+  final from = envelope.firstTag('from')?.attributes['jid'] as String?;
+  if (from == null) return false;
+  final encSender = JID.fromString(from);
+
+  final to = envelope.firstTag('to')?.attributes['jid'] as String?;
+  if (to == null) return false;
+  final encReceiver = JID.fromString(to);
 
   return encSender.toBare().toString() == sender &&
     encReceiver.toBare().toString() == ourJid.toBare().toString();
