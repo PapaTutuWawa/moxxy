@@ -28,6 +28,7 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
       ),
     );
 
+    // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       GetConversationOmemoFingerprintsCommand(
         jid: event.jid,
