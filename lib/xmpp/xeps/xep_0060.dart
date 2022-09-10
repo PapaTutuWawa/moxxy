@@ -7,6 +7,9 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+
+const pubsubNodeConfigMax = 'http://jabber.org/protocol/pubsub#config-node-max';
 
 class PubSubPublishOptions {
 
@@ -174,6 +177,36 @@ class PubSubManager extends XmppManagerBase {
   /// Publish [payload] to the PubSub node [node] on JID [jid]. Returns true if it
   /// was successful. False otherwise.
   Future<bool> publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
+    // TODO(PapaTutuWawa): Clean this mess up
+    if (options != null) {
+      final dm = getAttributes().getManagerById<DiscoManager>(discoManager)!;
+      final info = await dm.discoInfoQuery(jid);
+      if (info == null) {
+        if (options.maxItems == 'max') {
+          logger.severe('disco#info query failed and options.maxItems is set to "max".');
+          return false;
+        }
+      }
+
+      final nodeMaxSupported = info != null && info.features.contains(pubsubNodeConfigMax);
+      
+      if (options.maxItems == 'max' && !nodeMaxSupported) {
+        final items = await dm.discoItemsQuery(jid, node: node);
+        var count = 1;
+        if (items == null) {
+          logger.severe('disco#items query failed and options.maxItems is set to "max". Assuming 0 items');
+        } else {
+          count = items.length + 1;
+        }
+
+        logger.finest('PubSub host does not support node-config-max. Working around it');
+        options = PubSubPublishOptions(
+          accessModel: options.accessModel,
+          maxItems: '$count',
+        );
+      }
+    }
+
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'set',
@@ -194,7 +227,12 @@ class PubSubManager extends XmppManagerBase {
                   )
                 ],
               ),
-              ...options != null ? [ options.toXml() ] : []
+              ...options != null ? [
+                XMLNode(
+                  tag: 'publish-options',
+                  children: [options.toXml()],
+                ), 
+              ] : [],
             ],
           )
         ],
