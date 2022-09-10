@@ -251,6 +251,7 @@ class DatabaseService {
       String? originId,
       String? quoteId,
       String? filename,
+      int? errorType,
     }
   ) async {
     final m = Message(
@@ -263,7 +264,7 @@ class DatabaseService {
       isMedia,
       isFileUploadNotification,
       encrypted,
-      errorType: noError,
+      errorType: errorType,
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       thumbnailData: thumbnailData,

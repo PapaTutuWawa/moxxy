@@ -29,6 +29,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -839,6 +840,7 @@ class XmppService {
       mediaHeight: dimensions?.height.toInt(),
       quoteId: replyId,
       filename: event.fun?.name,
+      errorType: errorTypeFromException(event.other['encryption_error']),
     );
     
     // Attempt to auto-download the embedded file
