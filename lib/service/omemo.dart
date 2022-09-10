@@ -57,9 +57,8 @@ class OmemoService {
 
       // NOTE: We need to do this because Dart otherwise complains about not being able
       //       to cast dynamic to List<int>.
-      // ignore: avoid_dynamic_calls
       final opks = List<Map<String, dynamic>>.empty(growable: true);
-      for (final opk in deviceJson['opks']!) {
+      for (final Map<String, dynamic> opk in deviceJson['opks']! as List<dynamic>) {
         opks.add(<String, dynamic>{
           'id': opk['id']! as int,
           'public': opk['public']! as String,

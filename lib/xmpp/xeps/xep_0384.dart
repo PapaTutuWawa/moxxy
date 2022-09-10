@@ -141,6 +141,7 @@ class OmemoManager extends XmppManagerBase {
       tagXmlns: omemoXmlns,
       tagName: 'encrypted',
       callback: _onIncomingStanza,
+      priority: -98,
     ),
   ];
 
@@ -154,9 +155,8 @@ class OmemoManager extends XmppManagerBase {
     ),*/
     StanzaHandler(
       stanzaTag: 'message',
-      tagXmlns: omemoXmlns,
-      tagName: 'encrypted',
       callback: _onOutgoingStanza,
+      priority: 100,
     ),
   ];
 
@@ -179,66 +179,17 @@ class OmemoManager extends XmppManagerBase {
   @visibleForOverriding
   Future<void> commitState() async {}
 
-  Future<StanzaHandlerData> _onOutgoingStanza(Stanza stanza, StanzaHandlerData state) async {
-    if (!state.encrypted) {
-      return state;
-    }
-
-    final attrs = getAttributes();
-    final bareJid = attrs.getFullJID().toBare();
-    final toJid = JID.fromString(stanza.to!).toBare();
-
-    final newSessions = List<OmemoBundle>.empty(growable: true);
-    final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
-    if ((await omemoState.getDeviceMap()).containsKey(toJid.toString())) {
-      newSessions.addAll((await retrieveDeviceBundles(toJid))!);
-    } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
-      for (final id in unackedRatchets) {
-        newSessions.add((await retrieveDeviceBundle(toJid, id))!);
-      }
-    } else {
-      final map = await omemoState.getDeviceMap();
-      final devices = map[toJid.toString()]!;
-      final ratchetSessions = (await getDeviceList(toJid))!;
-      if (devices.length != ratchetSessions.length) {
-        for (final id in devices) {
-          if (ratchetSessions.contains(id)) continue;
-
-          newSessions.add((await retrieveDeviceBundle(toJid, id))!);
-        }
-      }
-    }
-    
-    final toEncrypt = List<XMLNode>.empty(growable: true);
-    final children = List<XMLNode>.empty(growable: true);
-    for (final child in stanza.children) {
-      if (!shouldEncrypt(child)) {
-        children.add(child);
-      } else {
-        toEncrypt.add(child);
-      }
-    }
-
-    final envelopeElement = XMLNode.xmlns(
-      tag: 'envelope',
-      xmlns: sceXmlns,
-      children: [
-        XMLNode(
-          tag: 'content',
-          children: toEncrypt,
-        ),
-
-        // TODO(PapaTutuWawa): Affix elements
-      ],
-    );
+  /// Encrypt [payload] using OMEMO. This either produces an <encrypted /> element with
+  /// an attached payload, if [payload] is not null, or an empty OMEMO message if [payload]
+  /// is null.
+  /// [jids] is the list of JIDs the payload should be encrypted for.
+  Future<XMLNode> _encryptPayload(XMLNode? payload, List<String> jids, List<OmemoBundle> newSessions) async {
     final encryptedEnvelope = await omemoState.encryptToJids(
-      [
-        JID.fromString(stanza.to!).toBare().toString(),
-        bareJid.toString(),
-      ],
-      envelopeElement.toXml(),
+      jids,
+      payload != null ? payload.toXml() : null,
       newSessions: newSessions,
     );
+
     final keyElements = <String, List<XMLNode>>{};
     for (final key in encryptedEnvelope.encryptedKeys) {
       final keyElement = XMLNode(
@@ -266,31 +217,109 @@ class OmemoManager extends XmppManagerBase {
         children: entry.value,
       );
     }).toList();
-    
-    final encrypted = XMLNode.xmlns(
-      tag: 'encrypted',
-      xmlns: omemoXmlns,
-      children: [
+
+    List<XMLNode> payloadElement = [];
+    if (payload != null) {
+      payloadElement = [
         XMLNode(
           tag: 'payload',
           text: base64.encode(encryptedEnvelope.ciphertext!),
         ),
+      ];
+    }
+    
+    return XMLNode.xmlns(
+      tag: 'encrypted',
+      xmlns: omemoXmlns,
+      children: [
+        ...payloadElement,
         XMLNode(
           tag: 'header',
           attributes: <String, String>{
-            'sid': '',
+            'sid': (await omemoState.getDeviceId()).toString(),
           },
           children: keysElements,
         ),
       ],
     );
+  }
+  
+  Future<StanzaHandlerData> _onOutgoingStanza(Stanza stanza, StanzaHandlerData state) async {
+    if (state.encrypted) {
+      return state;
+    }
 
-    children.add(encrypted);
-      
+    logger.finest('Before encrypting');
+    logger.finest(stanza.toXml());
+    
+    final attrs = getAttributes();
+    final bareJid = attrs.getFullJID().toBare();
+    final toJid = JID.fromString(stanza.to!).toBare();
+
+    final newSessions = List<OmemoBundle>.empty(growable: true);
+    final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
+    if (!(await omemoState.getDeviceMap()).containsKey(toJid.toString())) {
+      logger.finest('Retrieving bundles for $toJid');
+      newSessions.addAll((await retrieveDeviceBundles(toJid))!);
+    } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
+      logger.finest('Got unacked ratchets');
+      for (final id in unackedRatchets) {
+        logger.finest('Retrieving bundle for $toJid:$id');
+        newSessions.add((await retrieveDeviceBundle(toJid, id))!);
+      }
+    } else {
+      final map = await omemoState.getDeviceMap();
+      final devices = map[toJid.toString()]!;
+      final ratchetSessions = (await getDeviceList(toJid))!;
+      if (devices.length != ratchetSessions.length) {
+        for (final id in devices) {
+          if (ratchetSessions.contains(id)) continue;
+
+          logger.finest('Retrieving bundle for $toJid:$id');
+          newSessions.add((await retrieveDeviceBundle(toJid, id))!);
+        }
+      }
+    }
+    
+    final toEncrypt = List<XMLNode>.empty(growable: true);
+    final children = List<XMLNode>.empty(growable: true);
+    for (final child in stanza.children) {
+      if (!shouldEncrypt(child)) {
+        children.add(child);
+      } else {
+        toEncrypt.add(child);
+      }
+    }
+
+    final envelopeElement = XMLNode.xmlns(
+      tag: 'envelope',
+      xmlns: sceXmlns,
+      children: [
+        XMLNode(
+          tag: 'content',
+          children: toEncrypt,
+        ),
+
+        // TODO(PapaTutuWawa): Affix elements
+      ],
+    );
+
+    logger.finest('Encrypting stanza');
+    final encrypted = await _encryptPayload(
+      envelopeElement,
+      [ 
+        JID.fromString(stanza.to!).toBare().toString(),
+        //bareJid.toString(),
+      ],
+      newSessions
+    );
+    logger.finest('Encryption done');
+
+    final newStanza = state.stanza.copyWith(
+      children: children..add(encrypted),
+    );
     return state.copyWith(
-      stanza: state.stanza.copyWith(
-        children: children,
-      ),
+      stanza: newStanza,
     );
   }
 
@@ -298,7 +327,7 @@ class OmemoManager extends XmppManagerBase {
   Future<StanzaHandlerData> _onIncomingStanza(Stanza stanza, StanzaHandlerData state) async {
     final encrypted = stanza.firstTag('encrypted', xmlns: omemoXmlns)!;
     final header = encrypted.firstTag('header')!;
-    final payloadElement = encrypted.firstTag('encrypted')!;
+    final payloadElement = encrypted.firstTag('payload');
     final keys = List<EncryptedKey>.empty(growable: true);
     for (final keysElement in header.findTags('keys')) {
       final jid = keysElement.attributes['jid']! as String;
@@ -314,31 +343,65 @@ class OmemoManager extends XmppManagerBase {
       }
     }
 
+    final fromJid = JID.fromString(stanza.from!).toBare().toString();
+    final sid = int.parse(header.attributes['sid']! as String);
+
     final decrypted = await omemoState.decryptMessage(
-      base64.decode(payloadElement.innerText()),
-      JID.fromString(stanza.from!).toBare().toString(),
-      int.parse(header.attributes['sid']! as String),
+      payloadElement != null ? base64.decode(payloadElement.innerText()) : null,
+      fromJid,
+      sid,
       keys,
     );
-    final envelope = XMLNode.fromString(decrypted!);
-    // TODO(PapaTutuWawa): Check affix elements
 
-    final children = stanza.children.where(
-      (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
-    ).toList()
+    final isAcked = await omemoState.isRatchetAcknowledged(fromJid, sid);
+    if (!isAcked && payloadElement != null) {
+      logger.finest('Encrypting empty OMEMO message');
+      final empty = await _encryptPayload(
+        null,
+        [fromJid],
+        [],
+      );
+      logger.finest('Done.');
+
+      await getAttributes().sendStanza(
+        Stanza.message(
+          to: fromJid,
+          type: 'chat',
+          children: [empty],
+        ),
+        awaitable: false,
+        encrypted: true,
+      );
+    }
+    
+    if (payloadElement != null) {
+      final envelope = XMLNode.fromString(decrypted!);
+      // TODO(PapaTutuWawa): Check affix elements
+
+      final children = stanza.children.where(
+        (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
+      ).toList()
       ..addAll(envelope.firstTag('content')!.children);
+      
+      return state.copyWith(
+        encrypted: true,
+        stanza: Stanza(
+          to: stanza.to,
+          from: stanza.from,
+          id: stanza.id,
+          type: stanza.type,
+          children: children,
+          tag: stanza.tag,
+          attributes: Map<String, String>.from(stanza.attributes),
+        ),
+      );
+    }
+
+    logger.finest('Acking ratchet $fromJid:$sid');
+    await omemoState.ratchetAcknowledged(fromJid, sid);
     
     return state.copyWith(
       encrypted: true,
-      stanza: Stanza(
-        to: stanza.to,
-        from: stanza.from,
-        id: stanza.id,
-        type: stanza.type,
-        children: children,
-        tag: stanza.tag,
-        attributes: stanza.attributes as Map<String, String>,
-      ),
     );
   }
 

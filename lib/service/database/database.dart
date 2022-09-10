@@ -548,11 +548,12 @@ class DatabaseService {
       omemoTable,
       {
         ...json,
-        'mkskipped': jsonEncode(json['mkskipped']! as Map<String, dynamic>),
+        'mkskipped': jsonEncode(json['mkskipped']),
         'acknowledged': boolToInt(json['acknowledged']! as bool),
         'jid': ratchet.jid,
         'id': ratchet.id,
       },
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
@@ -560,12 +561,22 @@ class DatabaseService {
     final results = await _db.query(omemoTable);
 
     return results.map((ratchet) {
+      final json = jsonDecode(ratchet['mkskipped']! as String) as List<dynamic>;
+      final mkskipped = List<Map<String, dynamic>>.empty(growable: true);
+      for (final i in json) {
+        mkskipped.add({
+          'key': i['key']! as String,
+          'public': i['public']! as String,
+          'n': i['n']! as int,
+        });
+      }
+
       return OmemoDoubleRatchetWrapper(
         OmemoDoubleRatchet.fromJson(
           {
             ...ratchet,
             'acknowledged': intToBool(ratchet['acknowledged']! as int),
-            'mkskipped': jsonDecode(ratchet['mkskipped']! as String) as Map<String, dynamic>,
+            'mkskipped': mkskipped,
           },
         ),
         ratchet['id']! as int,

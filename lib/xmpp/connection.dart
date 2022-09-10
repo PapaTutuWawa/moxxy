@@ -405,7 +405,7 @@ class XmppConnection {
   /// If addId is true, then an 'id' attribute will be added to the stanza if [stanza] has
   /// none.
   // TODO(Unknown): if addId = false, the function crashes.
-  Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true }) async {
+  Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true, bool encrypted = false }) async {
     var stanza_ = stanza;
     
     // Add extra data in case it was not set
@@ -426,9 +426,14 @@ class XmppConnection {
       }
     }
 
-    final stanzaString = stanza_.toXml();
     final id = stanza_.id!;
 
+    _log.fine('Running pre stanza handlers..');
+    final data = await _runOutgoingPreStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_, encrypted: encrypted));
+    final stanzaString = data.stanza.toXml();
+    _log.fine('Done');
+
+    
     _log.fine('Attempting to acquire lock for $id...');
     var future = Future.value(XMLNode(tag: 'not-used'));
     await _awaitingResponseLock.synchronized(() async {
@@ -436,10 +441,6 @@ class XmppConnection {
         if (awaitable) {
           _awaitingResponse[id] = Completer();
         }
-
-        _log.fine('Running pre stanza handlers..');
-        await _runOutgoingPreStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_));
-        _log.fine('Done');
 
         // This uses the StreamManager to behave like a send queue
         if (await _canSendData()) {
@@ -559,28 +560,34 @@ class XmppConnection {
   /// Iterate over [handlers] and check if the handler matches [stanza]. If it does,
   /// call its callback and end the processing if the callback returned true; continue
   /// if it returned false.
-  Future<bool> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
+  Future<StanzaHandlerData> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
     var state = initial ?? StanzaHandlerData(false, stanza);
     for (final handler in handlers) {
       if (handler.matches(state.stanza)) {
         state = await handler.callback(state.stanza, state);
-        if (state.done) return true;
+        if (state.done) return state;
       }
     }
 
-    return false;
+    return state;
   }
 
   Future<bool> _runIncomingStanzaHandlers(Stanza stanza) async {
-    return _runStanzaHandlers(_incomingStanzaHandlers, stanza,);
+    final data = await _runStanzaHandlers(_incomingStanzaHandlers, stanza);
+    return data.done;
   }
 
-  Future<bool> _runOutgoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
+  Future<StanzaHandlerData> _runOutgoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
     return _runStanzaHandlers(_outgoingPreStanzaHandlers, stanza, initial: initial);
   }
 
   Future<bool> _runOutgoingPostStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
-    return _runStanzaHandlers(_outgoingPostStanzaHandlers, stanza, initial: initial);
+    final data = await _runStanzaHandlers(
+      _outgoingPostStanzaHandlers,
+      stanza,
+      initial: initial,
+    );
+    return data.done;
   }
   
   /// Called whenever we receive a stanza after resource binding or stream resumption.
