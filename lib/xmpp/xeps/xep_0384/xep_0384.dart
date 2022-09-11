@@ -428,7 +428,7 @@ class OmemoManager extends XmppManagerBase {
         final children = stanza.children.where(
           (child) => child.tag != 'encrypted' || child.attributes['xmlns'] != omemoXmlns,
         ).toList()
-        ..addAll(envelope.firstTag('content')!.children);
+          ..addAll(envelope.firstTag('content')!.children);
 
         final other = Map<String, dynamic>.from(state.other);
         if (!checkAffixElements(envelope, stanza.from!, ourJid)) {
