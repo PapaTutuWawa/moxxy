@@ -27,7 +27,9 @@ const vCardTempUpdate = 'vcard-temp:x:update';
 // XEP-0060
 const pubsubXmlns = 'http://jabber.org/protocol/pubsub';
 const pubsubEventXmlns = 'http://jabber.org/protocol/pubsub#event';
+const pubsubOwnerXmlns = 'http://jabber.org/protocol/pubsub#owner';
 const pubsubPublishOptionsXmlns = 'http://jabber.org/protocol/pubsub#publish-options';
+
 // XEP-0066
 const oobDataXmlns = 'jabber:x:oob';
 

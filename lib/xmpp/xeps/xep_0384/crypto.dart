@@ -15,6 +15,6 @@ bool checkAffixElements(XMLNode envelope, String sender, JID ourJid) {
   if (to == null) return false;
   final encReceiver = JID.fromString(to);
 
-  return encSender.toBare().toString() == sender &&
+  return encSender.toBare().toString() == JID.fromString(sender).toBare().toString() &&
     encReceiver.toBare().toString() == ourJid.toBare().toString();
 }

@@ -13,6 +13,7 @@ String errorTypeToText(int errorType) {
     case messageNotEncryptedForDevice: return 'Message not encrypted for device';
     case messageInvalidHMAC: return 'Could not decrypt message';
     case messageNoDecryptionKey: return 'No decryption key available';
+    case messageInvalidAffixElements: return 'Invalid encrypted message';
     default: return '';
   }
 }
