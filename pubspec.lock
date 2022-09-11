@@ -740,8 +740,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "12e09947f6fb1cbb907e9014d9eaf1a05f3809dc"
-      resolved-ref: "12e09947f6fb1cbb907e9014d9eaf1a05f3809dc"
+      ref: dad938b
+      resolved-ref: dad938b0e1be0aae64d50c92f78742ddc2b28cce
       url: "https://codeberg.org/PapaTutuWawa/omemo_dart.git"
     source: git
     version: "0.2.1"

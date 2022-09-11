@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
@@ -20,6 +21,7 @@ class OmemoDoubleRatchetWrapper {
 const _omemoStorageMarker = 'omemo_marker';
 const _omemoStorageDevice = 'omemo_device';
 const _omemoStorageDeviceMap = 'omemo_device_map';
+const _omemoStorageTrustMap = 'omemo_trust_map';
 
 class OmemoService {
 
@@ -36,13 +38,17 @@ class OmemoService {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
       omemoState = await OmemoSessionManager.generateNewIdentity(
         jid,
-        // TODO(PapaTutuWawa): Subclass
-        MemoryBTBVTrustManager(),
+        MoxxyBTBVTrustManager(
+          <RatchetMapKey, BTBVTrustState>{},
+          <RatchetMapKey, bool>{},
+          <String, List<int>>{},
+        ),
       );
 
       await _storage.write(key: _omemoStorageMarker, value: 'true');
       await commitDevice(await omemoState.getDevice());
       await commitDeviceMap(<String, List<int>>{});
+      await commitTrustManager(await omemoState.trustManager.toJson());
     } else {
       _log.info('OMEMO marker found. Restoring OMEMO state...');
       final deviceString = await _storage.read(key: _omemoStorageDevice);
@@ -63,7 +69,6 @@ class OmemoService {
 
       final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
       for (final ratchet in await GetIt.I.get<DatabaseService>().loadRatchets()) {
-        _log.finest('Loaded ratchet ${ratchet.jid}:${ratchet.id}');
         final key = RatchetMapKey(ratchet.jid, ratchet.id);
         ratchetMap[key] = ratchet.ratchet;
       }
@@ -76,13 +81,11 @@ class OmemoService {
         deviceMap[entry.key] = entry.value.map<int>((i) => i as int).toList();
       }
 
-      _log.finest(deviceMapJson);
       omemoState = OmemoSessionManager(
         device,
         deviceMap,
         ratchetMap,
-        // TODO(PapaTutuWawa): Subclass
-        MemoryBTBVTrustManager(),
+        await loadTrustManager(),
       );
     }
 
@@ -136,6 +139,20 @@ class OmemoService {
     return keys;
   }
 
+  Future<void> commitTrustManager(Map<String, dynamic> json) async {
+    await _storage.write(key: _omemoStorageTrustMap, value: jsonEncode(json));
+  }
+
+  Future<MoxxyBTBVTrustManager> loadTrustManager() async {
+    final data = await _storage.read(key: _omemoStorageTrustMap);
+    final json = jsonDecode(data!) as Map<String, dynamic>;
+    return MoxxyBTBVTrustManager(
+      BlindTrustBeforeVerificationTrustManager.trustCacheFromJson(json),
+      BlindTrustBeforeVerificationTrustManager.enableCacheFromJson(json),
+      BlindTrustBeforeVerificationTrustManager.deviceListFromJson(json),
+    );
+  }
+  
   Future<void> setOmemoKeyEnabled(String jid, int deviceId, bool enabled) async {
     await omemoState.trustManager.setEnabled(jid, deviceId, enabled);
   }

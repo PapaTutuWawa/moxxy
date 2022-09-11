@@ -25,3 +25,19 @@ class MoxxyOmemoManager extends OmemoManager {
     await GetIt.I.get<OmemoService>().commitDevice(device);
   }
 }
+
+class MoxxyBTBVTrustManager extends BlindTrustBeforeVerificationTrustManager {
+  MoxxyBTBVTrustManager(
+    Map<RatchetMapKey, BTBVTrustState> trustCache,
+    Map<RatchetMapKey, bool> enablementCache,
+    Map<String, List<int>> devices,
+  ) : super(trustCache: trustCache, enablementCache: enablementCache, devices: devices);
+
+  @override
+  Future<void> commitState() async {
+    await GetIt.I.get<OmemoService>().commitTrustManager(await toJson());
+  }
+
+  @override
+  Future<void> loadState() async {}
+}
