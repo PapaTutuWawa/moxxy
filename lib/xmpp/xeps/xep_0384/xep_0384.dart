@@ -321,7 +321,9 @@ class OmemoManager extends XmppManagerBase {
 
 
   Future<StanzaHandlerData> _onIncomingStanza(Stanza stanza, StanzaHandlerData state) async {
-    final encrypted = stanza.firstTag('encrypted', xmlns: omemoXmlns)!;
+    final encrypted = stanza.firstTag('encrypted', xmlns: omemoXmlns);
+    if (encrypted == null) return state;
+
     final header = encrypted.firstTag('header')!;
     final payloadElement = encrypted.firstTag('payload');
     final keys = List<EncryptedKey>.empty(growable: true);
