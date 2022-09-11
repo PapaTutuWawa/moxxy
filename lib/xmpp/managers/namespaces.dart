@@ -21,3 +21,4 @@ const chatStateManager = 'im.moxxy.chatstatemanager';
 const pingManager = 'im.moxxy.ping';
 const fileUploadNotificationManager = 'im.moxxy.fileuploadnotificationmanager';
 const omemoManager = 'org.moxxy.omemomanager';
+const emeManager = 'org.moxxy.ememanager';

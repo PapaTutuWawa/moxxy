@@ -10,6 +10,7 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/crypto.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/helpers.dart';
@@ -306,7 +307,9 @@ class OmemoManager extends XmppManagerBase {
 
       return state.copyWith(
         stanza: state.stanza.copyWith(
-          children: children..add(encrypted),
+          children: children
+            ..add(encrypted)
+            ..add(buildEmeElement(ExplicitEncryptionType.omemo2)),
         ),
       );
     } catch (ex) {

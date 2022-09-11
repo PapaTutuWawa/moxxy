@@ -80,6 +80,15 @@ const httpFileUploadXmlns = 'urn:xmpp:http:upload:0';
 // XEP-0372
 const referenceXmlns = 'urn:xmpp:reference:0';
 
+// XEP-380
+const emeXmlns = 'urn:xmpp:eme:0';
+const emeOtr = 'urn:xmpp:otr:0';
+const emeLegacyOpenPGP = 'jabber:x:encrypted';
+const emeOpenPGP = 'urn:xmpp:openpgp:0';
+const emeOmemo = 'eu.siacs.conversations.axolotl';
+const emeOmemo1 = 'urn:xmpp:omemo:1';
+const emeOmemo2 = 'urn:xmpp:omemo:2';
+
 // XEP-0384
 const omemoXmlns = 'urn:xmpp:omemo:2';
 const omemoDevicesXmlns = 'urn:xmpp:omemo:2:devices';
