@@ -771,7 +771,7 @@ class XmppService {
     }
     
     // Stop the processing here if the event does not describe a displayable message
-    if (!_isMessageEventMessage(event)) return;
+    if (!_isMessageEventMessage(event) && event.other['encryption_error'] == null) return;
 
     final state = await getXmppState();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
