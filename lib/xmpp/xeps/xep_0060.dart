@@ -103,6 +103,39 @@ class PubSubManager extends XmppManagerBase {
     
     return state.copyWith(done: true);
   }
+
+  Future<PubSubPublishOptions> _preprocessPublishOptions(String jid, String node, PubSubPublishOptions options) async {
+    if (options.maxItems != null) {
+      final dm = getAttributes().getManagerById<DiscoManager>(discoManager)!;
+      final info = await dm.discoInfoQuery(jid);
+      if (info == null) {
+        if (options.maxItems == 'max') {
+          logger.severe('disco#info query failed and options.maxItems is set to "max".');
+          return options;
+        }
+      }
+
+      final nodeMaxSupported = info != null && info.features.contains(pubsubNodeConfigMax);
+      
+      if (options.maxItems == 'max' && !nodeMaxSupported) {
+        final items = await dm.discoItemsQuery(jid, node: node);
+        var count = 1;
+        if (items == null) {
+          logger.severe('disco#items query failed and options.maxItems is set to "max". Assuming 0 items');
+        } else {
+          count = items.length + 1;
+        }
+
+        logger.finest('PubSub host does not support node-config-max. Working around it');
+        return PubSubPublishOptions(
+          accessModel: options.accessModel,
+          maxItems: '$count',
+        );
+      }
+    }
+
+    return options;
+  }
   
   Future<bool> subscribe(String jid, String node) async {
     final attrs = getAttributes();
@@ -174,40 +207,8 @@ class PubSubManager extends XmppManagerBase {
     return subscription.attributes['subscription'] == 'none';
   }
 
-  /// Publish [payload] to the PubSub node [node] on JID [jid]. Returns true if it
-  /// was successful. False otherwise.
-  Future<bool> publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
-    // TODO(PapaTutuWawa): Clean this mess up
-    if (options != null) {
-      final dm = getAttributes().getManagerById<DiscoManager>(discoManager)!;
-      final info = await dm.discoInfoQuery(jid);
-      if (info == null) {
-        if (options.maxItems == 'max') {
-          logger.severe('disco#info query failed and options.maxItems is set to "max".');
-          return false;
-        }
-      }
-
-      final nodeMaxSupported = info != null && info.features.contains(pubsubNodeConfigMax);
-      
-      if (options.maxItems == 'max' && !nodeMaxSupported) {
-        final items = await dm.discoItemsQuery(jid, node: node);
-        var count = 1;
-        if (items == null) {
-          logger.severe('disco#items query failed and options.maxItems is set to "max". Assuming 0 items');
-        } else {
-          count = items.length + 1;
-        }
-
-        logger.finest('PubSub host does not support node-config-max. Working around it');
-        options = PubSubPublishOptions(
-          accessModel: options.accessModel,
-          maxItems: '$count',
-        );
-      }
-    }
-
-    final result = await getAttributes().sendStanza(
+  Future<XMLNode> _publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
+    return getAttributes().sendStanza(
       Stanza.iq(
         type: 'set',
         to: jid,
@@ -238,8 +239,28 @@ class PubSubManager extends XmppManagerBase {
         ],
       ),
     );
+  }
+  
+  /// Publish [payload] to the PubSub node [node] on JID [jid]. Returns true if it
+  /// was successful. False otherwise.
+  Future<bool> publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
+    PubSubPublishOptions? pubOptions;
+    if (options != null) {
+      pubOptions = await _preprocessPublishOptions(jid, node, options);
+    }
 
-    if (result.attributes['type'] != 'result') return false;
+    var result = await _publish(jid, node, payload, id: id, options: pubOptions);
+    if (result.attributes['type'] != 'result') {
+      final error = result.firstTag('error');
+      if (error == null) return false;
+
+      if (error.firstTag('conflict') != null && error.firstTag('precondition-not-met') != null) {
+        await configure(jid, node, pubOptions!);
+        result = await _publish(jid, node, payload, id: id, options: pubOptions);
+        if (result.attributes['type'] != 'result') return false;
+
+      }
+    }
 
     final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
     if (pubsub == null) return false;
@@ -326,5 +347,59 @@ class PubSubManager extends XmppManagerBase {
       payload: item.children[0],
       node: node,
     );
+  }
+
+  Future<bool> configure(String jid, String node, PubSubPublishOptions options) async {
+    final attrs = getAttributes();
+
+    // Request the form
+    final form = await attrs.sendStanza(
+      Stanza.iq(
+        type: 'get',
+        to: jid,
+        children: [
+          XMLNode.xmlns(
+            tag: 'pubsub',
+            xmlns: pubsubOwnerXmlns,
+            children: [
+              XMLNode(
+                tag: 'configure',
+                attributes: <String, String>{
+                  'node': node,
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    if (form.attributes['type'] != 'result') return false;
+
+    final submit = await attrs.sendStanza(
+      Stanza.iq(
+        type: 'set',
+        to: jid,
+        children: [
+          XMLNode.xmlns(
+            tag: 'pubsub',
+            xmlns: pubsubOwnerXmlns,
+            children: [
+              XMLNode(
+                tag: 'configure',
+                attributes: <String, String>{
+                  'node': node,
+                },
+                children: [
+                  options.toXml(),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    if (submit.attributes['type'] != 'result') return false;
+
+    return true;
   }
 }
