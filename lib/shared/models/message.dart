@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 
 part 'message.freezed.dart';
 part 'message.g.dart';
@@ -73,5 +74,10 @@ class Message with _$Message {
       'encrypted': boolToInt(encrypted),
       'quote_id': quoteId,
     };
+  }
+
+  /// Returns true if the message is an error. If not, then returns false.
+  bool isError() {
+    return errorType != null && errorType != noError;
   }
 }

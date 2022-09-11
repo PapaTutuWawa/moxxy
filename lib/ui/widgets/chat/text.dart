@@ -34,18 +34,15 @@ class TextChatWidget extends StatelessWidget {
   final bool sent;
   final Widget? topWidget;
 
-  bool isError() {
-    return message.errorType != null && message.errorType != noError;
-  }
-  
   @override
   Widget build(BuildContext context) {
     final fontsize = EmojiUtil.hasOnlyEmojis(
       message.body,
       ignoreWhitespace: true,
-    ) && !isError() ?
+    ) && !message.isError() ?
       fontsizeBodyOnlyEmojis :
       fontsizeBody;
+
     return IntrinsicWidth(child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -53,11 +50,11 @@ class TextChatWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ParsedText(
-              text: isError() ?
+              text: message.isError() ?
                 errorTypeToText(message.errorType!) :
                 message.body,
               style: TextStyle(
-                color: isError() ?
+                color: message.isError() ?
                   Colors.grey :
                   const Color(0xf9ebffff),
                 fontSize: fontsize,

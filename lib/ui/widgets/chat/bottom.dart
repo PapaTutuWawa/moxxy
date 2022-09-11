@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -95,7 +93,7 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ] : [],
-        ...widget.message.errorType != noError ? [
+        ...widget.message.isError() ? [
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
