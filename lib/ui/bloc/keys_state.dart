@@ -5,5 +5,6 @@ class KeysState with _$KeysState {
   factory KeysState({
     @Default(false) bool working,
     @Default([]) List<OmemoKey> keys,
+    @Default('') String jid,
   }) = _KeysState;
 }

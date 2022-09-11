@@ -58,6 +58,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SendFilesCommand>(performSendFiles),
       EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
       EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(performGetOmemoFingerprints),
+      EventTypeMatcher<SetOmemoKeyEnabledCommand>(performEnableOmemoKey),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -453,5 +454,17 @@ Future<void> performGetOmemoFingerprints(GetConversationOmemoFingerprintsCommand
       fingerprints: await omemo.getOmemoKeysForJid(command.jid),
     ),
     id: id,
+  );
+}
+
+Future<void> performEnableOmemoKey(SetOmemoKeyEnabledCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final omemo = GetIt.I.get<OmemoService>();
+  await omemo.setOmemoKeyEnabled(command.jid, command.deviceId, command.enabled);
+
+  await performGetOmemoFingerprints(
+    GetConversationOmemoFingerprintsCommand(jid: command.jid),
+    extra: id,
   );
 }

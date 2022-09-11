@@ -17,10 +17,11 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
 
   KeysBloc() : super(KeysState()) {
     on<KeysRequestedEvent>(_onRequested);
+    on<KeyEnabledSetEvent>(_onKeyEnabledSet);
   }
 
   Future<void> _onRequested(KeysRequestedEvent event, Emitter<KeysState> emit) async {
-    emit(state.copyWith(working: true));
+    emit(state.copyWith(working: true, jid: event.jid));
 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
@@ -41,5 +42,17 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
         keys: result.fingerprints,
       ),
     );
+  }
+
+  Future<void> _onKeyEnabledSet(KeyEnabledSetEvent event, Emitter<KeysState> emit) async {
+    // ignore: cast_nullable_to_non_nullable
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+      SetOmemoKeyEnabledCommand(
+        jid: state.jid,
+        deviceId: event.deviceId,
+        enabled: event.enabled,
+      ),
+    ) as GetConversationOmemoFingerprintsResult;
+    emit(state.copyWith(keys: result.fingerprints));  
   }
 }

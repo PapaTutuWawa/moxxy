@@ -329,6 +329,14 @@ files:
           - JsonImplementation
         attributes:
           jid: String
+      - name: SetOmemoKeyEnabledCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          deviceId: int
+          enabled: bool
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

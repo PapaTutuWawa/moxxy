@@ -63,17 +63,23 @@ class OmemoService {
 
       final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
       for (final ratchet in await GetIt.I.get<DatabaseService>().loadRatchets()) {
+        _log.finest('Loaded ratchet ${ratchet.jid}:${ratchet.id}');
         final key = RatchetMapKey(ratchet.jid, ratchet.id);
         ratchetMap[key] = ratchet.ratchet;
       }
 
       final deviceMapString = await _storage.read(key: _omemoStorageDeviceMap);
       // ignore: argument_type_not_assignable
-      final deviceMapJson = Map<String, List<int>>.from(jsonDecode(deviceMapString!));
+      final deviceMapJson = Map<String, dynamic>.from(jsonDecode(deviceMapString!));
+      final deviceMap = <String, List<int>>{};
+      for (final entry in deviceMapJson.entries) {
+        deviceMap[entry.key] = entry.value.map<int>((i) => i as int).toList();
+      }
+
       _log.finest(deviceMapJson);
       omemoState = OmemoSessionManager(
         device,
-        deviceMapJson,
+        deviceMap,
         ratchetMap,
         // TODO(PapaTutuWawa): Subclass
         MemoryBTBVTrustManager(),
@@ -121,10 +127,16 @@ class OmemoService {
           await omemoState.trustManager.isTrusted(jid, fp.deviceId),
           // TODO(Unknown): Allow verifying OMEMO keys
           false,
+          await omemoState.trustManager.isEnabled(jid, fp.deviceId),
+          fp.deviceId,
         ),
       );
     }
 
     return keys;
+  }
+
+  Future<void> setOmemoKeyEnabled(String jid, int deviceId, bool enabled) async {
+    await omemoState.trustManager.setEnabled(jid, deviceId, enabled);
   }
 }

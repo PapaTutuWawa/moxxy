@@ -10,6 +10,8 @@ class OmemoKey with _$OmemoKey {
     String fingerprint,
     bool trusted,
     bool verified,
+    bool enabled,
+    int deviceId,
   ) = _OmemoKey;
 
   /// JSON

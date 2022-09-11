@@ -64,8 +64,15 @@ class KeysPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Switch(
-                        value: item.trusted,
-                        onChanged: (_) {},
+                        value: item.enabled,
+                        onChanged: (value) {
+                          context.read<KeysBloc>().add(
+                            KeyEnabledSetEvent(
+                              item.deviceId,
+                              value,
+                            ),
+                          );
+                        },
                       ),
                       IconButton(
                         icon: Icon(
