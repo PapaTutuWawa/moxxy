@@ -259,6 +259,8 @@ class OmemoManager extends XmppManagerBase {
       final bundles = await retrieveDeviceBundles(toJid);
       if (!bundles.isType<OmemoError>()) {
         newSessions.addAll(bundles.get<List<OmemoBundle>>());
+      } else {
+        logger.warning('Failed to retrieve device bundles for $toJid');
       }
     } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
       logger.finest('Got unacked ratchets');
@@ -267,6 +269,8 @@ class OmemoManager extends XmppManagerBase {
         final bundle = await retrieveDeviceBundle(toJid, id);
         if (!bundle.isType<OmemoError>()) {
           newSessions.add(bundle.get<OmemoBundle>());
+        } else {
+          logger.warning('Failed to retrieve device bundles for $toJid:$id');
         }
       }
     } else {
@@ -328,7 +332,7 @@ class OmemoManager extends XmppManagerBase {
     final toJid = JID.fromString(stanza.to!).toBare();
     var newSessions = <OmemoBundle>[];
     final result = await _findNewSessions(toJid);
-    if (result.isType<OmemoError>()) {
+    if (!result.isType<OmemoError>()) {
       newSessions = result.get<List<OmemoBundle>>();
     }
     
@@ -520,7 +524,7 @@ class OmemoManager extends XmppManagerBase {
     final bundles = bundlesRaw.get<List<PubSubItem>>().map(
       (bundle) => bundleFromXML(jid, int.parse(bundle.id), bundle.payload),
     ).toList();
-
+    
     return Result(bundles);
   }
   
