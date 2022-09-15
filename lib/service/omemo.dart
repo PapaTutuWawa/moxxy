@@ -7,6 +7,7 @@ import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
@@ -113,7 +114,8 @@ class OmemoService {
     final conn = GetIt.I.get<XmppConnection>();
     final omemo = conn.getManagerById<OmemoManager>(omemoManager)!;
     final bareJid = conn.getConnectionSettings().jid.toBare();
-    final ids = (await omemo.getDeviceList(bareJid)) ?? [];
+    final idsRaw = await omemo.getDeviceList(bareJid);
+    final ids = idsRaw.isType<OmemoError>() ? [] : idsRaw.get<List<int>>();
     final device = await omemoState.getDevice();
     if (!ids.contains(device.id)) {
       await omemo.publishBundle(await device.toBundle());
@@ -155,5 +157,9 @@ class OmemoService {
   
   Future<void> setOmemoKeyEnabled(String jid, int deviceId, bool enabled) async {
     await omemoState.trustManager.setEnabled(jid, deviceId, enabled);
+  }
+
+  Future<void> removeAllSessions(String jid) async {
+    await omemoState.removeAllRatchets(jid);
   }
 }

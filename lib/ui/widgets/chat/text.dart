@@ -14,6 +14,7 @@ String errorTypeToText(int errorType) {
     case messageInvalidHMAC: return 'Could not decrypt message';
     case messageNoDecryptionKey: return 'No decryption key available';
     case messageInvalidAffixElements: return 'Invalid encrypted message';
+    case messageInvalidNumber: return 'lol';
     default: return '';
   }
 }

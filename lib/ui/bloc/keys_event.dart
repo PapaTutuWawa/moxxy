@@ -16,3 +16,6 @@ class KeyEnabledSetEvent extends KeysEvent {
  final int deviceId;
  final bool enabled;
 }
+
+/// Triggered by the UI when all OMEMO sessions should be recreated
+class SessionsRecreatedEvent extends KeysEvent {}

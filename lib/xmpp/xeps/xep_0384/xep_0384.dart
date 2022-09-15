@@ -9,6 +9,8 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/types/resultv2.dart';
+import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/crypto.dart';
@@ -247,6 +249,76 @@ class OmemoManager extends XmppManagerBase {
     logger.finest('Acking ratchet $jid:$deviceId');
     await omemoState.ratchetAcknowledged(jid, deviceId);
   }
+
+  Future<Result<OmemoError, List<OmemoBundle>>> _findNewSessions(JID toJid) async {
+    final newSessions = List<OmemoBundle>.empty(growable: true);
+    final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
+    final sessionAvailable = (await omemoState.getDeviceMap()).containsKey(toJid.toString());
+    if (!sessionAvailable) {
+      logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
+      final bundles = await retrieveDeviceBundles(toJid);
+      if (!bundles.isType<OmemoError>()) {
+        newSessions.addAll(bundles.get<List<OmemoBundle>>());
+      }
+    } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
+      logger.finest('Got unacked ratchets');
+      for (final id in unackedRatchets) {
+        logger.finest('Retrieving bundle for $toJid:$id');
+        final bundle = await retrieveDeviceBundle(toJid, id);
+        if (!bundle.isType<OmemoError>()) {
+          newSessions.add(bundle.get<OmemoBundle>());
+        }
+      }
+    } else {
+      final map = await omemoState.getDeviceMap();
+      final devices = map[toJid.toString()]!;
+      final ratchetSessionsRaw = await getDeviceList(toJid);
+      if (ratchetSessionsRaw.isType<OmemoError>()) return Result(OmemoUnknownError());
+
+      final ratchetSessions = ratchetSessionsRaw.get<List<int>>();
+      if (devices.length != ratchetSessions.length) {
+        logger.finest('Mismatch between devices we have a session with and published devices');
+        for (final id in devices) {
+          if (ratchetSessions.contains(id)) continue;
+
+          logger.finest('Retrieving bundle for $toJid:$id');
+          final bundle = await retrieveDeviceBundle(toJid, id);
+          if (!bundle.isType<OmemoBundle>()) {
+            newSessions.add(bundle.get<OmemoBundle>());
+          } else {
+            logger.warning('Failed to retrieve bundle for $toJid:$id');
+          }
+        }
+      }
+    }
+
+    return Result(newSessions);
+  }
+
+  Future<void> sendEmptyMessage(JID toJid, {bool findNewSessions = false}) async {
+    var newSessions = <OmemoBundle>[];
+    if (findNewSessions) {
+      final result = await _findNewSessions(toJid);
+      if (!result.isType<OmemoError>()) newSessions = result.get<List<OmemoBundle>>();
+    }
+
+    final empty = await _encryptChildren(
+      null,
+      [toJid.toString()],
+      toJid.toString(),
+      newSessions,
+    );
+
+    await getAttributes().sendStanza(
+      Stanza.message(
+        to: toJid.toString(),
+        type: 'chat',
+        children: [empty],
+      ),
+      awaitable: false,
+      encrypted: true,
+    );
+  }
   
   Future<StanzaHandlerData> _onOutgoingStanza(Stanza stanza, StanzaHandlerData state) async {
     if (state.encrypted) {
@@ -254,32 +326,10 @@ class OmemoManager extends XmppManagerBase {
     }
     
     final toJid = JID.fromString(stanza.to!).toBare();
-
-    final newSessions = List<OmemoBundle>.empty(growable: true);
-    final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
-    final sessionAvailable = (await omemoState.getDeviceMap()).containsKey(toJid.toString());
-    if (!sessionAvailable) {
-      logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
-      newSessions.addAll((await retrieveDeviceBundles(toJid))!);
-    } else if (unackedRatchets != null && unackedRatchets.isNotEmpty) {
-      logger.finest('Got unacked ratchets');
-      for (final id in unackedRatchets) {
-        logger.finest('Retrieving bundle for $toJid:$id');
-        newSessions.add((await retrieveDeviceBundle(toJid, id))!);
-      }
-    } else {
-      final map = await omemoState.getDeviceMap();
-      final devices = map[toJid.toString()]!;
-      final ratchetSessions = (await getDeviceList(toJid))!;
-      if (devices.length != ratchetSessions.length) {
-        logger.finest('Mismatch between devices we have a session with and published devices');
-        for (final id in devices) {
-          if (ratchetSessions.contains(id)) continue;
-
-          logger.finest('Retrieving bundle for $toJid:$id');
-          newSessions.add((await retrieveDeviceBundle(toJid, id))!);
-        }
-      }
+    var newSessions = <OmemoBundle>[];
+    final result = await _findNewSessions(toJid);
+    if (result.isType<OmemoError>()) {
+      newSessions = result.get<List<OmemoBundle>>();
     }
     
     final toEncrypt = List<XMLNode>.empty(growable: true);
@@ -344,7 +394,7 @@ class OmemoManager extends XmppManagerBase {
       }
     }
 
-    final fromJid = JID.fromString(stanza.from!).toBare().toString();
+    final fromJid = JID.fromString(stanza.from!).toBare();
     final ourJid = getAttributes().getFullJID();
     final sid = int.parse(header.attributes['sid']! as String);
 
@@ -352,7 +402,7 @@ class OmemoManager extends XmppManagerBase {
     try {
       decrypted = await omemoState.decryptMessage(
         payloadElement != null ? base64.decode(payloadElement.innerText()) : null,
-        fromJid,
+        fromJid.toString(),
         sid,
         keys,
       );
@@ -366,30 +416,15 @@ class OmemoManager extends XmppManagerBase {
       );
     }
     
-    final isAcked = await omemoState.isRatchetAcknowledged(fromJid, sid);
+    final isAcked = await omemoState.isRatchetAcknowledged(fromJid.toString(), sid);
     if (!isAcked) {
       // Unacked ratchet decrypted this message
       if (decrypted != null) {
         // The message is not empty, i.e. contains content
         logger.finest('Received non-empty OMEMO encrypted message for unacked ratchet. Acking with empty OMEMO message.');
-        final empty = await _encryptChildren(
-          null,
-          [fromJid],
-          fromJid,
-          [],
-        );
-        logger.finest('Done.');
 
-        await _ackRatchet(fromJid, sid);
-        await getAttributes().sendStanza(
-          Stanza.message(
-            to: fromJid,
-            type: 'chat',
-            children: [empty],
-          ),
-          awaitable: false,
-          encrypted: true,
-        );
+        await _ackRatchet(fromJid.toString(), sid);
+        await sendEmptyMessage(fromJid);
 
         final envelope = XMLNode.fromString(decrypted);
         final children = stanza.children.where(
@@ -417,7 +452,7 @@ class OmemoManager extends XmppManagerBase {
         );
       } else {
         logger.info('Received empty OMEMO message for unacked ratchet. Marking $fromJid:$sid as acked');
-        await _ackRatchet(fromJid, sid);
+        await _ackRatchet(fromJid.toString(), sid);
         return state;
       }
     } else {
@@ -455,52 +490,61 @@ class OmemoManager extends XmppManagerBase {
     }
   }
 
-  Future<XMLNode?> _retrieveDeviceListPayload(JID jid) async {
+  Future<Result<OmemoError, XMLNode>> _retrieveDeviceListPayload(JID jid) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
-    final items = await pm.getItems(jid.toBare().toString(), omemoDevicesXmlns);
-    return items?.first.payload;
+    final result = await pm.getItems(jid.toBare().toString(), omemoDevicesXmlns);
+    if (result.isType<PubSubError>()) return Result(OmemoUnknownError());
+    return Result(result.get<List<PubSubItem>>().first.payload);
   }
   
   /// Retrieves the OMEMO device list from [jid].
-  Future<List<int>?> getDeviceList(JID jid) async {
-    if (_deviceMap.containsKey(jid)) return _deviceMap[jid]!;
+  Future<Result<OmemoError, List<int>>> getDeviceList(JID jid) async {
+    if (_deviceMap.containsKey(jid)) return Result(_deviceMap[jid]);
 
-    final items = await _retrieveDeviceListPayload(jid);
-    if (items == null) return null;
+    final itemsRaw = await _retrieveDeviceListPayload(jid);
+    if (itemsRaw.isType<OmemoError>()) return Result(OmemoUnknownError());
 
-    final ids = items.children
+    final ids = itemsRaw.get<XMLNode>().children
       .map((child) => int.parse(child.attributes['id']! as String))
       .toList();
     _deviceMap[jid] = ids;
-    return ids;
+    return Result(ids);
   }
 
-  Future<List<OmemoBundle>?> retrieveDeviceBundles(JID jid) async {
+  Future<Result<OmemoError, List<OmemoBundle>>> retrieveDeviceBundles(JID jid) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     // TODO(PapaTutuWawa): Error handling
-    final bundles = (await pm.getItems(jid.toString(), omemoBundlesXmlns))!;
+    final bundlesRaw = await pm.getItems(jid.toString(), omemoBundlesXmlns);
+    if (bundlesRaw.isType<OmemoError>()) return Result(OmemoUnknownError());
 
-    return bundles.map(
+    final bundles = bundlesRaw.get<List<PubSubItem>>().map(
       (bundle) => bundleFromXML(jid, int.parse(bundle.id), bundle.payload),
     ).toList();
+
+    return Result(bundles);
   }
   
   /// Retrieves a bundle from entity [jid] with the device id [deviceId].
-  Future<OmemoBundle?> retrieveDeviceBundle(JID jid, int deviceId) async {
+  Future<Result<OmemoError, OmemoBundle>> retrieveDeviceBundle(JID jid, int deviceId) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final bareJid = jid.toBare().toString();
     final item = await pm.getItem(bareJid, omemoBundlesXmlns, '$deviceId');
-    if (item == null) return null;
+    if (item.isType<PubSubError>()) return Result(OmemoUnknownError());
 
-    return bundleFromXML(jid, deviceId, item.payload);
+    return Result(bundleFromXML(jid, deviceId, item.get<PubSubItem>().payload));
   }
 
-  Future<bool> publishBundle(OmemoBundle bundle) async {
+  Future<Result<OmemoError, bool>> publishBundle(OmemoBundle bundle) async {
     final attrs = getAttributes();
     final pm = attrs.getManagerById<PubSubManager>(pubsubManager)!;
     final bareJid = attrs.getFullJID().toBare();
 
-    var deviceList = await _retrieveDeviceListPayload(bareJid);
+    XMLNode? deviceList;
+    final deviceListRaw = await _retrieveDeviceListPayload(bareJid);
+    if (!deviceListRaw.isType<OmemoError>()) {
+      deviceList = deviceListRaw.get<XMLNode>();
+    }
+
     deviceList ??= XMLNode.xmlns(
       tag: 'devices',
       xmlns: omemoDevicesXmlns,
@@ -529,7 +573,7 @@ class OmemoManager extends XmppManagerBase {
         accessModel: 'open',
       ),
     );
-    if (!deviceListPublish) return false;
+    if (deviceListPublish.isType<PubSubError>()) return const Result(false);
 
     final deviceBundlePublish = await pm.publish(
       bareJid.toString(),
@@ -542,6 +586,6 @@ class OmemoManager extends XmppManagerBase {
       ),
     );
     
-    return deviceBundlePublish;
+    return Result(deviceBundlePublish.isType<PubSubError>());
   }
 }

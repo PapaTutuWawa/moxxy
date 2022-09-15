@@ -5,6 +5,10 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
+enum KeysOptions {
+  recreateSessions,
+}
+
 class KeysPage extends StatelessWidget {
   const KeysPage({ Key? key }) : super(key: key);
 
@@ -102,7 +106,26 @@ class KeysPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<KeysBloc, KeysState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.simple('Keys'),
+        appBar: BorderlessTopbar.simple(
+          'Keys',
+          extra: [
+            Spacer(),
+            PopupMenuButton(
+              onSelected: (KeysOptions result) {
+                if (result == KeysOptions.recreateSessions) {
+                  context.read<KeysBloc>().add(SessionsRecreatedEvent());
+                }
+              },
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem(
+                  value: KeysOptions.recreateSessions,
+                  child: Text('Rebuild sessions'),
+                )
+              ],
+            ),
+          ],
+        ),
         body: _buildBody(state),
       ),
     );

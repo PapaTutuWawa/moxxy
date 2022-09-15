@@ -18,6 +18,7 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
   KeysBloc() : super(KeysState()) {
     on<KeysRequestedEvent>(_onRequested);
     on<KeyEnabledSetEvent>(_onKeyEnabledSet);
+    on<SessionsRecreatedEvent>(_onSessionsRecreated);
   }
 
   Future<void> _onRequested(KeysRequestedEvent event, Emitter<KeysState> emit) async {
@@ -54,5 +55,13 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
       ),
     ) as GetConversationOmemoFingerprintsResult;
     emit(state.copyWith(keys: result.fingerprints));  
+  }
+
+  Future<void> _onSessionsRecreated(SessionsRecreatedEvent event, Emitter<KeysState> emit) async {
+    // ignore: cast_nullable_to_non_nullable
+    MoxplatformPlugin.handler.getDataSender().sendData(
+      RecreateSessionsCommand(jid: state.jid),
+    );
+    emit(state.copyWith(keys: <OmemoKey>[]));
   }
 }

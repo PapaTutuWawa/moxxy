@@ -6,8 +6,11 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/types/resultv2.dart';
+import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060/helpers.dart';
 
 const pubsubNodeConfigMax = 'http://jabber.org/protocol/pubsub#config-node-max';
 
@@ -137,7 +140,7 @@ class PubSubManager extends XmppManagerBase {
     return options;
   }
   
-  Future<bool> subscribe(String jid, String node) async {
+  Future<Result<PubSubError, bool>> subscribe(String jid, String node) async {
     final attrs = getAttributes();
     final result = await attrs.sendStanza(
       Stanza.iq(
@@ -161,18 +164,18 @@ class PubSubManager extends XmppManagerBase {
       ),
     );
 
-    if (result.attributes['type'] != 'result') return false;
+    if (result.attributes['type'] != 'result') return Result(UnknownPubSubError());
 
     final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
-    if (pubsub == null) return false;
+    if (pubsub == null) return Result(UnknownPubSubError());
 
     final subscription = pubsub.firstTag('subscription');
-    if (subscription == null) return false;
+    if (subscription == null) return Result(UnknownPubSubError());
 
-    return subscription.attributes['subscription'] == 'subscribed';
+    return Result(subscription.attributes['subscription'] == 'subscribed');
   }
 
-  Future<bool> unsubscribe(String jid, String node) async {
+  Future<Result<PubSubError, bool>> unsubscribe(String jid, String node) async {
     final attrs = getAttributes();
     final result = await attrs.sendStanza(
       Stanza.iq(
@@ -196,15 +199,15 @@ class PubSubManager extends XmppManagerBase {
       ),
     );
 
-    if (result.attributes['type'] != 'result') return false;
+    if (result.attributes['type'] != 'result') return Result(UnknownPubSubError());
 
     final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
-    if (pubsub == null) return false;
+    if (pubsub == null) return Result(UnknownPubSubError());
 
     final subscription = pubsub.firstTag('subscription');
-    if (subscription == null) return false;
+    if (subscription == null) return Result(UnknownPubSubError());
 
-    return subscription.attributes['subscription'] == 'none';
+    return Result(subscription.attributes['subscription'] == 'none');
   }
 
   Future<XMLNode> _publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
@@ -243,7 +246,14 @@ class PubSubManager extends XmppManagerBase {
   
   /// Publish [payload] to the PubSub node [node] on JID [jid]. Returns true if it
   /// was successful. False otherwise.
-  Future<bool> publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
+  Future<Result<PubSubError, bool>> publish(
+    String jid,
+    String node,
+    XMLNode payload, {
+      String? id,
+      PubSubPublishOptions? options,
+    }
+  ) async {
     PubSubPublishOptions? pubOptions;
     if (options != null) {
       pubOptions = await _preprocessPublishOptions(jid, node, options);
@@ -251,32 +261,35 @@ class PubSubManager extends XmppManagerBase {
 
     var result = await _publish(jid, node, payload, id: id, options: pubOptions);
     if (result.attributes['type'] != 'result') {
-      final error = result.firstTag('error');
-      if (error == null) return false;
+      final error = getPubSubError(result);
 
-      if (error.firstTag('conflict') != null && error.firstTag('precondition-not-met') != null) {
-        await configure(jid, node, pubOptions!);
+      // If preconditions are not met, configure the node
+      if (error is PreconditionsNotMetError) {
+        final configureResult = await configure(jid, node, pubOptions!);
+        if (configureResult.isType<PubSubError>()) {
+          return Result(configureResult.get<PubSubError>());
+        }
+
         result = await _publish(jid, node, payload, id: id, options: pubOptions);
-        if (result.attributes['type'] != 'result') return false;
-
+        if (result.attributes['type'] != 'result') return Result(getPubSubError(result));
       }
     }
 
     final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
-    if (pubsub == null) return false;
+    if (pubsub == null) return Result(MalformedResponseError());
 
     final publish = pubsub.firstTag('publish');
-    if (publish == null) return false;
+    if (publish == null) return Result(MalformedResponseError());
 
     final item = publish.firstTag('item');
-    if (item == null) return false;
+    if (item == null) return Result(MalformedResponseError());
 
-    if (id != null) return item.attributes['id'] == id;
+    if (id != null) return Result(item.attributes['id'] == id);
 
-    return true;
+    return const Result(true);
   }
   
-  Future<List<PubSubItem>?> getItems(String jid, String node) async {
+  Future<Result<PubSubError, List<PubSubItem>>> getItems(String jid, String node) async {
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'get',
@@ -293,12 +306,12 @@ class PubSubManager extends XmppManagerBase {
       ),
     );
 
-    if (result.attributes['type'] != 'result') return null;
+    if (result.attributes['type'] != 'result') return Result(getPubSubError(result));
 
     final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
-    if (pubsub == null) return null;
+    if (pubsub == null) return Result(getPubSubError(result));
 
-    return pubsub
+    final items = pubsub
       .firstTag('items')!
       .children.map((item) {
         return PubSubItem(
@@ -308,9 +321,11 @@ class PubSubManager extends XmppManagerBase {
         );
       })
       .toList();
+
+    return Result(items);
   }
 
-  Future<PubSubItem?> getItem(String jid, String node, String id) async {
+  Future<Result<PubSubError, PubSubItem>> getItem(String jid, String node, String id) async {
     final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'get',
@@ -336,20 +351,24 @@ class PubSubManager extends XmppManagerBase {
       ),
     );
 
-    if (result.attributes['type'] != 'result') return null;
+    if (result.attributes['type'] != 'result') return Result(getPubSubError(result));
 
     final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
-    if (pubsub == null) return null;
+    if (pubsub == null) return Result(getPubSubError(result));
 
-    final item = pubsub.firstTag('items')!.firstTag('item')!;
-    return PubSubItem(
-      id: item.attributes['id']! as String,
-      payload: item.children[0],
+    final itemElement = pubsub.firstTag('items')?.firstTag('item');
+    if (itemElement == null) return Result(NoItemReturnedError());
+
+    final item = PubSubItem(
+      id: itemElement.attributes['id']! as String,
+      payload: itemElement.children[0],
       node: node,
     );
+
+    return Result(item);
   }
 
-  Future<bool> configure(String jid, String node, PubSubPublishOptions options) async {
+  Future<Result<PubSubError, bool>> configure(String jid, String node, PubSubPublishOptions options) async {
     final attrs = getAttributes();
 
     // Request the form
@@ -373,7 +392,7 @@ class PubSubManager extends XmppManagerBase {
         ],
       ),
     );
-    if (form.attributes['type'] != 'result') return false;
+    if (form.attributes['type'] != 'result') return Result(getPubSubError(form));
 
     final submit = await attrs.sendStanza(
       Stanza.iq(
@@ -398,8 +417,8 @@ class PubSubManager extends XmppManagerBase {
         ],
       ),
     );
-    if (submit.attributes['type'] != 'result') return false;
+    if (submit.attributes['type'] != 'result') return Result(getPubSubError(form));
 
-    return true;
+    return const Result(true);
   }
 }

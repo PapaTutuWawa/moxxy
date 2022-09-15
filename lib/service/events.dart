@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:get_it/get_it.dart';
-import 'package:logging/logging.dart';
+import 'package:get_it/get_it.dart'; import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
@@ -31,6 +30,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
@@ -59,6 +59,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
       EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(performGetOmemoFingerprints),
       EventTypeMatcher<SetOmemoKeyEnabledCommand>(performEnableOmemoKey),
+      EventTypeMatcher<RecreateSessionsCommand>(performRecreateSessions),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -467,4 +468,16 @@ Future<void> performEnableOmemoKey(SetOmemoKeyEnabledCommand command, { dynamic 
     GetConversationOmemoFingerprintsCommand(jid: command.jid),
     extra: id,
   );
+}
+
+Future<void> performRecreateSessions(RecreateSessionsCommand command, { dynamic extra }) async {
+  await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
+
+  /*
+  final conn = GetIt.I.get<XmppConnection>();
+  await conn.getManagerById<OmemoManager>(omemoManager)!.sendEmptyMessage(
+    JID.fromString(command.jid),
+    findNewSessions: true,
+  );
+  */
 }

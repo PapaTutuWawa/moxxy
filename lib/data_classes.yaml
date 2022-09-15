@@ -337,6 +337,12 @@ files:
           jid: String
           deviceId: int
           enabled: bool
+      - name: RecreateSessionsCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
