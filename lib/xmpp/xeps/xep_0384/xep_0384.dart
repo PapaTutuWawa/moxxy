@@ -255,11 +255,18 @@ class OmemoManager extends XmppManagerBase {
     );
   }
 
+  /// A logging wrapper around acking the ratchet with [jid] with identifier [deviceId].
   Future<void> _ackRatchet(String jid, int deviceId) async {
     logger.finest('Acking ratchet $jid:$deviceId');
     await omemoState.ratchetAcknowledged(jid, deviceId);
   }
 
+  /// Figure out if new sessions need to be built. [toJid] is the JID of the entity we
+  /// want to send a message to. [children] refers to the unencrypted children of the
+  /// message. They are required to be passed because shouldIgnoreUnackedRatchets is
+  /// called here.
+  ///
+  /// Either returns a list of bundles we "need" to build a session with or an OmemoError.
   Future<Result<OmemoError, List<OmemoBundle>>> _findNewSessions(JID toJid, List<XMLNode> children) async {
     final newSessions = List<OmemoBundle>.empty(growable: true);
     final ignoreUnacked = _shouldIgnoreUnackedRatchets(children);
@@ -313,6 +320,17 @@ class OmemoManager extends XmppManagerBase {
     return Result(newSessions);
   }
 
+  /// Sends an empty Omemo message to [toJid].
+  ///
+  /// If [findNewSessions] is true, then
+  /// new devices will be looked for first before sending the message. This means that
+  /// the new sessions will be included in the empty Omemo message. If false, then no
+  /// new sessions will be looked for before encrypting.
+  ///
+  /// [calledFromCriticalSection] MUST NOT be used from outside the manager. If true, then
+  /// sendEmptyMessage will not attempt to enter the critical section guarding the
+  /// encryption and decryption. If false, then the critical section will be entered before
+  /// encryption and left after sending the message.
   Future<void> sendEmptyMessage(JID toJid, {
     bool findNewSessions = false,
     @internal
@@ -386,6 +404,7 @@ class OmemoManager extends XmppManagerBase {
         toEncrypt,
         [ 
           JID.fromString(stanza.to!).toBare().toString(),
+          // TODO(PapaTutuWawa): Encrypt to self.
           //bareJid.toString(),
         ],
         stanza.to!,
@@ -416,7 +435,8 @@ class OmemoManager extends XmppManagerBase {
   /// and don't try to build a new ratchet even though there are unacked ones.
   /// The current logic is that chat states with no body ignore the "ack" state of the
   /// ratchets.
-  bool _shouldIgnoreUnackedRatchets(List<XMLNode> children) {
+  @visibleForOverriding
+  bool shouldIgnoreUnackedRatchets(List<XMLNode> children) {
     return listContains(
       children,
       (XMLNode child) {
@@ -428,6 +448,10 @@ class OmemoManager extends XmppManagerBase {
     );
   }
 
+  /// Wrapper function that attempts to enter the encryption/decryption critical section.
+  /// In case the critical section could be entered, null is returned. If not, then a
+  /// Completer is returned whose future will resolve once the critical section can be
+  /// entered.
   Future<Completer<void>?> _handlerEntry(JID fromJid) async {
     return _handlerLock.synchronized(() {
       if (_handlerFutures.containsKey(fromJid)) {
@@ -441,6 +465,7 @@ class OmemoManager extends XmppManagerBase {
     });
   }
 
+  /// Wrapper function that exits the critical section.
   Future<void> _handlerExit(JID fromJid) async {
     await _handlerLock.synchronized(() {
       if (_handlerFutures.containsKey(fromJid)) {
@@ -583,6 +608,10 @@ class OmemoManager extends XmppManagerBase {
     }
   }
 
+  /// Convenience function that attempts to retrieve the raw XML payload from the
+  /// device list PubSub node.
+  ///
+  /// On success, returns the XML data. On failure, returns an OmemoError.
   Future<Result<OmemoError, XMLNode>> _retrieveDeviceListPayload(JID jid) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final result = await pm.getItems(jid.toBare().toString(), omemoDevicesXmlns);
@@ -604,9 +633,12 @@ class OmemoManager extends XmppManagerBase {
     return Result(ids);
   }
 
+  /// Retrieve all device bundles for the JID [jid].
+  ///
+  /// On success, returns a list of devices. On failure, returns am OmemoError.
   Future<Result<OmemoError, List<OmemoBundle>>> retrieveDeviceBundles(JID jid) async {
+    // TODO(Unknown): Should we query the device list first?
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
-    // TODO(PapaTutuWawa): Error handling
     final bundlesRaw = await pm.getItems(jid.toString(), omemoBundlesXmlns);
     if (bundlesRaw.isType<OmemoError>()) return Result(OmemoUnknownError());
 
@@ -614,12 +646,12 @@ class OmemoManager extends XmppManagerBase {
       (bundle) => bundleFromXML(jid, int.parse(bundle.id), bundle.payload),
     ).toList();
 
-    logger.finest('Number of bundles: ${bundles.length}');
-    
     return Result(bundles);
   }
   
   /// Retrieves a bundle from entity [jid] with the device id [deviceId].
+  ///
+  /// On success, returns the device bundle. On failure, returns an OmemoError.
   Future<Result<OmemoError, OmemoBundle>> retrieveDeviceBundle(JID jid, int deviceId) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final bareJid = jid.toBare().toString();
@@ -629,6 +661,10 @@ class OmemoManager extends XmppManagerBase {
     return Result(bundleFromXML(jid, deviceId, item.get<PubSubItem>().payload));
   }
 
+  /// Attempts to publish a device bundle to the device list and device bundle PubSub
+  /// nodes.
+  ///
+  /// On success, returns true. On failure, returns an OmemoError.
   Future<Result<OmemoError, bool>> publishBundle(OmemoBundle bundle) async {
     final attrs = getAttributes();
     final pm = attrs.getManagerById<PubSubManager>(pubsubManager)!;
@@ -690,6 +726,7 @@ class OmemoManager extends XmppManagerBase {
     return Result(deviceBundlePublish.isType<PubSubError>());
   }
 
+  /// Subscribes to the device list PubSub node of [jid].
   Future<void> subscribeToDeviceList(JID jid) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     await pm.subscribe(jid.toString(), omemoDevicesXmlns);
