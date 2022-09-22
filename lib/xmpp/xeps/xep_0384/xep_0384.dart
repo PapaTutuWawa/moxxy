@@ -313,7 +313,18 @@ class OmemoManager extends XmppManagerBase {
     return Result(newSessions);
   }
 
-  Future<void> sendEmptyMessage(JID toJid, {bool findNewSessions = false}) async {
+  Future<void> sendEmptyMessage(JID toJid, {
+    bool findNewSessions = false,
+    @internal
+    bool calledFromCriticalSection = false,
+  }) async {
+    if (!calledFromCriticalSection) {
+      final completer = await _handlerEntry(toJid);
+      if (completer != null) {
+        await completer.future;
+      }
+    }
+
     var newSessions = <OmemoBundle>[];
     if (findNewSessions) {
       final result = await _findNewSessions(toJid, <XMLNode>[]);
@@ -336,6 +347,10 @@ class OmemoManager extends XmppManagerBase {
       awaitable: false,
       encrypted: true,
     );
+
+    if (!calledFromCriticalSection) {
+      await _handlerExit(toJid);
+    }
   }
   
   Future<StanzaHandlerData> _onOutgoingStanza(Stanza stanza, StanzaHandlerData state) async {
@@ -402,8 +417,6 @@ class OmemoManager extends XmppManagerBase {
   /// The current logic is that chat states with no body ignore the "ack" state of the
   /// ratchets.
   bool _shouldIgnoreUnackedRatchets(List<XMLNode> children) {
-    return true;
-    /*
     return listContains(
       children,
       (XMLNode child) {
@@ -413,7 +426,6 @@ class OmemoManager extends XmppManagerBase {
       children,
       (XMLNode child) => child.tag == 'body',
     );
-    */
   }
 
   Future<Completer<void>?> _handlerEntry(JID fromJid) async {
@@ -501,7 +513,7 @@ class OmemoManager extends XmppManagerBase {
         logger.finest('Received non-empty OMEMO encrypted message for unacked ratchet. Acking with empty OMEMO message.');
 
         await _ackRatchet(fromJid.toString(), sid);
-        await sendEmptyMessage(fromJid);
+        await sendEmptyMessage(fromJid, calledFromCriticalSection: true);
 
         final envelope = XMLNode.fromString(decrypted);
         final children = stanza.children.where(

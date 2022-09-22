@@ -473,11 +473,9 @@ Future<void> performEnableOmemoKey(SetOmemoKeyEnabledCommand command, { dynamic 
 Future<void> performRecreateSessions(RecreateSessionsCommand command, { dynamic extra }) async {
   await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
 
-  /*
   final conn = GetIt.I.get<XmppConnection>();
   await conn.getManagerById<OmemoManager>(omemoManager)!.sendEmptyMessage(
     JID.fromString(command.jid),
     findNewSessions: true,
   );
-  */
 }
