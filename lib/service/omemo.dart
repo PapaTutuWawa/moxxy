@@ -58,7 +58,9 @@ class OmemoService {
       // NOTE: We need to do this because Dart otherwise complains about not being able
       //       to cast dynamic to List<int>.
       final opks = List<Map<String, dynamic>>.empty(growable: true);
-      for (final Map<String, dynamic> opk in deviceJson['opks']! as List<dynamic>) {
+      final opksIter = deviceJson['opks']! as List<dynamic>;
+      for (final _opk in opksIter) {
+        final opk = _opk as Map<String, dynamic>;
         opks.add(<String, dynamic>{
           'id': opk['id']! as int,
           'public': opk['public']! as String,
@@ -79,7 +81,9 @@ class OmemoService {
       final deviceMapJson = Map<String, dynamic>.from(jsonDecode(deviceMapString!));
       final deviceMap = <String, List<int>>{};
       for (final entry in deviceMapJson.entries) {
-        deviceMap[entry.key] = entry.value.map<int>((i) => i as int).toList();
+        deviceMap[entry.key] = (entry.value as List<dynamic>).map<int>(
+          (dynamic i) => i as int,
+        ).toList();
       }
 
       omemoState = OmemoSessionManager(
@@ -115,7 +119,7 @@ class OmemoService {
     final omemo = conn.getManagerById<OmemoManager>(omemoManager)!;
     final bareJid = conn.getConnectionSettings().jid.toBare();
     final idsRaw = await omemo.getDeviceList(bareJid);
-    final ids = idsRaw.isType<OmemoError>() ? [] : idsRaw.get<List<int>>();
+    final ids = idsRaw.isType<OmemoError>() ? <int>[] : idsRaw.get<List<int>>();
     final device = await omemoState.getDevice();
     if (!ids.contains(device.id)) {
       await omemo.publishBundle(await device.toBundle());

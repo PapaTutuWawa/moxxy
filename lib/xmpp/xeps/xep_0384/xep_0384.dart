@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:collection';
+import 'dart:convert';
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/xmpp/events.dart';
@@ -269,7 +269,7 @@ class OmemoManager extends XmppManagerBase {
   /// Either returns a list of bundles we "need" to build a session with or an OmemoError.
   Future<Result<OmemoError, List<OmemoBundle>>> _findNewSessions(JID toJid, List<XMLNode> children) async {
     final newSessions = List<OmemoBundle>.empty(growable: true);
-    final ignoreUnacked = _shouldIgnoreUnackedRatchets(children);
+    final ignoreUnacked = shouldIgnoreUnackedRatchets(children);
     final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
     final sessionAvailable = (await omemoState.getDeviceMap()).containsKey(toJid.toString());
     if (!sessionAvailable) {
@@ -333,7 +333,7 @@ class OmemoManager extends XmppManagerBase {
   /// encryption and left after sending the message.
   Future<void> sendEmptyMessage(JID toJid, {
     bool findNewSessions = false,
-    @internal
+    @protected
     bool calledFromCriticalSection = false,
   }) async {
     if (!calledFromCriticalSection) {
@@ -455,7 +455,7 @@ class OmemoManager extends XmppManagerBase {
   Future<Completer<void>?> _handlerEntry(JID fromJid) async {
     return _handlerLock.synchronized(() {
       if (_handlerFutures.containsKey(fromJid)) {
-        final c = Completer();
+        final c = Completer<void>();
         _handlerFutures[fromJid]!.addLast(c);
         return c;
       }
@@ -474,8 +474,7 @@ class OmemoManager extends XmppManagerBase {
           return;
         }
 
-        final completer = _handlerFutures[fromJid]!.removeFirst();
-        completer.complete();
+        _handlerFutures[fromJid]!.removeFirst().complete();
       }
     });
   }
@@ -682,7 +681,7 @@ class OmemoManager extends XmppManagerBase {
     );
 
     final ids = deviceList.children
-      .map((child) => int.parse(child.attributes['id']!));
+      .map((child) => int.parse(child.attributes['id']! as String));
       
     if (!ids.contains(bundle.id)) {
       // Only update the device list if the device Id is not there

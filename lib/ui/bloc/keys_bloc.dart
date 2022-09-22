@@ -8,7 +8,6 @@ import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-
 part 'keys_bloc.freezed.dart';
 part 'keys_event.dart';
 part 'keys_state.dart';
@@ -59,7 +58,7 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
 
   Future<void> _onSessionsRecreated(SessionsRecreatedEvent event, Emitter<KeysState> emit) async {
     // ignore: cast_nullable_to_non_nullable
-    MoxplatformPlugin.handler.getDataSender().sendData(
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       RecreateSessionsCommand(jid: state.jid),
     );
     emit(state.copyWith(keys: <OmemoKey>[]));

@@ -109,7 +109,7 @@ class KeysPage extends StatelessWidget {
         appBar: BorderlessTopbar.simple(
           'Keys',
           extra: [
-            Spacer(),
+            const Spacer(),
             PopupMenuButton(
               onSelected: (KeysOptions result) {
                 if (result == KeysOptions.recreateSessions) {

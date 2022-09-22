@@ -433,7 +433,7 @@ class XmppConnection {
     final stanzaString = data.stanza.toXml();
     _log.fine('Done');
 
-    
+    // ignore: cascade_invocations
     _log.fine('Attempting to acquire lock for $id...');
     var future = Future.value(XMLNode(tag: 'not-used'));
     await _awaitingResponseLock.synchronized(() async {

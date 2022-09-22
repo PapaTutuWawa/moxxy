@@ -37,7 +37,4 @@ class MoxxyBTBVTrustManager extends BlindTrustBeforeVerificationTrustManager {
   Future<void> commitState() async {
     await GetIt.I.get<OmemoService>().commitTrustManager(await toJson());
   }
-
-  @override
-  Future<void> loadState() async {}
 }
