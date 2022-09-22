@@ -739,9 +739,11 @@ packages:
   omemo_dart:
     dependency: "direct main"
     description:
-      name: omemo_dart
-      url: "https://git.polynom.me/api/packages/PapaTutuWawa/pub/"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: b4c14a9769796872f89541ce1fcb383523f2f380
+      url: "https://codeberg.org/PapaTutuWawa/omemo_dart.git"
+    source: git
     version: "0.3.0"
   package_config:
     dependency: transitive

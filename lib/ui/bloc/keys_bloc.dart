@@ -63,5 +63,7 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
       RecreateSessionsCommand(jid: state.jid),
     );
     emit(state.copyWith(keys: <OmemoKey>[]));
+
+    GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
 }
