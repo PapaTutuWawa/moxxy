@@ -113,10 +113,21 @@ class OmemoManager extends XmppManagerBase {
   Future<void> onXmppEvent(XmppEvent event) async {
     if (event is PubSubNotificationEvent) {
       if (event.item.node != omemoDevicesXmlns) return;
-
-      _deviceMap[JID.fromString(event.from)] = event.item.payload.children
+      
+      final ownJid = getAttributes().getFullJID().toBare().toString();
+      final ids = event.item.payload.children
         .map((child) => int.parse(child.attributes['id']! as String))
         .toList();
+      if (event.from == ownJid) {
+        // Another client published to our device list node
+        if (!ids.contains(await omemoState.getDeviceId())) {
+          // Attempt to publish again
+          await publishBundle(await omemoState.getDeviceBundle());
+        }
+      } else {
+        // Someone published to their device list node
+        _deviceMap[JID.fromString(event.from)] = ids;
+      } 
     }
   }
   
