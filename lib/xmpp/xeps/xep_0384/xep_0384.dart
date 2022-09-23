@@ -15,7 +15,7 @@ import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/resultv2.dart';
 import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';

@@ -1,7 +1,7 @@
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';

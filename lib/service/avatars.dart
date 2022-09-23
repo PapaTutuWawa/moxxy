@@ -17,7 +17,7 @@ import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';

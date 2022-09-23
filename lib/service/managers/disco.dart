@@ -1,4 +1,4 @@
-import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 
 class MoxxyDiscoManager extends DiscoManager {

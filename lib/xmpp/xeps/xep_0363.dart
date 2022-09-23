@@ -9,7 +9,7 @@ import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/error.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 
 const errorNoUploadServer = 1;

@@ -14,6 +14,7 @@ import 'package:moxxyv2/xmpp/types/resultv2.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0115.dart';
 import 'package:synchronized/synchronized.dart';
 
