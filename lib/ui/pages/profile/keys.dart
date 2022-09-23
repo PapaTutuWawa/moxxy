@@ -60,6 +60,7 @@ class KeysPage extends StatelessWidget {
                       part_,
                       style: const TextStyle(
                         fontFamily: 'RobotoMono',
+                        // TODO(PapaTutuWawa): Ensure that we can always fit 8 * 4 characters on one line
                         fontSize: 18,
                       ),
                     ),).toList(),
