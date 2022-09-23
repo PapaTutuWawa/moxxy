@@ -9,6 +9,8 @@ import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/resultv2.dart';
 import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060/helpers.dart';
 
@@ -121,12 +123,12 @@ class PubSubManager extends XmppManagerBase {
       final nodeMaxSupported = info != null && info.features.contains(pubsubNodeConfigMax);
       
       if (options.maxItems == 'max' && !nodeMaxSupported) {
-        final items = await dm.discoItemsQuery(jid, node: node);
+        final response = await dm.discoItemsQuery(jid, node: node);
         var count = 1;
-        if (items == null) {
+        if (response.isType<DiscoError>()) {
           logger.severe('disco#items query failed and options.maxItems is set to "max". Assuming 0 items');
         } else {
-          count = items.length + 1;
+          count = response.get<List<DiscoItem>>().length + 1;
         }
 
         logger.finest('PubSub host does not support node-config-max. Working around it');

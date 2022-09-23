@@ -4,6 +4,8 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 
@@ -161,8 +163,11 @@ class UserAvatarManager extends XmppManagerBase {
   Future<String?> getAvatarId(String jid) async {
     final disco = getAttributes().getManagerById(discoManager)! as DiscoManager;
     final response = await disco.discoItemsQuery(jid, node: userAvatarDataXmlns);
-    if (response == null || response.isEmpty) return null;
+    if (response.isType<DiscoError>()) return null;
 
-    return response.first.name;
+    final items = response.get<List<DiscoItem>>();
+    if (items.isEmpty) return null;
+
+    return items.first.name;
   }
 }

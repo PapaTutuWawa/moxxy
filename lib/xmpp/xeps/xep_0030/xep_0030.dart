@@ -10,6 +10,8 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/types/resultv2.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0115.dart';
 import 'package:synchronized/synchronized.dart';
@@ -317,9 +319,26 @@ class DiscoManager extends XmppManagerBase {
   }
 
   /// Sends a disco items query to the (full) jid [entity], optionally with node=[node].
-  Future<List<DiscoItem>?> discoItemsQuery(String entity, { String? node }) async {
-    final stanza = await getAttributes().sendStanza(buildDiscoItemsQueryStanza(entity, node: node));
-    return parseDiscoItemsResponse(Stanza.fromXMLNode(stanza));
+  Future<Result<DiscoError, List<DiscoItem>>> discoItemsQuery(String entity, { String? node }) async {
+    final stanza = await getAttributes()
+      .sendStanza(buildDiscoItemsQueryStanza(entity, node: node)) as Stanza;
+
+    final query = stanza.firstTag('query');
+    if (query == null) return Result(InvalidResponseDiscoError());
+
+    final error = stanza.firstTag('error');
+    if (error != null && stanza.type == 'error') {
+      //print("Disco Items error: " + error.toXml());
+      return Result(ErrorResponseDiscoError());
+    }
+
+    final items = query.findTags('item').map((node) => DiscoItem(
+      jid: node.attributes['jid']! as String,
+      node: node.attributes['node'] as String?,
+      name: node.attributes['name'] as String?,
+    ),).toList();
+
+    return Result(items);
   }
 
   /// Queries information about a jid based on its node and capability hash.
@@ -343,11 +362,12 @@ class DiscoManager extends XmppManagerBase {
       return null;
     }
 
-    final items = await discoItemsQuery(serverJid);
-    if (items != null) {
+    final response = await discoItemsQuery(serverJid);
+    if (response.isType<List<DiscoItem>>()) {
       logger.finest('Discovered disco items form $serverJid');
 
       // Query all items
+      final items = response.get<List<DiscoItem>>();
       for (final item in items) {
         logger.finest('Querying info for ${item.jid}...');
         final itemInfo = await discoInfoQuery(item.jid);

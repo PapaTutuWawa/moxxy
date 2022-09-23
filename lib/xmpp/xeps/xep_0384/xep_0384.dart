@@ -14,6 +14,9 @@ import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/resultv2.dart';
 import 'package:moxxyv2/xmpp/xeps/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/crypto.dart';
@@ -298,7 +301,7 @@ class OmemoManager extends XmppManagerBase {
       final devices = map[toJid.toString()]!;
       final ratchetSessionsRaw = await getDeviceList(toJid);
       await subscribeToDeviceList(toJid);
-      if (ratchetSessionsRaw.isType<OmemoError>()) return Result(OmemoUnknownError());
+      if (ratchetSessionsRaw.isType<OmemoError>()) return Result(UnknownOmemoError());
 
       final ratchetSessions = ratchetSessionsRaw.get<List<int>>();
       if (devices.length != ratchetSessions.length) {
@@ -614,7 +617,7 @@ class OmemoManager extends XmppManagerBase {
   Future<Result<OmemoError, XMLNode>> _retrieveDeviceListPayload(JID jid) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final result = await pm.getItems(jid.toBare().toString(), omemoDevicesXmlns);
-    if (result.isType<PubSubError>()) return Result(OmemoUnknownError());
+    if (result.isType<PubSubError>()) return Result(UnknownOmemoError());
     return Result(result.get<List<PubSubItem>>().first.payload);
   }
   
@@ -623,7 +626,7 @@ class OmemoManager extends XmppManagerBase {
     if (_deviceMap.containsKey(jid)) return Result(_deviceMap[jid]);
 
     final itemsRaw = await _retrieveDeviceListPayload(jid);
-    if (itemsRaw.isType<OmemoError>()) return Result(OmemoUnknownError());
+    if (itemsRaw.isType<OmemoError>()) return Result(UnknownOmemoError());
 
     final ids = itemsRaw.get<XMLNode>().children
       .map((child) => int.parse(child.attributes['id']! as String))
@@ -639,7 +642,7 @@ class OmemoManager extends XmppManagerBase {
     // TODO(Unknown): Should we query the device list first?
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final bundlesRaw = await pm.getItems(jid.toString(), omemoBundlesXmlns);
-    if (bundlesRaw.isType<OmemoError>()) return Result(OmemoUnknownError());
+    if (bundlesRaw.isType<OmemoError>()) return Result(UnknownOmemoError());
 
     final bundles = bundlesRaw.get<List<PubSubItem>>().map(
       (bundle) => bundleFromXML(jid, int.parse(bundle.id), bundle.payload),
@@ -655,7 +658,7 @@ class OmemoManager extends XmppManagerBase {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final bareJid = jid.toBare().toString();
     final item = await pm.getItem(bareJid, omemoBundlesXmlns, '$deviceId');
-    if (item.isType<PubSubError>()) return Result(OmemoUnknownError());
+    if (item.isType<PubSubError>()) return Result(UnknownOmemoError());
 
     return Result(bundleFromXML(jid, deviceId, item.get<PubSubItem>().payload));
   }
@@ -729,5 +732,20 @@ class OmemoManager extends XmppManagerBase {
   Future<void> subscribeToDeviceList(JID jid) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     await pm.subscribe(jid.toString(), omemoDevicesXmlns);
+  }
+
+  /// Attempts to find out if [jid] supports omemo:2.
+  ///
+  /// On success, returns whether [jid] has published a device list and device bundles.
+  /// On failure, returns an OmemoError.
+  Future<Result<OmemoError, bool>> supportsOmemo(JID jid) async {
+    final dm = getAttributes().getManagerById<DiscoManager>(discoManager)!;
+    final items = await dm.discoItemsQuery(jid.toBare().toString());
+
+    if (items.isType<DiscoError>()) return Result(UnknownOmemoError());
+
+    final nodes = items.get<List<DiscoItem>>();
+    final result = nodes.any((item) => item.node == omemoDevicesXmlns) && nodes.any((item) => item.node == omemoBundlesXmlns);
+    return Result(result);
   }
 }
