@@ -444,6 +444,7 @@ class XmppService {
           DateTime.now().millisecondsSinceEpoch,
           true,
           prefs.defaultMuteState,
+          prefs.enableOmemoByDefault,
         );
 
         // Notify the UI
@@ -632,6 +633,7 @@ class XmppService {
         timestamp,
         true,
         prefs.defaultMuteState,
+        prefs.enableOmemoByDefault,
       );
 
       sendEvent(ConversationAddedEvent(conversation: conv));
@@ -920,6 +922,7 @@ class XmppService {
         messageTimestamp,
         true,
         prefs.defaultMuteState,
+        prefs.enableOmemoByDefault,
       );
 
       // Notify the UI

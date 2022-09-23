@@ -46,7 +46,8 @@ class ConversationTopbarWidget extends StatelessWidget {
     return prev.conversation?.title != next.conversation?.title
       || prev.conversation?.avatarUrl != next.conversation?.avatarUrl
       || prev.conversation?.chatState != next.conversation?.chatState
-      || prev.conversation?.jid != next.conversation?.jid;
+      || prev.conversation?.jid != next.conversation?.jid
+      || prev.conversation?.encrypted != next.conversation?.encrypted;
   }
 
   Widget _buildChatState(ChatState state) {
@@ -104,10 +105,14 @@ class ConversationTopbarWidget extends StatelessWidget {
             PopupMenuButton(
               onSelected: (result) {
                 if (result == EncryptionOption.omemo) {
-                  showNotImplementedDialog('End-to-End encryption', context);
+                  // TODO(PapaTutuWawa): Tell the backend to start encrypting
+                } else if (result == EncryptionOption.none) {
+                  // TODO(PapaTutuWawa): Tell the backend to not encrypt
                 }
               },
-              icon: const Icon(Icons.lock_open),
+              icon: state.conversation!.encrypted ?
+                    const Icon(Icons.lock) :
+                    const Icon(Icons.lock_open),
               itemBuilder: (BuildContext c) => [
                 popupItemWithIcon(EncryptionOption.none, 'Unencrypted', Icons.lock_open),
                 popupItemWithIcon(EncryptionOption.omemo, 'Encrypted', Icons.lock),

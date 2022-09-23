@@ -130,6 +130,7 @@ class DatabaseService {
       String? avatarUrl,
       ChatState? chatState,
       bool? muted,
+      bool? encrypted,
     }
   ) async {
     final cd = (await _db.query(
@@ -165,6 +166,9 @@ class DatabaseService {
     if (muted != null) {
       c['muted'] = boolToInt(muted);
     }
+    if (encrypted != null) {
+      c['encrypted'] = boolToInt(encrypted);
+    }
 
     await _db.update(
       'Conversations',
@@ -193,6 +197,7 @@ class DatabaseService {
     int lastChangeTimestamp,
     bool open,
     bool muted,
+    bool encrypted,
   ) async {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
@@ -208,6 +213,7 @@ class DatabaseService {
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
       muted,
+      encrypted,
       ChatState.gone,
     );
 

@@ -62,6 +62,7 @@ class ConversationService {
       String? avatarUrl,
       ChatState? chatState,
       bool? muted,
+      bool? encrypted,
     }
   ) async {
     final conversation = await _getConversationById(id);
@@ -74,6 +75,7 @@ class ConversationService {
       avatarUrl: avatarUrl,
       chatState: conversation?.chatState ?? ChatState.gone,
       muted: muted,
+      encrypted: encrypted,
     );
 
     _conversationCache.cache(id, newConversation);
@@ -90,6 +92,7 @@ class ConversationService {
     int lastChangeTimestamp,
     bool open,
     bool muted,
+    bool encrypted,
   ) async {
     final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
       title,
@@ -100,6 +103,7 @@ class ConversationService {
       lastChangeTimestamp,
       open,
       muted,
+      encrypted,
     );
 
     _conversationCache.cache(newConversation.id, newConversation);

@@ -49,7 +49,8 @@ Future<void> createDatabase(Database db, int version) async {
       unreadCounter INTEGER NOT NULL,
       lastMessageBody TEXT NOT NULL,
       open INTEGER NOT NULL,
-      muted INTEGER NOT NULL
+      muted INTEGER NOT NULL,
+      encrypted INTEGER NOT NULL
     )''',
   );
 
@@ -252,6 +253,14 @@ Future<void> createDatabase(Database db, int version) async {
     preferenceTable,
     Preference(
       'defaultMuteState',
+      typeBool,
+      'false',
+    ).toDatabaseJson(),
+  );
+  await db.insert(
+    preferenceTable,
+    Preference(
+      'enableOmemoByDefault',
       typeBool,
       'false',
     ).toDatabaseJson(),

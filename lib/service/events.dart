@@ -197,6 +197,7 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,
+      (await GetIt.I.get<PreferencesService>().getPreferences()).enableOmemoByDefault,
     );
 
     sendEvent(
@@ -300,6 +301,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,
+      (await GetIt.I.get<PreferencesService>().getPreferences()).enableOmemoByDefault,
     );
     sendEvent(
       AddContactResultEvent(conversation: c, added: true),
