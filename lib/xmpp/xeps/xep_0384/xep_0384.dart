@@ -282,15 +282,24 @@ class OmemoManager extends XmppManagerBase {
   ///
   /// Either returns a list of bundles we "need" to build a session with or an OmemoError.
   Future<Result<OmemoError, List<OmemoBundle>>> _findNewSessions(JID toJid, List<XMLNode> children) async {
+    final ownJid = getAttributes().getFullJID().toBare();
+    final ownId = await omemoState.getDeviceId();
     final newSessions = List<OmemoBundle>.empty(growable: true);
     final ignoreUnacked = shouldIgnoreUnackedRatchets(children);
     final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
     final sessionAvailable = (await omemoState.getDeviceMap()).containsKey(toJid.toString());
     if (!sessionAvailable) {
       logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
-      final bundles = await retrieveDeviceBundles(toJid);
-      if (!bundles.isType<OmemoError>()) {
-        newSessions.addAll(bundles.get<List<OmemoBundle>>());
+      final result = await retrieveDeviceBundles(toJid);
+      if (result.isType<List<OmemoBundle>>()) {
+        final bundles = result.get<List<OmemoBundle>>();
+
+        if (ownJid == toJid) {
+          logger.finest('Requesting bundles for own JID. Ignoring current device');
+          newSessions.addAll(bundles.where((bundle) => bundle.id != ownId));
+        } else {
+          newSessions.addAll(bundles);
+        }
       } else {
         logger.warning('Failed to retrieve device bundles for $toJid');
       }
@@ -315,11 +324,22 @@ class OmemoManager extends XmppManagerBase {
       if (ratchetSessionsRaw.isType<OmemoError>()) return Result(UnknownOmemoError());
 
       final ratchetSessions = ratchetSessionsRaw.get<List<int>>();
-      if (devices.length != ratchetSessions.length) {
+      final expectedDeviceNumber = toJid != ownJid ?
+        // We should have a session with every device of [jid] if it's not us
+        ratchetSessions.length :
+        // We should have a session with every device of [jid] except for one if it's us
+        ratchetSessions.length - 1;
+      if (devices.length != expectedDeviceNumber) {
         logger.finest('Mismatch between devices we have a session with and published devices');
         for (final id in devices) {
           if (ratchetSessions.contains(id)) continue;
 
+          // Ignore requests for our own device.
+          if (toJid == ownJid && id == ownId) {
+            logger.finest('Attempted to request bundle for our own device $id, which is the current device. Skipping request...');
+            continue;
+          }
+          
           logger.finest('Retrieving bundle for $toJid:$id');
           final bundle = await retrieveDeviceBundle(toJid, id);
           if (!bundle.isType<OmemoBundle>()) {
