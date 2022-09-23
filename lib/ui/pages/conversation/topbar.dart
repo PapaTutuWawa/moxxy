@@ -104,10 +104,10 @@ class ConversationTopbarWidget extends StatelessWidget {
             // ignore: implicit_dynamic_type
             PopupMenuButton(
               onSelected: (result) {
-                if (result == EncryptionOption.omemo) {
-                  // TODO(PapaTutuWawa): Tell the backend to start encrypting
-                } else if (result == EncryptionOption.none) {
-                  // TODO(PapaTutuWawa): Tell the backend to not encrypt
+                if (result == EncryptionOption.omemo && state.conversation!.encrypted == false) {
+                  context.read<ConversationBloc>().add(OmemoSetEvent(true));
+                } else if (result == EncryptionOption.none && state.conversation!.encrypted == true) {
+                  context.read<ConversationBloc>().add(OmemoSetEvent(false));
                 }
               },
               icon: state.conversation!.encrypted ?

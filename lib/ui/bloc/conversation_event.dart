@@ -119,3 +119,9 @@ class OwnJidReceivedEvent extends ConversationEvent {
   OwnJidReceivedEvent(this.jid);
   final String jid;
 }
+
+/// Triggered when we enable or disable Omemo in the chat
+class OmemoSetEvent extends ConversationEvent {
+  OmemoSetEvent(this.enabled);
+  final bool enabled;
+}

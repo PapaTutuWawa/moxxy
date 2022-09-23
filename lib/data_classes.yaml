@@ -343,6 +343,13 @@ files:
           - JsonImplementation
         attributes:
           jid: String
+      - name: SetOmemoEnabledCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          enabled: bool
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

@@ -60,6 +60,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(performGetOmemoFingerprints),
       EventTypeMatcher<SetOmemoKeyEnabledCommand>(performEnableOmemoKey),
       EventTypeMatcher<RecreateSessionsCommand>(performRecreateSessions),
+      EventTypeMatcher<SetOmemoEnabledCommand>(performSetOmemoEnabled),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -479,5 +480,14 @@ Future<void> performRecreateSessions(RecreateSessionsCommand command, { dynamic 
   await conn.getManagerById<OmemoManager>(omemoManager)!.sendEmptyMessage(
     JID.fromString(command.jid),
     findNewSessions: true,
+  );
+}
+
+Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command, { dynamic extra }) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(command.jid);
+  await cs.updateConversation(
+    conversation!.id,
+    encrypted: command.enabled,
   );
 }
