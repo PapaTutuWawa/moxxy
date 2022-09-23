@@ -118,10 +118,10 @@ class KeysPage extends StatelessWidget {
               },
               icon: const Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: KeysOptions.recreateSessions,
                   enabled: state.keys.isNotEmpty,
-                  child: Text('Rebuild sessions'),
+                  child: const Text('Rebuild sessions'),
                 )
               ],
             ),
