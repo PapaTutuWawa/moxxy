@@ -416,10 +416,17 @@ class OmemoManager extends XmppManagerBase {
       await completer.future;
     }
 
-    var newSessions = <OmemoBundle>[];
-    final result = await _findNewSessions(toJid, stanza.children);
-    if (!result.isType<OmemoError>()) {
-      newSessions = result.get<List<OmemoBundle>>();
+    final newSessions = List<OmemoBundle>.empty(growable: true);
+    // Try to find new sessions for [toJid].
+    final resultToJid = await _findNewSessions(toJid, stanza.children);
+    if (resultToJid.isType<List<OmemoBundle>>()) {
+      newSessions.addAll(resultToJid.get<List<OmemoBundle>>());
+    }
+    // Try to find new sessions for our own Jid.
+    final ownJid = getAttributes().getFullJID().toBare();
+    final resultOwnJid = await _findNewSessions(ownJid, stanza.children);
+    if (resultOwnJid.isType<List<OmemoBundle>>()) {
+      newSessions.addAll(resultOwnJid.get<List<OmemoBundle>>());
     }
     
     final toEncrypt = List<XMLNode>.empty(growable: true);
@@ -438,8 +445,7 @@ class OmemoManager extends XmppManagerBase {
         toEncrypt,
         [ 
           JID.fromString(stanza.to!).toBare().toString(),
-          // TODO(PapaTutuWawa): Encrypt to self.
-          //bareJid.toString(),
+          ownJid.toString(),
         ],
         stanza.to!,
         newSessions,
@@ -469,6 +475,10 @@ class OmemoManager extends XmppManagerBase {
   /// and don't try to build a new ratchet even though there are unacked ones.
   /// The current logic is that chat states with no body ignore the "ack" state of the
   /// ratchets.
+  ///
+  /// This function may be overriden. By default, the ack status of the ratchet is ignored
+  /// if we're sending a message containing chatstates or chat markers and the message does
+  /// not contain a <body /> element.
   @visibleForOverriding
   bool shouldIgnoreUnackedRatchets(List<XMLNode> children) {
     return listContains(
