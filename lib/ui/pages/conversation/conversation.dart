@@ -84,6 +84,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     return ChatBubble(
       message: item,
       sentBySelf: isSent(item, jid),
+      chatEncrypted: state.conversation!.encrypted,
       start: start,
       end: end,
       between: between,
