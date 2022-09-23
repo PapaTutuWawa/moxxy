@@ -51,17 +51,11 @@ class CarbonsManager extends XmppManagerBase {
 
     // Query the server
     final disco = getAttributes().getManagerById<DiscoManager>(discoManager)!;
-    final result = await disco.discoInfoQuery(
-      getAttributes().getConnectionSettings().jid.toBare().toString(),
+    _supported = await disco.supportsFeature(
+      getAttributes().getConnectionSettings().jid.toBare(),
+      carbonsXmlns,
     );
-
     _gotSupported = true;
-    if (result == null) {
-      _supported = false;
-    } else {
-      _supported = result.features.contains(carbonsXmlns);
-    }
-
     return _supported;
   }
 

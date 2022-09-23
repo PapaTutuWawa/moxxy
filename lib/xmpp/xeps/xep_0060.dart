@@ -112,16 +112,16 @@ class PubSubManager extends XmppManagerBase {
   Future<PubSubPublishOptions> _preprocessPublishOptions(String jid, String node, PubSubPublishOptions options) async {
     if (options.maxItems != null) {
       final dm = getAttributes().getManagerById<DiscoManager>(discoManager)!;
-      final info = await dm.discoInfoQuery(jid);
-      if (info == null) {
+      final result = await dm.discoInfoQuery(jid);
+      if (result.isType<DiscoError>()) {
         if (options.maxItems == 'max') {
           logger.severe('disco#info query failed and options.maxItems is set to "max".');
           return options;
         }
       }
 
-      final nodeMaxSupported = info != null && info.features.contains(pubsubNodeConfigMax);
       
+      final nodeMaxSupported = result.isType<DiscoInfo>() && result.get<DiscoInfo>().features.contains(pubsubNodeConfigMax);
       if (options.maxItems == 'max' && !nodeMaxSupported) {
         final response = await dm.discoItemsQuery(jid, node: node);
         var count = 1;

@@ -46,6 +46,8 @@ import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/settings.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
@@ -270,9 +272,10 @@ class XmppService {
   }
 
   Future<void> _acknowledgeMessage(MessageEvent event) async {
-    final info = await GetIt.I.get<XmppConnection>().getDiscoManager().discoInfoQuery(event.fromJid.toString());
-    if (info == null) return;
+    final result = await GetIt.I.get<XmppConnection>().getDiscoManager().discoInfoQuery(event.fromJid.toString());
+    if (result.isType<DiscoError>()) return;
 
+    final info = result.get<DiscoInfo>();
     if (event.isMarkable && info.features.contains(chatMarkersXmlns)) {
       unawaited(
         GetIt.I.get<XmppConnection>().sendStanza(

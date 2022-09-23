@@ -11,6 +11,7 @@ import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/resultv2.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0115.dart';
@@ -134,11 +135,11 @@ class DiscoManager extends XmppManagerBase {
     // Request the cap hash
     logger.finest("Received capability hash we don't know about. Requesting it...");
     final result = await discoInfoQuery(from.toString(), node: '${info.node}#${info.ver}');
-    if (result == null) return;
+    if (result.isType<DiscoError>()) return;
 
     await _cacheLock.synchronized(() async {
       _capHashCache[from.toString()] = info;
-      _capHashInfoCache[info.ver] = result;
+      _capHashInfoCache[info.ver] = result.get<DiscoInfo>();
     });
   }
   
@@ -270,7 +271,7 @@ class DiscoManager extends XmppManagerBase {
   }
 
   /// Sends a disco info query to the (full) jid [entity], optionally with node=[node].
-  Future<DiscoInfo?> discoInfoQuery(String entity, { String? node}) async {
+  Future<Result<DiscoError, DiscoInfo>> discoInfoQuery(String entity, { String? node}) async {
     final cacheKey = DiscoCacheKey(entity, node);
     DiscoInfo? info;
     Completer<DiscoInfo?>? completer;
@@ -290,15 +291,46 @@ class DiscoManager extends XmppManagerBase {
     });
 
     if (info != null) {
-      return info!;
+      return Result(info);
     } else if (completer != null) {
-      return completer!.future;
+      return Result(await completer!.future);
     }
 
     final stanza = await getAttributes().sendStanza(
       buildDiscoInfoQueryStanza(entity, node),
     );
-    final result = parseDiscoInfoResponse(stanza);
+    final query = stanza.firstTag('query');
+    if (query == null) return Result(InvalidResponseDiscoError());
+
+    final error = stanza.firstTag('error');
+    if (error != null && stanza.attributes['type'] == 'error') {
+      //print("Disco Items error: " + error.toXml());
+      return Result(ErrorResponseDiscoError());
+    }
+    
+    final features = List<String>.empty(growable: true);
+    final identities = List<Identity>.empty(growable: true);
+
+    for (final element in query.children) {
+      if (element.tag == 'feature') {
+        features.add(element.attributes['var']! as String);
+      } else if (element.tag == 'identity') {
+        identities.add(Identity(
+          category: element.attributes['category']! as String,
+          type: element.attributes['type']! as String,
+          name: element.attributes['name'] as String?,
+        ),);
+      } else {
+        //print("Unknown disco tag: " + element.tag);
+      }
+    }
+
+    final result = DiscoInfo(
+      features,
+      identities,
+      query.findTags('x', xmlns: dataFormsXmlns).map(parseDataForm).toList(),
+      JID.fromString(stanza.attributes['from']! as String),
+    );
 
     await _cacheLock.synchronized(() async {
       // Complete all futures
@@ -307,15 +339,13 @@ class DiscoManager extends XmppManagerBase {
       }
 
       // Add to cache
-      if (result != null) {
-        _discoInfoCache[cacheKey] = result;
-      }
+      _discoInfoCache[cacheKey] = result;
       
-      // Remove from the cache
+      // Remove from the request cache
       _runningInfoQueries.remove(cacheKey);
     });
     
-    return result;
+    return Result(result);
   }
 
   /// Sends a disco items query to the (full) jid [entity], optionally with node=[node].
@@ -342,16 +372,17 @@ class DiscoManager extends XmppManagerBase {
   }
 
   /// Queries information about a jid based on its node and capability hash.
-  Future<DiscoInfo?> discoInfoCapHashQuery(String jid, String node, String ver) async {
+  Future<Result<DiscoError, DiscoInfo>> discoInfoCapHashQuery(String jid, String node, String ver) async {
     return discoInfoQuery(jid, node: '$node#$ver');
   }
 
-  Future<List<DiscoInfo>?> performDiscoSweep() async {
+  Future<Result<DiscoError, List<DiscoInfo>>> performDiscoSweep() async {
     final attrs = getAttributes();
     final serverJid = attrs.getConnectionSettings().jid.domain;
     final infoResults = List<DiscoInfo>.empty(growable: true);
-    final info = await discoInfoQuery(serverJid);
-    if (info != null) {
+    final result = await discoInfoQuery(serverJid);
+    if (result.isType<DiscoInfo>()) {
+      final info = result.get<DiscoInfo>();
       logger.finest('Discovered supported server features: ${info.features}');
       infoResults.add(info);
 
@@ -359,7 +390,7 @@ class DiscoManager extends XmppManagerBase {
       attrs.sendEvent(ServerDiscoDoneEvent());
     } else {
       logger.warning('Failed to discover server features');
-      return null;
+      return Result(UnknownDiscoError());
     }
 
     final response = await discoItemsQuery(serverJid);
@@ -370,8 +401,9 @@ class DiscoManager extends XmppManagerBase {
       final items = response.get<List<DiscoItem>>();
       for (final item in items) {
         logger.finest('Querying info for ${item.jid}...');
-        final itemInfo = await discoInfoQuery(item.jid);
-        if (itemInfo != null) {
+        final itemInfoResult = await discoInfoQuery(item.jid);
+        if (itemInfoResult.isType<DiscoInfo>()) {
+          final itemInfo = itemInfoResult.get<DiscoInfo>();
           logger.finest('Received info for ${item.jid}');
           infoResults.add(itemInfo);
           attrs.sendEvent(ServerItemDiscoEvent(itemInfo));
@@ -383,6 +415,15 @@ class DiscoManager extends XmppManagerBase {
       logger.warning('Failed to discover items of $serverJid');
     }
 
-    return infoResults;
+    return Result(infoResults);
+  }
+
+  /// A wrapper function around discoInfoQuery: Returns true if the entity with JID
+  /// [entity] supports the disco feature [feature]. If not, returns false.
+  Future<bool> supportsFeature(JID entity, String feature) async {
+    final info = await discoInfoQuery(entity.toString());
+    if (info.isType<DiscoError>()) return false;
+
+    return info.get<DiscoInfo>().features.contains(feature);
   }
 }
