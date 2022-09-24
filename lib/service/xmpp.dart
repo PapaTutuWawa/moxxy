@@ -551,14 +551,16 @@ class XmppService {
           password: settings.password,
       ),);
 
-      // TODO(Unknown): This might be a race condition
-      final omemo = GetIt.I.get<OmemoService>();
-      if (!omemo.initialized) {
-        await omemo.initialize(settings.jid.toBare().toString());
-        GetIt.I.get<XmppConnection>().registerManager(
-          MoxxyOmemoManager(GetIt.I.get<OmemoService>().omemoState),
-        );
-      }
+      unawaited(
+        (() async {
+          final omemo = GetIt.I.get<OmemoService>();
+          await omemo.ensureInitialized();
+          await omemo.initialize(settings.jid.toBare().toString());
+          GetIt.I.get<XmppConnection>().registerManager(
+            MoxxyOmemoManager(GetIt.I.get<OmemoService>().omemoState),
+          );
+        })(),
+      );
       
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
       await GetIt.I.get<OmemoService>().publishDeviceIfNeeded();

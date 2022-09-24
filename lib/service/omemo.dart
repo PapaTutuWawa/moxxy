@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
@@ -10,6 +11,7 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';
+import 'package:synchronized/synchronized.dart';
 
 class OmemoDoubleRatchetWrapper {
 
@@ -31,7 +33,11 @@ class OmemoService {
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
   final Logger _log = Logger('OmemoService');
-  bool initialized = false;
+
+  bool _initialized = false;
+  final Lock _initLock = Lock();
+  final List<Completer<void>> _waitingForInitialization = List<Completer<void>>.empty(growable: true);
+
   late OmemoSessionManager omemoState;
   
   Future<void> initialize(String jid) async {
@@ -94,10 +100,34 @@ class OmemoService {
       );
     }
 
+    await _initLock.synchronized(() {
+      _initialized = true;
 
-    initialized = true;
+      for (final c in _waitingForInitialization) {
+        c.complete();
+      }
+      _waitingForInitialization.clear();
+    });
   }
 
+  /// Ensures that the code following this *AWAITED* call can access every method
+  /// of the OmemoService.
+  Future<void> ensureInitialized() async {
+    final completer = await _initLock.synchronized(() {
+      if (!_initialized) {
+        final c = Completer<void>();
+        _waitingForInitialization.add(c);
+        return c;
+      }
+
+      return null;
+    });
+
+    if (completer != null) {
+      await completer.future;
+    }
+  }
+  
   Future<void> commitDeviceMap(Map<String, List<int>> deviceMap) async {
     await _storage.write(
       key: _omemoStorageDeviceMap,
@@ -115,6 +145,7 @@ class OmemoService {
   /// Requests our device list and checks if the current device is in it. If not, then
   /// it will be published.
   Future<void> publishDeviceIfNeeded() async {
+    await ensureInitialized();
     final conn = GetIt.I.get<XmppConnection>();
     final omemo = conn.getManagerById<OmemoManager>(omemoManager)!;
     final bareJid = conn.getConnectionSettings().jid.toBare();
@@ -127,6 +158,7 @@ class OmemoService {
   }
 
   Future<List<OmemoKey>> getOmemoKeysForJid(String jid) async {
+    await ensureInitialized();
     final fingerprints = await omemoState.getHexFingerprintsForJid(jid);
     final keys = List<OmemoKey>.empty(growable: true);
     for (final fp in fingerprints) {
@@ -160,10 +192,12 @@ class OmemoService {
   }
   
   Future<void> setOmemoKeyEnabled(String jid, int deviceId, bool enabled) async {
+    await ensureInitialized();
     await omemoState.trustManager.setEnabled(jid, deviceId, enabled);
   }
 
   Future<void> removeAllSessions(String jid) async {
+    await ensureInitialized();
     await omemoState.removeAllRatchets(jid);
   }
 }
