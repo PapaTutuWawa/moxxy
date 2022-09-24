@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/omemo.dart';
-import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';
@@ -19,10 +18,7 @@ class MoxxyOmemoManager extends OmemoManager {
 
   @override
   Future<bool> shouldEncryptStanza(JID toJid) async {
-    final cs = GetIt.I.get<ConversationService>();
-    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    final conversation = await cs.getConversationByJid(toJid.toString());
-    return conversation?.encrypted ?? prefs.enableOmemoByDefault;
+    return GetIt.I.get<ConversationService>().shouldEncryptForConversation(toJid);
   }
 }
 
