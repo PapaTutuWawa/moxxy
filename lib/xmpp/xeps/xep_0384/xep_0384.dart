@@ -484,6 +484,7 @@ abstract class OmemoManager extends XmppManagerBase {
         ),
       );
     } catch (ex) {
+      // TODO(PapaTutuWawa): Maybe refuse to send the stanza to prevent leaking information.
       logger.severe('Encryption failed! $ex');
       await _handlerExit(toJid);
       return state.copyWith(
