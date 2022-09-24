@@ -557,7 +557,8 @@ class XmppService {
       ),);
       
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
-      await GetIt.I.get<OmemoService>().publishDeviceIfNeeded();
+      unawaited(GetIt.I.get<OmemoService>().initializeIfNeeded(settings.jid.toString()));
+      unawaited(GetIt.I.get<OmemoService>().publishDeviceIfNeeded());
 
       if (!event.resumed) {
         // In section 5 of XEP-0198 it says that a client should not request the roster
@@ -918,7 +919,7 @@ class XmppService {
         messageTimestamp,
         true,
         prefs.defaultMuteState,
-        prefs.enableOmemoByDefault,
+        message.encrypted,
       );
 
       // Notify the UI

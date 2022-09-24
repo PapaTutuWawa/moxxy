@@ -234,7 +234,7 @@ Future<void> entrypoint() async {
 
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
-    await GetIt.I.get<OmemoService>().initialize(settings.jid.toBare().toString());
+    unawaited(GetIt.I.get<OmemoService>().initializeIfNeeded(settings.jid.toBare().toString()));
 
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.

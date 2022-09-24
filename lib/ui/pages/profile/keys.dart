@@ -19,7 +19,7 @@ class KeysPage extends StatelessWidget {
     ),
   );
   
-  Widget _buildBody(KeysState state) {
+  Widget _buildBody(BuildContext context, KeysState state) {
     if (state.working) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -39,7 +39,9 @@ class KeysPage extends StatelessWidget {
           fingerprint = fingerprint.substring(8);
           parts.add(part);
         }
-        
+
+        final width = MediaQuery.of(context).size.width;
+        final fontSize = (width - 8*3) / (8*4 + 3 * 6);
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Card(
@@ -58,10 +60,9 @@ class KeysPage extends StatelessWidget {
                     children: parts
                     .map((part_) => Text(
                       part_,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'RobotoMono',
-                        // TODO(PapaTutuWawa): Ensure that we can always fit 8 * 4 characters on one line
-                        fontSize: 18,
+                        fontSize: fontSize,
                       ),
                     ),).toList(),
                   ),
@@ -128,7 +129,7 @@ class KeysPage extends StatelessWidget {
             ),
           ],
         ),
-        body: _buildBody(state),
+        body: _buildBody(context, state),
       ),
     );
   }

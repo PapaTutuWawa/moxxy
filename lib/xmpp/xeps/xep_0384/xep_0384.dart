@@ -144,6 +144,13 @@ abstract class OmemoManager extends XmppManagerBase {
     final session = await getSessionManager();
     return session.isRatchetAcknowledged(jid, deviceId);
   }
+
+  /// Wrapper around checking if [jid] appears in the session manager's device map.
+  Future<bool> _hasSessionWith(String jid) async {
+    final session = await getSessionManager();
+    final deviceMap = await session.getDeviceMap();
+    return deviceMap.containsKey(jid);
+  }
   
   /// Determines what child elements of a stanza should be encrypted. If shouldEncrypt
   /// returns true for [element], then [element] will be encrypted. If shouldEncrypt
@@ -291,7 +298,7 @@ abstract class OmemoManager extends XmppManagerBase {
     final newSessions = List<OmemoBundle>.empty(growable: true);
     final ignoreUnacked = shouldIgnoreUnackedRatchets(children);
     final unackedRatchets = await session.getUnacknowledgedRatchets(toJid.toString());
-    final sessionAvailable = (await session.getDeviceMap()).containsKey(toJid.toString());
+    final sessionAvailable = await _hasSessionWith(toJid.toString());
     if (!sessionAvailable) {
       logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
       final result = await retrieveDeviceBundles(toJid);
@@ -413,11 +420,15 @@ abstract class OmemoManager extends XmppManagerBase {
     if (state.encrypted) {
       return state;
     }
-    if (!state.shouldEncrypt) {
+
+    final toJid = JID.fromString(stanza.to!).toBare();
+    if (!(await shouldEncryptStanza(toJid))) {
+      logger.finest('shouldEncryptStanza returned false for message to $toJid. Not encrypting.');
       return state;
+    } else {
+      logger.finest('shouldEncryptStanza returned true for message to $toJid.');
     }
     
-    final toJid = JID.fromString(stanza.to!).toBare();
     final completer = await _handlerEntry(toJid);
     if (completer != null) {
       await completer.future;
@@ -434,6 +445,8 @@ abstract class OmemoManager extends XmppManagerBase {
     final resultOwnJid = await _findNewSessions(ownJid, stanza.children);
     if (resultOwnJid.isType<List<OmemoBundle>>()) {
       newSessions.addAll(resultOwnJid.get<List<OmemoBundle>>());
+
+      logger.finest(newSessions);
     }
     
     final toEncrypt = List<XMLNode>.empty(growable: true);
@@ -446,14 +459,17 @@ abstract class OmemoManager extends XmppManagerBase {
       }
     }
 
+    final jidsToEncryptFor = <String>[JID.fromString(stanza.to!).toBare().toString()];
+    // Prevent encrypting to self if there is only one device (ours).
+    if (await _hasSessionWith(ownJid.toString())) {
+      jidsToEncryptFor.add(ownJid.toString());
+    }
+
     try {
       logger.finest('Encrypting stanza');
       final encrypted = await _encryptChildren(
         toEncrypt,
-        [ 
-          JID.fromString(stanza.to!).toBare().toString(),
-          ownJid.toString(),
-        ],
+        jidsToEncryptFor,
         stanza.to!,
         newSessions,
       );
@@ -468,6 +484,7 @@ abstract class OmemoManager extends XmppManagerBase {
         ),
       );
     } catch (ex) {
+      logger.severe('Encryption failed! $ex');
       await _handlerExit(toJid);
       return state.copyWith(
         other: {
@@ -499,6 +516,12 @@ abstract class OmemoManager extends XmppManagerBase {
     );
   }
 
+  /// This function is called whenever a message is to be encrypted. If it returns true,
+  /// then the message will be encrypted. If it returns false, the message won't be
+  /// encrypted.
+  @visibleForOverriding
+  Future<bool> shouldEncryptStanza(JID toJid);
+  
   /// Wrapper function that attempts to enter the encryption/decryption critical section.
   /// In case the critical section could be entered, null is returned. If not, then a
   /// Completer is returned whose future will resolve once the critical section can be

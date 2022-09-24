@@ -42,8 +42,6 @@ class StanzaHandlerData with _$StanzaHandlerData {
       String? funCancellation,
       // Whether the stanza was received encrypted
       @Default(false) bool encrypted,
-      // Whether the stanza should be encrypted (send only)
-      @Default(false) bool shouldEncrypt,
       // The stated type of encryption used, if any was used
       ExplicitEncryptionType? encryptionType,
       // This is for stanza handlers that are not part of the XMPP library but still need

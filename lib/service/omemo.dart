@@ -40,7 +40,10 @@ class OmemoService {
 
   late OmemoSessionManager omemoState;
   
-  Future<void> initialize(String jid) async {
+  Future<void> initializeIfNeeded(String jid) async {
+    final done = await _initLock.synchronized(() => _initialized);
+    if (done) return;
+
     if (!(await _storage.containsKey(key: _omemoStorageMarker))) {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
       omemoState = await OmemoSessionManager.generateNewIdentity(
@@ -162,7 +165,10 @@ class OmemoService {
   /// Requests our device list and checks if the current device is in it. If not, then
   /// it will be published.
   Future<void> publishDeviceIfNeeded() async {
+    _log.finest('publishDeviceIfNeeded: Waiting for initialization...');
     await ensureInitialized();
+    _log.finest('publishDeviceIfNeeded: Done');
+
     final conn = GetIt.I.get<XmppConnection>();
     final omemo = conn.getManagerById<OmemoManager>(omemoManager)!;
     final bareJid = conn.getConnectionSettings().jid.toBare();
