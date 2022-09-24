@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -21,17 +19,8 @@ class OmemoDoubleRatchetWrapper {
   final String jid;
 }
 
-const _omemoStorageMarker = 'omemo_marker';
-const _omemoStorageDevice = 'omemo_device';
-const _omemoStorageDeviceMap = 'omemo_device_map';
-const _omemoStorageTrustMap = 'omemo_trust_map';
-
 class OmemoService {
 
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    // TODO(Unknown): Set other options
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
   final Logger _log = Logger('OmemoService');
 
   bool _initialized = false;
@@ -44,7 +33,9 @@ class OmemoService {
     final done = await _initLock.synchronized(() => _initialized);
     if (done) return;
 
-    if (!(await _storage.containsKey(key: _omemoStorageMarker))) {
+    final db = GetIt.I.get<DatabaseService>();
+    final device = await db.loadOmemoDevice(jid);
+    if (device == null) {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
       omemoState = await OmemoSessionManager.generateNewIdentity(
         jid,
@@ -55,49 +46,21 @@ class OmemoService {
         ),
       );
 
-      await _storage.write(key: _omemoStorageMarker, value: 'true');
       await commitDevice(await omemoState.getDevice());
       await commitDeviceMap(<String, List<int>>{});
       await commitTrustManager(await omemoState.trustManager.toJson());
     } else {
       _log.info('OMEMO marker found. Restoring OMEMO state...');
-      final deviceString = await _storage.read(key: _omemoStorageDevice);
-      final deviceJson = jsonDecode(deviceString!) as Map<String, dynamic>;
-
-      // NOTE: We need to do this because Dart otherwise complains about not being able
-      //       to cast dynamic to List<int>.
-      final opks = List<Map<String, dynamic>>.empty(growable: true);
-      final opksIter = deviceJson['opks']! as List<dynamic>;
-      for (final _opk in opksIter) {
-        final opk = _opk as Map<String, dynamic>;
-        opks.add(<String, dynamic>{
-          'id': opk['id']! as int,
-          'public': opk['public']! as String,
-          'private': opk['private']! as String,
-        });
-      }
-      deviceJson['opks'] = opks;
-      final device = Device.fromJson(deviceJson);
-
       final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
       for (final ratchet in await GetIt.I.get<DatabaseService>().loadRatchets()) {
         final key = RatchetMapKey(ratchet.jid, ratchet.id);
         ratchetMap[key] = ratchet.ratchet;
       }
 
-      final deviceMapString = await _storage.read(key: _omemoStorageDeviceMap);
-      // ignore: argument_type_not_assignable
-      final deviceMapJson = Map<String, dynamic>.from(jsonDecode(deviceMapString!));
-      final deviceMap = <String, List<int>>{};
-      for (final entry in deviceMapJson.entries) {
-        deviceMap[entry.key] = (entry.value as List<dynamic>).map<int>(
-          (dynamic i) => i as int,
-        ).toList();
-      }
-
+      final db = GetIt.I.get<DatabaseService>();
       omemoState = OmemoSessionManager(
         device,
-        deviceMap,
+        await db.loadOmemoDeviceList(),
         ratchetMap,
         await loadTrustManager(),
       );
@@ -149,17 +112,11 @@ class OmemoService {
   }
   
   Future<void> commitDeviceMap(Map<String, List<int>> deviceMap) async {
-    await _storage.write(
-      key: _omemoStorageDeviceMap,
-      value: jsonEncode(deviceMap),
-    );
+    await GetIt.I.get<DatabaseService>().saveOmemoDeviceList(deviceMap);
   }
   
   Future<void> commitDevice(Device device) async {
-    await _storage.write(
-      key: _omemoStorageDevice,
-      value: jsonEncode(await device.toJson()),
-    );
+    await GetIt.I.get<DatabaseService>().saveOmemoDevice(device);
   }
 
   /// Requests our device list and checks if the current device is in it. If not, then
@@ -201,16 +158,24 @@ class OmemoService {
   }
 
   Future<void> commitTrustManager(Map<String, dynamic> json) async {
-    await _storage.write(key: _omemoStorageTrustMap, value: jsonEncode(json));
+
+    await GetIt.I.get<DatabaseService>().saveTrustCache(
+      json['trust']! as Map<String, int>,
+    );
+    await GetIt.I.get<DatabaseService>().saveTrustEnablementList(
+      json['enable']! as Map<String, bool>,
+    );
+    await GetIt.I.get<DatabaseService>().saveTrustDeviceList(
+      json['devices']! as Map<String, List<int>>,
+    );
   }
 
   Future<MoxxyBTBVTrustManager> loadTrustManager() async {
-    final data = await _storage.read(key: _omemoStorageTrustMap);
-    final json = jsonDecode(data!) as Map<String, dynamic>;
+    final db = GetIt.I.get<DatabaseService>();
     return MoxxyBTBVTrustManager(
-      BlindTrustBeforeVerificationTrustManager.trustCacheFromJson(json),
-      BlindTrustBeforeVerificationTrustManager.enableCacheFromJson(json),
-      BlindTrustBeforeVerificationTrustManager.deviceListFromJson(json),
+      await db.loadTrustCache(),
+      await db.loadTrustEnablementList(),
+      await db.loadTrustDeviceList(),
     );
   }
   

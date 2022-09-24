@@ -553,7 +553,7 @@ class DatabaseService {
   Future<void> saveRatchet(OmemoDoubleRatchetWrapper ratchet) async {
     final json = await ratchet.ratchet.toJson();
     await _db.insert(
-      omemoTable,
+      omemoRatchetsTable,
       {
         ...json,
         'mkskipped': jsonEncode(json['mkskipped']),
@@ -566,7 +566,7 @@ class DatabaseService {
   }
 
   Future<List<OmemoDoubleRatchetWrapper>> loadRatchets() async {
-    final results = await _db.query(omemoTable);
+    final results = await _db.query(omemoRatchetsTable);
 
     return results.map((ratchet) {
       final json = jsonDecode(ratchet['mkskipped']! as String) as List<dynamic>;
@@ -591,5 +591,195 @@ class DatabaseService {
         ratchet['jid']! as String,
       );
     }).toList();
+  }
+
+  Future<Map<RatchetMapKey, BTBVTrustState>> loadTrustCache() async {
+    final entries = await _db.query(omemoTrustCacheTable);
+
+    final mapEntries = entries.map<MapEntry<RatchetMapKey, BTBVTrustState>>((entry) {
+      // TODO(PapaTutuWawa): Expose this from omemo_dart
+      BTBVTrustState state;
+      final value = entry['trust']! as int;
+      if (value == 1) {
+        state = BTBVTrustState.notTrusted;
+      } else if (value == 2) {
+        state = BTBVTrustState.blindTrust;
+      } else if (value == 3) {
+        state = BTBVTrustState.verified;
+      } else {
+        state = BTBVTrustState.notTrusted;
+      }
+
+      return MapEntry(
+        RatchetMapKey.fromJsonKey(entry['key']! as String),
+        state,
+      );
+    });
+
+    return Map.fromEntries(mapEntries);
+  }
+
+  Future<void> saveTrustCache(Map<String, int> cache) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustCacheTable);
+    for (final entry in cache.entries) {
+      batch.insert(
+        omemoTrustCacheTable,
+        {
+          'key': entry.key,
+          'trust': entry.value,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    
+    await batch.commit();
+  }
+  
+  Future<Map<RatchetMapKey, bool>> loadTrustEnablementList() async {
+    final entries = await _db.query(omemoTrustEnableListTable);
+
+    final mapEntries = entries.map<MapEntry<RatchetMapKey, bool>>((entry) {
+      return MapEntry(
+        RatchetMapKey.fromJsonKey(entry['key']! as String),
+        intToBool(entry['enabled']! as int),
+      );
+    });
+
+    return Map.fromEntries(mapEntries);
+  }
+
+  Future<void> saveTrustEnablementList(Map<String, bool> list) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustEnableListTable);
+    for (final entry in list.entries) {
+      batch.insert(
+        omemoTrustEnableListTable,
+        {
+          'key': entry.key,
+          'enabled': boolToInt(entry.value),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    
+    await batch.commit();
+  }
+  
+  Future<Map<String, List<int>>> loadTrustDeviceList() async {
+    final entries = await _db.query(omemoTrustDeviceListTable);
+
+    final map = <String, List<int>>{};
+    for (final entry in entries) {
+      final key = entry['key']! as String;
+      final device = entry['device']! as int;
+
+      if (map.containsKey(key)) {
+        map[key]!.add(device);
+      } else {
+        map[key] = [device];
+      }
+    }
+    
+    return map;
+  }
+
+  Future<void> saveTrustDeviceList(Map<String, List<int>> list) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustDeviceListTable);
+    for (final entry in list.entries) {
+      batch.insert(
+        omemoTrustDeviceListTable,
+        {
+          'jid': entry.key,
+          'device': entry.value,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    
+    await batch.commit();
+  }
+
+  Future<void> saveOmemoDevice(Device device) async {
+    await _db.insert(
+      omemoDeviceTable,
+      {
+        'jid': device.jid,
+        'id': device.id,
+        'data': jsonEncode(await device.toJson()),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<Device?> loadOmemoDevice(String jid) async {
+    final data = await _db.query(
+      omemoDeviceTable,
+      where: 'jid = ?',
+      whereArgs: [jid],
+      limit: 1,
+    );
+    if (data.isEmpty) return null;
+
+    final deviceJson = jsonDecode(data.first['data']! as String) as Map<String, dynamic>;
+    // NOTE: We need to do this because Dart otherwise complains about not being able
+    //       to cast dynamic to List<int>.
+    final opks = List<Map<String, dynamic>>.empty(growable: true);
+    final opksIter = deviceJson['opks']! as List<dynamic>;
+    for (final _opk in opksIter) {
+      final opk = _opk as Map<String, dynamic>;
+      opks.add(<String, dynamic>{
+        'id': opk['id']! as int,
+        'public': opk['public']! as String,
+        'private': opk['private']! as String,
+      });
+    }
+    deviceJson['opks'] = opks;
+    return Device.fromJson(deviceJson);
+  }
+
+  Future<Map<String, List<int>>> loadOmemoDeviceList() async {
+    final list = await _db.query(omemoDeviceListTable);
+    final map = <String, List<int>>{};
+    for (final entry in list) {
+      final key = entry['jid']! as String;
+      final id = entry['id']! as int;
+
+      if (map.containsKey(key)) {
+        map[key]!.add(id);
+      } else {
+        map[key] = [id];
+      }
+    }
+
+    return map;
+  }
+  
+  Future<void> saveOmemoDeviceList(Map<String, List<int>> list) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoDeviceListTable);
+    for (final entry in list.entries) {
+      for (final id in entry.value) {
+        batch.insert(
+          omemoDeviceListTable,
+          {
+            'jid': entry.key,
+            'id': id,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    }
+
+    await batch.commit();
   }
 }

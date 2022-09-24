@@ -84,7 +84,7 @@ Future<void> createDatabase(Database db, int version) async {
   // OMEMO
   await db.execute(
     '''
-    CREATE TABLE $omemoTable (
+    CREATE TABLE $omemoRatchetsTable (
       id         INTEGER PRIMARY KEY,
       jid        TEXT NOT NULL,
       dhs        TEXT NOT NULL,
@@ -102,7 +102,45 @@ Future<void> createDatabase(Database db, int version) async {
       mkskipped  TEXT NOT NULL
     )''',
   );
-  
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTrustCacheTable (
+      key   TEXT PRIMARY KEY NOT NULL,
+      trust INTEGER NOT NULL
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTrustDeviceListTable (
+      jid    TEXT NOT NULL,
+      device INTEGER NOT NULL
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTrustEnableListTable (
+      key     TEXT PRIMARY KEY NOT NULL,
+      enabled INTEGER NOT NULL
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoDeviceTable (
+      jid  TEXT NOT NULL,
+      id   INTEGER NOT NULL,
+      data TEXT NOT NULL,
+      PRIMARY KEY (jid, id)
+    )''',
+  );
+   await db.execute(
+    '''
+    CREATE TABLE $omemoDeviceListTable (
+      jid  TEXT NOT NULL,
+      id   INTEGER NOT NULL,
+      PRIMARY KEY (jid, id)
+    )''',
+  );
+ 
   // Settings
   await db.execute(
     '''
@@ -110,8 +148,7 @@ Future<void> createDatabase(Database db, int version) async {
       key TEXT NOT NULL PRIMARY KEY,
       type INTEGER NOT NULL,
       value TEXT NOT NULL
-    );
-    ''',
+    )''',
   );
   await db.insert(
     preferenceTable,
