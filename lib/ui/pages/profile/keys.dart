@@ -41,7 +41,7 @@ class KeysPage extends StatelessWidget {
         }
 
         final width = MediaQuery.of(context).size.width;
-        final fontSize = (width - 8*3) / (8*4 + 3 * 6);
+        final fontSize = width * 0.04;
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Card(
