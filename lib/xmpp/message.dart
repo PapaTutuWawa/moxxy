@@ -34,6 +34,7 @@ class MessageDetails {
     this.fun,
     this.funReplacement,
     this.funCancellation,
+    this.shouldEncrypt = false,
   });
   final String to;
   final String? body;
@@ -49,6 +50,7 @@ class MessageDetails {
   final FileMetadataData? fun;
   final String? funReplacement;
   final String? funCancellation;
+  final bool shouldEncrypt;
 }
 
 class MessageManager extends XmppManagerBase {
@@ -206,6 +208,10 @@ class MessageManager extends XmppManagerBase {
       );
     }
     
-    getAttributes().sendStanza(stanza, awaitable: false);
+    getAttributes().sendStanza(
+      stanza,
+      awaitable: false,
+      shouldEncrypt: details.shouldEncrypt,
+    );
   }
 }

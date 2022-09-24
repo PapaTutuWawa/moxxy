@@ -413,6 +413,9 @@ abstract class OmemoManager extends XmppManagerBase {
     if (state.encrypted) {
       return state;
     }
+    if (!state.shouldEncrypt) {
+      return state;
+    }
     
     final toJid = JID.fromString(stanza.to!).toBare();
     final completer = await _handlerEntry(toJid);

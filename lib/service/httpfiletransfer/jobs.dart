@@ -6,10 +6,12 @@ import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 @immutable
 class FileUploadJob {
 
-  const FileUploadJob(this.recipients, this.path, this.mime, this.messageMap, this.thumbnails);
+  const FileUploadJob(this.recipients, this.path, this.mime, this.encryptMap, this.messageMap, this.thumbnails);
   final List<String> recipients;
   final String path;
   final String? mime;
+  // Recipient -> Should encrypt
+  final Map<String, bool> encryptMap;
   // Recipient -> Message
   final Map<String, Message> messageMap;
   final List<Thumbnail> thumbnails;
@@ -21,11 +23,12 @@ class FileUploadJob {
       path == other.path &&
       messageMap == other.messageMap &&
       mime == other.mime &&
-      thumbnails == other.thumbnails;
+      thumbnails == other.thumbnails &&
+      encryptMap == other.encryptMap;
   }
 
   @override
-  int get hashCode => path.hashCode ^ recipients.hashCode ^ messageMap.hashCode ^ mime.hashCode ^ thumbnails.hashCode;
+  int get hashCode => path.hashCode ^ recipients.hashCode ^ messageMap.hashCode ^ mime.hashCode ^ thumbnails.hashCode ^ encryptMap.hashCode;
 }
 
 /// A job describing the upload of a file.

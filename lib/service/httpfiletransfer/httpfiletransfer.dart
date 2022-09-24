@@ -236,6 +236,7 @@ class HttpFileTransferService {
                 ),
                 slot.getUrl,
               ),
+              shouldEncrypt: job.encryptMap[recipient]!,
               funReplacement: msg.sid,
             ),
           );

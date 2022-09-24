@@ -211,6 +211,13 @@ class XmppService {
     for (final recipient in recipients) {
       final sid = conn.generateId();
       final originId = conn.generateId();
+      final conversation = await cs.getConversationByJid(recipient);
+      final newConversation = await cs.updateConversation(
+        conversation!.id,
+        lastMessageBody: body,
+        lastChangeTimestamp: timestamp,
+      );
+
       final message = await ms.addMessageFromData(
         body,
         timestamp,
@@ -219,8 +226,7 @@ class XmppService {
         false,
         sid,
         false,
-        // TODO(PapaTutuWawa): Set this depending on the conversation settings
-        true,
+        newConversation.encrypted,
         originId: originId,
         quoteId: quotedMessage?.sid,
       );
@@ -242,14 +248,8 @@ class XmppService {
           quoteFrom: quotedMessage?.sender,
           quoteId: quotedMessage?.sid,
           chatState: chatState,
+          shouldEncrypt: newConversation.encrypted,
         ),
-      );
-
-      final conversation = await cs.getConversationByJid(recipient);
-      final newConversation = await cs.updateConversation(
-        conversation!.id,
-        lastMessageBody: body,
-        lastChangeTimestamp: timestamp,
       );
 
       sendEvent(
@@ -361,6 +361,8 @@ class XmppService {
     final thumbnails = <String, List<Thumbnail>>{};
     // Path -> Dimensions
     final dimensions = <String, Size>{};
+    // Recipient -> Should encrypt
+    final encrypt = <String, bool>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -368,6 +370,9 @@ class XmppService {
       final pathMime = lookupMimeType(path);
 
       for (final recipient in recipients) {
+        final conversation = await cs.getConversationByJid(recipient);
+        encrypt[recipient] = conversation?.encrypted ?? prefs.enableOmemoByDefault;
+
         // TODO(Unknown): Do the same for videos
         if (pathMime != null && pathMime.startsWith('image/')) {
           final imageSize = image_size.ImageSizeGetter.getSize(FileInput(File(path)));
@@ -385,8 +390,7 @@ class XmppService {
           true,
           conn.generateId(),
           false,
-          // TODO(PapaTutuWawa): Set this depending on the conversation settings
-          true,
+          encrypt[recipient]!,
           mediaUrl: path,
           mediaType: pathMime,
           originId: conn.generateId(),
@@ -490,6 +494,7 @@ class XmppService {
               size: File(path).statSync().size,
               thumbnails: thumbnails[path] ?? [],
             ),
+            shouldEncrypt: encrypt[recipient]!,
           ),
         );
       }
@@ -499,6 +504,7 @@ class XmppService {
           recipients,
           path,
           pathMime,
+          encrypt,
           messages[path]!,
           thumbnails[path] ?? [],
         ),
