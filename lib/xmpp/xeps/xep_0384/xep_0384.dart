@@ -39,28 +39,9 @@ const _doNotEncryptList = [
   DoNotEncrypt('stanza-id', stableIdXmlns),
 ];
 
-class OmemoManager extends XmppManagerBase {
+abstract class OmemoManager extends XmppManagerBase {
 
-  OmemoManager(this.omemoState)
-    : _handlerLock = Lock(),
-      _handlerFutures = {},
-      super() {
-    omemoState.eventStream.listen((event) async {
-      if (event is RatchetModifiedEvent) {
-        await commitRatchet(event.ratchet, event.jid, event.deviceId);
-      } else if (event is DeviceMapModifiedEvent) {
-        await commitDeviceMap(event.map);
-      } else if (event is DeviceModifiedEvent) {
-        await commitDevice(event.device);
-
-        // Publish it
-        await publishBundle(await event.device.toBundle());
-      }
-    });
-  }
-
-  @protected
-  final OmemoSessionManager omemoState;
+  OmemoManager() : _handlerLock = Lock(), _handlerFutures = {}, super();
 
   final Lock _handlerLock;
   final Map<JID, Queue<Completer<void>>> _handlerFutures;
@@ -120,9 +101,9 @@ class OmemoManager extends XmppManagerBase {
         .toList();
       if (event.from == ownJid) {
         // Another client published to our device list node
-        if (!ids.contains(await omemoState.getDeviceId())) {
+        if (!ids.contains(await _getDeviceId())) {
           // Attempt to publish again
-          await publishBundle(await omemoState.getDeviceBundle());
+          await publishBundle(await _getDeviceBundle());
         }
       } else {
         // Someone published to their device list node
@@ -131,18 +112,39 @@ class OmemoManager extends XmppManagerBase {
     }
   }
   
-  /// Commit the OMEMO ratchet to persistent storage, if wanted.
   @visibleForOverriding
-  Future<void> commitRatchet(OmemoDoubleRatchet ratchet, String jid, int deviceId) async {}
+  Future<OmemoSessionManager> getSessionManager();
 
-  /// Commit the session manager's device map to storage, if wanted.
-  @visibleForOverriding
-  Future<void> commitDeviceMap(Map<String, List<int>> map) async {}
+  /// Wrapper around using getSessionManager and then calling encryptToJids on it.
+  Future<EncryptionResult> _encryptToJids(List<String> jids, String? plaintext, { List<OmemoBundle>? newSessions }) async {
+    final session = await getSessionManager();
+    return session.encryptToJids(jids, plaintext, newSessions: newSessions);
+  }
 
-  /// Commit the device to storage, if wanted.
-  @visibleForOverriding
-  Future<void> commitDevice(Device device) async {}
+  /// Wrapper around using getSessionManager and then calling encryptToJids on it.
+  Future<String?> _decryptMessage(List<int>? ciphertext, String senderJid, int senderDeviceId, List<EncryptedKey> keys) async {
+    final session = await getSessionManager();
+    return session.decryptMessage(ciphertext, senderJid, senderDeviceId, keys);
+  }
+  
+  /// Wrapper around using getSessionManager and then calling getDeviceId on it.
+  Future<int> _getDeviceId() async {
+    final session = await getSessionManager();
+    return session.getDeviceId();
+  }
 
+  /// Wrapper around using getSessionManager and then calling getDeviceId on it.
+  Future<OmemoBundle> _getDeviceBundle() async {
+    final session = await getSessionManager();
+    return session.getDeviceBundle();
+  }
+
+  /// Wrapper around using getSessionManager and then calling isRatchetAcknowledged on it.
+  Future<bool> _isRatchetAcknowledged(String jid, int deviceId) async {
+    final session = await getSessionManager();
+    return session.isRatchetAcknowledged(jid, deviceId);
+  }
+  
   /// Determines what child elements of a stanza should be encrypted. If shouldEncrypt
   /// returns true for [element], then [element] will be encrypted. If shouldEncrypt
   /// returns false, then [element] won't be encrypted.
@@ -209,7 +211,7 @@ class OmemoManager extends XmppManagerBase {
       );
     }
 
-    final encryptedEnvelope = await omemoState.encryptToJids(
+    final encryptedEnvelope = await _encryptToJids(
       jids,
       payload?.toXml(),
       newSessions: newSessions,
@@ -261,7 +263,7 @@ class OmemoManager extends XmppManagerBase {
         XMLNode(
           tag: 'header',
           attributes: <String, String>{
-            'sid': (await omemoState.getDeviceId()).toString(),
+            'sid': (await _getDeviceId()).toString(),
           },
           children: keysElements,
         ),
@@ -272,7 +274,8 @@ class OmemoManager extends XmppManagerBase {
   /// A logging wrapper around acking the ratchet with [jid] with identifier [deviceId].
   Future<void> _ackRatchet(String jid, int deviceId) async {
     logger.finest('Acking ratchet $jid:$deviceId');
-    await omemoState.ratchetAcknowledged(jid, deviceId);
+    final session = await getSessionManager();
+    await session.ratchetAcknowledged(jid, deviceId);
   }
 
   /// Figure out if new sessions need to be built. [toJid] is the JID of the entity we
@@ -283,11 +286,12 @@ class OmemoManager extends XmppManagerBase {
   /// Either returns a list of bundles we "need" to build a session with or an OmemoError.
   Future<Result<OmemoError, List<OmemoBundle>>> _findNewSessions(JID toJid, List<XMLNode> children) async {
     final ownJid = getAttributes().getFullJID().toBare();
-    final ownId = await omemoState.getDeviceId();
+    final session = await getSessionManager();
+    final ownId = await session.getDeviceId();
     final newSessions = List<OmemoBundle>.empty(growable: true);
     final ignoreUnacked = shouldIgnoreUnackedRatchets(children);
-    final unackedRatchets = await omemoState.getUnacknowledgedRatchets(toJid.toString());
-    final sessionAvailable = (await omemoState.getDeviceMap()).containsKey(toJid.toString());
+    final unackedRatchets = await session.getUnacknowledgedRatchets(toJid.toString());
+    final sessionAvailable = (await session.getDeviceMap()).containsKey(toJid.toString());
     if (!sessionAvailable) {
       logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
       final result = await retrieveDeviceBundles(toJid);
@@ -317,7 +321,7 @@ class OmemoManager extends XmppManagerBase {
         }
       }
     } else {
-      final map = await omemoState.getDeviceMap();
+      final map = await session.getDeviceMap();
       final devices = map[toJid.toString()]!;
       final ratchetSessionsRaw = await getDeviceList(toJid);
       await subscribeToDeviceList(toJid);
@@ -555,7 +559,7 @@ class OmemoManager extends XmppManagerBase {
 
     String? decrypted;
     try {
-      decrypted = await omemoState.decryptMessage(
+      decrypted = await _decryptMessage(
         payloadElement != null ? base64.decode(payloadElement.innerText()) : null,
         fromJid.toString(),
         sid,
@@ -573,7 +577,7 @@ class OmemoManager extends XmppManagerBase {
       );
     }
     
-    final isAcked = await omemoState.isRatchetAcknowledged(fromJid.toString(), sid);
+    final isAcked = await _isRatchetAcknowledged(fromJid.toString(), sid);
     if (!isAcked) {
       // Unacked ratchet decrypted this message
       if (decrypted != null) {

@@ -22,7 +22,6 @@ import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/message.dart';
-import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -550,17 +549,6 @@ class XmppService {
           jid: settings.jid.toString(),
           password: settings.password,
       ),);
-
-      unawaited(
-        (() async {
-          final omemo = GetIt.I.get<OmemoService>();
-          await omemo.ensureInitialized();
-          await omemo.initialize(settings.jid.toBare().toString());
-          GetIt.I.get<XmppConnection>().registerManager(
-            MoxxyOmemoManager(GetIt.I.get<OmemoService>().omemoState),
-          );
-        })(),
-      );
       
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
       await GetIt.I.get<OmemoService>().publishDeviceIfNeeded();

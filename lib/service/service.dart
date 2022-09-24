@@ -188,6 +188,7 @@ Future<void> entrypoint() async {
       MoxxyStreamManagementManager(),
       MoxxyDiscoManager(),
       MoxxyRosterManager(),
+      MoxxyOmemoManager(),
       PingManager(),
       MessageManager(),
       PresenceManager(),
@@ -234,9 +235,6 @@ Future<void> entrypoint() async {
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
     await GetIt.I.get<OmemoService>().initialize(settings.jid.toBare().toString());
-    GetIt.I.get<XmppConnection>().registerManager(
-      MoxxyOmemoManager(GetIt.I.get<OmemoService>().omemoState),
-    );
 
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.

@@ -100,6 +100,23 @@ class OmemoService {
       );
     }
 
+    omemoState.eventStream.listen((event) async {
+      if (event is RatchetModifiedEvent) {
+        await GetIt.I.get<DatabaseService>().saveRatchet(
+          OmemoDoubleRatchetWrapper(event.ratchet, event.deviceId, event.jid),
+        );
+      } else if (event is DeviceMapModifiedEvent) {
+        await commitDeviceMap(event.map);
+      } else if (event is DeviceModifiedEvent) {
+        await commitDevice(event.device);
+
+        // Publish it
+        await GetIt.I.get<XmppConnection>()
+          .getManagerById<OmemoManager>(omemoManager)!
+          .publishBundle(await event.device.toBundle());
+      }
+    });
+    
     await _initLock.synchronized(() {
       _initialized = true;
 
