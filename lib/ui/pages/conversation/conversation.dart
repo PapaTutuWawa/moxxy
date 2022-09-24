@@ -230,7 +230,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   BlocBuilder<ConversationBloc, ConversationState>(
                     // NOTE: We don't need to update when the jid changes as it should
                     //       be static over the entire lifetime of the BLoC.
-                    buildWhen: (prev, next) => prev.messages != next.messages,
+                    buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation!.encrypted != next.conversation!.encrypted,
                     builder: (context, state) => Expanded(
                       child: ListView.builder(
                         reverse: true,
