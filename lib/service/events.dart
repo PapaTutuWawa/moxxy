@@ -496,10 +496,15 @@ Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command, { dynamic ex
 Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand command, { dynamic extra }) async {
   final id = extra as String;
   final os = GetIt.I.get<OmemoService>();
+  final xs = GetIt.I.get<XmppService>();
   await os.ensureInitialized();
+
+  final jid = (await xs.getConnectionSettings())!.jid;
   sendEvent(
     GetOwnOmemoFingerprintsResult(
-      deviceFingerprint: await os.getDeviceFingerprint(),
+      ownDeviceFingerprint: await os.getDeviceFingerprint(),
+      ownDeviceId: await os.getDeviceId(),
+      fingerprints: await os.getOmemoKeysForJid(jid.toString()),
     ),
     id: id,
   );

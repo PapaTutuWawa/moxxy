@@ -189,6 +189,10 @@ class OmemoService {
     await omemoState.removeAllRatchets(jid);
   }
 
+  Future<int> getDeviceId() async {
+    return omemoState.getDeviceId();
+  }
+  
   Future<String> getDeviceFingerprint() async {
     return (await omemoState.getHexFingerprintForDevice()).fingerprint;
   }

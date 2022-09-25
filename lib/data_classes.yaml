@@ -184,7 +184,11 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          deviceFingerprint: String
+          ownDeviceFingerprint: String
+          ownDeviceId: int
+          fingerprints:
+            type: List<OmemoKey>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

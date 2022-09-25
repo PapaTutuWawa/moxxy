@@ -58,3 +58,4 @@ const String blocklistRoute = '/blocklist';
 const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';
 const String keysRoute = '$profileRoute/keys';
+const String ownKeysRoute = '$profileRoute/own_keys';

@@ -12,6 +12,9 @@ class OmemoKey with _$OmemoKey {
     bool verified,
     bool enabled,
     int deviceId,
+    {
+      @Default(true) bool hasSessionWith, 
+    }
   ) = _OmemoKey;
 
   /// JSON

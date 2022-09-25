@@ -17,6 +17,7 @@ import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
 import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/own_keys_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -38,6 +39,7 @@ import 'package:moxxyv2/ui/pages/intro.dart';
 import 'package:moxxyv2/ui/pages/login.dart';
 import 'package:moxxyv2/ui/pages/newconversation.dart';
 import 'package:moxxyv2/ui/pages/profile/keys.dart';
+import 'package:moxxyv2/ui/pages/profile/own_keys.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/server_info.dart';
@@ -89,6 +91,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ShareSelectionBloc>(ShareSelectionBloc());
   GetIt.I.registerSingleton<ServerInfoBloc>(ServerInfoBloc());
   GetIt.I.registerSingleton<KeysBloc>(KeysBloc());
+  GetIt.I.registerSingleton<OwnKeysBloc>(OwnKeysBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -157,6 +160,9 @@ void main() async {
         ),
         BlocProvider<KeysBloc>(
           create: (_) => GetIt.I.get<KeysBloc>(),
+        ),
+        BlocProvider<OwnKeysBloc>(
+          create: (_) => GetIt.I.get<OwnKeysBloc>(),
         ),
       ],
       child: MyApp(navKey),
@@ -321,6 +327,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case serverInfoRoute: return ServerInfoPage.route;
           case conversationSettingsRoute: return ConversationSettingsPage.route;
           case keysRoute: return KeysPage.route;
+          case ownKeysRoute: return OwnKeysPage.route;
         }
 
         return null;

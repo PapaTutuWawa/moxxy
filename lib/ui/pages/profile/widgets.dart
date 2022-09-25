@@ -10,6 +10,7 @@ class FingerprintListItem extends StatelessWidget {
     {
       this.onVerifiedPressed,
       this.onEnableValueChanged,
+      this.onShowQrCodePressed,
       Key? key,
     }
   ) : super(key: key);
@@ -19,7 +20,8 @@ class FingerprintListItem extends StatelessWidget {
   final bool hasVerifiedKeys;
   final void Function()? onVerifiedPressed;
   final void Function(bool value)? onEnableValueChanged;
-
+  final void Function()? onShowQrCodePressed;
+  
   @override
   Widget build(BuildContext context) {
     final parts = List<String>.empty(growable: true);
@@ -57,10 +59,14 @@ class FingerprintListItem extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Switch(
-                    value: enabled,
-                    onChanged: onEnableValueChanged,
-                  ),
+                  ...onEnableValueChanged != null ?
+                    [
+                      Switch(
+                        value: enabled,
+                        onChanged: onEnableValueChanged,
+                      ),
+                    ] :
+                    [],
                   ...onVerifiedPressed != null ?
                     [
                       IconButton(
@@ -70,6 +76,14 @@ class FingerprintListItem extends StatelessWidget {
                             Icons.qr_code_scanner,
                         ),
                         onPressed: onVerifiedPressed,
+                      ),
+                    ] :
+                    [],
+                  ...onShowQrCodePressed != null ?
+                    [
+                      IconButton(
+                        icon: const Icon(Icons.qr_code),
+                        onPressed: onShowQrCodePressed,
                       ),
                     ] :
                     [],

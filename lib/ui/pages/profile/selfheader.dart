@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
+import 'package:moxxyv2/ui/bloc/own_keys_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -129,7 +129,7 @@ class SelfProfileHeader extends StatelessWidget {
                         ),
                       ),
                       onTap: () {
-                        GetIt.I.get<KeysBloc>().add(KeysRequestedEvent(jid));
+                        GetIt.I.get<OwnKeysBloc>().add(OwnKeysRequestedEvent());
                       },
                     ),
                     const Text(
