@@ -56,6 +56,7 @@ class MessageService {
       Map<String, String>? ciphertextHashes,
       bool isDownloading = false,
       bool isUploading = false,
+      int? mediaSize,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -85,6 +86,7 @@ class MessageService {
       ciphertextHashes: ciphertextHashes,
       isUploading: isUploading,
       isDownloading: isDownloading,
+      mediaSize: mediaSize,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents
@@ -111,13 +113,13 @@ class MessageService {
     if (!_messageCache.containsKey(conversationJid)) {
       await getMessagesForJid(conversationJid);
     }
-    
+
     return firstWhereOrNull(
       _messageCache[conversationJid]!,
       (message) => message.id == id,
     );
   }
-  
+
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
   Future<Message> updateMessage(int id, {
     String? mediaUrl,
@@ -134,6 +136,7 @@ class MessageService {
     String? encryptionScheme,
     int? mediaWidth,
     int? mediaHeight,
+    int? mediaSize,
     bool? isUploading,
     bool? isDownloading,
   }) async {
@@ -153,6 +156,7 @@ class MessageService {
       encryptionScheme: encryptionScheme,
       mediaWidth: mediaWidth,
       mediaHeight: mediaHeight,
+      mediaSize: mediaSize,
       isUploading: isUploading,
       isDownloading: isDownloading,
     );

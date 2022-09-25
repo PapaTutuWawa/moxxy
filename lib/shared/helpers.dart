@@ -218,19 +218,19 @@ String? guessMimeTypeFromExtension(String ext) {
   return null;
 }
 
-/// Show a combinatio of an emoji and its file type
-String mimeTypeToConversationBody(String? mime) {
+/// Return an emoji for a MIME type, per default accompanied by the name of the
+/// type.
+String mimeTypeToEmoji(String? mime, {bool addTypeName = true}) {
   if (mime != null) {
-    if (mime.startsWith('image/')) {
-      return '📷 Image';
-    } else if (mime.startsWith('video/')) {
-      return '🎞️ Video';
-    } else if (mime.startsWith('audio/')) {
-      return '🎵 Audio';
+    if (mime.startsWith('image')) {
+      return '🖼️${addTypeName ?  " Image" : ""}';
+    } else if (mime.startsWith('audio')) {
+      return '🎙${addTypeName ?  " Audio" : ""}';
+    } else if (mime.startsWith('video')) {
+      return '🎬${addTypeName ?  " Video" : ""}';
     }
   }
-
-  return '📁 File';
+  return '📁${addTypeName ?  " File" : ""}';
 }
 
 /// Parse an Uri and return the "filename".
