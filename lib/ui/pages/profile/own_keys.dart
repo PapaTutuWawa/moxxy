@@ -87,7 +87,7 @@ class OwnKeysPage extends StatelessWidget {
                   _showDeviceQRCode(context, state.deviceId, state.deviceFingerprint);
                 },
               ),
-              ...state.keys.isEmpty ?
+              ...state.keys.isNotEmpty ?
                 [
                   const Align(
                     alignment: Alignment.centerLeft,
