@@ -16,6 +16,7 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
 
   KeysBloc() : super(KeysState()) {
     on<KeysRequestedEvent>(_onRequested);
+    on<OwnKeysRequestedEvent>(_onOwnKeysRequested);
     on<KeyEnabledSetEvent>(_onKeyEnabledSet);
     on<SessionsRecreatedEvent>(_onSessionsRecreated);
   }
@@ -44,6 +45,28 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
     );
   }
 
+  Future<void> _onOwnKeysRequested(OwnKeysRequestedEvent event, Emitter<KeysState> emit) async {
+    emit(state.copyWith(working: true, jid: ''));
+
+    GetIt.I.get<NavigationBloc>().add(
+      PushedNamedEvent(
+        const NavigationDestination(keysRoute),
+      ),
+    );
+
+    // ignore: cast_nullable_to_non_nullable
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+      GetOwnOmemoFingerprintsCommand(),
+    ) as GetOwnOmemoFingerprintsResult;
+
+    emit(
+      state.copyWith(
+        working: false,
+        //keys: result.fingerprints,
+      ),
+    );
+  }
+  
   Future<void> _onKeyEnabledSet(KeyEnabledSetEvent event, Emitter<KeysState> emit) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(

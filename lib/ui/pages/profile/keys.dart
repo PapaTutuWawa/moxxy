@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/pages/profile/widgets.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum KeysOptions {
@@ -31,74 +32,27 @@ class KeysPage extends StatelessWidget {
       itemCount: state.keys.length,
       itemBuilder: (context, index) {
         final item = state.keys[index];
-        var fingerprint = item.fingerprint;
+        final fingerprint = item.fingerprint;
 
-        final parts = List<String>.empty(growable: true);
-        for (var i = 0; i < 8; i++) {
-          final part = fingerprint.substring(0, 8);
-          fingerprint = fingerprint.substring(8);
-          parts.add(part);
-        }
+        return FingerprintListItem(
+          fingerprint,
+          item.enabled,
+          item.verified,
+          hasVerifiedKeys,
+          onVerifiedPressed: () {
+            if (item.verified) return;
 
-        final width = MediaQuery.of(context).size.width;
-        final fontSize = width * 0.04;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(textfieldRadiusRegular),
-            ),
-            color: !item.verified && hasVerifiedKeys ? Colors.red : null,
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 6,
-                    children: parts
-                    .map((part_) => Text(
-                      part_,
-                      style: TextStyle(
-                        fontFamily: 'RobotoMono',
-                        fontSize: fontSize,
-                      ),
-                    ),).toList(),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Switch(
-                        value: item.enabled,
-                        onChanged: (value) {
-                          context.read<KeysBloc>().add(
-                            KeyEnabledSetEvent(
-                              item.deviceId,
-                              value,
-                            ),
-                          );
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          item.verified ?
-                            Icons.verified_user :
-                            Icons.qr_code_scanner,
-                        ),
-                        onPressed: () {
-                          if (item.verified) return;
-
-                          // TODO(PapaTutuWawa): Implement
-                          showNotImplementedDialog('verification feature', context);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+            // TODO(PapaTutuWawa): Implement
+            showNotImplementedDialog('verification feature', context);
+          },
+          onEnableValueChanged: (value) {
+            context.read<KeysBloc>().add(
+              KeyEnabledSetEvent(
+                item.deviceId,
+                value,
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

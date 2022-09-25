@@ -19,3 +19,6 @@ class KeyEnabledSetEvent extends KeysEvent {
 
 /// Triggered by the UI when all OMEMO sessions should be recreated
 class SessionsRecreatedEvent extends KeysEvent {}
+
+/// Triggered when the user requested their own fingerprints
+class OwnKeysRequestedEvent extends KeysEvent {}

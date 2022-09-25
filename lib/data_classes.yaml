@@ -69,8 +69,7 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
-      # Send by the service if a message has been received or returned by
-      # [SendMessageCommand].
+      # Send by the service if a message has been received or returned by # [SendMessageCommand].
       - name: MessageAddedEvent
         extends: BackgroundEvent
         implements:
@@ -180,6 +179,12 @@ files:
           fingerprints:
             type: List<OmemoKey>
             deserialise: true
+      - name: GetOwnOmemoFingerprintsResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          deviceFingerprint: String
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -350,6 +355,11 @@ files:
         attributes:
           jid: String
           enabled: bool
+      - name: GetOwnOmemoFingerprintsCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

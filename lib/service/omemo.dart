@@ -188,4 +188,8 @@ class OmemoService {
     await ensureInitialized();
     await omemoState.removeAllRatchets(jid);
   }
+
+  Future<String> getDeviceFingerprint() async {
+    return (await omemoState.getHexFingerprintForDevice()).fingerprint;
+  }
 }
