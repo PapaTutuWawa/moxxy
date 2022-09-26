@@ -504,7 +504,7 @@ Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand comma
     GetOwnOmemoFingerprintsResult(
       ownDeviceFingerprint: await os.getDeviceFingerprint(),
       ownDeviceId: await os.getDeviceId(),
-      fingerprints: await os.getOmemoKeysForJid(jid.toString()),
+      fingerprints: await os.getOwnFingerprints(jid),
     ),
     id: id,
   );

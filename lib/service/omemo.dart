@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:get_it/get_it.dart';
+import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
@@ -195,5 +197,43 @@ class OmemoService {
   
   Future<String> getDeviceFingerprint() async {
     return (await omemoState.getHexFingerprintForDevice()).fingerprint;
+  }
+
+  /// Returns a list of OmemoKeys for devices we have sessions with and other devices
+  /// published on [ownJid]'s devices PubSub node.
+  /// Note that the list is made so that the current device is excluded.
+  Future<List<OmemoKey>> getOwnFingerprints(JID ownJid) async {
+    final conn = GetIt.I.get<XmppConnection>();
+    final ownId = await getDeviceId();
+    final keys = List<OmemoKey>.from(
+      await getOmemoKeysForJid(ownJid.toString()),
+    );
+
+    // TODO(PapaTutuWawa): This should be cached in the database and only requested if
+    //                     it's not cached.
+    final allDevicesRaw = await conn.getManagerById<OmemoManager>(omemoManager)!
+      .retrieveDeviceBundles(ownJid);
+    if (allDevicesRaw.isType<List<OmemoBundle>>()) {
+      final allDevices = allDevicesRaw.get<List<OmemoBundle>>();
+
+      for (final device in allDevices) {
+        // All devices that are publishes that is not the current device
+        if (device.id == ownId) continue;
+        final curveIk = await device.ik.toCurve25519();
+        
+        keys.add(
+          OmemoKey(
+            HEX.encode(await curveIk.getBytes()),
+            false,
+            false,
+            false,
+            device.id,
+            hasSessionWith: false,
+          ),
+        );
+      }
+    }
+
+    return keys;
   }
 }
