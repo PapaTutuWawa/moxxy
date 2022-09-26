@@ -11,6 +11,7 @@ class FingerprintListItem extends StatelessWidget {
       this.onVerifiedPressed,
       this.onEnableValueChanged,
       this.onShowQrCodePressed,
+      this.onDeletePressed,
       Key? key,
     }
   ) : super(key: key);
@@ -21,6 +22,7 @@ class FingerprintListItem extends StatelessWidget {
   final void Function()? onVerifiedPressed;
   final void Function(bool value)? onEnableValueChanged;
   final void Function()? onShowQrCodePressed;
+  final void Function()? onDeletePressed;
   
   @override
   Widget build(BuildContext context) {
@@ -84,6 +86,14 @@ class FingerprintListItem extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.qr_code),
                         onPressed: onShowQrCodePressed,
+                      ),
+                    ] :
+                    [],
+                  ...onDeletePressed != null ?
+                    [
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: onDeletePressed,
                       ),
                     ] :
                     [],

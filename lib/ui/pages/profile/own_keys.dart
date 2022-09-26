@@ -118,19 +118,27 @@ class OwnKeysPage extends StatelessWidget {
           item.enabled,
           item.verified,
           hasVerifiedKeys,
-          onVerifiedPressed: () {
-            if (item.verified) return;
+          onVerifiedPressed: !item.hasSessionWith ?
+            null :
+            () {
+              if (item.verified) return;
 
+              // TODO(PapaTutuWawa): Implement
+              showNotImplementedDialog('verification feature', context);
+            },
+          onEnableValueChanged: !item.hasSessionWith ?
+            null :
+            (value) {
+              context.read<OwnKeysBloc>().add(
+                OwnKeyEnabledSetEvent(
+                  item.deviceId,
+                  value,
+                ),
+              );
+            },
+          onDeletePressed: () {
             // TODO(PapaTutuWawa): Implement
-            showNotImplementedDialog('verification feature', context);
-          },
-          onEnableValueChanged: (value) {
-            context.read<OwnKeysBloc>().add(
-              OwnKeyEnabledSetEvent(
-                item.deviceId,
-                value,
-              ),
-            );
+            showNotImplementedDialog('device key deletion', context);
           },
         );
       },
