@@ -19,6 +19,7 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
     on<OwnKeysRequestedEvent>(_onRequested);
     on<OwnKeyEnabledSetEvent>(_onKeyEnabledSet);
     on<OwnSessionsRecreatedEvent>(_onSessionsRecreated);
+    on<OwnDeviceRemovedEvent>(_onDeviceRemoved);
   }
 
   Future<void> _onRequested(OwnKeysRequestedEvent event, Emitter<OwnKeysState> emit) async {
@@ -70,6 +71,7 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
   }
 
   Future<void> _onSessionsRecreated(OwnSessionsRecreatedEvent event, Emitter<OwnKeysState> emit) async {
+    // TODO(PapaTutuWawa): Implement
     /*
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -79,5 +81,22 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
     */
+  }
+
+  Future<void> _onDeviceRemoved(OwnDeviceRemovedEvent event, Emitter<OwnKeysState> emit) async {
+    // ignore: cast_nullable_to_non_nullable
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      RemoveOwnDeviceCommand(deviceId: event.deviceId),
+      awaitable: false,
+    );
+
+    emit(
+      state.copyWith(
+        keys: List.from(
+          state.keys
+            .where((key) => key.deviceId != event.deviceId),
+        ),
+      ),
+    );
   }
 }

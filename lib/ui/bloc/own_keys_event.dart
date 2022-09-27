@@ -15,3 +15,10 @@ class OwnKeyEnabledSetEvent extends OwnKeysEvent {
 
 /// Triggered by the UI when all OMEMO sessions should be recreated
 class OwnSessionsRecreatedEvent extends OwnKeysEvent {}
+
+/// Triggered by the UI when the device with id [deviceId] should be removed.
+class OwnDeviceRemovedEvent extends OwnKeysEvent {
+
+  OwnDeviceRemovedEvent(this.deviceId);
+  final int deviceId;
+}

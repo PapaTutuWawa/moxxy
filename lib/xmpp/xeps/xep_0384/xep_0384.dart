@@ -820,4 +820,48 @@ abstract class OmemoManager extends XmppManagerBase {
     final result = nodes.any((item) => item.node == omemoDevicesXmlns) && nodes.any((item) => item.node == omemoBundlesXmlns);
     return Result(result);
   }
+
+  /// Attempts to delete a device with device id [deviceId] from the device bundles node
+  /// and then the device list node. This allows a device that was accidentally removed
+  /// to republish without any race conditions.
+  /// Note that this does not delete a possibly existent ratchet session.
+  ///
+  /// On success, returns true. On failure, returns an OmemoError.
+  Future<Result<OmemoError, bool>> deleteDevice(int deviceId) async {
+    final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
+    final jid = getAttributes().getFullJID().toBare();
+
+    final bundleResult = await pm.delete(jid, omemoBundlesXmlns, '$deviceId');
+    if (bundleResult.isType<PubSubError>()) {
+      // TODO(Unknown): Be more specific
+      return Result(UnknownOmemoError());
+    }
+
+    final deviceListResult = await _retrieveDeviceListPayload(jid);
+    if (deviceListResult.isType<OmemoError>()) {
+      return Result(bundleResult.get<OmemoError>());
+    }
+
+    final payload = deviceListResult.get<XMLNode>();
+    final newPayload = XMLNode.xmlns(
+      tag: 'devices',
+      xmlns: omemoDevicesXmlns,
+      children: payload.children
+        .where((child) => child.attributes['id'] != '$deviceId')
+        .toList(),
+    );
+    final publishResult = await pm.publish(
+      jid.toString(),
+      omemoDevicesXmlns,
+      newPayload,
+      id: 'current',
+      options: const PubSubPublishOptions(
+        accessModel: 'open',
+      ),
+    );
+
+    if (publishResult.isType<PubSubError>()) return Result(UnknownOmemoError());
+
+    return const Result(true);
+  }
 }

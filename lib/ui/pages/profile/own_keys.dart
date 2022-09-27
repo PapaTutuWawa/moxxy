@@ -137,8 +137,7 @@ class OwnKeysPage extends StatelessWidget {
               );
             },
           onDeletePressed: () {
-            // TODO(PapaTutuWawa): Implement
-            showNotImplementedDialog('device key deletion', context);
+            context.read<OwnKeysBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
           },
         );
       },

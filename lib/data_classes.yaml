@@ -364,6 +364,12 @@ files:
         implements:
           - JsonImplementation
         attributes:
+      - name: RemoveOwnDeviceCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          deviceId: int
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
