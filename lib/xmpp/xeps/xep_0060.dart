@@ -1,4 +1,5 @@
 import 'package:moxxyv2/xmpp/events.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/base.dart';
 import 'package:moxxyv2/xmpp/managers/data.dart';
 import 'package:moxxyv2/xmpp/managers/handlers.dart';
@@ -420,6 +421,36 @@ class PubSubManager extends XmppManagerBase {
       ),
     );
     if (submit.attributes['type'] != 'result') return Result(getPubSubError(form));
+
+    return const Result(true);
+  }
+
+  Future<Result<PubSubError, bool>> delete(JID host, String node, String itemId) async {
+    final request = await getAttributes().sendStanza(
+      Stanza.iq(
+        type: 'set',
+        to: host.toString(),
+        children: [
+          XMLNode.xmlns(
+            tag: 'pubsub',
+            xmlns: pubsubOwnerXmlns,
+            children: [
+              XMLNode(
+                tag: 'delete',
+                attributes: <String, String>{
+                  'node': node,
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    ) as Stanza;
+
+    if (request.type != 'result') {
+      // TODO(Unknown): Be more specific
+      return Result(UnknownPubSubError());
+    }
 
     return const Result(true);
   }
