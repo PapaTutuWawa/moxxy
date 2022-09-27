@@ -18,6 +18,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0334.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/crypto.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
@@ -405,7 +406,14 @@ abstract class OmemoManager extends XmppManagerBase {
       Stanza.message(
         to: toJid.toString(),
         type: 'chat',
-        children: [empty],
+        children: [
+          empty,
+
+          // Add a storage hint in case this is a message
+          // Taken from the example at
+          // https://xmpp.org/extensions/xep-0384.html#message-structure-description.
+          MessageProcessingHint.store.toXml(),
+        ],
       ),
       awaitable: false,
       encrypted: true,
@@ -475,14 +483,19 @@ abstract class OmemoManager extends XmppManagerBase {
       );
       logger.finest('Encryption done');
 
+      children
+        ..add(encrypted)
+        ..add(buildEmeElement(ExplicitEncryptionType.omemo2));
+
+      // Add a storage hint in case this is a message
+      // Taken from the example at
+      // https://xmpp.org/extensions/xep-0384.html#message-structure-description.
+      if (stanza.tag == 'message') {
+        children.add(MessageProcessingHint.store.toXml());
+      }
+      
       await _handlerExit(toJid);
-      return state.copyWith(
-        stanza: state.stanza.copyWith(
-          children: children
-            ..add(encrypted)
-            ..add(buildEmeElement(ExplicitEncryptionType.omemo2)),
-        ),
-      );
+      return state.copyWith(stanza: state.stanza.copyWith(children: children));
     } catch (ex) {
       // TODO(PapaTutuWawa): Maybe refuse to send the stanza to prevent leaking information.
       logger.severe('Encryption failed! $ex');
