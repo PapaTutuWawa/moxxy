@@ -71,16 +71,22 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
   }
 
   Future<void> _onSessionsRecreated(OwnSessionsRecreatedEvent event, Emitter<OwnKeysState> emit) async {
-    // TODO(PapaTutuWawa): Implement
-    /*
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      RecreateSessionsCommand(jid: state.jid),
+      RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
+      awaitable: false,
     );
-    emit(state.copyWith(keys: <OmemoKey>[]));
+    emit(
+      state.copyWith(
+        keys: List.from(
+          state.keys.map((key) => key.copyWith(
+            hasSessionWith: false,
+          ),),
+        ),
+      ),
+    );
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
-    */
   }
 
   Future<void> _onDeviceRemoved(OwnDeviceRemovedEvent event, Emitter<OwnKeysState> emit) async {

@@ -60,6 +60,7 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
       RecreateSessionsCommand(jid: state.jid),
+      awaitable: false,
     );
     emit(state.copyWith(keys: <OmemoKey>[]));
 
