@@ -7,6 +7,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 
 part 'own_keys_bloc.freezed.dart';
 part 'own_keys_event.dart';
@@ -45,17 +46,27 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
   }
   
   Future<void> _onKeyEnabledSet(OwnKeyEnabledSetEvent event, Emitter<OwnKeysState> emit) async {
-    /*
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       SetOmemoKeyEnabledCommand(
-        jid: state.jid,
+        jid: GetIt.I.get<UIDataService>().ownJid!,
         deviceId: event.deviceId,
         enabled: event.enabled,
       ),
-    ) as GetConversationOmemoFingerprintsResult;
-    emit(state.copyWith(keys: result.fingerprints));
-    */
+      awaitable: false,
+    );
+
+    emit(
+      state.copyWith(
+        keys: state.keys.map((key) {
+          if (key.deviceId == event.deviceId) {
+            return key.copyWith(enabled: event.enabled);
+          }
+
+          return key;
+        }).toList(),
+      ),
+    );
   }
 
   Future<void> _onSessionsRecreated(OwnSessionsRecreatedEvent event, Emitter<OwnKeysState> emit) async {
