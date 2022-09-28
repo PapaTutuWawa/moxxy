@@ -33,6 +33,7 @@ class Message with _$Message {
       String? srcUrl,
       String? key,
       String? iv,
+      String? encryptionScheme,
       @Default(false) bool received,
       @Default(false) bool displayed,
       @Default(false) bool acked,

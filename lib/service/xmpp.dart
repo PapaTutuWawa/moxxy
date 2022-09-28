@@ -61,6 +61,7 @@ const currentXmppStateVersion = 1;
 const xmppStateKey = 'xmppState';
 const xmppStateVersionKey = 'xmppState_version';
 
+// TODO(PapaTutuWawa): Move the XmppState into the database
 class _XmppStateMigrator extends Migrator<XmppState> {
 
   _XmppStateMigrator() : super(currentXmppStateVersion, []);
@@ -110,8 +111,9 @@ class _XmppStateMigrator extends Migrator<XmppState> {
 @immutable
 class MediaFileLocation {
 
-  const MediaFileLocation(this.url, this.key, this.iv);
+  const MediaFileLocation(this.url, this.encryptionScheme, this.key, this.iv);
   final String url;
+  final String? encryptionScheme;
   final List<int>? key;
   final List<int>? iv;
 
@@ -300,19 +302,20 @@ class XmppService {
       );
 
       if (source is StatelessFileSharingUrlSource) {
-        return MediaFileLocation(source.url, null, null);
+        return MediaFileLocation(source.url, null, null, null);
       } else {
         final esource = source! as StatelessFileSharingEncryptedSource;
         return MediaFileLocation(
           esource.source.url,
+          esource.encryption.toNamespace(),
           esource.key,
           esource.iv,
         );
       }
     } else if (event.sims != null) {
-      return MediaFileLocation(event.sims!.url, null, null);
+      return MediaFileLocation(event.sims!.url, null, null, null);
     } else if (event.oob != null) {
-      return MediaFileLocation(event.oob!.url!, null, null);
+      return MediaFileLocation(event.oob!.url!, null, null, null);
     }
 
     return null;

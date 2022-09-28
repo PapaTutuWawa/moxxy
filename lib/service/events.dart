@@ -336,6 +336,7 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
     FileDownloadJob(
       MediaFileLocation(
         message.srcUrl!,
+        message.encryptionScheme,
         message.key != null ? base64Decode(message.key!) : null,
         message.iv != null ? base64Decode(message.iv!) : null,
       ),

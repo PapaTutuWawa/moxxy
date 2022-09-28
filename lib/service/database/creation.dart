@@ -29,6 +29,7 @@ Future<void> createDatabase(Database db, int version) async {
       srcUrl TEXT,
       key TEXT,
       iv TEXT,
+      encryptionScheme TEXT,
       received INTEGER,
       displayed INTEGER,
       acked INTEGER,
