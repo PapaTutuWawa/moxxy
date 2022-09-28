@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:cryptography_flutter/cryptography_flutter.dart';
+//import 'package:cryptography_flutter/cryptography_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -164,7 +164,7 @@ Future<void> entrypoint() async {
   setupBackgroundEventHandler();
 
   // Setup cryptographic offloading
-  FlutterCryptography.enable();
+  //FlutterCryptography.enable();
   
   // Initialize the database
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());

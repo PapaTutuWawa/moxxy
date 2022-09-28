@@ -109,6 +109,7 @@ class MessageService {
     String? srcUrl,
     String? key,
     String? iv,
+    String? encryptionScheme,
     int? mediaWidth,
     int? mediaHeight,
   }) async {
@@ -124,15 +125,16 @@ class MessageService {
       srcUrl: srcUrl,
       key: key,
       iv: iv,
+      encryptionScheme: encryptionScheme,
       mediaWidth: mediaWidth,
       mediaHeight: mediaHeight,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {
       _messageCache[newMessage.conversationJid] = _messageCache[newMessage.conversationJid]!.map((m) {
-          if (m.id == newMessage.id) return newMessage;
+        if (m.id == newMessage.id) return newMessage;
 
-          return m;
+        return m;
       }).toList();
     }
     

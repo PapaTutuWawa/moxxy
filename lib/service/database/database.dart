@@ -345,6 +345,7 @@ class DatabaseService {
     String? srcUrl,
     String? key,
     String? iv,
+    String? encryptionScheme,
     int? mediaWidth,
     int? mediaHeight,
   }) async {
@@ -391,6 +392,9 @@ class DatabaseService {
     }
     if (iv != null) {
       m['iv'] = iv;
+    }
+    if (encryptionScheme != null) {
+      m['encryptionScheme'] = encryptionScheme;
     }
 
     await _db.update(
@@ -708,14 +712,16 @@ class DatabaseService {
     // ignore: cascade_invocations
     batch.delete(omemoTrustDeviceListTable);
     for (final entry in list.entries) {
-      batch.insert(
-        omemoTrustDeviceListTable,
-        {
-          'jid': entry.key,
-          'device': entry.value,
-        },
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+      for (final device in entry.value) {
+        batch.insert(
+          omemoTrustDeviceListTable,
+          {
+            'jid': entry.key,
+            'device': device,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
     }
     
     await batch.commit();

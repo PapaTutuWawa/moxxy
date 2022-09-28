@@ -23,7 +23,7 @@ extension SFSEncryptionTypeNamespaceExtension on SFSEncryptionType {
   }
 }
 
-SFSEncryptionType _encryptionTypeFromNamespace(String xmlns) {
+SFSEncryptionType encryptionTypeFromNamespace(String xmlns) {
   switch (xmlns) {
     case sfsEncryptionAes128GcmNoPaddingXmlns:
       return SFSEncryptionType.aes128GcmNoPadding;
@@ -54,7 +54,7 @@ class StatelessFileSharingEncryptedSource extends StatelessFileSharingSource {
     )!;
 
     return StatelessFileSharingEncryptedSource(
-      _encryptionTypeFromNamespace(element.attributes['cipher']! as String),
+      encryptionTypeFromNamespace(element.attributes['cipher']! as String),
       key,
       iv,
       StatelessFileSharingUrlSource.fromXml(source),

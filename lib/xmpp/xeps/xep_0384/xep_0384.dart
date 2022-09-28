@@ -296,10 +296,22 @@ abstract class OmemoManager extends XmppManagerBase {
     final ownJid = getAttributes().getFullJID().toBare();
     final session = await getSessionManager();
     final ownId = await session.getDeviceId();
+
+    // Ignore our own device if it is the only published device on our devices node
+    if (toJid.toBare() == ownJid) {
+      final deviceList = await getDeviceList(ownJid);
+      if (deviceList.isType<List<int>>()) {
+        final devices = deviceList.get<List<int>>();
+        if (devices.length == 1 && devices.first == ownId) {
+          return const Result(<OmemoBundle>[]);
+        }
+      }
+    }
+
     final newSessions = List<OmemoBundle>.empty(growable: true);
     final ignoreUnacked = shouldIgnoreUnackedRatchets(children);
     final unackedRatchets = await session.getUnacknowledgedRatchets(toJid.toString());
-    final sessionAvailable = await _hasSessionWith(toJid.toString());
+    final sessionAvailable = await _hasSessionWith(toJid.toString());   
     if (!sessionAvailable) {
       logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
       final result = await retrieveDeviceBundles(toJid);
@@ -453,8 +465,6 @@ abstract class OmemoManager extends XmppManagerBase {
     final resultOwnJid = await _findNewSessions(ownJid, stanza.children);
     if (resultOwnJid.isType<List<OmemoBundle>>()) {
       newSessions.addAll(resultOwnJid.get<List<OmemoBundle>>());
-
-      logger.finest(newSessions);
     }
     
     final toEncrypt = List<XMLNode>.empty(growable: true);
@@ -655,6 +665,14 @@ abstract class OmemoManager extends XmppManagerBase {
       } else {
         logger.info('Received empty OMEMO message for unacked ratchet. Marking $fromJid:$sid as acked');
         await _ackRatchet(fromJid.toString(), sid);
+
+        final ownId = await (await getSessionManager()).getDeviceId();
+        final kex = keys.any((key) => key.kex && key.rid == ownId);
+        if (kex) {
+          logger.info('Empty OMEMO message contained a kex. Answering.');
+          await sendEmptyMessage(fromJid, calledFromCriticalSection: true);
+        }
+
         await _handlerExit(fromJid);
         return state;
       }

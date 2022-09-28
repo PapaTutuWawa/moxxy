@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:get_it/get_it.dart';
@@ -11,6 +13,7 @@ import 'package:mime/mime.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
@@ -26,7 +29,10 @@ import 'package:moxxyv2/xmpp/message.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 import 'package:path/path.dart' as pathlib;
+import 'package:path_provider/path_provider.dart';
+import 'package:random_string/random_string.dart';
 import 'package:synchronized/synchronized.dart';
 
 /// This service is responsible for managing the up- and download of files using Http.
@@ -140,17 +146,34 @@ class HttpFileTransferService {
   /// Actually attempt to upload the file described by the job [job].
   Future<void> _performFileUpload(FileUploadJob job) async {
     _log.finest('Beginning upload of ${job.path}');
+
+    var path = job.path;
+    final useEncryption = job.encryptMap.entries.every((entry) => entry.value);
+    EncryptionResult? encryption;
+    if (useEncryption) {
+      final tempDir = await getTemporaryDirectory();
+      final randomFilename = randomAlphaNumeric(
+        20,
+        provider: CoreRandomProvider.from(Random.secure()),
+      );
+      path = pathlib.join(tempDir.path, randomFilename);
+
+      // TODO(PapaTutuWawa): Do this in a separate Isolate
+      encryption = await GetIt.I.get<CryptographyService>().encryptFile(
+        job.path,
+        SFSEncryptionType.aes256GcmNoPadding,
+      );
+    }
+
     final file = File(job.path);
     final data = await file.readAsBytes();
     final stat = file.statSync();
-
-    // TODO(PapaTutuWawa): Encrypt the file before upload if the chat is encrypted
     
     // Request the upload slot
     final conn = GetIt.I.get<XmppConnection>();
     final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
     final slotResult = await httpManager.requestUploadSlot(
-      pathlib.basename(job.path),
+      pathlib.basename(path),
       stat.size,
     );
 
@@ -210,18 +233,33 @@ class HttpFileTransferService {
           var msg = job.messageMap[recipient]!;
 
           // Reset a stored error, if there was one
-          if (msg.errorType != null) {
-            msg = await ms.updateMessage(
-              msg.id,
-              errorType: noError,
-            );
-          }
+          msg = await ms.updateMessage(
+            msg.id,
+            errorType: noError,
+            encryptionScheme: encryption != null ?
+              SFSEncryptionType.aes256GcmNoPadding.toNamespace() :
+              null,
+            key: encryption != null ? base64Encode(encryption.key) : null,
+            iv: encryption != null ? base64Encode(encryption.iv) : null,
+          );
           sendEvent(
             MessageUpdatedEvent(
               message: msg.copyWith(isUploading: false),
             ),
           );
 
+          StatelessFileSharingSource source;
+          if (encryption != null) {
+            source = StatelessFileSharingEncryptedSource(
+              SFSEncryptionType.aes256GcmNoPadding,
+              encryption.key,
+              encryption.iv,
+              StatelessFileSharingUrlSource(slot.getUrl),
+            );
+          } else {
+            source = StatelessFileSharingUrlSource(slot.getUrl);
+          }
+          
           // Send the message to the recipient
           conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
             MessageDetails(
@@ -236,9 +274,7 @@ class HttpFileTransferService {
                   name: pathlib.basename(job.path),
                   thumbnails: job.thumbnails,
                 ),
-                <StatelessFileSharingSource>[
-                  StatelessFileSharingUrlSource(slot.getUrl),
-                ],
+                <StatelessFileSharingSource>[source],
               ),
               shouldEncrypt: job.encryptMap[recipient]!,
               funReplacement: msg.sid,
@@ -279,15 +315,22 @@ class HttpFileTransferService {
   Future<void> _performFileDownload(FileDownloadJob job) async {
     _log.finest('Downloading ${job.location.url}');
     final uri = Uri.parse(job.location.url);
+    // TODO(PapaTutuWawa): Pull the filename from the SFS metadata or any other source
     final filename = uri.pathSegments.last;
     final downloadedPath = await getDownloadPath(filename, job.conversationJid, job.mimeGuess);
 
-    // TODO(PapaTutuWawa): Decrypt the file if it was encrypted
+    var downloadPath = downloadedPath;
+    if (job.location.key != null && job.location.iv != null) {
+      // The file was encrypted
+      final tempDir = await getTemporaryDirectory();
+      downloadPath = pathlib.join(tempDir.path, filename);
+    }
     
+    dio.Response<dynamic>? response;
     try {
-      final response = await dio.Dio().downloadUri(
+      response = await dio.Dio().downloadUri(
         uri,
-        downloadedPath,
+        downloadPath,
         onReceiveProgress: (count, total) {
           final progress = count.toDouble() / total.toDouble();
           sendEvent(
@@ -298,67 +341,83 @@ class HttpFileTransferService {
           );
         },
       );
-
-      if (!isRequestOkay(response.statusCode)) {
-        // TODO(PapaTutuWawa): Error handling
-        // TODO(PapaTutuWawa): Trigger event
-        _log.warning('HTTP GET of ${job.location.url} returned ${response.statusCode}');
-      } else {
-        // Check the MIME type
-        final notification = GetIt.I.get<NotificationsService>();
-        final mime = job.mimeGuess ?? lookupMimeType(downloadedPath);
-
-        int? mediaWidth;
-        int? mediaHeight;
-        if (mime != null) {
-          if (mime.startsWith('image/')) {
-            MoxplatformPlugin.media.scanFile(downloadedPath);
-
-            // Find out the dimensions
-            // TODO(Unknown): Restrict to the library's supported file types
-            final size = ImageSizeGetter.getSize(FileInput(File(downloadedPath)));
-            mediaWidth = size.width;
-            mediaHeight = size.height;
-          } else if (mime.startsWith('video/')) {
-            // TODO(Unknown): Also figure out the thumbnail size here
-            MoxplatformPlugin.media.scanFile(downloadedPath);
-          } else if (mime.startsWith('audio/')) {
-            MoxplatformPlugin.media.scanFile(downloadedPath);
-          }
-        }
-        
-        final msg = await GetIt.I.get<MessageService>().updateMessage(
-          job.mId,
-          mediaUrl: downloadedPath,
-          mediaType: mime,
-          mediaWidth: mediaWidth,
-          mediaHeight: mediaHeight,
-          isFileUploadNotification: false,
-        );
-
-        sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
-
-        if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
-          _log.finest('Creating notification with bigPicture $downloadedPath');
-          await notification.showNotification(msg, '');
-        }
-
-        final conv = (await GetIt.I.get<ConversationService>().getConversationByJid(job.conversationJid))!;
-        final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
-          downloadedPath,
-          msg.timestamp,
-          conv.id,
-          mime: mime,
-        );
-        final newConv = conv.copyWith(
-          sharedMedia: List<SharedMedium>.from(conv.sharedMedia)..add(sharedMedium),
-        );
-        sendEvent(ConversationUpdatedEvent(conversation: newConv));
-      }
     } on dio.DioError catch(err) {
       // TODO(PapaTutuWawa): React if we received an error that is not related to the
       //                     connection.
       _log.finest('Error: $err');
+    }
+
+    if (!isRequestOkay(response?.statusCode)) {
+      // TODO(PapaTutuWawa): Error handling
+      // TODO(PapaTutuWawa): Trigger event
+      _log.warning('HTTP GET of ${job.location.url} returned ${response?.statusCode}');
+    } else {
+      if (job.location.key != null && job.location.iv != null) {
+        // The file was encrypted
+        // TODO(PapaTutuWawa): Maybe do this in a separate Isolate
+        final decryptedData = await GetIt.I.get<CryptographyService>().decryptFile(
+          downloadPath,
+          encryptionTypeFromNamespace(job.location.encryptionScheme!),
+          job.location.key!,
+          job.location.iv!,
+        );
+
+        await File(downloadedPath).writeAsBytes(decryptedData);
+
+        // Cleanup the temporary file
+        unawaited(Directory(pathlib.dirname(downloadPath)).delete(recursive: true));
+      }
+
+      // Check the MIME type
+      final notification = GetIt.I.get<NotificationsService>();
+      final mime = job.mimeGuess ?? lookupMimeType(downloadedPath);
+
+      int? mediaWidth;
+      int? mediaHeight;
+      if (mime != null) {
+        if (mime.startsWith('image/')) {
+          MoxplatformPlugin.media.scanFile(downloadedPath);
+
+          // Find out the dimensions
+          // TODO(Unknown): Restrict to the library's supported file types
+          final size = ImageSizeGetter.getSize(FileInput(File(downloadedPath)));
+          mediaWidth = size.width;
+          mediaHeight = size.height;
+        } else if (mime.startsWith('video/')) {
+          // TODO(Unknown): Also figure out the thumbnail size here
+          MoxplatformPlugin.media.scanFile(downloadedPath);
+        } else if (mime.startsWith('audio/')) {
+          MoxplatformPlugin.media.scanFile(downloadedPath);
+        }
+      }
+      
+      final msg = await GetIt.I.get<MessageService>().updateMessage(
+        job.mId,
+        mediaUrl: downloadedPath,
+        mediaType: mime,
+        mediaWidth: mediaWidth,
+        mediaHeight: mediaHeight,
+        isFileUploadNotification: false,
+      );
+
+      sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+
+      if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
+        _log.finest('Creating notification with bigPicture $downloadedPath');
+        await notification.showNotification(msg, '');
+      }
+
+      final conv = (await GetIt.I.get<ConversationService>().getConversationByJid(job.conversationJid))!;
+      final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
+        downloadedPath,
+        msg.timestamp,
+        conv.id,
+        mime: mime,
+      );
+      final newConv = conv.copyWith(
+        sharedMedia: List<SharedMedium>.from(conv.sharedMedia)..add(sharedMedium),
+      );
+      sendEvent(ConversationUpdatedEvent(conversation: newConv));
     }
 
     // Free the download resources for the next one

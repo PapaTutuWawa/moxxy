@@ -48,14 +48,17 @@ class CryptographyService {
 
     _log.finest('Encryption done for $path');
     return EncryptionResult(
-      await key.extractBytes(),
+      [
+        ...await key.extractBytes(),
+        ...secretBox.mac.bytes,
+      ],
       iv,
       secretBox.cipherText,
       secretBox.mac.bytes,
     );
   }
 
-  Future<List<int>> decryptFile(String path, SFSEncryptionType encryption, List<int> key, List<int> iv, List<int> mac) async {
+  Future<List<int>> decryptFile(String path, SFSEncryptionType encryption, List<int> key, List<int> iv) async {
     _log.finest('Beginning decryption for $path');
     Cipher algorithm;
     switch (encryption) {
@@ -71,9 +74,16 @@ class CryptographyService {
         // ignore: dead_code
         break;
     }
+    
+    final ciphertext = await File(path).readAsBytes();
+    final mac = List<int>.empty(growable: true);
+    // TODO(PapaTutuWawa): Somehow handle aes256CbcPkcs7
+    if (encryption == SFSEncryptionType.aes128GcmNoPadding || encryption == SFSEncryptionType.aes256GcmNoPadding) {
+      mac.addAll(ciphertext.sublist(ciphertext.length - 16));
+    }
 
     final secretBox = SecretBox(
-      await File(path).readAsBytes(),
+      ciphertext,
       nonce: iv,
       mac: Mac(mac),
     );
