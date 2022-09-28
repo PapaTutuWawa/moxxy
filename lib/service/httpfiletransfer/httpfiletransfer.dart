@@ -163,9 +163,12 @@ class HttpFileTransferService {
         job.path,
         SFSEncryptionType.aes256GcmNoPadding,
       );
+
+      // Write the new encrypted file
+      await File(path).writeAsBytes(encryption.ciphertext);
     }
 
-    final file = File(job.path);
+    final file = File(path);
     final data = await file.readAsBytes();
     final stat = file.statSync();
     
