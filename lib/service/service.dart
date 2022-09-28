@@ -12,6 +12,7 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -178,6 +179,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<ConversationService>(ConversationService());
   GetIt.I.registerSingleton<MessageService>(MessageService());
   GetIt.I.registerSingleton<OmemoService>(OmemoService());
+  GetIt.I.registerSingleton<CryptographyService>(CryptographyService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
