@@ -48,12 +48,12 @@ class CryptographyService {
 
     _log.finest('Encryption done for $path');
     return EncryptionResult(
+      await key.extractBytes(),
+      iv,
       [
         ...await key.extractBytes(),
         ...secretBox.mac.bytes,
       ],
-      iv,
-      secretBox.cipherText,
       secretBox.mac.bytes,
     );
   }
