@@ -132,6 +132,14 @@
     </implements>
     <implements>
       <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0334.html" />
+	<xmpp:status>complete</xmpp:status>
+	<xmpp:note xml:lang="en">Write-only support</xmpp:note>
+	<xmpp:version>0.3.0</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0352.html" />
 	<xmpp:status>complete</xmpp:status>
 	<xmpp:version>1.0</xmpp:version>
@@ -192,6 +200,13 @@
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0447.html" />
 	<xmpp:status>complete</xmpp:status>
 	<xmpp:version>0.1.2</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0448.html" />
+	<xmpp:status>partial</xmpp:status>
+	<xmpp:version>0.2.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
