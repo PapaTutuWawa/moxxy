@@ -889,6 +889,7 @@ class XmppService {
       srcUrl: embeddedFile?.url,
       key: embeddedFile?.keyBase64,
       iv: embeddedFile?.ivBase64,
+      encryptionScheme: embeddedFile?.encryptionScheme,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
       mediaWidth: dimensions?.width.toInt(),

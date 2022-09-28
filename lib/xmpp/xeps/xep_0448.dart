@@ -45,7 +45,7 @@ class StatelessFileSharingEncryptedSource extends StatelessFileSharingSource {
 
     final key = base64Decode(element.firstTag('key')!.text!);
     final iv = base64Decode(element.firstTag('iv')!.text!);
-    final sources = element.firstTag('source', xmlns: sfsXmlns)!.children;
+    final sources = element.firstTag('sources', xmlns: sfsXmlns)!.children;
 
     // Find the first URL source
     final source = firstWhereOrNull(
