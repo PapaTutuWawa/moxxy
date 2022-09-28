@@ -693,7 +693,7 @@ class DatabaseService {
 
     final map = <String, List<int>>{};
     for (final entry in entries) {
-      final key = entry['key']! as String;
+      final key = entry['jid']! as String;
       final device = entry['device']! as int;
 
       if (map.containsKey(key)) {
