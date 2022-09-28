@@ -1,6 +1,7 @@
 import 'dart:async';
-
-import 'package:get_it/get_it.dart'; import 'package:logging/logging.dart';
+import 'dart:convert';
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
@@ -327,12 +328,17 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
   // TODO(Unknown): Maybe deduplicate with the code in the xmpp service
   // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
   //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-  final ext = command.message.srcUrl!.split('.').last;
+  final message = command.message;
+  final ext = message.srcUrl!.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
 
   await srv.downloadFile(
     FileDownloadJob(
-      command.message.srcUrl!,
+      MediaFileLocation(
+        message.srcUrl!,
+        message.key != null ? base64Decode(message.key!) : null,
+        message.iv != null ? base64Decode(message.iv!) : null,
+      ),
       command.message.id,
       command.message.conversationJid,
       mimeGuess,

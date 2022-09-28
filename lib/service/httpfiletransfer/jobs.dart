@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 
@@ -35,8 +36,8 @@ class FileUploadJob {
 @immutable
 class FileDownloadJob {
 
-  const FileDownloadJob(this.url, this.mId, this.conversationJid, this.mimeGuess, {this.shouldShowNotification = true});
-  final String url;
+  const FileDownloadJob(this.location, this.mId, this.conversationJid, this.mimeGuess, {this.shouldShowNotification = true});
+  final MediaFileLocation location;
   final int mId;
   final String conversationJid;
   final String? mimeGuess;
@@ -45,12 +46,12 @@ class FileDownloadJob {
   @override
   bool operator ==(Object other) {
     return other is FileDownloadJob &&
-      url == other.url &&
+      location == other.location &&
       mId == other.mId &&
       conversationJid == other.conversationJid &&
       mimeGuess == other.mimeGuess &&
       shouldShowNotification == other.shouldShowNotification;
   }
   @override
-  int get hashCode => url.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode;
+  int get hashCode => location.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode;
 }

@@ -248,6 +248,8 @@ class DatabaseService {
     bool encrypted,
     {
       String? srcUrl,
+      String? key,
+      String? iv,
       String? mediaUrl,
       String? mediaType,
       String? thumbnailData,
@@ -271,6 +273,8 @@ class DatabaseService {
       encrypted,
       errorType: errorType,
       mediaUrl: mediaUrl,
+      key: key,
+      iv: iv,
       mediaType: mediaType,
       thumbnailData: thumbnailData,
       mediaWidth: mediaWidth,
@@ -337,6 +341,8 @@ class DatabaseService {
     int? errorType,
     bool? isFileUploadNotification,
     String? srcUrl,
+    String? key,
+    String? iv,
     int? mediaWidth,
     int? mediaHeight,
   }) async {
@@ -377,6 +383,12 @@ class DatabaseService {
     }
     if (mediaHeight != null) {
       m['mediaHeight'] = mediaHeight;
+    }
+    if (key != null) {
+      m['key'] = key;
+    }
+    if (iv != null) {
+      m['iv'] = iv;
     }
 
     await _db.update(

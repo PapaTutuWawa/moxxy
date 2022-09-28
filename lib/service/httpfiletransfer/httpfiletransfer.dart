@@ -144,6 +144,8 @@ class HttpFileTransferService {
     final data = await file.readAsBytes();
     final stat = file.statSync();
 
+    // TODO(PapaTutuWawa): Encrypt the file before upload if the chat is encrypted
+    
     // Request the upload slot
     final conn = GetIt.I.get<XmppConnection>();
     final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
@@ -234,7 +236,9 @@ class HttpFileTransferService {
                   name: pathlib.basename(job.path),
                   thumbnails: job.thumbnails,
                 ),
-                slot.getUrl,
+                <StatelessFileSharingSource>[
+                  StatelessFileSharingUrlSource(slot.getUrl),
+                ],
               ),
               shouldEncrypt: job.encryptMap[recipient]!,
               funReplacement: msg.sid,
@@ -273,11 +277,13 @@ class HttpFileTransferService {
   
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
-    _log.finest('Downloading ${job.url}');
-    final uri = Uri.parse(job.url);
+    _log.finest('Downloading ${job.location.url}');
+    final uri = Uri.parse(job.location.url);
     final filename = uri.pathSegments.last;
     final downloadedPath = await getDownloadPath(filename, job.conversationJid, job.mimeGuess);
 
+    // TODO(PapaTutuWawa): Decrypt the file if it was encrypted
+    
     try {
       final response = await dio.Dio().downloadUri(
         uri,
@@ -296,7 +302,7 @@ class HttpFileTransferService {
       if (!isRequestOkay(response.statusCode)) {
         // TODO(PapaTutuWawa): Error handling
         // TODO(PapaTutuWawa): Trigger event
-        _log.warning('HTTP GET of ${job.url} returned ${response.statusCode}');
+        _log.warning('HTTP GET of ${job.location.url} returned ${response.statusCode}');
       } else {
         // Check the MIME type
         final notification = GetIt.I.get<NotificationsService>();

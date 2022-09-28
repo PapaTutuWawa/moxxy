@@ -31,6 +31,8 @@ class Message with _$Message {
       int? mediaWidth,
       int? mediaHeight,
       String? srcUrl,
+      String? key,
+      String? iv,
       @Default(false) bool received,
       @Default(false) bool displayed,
       @Default(false) bool acked,

@@ -16,6 +16,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 
 class MessageDetails {
 
@@ -152,7 +153,13 @@ class MessageManager extends XmppManagerBase {
     } else {
       var body = details.body;
       if (details.sfs != null) {
-        body = details.sfs!.url;
+        // TODO(Unknown): Maybe find a better solution
+        final firstSource = details.sfs!.sources.first;
+        if (firstSource is StatelessFileSharingUrlSource) {
+          body = firstSource.url;
+        } else if (firstSource is StatelessFileSharingEncryptedSource) {
+          body = firstSource.source.url;
+        }
       }
 
       stanza.addChild(
@@ -171,10 +178,13 @@ class MessageManager extends XmppManagerBase {
     }
 
     if (details.sfs != null) {
-      stanza
-        ..addChild(details.sfs!.toXML())
+      stanza.addChild(details.sfs!.toXML());
+
+      final source = details.sfs!.sources.first;
+      if (source is StatelessFileSharingUrlSource) {
         // SFS recommends OOB as a fallback
-        ..addChild(constructOOBNode(OOBData(url: details.sfs!.url)),);
+        stanza.addChild(constructOOBNode(OOBData(url: source.url)));
+      }
     }
     
     if (details.chatState != null) {

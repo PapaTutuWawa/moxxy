@@ -39,6 +39,8 @@ class MessageService {
     bool encrypted,
     {
       String? srcUrl,
+      String? key,
+      String? iv,
       String? mediaUrl,
       String? mediaType,
       String? thumbnailData,
@@ -60,6 +62,8 @@ class MessageService {
       isFileUploadNotification,
       encrypted,
       srcUrl: srcUrl,
+      key: key,
+      iv: iv,
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       thumbnailData: thumbnailData,
@@ -101,6 +105,8 @@ class MessageService {
     int? errorType,
     bool? isFileUploadNotification,
     String? srcUrl,
+    String? key,
+    String? iv,
     int? mediaWidth,
     int? mediaHeight,
   }) async {
@@ -114,6 +120,8 @@ class MessageService {
       errorType: errorType,
       isFileUploadNotification: isFileUploadNotification,
       srcUrl: srcUrl,
+      key: key,
+      iv: iv,
       mediaWidth: mediaWidth,
       mediaHeight: mediaHeight,
     );

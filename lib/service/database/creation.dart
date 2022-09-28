@@ -27,6 +27,8 @@ Future<void> createDatabase(Database db, int version) async {
       mediaWidth INTEGER,
       mediaHeight INTEGER,
       srcUrl TEXT,
+      key TEXT,
+      iv TEXT,
       received INTEGER,
       displayed INTEGER,
       acked INTEGER,

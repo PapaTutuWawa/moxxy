@@ -108,6 +108,12 @@ const fileMetadataXmlns = 'urn:xmpp:file:metadata:0';
 // XEP-0447
 const sfsXmlns = 'urn:xmpp:sfs:0';
 
+// XEP-0448
+const sfsEncryptionXmlns = 'urn:xmpp:esfs:0';
+const sfsEncryptionAes128GcmNoPaddingXmlns = 'urn:xmpp:ciphers:aes-128-gcm-nopadding:0';
+const sfsEncryptionAes256GcmNoPaddingXmlns = 'urn:xmpp:ciphers:aes-256-gcm-nopadding:0';
+const sfsEncryptionAes256CbcPkcs7Xmlns = 'urn:xmpp:ciphers:aes-256-cbc-pkcs7:0';
+
 // XEP-0461
 const replyXmlns = 'urn:xmpp:reply:0';
 const fallbackXmlns = 'urn:xmpp:feature-fallback:0';

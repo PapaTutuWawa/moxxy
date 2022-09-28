@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' as image_size;
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
@@ -51,6 +52,8 @@ import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -101,6 +104,35 @@ class _XmppStateMigrator extends Migrator<XmppState> {
   Future<void> commit(int version, XmppState data) async {
     await _storage.write(key: xmppStateVersionKey, value: currentXmppStateVersion.toString());
     await _storage.write(key: xmppStateKey, value: json.encode(data.toJson()));
+  }
+}
+
+@immutable
+class MediaFileLocation {
+
+  const MediaFileLocation(this.url, this.key, this.iv);
+  final String url;
+  final List<int>? key;
+  final List<int>? iv;
+
+  String? get keyBase64 {
+    if (key != null) return base64Encode(key!);
+
+    return null;
+  }
+
+  String? get ivBase64 {
+    if (iv != null) return base64Encode(iv!);
+
+    return null;
+  }
+
+  @override
+  int get hashCode => url.hashCode ^ key.hashCode ^ iv.hashCode;
+
+  @override
+  bool operator==(Object other) {
+    return other is MediaFileLocation && url == other.url && key == other.key && iv == other.iv;
   }
 }
 
@@ -258,13 +290,29 @@ class XmppService {
     }
   }
 
-  String? _getMessageSrcUrl(MessageEvent event) {
+  MediaFileLocation? _getMessageSrcUrl(MessageEvent event) {
     if (event.sfs != null) {
-      return event.sfs!.url;
+      final source = firstWhereOrNull(
+        event.sfs!.sources,
+        (StatelessFileSharingSource source) {
+          return source is StatelessFileSharingUrlSource || source is StatelessFileSharingEncryptedSource;
+        },
+      );
+
+      if (source is StatelessFileSharingUrlSource) {
+        return MediaFileLocation(source.url, null, null);
+      } else {
+        final esource = source! as StatelessFileSharingEncryptedSource;
+        return MediaFileLocation(
+          esource.source.url,
+          esource.key,
+          esource.iv,
+        );
+      }
     } else if (event.sims != null) {
-      return event.sims!.url;
+      return MediaFileLocation(event.sims!.url, null, null);
     } else if (event.oob != null) {
-      return event.oob!.url;
+      return MediaFileLocation(event.oob!.url!, null, null);
     }
 
     return null;
@@ -738,13 +786,13 @@ class XmppService {
   }
   
   /// Returns true if a file is embedded in [event]. If not, returns false.
-  /// [embeddedFileUrl] is the possible Url of the file. If no file is present, then
-  /// [embeddedFileUrl] is null.
-  bool _isFileEmbedded(MessageEvent event, String? embeddedFileUrl) {
+  /// [embeddedFile] is the possible source of the file. If no file is present, then
+  /// [embeddedFile] is null.
+  bool _isFileEmbedded(MessageEvent event, MediaFileLocation? embeddedFile) {
     // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
     // that the message body and the OOB url are the same if the OOB url is not null.
-    return embeddedFileUrl != null
-      && Uri.parse(embeddedFileUrl).scheme == 'https'
+    return embeddedFile != null
+      && Uri.parse(embeddedFile.url).scheme == 'https'
       && implies(event.oob != null, event.body == event.oob?.url);
   }
 
@@ -807,10 +855,10 @@ class XmppService {
     }
 
     // The Url of the file embedded in the message, if there is one.
-    final embeddedFileUrl = _getMessageSrcUrl(event);
+    final embeddedFile = _getMessageSrcUrl(event);
     // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
     // that the message body and the OOB url are the same if the OOB url is not null.
-    final isFileEmbedded = _isFileEmbedded(event, embeddedFileUrl);
+    final isFileEmbedded = _isFileEmbedded(event, embeddedFile);
     // Indicates if we should auto-download the file, if a file is specified in the message
     final shouldDownload = await _shouldDownloadFile(conversationJid);
     // The thumbnail for the embedded file.
@@ -835,7 +883,9 @@ class XmppService {
       event.sid,
       event.fun != null,
       event.encrypted,
-      srcUrl: embeddedFileUrl,
+      srcUrl: embeddedFile?.url,
+      key: embeddedFile?.keyBase64,
+      iv: embeddedFile?.ivBase64,
       mediaType: mimeGuess,
       thumbnailData: thumbnailData,
       mediaWidth: dimensions?.width.toInt(),
@@ -848,7 +898,7 @@ class XmppService {
     // Attempt to auto-download the embedded file
     if (isFileEmbedded && shouldDownload) {
       final fts = GetIt.I.get<HttpFileTransferService>();
-      final metadata = await peekFile(embeddedFileUrl!);
+      final metadata = await peekFile(embeddedFile!.url);
 
       if (metadata.mime != null) mimeGuess = metadata.mime;
 
@@ -859,7 +909,7 @@ class XmppService {
         message = message.copyWith(isDownloading: true);
         await fts.downloadFile(
           FileDownloadJob(
-            embeddedFileUrl,
+            embeddedFile,
             message.id,
             conversationJid,
             mimeGuess,
@@ -968,16 +1018,16 @@ class XmppService {
     }
     
     // The Url of the file embedded in the message, if there is one.
-    final embeddedFileUrl = _getMessageSrcUrl(event);
+    final embeddedFile = _getMessageSrcUrl(event);
     // Is there even a file we can download?
-    final isFileEmbedded = _isFileEmbedded(event, embeddedFileUrl);
+    final isFileEmbedded = _isFileEmbedded(event, embeddedFile);
 
     if (isFileEmbedded) {
       if (await _shouldDownloadFile(conversationJid)) {
         message = message.copyWith(isDownloading: true);
         await GetIt.I.get<HttpFileTransferService>().downloadFile(
           FileDownloadJob(
-            embeddedFileUrl!,
+            embeddedFile!,
             message.id,
             conversationJid,
             null,
@@ -987,7 +1037,9 @@ class XmppService {
       } else {
         message = await ms.updateMessage(
           message.id,
-          srcUrl: embeddedFileUrl,
+          srcUrl: embeddedFile!.url,
+          key: embeddedFile.keyBase64,
+          iv: embeddedFile.ivBase64,
           isFileUploadNotification: false,
         );
 
