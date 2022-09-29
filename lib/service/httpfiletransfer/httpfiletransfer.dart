@@ -158,14 +158,11 @@ class HttpFileTransferService {
       );
       path = pathlib.join(tempDir.path, randomFilename);
 
-      // TODO(PapaTutuWawa): Do this in a separate Isolate
       encryption = await GetIt.I.get<CryptographyService>().encryptFile(
         job.path,
+        path,
         SFSEncryptionType.aes256GcmNoPadding,
       );
-
-      // Write the new encrypted file
-      await File(path).writeAsBytes(encryption.ciphertext);
     }
 
     final file = File(path);
@@ -357,15 +354,13 @@ class HttpFileTransferService {
     } else {
       if (job.location.key != null && job.location.iv != null) {
         // The file was encrypted
-        // TODO(PapaTutuWawa): Maybe do this in a separate Isolate
-        final decryptedData = await GetIt.I.get<CryptographyService>().decryptFile(
+        await GetIt.I.get<CryptographyService>().decryptFile(
           downloadPath,
+          downloadedPath,
           encryptionTypeFromNamespace(job.location.encryptionScheme!),
           job.location.key!,
           job.location.iv!,
         );
-
-        await File(downloadedPath).writeAsBytes(decryptedData);
 
         // Cleanup the temporary file
         unawaited(Directory(pathlib.dirname(downloadPath)).delete(recursive: true));
