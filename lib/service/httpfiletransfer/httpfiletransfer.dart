@@ -371,6 +371,7 @@ class HttpFileTransferService {
           job.location.iv!,
         );
 
+        // TODO(PapaTutuWawa): Calculate the file's hash and compare to the provided ones
         // Cleanup the temporary file
         unawaited(Directory(pathlib.dirname(downloadPath)).delete(recursive: true));
       }
