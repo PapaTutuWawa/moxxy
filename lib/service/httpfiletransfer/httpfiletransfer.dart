@@ -363,13 +363,27 @@ class HttpFileTransferService {
     } else {
       if (job.location.key != null && job.location.iv != null) {
         // The file was encrypted
-        await GetIt.I.get<CryptographyService>().decryptFile(
+        final result = await GetIt.I.get<CryptographyService>().decryptFile(
           downloadPath,
           downloadedPath,
           encryptionTypeFromNamespace(job.location.encryptionScheme!),
           job.location.key!,
           job.location.iv!,
         );
+
+        if (!result) {
+          _log.warning('Failed to decrypt $downloadPath');
+          final msg = await GetIt.I.get<MessageService>().updateMessage(
+            job.mId,
+            isFileUploadNotification: false,
+            errorType: messageFailedToDecryptFile,
+          );
+          sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+
+          // We cannot do anything more so just bail
+          await _pickNextDownloadTask();
+          return;
+        }
 
         // TODO(PapaTutuWawa): Calculate the file's hash and compare to the provided ones
         // Cleanup the temporary file
@@ -429,9 +443,14 @@ class HttpFileTransferService {
     }
 
     // Free the download resources for the next one
+    await _pickNextDownloadTask();
+  }
+
+  Future<void> _pickNextDownloadTask() async {
     if (GetIt.I.get<ConnectivityService>().currentState == ConnectivityResult.none) return;
-    await _uploadLock.synchronized(() async {
-      if (_uploadQueue.isNotEmpty) {
+
+    await _downloadLock.synchronized(() async {
+      if (_downloadQueue.isNotEmpty) {
         _currentDownloadJob = _downloadQueue.removeFirst();
         unawaited(_performFileDownload(_currentDownloadJob!));
       } else {

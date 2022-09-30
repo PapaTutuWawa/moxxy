@@ -31,9 +31,9 @@ class CryptographyService {
   /// Decrypt the file at [source] and write the decrypted version to [dest]. For the
   /// decryption, use the algorithm indicated by [encryption] with the key [key] and the
   /// IV or nonce [iv].
-  Future<void> decryptFile(String source, String dest, SFSEncryptionType encryption, List<int> key, List<int> iv) async {
+  Future<bool> decryptFile(String source, String dest, SFSEncryptionType encryption, List<int> key, List<int> iv) async {
     _log.finest('Beginning decryption for $source');
-    await compute(
+    final result = await compute(
       decryptFileImpl,
       DecryptionRequest(
         source,
@@ -44,6 +44,7 @@ class CryptographyService {
       ),
     );
     _log.finest('Decryption done for $source');
+    return result;
   }
 
   /// Read the file at [path] and calculate the base64-encoded hash using the algorithm

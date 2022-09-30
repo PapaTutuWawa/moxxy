@@ -9,6 +9,7 @@ const messageNoDecryptionKey = 4;
 const messageInvalidAffixElements = 5;
 const messageInvalidNumber = 6;
 const messageFailedToEncrypt = 7;
+const messageFailedToDecryptFile = 8;
 
 int errorTypeFromException(dynamic exception) {
   if (exception is NoDecryptionKeyException) {

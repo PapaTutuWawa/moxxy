@@ -62,7 +62,7 @@ Future<EncryptionResult> encryptFileImpl(EncryptionRequest request) async {
 }
 
 // TODO(PapaTutuWawa): Somehow fail when the ciphertext hash is not matching the provided data
-Future<void> decryptFileImpl(DecryptionRequest request) async {
+Future<bool> decryptFileImpl(DecryptionRequest request) async {
   Cipher algorithm;
   switch (request.encryption) {
     case SFSEncryptionType.aes128GcmNoPadding:
@@ -94,10 +94,15 @@ Future<void> decryptFileImpl(DecryptionRequest request) async {
     mac: Mac(mac),
   );
 
-  final data = await algorithm.decrypt(
-    secretBox,
-    secretKey: SecretKey(request.key),
-  );
+  try {
+    final data = await algorithm.decrypt(
+      secretBox,
+      secretKey: SecretKey(request.key),
+    );
+    await File(request.dest).writeAsBytes(data);
+  } catch (_) {
+    return false;
+  }
 
-  await File(request.dest).writeAsBytes(data);
+  return true;
 }
