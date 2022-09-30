@@ -26,6 +26,8 @@ import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/message.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0446.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
@@ -249,6 +251,7 @@ class HttpFileTransferService {
           );
 
           StatelessFileSharingSource source;
+          final plaintextHashes = <String, String>{};
           if (encryption != null) {
             source = StatelessFileSharingEncryptedSource(
               SFSEncryptionType.aes256GcmNoPadding,
@@ -257,8 +260,11 @@ class HttpFileTransferService {
               encryption.ciphertextHashes,
               StatelessFileSharingUrlSource(slot.getUrl),
             );
+
+            plaintextHashes.addAll(encryption.plaintextHashes);
           } else {
             source = StatelessFileSharingUrlSource(slot.getUrl);
+            plaintextHashes[hashSha256] = await GetIt.I.get<CryptographyService>().hashFile(job.path, HashFunction.sha256);
           }
           
           // Send the message to the recipient
@@ -274,8 +280,7 @@ class HttpFileTransferService {
                   size: stat.size,
                   name: pathlib.basename(job.path),
                   thumbnails: job.thumbnails,
-                  // TODO(PapaTutuWawa): Also include those hashes when we're not encrypting
-                  hashes: encryption?.plaintextHashes,
+                  hashes: plaintextHashes,
                 ),
                 <StatelessFileSharingSource>[source],
               ),

@@ -7,6 +7,12 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 
+Future<List<int>> _hashFile(_HashRequest request) async {
+  final data = await File(request.path).readAsBytes();
+
+  return CryptographicHashManager.hashFromData(data, request.hash);
+}
+
 Future<EncryptionResult> _encryptFile(_EncryptionRequest request) async { 
   Cipher algorithm;
   switch (request.encryption) {
@@ -128,6 +134,14 @@ class _DecryptionRequest {
   final List<int> iv;
 }
 
+@immutable
+class _HashRequest {
+
+  const _HashRequest(this.path, this.hash);
+  final String path;
+  final HashFunction hash;
+}
+
 class CryptographyService {
 
   CryptographyService() : _log = Logger('CryptographyService');
@@ -161,5 +175,15 @@ class CryptographyService {
       ),
     );
     _log.finest('Decryption done for $source');
+  }
+
+  Future<String> hashFile(String path, HashFunction hash) async {
+    _log.finest('Beginning hash generation of $path');
+    final data = await compute(
+      _hashFile,
+      _HashRequest(path, hash),
+    );
+    _log.finest('Hash generation done for $path');
+    return base64Encode(data);
   }
 }
