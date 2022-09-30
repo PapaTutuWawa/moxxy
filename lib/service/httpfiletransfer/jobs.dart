@@ -1,5 +1,5 @@
 import 'package:meta/meta.dart';
-import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 
@@ -36,12 +36,22 @@ class FileUploadJob {
 @immutable
 class FileDownloadJob {
 
-  const FileDownloadJob(this.location, this.mId, this.conversationJid, this.mimeGuess, {this.shouldShowNotification = true});
+  const FileDownloadJob(
+    this.location,
+    this.mId,
+    this.conversationJid,
+    this.mimeGuess, {
+      this.shouldShowNotification = true,
+      this.ciphertextHashes,
+      this.plaintextHashes,
+  });
   final MediaFileLocation location;
   final int mId;
   final String conversationJid;
   final String? mimeGuess;
   final bool shouldShowNotification;
+  final Map<String, String>? ciphertextHashes;
+  final Map<String, String>? plaintextHashes;
   
   @override
   bool operator ==(Object other) {
@@ -50,8 +60,11 @@ class FileDownloadJob {
       mId == other.mId &&
       conversationJid == other.conversationJid &&
       mimeGuess == other.mimeGuess &&
-      shouldShowNotification == other.shouldShowNotification;
+      shouldShowNotification == other.shouldShowNotification &&
+      plaintextHashes == other.plaintextHashes &&
+      ciphertextHashes == other.ciphertextHashes;
   }
+
   @override
-  int get hashCode => location.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode;
+  int get hashCode => location.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode ^ plaintextHashes.hashCode ^ ciphertextHashes.hashCode;
 }

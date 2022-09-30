@@ -8,7 +8,6 @@ import 'package:get_it/get_it.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' as image_size;
 import 'package:logging/logging.dart';
-import 'package:meta/meta.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
@@ -22,6 +21,7 @@ import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
+import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -105,36 +105,6 @@ class _XmppStateMigrator extends Migrator<XmppState> {
   Future<void> commit(int version, XmppState data) async {
     await _storage.write(key: xmppStateVersionKey, value: currentXmppStateVersion.toString());
     await _storage.write(key: xmppStateKey, value: json.encode(data.toJson()));
-  }
-}
-
-@immutable
-class MediaFileLocation {
-
-  const MediaFileLocation(this.url, this.encryptionScheme, this.key, this.iv);
-  final String url;
-  final String? encryptionScheme;
-  final List<int>? key;
-  final List<int>? iv;
-
-  String? get keyBase64 {
-    if (key != null) return base64Encode(key!);
-
-    return null;
-  }
-
-  String? get ivBase64 {
-    if (iv != null) return base64Encode(iv!);
-
-    return null;
-  }
-
-  @override
-  int get hashCode => url.hashCode ^ key.hashCode ^ iv.hashCode;
-
-  @override
-  bool operator==(Object other) {
-    return other is MediaFileLocation && url == other.url && key == other.key && iv == other.iv;
   }
 }
 
