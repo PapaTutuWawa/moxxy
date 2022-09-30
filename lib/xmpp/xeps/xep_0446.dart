@@ -6,15 +6,15 @@ import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 class FileMetadataData {
 
   const FileMetadataData({
-      this.mediaType,
-      this.width,
-      this.height,
-      this.desc,
-      this.length,
-      this.name,
-      this.size,
-      required this.thumbnails,
-      Map<String, String>? hashes,
+    this.mediaType,
+    this.width,
+    this.height,
+    this.desc,
+    this.length,
+    this.name,
+    this.size,
+    required this.thumbnails,
+    Map<String, String>? hashes,
   }) : hashes = hashes ?? const {};
 
   /// Parse [node] as a FileMetadataData element.

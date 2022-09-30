@@ -63,6 +63,13 @@ const forwardedXmlns = 'urn:xmpp:forward:0';
 
 // XEP-0300
 const hashXmlns = 'urn:xmpp:hashes:2';
+const hashFunctionNameBaseXmlns = 'urn:xmpp:hash-function-text-names';
+const hashSha256 = 'sha-256';
+const hashSha512 = 'sha-512';
+const hashSha3256 = 'sha3-256';
+const hashSha3512 = 'sha3-512';
+const hashBlake2b256 = 'blake2b-256';
+const hashBlake2b512 = 'blake2b-512';
 
 // XEP-0333
 const chatMarkersXmlns = 'urn:xmpp:chat-markers:0';

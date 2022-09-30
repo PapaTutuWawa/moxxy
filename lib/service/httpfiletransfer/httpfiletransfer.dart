@@ -254,6 +254,7 @@ class HttpFileTransferService {
               SFSEncryptionType.aes256GcmNoPadding,
               encryption.key,
               encryption.iv,
+              encryption.ciphertextHashes,
               StatelessFileSharingUrlSource(slot.getUrl),
             );
           } else {
@@ -273,6 +274,8 @@ class HttpFileTransferService {
                   size: stat.size,
                   name: pathlib.basename(job.path),
                   thumbnails: job.thumbnails,
+                  // TODO(PapaTutuWawa): Also include those hashes when we're not encrypting
+                  hashes: encryption?.plaintextHashes,
                 ),
                 <StatelessFileSharingSource>[source],
               ),

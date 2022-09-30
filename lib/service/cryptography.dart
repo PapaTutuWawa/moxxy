@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 
 Future<EncryptionResult> _encryptFile(_EncryptionRequest request) async { 
@@ -23,24 +26,37 @@ Future<EncryptionResult> _encryptFile(_EncryptionRequest request) async {
   // Generate a key and an IV for the file
   final key = await algorithm.newSecretKey();
   final iv = algorithm.newNonce();
+  final plaintext = await File(request.source).readAsBytes();
   final secretBox = await algorithm.encrypt(
-    await File(request.source).readAsBytes(),
+    plaintext,
     secretKey: key,
     nonce: iv,
   );
-
-  // Write the file
-  await File(request.dest).writeAsBytes([
+  final ciphertext = [
     ...secretBox.cipherText,
     ...secretBox.mac.bytes,
-  ]);
+  ];
+
+  // Write the file
+  await File(request.dest).writeAsBytes(ciphertext);
 
   return EncryptionResult(
     await key.extractBytes(),
     iv,
+    {
+      hashSha256: base64Encode(
+        await CryptographicHashManager.hashFromData(plaintext, HashFunction.sha256),
+      ),
+    },
+    {
+      hashSha256: base64Encode(
+        await CryptographicHashManager.hashFromData(ciphertext, HashFunction.sha256),
+      ),
+    },
   );
 }
 
+// TODO(PapaTutuWawa): Somehow fail when the ciphertext hash is not matching the provided data
 Future<void> _decryptFile(_DecryptionRequest request) async {
   Cipher algorithm;
   switch (request.encryption) {
@@ -84,9 +100,12 @@ Future<void> _decryptFile(_DecryptionRequest request) async {
 @immutable
 class EncryptionResult {
 
-  const EncryptionResult(this.key, this.iv);
+  const EncryptionResult(this.key, this.iv, this.plaintextHashes, this.ciphertextHashes);
   final List<int> key;
   final List<int> iv;
+
+  final Map<String, String> plaintextHashes;
+  final Map<String, String> ciphertextHashes;
 }
 
 @immutable

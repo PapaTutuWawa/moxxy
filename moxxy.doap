@@ -124,6 +124,14 @@
     </implements>
     <implements>
       <xmpp:SupportedXep>
+	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0300.html" />
+	<xmpp:status>partial</xmpp:status>
+	<xmpp:note xml:lang="en">Supports only Sha256, Sha512 and blake2b512</xmpp:note>
+	<xmpp:version>1.0.0</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0333.html" />
 	<xmpp:status>partial</xmpp:status>
 	<xmpp:note xml:lang="en">Read-only support</xmpp:note>
