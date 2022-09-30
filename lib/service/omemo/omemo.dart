@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
+import 'package:moxxyv2/service/omemo/implementations.dart';
 import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
@@ -39,14 +41,8 @@ class OmemoService {
     final device = await db.loadOmemoDevice(jid);
     if (device == null) {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
-      omemoState = await OmemoSessionManager.generateNewIdentity(
-        jid,
-        MoxxyBTBVTrustManager(
-          <RatchetMapKey, BTBVTrustState>{},
-          <RatchetMapKey, bool>{},
-          <String, List<int>>{},
-        ),
-      );
+      // Generate the identity in the background
+      omemoState = await compute(generateNewIdentityImpl, jid);
 
       await commitDevice(await omemoState.getDevice());
       await commitDeviceMap(<String, List<int>>{});

@@ -23,7 +23,7 @@ import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/notifications.dart';
-import 'package:moxxyv2/service/omemo.dart';
+import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/xmpp.dart';

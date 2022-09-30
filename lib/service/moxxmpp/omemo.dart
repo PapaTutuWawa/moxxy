@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/omemo.dart';
+import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';

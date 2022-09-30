@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
-import 'package:moxxyv2/service/omemo.dart';
+import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
