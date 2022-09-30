@@ -11,7 +11,7 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $messsagesTable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id INTEGER NOT NULL AUTOINCREMENT,
       sender TEXT NOT NULL,
       body TEXT,
       timestamp INTEGER NOT NULL,
@@ -36,7 +36,8 @@ Future<void> createDatabase(Database db, int version) async {
       originId TEXT,
       quote_id INTEGER,
       filename TEXT,
-      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messsagesTable (id)
+      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messsagesTable (id),
+      PRIMARY KEY (id, sender, sid, conversationJid)
     )''',
   );
 
