@@ -507,10 +507,10 @@ abstract class OmemoManager extends XmppManagerBase {
       await _handlerExit(toJid);
       return state.copyWith(stanza: state.stanza.copyWith(children: children));
     } catch (ex) {
-      // TODO(PapaTutuWawa): Maybe refuse to send the stanza to prevent leaking information.
       logger.severe('Encryption failed! $ex');
       await _handlerExit(toJid);
       return state.copyWith(
+        cancel: true,
         other: {
           ...state.other,
           'encryption_error': ex,

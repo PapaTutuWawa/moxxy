@@ -207,3 +207,11 @@ class BlocklistUnblockAllPushEvent extends XmppEvent {
 
   BlocklistUnblockAllPushEvent();
 }
+
+/// Triggered when a stanza has not been sent because a stanza handler
+/// wanted to cancel the entire process.
+class StanzaSendingCancelledEvent extends XmppEvent {
+
+  StanzaSendingCancelledEvent(this.stanza);
+  final Stanza stanza;
+}

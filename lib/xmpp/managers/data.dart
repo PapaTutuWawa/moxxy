@@ -17,6 +17,9 @@ class StanzaHandlerData with _$StanzaHandlerData {
     // Indicates to the runner that processing is now done. This means that all
     // pre-processing is done and no other handlers should be consulted.
     bool done,
+    // Indicates to the runner that processing is to be cancelled and no further handlers
+    // should run. The stanza also will not be sent.
+    bool cancel,
     // The stanza that is being dealt with. SHOULD NOT be overwritten, unless it is absolutely
     // necessary, e.g. with Message Carbons or OMEMO
     Stanza stanza,

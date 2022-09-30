@@ -132,6 +132,7 @@ class XmppService {
         EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
         EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
         EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
+        EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
       ]);
     }
   final Logger _log;
@@ -1061,5 +1062,30 @@ class XmppService {
 
   Future<void> _onBlocklistUnblockAllPush(BlocklistUnblockAllPushEvent event, { dynamic extra }) async {
     GetIt.I.get<BlocklistService>().onUnblockAllPush();
+  }
+
+  Future<void> _onStanzaSendingCancelled(StanzaSendingCancelledEvent event, { dynamic extra }) async {
+    // We only really care about messages
+    if (event.stanza.tag != 'message') return;
+
+    final ms = GetIt.I.get<MessageService>();
+    final message = await ms.getMessageByStanzaId(
+      JID.fromString(event.stanza.to!).toBare().toString(),
+      event.stanza.id!,
+    );
+
+    if (message == null) {
+      _log.warning('Message could not be sent but we cannot find it in the database');
+      return;
+    }
+
+    final newMessage = await ms.updateMessage(
+      message.id,
+      errorType: messageFailedToEncrypt,
+    );
+
+
+    // Tell the UI
+    sendEvent(MessageUpdatedEvent(message: newMessage));
   }
 }

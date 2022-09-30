@@ -433,15 +433,25 @@ class XmppConnection {
       stanza_,
       initial: StanzaHandlerData(
         false,
+        false,
         stanza_,
         encrypted: encrypted,
       ),
     );
-    final stanzaString = data.stanza.toXml();
     _log.fine('Done');
+
+    // TODO(PapaTutuWawa): Handle this much more graceful
+    if (data.cancel) {
+      _log.fine('A stanza handler indicated that it wants to cancel sending.');
+      await _sendEvent(StanzaSendingCancelledEvent(data.stanza));
+      return XMLNode(tag: 'error');
+    }
+
+    final stanzaString = data.stanza.toXml();
 
     // ignore: cascade_invocations
     _log.fine('Attempting to acquire lock for $id...');
+    // TODO(PapaTutuWawa): Handle this much more graceful
     var future = Future.value(XMLNode(tag: 'not-used'));
     await _awaitingResponseLock.synchronized(() async {
         _log.fine('Lock acquired for $id');
@@ -460,7 +470,14 @@ class XmppConnection {
         }
 
         _log.fine('Running post stanza handlers..');
-        await _runOutgoingPostStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_));
+        await _runOutgoingPostStanzaHandlers(
+          stanza_,
+          initial: StanzaHandlerData(
+            false,
+            false,
+            stanza_,
+          ),
+        );
         _log.fine('Done');
 
         if (awaitable) {
@@ -568,11 +585,11 @@ class XmppConnection {
   /// call its callback and end the processing if the callback returned true; continue
   /// if it returned false.
   Future<StanzaHandlerData> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
-    var state = initial ?? StanzaHandlerData(false, stanza);
+    var state = initial ?? StanzaHandlerData(false, false, stanza);
     for (final handler in handlers) {
       if (handler.matches(state.stanza)) {
         state = await handler.callback(state.stanza, state);
-        if (state.done) return state;
+        if (state.done || state.cancel) return state;
       }
     }
 
