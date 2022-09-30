@@ -115,7 +115,7 @@ class ConversationSettingsPage extends StatelessWidget {
                   ),
                 ),
                 SettingsTile.switchTile(
-                  title: const Text('Enable end-to-end encryption by default'),
+                  title: const Text('Enable end-to-end encryption by default. WARNING: Experimental'),
                   initialValue: state.enableOmemoByDefault,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
