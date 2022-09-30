@@ -15,8 +15,6 @@ import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060/helpers.dart';
 
-const pubsubNodeConfigMax = 'http://jabber.org/protocol/pubsub#config-node-max';
-
 class PubSubPublishOptions {
 
   const PubSubPublishOptions({

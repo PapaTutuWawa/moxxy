@@ -29,6 +29,7 @@ const pubsubXmlns = 'http://jabber.org/protocol/pubsub';
 const pubsubEventXmlns = 'http://jabber.org/protocol/pubsub#event';
 const pubsubOwnerXmlns = 'http://jabber.org/protocol/pubsub#owner';
 const pubsubPublishOptionsXmlns = 'http://jabber.org/protocol/pubsub#publish-options';
+const pubsubNodeConfigMax = 'http://jabber.org/protocol/pubsub#config-node-max';
 
 // XEP-0066
 const oobDataXmlns = 'jabber:x:oob';
