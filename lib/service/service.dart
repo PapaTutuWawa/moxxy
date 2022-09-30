@@ -44,7 +44,7 @@ import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';

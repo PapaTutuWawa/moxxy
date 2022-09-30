@@ -17,7 +17,7 @@ import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0334.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/crypto.dart';
