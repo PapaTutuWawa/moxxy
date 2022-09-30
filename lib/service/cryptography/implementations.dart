@@ -1,19 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:cryptography/cryptography.dart';
-import 'package:flutter/foundation.dart';
-import 'package:logging/logging.dart';
+import 'package:moxxyv2/service/cryptography/types.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 
-Future<List<int>> _hashFile(_HashRequest request) async {
+Future<List<int>> hashFileImpl(HashRequest request) async {
   final data = await File(request.path).readAsBytes();
 
   return CryptographicHashManager.hashFromData(data, request.hash);
 }
 
-Future<EncryptionResult> _encryptFile(_EncryptionRequest request) async { 
+Future<EncryptionResult> encryptFileImpl(EncryptionRequest request) async { 
   Cipher algorithm;
   switch (request.encryption) {
     case SFSEncryptionType.aes128GcmNoPadding:
@@ -63,7 +62,7 @@ Future<EncryptionResult> _encryptFile(_EncryptionRequest request) async {
 }
 
 // TODO(PapaTutuWawa): Somehow fail when the ciphertext hash is not matching the provided data
-Future<void> _decryptFile(_DecryptionRequest request) async {
+Future<void> decryptFileImpl(DecryptionRequest request) async {
   Cipher algorithm;
   switch (request.encryption) {
     case SFSEncryptionType.aes128GcmNoPadding:
@@ -101,89 +100,4 @@ Future<void> _decryptFile(_DecryptionRequest request) async {
   );
 
   await File(request.dest).writeAsBytes(data);
-}
-
-@immutable
-class EncryptionResult {
-
-  const EncryptionResult(this.key, this.iv, this.plaintextHashes, this.ciphertextHashes);
-  final List<int> key;
-  final List<int> iv;
-
-  final Map<String, String> plaintextHashes;
-  final Map<String, String> ciphertextHashes;
-}
-
-@immutable
-class _EncryptionRequest {
-
-  const _EncryptionRequest(this.source, this.dest, this.encryption);
-  final String source;
-  final String dest;
-  final SFSEncryptionType encryption;
-}
-
-@immutable
-class _DecryptionRequest {
-
-  const _DecryptionRequest(this.source, this.dest, this.encryption, this.key, this.iv);
-  final String source;
-  final String dest;
-  final SFSEncryptionType encryption;
-  final List<int> key;
-  final List<int> iv;
-}
-
-@immutable
-class _HashRequest {
-
-  const _HashRequest(this.path, this.hash);
-  final String path;
-  final HashFunction hash;
-}
-
-class CryptographyService {
-
-  CryptographyService() : _log = Logger('CryptographyService');
-  final Logger _log;
-
-  Future<EncryptionResult> encryptFile(String source, String dest, SFSEncryptionType encryption) async {
-    _log.finest('Beginning encryption routine for $source');
-    final result = await compute(
-      _encryptFile,
-      _EncryptionRequest(
-        source,
-        dest,
-        encryption,
-      ),
-    );
-    _log.finest('Encryption done for $source');
-
-    return result;
-  }
-
-  Future<void> decryptFile(String source, String dest, SFSEncryptionType encryption, List<int> key, List<int> iv) async {
-    _log.finest('Beginning decryption for $source');
-    await compute(
-      _decryptFile,
-      _DecryptionRequest(
-        source,
-        dest,
-        encryption,
-        key,
-        iv,
-      ),
-    );
-    _log.finest('Decryption done for $source');
-  }
-
-  Future<String> hashFile(String path, HashFunction hash) async {
-    _log.finest('Beginning hash generation of $path');
-    final data = await compute(
-      _hashFile,
-      _HashRequest(path, hash),
-    );
-    _log.finest('Hash generation done for $path');
-    return base64Encode(data);
-  }
 }
