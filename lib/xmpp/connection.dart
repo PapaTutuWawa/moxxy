@@ -440,11 +440,20 @@ class XmppConnection {
     );
     _log.fine('Done');
 
-    // TODO(PapaTutuWawa): Handle this much more graceful
     if (data.cancel) {
       _log.fine('A stanza handler indicated that it wants to cancel sending.');
       await _sendEvent(StanzaSendingCancelledEvent(data.stanza));
-      return XMLNode(tag: 'error');
+      return Stanza(
+        tag: data.stanza.tag,
+        to: data.stanza.from,
+        from: data.stanza.to,
+        attributes: <String, String>{
+          'type': 'error',
+          ...data.stanza.id != null ? {
+            'id': data.stanza.id!,
+          } : {},
+        },
+      );
     }
 
     final stanzaString = data.stanza.toXml();
