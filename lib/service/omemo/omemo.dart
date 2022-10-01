@@ -123,6 +123,7 @@ class OmemoService {
 
   /// Requests our device list and checks if the current device is in it. If not, then
   /// it will be published.
+  // TODO(PapaTutuWawa): Somehow notify when we failed.
   Future<void> publishDeviceIfNeeded() async {
     _log.finest('publishDeviceIfNeeded: Waiting for initialization...');
     await ensureInitialized();

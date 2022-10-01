@@ -8,11 +8,11 @@ import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/types/resultv2.dart';
-import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060/helpers.dart';
 
 class PubSubPublishOptions {
@@ -108,6 +108,19 @@ class PubSubManager extends XmppManagerBase {
     return state.copyWith(done: true);
   }
 
+  Future<int> _getNodeItemCount(String jid, String node) async {
+    final dm = getAttributes().getManagerById<DiscoManager>(discoManager)!;
+    final response = await dm.discoItemsQuery(jid, node: node);
+    var count = 0;
+    if (response.isType<DiscoError>()) {
+      logger.warning('_getNodeItemCount: disco#items query failed. Assuming no items.');
+    } else {
+      count = response.get<List<DiscoItem>>().length;
+    }
+
+    return count;
+  }
+  
   Future<PubSubPublishOptions> _preprocessPublishOptions(String jid, String node, PubSubPublishOptions options) async {
     if (options.maxItems != null) {
       final dm = getAttributes().getManagerById<DiscoManager>(discoManager)!;
@@ -119,16 +132,9 @@ class PubSubManager extends XmppManagerBase {
         }
       }
 
-      
       final nodeMaxSupported = result.isType<DiscoInfo>() && result.get<DiscoInfo>().features.contains(pubsubNodeConfigMax);
       if (options.maxItems == 'max' && !nodeMaxSupported) {
-        final response = await dm.discoItemsQuery(jid, node: node);
-        var count = 1;
-        if (response.isType<DiscoError>()) {
-          logger.severe('disco#items query failed and options.maxItems is set to "max". Assuming 0 items');
-        } else {
-          count = response.get<List<DiscoItem>>().length + 1;
-        }
+        final count = await _getNodeItemCount(jid, node) + 1;
 
         logger.finest('PubSub host does not support node-config-max. Working around it');
         return PubSubPublishOptions(
@@ -295,6 +301,20 @@ class PubSubManager extends XmppManagerBase {
           tryConfigureAndPublish: false,
         );
         if (publishResult.isType<PubSubError>()) return publishResult;
+      } else if (error is EjabberdMaxItemsError && tryConfigureAndPublish && options != null) {
+        // TODO(Unknown): Remove once ejabberd fixes the bug. See errors.dart for more info.
+        logger.warning('Publish failed due to the server rejecting the usage of "max" for "max_items" in publish options. Configuring...');
+        final count = await _getNodeItemCount(jid, node) + 1;
+        return publish(
+          jid,
+          node,
+          payload,
+          id: id,
+          options: PubSubPublishOptions(
+            accessModel: options.accessModel,
+            maxItems: '$count',
+          ),
+        );
       } else {
         return Result(error);
       }

@@ -3,10 +3,10 @@ import 'package:moxxyv2/xmpp/managers/base.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
-import 'package:moxxyv2/xmpp/xeps/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060/xep_0060.dart';
 
 class UserAvatar {
