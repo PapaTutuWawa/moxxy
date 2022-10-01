@@ -30,6 +30,9 @@ import 'package:synchronized/synchronized.dart';
 const _doNotEncryptList = [
   // XEP-0033
   DoNotEncrypt('addresses', extendedAddressingXmlns),
+  // XEP-0060
+  DoNotEncrypt('pubsub', pubsubXmlns),
+  DoNotEncrypt('pubsub', pubsubOwnerXmlns),
   // XEP-0334
   DoNotEncrypt('no-permanent-store', messageProcessingHintsXmlns),
   DoNotEncrypt('no-store', messageProcessingHintsXmlns),
