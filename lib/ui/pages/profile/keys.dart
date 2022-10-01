@@ -63,7 +63,7 @@ class KeysPage extends StatelessWidget {
     return BlocBuilder<KeysBloc, KeysState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
-          'Keys',
+          'Devices',
           extra: [
             const Spacer(),
             PopupMenuButton(
