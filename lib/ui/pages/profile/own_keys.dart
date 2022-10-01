@@ -141,7 +141,10 @@ class OwnKeysPage extends StatelessWidget {
               'Delete device',
               'This means that contacts will not be able to encrypt for that device. Continue?',
               context,
-              () => context.read<OwnKeysBloc>().add(OwnDeviceRemovedEvent(item.deviceId)),
+              () {
+                context.read<OwnKeysBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
+                Navigator.of(context).pop();
+              },
             );
           },
         );
