@@ -57,6 +57,17 @@ class KeysPage extends StatelessWidget {
       },
     );
   }
+
+  void _recreateSessions(BuildContext context) {
+    showConfirmationDialog(
+      'Recreate sessions?',
+      "This will recreate the cryptographic sessions with the contact. Use only if this device throws decryption errors or your contact's devices throw decryption errors.",
+      context,
+      () {
+        context.read<KeysBloc>().add(SessionsRecreatedEvent());
+      },
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -69,7 +80,7 @@ class KeysPage extends StatelessWidget {
             PopupMenuButton(
               onSelected: (KeysOptions result) {
                 if (result == KeysOptions.recreateSessions) {
-                  context.read<KeysBloc>().add(SessionsRecreatedEvent());
+                  _recreateSessions(context);
                 }
               },
               icon: const Icon(Icons.more_vert),

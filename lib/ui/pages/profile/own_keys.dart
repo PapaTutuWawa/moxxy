@@ -11,6 +11,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 enum OwnKeysOptions {
   recreateSessions,
+  recreateDevice,
 }
 
 class OwnKeysPage extends StatelessWidget {
@@ -151,6 +152,28 @@ class OwnKeysPage extends StatelessWidget {
       },
     );
   }
+
+  void _recreateSessions(BuildContext context) {
+    showConfirmationDialog(
+      'Recreate own sessions?',
+      'This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.',
+      context,
+      () {
+        context.read<OwnKeysBloc>().add(OwnSessionsRecreatedEvent());
+      },
+    );
+  }
+
+  void _recreateDevice(BuildContext context) {
+    showConfirmationDialog(
+      'Recreate own device?',
+      "This will recreate this device's cryptographic identity. It might take some time and will cause decryption errors until you sent a message to your contacts. If they verified your device, they will have to do it again. Continue?",
+      context,
+      () {
+        context.read<OwnKeysBloc>().add(OwnDeviceRegeneratedEvent());
+      },
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -162,8 +185,13 @@ class OwnKeysPage extends StatelessWidget {
             const Spacer(),
             PopupMenuButton(
               onSelected: (OwnKeysOptions result) {
-                if (result == OwnKeysOptions.recreateSessions) {
-                  context.read<OwnKeysBloc>().add(OwnSessionsRecreatedEvent());
+                switch (result) {
+                  case OwnKeysOptions.recreateSessions:
+                    _recreateSessions(context);
+                    break;
+                  case OwnKeysOptions.recreateDevice:
+                    _recreateDevice(context);
+                    break;
                 }
               },
               icon: const Icon(Icons.more_vert),
@@ -172,7 +200,11 @@ class OwnKeysPage extends StatelessWidget {
                   value: OwnKeysOptions.recreateSessions,
                   enabled: state.keys.isNotEmpty,
                   child: const Text('Rebuild sessions'),
-                )
+                ),
+                const PopupMenuItem(
+                  value: OwnKeysOptions.recreateDevice,
+                  child: Text('Recreate identity'),
+                ),
               ],
             ),
           ],

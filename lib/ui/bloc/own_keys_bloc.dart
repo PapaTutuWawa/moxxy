@@ -20,6 +20,7 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
     on<OwnKeyEnabledSetEvent>(_onKeyEnabledSet);
     on<OwnSessionsRecreatedEvent>(_onSessionsRecreated);
     on<OwnDeviceRemovedEvent>(_onDeviceRemoved);
+    on<OwnDeviceRegeneratedEvent>(_onDeviceRegenerated);
   }
 
   Future<void> _onRequested(OwnKeysRequestedEvent event, Emitter<OwnKeysState> emit) async {
@@ -104,5 +105,9 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
         ),
       ),
     );
+  }
+
+  Future<void> _onDeviceRegenerated(OwnDeviceRegeneratedEvent event, Emitter<OwnKeysState> emit) async {
+    // TODO(PapaTutuWawa): Implement
   }
 }
