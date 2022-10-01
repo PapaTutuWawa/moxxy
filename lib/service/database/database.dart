@@ -260,6 +260,7 @@ class DatabaseService {
       String? quoteId,
       String? filename,
       int? errorType,
+      int? warningType,
       Map<String, String>? plaintextHashes,
       Map<String, String>? ciphertextHashes,
     }
@@ -275,6 +276,7 @@ class DatabaseService {
       isFileUploadNotification,
       encrypted,
       errorType: errorType,
+      warningType: warningType,
       mediaUrl: mediaUrl,
       key: key,
       iv: iv,
@@ -345,6 +347,7 @@ class DatabaseService {
     bool? displayed,
     bool? acked,
     int? errorType,
+    int? warningType,
     bool? isFileUploadNotification,
     String? srcUrl,
     String? key,
@@ -378,6 +381,9 @@ class DatabaseService {
     }
     if (errorType != null) {
       m['errorType'] = errorType;
+    }
+    if (warningType != null) {
+      m['warningType'] = warningType;
     }
     if (isFileUploadNotification != null) {
       m['isFileUploadNotification'] = boolToInt(isFileUploadNotification);

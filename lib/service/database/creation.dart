@@ -21,6 +21,7 @@ Future<void> createDatabase(Database db, int version) async {
       isFileUploadNotification INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       errorType INTEGER,
+      warningType INTEGER,
       mediaUrl TEXT,
       mediaType TEXT,
       thumbnailData TEXT,

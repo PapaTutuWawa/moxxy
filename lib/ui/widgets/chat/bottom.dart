@@ -105,6 +105,16 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ] : [],
+        ...widget.message.isWarning() ? [
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.warning,
+              size: _bubbleBottomIconSize,
+              color: Colors.yellow,
+            ),
+          ),
+        ] : [],
         ..._showCheckmark() ? [
             const Padding(
               padding: EdgeInsets.only(left: 3),

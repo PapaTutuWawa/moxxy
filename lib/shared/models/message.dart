@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
+import 'package:moxxyv2/shared/warning_types.dart';
 
 part 'message.freezed.dart';
 part 'message.g.dart';
@@ -36,6 +37,7 @@ class Message with _$Message {
     bool encrypted,
     {
       int? errorType,
+      int? warningType,
       String? mediaUrl,
       @Default(false) bool isDownloading,
       @Default(false) bool isUploading,
@@ -101,5 +103,10 @@ class Message with _$Message {
   /// Returns true if the message is an error. If not, then returns false.
   bool isError() {
     return errorType != null && errorType != noError;
+  }
+
+  /// Returns true if the message is a warning. If not, then returns false.
+  bool isWarning() {
+    return warningType != null && warningType != noWarning;
   }
 }

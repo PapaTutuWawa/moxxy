@@ -51,6 +51,7 @@ class MessageService {
       String? quoteId,
       String? filename,
       int? errorType,
+      int? warningType,
       Map<String, String>? plaintextHashes,
       Map<String, String>? ciphertextHashes,
     }
@@ -77,6 +78,7 @@ class MessageService {
       quoteId: quoteId,
       filename: filename,
       errorType: errorType,
+      warningType: warningType,
       plaintextHashes: plaintextHashes,
       ciphertextHashes: ciphertextHashes,
     );
@@ -109,6 +111,7 @@ class MessageService {
     bool? displayed,
     bool? acked,
     int? errorType,
+    int? warningType,
     bool? isFileUploadNotification,
     String? srcUrl,
     String? key,
@@ -125,6 +128,7 @@ class MessageService {
       displayed: displayed,
       acked: acked,
       errorType: errorType,
+      warningType: warningType,
       isFileUploadNotification: isFileUploadNotification,
       srcUrl: srcUrl,
       key: key,

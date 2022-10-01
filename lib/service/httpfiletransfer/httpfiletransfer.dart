@@ -24,6 +24,7 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/media.dart';
+import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/message.dart';
@@ -361,6 +362,7 @@ class HttpFileTransferService {
       // TODO(PapaTutuWawa): Trigger event
       _log.warning('HTTP GET of ${job.location.url} returned ${response?.statusCode}');
     } else {
+      var integrityCheckPassed = true;
       if (job.location.key != null && job.location.iv != null) {
         // The file was encrypted
         final result = await GetIt.I.get<CryptographyService>().decryptFile(
@@ -386,6 +388,8 @@ class HttpFileTransferService {
           await _pickNextDownloadTask();
           return;
         }
+
+        integrityCheckPassed = result.plaintextOkay && result.ciphertextOkay;
 
         // TODO(PapaTutuWawa): Calculate the file's hash and compare to the provided ones
         // Cleanup the temporary file
@@ -422,6 +426,9 @@ class HttpFileTransferService {
         mediaWidth: mediaWidth,
         mediaHeight: mediaHeight,
         isFileUploadNotification: false,
+        warningType: integrityCheckPassed ?
+          warningFileIntegrityCheckFailed :
+          null,
       );
 
       sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
