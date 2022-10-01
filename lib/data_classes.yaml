@@ -370,6 +370,11 @@ files:
           - JsonImplementation
         attributes:
           deviceId: int
+      - name: RegenerateOwnDeviceCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

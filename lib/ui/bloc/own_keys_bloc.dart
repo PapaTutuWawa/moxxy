@@ -108,6 +108,10 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
   }
 
   Future<void> _onDeviceRegenerated(OwnDeviceRegeneratedEvent event, Emitter<OwnKeysState> emit) async {
-    // TODO(PapaTutuWawa): Implement
+    // ignore: cast_nullable_to_non_nullable
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      RegenerateOwnDeviceCommand(),
+      awaitable: false,
+    );
   }
 }

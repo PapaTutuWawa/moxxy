@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
@@ -32,13 +33,13 @@ class OmemoService {
   final Logger _log = Logger('OmemoService');
 
   bool _initialized = false;
-  final Lock _initLock = Lock();
-  final List<Completer<void>> _waitingForInitialization = List<Completer<void>>.empty(growable: true);
+  final Lock _lock = Lock();
+  final Queue<Completer<void>> _waitingForInitialization = Queue<Completer<void>>();
 
   late OmemoSessionManager omemoState;
   
   Future<void> initializeIfNeeded(String jid) async {
-    final done = await _initLock.synchronized(() => _initialized);
+    final done = await _lock.synchronized(() => _initialized);
     if (done) return;
 
     final db = GetIt.I.get<DatabaseService>();
@@ -85,7 +86,7 @@ class OmemoService {
       }
     });
     
-    await _initLock.synchronized(() {
+    await _lock.synchronized(() {
       _initialized = true;
 
       for (final c in _waitingForInitialization) {
@@ -95,10 +96,45 @@ class OmemoService {
     });
   }
 
+  Future<void> regenerateDevice(String jid) async {
+    // Prevent access to the session manager as it is (mostly) guarded ensureInitialized
+    await _lock.synchronized(() {
+      _initialized = false;
+    });
+
+    _log.info('No OMEMO marker found. Generating OMEMO identity...');
+    final oldId = await omemoState.getDeviceId();
+
+    // Regenerate the identity in the background
+    omemoState = await compute(generateNewIdentityImpl, jid);
+
+    await commitDevice(await omemoState.getDevice());
+    await commitDeviceMap(<String, List<int>>{});
+    await commitTrustManager(await omemoState.trustManager.toJson());
+
+    // Remove the old device
+    final omemo = GetIt.I.get<XmppConnection>()
+      .getManagerById<OmemoManager>(omemoManager)!;
+    await omemo.deleteDevice(oldId);
+
+    // Publish the new one
+    await omemo.publishBundle(await omemoState.getDeviceBundle());
+    
+    // Allow access again
+    await _lock.synchronized(() {
+      _initialized = true;
+
+      for (final c in _waitingForInitialization) {
+        c.complete();
+      }
+      _waitingForInitialization.clear();
+    });
+  }
+  
   /// Ensures that the code following this *AWAITED* call can access every method
   /// of the OmemoService.
   Future<void> ensureInitialized() async {
-    final completer = await _initLock.synchronized(() {
+    final completer = await _lock.synchronized(() {
       if (!_initialized) {
         final c = Completer<void>();
         _waitingForInitialization.add(c);
@@ -214,6 +250,7 @@ class OmemoService {
   }
 
   Future<int> getDeviceId() async {
+    await ensureInitialized();
     return omemoState.getDeviceId();
   }
   
