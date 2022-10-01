@@ -493,9 +493,12 @@ abstract class OmemoManager extends XmppManagerBase {
       );
       logger.finest('Encryption done');
 
-      children
-        ..add(encrypted)
-        ..add(buildEmeElement(ExplicitEncryptionType.omemo2));
+      children.add(encrypted);
+
+      // Only add EME when sending a message
+      if (stanza.tag == 'message') {
+        children.add(buildEmeElement(ExplicitEncryptionType.omemo2));
+      }
 
       // Add a storage hint in case this is a message
       // Taken from the example at
