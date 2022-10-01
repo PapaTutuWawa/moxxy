@@ -210,9 +210,42 @@ class PubSubManager extends XmppManagerBase {
 
     return Result(subscription.attributes['subscription'] == 'none');
   }
+  
+  /// Publish [payload] to the PubSub node [node] on JID [jid]. Returns true if it
+  /// was successful. False otherwise.
+  Future<Result<PubSubError, bool>> publish(
+    String jid,
+    String node,
+    XMLNode payload, {
+      String? id,
+      PubSubPublishOptions? options,
+    }
+  ) async {
+    return _publish(
+      jid,
+      node,
+      payload,
+      id: id,
+      options: options,
+    );
+  }
 
-  Future<XMLNode> _publish(String jid, String node, XMLNode payload, { String? id, PubSubPublishOptions? options }) async {
-    return getAttributes().sendStanza(
+  Future<Result<PubSubError, bool>> _publish(
+    String jid,
+    String node,
+    XMLNode payload, {
+      String? id,
+      PubSubPublishOptions? options,
+      // Should, if publishing fails, try to reconfigure and publish again?
+      bool tryConfigureAndPublish = true,
+    }
+  ) async {
+    PubSubPublishOptions? pubOptions;
+    if (options != null) {
+      pubOptions = await _preprocessPublishOptions(jid, node, options);
+    }
+
+    final result = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'set',
         to: jid,
@@ -243,46 +276,37 @@ class PubSubManager extends XmppManagerBase {
         ],
       ),
     );
-  }
-  
-  /// Publish [payload] to the PubSub node [node] on JID [jid]. Returns true if it
-  /// was successful. False otherwise.
-  Future<Result<PubSubError, bool>> publish(
-    String jid,
-    String node,
-    XMLNode payload, {
-      String? id,
-      PubSubPublishOptions? options,
-    }
-  ) async {
-    PubSubPublishOptions? pubOptions;
-    if (options != null) {
-      pubOptions = await _preprocessPublishOptions(jid, node, options);
-    }
-
-    var result = await _publish(jid, node, payload, id: id, options: pubOptions);
     if (result.attributes['type'] != 'result') {
       final error = getPubSubError(result);
 
       // If preconditions are not met, configure the node
-      if (error is PreconditionsNotMetError) {
+      if (error is PreconditionsNotMetError && tryConfigureAndPublish) {
         final configureResult = await configure(jid, node, pubOptions!);
         if (configureResult.isType<PubSubError>()) {
           return Result(configureResult.get<PubSubError>());
         }
 
-        result = await _publish(jid, node, payload, id: id, options: pubOptions);
-        if (result.attributes['type'] != 'result') return Result(getPubSubError(result));
+        final publishResult = await _publish(
+          jid,
+          node,
+          payload,
+          id: id,
+          options: options,
+          tryConfigureAndPublish: false,
+        );
+        if (publishResult.isType<PubSubError>()) return publishResult;
+      } else {
+        return Result(error);
       }
     }
 
-    final pubsub = result.firstTag('pubsub', xmlns: pubsubXmlns);
-    if (pubsub == null) return Result(MalformedResponseError());
+    final pubsubElement = result.firstTag('pubsub', xmlns: pubsubXmlns);
+    if (pubsubElement == null) return Result(MalformedResponseError());
 
-    final publish = pubsub.firstTag('publish');
-    if (publish == null) return Result(MalformedResponseError());
+    final publishElement = pubsubElement.firstTag('publish');
+    if (publishElement == null) return Result(MalformedResponseError());
 
-    final item = publish.firstTag('item');
+    final item = publishElement.firstTag('item');
     if (item == null) return Result(MalformedResponseError());
 
     if (id != null) return Result(item.attributes['id'] == id);
