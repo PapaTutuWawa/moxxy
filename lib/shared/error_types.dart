@@ -10,6 +10,7 @@ const messageInvalidAffixElements = 5;
 const messageInvalidNumber = 6;
 const messageFailedToEncrypt = 7;
 const messageFailedToDecryptFile = 8;
+const messageContactDoesNotSupportOmemo = 9;
 
 int errorTypeFromException(dynamic exception) {
   if (exception is NoDecryptionKeyException) {
@@ -20,6 +21,10 @@ int errorTypeFromException(dynamic exception) {
     return messageNoDecryptionKey;
   } else if (exception is InvalidAffixElementsException) {
     return messageInvalidAffixElements;
+  } else if (exception is EncryptionFailedException) {
+    return messageFailedToEncrypt;
+  } else if (exception is OmemoNotSupportedForContactException) {
+    return messageContactDoesNotSupportOmemo;
   }
 
   return noError;

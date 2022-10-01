@@ -1081,7 +1081,7 @@ class XmppService {
 
     final newMessage = await ms.updateMessage(
       message.id,
-      errorType: messageFailedToEncrypt,
+      errorType: errorTypeFromException(event.data.cancelReason),
     );
 
 

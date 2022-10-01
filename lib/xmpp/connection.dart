@@ -434,6 +434,7 @@ class XmppConnection {
       initial: StanzaHandlerData(
         false,
         false,
+        null,
         stanza_,
         encrypted: encrypted,
       ),
@@ -484,6 +485,7 @@ class XmppConnection {
           initial: StanzaHandlerData(
             false,
             false,
+            null,
             stanza_,
           ),
         );
@@ -594,7 +596,7 @@ class XmppConnection {
   /// call its callback and end the processing if the callback returned true; continue
   /// if it returned false.
   Future<StanzaHandlerData> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
-    var state = initial ?? StanzaHandlerData(false, false, stanza);
+    var state = initial ?? StanzaHandlerData(false, false, null, stanza);
     for (final handler in handlers) {
       if (handler.matches(state.stanza)) {
         state = await handler.callback(state.stanza, state);

@@ -326,6 +326,7 @@ abstract class OmemoManager extends XmppManagerBase {
         }
       } else {
         logger.warning('Failed to retrieve device bundles for $toJid');
+        return Result(OmemoNotSupportedForContactException());
       }
 
       await subscribeToDeviceList(toJid);
@@ -459,7 +460,16 @@ abstract class OmemoManager extends XmppManagerBase {
     final resultToJid = await _findNewSessions(toJid, stanza.children);
     if (resultToJid.isType<List<OmemoBundle>>()) {
       newSessions.addAll(resultToJid.get<List<OmemoBundle>>());
+    } else {
+      if (resultToJid.isType<OmemoNotSupportedForContactException>()) {
+        await _handlerExit(toJid);
+        return state.copyWith(
+          cancel: true,
+          cancelReason: resultToJid.get<OmemoNotSupportedForContactException>(),
+        );
+      }
     }
+
     // Try to find new sessions for our own Jid.
     final ownJid = getAttributes().getFullJID().toBare();
     final resultOwnJid = await _findNewSessions(ownJid, stanza.children);
@@ -514,6 +524,7 @@ abstract class OmemoManager extends XmppManagerBase {
       await _handlerExit(toJid);
       return state.copyWith(
         cancel: true,
+        cancelReason: EncryptionFailedException(),
         other: {
           ...state.other,
           'encryption_error': ex,
