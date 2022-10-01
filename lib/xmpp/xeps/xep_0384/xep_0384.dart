@@ -759,7 +759,7 @@ abstract class OmemoManager extends XmppManagerBase {
     // TODO(Unknown): Should we query the device list first?
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final bundlesRaw = await pm.getItems(jid.toString(), omemoBundlesXmlns);
-    if (bundlesRaw.isType<OmemoError>()) return Result(UnknownOmemoError());
+    if (bundlesRaw.isType<PubSubError>()) return Result(UnknownOmemoError());
 
     final bundles = bundlesRaw.get<List<PubSubItem>>().map(
       (bundle) => bundleFromXML(jid, int.parse(bundle.id), bundle.payload),
@@ -876,7 +876,7 @@ abstract class OmemoManager extends XmppManagerBase {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
     final jid = getAttributes().getFullJID().toBare();
 
-    final bundleResult = await pm.delete(jid, omemoBundlesXmlns, '$deviceId');
+    final bundleResult = await pm.retract(jid, omemoBundlesXmlns, '$deviceId');
     if (bundleResult.isType<PubSubError>()) {
       // TODO(Unknown): Be more specific
       return Result(UnknownOmemoError());

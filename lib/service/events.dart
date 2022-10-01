@@ -64,6 +64,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RecreateSessionsCommand>(performRecreateSessions),
       EventTypeMatcher<SetOmemoEnabledCommand>(performSetOmemoEnabled),
       EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(performGetOwnOmemoFingerprints),
+      EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -518,4 +519,10 @@ Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand comma
     ),
     id: id,
   );
+}
+
+Future<void> performRemoveOwnDevice(RemoveOwnDeviceCommand command, { dynamic extra }) async {
+  await GetIt.I.get<XmppConnection>()
+    .getManagerById<OmemoManager>(omemoManager)!
+    .deleteDevice(command.deviceId);
 }

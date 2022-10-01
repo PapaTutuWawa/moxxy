@@ -447,7 +447,7 @@ class PubSubManager extends XmppManagerBase {
     return const Result(true);
   }
 
-  Future<Result<PubSubError, bool>> delete(JID host, String node, String itemId) async {
+  Future<Result<PubSubError, bool>> delete(JID host, String node) async {
     final request = await getAttributes().sendStanza(
       Stanza.iq(
         type: 'set',
@@ -462,6 +462,44 @@ class PubSubManager extends XmppManagerBase {
                 attributes: <String, String>{
                   'node': node,
                 },
+              ),
+            ],
+          ),
+        ],
+      ),
+    ) as Stanza;
+
+    if (request.type != 'result') {
+      // TODO(Unknown): Be more specific
+      return Result(UnknownPubSubError());
+    }
+
+    return const Result(true);
+  }
+
+  Future<Result<PubSubError, bool>> retract(JID host, String node, String itemId) async {
+    final request = await getAttributes().sendStanza(
+      Stanza.iq(
+        type: 'set',
+        to: host.toString(),
+        children: [
+          XMLNode.xmlns(
+            tag: 'pubsub',
+            xmlns: pubsubXmlns,
+            children: [
+              XMLNode(
+                tag: 'retract',
+                attributes: <String, String>{
+                  'node': node,
+                },
+                children: [
+                  XMLNode(
+                    tag: 'item',
+                    attributes: <String, String>{
+                      'id': itemId,
+                    },
+                  ),
+                ],
               ),
             ],
           ),

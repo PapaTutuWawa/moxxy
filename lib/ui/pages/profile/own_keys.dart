@@ -137,7 +137,12 @@ class OwnKeysPage extends StatelessWidget {
               );
             },
           onDeletePressed: () {
-            context.read<OwnKeysBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
+            showConfirmationDialog(
+              'Delete device',
+              'This means that contacts will not be able to encrypt for that device. Continue?',
+              context,
+              () => context.read<OwnKeysBloc>().add(OwnDeviceRemovedEvent(item.deviceId)),
+            );
           },
         );
       },

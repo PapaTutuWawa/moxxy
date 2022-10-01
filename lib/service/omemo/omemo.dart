@@ -10,6 +10,10 @@ import 'package:moxxyv2/shared/models/omemo_key.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';
@@ -126,12 +130,33 @@ class OmemoService {
 
     final conn = GetIt.I.get<XmppConnection>();
     final omemo = conn.getManagerById<OmemoManager>(omemoManager)!;
+    final dm = conn.getManagerById<DiscoManager>(discoManager)!;
     final bareJid = conn.getConnectionSettings().jid.toBare();
+    final device = await omemoState.getDevice();
+
+    final bundlesRaw = await dm.discoItemsQuery(
+      bareJid.toString(),
+      node: omemoBundlesXmlns,
+    );
+    if (bundlesRaw.isType<DiscoError>()) {
+      await omemo.publishBundle(await device.toBundle());
+      return;
+    }
+
+    final bundleIds = bundlesRaw
+      .get<List<DiscoItem>>()
+      .where((item) => item.name != null)
+      .map((item) => int.parse(item.name!));
+    if (!bundleIds.contains(device.id)) {
+      await omemo.publishBundle(await device.toBundle());
+      return;
+    }
+    
     final idsRaw = await omemo.getDeviceList(bareJid);
     final ids = idsRaw.isType<OmemoError>() ? <int>[] : idsRaw.get<List<int>>();
-    final device = await omemoState.getDevice();
     if (!ids.contains(device.id)) {
       await omemo.publishBundle(await device.toBundle());
+      return;
     }
   }
 
