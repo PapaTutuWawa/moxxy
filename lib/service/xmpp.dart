@@ -1066,12 +1066,12 @@ class XmppService {
 
   Future<void> _onStanzaSendingCancelled(StanzaSendingCancelledEvent event, { dynamic extra }) async {
     // We only really care about messages
-    if (event.stanza.tag != 'message') return;
+    if (event.data.stanza.tag != 'message') return;
 
     final ms = GetIt.I.get<MessageService>();
     final message = await ms.getMessageByStanzaId(
-      JID.fromString(event.stanza.to!).toBare().toString(),
-      event.stanza.id!,
+      JID.fromString(event.data.stanza.to!).toBare().toString(),
+      event.data.stanza.id!,
     );
 
     if (message == null) {

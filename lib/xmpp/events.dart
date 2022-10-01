@@ -1,5 +1,6 @@
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/managers/data.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0060/xep_0060.dart';
@@ -212,6 +213,6 @@ class BlocklistUnblockAllPushEvent extends XmppEvent {
 /// wanted to cancel the entire process.
 class StanzaSendingCancelledEvent extends XmppEvent {
 
-  StanzaSendingCancelledEvent(this.stanza);
-  final Stanza stanza;
+  StanzaSendingCancelledEvent(this.data);
+  final StanzaHandlerData data;
 }

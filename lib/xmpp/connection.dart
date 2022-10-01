@@ -442,7 +442,7 @@ class XmppConnection {
 
     if (data.cancel) {
       _log.fine('A stanza handler indicated that it wants to cancel sending.');
-      await _sendEvent(StanzaSendingCancelledEvent(data.stanza));
+      await _sendEvent(StanzaSendingCancelledEvent(data));
       return Stanza(
         tag: data.stanza.tag,
         to: data.stanza.from,
