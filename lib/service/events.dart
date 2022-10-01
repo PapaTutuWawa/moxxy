@@ -340,6 +340,8 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
         message.encryptionScheme,
         message.key != null ? base64Decode(message.key!) : null,
         message.iv != null ? base64Decode(message.iv!) : null,
+        message.plaintextHashes,
+        message.ciphertextHashes,
       ),
       command.message.id,
       command.message.conversationJid,

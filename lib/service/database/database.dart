@@ -260,6 +260,8 @@ class DatabaseService {
       String? quoteId,
       String? filename,
       int? errorType,
+      Map<String, String>? plaintextHashes,
+      Map<String, String>? ciphertextHashes,
     }
   ) async {
     final m = Message(
@@ -287,6 +289,8 @@ class DatabaseService {
       acked: false,
       originId: originId,
       filename: filename,
+      plaintextHashes: plaintextHashes,
+      ciphertextHashes: ciphertextHashes,
     );
 
     Message? quotes;

@@ -31,7 +31,15 @@ class CryptographyService {
   /// Decrypt the file at [source] and write the decrypted version to [dest]. For the
   /// decryption, use the algorithm indicated by [encryption] with the key [key] and the
   /// IV or nonce [iv].
-  Future<bool> decryptFile(String source, String dest, SFSEncryptionType encryption, List<int> key, List<int> iv) async {
+  Future<DecryptionResult> decryptFile(
+    String source,
+    String dest,
+    SFSEncryptionType encryption,
+    List<int> key,
+    List<int> iv,
+    Map<String, String> plaintextHashes,
+    Map<String, String> ciphertextHashes,
+  ) async {
     _log.finest('Beginning decryption for $source');
     final result = await compute(
       decryptFileImpl,
@@ -41,6 +49,8 @@ class CryptographyService {
         encryption,
         key,
         iv,
+        plaintextHashes,
+        ciphertextHashes,
       ),
     );
     _log.finest('Decryption done for $source');

@@ -1,9 +1,22 @@
+import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 
 part 'message.freezed.dart';
 part 'message.g.dart';
+
+Map<String, String>? _optionalJsonDecode(String? data) {
+  if (data == null) return null;
+
+  return jsonDecode(data) as Map<String, String>;
+}
+
+String? _optionalJsonEncode(Map<String, String>? data) {
+  if (data == null) return null;
+
+  return jsonEncode(data);
+}
 
 @freezed
 class Message with _$Message {
@@ -40,6 +53,8 @@ class Message with _$Message {
       String? originId,
       Message? quotes,
       String? filename,
+      Map<String, String>? plaintextHashes,
+      Map<String, String>? ciphertextHashes,
     }
   ) = _Message;
 
@@ -57,6 +72,8 @@ class Message with _$Message {
       'isMedia': intToBool(json['isMedia']! as int),
       'isFileUploadNotification': intToBool(json['isFileUploadNotification']! as int),
       'encrypted': intToBool(json['encrypted']! as int),
+      'plaintextHashes': _optionalJsonDecode(json['plaintextHashes'] as String?),
+      'ciphertextHashes': _optionalJsonDecode(json['ciphertextHashes'] as String?),
     }).copyWith(quotes: quotes);
   }
   
@@ -76,6 +93,8 @@ class Message with _$Message {
       'acked': boolToInt(acked),
       'encrypted': boolToInt(encrypted),
       'quote_id': quoteId,
+      'plaintextHashes': _optionalJsonEncode(plaintextHashes),
+      'ciphertextHashes': _optionalJsonEncode(ciphertextHashes),
     };
   }
 

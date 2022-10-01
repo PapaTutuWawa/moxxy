@@ -51,6 +51,8 @@ class MessageService {
       String? quoteId,
       String? filename,
       int? errorType,
+      Map<String, String>? plaintextHashes,
+      Map<String, String>? ciphertextHashes,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -75,6 +77,8 @@ class MessageService {
       quoteId: quoteId,
       filename: filename,
       errorType: errorType,
+      plaintextHashes: plaintextHashes,
+      ciphertextHashes: ciphertextHashes,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents

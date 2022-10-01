@@ -4,11 +4,20 @@ import 'package:meta/meta.dart';
 @immutable
 class MediaFileLocation {
 
-  const MediaFileLocation(this.url, this.encryptionScheme, this.key, this.iv);
+  const MediaFileLocation(
+    this.url,
+    this.encryptionScheme,
+    this.key,
+    this.iv,
+    this.plaintextHashes,
+    this.ciphertextHashes,
+  );
   final String url;
   final String? encryptionScheme;
   final List<int>? key;
   final List<int>? iv;
+  final Map<String, String>? plaintextHashes;
+  final Map<String, String>? ciphertextHashes;
 
   String? get keyBase64 {
     if (key != null) return base64Encode(key!);

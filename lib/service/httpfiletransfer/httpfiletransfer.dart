@@ -369,9 +369,11 @@ class HttpFileTransferService {
           encryptionTypeFromNamespace(job.location.encryptionScheme!),
           job.location.key!,
           job.location.iv!,
+          job.location.plaintextHashes ?? {},
+          job.location.ciphertextHashes ?? {},
         );
 
-        if (!result) {
+        if (!result.decryptionOkay) {
           _log.warning('Failed to decrypt $downloadPath');
           final msg = await GetIt.I.get<MessageService>().updateMessage(
             job.mId,

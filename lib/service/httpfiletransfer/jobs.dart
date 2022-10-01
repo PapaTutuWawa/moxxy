@@ -42,16 +42,12 @@ class FileDownloadJob {
     this.conversationJid,
     this.mimeGuess, {
       this.shouldShowNotification = true,
-      this.ciphertextHashes,
-      this.plaintextHashes,
   });
   final MediaFileLocation location;
   final int mId;
   final String conversationJid;
   final String? mimeGuess;
   final bool shouldShowNotification;
-  final Map<String, String>? ciphertextHashes;
-  final Map<String, String>? plaintextHashes;
   
   @override
   bool operator ==(Object other) {
@@ -60,11 +56,9 @@ class FileDownloadJob {
       mId == other.mId &&
       conversationJid == other.conversationJid &&
       mimeGuess == other.mimeGuess &&
-      shouldShowNotification == other.shouldShowNotification &&
-      plaintextHashes == other.plaintextHashes &&
-      ciphertextHashes == other.ciphertextHashes;
+      shouldShowNotification == other.shouldShowNotification;
   }
 
   @override
-  int get hashCode => location.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode ^ plaintextHashes.hashCode ^ ciphertextHashes.hashCode;
+  int get hashCode => location.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode;
 }

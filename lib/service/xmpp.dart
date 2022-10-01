@@ -273,7 +273,14 @@ class XmppService {
       );
 
       if (source is StatelessFileSharingUrlSource) {
-        return MediaFileLocation(source.url, null, null, null);
+        return MediaFileLocation(
+          source.url,
+          null,
+          null,
+          null,
+          event.sfs?.metadata.hashes,
+          null,
+        );
       } else {
         final esource = source! as StatelessFileSharingEncryptedSource;
         return MediaFileLocation(
@@ -281,12 +288,14 @@ class XmppService {
           esource.encryption.toNamespace(),
           esource.key,
           esource.iv,
+          event.sfs?.metadata.hashes,
+          esource.hashes,
         );
       }
     } else if (event.sims != null) {
-      return MediaFileLocation(event.sims!.url, null, null, null);
+      return MediaFileLocation(event.sims!.url, null, null, null, null, null);
     } else if (event.oob != null) {
-      return MediaFileLocation(event.oob!.url!, null, null, null);
+      return MediaFileLocation(event.oob!.url!, null, null, null, null, null);
     }
 
     return null;
@@ -868,6 +877,7 @@ class XmppService {
       quoteId: replyId,
       filename: event.fun?.name,
       errorType: errorTypeFromException(event.other['encryption_error']),
+
     );
     
     // Attempt to auto-download the embedded file

@@ -62,7 +62,7 @@ Future<EncryptionResult> encryptFileImpl(EncryptionRequest request) async {
 }
 
 // TODO(PapaTutuWawa): Somehow fail when the ciphertext hash is not matching the provided data
-Future<bool> decryptFileImpl(DecryptionRequest request) async {
+Future<DecryptionResult> decryptFileImpl(DecryptionRequest request) async {
   Cipher algorithm;
   switch (request.encryption) {
     case SFSEncryptionType.aes128GcmNoPadding:
@@ -88,6 +88,25 @@ Future<bool> decryptFileImpl(DecryptionRequest request) async {
     ciphertext.addAll(ciphertextRaw.sublist(0, ciphertextRaw.length - 16));
   }
 
+  var passedCiphertextIntegrityCheck = true;
+  var passedPlaintextIntegrityCheck = true;
+  // Try to find one hash we can verify
+  for (final entry in request.ciphertextHashes.entries) {
+    if ([hashSha256, hashSha512, hashBlake2b512].contains(entry.key)) {
+      final hash = await CryptographicHashManager.hashFromData(
+        ciphertext,
+        hashFunctionFromName(entry.key),
+      );
+
+      if (base64Encode(hash) == entry.value) {
+        passedCiphertextIntegrityCheck = true;
+      } else {
+        passedCiphertextIntegrityCheck = false;
+      }
+      break;
+    }
+  }
+  
   final secretBox = SecretBox(
     ciphertext,
     nonce: request.iv,
@@ -99,10 +118,35 @@ Future<bool> decryptFileImpl(DecryptionRequest request) async {
       secretBox,
       secretKey: SecretKey(request.key),
     );
+
+    for (final entry in request.plaintextHashes.entries) {
+      if ([hashSha256, hashSha512, hashBlake2b512].contains(entry.key)) {
+        final hash = await CryptographicHashManager.hashFromData(
+          data,
+          hashFunctionFromName(entry.key),
+        );
+
+        if (base64Encode(hash) == entry.value) {
+          passedPlaintextIntegrityCheck = true;
+        } else {
+          passedPlaintextIntegrityCheck = false;
+        }
+        break;
+      }
+    }
+
     await File(request.dest).writeAsBytes(data);
   } catch (_) {
-    return false;
+    return DecryptionResult(
+      false,
+      passedPlaintextIntegrityCheck,
+      passedCiphertextIntegrityCheck,
+    );
   }
 
-  return true;
+  return DecryptionResult(
+    true,
+    passedPlaintextIntegrityCheck,
+    passedCiphertextIntegrityCheck,
+  );
 }
