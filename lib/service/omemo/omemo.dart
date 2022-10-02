@@ -105,6 +105,9 @@ class OmemoService {
     _log.info('No OMEMO marker found. Generating OMEMO identity...');
     final oldId = await omemoState.getDeviceId();
 
+    // Clear the database
+    await GetIt.I.get<DatabaseService>().emptyOmemoSessionTables();
+    
     // Regenerate the identity in the background
     omemoState = await compute(generateNewIdentityImpl, jid);
 

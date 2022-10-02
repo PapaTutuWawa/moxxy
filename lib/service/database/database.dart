@@ -812,4 +812,16 @@ class DatabaseService {
 
     await batch.commit();
   }
+
+  Future<void> emptyOmemoSessionTables() async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch
+      ..delete(omemoRatchetsTable)
+      ..delete(omemoTrustCacheTable)
+      ..delete(omemoTrustEnableListTable);
+
+    await batch.commit();
+  }
 }
