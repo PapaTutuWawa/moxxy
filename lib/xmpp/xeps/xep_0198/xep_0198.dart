@@ -102,10 +102,10 @@ class StreamManagementManager extends XmppManagerBase {
   Future<void> resetState() async {
     await _stateLock.synchronized(() async {
       setState(_state.copyWith(
-          c2s: 0,
-          s2c: 0,
-          streamResumptionLocation: null,
-          streamResumptionId: null,
+        c2s: 0,
+        s2c: 0,
+        streamResumptionLocation: null,
+        streamResumptionId: null,
       ),);
       await commitState();
     });
@@ -143,6 +143,7 @@ class StreamManagementManager extends XmppManagerBase {
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
       callback: _onServerStanzaReceived,
+      priority: 9999,
     )
   ];
 
@@ -265,7 +266,7 @@ class StreamManagementManager extends XmppManagerBase {
     final attrs = getAttributes();
     logger.finest('Sending ack response');
     await _stateLock.synchronized(() async {
-        attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
+      attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
     });
 
     return true;
