@@ -117,6 +117,10 @@ dependency_overrides:
   flutter:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 3.0.1
+  omemo_dart:
+    git:
+      url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
+      rev: 2aa3674c4bb70572c2a83cd891fc868e93c8e96b
  
 extra_licenses:
   - name: undraw.co
