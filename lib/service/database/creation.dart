@@ -105,7 +105,8 @@ Future<void> createDatabase(Database db, int version) async {
       ik_pub     TEXT NOT NULL,
       session_ad TEXT NOT NULL,
       acknowledged INTEGER NOT NULL,
-      mkskipped  TEXT NOT NULL
+      mkskipped  TEXT NOT NULL,
+      kex_timestamp INTEGER NOT NULL
     )''',
   );
   await db.execute(

@@ -53,6 +53,9 @@ const blockingXmlns = 'urn:xmpp:blocking';
 // XEP-0198
 const smXmlns = 'urn:xmpp:sm:3';
 
+// XEP-0203
+const delayedDeliveryXmlns = 'urn:xmpp:delay';
+
 // XEP-0234
 const jingleFileTransferXmlns = 'urn:xmpp:jingle:apps:file-transfer:5';
 

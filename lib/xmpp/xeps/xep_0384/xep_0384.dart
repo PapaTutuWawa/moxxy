@@ -126,9 +126,15 @@ abstract class OmemoManager extends XmppManagerBase {
   }
 
   /// Wrapper around using getSessionManager and then calling encryptToJids on it.
-  Future<String?> _decryptMessage(List<int>? ciphertext, String senderJid, int senderDeviceId, List<EncryptedKey> keys) async {
+  Future<String?> _decryptMessage(List<int>? ciphertext, String senderJid, int senderDeviceId, List<EncryptedKey> keys, int sendTimestamp) async {
     final session = await getSessionManager();
-    return session.decryptMessage(ciphertext, senderJid, senderDeviceId, keys);
+    return session.decryptMessage(
+      ciphertext,
+      senderJid,
+      senderDeviceId,
+      keys,
+      sendTimestamp,
+    );
   }
   
   /// Wrapper around using getSessionManager and then calling getDeviceId on it.
@@ -632,6 +638,7 @@ abstract class OmemoManager extends XmppManagerBase {
         fromJid.toString(),
         sid,
         keys,
+        state.delayedDelivery?.timestamp.millisecondsSinceEpoch ?? DateTime.now().millisecondsSinceEpoch,
       );
     } catch (ex) {
       logger.warning('Error occurred during message decryption: $ex');

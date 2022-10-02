@@ -51,6 +51,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0203.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0280.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
@@ -217,6 +218,7 @@ Future<void> entrypoint() async {
       FileUploadNotificationManager(),
       EmeManager(),
       CryptographicHashManager(),
+      DelayedDeliveryManager(),
     ])
     ..registerFeatureNegotiators([
       ResourceBindingNegotiator(),
