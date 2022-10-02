@@ -597,6 +597,7 @@ abstract class OmemoManager extends XmppManagerBase {
   Future<StanzaHandlerData> _onIncomingStanza(Stanza stanza, StanzaHandlerData state) async {
     final encrypted = stanza.firstTag('encrypted', xmlns: omemoXmlns);
     if (encrypted == null) return state;
+    if (stanza.from == null) return state;
 
     final fromJid = JID.fromString(stanza.from!).toBare();
     final completer = await _handlerEntry(fromJid);
