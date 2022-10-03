@@ -631,6 +631,13 @@ abstract class OmemoManager extends XmppManagerBase {
     final ourJid = getAttributes().getFullJID();
     final sid = int.parse(header.attributes['sid']! as String);
 
+    // Ensure that if we receive a message from a device that we don't know about, we
+    // ensure that _deviceMap is up-to-date.
+    final devices = _deviceMap[fromJid] ?? <int>[];
+    if (!devices.contains(sid)) {
+      await getDeviceList(fromJid);
+    }
+
     String? decrypted;
     try {
       decrypted = await _decryptMessage(
