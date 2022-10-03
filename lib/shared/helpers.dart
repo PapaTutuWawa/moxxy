@@ -238,6 +238,16 @@ String filenameFromUrl(String url) {
   return Uri.parse(url).pathSegments.last;
 }
 
+/// Attempts to escape [filename] such that it cannot be expanded into another path, i.e.
+/// make "../" not dangerous.
+String escapeFilename(String filename) {
+  return filename
+    .replaceAll('/', '%2F')
+    // ignore: use_raw_strings
+    .replaceAll('\\', '%5C')
+    .replaceAll('../', '..%2F');
+}
+
 ChatState chatStateFromString(String raw) {
   switch(raw) {
     case 'active': {

@@ -108,7 +108,7 @@ files:
           - JsonImplementation
         attributes:
           id: int
-          progress: double
+          progress: double?
       # Triggered by [RosterService] if we receive a roster push.
       - name: RosterDiffEvent
         extends: BackgroundEvent

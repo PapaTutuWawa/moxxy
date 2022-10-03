@@ -6,6 +6,7 @@ class MediaFileLocation {
 
   const MediaFileLocation(
     this.url,
+    this.filename,
     this.encryptionScheme,
     this.key,
     this.iv,
@@ -13,6 +14,7 @@ class MediaFileLocation {
     this.ciphertextHashes,
   );
   final String url;
+  final String filename;
   final String? encryptionScheme;
   final List<int>? key;
   final List<int>? iv;
@@ -32,10 +34,16 @@ class MediaFileLocation {
   }
 
   @override
-  int get hashCode => url.hashCode ^ key.hashCode ^ iv.hashCode;
+  int get hashCode => url.hashCode ^ filename.hashCode ^ encryptionScheme.hashCode ^ key.hashCode ^ iv.hashCode ^ plaintextHashes.hashCode ^ ciphertextHashes.hashCode;
 
   @override
   bool operator==(Object other) {
-    return other is MediaFileLocation && url == other.url && key == other.key && iv == other.iv;
+    // TODO(PapaTutuWawa): Compare the Maps
+    return other is MediaFileLocation &&
+           url == other.url &&
+           filename == other.filename &&
+           encryptionScheme == other.encryptionScheme &&
+           key == other.key &&
+           iv == other.iv;
   }
 }

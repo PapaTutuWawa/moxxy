@@ -323,10 +323,8 @@ class HttpFileTransferService {
   
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
-    _log.finest('Downloading ${job.location.url}');
-    final uri = Uri.parse(job.location.url);
-    // TODO(PapaTutuWawa): Pull the filename from the SFS metadata or any other source
-    final filename = uri.pathSegments.last;
+    final filename = job.location.filename;
+    _log.finest('Downloading ${job.location.url} as $filename');
     final downloadedPath = await getDownloadPath(filename, job.conversationJid, job.mimeGuess);
 
     var downloadPath = downloadedPath;
@@ -339,7 +337,7 @@ class HttpFileTransferService {
     dio.Response<dynamic>? response;
     try {
       response = await dio.Dio().downloadUri(
-        uri,
+        Uri.parse(job.location.url),
         downloadPath,
         onReceiveProgress: (count, total) {
           final progress = count.toDouble() / total.toDouble();
@@ -364,7 +362,13 @@ class HttpFileTransferService {
     } else {
       var integrityCheckPassed = true;
       if (job.location.key != null && job.location.iv != null) {
-        // The file was encrypted
+        // The file was downloaded and is now being decrypted
+        sendEvent(
+          ProgressEvent(
+            id: job.mId,
+          ),
+        );
+
         final result = await GetIt.I.get<CryptographyService>().decryptFile(
           downloadPath,
           downloadedPath,
@@ -382,7 +386,13 @@ class HttpFileTransferService {
             isFileUploadNotification: false,
             errorType: messageFailedToDecryptFile,
           );
-          sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+          sendEvent(
+            MessageUpdatedEvent(
+              message: msg.copyWith(
+                isDownloading: false,
+              ),
+            ),
+          );
 
           // We cannot do anything more so just bail
           await _pickNextDownloadTask();
@@ -390,9 +400,6 @@ class HttpFileTransferService {
         }
 
         integrityCheckPassed = result.plaintextOkay && result.ciphertextOkay;
-
-        // TODO(PapaTutuWawa): Calculate the file's hash and compare to the provided ones
-        // Cleanup the temporary file
         unawaited(Directory(pathlib.dirname(downloadPath)).delete(recursive: true));
       }
 
@@ -431,7 +438,13 @@ class HttpFileTransferService {
           null,
       );
 
-      sendEvent(MessageUpdatedEvent(message: msg.copyWith(isDownloading: false)));
+      sendEvent(
+        MessageUpdatedEvent(
+          message: msg.copyWith(
+            isDownloading: false,
+          ),
+        ),
+      );
 
       if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
         _log.finest('Creating notification with bigPicture $downloadedPath');

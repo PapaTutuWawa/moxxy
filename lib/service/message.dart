@@ -102,6 +102,17 @@ class MessageService {
       (message) => message.sid == stanzaId,
     );
   }
+
+  Future<Message?> getMessageById(String conversationJid, int id) async {
+    if (!_messageCache.containsKey(conversationJid)) {
+      await getMessagesForJid(conversationJid);
+    }
+    
+    return firstWhereOrNull(
+      _messageCache[conversationJid]!,
+      (message) => message.id == id,
+    );
+  }
   
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
   Future<Message> updateMessage(int id, {

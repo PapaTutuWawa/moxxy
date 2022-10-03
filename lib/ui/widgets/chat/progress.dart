@@ -25,7 +25,7 @@ class ProgressWidgetState extends State<ProgressWidget> {
 
   double? _progress;
 
-  void _onProgressUpdate(double progress) {
+  void _onProgressUpdate(double? progress) {
     setState(() {
       _progress = progress;
     });

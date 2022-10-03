@@ -272,9 +272,13 @@ class XmppService {
         },
       );
 
+      final name = event.sfs?.metadata.name; 
       if (source is StatelessFileSharingUrlSource) {
         return MediaFileLocation(
           source.url,
+          name != null ?
+            escapeFilename(name) :
+            filenameFromUrl(source.url),
           null,
           null,
           null,
@@ -285,6 +289,9 @@ class XmppService {
         final esource = source! as StatelessFileSharingEncryptedSource;
         return MediaFileLocation(
           esource.source.url,
+          name != null ?
+            escapeFilename(name) :
+            filenameFromUrl(esource.source.url),
           esource.encryption.toNamespace(),
           esource.key,
           esource.iv,
@@ -293,9 +300,26 @@ class XmppService {
         );
       }
     } else if (event.sims != null) {
-      return MediaFileLocation(event.sims!.url, null, null, null, null, null);
+      // TODO(PapaTutuWawa): Remove SIMS
+      return MediaFileLocation(
+        event.sims!.url,
+        filenameFromUrl(event.sims!.url),
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
     } else if (event.oob != null) {
-      return MediaFileLocation(event.oob!.url!, null, null, null, null, null);
+      return MediaFileLocation(
+        event.oob!.url!,
+        filenameFromUrl(event.oob!.url!),
+        null,
+        null,
+        null,
+        null,
+        null,
+      );
     }
 
     return null;
@@ -427,6 +451,7 @@ class XmppService {
           originId: conn.generateId(),
           mediaWidth: dimensions[path]?.width.toInt(),
           mediaHeight: dimensions[path]?.height.toInt(),
+          filename: pathlib.basename(path),
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
@@ -867,6 +892,7 @@ class XmppService {
       event.fun != null,
       event.encrypted,
       srcUrl: embeddedFile?.url,
+      filename: event.fun?.name ?? embeddedFile?.filename,
       key: embeddedFile?.keyBase64,
       iv: embeddedFile?.ivBase64,
       encryptionScheme: embeddedFile?.encryptionScheme,
@@ -875,7 +901,6 @@ class XmppService {
       mediaWidth: dimensions?.width.toInt(),
       mediaHeight: dimensions?.height.toInt(),
       quoteId: replyId,
-      filename: event.fun?.name,
       errorType: errorTypeFromException(event.other['encryption_error']),
 
     );
