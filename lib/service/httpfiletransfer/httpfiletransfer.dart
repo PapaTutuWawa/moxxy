@@ -355,7 +355,10 @@ class HttpFileTransferService {
       _log.warning('HTTP GET of ${job.location.url} returned ${response?.statusCode}');
     } else {
       var integrityCheckPassed = true;
-      if (job.location.key != null && job.location.iv != null) {
+      final conv = (await GetIt.I.get<ConversationService>()
+          .getConversationByJid(job.conversationJid))!;
+      final decryptionKeysAvailable = job.location.key != null && job.location.iv != null;
+      if (decryptionKeysAvailable) {
         // The file was downloaded and is now being decrypted
         sendEvent(
           ProgressEvent(
@@ -425,6 +428,9 @@ class HttpFileTransferService {
         warningType: integrityCheckPassed ?
           warningFileIntegrityCheckFailed :
           null,
+        errorType: conv.encrypted && !decryptionKeysAvailable ?
+          messageChatEncryptedButFileNot :
+          null,
         isDownloading: false,
       );
 
@@ -435,7 +441,6 @@ class HttpFileTransferService {
         await notification.showNotification(msg, '');
       }
 
-      final conv = (await GetIt.I.get<ConversationService>().getConversationByJid(job.conversationJid))!;
       final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
         downloadedPath,
         msg.timestamp,

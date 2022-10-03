@@ -11,6 +11,7 @@ const messageInvalidNumber = 6;
 const messageFailedToEncrypt = 7;
 const messageFailedToDecryptFile = 8;
 const messageContactDoesNotSupportOmemo = 9;
+const messageChatEncryptedButFileNot = 10;
 
 int errorTypeFromException(dynamic exception) {
   if (exception is NoDecryptionKeyException) {
