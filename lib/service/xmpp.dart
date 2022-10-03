@@ -441,6 +441,7 @@ class XmppService {
           mediaWidth: dimensions[path]?.width.toInt(),
           mediaHeight: dimensions[path]?.height.toInt(),
           filename: pathlib.basename(path),
+          isUploading: true,
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
@@ -448,7 +449,7 @@ class XmppService {
           messages[path] = { recipient: msg };
         }
 
-        sendEvent(MessageAddedEvent(message: msg.copyWith(isUploading: true)));
+        sendEvent(MessageAddedEvent(message: msg));
       }
     }
 
@@ -758,8 +759,8 @@ class XmppService {
   /// Extract the mime guess from a message, if existent.
   String? _getMimeGuess(MessageEvent event) {
     return firstNotNull([
-        event.sfs?.metadata.mediaType,
-        event.fun?.mediaType,
+      event.sfs?.metadata.mediaType,
+      event.fun?.mediaType,
     ]);
   }
 
@@ -889,7 +890,6 @@ class XmppService {
       mediaHeight: dimensions?.height.toInt(),
       quoteId: replyId,
       errorType: errorTypeFromException(event.other['encryption_error']),
-
     );
     
     // Attempt to auto-download the embedded file
@@ -903,7 +903,10 @@ class XmppService {
       // "always download".
       if (prefs.maximumAutoDownloadSize == -1
         || (metadata.size != null && metadata.size! < prefs.maximumAutoDownloadSize * 1000000)) {
-        message = message.copyWith(isDownloading: true);
+        message = await ms.updateMessage(
+          message.id,
+          isDownloading: true,
+        );
         await fts.downloadFile(
           FileDownloadJob(
             embeddedFile,
@@ -983,13 +986,13 @@ class XmppService {
     }
 
     // Notify the UI of the message
-    sendEvent(
-      MessageAddedEvent(
-        message: message.copyWith(
-          isDownloading: event.fun != null,
-        ),
-      ),
-    );
+    if (message.isDownloading != (event.fun != null)) {
+      message = await ms.updateMessage(
+        message.id,
+        isDownloading: event.fun != null,
+      );
+    }
+    sendEvent(MessageAddedEvent(message: message));
   }
 
   Future<void> _handleFileUploadNotificationReplacement(MessageEvent event, String conversationJid) async {
@@ -1021,7 +1024,10 @@ class XmppService {
 
     if (isFileEmbedded) {
       if (await _shouldDownloadFile(conversationJid)) {
-        message = message.copyWith(isDownloading: true);
+        await ms.updateMessage(
+          message.id,
+          isDownloading: true,
+        );
         await GetIt.I.get<HttpFileTransferService>().downloadFile(
           FileDownloadJob(
             embeddedFile!,
@@ -1038,10 +1044,11 @@ class XmppService {
           key: embeddedFile.keyBase64,
           iv: embeddedFile.ivBase64,
           isFileUploadNotification: false,
+          isDownloading: false,
         );
 
         // Tell the UI
-        sendEvent(MessageUpdatedEvent(message: message.copyWith(isDownloading: false)));
+        sendEvent(MessageUpdatedEvent(message: message));
       }
     } else {
       _log.warning('Received a File Upload Notification replacement but the replacement contains no file!');

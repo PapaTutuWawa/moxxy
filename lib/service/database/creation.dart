@@ -39,6 +39,8 @@ Future<void> createDatabase(Database db, int version) async {
       filename TEXT,
       plaintextHashes TEXT,
       ciphertextHashes TEXT,
+      isDownloading INTEGER NOT NULL,
+      isUploading INTEGER NOT NULL,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messsagesTable (id)
     )''',
   );

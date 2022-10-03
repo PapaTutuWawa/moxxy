@@ -222,12 +222,9 @@ class HttpFileTransferService {
           final msg = await ms.updateMessage(
             job.messageMap[recipient]!.id,
             errorType: fileUploadFailedError,
+            isUploading: false,
           );
-          sendEvent(
-            MessageUpdatedEvent(
-              message: msg.copyWith(isUploading: false),
-            ),
-          );
+          sendEvent(MessageUpdatedEvent(message: msg));
         }
       } else {
         _log.fine('Upload was successful');
@@ -245,12 +242,9 @@ class HttpFileTransferService {
               null,
             key: encryption != null ? base64Encode(encryption.key) : null,
             iv: encryption != null ? base64Encode(encryption.iv) : null,
+            isUploading: false,
           );
-          sendEvent(
-            MessageUpdatedEvent(
-              message: msg.copyWith(isUploading: false),
-            ),
-          );
+          sendEvent(MessageUpdatedEvent(message: msg));
 
           StatelessFileSharingSource source;
           final plaintextHashes = <String, String>{};
@@ -385,14 +379,9 @@ class HttpFileTransferService {
             job.mId,
             isFileUploadNotification: false,
             errorType: messageFailedToDecryptFile,
+            isDownloading: false,
           );
-          sendEvent(
-            MessageUpdatedEvent(
-              message: msg.copyWith(
-                isDownloading: false,
-              ),
-            ),
-          );
+          sendEvent(MessageUpdatedEvent(message: msg));
 
           // We cannot do anything more so just bail
           await _pickNextDownloadTask();
@@ -436,15 +425,10 @@ class HttpFileTransferService {
         warningType: integrityCheckPassed ?
           warningFileIntegrityCheckFailed :
           null,
+        isDownloading: false,
       );
 
-      sendEvent(
-        MessageUpdatedEvent(
-          message: msg.copyWith(
-            isDownloading: false,
-          ),
-        ),
-      );
+      sendEvent(MessageUpdatedEvent(message: msg));
 
       if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
         _log.finest('Creating notification with bigPicture $downloadedPath');

@@ -76,15 +76,15 @@ class Message with _$Message {
       'encrypted': intToBool(json['encrypted']! as int),
       'plaintextHashes': _optionalJsonDecode(json['plaintextHashes'] as String?),
       'ciphertextHashes': _optionalJsonDecode(json['ciphertextHashes'] as String?),
+      'isDownloading': intToBool(json['isDownloading']! as int),
+      'isUploading': intToBool(json['isUploading']! as int),
     }).copyWith(quotes: quotes);
   }
   
   Map<String, dynamic> toDatabaseJson(int? quoteId) {
     final map = toJson()
       ..remove('id')
-      ..remove('quotes')
-      ..remove('isDownloading')
-      ..remove('isUploading');
+      ..remove('quotes');
 
     return {
       ...map,
@@ -97,6 +97,8 @@ class Message with _$Message {
       'quote_id': quoteId,
       'plaintextHashes': _optionalJsonEncode(plaintextHashes),
       'ciphertextHashes': _optionalJsonEncode(ciphertextHashes),
+      'isDownloading': boolToInt(isDownloading),
+      'isUploading': boolToInt(isUploading),
     };
   }
 

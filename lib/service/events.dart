@@ -323,15 +323,20 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
 }
 
 Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic extra }) async {
-  sendEvent(MessageUpdatedEvent(message: command.message.copyWith(isDownloading: true)));
-
+  final ms = GetIt.I.get<MessageService>();
   final srv = GetIt.I.get<HttpFileTransferService>();
+
+  final message = await ms.updateMessage(
+    command.message.id,
+    isDownloading: true,
+  );
+  sendEvent(MessageUpdatedEvent(message: message));
+
   final metadata = await peekFile(command.message.srcUrl!);
 
   // TODO(Unknown): Maybe deduplicate with the code in the xmpp service
   // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
   //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-  final message = command.message;
   final ext = message.srcUrl!.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
 
@@ -346,8 +351,8 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
         message.plaintextHashes,
         message.ciphertextHashes,
       ),
-      command.message.id,
-      command.message.conversationJid,
+      message.id,
+      message.conversationJid,
       mimeGuess,
     ),
   );

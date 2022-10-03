@@ -263,6 +263,8 @@ class DatabaseService {
       int? warningType,
       Map<String, String>? plaintextHashes,
       Map<String, String>? ciphertextHashes,
+      bool isDownloading = false,
+      bool isUploading = false,
     }
   ) async {
     final m = Message(
@@ -293,6 +295,8 @@ class DatabaseService {
       filename: filename,
       plaintextHashes: plaintextHashes,
       ciphertextHashes: ciphertextHashes,
+      isUploading: isUploading,
+      isDownloading: isDownloading,
     );
 
     Message? quotes;
@@ -355,6 +359,8 @@ class DatabaseService {
     String? encryptionScheme,
     int? mediaWidth,
     int? mediaHeight,
+    bool? isDownloading,
+    bool? isUploading,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -405,6 +411,12 @@ class DatabaseService {
     }
     if (encryptionScheme != null) {
       m['encryptionScheme'] = encryptionScheme;
+    }
+    if (isDownloading != null) {
+      m['isDownloading'] = boolToInt(isDownloading);
+    }
+    if (isUploading != null) {
+      m['isUploading'] = boolToInt(isUploading);
     }
 
     await _db.update(

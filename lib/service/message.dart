@@ -54,6 +54,8 @@ class MessageService {
       int? warningType,
       Map<String, String>? plaintextHashes,
       Map<String, String>? ciphertextHashes,
+      bool isDownloading = false,
+      bool isUploading = false,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -81,6 +83,8 @@ class MessageService {
       warningType: warningType,
       plaintextHashes: plaintextHashes,
       ciphertextHashes: ciphertextHashes,
+      isUploading: isUploading,
+      isDownloading: isDownloading,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents
@@ -130,6 +134,8 @@ class MessageService {
     String? encryptionScheme,
     int? mediaWidth,
     int? mediaHeight,
+    bool? isUploading,
+    bool? isDownloading,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -147,6 +153,8 @@ class MessageService {
       encryptionScheme: encryptionScheme,
       mediaWidth: mediaWidth,
       mediaHeight: mediaHeight,
+      isUploading: isUploading,
+      isDownloading: isDownloading,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {
