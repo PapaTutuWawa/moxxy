@@ -312,6 +312,116 @@ void main() {
       await Future.delayed(const Duration(seconds: 2));
       expect(sm.state.s2c, 1);
     });
+
+    test('Test counting incoming stanzas that are awaited', () async {
+      final fakeSocket = StubTCPSocket(
+        play: [
+          StringExpectation(
+            "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='test.server' xml:lang='en'>",
+            '''
+<stream:stream
+    xmlns="jabber:client"
+    version="1.0"
+    xmlns:stream="http://etherx.jabber.org/streams"
+    from="test.server"
+    xml:lang="en">
+  <stream:features xmlns="http://etherx.jabber.org/streams">
+    <mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">
+      <mechanism>PLAIN</mechanism>
+    </mechanisms>
+  </stream:features>''',
+          ),
+          StringExpectation(
+            "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='PLAIN'>AHBvbHlub21kaXZpc2lvbgBhYWFh</auth>",
+            '<success xmlns="urn:ietf:params:xml:ns:xmpp-sasl" />'
+          ),
+          StringExpectation(
+            "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='test.server' xml:lang='en'>",
+            '''
+<stream:stream
+    xmlns="jabber:client"
+    version="1.0"
+    xmlns:stream="http://etherx.jabber.org/streams"
+    from="test.server"
+    xml:lang="en">
+  <stream:features xmlns="http://etherx.jabber.org/streams">
+    <bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">
+      <required/>
+    </bind>
+    <session xmlns="urn:ietf:params:xml:ns:xmpp-session">
+      <optional/>
+    </session>
+    <csi xmlns="urn:xmpp:csi:0"/>
+    <sm xmlns="urn:xmpp:sm:3"/>
+  </stream:features>
+''',
+          ),
+          StanzaExpectation(
+            '<iq xmlns="jabber:client" type="set" id="a"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"/></iq>',
+            '<iq xmlns="jabber:client" type="result" id="a"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><jid>polynomdivision@test.server/MU29eEZn</jid></bind></iq>',
+            ignoreId: true,
+          ),
+          StringExpectation(
+            "<enable xmlns='urn:xmpp:sm:3' resume='true' />",
+            '<enabled xmlns="urn:xmpp:sm:3" id="some-long-sm-id" resume="true" />',
+          ),
+          StringExpectation(
+            "<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' hash='sha-1' node='http://moxxy.im' ver='QRTBC5cg/oYd+UOTYazSQR4zb/I=' /></presence>",
+            '<iq type="result" />',
+          ),
+          StanzaExpectation(
+            "<iq to='user@example.com' type='get' id='a' xmlns='jabber:client' />",
+            "<iq to='user@example.com' type='result' id='a' />",
+            ignoreId: true,
+            adjustId: true,
+          ),
+        ]
+      );
+
+      final XmppConnection conn = XmppConnection(TestingReconnectionPolicy(), socket: fakeSocket);
+      conn.setConnectionSettings(ConnectionSettings(
+          jid: JID.fromString('polynomdivision@test.server'),
+          password: 'aaaa',
+          useDirectTLS: true,
+          allowPlainAuth: true,
+      ),);
+      final sm = StreamManagementManager();
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          PingManager(),
+          sm,
+          CarbonsManager()..forceEnable(),
+      ]);
+      conn.registerFeatureNegotiators(
+        [
+          SaslPlainNegotiator(),
+          ResourceBindingNegotiator(),
+          StreamManagementNegotiator(),
+        ]
+      );
+
+      await conn.connect();
+      await Future.delayed(const Duration(seconds: 3));
+      expect(fakeSocket.getState(), 6);
+      expect(await conn.getConnectionState(), XmppConnectionState.connected);
+      expect(
+        conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
+        true,
+      );
+
+      // Await an iq
+      await conn.sendStanza(
+        Stanza.iq(
+          to: 'user@example.com',
+          type: 'get',
+        ),
+        addFrom: StanzaFromType.none,
+      );
+
+      expect(sm.state.s2c, 2);
+    });
   });
 
   group('Stream resumption', () {

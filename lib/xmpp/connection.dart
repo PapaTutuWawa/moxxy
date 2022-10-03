@@ -645,8 +645,13 @@ class XmppConnection {
       return;
     }
 
-    // See if we are waiting for this stanza
     final stanza = Stanza.fromXMLNode(nonza);
+
+    // Run the incoming stanza handlers and bounce with an error if no manager handled
+    // it.
+    final stanzaHandled = await _runIncomingStanzaHandlers(stanza);
+    
+    // See if we are waiting for this stanza
     final id = stanza.attributes['id'] as String?;
     var awaited = false;
     await _awaitingResponseLock.synchronized(() async {
@@ -656,13 +661,12 @@ class XmppConnection {
         awaited = true;
       }
     });
+
     if (awaited) {
       return;
     }
 
-    // Run the incoming stanza handlers and bounce with an error if no manager handled
-    // it.
-    final stanzaHandled = await _runIncomingStanzaHandlers(stanza);
+    // Only bounce if the stanza has neither been awaited, nor handled.
     if (!stanzaHandled) {
       handleUnhandledStanza(this, stanza);
     }
