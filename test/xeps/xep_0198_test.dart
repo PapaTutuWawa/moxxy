@@ -18,6 +18,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/state.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0280.dart';
 
 import 'package:test/test.dart';
 
@@ -26,19 +27,19 @@ import '../helpers/xmpp.dart';
 
 Future<void> runIncomingStanzaHandlers(StreamManagementManager man, Stanza stanza) async {
   for (final handler in man.getIncomingStanzaHandlers()) {
-    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, stanza));
+    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, false, null, stanza));
   }
 }
 
 Future<void> runOutgoingStanzaHandlers(StreamManagementManager man, Stanza stanza) async {
   for (final handler in man.getOutgoingPostStanzaHandlers()) {
-    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, stanza));
+    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, false, null, stanza));
   }
 }
 
 XmppManagerAttributes mkAttributes(void Function(Stanza) callback) {
   return XmppManagerAttributes(
-    sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async {
+    sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool encrypted = false, bool awaitable = true }) async {
       callback(stanza);
 
       return Stanza.message();
@@ -199,6 +200,118 @@ void main() {
       await manager.runNonzaHandlers(mkAck(3));
       expect(await manager.getPendingAcks(), 2);
     });
+
+    test('Test counting incoming stanzas for which handlers end early', () async {
+      final fakeSocket = StubTCPSocket(
+        play: [
+          StringExpectation(
+            "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='test.server' xml:lang='en'>",
+            '''
+<stream:stream
+    xmlns="jabber:client"
+    version="1.0"
+    xmlns:stream="http://etherx.jabber.org/streams"
+    from="test.server"
+    xml:lang="en">
+  <stream:features xmlns="http://etherx.jabber.org/streams">
+    <mechanisms xmlns="urn:ietf:params:xml:ns:xmpp-sasl">
+      <mechanism>PLAIN</mechanism>
+    </mechanisms>
+  </stream:features>''',
+          ),
+          StringExpectation(
+            "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='PLAIN'>AHBvbHlub21kaXZpc2lvbgBhYWFh</auth>",
+            '<success xmlns="urn:ietf:params:xml:ns:xmpp-sasl" />'
+          ),
+          StringExpectation(
+            "<stream:stream xmlns='jabber:client' version='1.0' xmlns:stream='http://etherx.jabber.org/streams' to='test.server' xml:lang='en'>",
+            '''
+<stream:stream
+    xmlns="jabber:client"
+    version="1.0"
+    xmlns:stream="http://etherx.jabber.org/streams"
+    from="test.server"
+    xml:lang="en">
+  <stream:features xmlns="http://etherx.jabber.org/streams">
+    <bind xmlns="urn:ietf:params:xml:ns:xmpp-bind">
+      <required/>
+    </bind>
+    <session xmlns="urn:ietf:params:xml:ns:xmpp-session">
+      <optional/>
+    </session>
+    <csi xmlns="urn:xmpp:csi:0"/>
+    <sm xmlns="urn:xmpp:sm:3"/>
+  </stream:features>
+''',
+          ),
+          StanzaExpectation(
+            '<iq xmlns="jabber:client" type="set" id="a"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"/></iq>',
+            '<iq xmlns="jabber:client" type="result" id="a"><bind xmlns="urn:ietf:params:xml:ns:xmpp-bind"><jid>polynomdivision@test.server/MU29eEZn</jid></bind></iq>',
+            ignoreId: true,
+          ),
+          StringExpectation(
+            "<enable xmlns='urn:xmpp:sm:3' resume='true' />",
+            '<enabled xmlns="urn:xmpp:sm:3" id="some-long-sm-id" resume="true" />',
+          ),
+        ]
+      );
+
+      final XmppConnection conn = XmppConnection(TestingReconnectionPolicy(), socket: fakeSocket);
+      conn.setConnectionSettings(ConnectionSettings(
+          jid: JID.fromString('polynomdivision@test.server'),
+          password: 'aaaa',
+          useDirectTLS: true,
+          allowPlainAuth: true,
+      ),);
+      final sm = StreamManagementManager();
+      conn.registerManagers([
+          PresenceManager(),
+          RosterManager(),
+          DiscoManager(),
+          PingManager(),
+          sm,
+          CarbonsManager()..forceEnable(),
+      ]);
+      conn.registerFeatureNegotiators(
+        [
+          SaslPlainNegotiator(),
+          ResourceBindingNegotiator(),
+          StreamManagementNegotiator(),
+        ]
+      );
+
+      await conn.connect();
+      await Future.delayed(const Duration(seconds: 3));
+      expect(fakeSocket.getState(), 6);
+      expect(await conn.getConnectionState(), XmppConnectionState.connected);
+      expect(
+        conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
+        true,
+      );
+
+      // Send an invalid carbon
+      fakeSocket.injectRawXml('''
+<message xmlns='jabber:client'
+         from='romeo@montague.example'
+         to='romeo@montague.example/home'
+         type='chat'>
+  <received xmlns='urn:xmpp:carbons:2'>
+    <forwarded xmlns='urn:xmpp:forward:0'>
+      <message xmlns='jabber:client'
+               from='juliet@capulet.example/balcony'
+               to='romeo@montague.example/garden'
+               type='chat'>
+        <body>What man art thou that, thus bescreen'd in night, so stumblest on my counsel?</body>
+        <thread>0e3141cd80894871a68e6fe6b1ec56fa</thread>
+      </message>
+    </forwarded>
+  </received>
+</message>
+      ''');
+
+      await Future.delayed(const Duration(seconds: 2));
+      expect(sm.state.s2c, 1);
+    });
   });
 
   group('Stream resumption', () {
@@ -335,7 +448,7 @@ void main() {
       await conn.connect();
       await Future.delayed(const Duration(seconds: 3));
 
-      expect(fakeSocket.getState(), 7);
+      expect(fakeSocket.getState(), 6);
       expect(await conn.getConnectionState(), XmppConnectionState.connected);
       expect(
         conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
@@ -433,14 +546,15 @@ void main() {
         );
 
       await conn.connect();
-      await Future.delayed(const Duration(seconds: 3), () async {
-        expect(fakeSocket.getState(), 8);
-        expect(await conn.getConnectionState(), XmppConnectionState.connected);
-        expect(
-          conn.getManagerById<StreamManagementManager>(smManager)!.isStreamManagementEnabled(),
-          true,
-        );
-      });
+      await Future.delayed(const Duration(seconds: 3));
+      expect(fakeSocket.getState(), 7);
+      expect(await conn.getConnectionState(), XmppConnectionState.connected);
+      expect(
+        conn
+          .getManagerById<StreamManagementManager>(smManager)!
+          .isStreamManagementEnabled(),
+        true,
+      );
     });
 
     test('Test a successful stream resumption', () async {
@@ -525,7 +639,7 @@ void main() {
 
       await conn.connect(lastResource: 'abc123');
       await Future.delayed(const Duration(seconds: 3), () async {
-        expect(fakeSocket.getState(), 7);
+        expect(fakeSocket.getState(), 5);
         expect(await conn.getConnectionState(), XmppConnectionState.connected);
         final sm = conn.getManagerById<StreamManagementManager>(smManager)!;
         expect(sm.isStreamManagementEnabled(), true);
