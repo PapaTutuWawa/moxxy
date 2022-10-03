@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
+import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
@@ -17,7 +19,14 @@ class MoxxyOmemoManager extends OmemoManager {
   }
 
   @override
-  Future<bool> shouldEncryptStanza(JID toJid) async {
+  Future<bool> shouldEncryptStanza(JID toJid, Stanza stanza) async {
+    // Never encrypt stanzas that contain PubSub elements
+    if (stanza.firstTag('pubsub', xmlns: pubsubXmlns) != null ||
+        stanza.firstTag('pubsub', xmlns: pubsubOwnerXmlns) != null) {
+      return false;
+    }
+
+    // Encrypt when the conversation is set to use OMEMO.
     return GetIt.I.get<ConversationService>().shouldEncryptForConversation(toJid);
   }
 }

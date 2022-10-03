@@ -452,7 +452,7 @@ abstract class OmemoManager extends XmppManagerBase {
     }
 
     final toJid = JID.fromString(stanza.to!).toBare();
-    if (!(await shouldEncryptStanza(toJid))) {
+    if (!(await shouldEncryptStanza(toJid, stanza))) {
       logger.finest('shouldEncryptStanza returned false for message to $toJid. Not encrypting.');
       return state;
     } else {
@@ -567,7 +567,7 @@ abstract class OmemoManager extends XmppManagerBase {
   /// then the message will be encrypted. If it returns false, the message won't be
   /// encrypted.
   @visibleForOverriding
-  Future<bool> shouldEncryptStanza(JID toJid);
+  Future<bool> shouldEncryptStanza(JID toJid, Stanza stanza);
   
   /// Wrapper function that attempts to enter the encryption/decryption critical section.
   /// In case the critical section could be entered, null is returned. If not, then a
