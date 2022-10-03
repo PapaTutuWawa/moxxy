@@ -59,7 +59,6 @@ import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0385.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0461.dart';
 
@@ -206,7 +205,6 @@ Future<void> entrypoint() async {
       VCardManager(),
       UserAvatarManager(),
       StableIdManager(),
-      SIMSManager(),
       MessageDeliveryReceiptManager(),
       ChatMarkerManager(),
       OOBManager(),

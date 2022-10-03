@@ -299,17 +299,6 @@ class XmppService {
           esource.hashes,
         );
       }
-    } else if (event.sims != null) {
-      // TODO(PapaTutuWawa): Remove SIMS
-      return MediaFileLocation(
-        event.sims!.url,
-        filenameFromUrl(event.sims!.url),
-        null,
-        null,
-        null,
-        null,
-        null,
-      );
     } else if (event.oob != null) {
       return MediaFileLocation(
         event.oob!.url!,
@@ -748,14 +737,13 @@ class XmppService {
 
   /// Return true if [event] describes a message that we want to display.
   bool _isMessageEventMessage(MessageEvent event) {
-    return event.body.isNotEmpty || event.sfs != null || event.sims != null || event.fun != null;
+    return event.body.isNotEmpty || event.sfs != null || event.fun != null;
   }
 
   /// Extract the thumbnail data from a message, if existent.
   String? _getThumbnailData(MessageEvent event) {
     final thumbnails = firstNotNull([
         event.sfs?.metadata.thumbnails,
-        event.sims?.thumbnails,
         event.fun?.thumbnails,
     ]) ?? [];
     for (final i in thumbnails) {
@@ -771,7 +759,6 @@ class XmppService {
   String? _getMimeGuess(MessageEvent event) {
     return firstNotNull([
         event.sfs?.metadata.mediaType,
-        event.sims?.mediaType,
         event.fun?.mediaType,
     ]);
   }
