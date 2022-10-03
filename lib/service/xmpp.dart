@@ -1144,26 +1144,35 @@ class XmppService {
   /// (from experience this information is sufficient, as most clients show
   /// the file size, and including time information might be confusing and a
   /// potential privacy issue).
-  /// The body of the quotes message is always printed, in case other clients
-  /// provided useful fallback information.
+  /// This information is complemented either the srcUrl or – if unavailable –
+  /// by the body of the quoted message. For non-media messages, we always use
+  /// the body as fallback.
   String? createFallbackBodyForQuotedMessage(Message? quotedMessage) {
     if (quotedMessage == null) {
       return null;
     }
+
     if (quotedMessage.isMedia) {
+      // Create formatted size string, if size is stored
       String quoteMessageSize;
       if (quotedMessage.mediaSize != null && quotedMessage.mediaSize! > 0) {
-        quoteMessageSize = '(${quotedMessage.mediaSize} KiB) ';
+        quoteMessageSize = '(${fileSizeToString(quotedMessage.mediaSize!)}) ';
       } else {
         quoteMessageSize = '';
       }
+
+      // Create media url string, or use body if no srcUrl is stored
       String quotedMediaUrl;
       if (quotedMessage.srcUrl != null && quotedMessage.srcUrl!.isNotEmpty) {
-        quotedMediaUrl = quotedMessage.srcUrl!;
+        quotedMediaUrl = '• ${quotedMessage.srcUrl!}';
+      } else if (quotedMessage.body.isNotEmpty){
+        quotedMediaUrl = '• ${quotedMessage.body}';
       } else {
-          quotedMediaUrl = quotedMessage.body;
-        }
-      return '${quotedMessage.messageEmoji} $quoteMessageSize${quotedMediaUrl.isNotEmpty ? "• $quotedMediaUrl" : ""}';
+        quotedMediaUrl = '';
+      }
+
+      // Concatenate emoji, size string, and media url and return
+      return '${quotedMessage.messageEmoji} $quoteMessageSize$quotedMediaUrl';
     } else {
       return quotedMessage.body;
     }
