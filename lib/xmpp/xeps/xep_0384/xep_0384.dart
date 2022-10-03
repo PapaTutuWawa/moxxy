@@ -363,7 +363,7 @@ abstract class OmemoManager extends XmppManagerBase {
         ratchetSessions.length :
         // We should have a session with every device of [jid] except for one if it's us
         ratchetSessions.length - 1;
-      if (devices.length != expectedDeviceNumber) {
+      if (devices.length > expectedDeviceNumber) {
         logger.finest('Mismatch between devices we have a session with and published devices');
         for (final id in devices) {
           if (ratchetSessions.contains(id)) continue;
@@ -376,7 +376,7 @@ abstract class OmemoManager extends XmppManagerBase {
           
           logger.finest('Retrieving bundle for $toJid:$id');
           final bundle = await retrieveDeviceBundle(toJid, id);
-          if (!bundle.isType<OmemoBundle>()) {
+          if (bundle.isType<OmemoBundle>()) {
             newSessions.add(bundle.get<OmemoBundle>());
           } else {
             logger.warning('Failed to retrieve bundle for $toJid:$id');
