@@ -1024,10 +1024,14 @@ class XmppService {
 
     if (isFileEmbedded) {
       if (await _shouldDownloadFile(conversationJid)) {
-        await ms.updateMessage(
+        message = await ms.updateMessage(
           message.id,
           isDownloading: true,
         );
+
+        // Tell the UI
+        sendEvent(MessageUpdatedEvent(message: message));
+
         await GetIt.I.get<HttpFileTransferService>().downloadFile(
           FileDownloadJob(
             embeddedFile!,
