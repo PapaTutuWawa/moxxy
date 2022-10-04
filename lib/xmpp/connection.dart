@@ -81,6 +81,7 @@ class XmppConnection {
       BaseSocketWrapper? socket,
       this.connectionPingDuration = const Duration(minutes: 3),
       this.connectingTimeout = const Duration(minutes: 2),
+      bool socketLogging = false,
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
@@ -89,7 +90,7 @@ class XmppConnection {
     _resource = '',
     _streamBuffer = XmlStreamBuffer(),
     _uuid = const Uuid(),
-    _socket = socket ?? TCPSocketWrapper(),
+    _socket = socket ?? TCPSocketWrapper(socketLogging),
     _awaitingResponse = {},
     _awaitingResponseLock = Lock(),
     _xmppManagers = {},
@@ -196,7 +197,10 @@ class XmppConnection {
       XmppManagerAttributes(
         sendStanza: sendStanza,
         sendNonza: sendRawXML,
-        sendRawXml: _socket.write,
+        sendRawXml: (xml) {
+          _log.finest('==> $xml');
+          _socket.write(xml);
+        },
         sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
@@ -380,7 +384,9 @@ class XmppConnection {
   
   /// Sends an [XMLNode] without any further processing to the server.
   void sendRawXML(XMLNode node, { String? redact }) {
-    _socket.write(node.toXml(), redact: redact);
+    final string = node.toXml();
+    _log.finest('==> $string');
+    _socket.write(string, redact: redact);
   }
 
   /// Sends [raw] to the server.
@@ -456,6 +462,11 @@ class XmppConnection {
         },
       );
     }
+
+    final prefix = data.encrypted ?
+      '(Encrypted) ' :
+      '';
+    _log.finest('==> $prefix${stanza_.toXml()}');
 
     final stanzaString = data.stanza.toXml();
 
@@ -607,9 +618,8 @@ class XmppConnection {
     return state;
   }
 
-  Future<bool> _runIncomingStanzaHandlers(Stanza stanza) async {
-    final data = await _runStanzaHandlers(_incomingStanzaHandlers, stanza);
-    return data.done;
+  Future<StanzaHandlerData> _runIncomingStanzaHandlers(Stanza stanza) async {
+    return _runStanzaHandlers(_incomingStanzaHandlers, stanza);
   }
 
   Future<StanzaHandlerData> _runOutgoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
@@ -629,6 +639,8 @@ class XmppConnection {
   Future<void> _handleStanza(XMLNode nonza) async {
     // Process nonzas separately
     if (!['message', 'iq', 'presence'].contains(nonza.tag)) {
+      _log.finest('<== ${nonza.toXml()}');
+
       var nonzaHandled = false;
       await Future.forEach(
         _xmppManagers.values,
@@ -649,8 +661,12 @@ class XmppConnection {
 
     // Run the incoming stanza handlers and bounce with an error if no manager handled
     // it.
-    final stanzaHandled = await _runIncomingStanzaHandlers(stanza);
-    
+    final incomingHandlers = await _runIncomingStanzaHandlers(stanza);
+    final prefix = incomingHandlers.encrypted ?
+      '(Encrypted) ' :
+      '';
+    _log.finest('<== $prefix${incomingHandlers.stanza.toXml()}');
+
     // See if we are waiting for this stanza
     final id = stanza.attributes['id'] as String?;
     var awaited = false;
@@ -667,7 +683,7 @@ class XmppConnection {
     }
 
     // Only bounce if the stanza has neither been awaited, nor handled.
-    if (!stanzaHandled) {
+    if (!incomingHandlers.done) {
       handleUnhandledStanza(this, stanza);
     }
   }
@@ -797,7 +813,9 @@ class XmppConnection {
   Future<void> handleXmlStream(XMLNode node) async {
     // Check if we received a stream error
     if (node.tag == 'stream:error') {
-      _log.severe('Received a stream error! Attempting reconnection');
+      _log
+        ..finest('<== ${node.toXml()}')
+        ..severe('Received a stream error! Attempting reconnection');
       await handleError('Stream error');
       
       return;
@@ -805,6 +823,8 @@ class XmppConnection {
 
     switch (_routingState) {
       case RoutingState.negotiating:
+        _log.finest('<== ${node.toXml()}');
+
         // Why lock here? The problem is that if we do stream resumption, then we might
         // receive "<resumed .../><iq .../>...", which will all be fed into the negotiator,
         // causing (a) the negotiator to become confused and (b) the stanzas/nonzas to be
