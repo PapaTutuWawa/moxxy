@@ -243,6 +243,7 @@ class HttpFileTransferService {
             key: encryption != null ? base64Encode(encryption.key) : null,
             iv: encryption != null ? base64Encode(encryption.iv) : null,
             isUploading: false,
+            srcUrl: slot.getUrl,
           );
           sendEvent(MessageUpdatedEvent(message: msg));
 
@@ -407,9 +408,15 @@ class HttpFileTransferService {
 
           // Find out the dimensions
           // TODO(Unknown): Restrict to the library's supported file types
-          final size = ImageSizeGetter.getSize(FileInput(File(downloadedPath)));
-          mediaWidth = size.width;
-          mediaHeight = size.height;
+          Size? size;
+          try {
+            size = ImageSizeGetter.getSize(FileInput(File(downloadedPath)));
+          } catch (ex) {
+            _log.warning('Failed to get image size for $downloadedPath: $ex');
+          }
+
+          mediaWidth = size?.width;
+          mediaHeight = size?.height;
         } else if (mime.startsWith('video/')) {
           // TODO(Unknown): Also figure out the thumbnail size here
           MoxplatformPlugin.media.scanFile(downloadedPath);

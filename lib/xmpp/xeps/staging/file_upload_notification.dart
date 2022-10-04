@@ -26,18 +26,21 @@ class FileUploadNotificationManager extends XmppManagerBase {
       tagName: 'file-upload',
       tagXmlns: fileUploadNotificationXmlns,
       callback: _onFileUploadNotificationReceived,
+      priority: -99,
     ),
     StanzaHandler(
       stanzaTag: 'message',
       tagName: 'replaces',
       tagXmlns: fileUploadNotificationXmlns,
       callback: _onFileUploadNotificationReplacementReceived,
+      priority: -99,
     ),
     StanzaHandler(
       stanzaTag: 'message',
       tagName: 'cancelled',
       tagXmlns: fileUploadNotificationXmlns,
       callback: _onFileUploadNotificationCancellationReceived,
+      priority: -99,
     ),
   ];
 
