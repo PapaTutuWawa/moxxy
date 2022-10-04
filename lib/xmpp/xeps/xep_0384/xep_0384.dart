@@ -51,6 +51,9 @@ abstract class OmemoManager extends XmppManagerBase {
   final Map<JID, Queue<Completer<void>>> _handlerFutures;
 
   final Map<JID, List<int>> _deviceMap = {};
+
+  // Mapping whether we already tried to subscribe to the JID's devices node
+  final Map<JID, bool> _subscriptionMap = {};
   
   @override
   String getId() => omemoManager;
@@ -338,7 +341,9 @@ abstract class OmemoManager extends XmppManagerBase {
         return Result(OmemoNotSupportedForContactException());
       }
 
-      await subscribeToDeviceList(toJid);
+      if (!_subscriptionMap.containsKey(toJid)) {
+        await subscribeToDeviceList(toJid);
+      }
     } else if (unackedRatchets != null && unackedRatchets.isNotEmpty && !ignoreUnacked) {
       logger.finest('Got unacked ratchets');
       for (final id in unackedRatchets) {
@@ -354,7 +359,11 @@ abstract class OmemoManager extends XmppManagerBase {
       final map = await session.getDeviceMap();
       final devices = map[toJid.toString()]!;
       final ratchetSessionsRaw = await getDeviceList(toJid);
-      await subscribeToDeviceList(toJid);
+
+      if (!_subscriptionMap.containsKey(toJid)) {
+        await subscribeToDeviceList(toJid);
+      }
+
       if (ratchetSessionsRaw.isType<OmemoError>()) return Result(UnknownOmemoError());
 
       final ratchetSessions = ratchetSessionsRaw.get<List<int>>();
@@ -871,7 +880,11 @@ abstract class OmemoManager extends XmppManagerBase {
   /// Subscribes to the device list PubSub node of [jid].
   Future<void> subscribeToDeviceList(JID jid) async {
     final pm = getAttributes().getManagerById<PubSubManager>(pubsubManager)!;
-    await pm.subscribe(jid.toString(), omemoDevicesXmlns);
+    final result = await pm.subscribe(jid.toString(), omemoDevicesXmlns);
+
+    if (!result.isType<PubSubError>()) {
+      _subscriptionMap[jid] = true;
+    }
   }
 
   /// Attempts to find out if [jid] supports omemo:2.
