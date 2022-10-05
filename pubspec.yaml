@@ -57,7 +57,7 @@ dependencies:
     version: 0.1.4
   moxplatform:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.12
+    version: 0.1.15
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.0

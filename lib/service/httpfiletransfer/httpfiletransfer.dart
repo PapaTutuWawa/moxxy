@@ -146,6 +146,22 @@ class HttpFileTransferService {
       );
     }
   }
+
+  Future<void> _fileUploadFailed(FileUploadJob job, int error) async {
+    final ms = GetIt.I.get<MessageService>();
+
+    // Notify UI of upload failure
+    for (final recipient in job.recipients) {
+      final msg = await ms.updateMessage(
+        job.messageMap[recipient]!.id,
+        errorType: error,
+        isUploading: false,
+      );
+      sendEvent(MessageUpdatedEvent(message: msg));
+    }
+
+    await _pickNextUploadTask();
+  }
   
   /// Actually attempt to upload the file described by the job [job].
   Future<void> _performFileUpload(FileUploadJob job) async {
@@ -162,11 +178,17 @@ class HttpFileTransferService {
       );
       path = pathlib.join(tempDir.path, randomFilename);
 
-      encryption = await GetIt.I.get<CryptographyService>().encryptFile(
-        job.path,
-        path,
-        SFSEncryptionType.aes256GcmNoPadding,
-      );
+      try {
+        encryption = await GetIt.I.get<CryptographyService>().encryptFile(
+          job.path,
+          path,
+          SFSEncryptionType.aes256GcmNoPadding,
+        );
+      } catch (ex) {
+        _log.warning('Encrypting ${job.path} failed: $ex');
+        await _fileUploadFailed(job, messageFailedToEncryptFile);
+        return;
+      }
     }
 
     final file = File(path);
@@ -183,10 +205,9 @@ class HttpFileTransferService {
 
     if (slotResult.isError()) {
       _log.severe('Failed to request upload slot for ${job.path}!');
-      await _nextUploadJob();
+      await _fileUploadFailed(job, fileUploadFailedError);
       return;
     }
-
     final slot = slotResult.getValue();
     try {
       final response = await dio.Dio().putUri<dynamic>(
@@ -216,16 +237,8 @@ class HttpFileTransferService {
       if (response.statusCode != 201) {
         // TODO(PapaTutuWawa): Trigger event
         _log.severe('Upload failed');
-
-        // Notify UI of upload failure
-        for (final recipient in job.recipients) {
-          final msg = await ms.updateMessage(
-            job.messageMap[recipient]!.id,
-            errorType: fileUploadFailedError,
-            isUploading: false,
-          );
-          sendEvent(MessageUpdatedEvent(message: msg));
-        }
+        await _fileUploadFailed(job, fileUploadFailedError);
+        return;
       } else {
         _log.fine('Upload was successful');
 
@@ -295,15 +308,15 @@ class HttpFileTransferService {
         }
       }
     } on dio.DioError {
-      // TODO(PapaTutuWawa): Check if this is a timeout
       _log.finest('Upload failed due to connection error');
+      await _fileUploadFailed(job, fileUploadFailedError);
       return;
     }
 
-    await _nextUploadJob();
+    await _pickNextUploadTask();
   }
 
-  Future<void> _nextUploadJob() async {
+  Future<void> _pickNextUploadTask() async {
     // Free the upload resources for the next one
     if (GetIt.I.get<ConnectivityService>().currentState == ConnectivityResult.none) return;
     await _uploadLock.synchronized(() async {
@@ -314,6 +327,20 @@ class HttpFileTransferService {
         _currentUploadJob = null;
       }
     });
+  }
+
+  Future<void> _fileDownloadFailed(FileDownloadJob job, int error) async {
+    final ms = GetIt.I.get<MessageService>();
+
+    // Notify UI of download failure
+    final msg = await ms.updateMessage(
+      job.mId,
+      errorType: error,
+      isDownloading: false,
+    );
+    sendEvent(MessageUpdatedEvent(message: msg));
+
+    await _pickNextDownloadTask();
   }
   
   /// Actually attempt to download the file described by the job [job].
@@ -347,13 +374,15 @@ class HttpFileTransferService {
     } on dio.DioError catch(err) {
       // TODO(PapaTutuWawa): React if we received an error that is not related to the
       //                     connection.
-      _log.finest('Error: $err');
+      _log.finest('Failed to download: $err');
+      await _fileDownloadFailed(job, fileDownloadFailedError);
+      return;
     }
 
-    if (!isRequestOkay(response?.statusCode)) {
-      // TODO(PapaTutuWawa): Error handling
-      // TODO(PapaTutuWawa): Trigger event
-      _log.warning('HTTP GET of ${job.location.url} returned ${response?.statusCode}');
+    if (!isRequestOkay(response.statusCode)) {
+      _log.warning('HTTP GET of ${job.location.url} returned ${response.statusCode}');
+      await _fileDownloadFailed(job, fileDownloadFailedError);
+      return;
     } else {
       var integrityCheckPassed = true;
       final conv = (await GetIt.I.get<ConversationService>()
@@ -367,32 +396,30 @@ class HttpFileTransferService {
           ),
         );
 
-        final result = await GetIt.I.get<CryptographyService>().decryptFile(
-          downloadPath,
-          downloadedPath,
-          encryptionTypeFromNamespace(job.location.encryptionScheme!),
-          job.location.key!,
-          job.location.iv!,
-          job.location.plaintextHashes ?? {},
-          job.location.ciphertextHashes ?? {},
-        );
-
-        if (!result.decryptionOkay) {
-          _log.warning('Failed to decrypt $downloadPath');
-          final msg = await GetIt.I.get<MessageService>().updateMessage(
-            job.mId,
-            isFileUploadNotification: false,
-            errorType: messageFailedToDecryptFile,
-            isDownloading: false,
+        try {
+          final result = await GetIt.I.get<CryptographyService>().decryptFile(
+            downloadPath,
+            downloadedPath,
+            encryptionTypeFromNamespace(job.location.encryptionScheme!),
+            job.location.key!,
+            job.location.iv!,
+            job.location.plaintextHashes ?? {},
+            job.location.ciphertextHashes ?? {},
           );
-          sendEvent(MessageUpdatedEvent(message: msg));
 
-          // We cannot do anything more so just bail
-          await _pickNextDownloadTask();
+          if (!result.decryptionOkay) {
+            _log.warning('Failed to decrypt $downloadPath');
+            await _fileDownloadFailed(job, messageFailedToDecryptFile);
+            return;
+          }
+
+          integrityCheckPassed = result.plaintextOkay && result.ciphertextOkay;
+        } catch (ex) {
+          _log.warning('Decryption of $downloadPath ($downloadedPath) failed: $ex');
+          await _fileDownloadFailed(job, messageFailedToDecryptFile);
           return;
         }
 
-        integrityCheckPassed = result.plaintextOkay && result.ciphertextOkay;
         unawaited(Directory(pathlib.dirname(downloadPath)).delete(recursive: true));
       }
 

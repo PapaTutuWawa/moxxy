@@ -693,21 +693,21 @@ packages:
       name: moxplatform
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.12"
+    version: "0.1.15"
   moxplatform_android:
     dependency: transitive
     description:
       name: moxplatform_android
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.12"
+    version: "0.1.15"
   moxplatform_platform_interface:
     dependency: transitive
     description:
       name: moxplatform_platform_interface
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.12"
+    version: "0.1.15"
   moxxyv2_builders:
     dependency: "direct main"
     description:

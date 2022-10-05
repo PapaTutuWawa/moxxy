@@ -7,6 +7,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxyv2/service/cryptography/implementations.dart';
 import 'package:moxxyv2/service/cryptography/types.dart';
+import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 
@@ -45,20 +46,25 @@ class CryptographyService {
       // TODO(PapaTutuWawa): What was the IV for aes128GcmNoPadding?
       _randomBuffer(12) :
       _randomBuffer(12);
-    final result = await MoxplatformPlugin.crypto.encryptFile(
+    final result = (await MoxplatformPlugin.crypto.encryptFile(
       source,
       dest,
       Uint8List.fromList(key),
       Uint8List.fromList(iv),
       _sfsToCipher(encryption),
-    );
+      'SHA-256',
+    ))!;
     _log.finest('Encryption done for $source ($result)');
 
     return EncryptionResult(
       key,
       iv,
-      const {},
-      const {},
+      <String, String>{
+        hashSha256: base64Encode(result.plaintextHash),
+      },
+      <String, String>{
+        hashSha256: base64Encode(result.ciphertextHash),
+      },
     );
   }
 
@@ -81,14 +87,40 @@ class CryptographyService {
       Uint8List.fromList(key),
       Uint8List.fromList(iv),
       _sfsToCipher(encryption),
+      // TODO(Unknown): How to we get hash agility here?
+      'SHA-256',
     );
-    _log.finest('Decryption done for $source ($result)');
+    _log.finest('Decryption done for $source (${result != null})');
+
+    var passedPlaintextIntegrityCheck = true;
+    var passedCiphertextIntegrityCheck = true;
+    for (final entry in plaintextHashes.entries) {
+      if (entry.key == hashSha256) {
+        if (base64Encode(result!.plaintextHash) != entry.value) {
+          passedPlaintextIntegrityCheck = false;
+        } else {
+          passedPlaintextIntegrityCheck = true;
+        }
+
+        break;
+      }
+    }
+     for (final entry in ciphertextHashes.entries) {
+      if (entry.key == hashSha256) {
+        if (base64Encode(result!.ciphertextHash) != entry.value) {
+          passedCiphertextIntegrityCheck = false;
+        } else {
+          passedCiphertextIntegrityCheck = true;
+        }
+
+        break;
+      }
+    }
 
     return DecryptionResult(
-      result,
-      // TODO(PapaTutuWawa): Implement
-      true,
-      true,
+      result != null,
+      passedPlaintextIntegrityCheck,
+      passedCiphertextIntegrityCheck,
     );
   }
 
