@@ -274,7 +274,12 @@ class HttpFileTransferService {
             plaintextHashes.addAll(encryption.plaintextHashes);
           } else {
             source = StatelessFileSharingUrlSource(slot.getUrl);
-            plaintextHashes[hashSha256] = await GetIt.I.get<CryptographyService>().hashFile(job.path, HashFunction.sha256);
+            try {
+              plaintextHashes[hashSha256] = await GetIt.I.get<CryptographyService>()
+                .hashFile(job.path, HashFunction.sha256);
+            } catch (ex) {
+              _log.warning('Failed to hash file ${job.path} using SHA-256: $ex');
+            }
           }
           
           // Send the message to the recipient
