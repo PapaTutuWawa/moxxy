@@ -17,7 +17,6 @@ dependencies:
   connectivity_plus: 2.3.6
   crop_your_image: 0.7.2
   cryptography: 2.0.5
-  cryptography_flutter: 2.0.2
   #cupertino_icons: 1.0.2
   dart_emoji: 0.2.0+2
   decorated_icon: 1.2.1
