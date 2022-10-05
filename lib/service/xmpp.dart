@@ -419,11 +419,15 @@ class XmppService {
 
         // TODO(Unknown): Do the same for videos
         if (pathMime != null && pathMime.startsWith('image/')) {
-          final imageSize = image_size.ImageSizeGetter.getSize(FileInput(File(path)));
-          dimensions[path] = Size(
-            imageSize.width.toDouble(),
-            imageSize.height.toDouble(),
-          );
+          try {
+            final imageSize = image_size.ImageSizeGetter.getSize(FileInput(File(path)));
+            dimensions[path] = Size(
+              imageSize.width.toDouble(),
+              imageSize.height.toDouble(),
+            );
+          } catch (ex) {
+            _log.warning('Failed to get image dimensions for $path');
+          }
         }
 
         final msg = await ms.addMessageFromData(
