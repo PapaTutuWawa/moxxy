@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
+import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -96,7 +96,7 @@ class ConversationProfileHeader extends StatelessWidget {
               ),
               // TODO(PapaTutuWawa): Only show when the chat partner has OMEMO keys
               Tooltip(
-                message: 'Keys',
+                message: 'Devices',
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -112,7 +112,7 @@ class ConversationProfileHeader extends StatelessWidget {
                         ),
                       ),
                       onTap: () {
-                        GetIt.I.get<KeysBloc>().add(KeysRequestedEvent(conversation.jid));
+                        GetIt.I.get<DevicesBloc>().add(DevicesRequestedEvent(conversation.jid));
                       },
                     ),
                     const Text(

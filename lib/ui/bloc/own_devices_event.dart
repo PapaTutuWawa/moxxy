@@ -1,26 +1,26 @@
-part of 'own_keys_bloc.dart';
+part of 'own_devices_bloc.dart';
 
-abstract class OwnKeysEvent {}
+abstract class OwnDevicesEvent {}
 
 /// Triggered when the user requested the own keys page
-class OwnKeysRequestedEvent extends OwnKeysEvent {}
+class OwnDevicesRequestedEvent extends OwnDevicesEvent {}
 
 /// Triggered by the UI when we want to enable or disable a key
-class OwnKeyEnabledSetEvent extends OwnKeysEvent {
+class OwnDeviceEnabledSetEvent extends OwnDevicesEvent {
 
- OwnKeyEnabledSetEvent(this.deviceId, this.enabled);
+ OwnDeviceEnabledSetEvent(this.deviceId, this.enabled);
  final int deviceId;
  final bool enabled;
 }
 
 /// Triggered by the UI when all OMEMO sessions should be recreated
-class OwnSessionsRecreatedEvent extends OwnKeysEvent {}
+class OwnSessionsRecreatedEvent extends OwnDevicesEvent {}
 
 /// Triggered by the UI when the OMEMO device should be regenerated
-class OwnDeviceRegeneratedEvent extends OwnKeysEvent {}
+class OwnDeviceRegeneratedEvent extends OwnDevicesEvent {}
 
 /// Triggered by the UI when the device with id [deviceId] should be removed.
-class OwnDeviceRemovedEvent extends OwnKeysEvent {
+class OwnDeviceRemovedEvent extends OwnDevicesEvent {
 
   OwnDeviceRemovedEvent(this.deviceId);
   final int deviceId;

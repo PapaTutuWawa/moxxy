@@ -1,44 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moxxyv2/ui/bloc/keys_bloc.dart';
+import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/widgets.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-enum KeysOptions {
+enum DevicesOptions {
   recreateSessions,
 }
 
-class KeysPage extends StatelessWidget {
-  const KeysPage({ Key? key }) : super(key: key);
+class DevicesPage extends StatelessWidget {
+  const DevicesPage({ Key? key }) : super(key: key);
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const KeysPage(),
+    builder: (context) => const DevicesPage(),
     settings: const RouteSettings(
-      name: keysRoute,
+      name: devicesRoute,
     ),
   );
   
-  Widget _buildBody(BuildContext context, KeysState state) {
+  Widget _buildBody(BuildContext context, DevicesState state) {
     if (state.working) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    final hasVerifiedKeys = state.keys.any((item) => item.verified);
+    final hasVerifiedDevices = state.devices.any((item) => item.verified);
     return ListView.builder(
-      itemCount: state.keys.length,
+      itemCount: state.devices.length,
       itemBuilder: (context, index) {
-        final item = state.keys[index];
+        final item = state.devices[index];
         final fingerprint = item.fingerprint;
 
         return FingerprintListItem(
           fingerprint,
           item.enabled,
           item.verified,
-          hasVerifiedKeys,
+          hasVerifiedDevices,
           onVerifiedPressed: () {
             if (item.verified) return;
 
@@ -46,8 +46,8 @@ class KeysPage extends StatelessWidget {
             showNotImplementedDialog('verification feature', context);
           },
           onEnableValueChanged: (value) {
-            context.read<KeysBloc>().add(
-              KeyEnabledSetEvent(
+            context.read<DevicesBloc>().add(
+              DeviceEnabledSetEvent(
                 item.deviceId,
                 value,
               ),
@@ -64,30 +64,30 @@ class KeysPage extends StatelessWidget {
       "This will recreate the cryptographic sessions with the contact. Use only if this device throws decryption errors or your contact's devices throw decryption errors.",
       context,
       () {
-        context.read<KeysBloc>().add(SessionsRecreatedEvent());
+        context.read<DevicesBloc>().add(SessionsRecreatedEvent());
       },
     );
   }
   
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<KeysBloc, KeysState>(
+    return BlocBuilder<DevicesBloc, DevicesState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
           'Devices',
           extra: [
             const Spacer(),
             PopupMenuButton(
-              onSelected: (KeysOptions result) {
-                if (result == KeysOptions.recreateSessions) {
+              onSelected: (DevicesOptions result) {
+                if (result == DevicesOptions.recreateSessions) {
                   _recreateSessions(context);
                 }
               },
               icon: const Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
                 PopupMenuItem(
-                  value: KeysOptions.recreateSessions,
-                  enabled: state.keys.isNotEmpty,
+                  value: DevicesOptions.recreateSessions,
+                  enabled: state.devices.isNotEmpty,
                   child: const Text('Rebuild sessions'),
                 )
               ],

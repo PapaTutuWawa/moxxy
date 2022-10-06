@@ -177,7 +177,7 @@ files:
           - JsonImplementation
         attributes:
           fingerprints:
-            type: List<OmemoKey>
+            type: List<OmemoDevice>
             deserialise: true
       - name: GetOwnOmemoFingerprintsResult
         extends: BackgroundEvent
@@ -187,7 +187,7 @@ files:
           ownDeviceFingerprint: String
           ownDeviceId: int
           fingerprints:
-            type: List<OmemoKey>
+            type: List<OmemoDevice>
             deserialise: true
     generate_builder: true
     builder_name: "Event"
@@ -338,7 +338,7 @@ files:
           - JsonImplementation
         attributes:
           jid: String
-      - name: SetOmemoKeyEnabledCommand
+      - name: SetOmemoDeviceEnabledCommand
         extends: BackgroundCommand
         implements:
           - JsonImplementation

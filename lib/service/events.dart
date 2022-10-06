@@ -60,7 +60,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SendFilesCommand>(performSendFiles),
       EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
       EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(performGetOmemoFingerprints),
-      EventTypeMatcher<SetOmemoKeyEnabledCommand>(performEnableOmemoKey),
+      EventTypeMatcher<SetOmemoDeviceEnabledCommand>(performEnableOmemoKey),
       EventTypeMatcher<RecreateSessionsCommand>(performRecreateSessions),
       EventTypeMatcher<SetOmemoEnabledCommand>(performSetOmemoEnabled),
       EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(performGetOwnOmemoFingerprints),
@@ -480,7 +480,7 @@ Future<void> performGetOmemoFingerprints(GetConversationOmemoFingerprintsCommand
   );
 }
 
-Future<void> performEnableOmemoKey(SetOmemoKeyEnabledCommand command, { dynamic extra }) async {
+Future<void> performEnableOmemoKey(SetOmemoDeviceEnabledCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();

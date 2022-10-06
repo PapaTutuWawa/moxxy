@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
-import 'package:moxxyv2/shared/models/omemo_key.dart';
+import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
@@ -200,13 +200,13 @@ class OmemoService {
     }
   }
 
-  Future<List<OmemoKey>> getOmemoKeysForJid(String jid) async {
+  Future<List<OmemoDevice>> getOmemoKeysForJid(String jid) async {
     await ensureInitialized();
     final fingerprints = await omemoState.getHexFingerprintsForJid(jid);
-    final keys = List<OmemoKey>.empty(growable: true);
+    final keys = List<OmemoDevice>.empty(growable: true);
     for (final fp in fingerprints) {
       keys.add(
-        OmemoKey(
+        OmemoDevice(
           fp.fingerprint,
           await omemoState.trustManager.isTrusted(jid, fp.deviceId),
           // TODO(Unknown): Allow verifying OMEMO keys
@@ -261,13 +261,13 @@ class OmemoService {
     return (await omemoState.getHexFingerprintForDevice()).fingerprint;
   }
 
-  /// Returns a list of OmemoKeys for devices we have sessions with and other devices
+  /// Returns a list of OmemoDevices for devices we have sessions with and other devices
   /// published on [ownJid]'s devices PubSub node.
   /// Note that the list is made so that the current device is excluded.
-  Future<List<OmemoKey>> getOwnFingerprints(JID ownJid) async {
+  Future<List<OmemoDevice>> getOwnFingerprints(JID ownJid) async {
     final conn = GetIt.I.get<XmppConnection>();
     final ownId = await getDeviceId();
-    final keys = List<OmemoKey>.from(
+    final keys = List<OmemoDevice>.from(
       await getOmemoKeysForJid(ownJid.toString()),
     );
 
@@ -284,7 +284,7 @@ class OmemoService {
         final curveIk = await device.ik.toCurve25519();
         
         keys.add(
-          OmemoKey(
+          OmemoDevice(
             HEX.encode(await curveIk.getBytes()),
             false,
             false,

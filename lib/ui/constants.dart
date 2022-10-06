@@ -57,5 +57,5 @@ const String conversationSettingsRoute = '$settingsRoute/conversation';
 const String blocklistRoute = '/blocklist';
 const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';
-const String keysRoute = '$profileRoute/keys';
-const String ownKeysRoute = '$profileRoute/own_keys';
+const String devicesRoute = '$profileRoute/devices';
+const String ownDevicesRoute = '$profileRoute/own_devices';

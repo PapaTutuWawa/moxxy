@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/ui/bloc/own_keys_bloc.dart';
+import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/widgets.dart';
@@ -9,18 +9,18 @@ import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-enum OwnKeysOptions {
+enum OwnDevicesOptions {
   recreateSessions,
   recreateDevice,
 }
 
-class OwnKeysPage extends StatelessWidget {
-  const OwnKeysPage({ Key? key }) : super(key: key);
+class OwnDevicesPage extends StatelessWidget {
+  const OwnDevicesPage({ Key? key }) : super(key: key);
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const OwnKeysPage(),
+    builder: (context) => const OwnDevicesPage(),
     settings: const RouteSettings(
-      name: ownKeysRoute,
+      name: ownDevicesRoute,
     ),
   );
 
@@ -50,14 +50,14 @@ class OwnKeysPage extends StatelessWidget {
     );
   }
   
-  Widget _buildBody(BuildContext context, OwnKeysState state) {
+  Widget _buildBody(BuildContext context, OwnDevicesState state) {
     if (state.working) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    final hasVerifiedKeys = state.keys.any((item) => item.verified);
+    final hasVerifiedDevices = state.keys.any((item) => item.verified);
     return ListView.builder(
       itemCount: state.keys.length + 1,
       itemBuilder: (context, index) {
@@ -118,7 +118,7 @@ class OwnKeysPage extends StatelessWidget {
           fingerprint,
           item.enabled,
           item.verified,
-          hasVerifiedKeys,
+          hasVerifiedDevices,
           onVerifiedPressed: !item.hasSessionWith ?
             null :
             () {
@@ -130,8 +130,8 @@ class OwnKeysPage extends StatelessWidget {
           onEnableValueChanged: !item.hasSessionWith ?
             null :
             (value) {
-              context.read<OwnKeysBloc>().add(
-                OwnKeyEnabledSetEvent(
+              context.read<OwnDevicesBloc>().add(
+                OwnDeviceEnabledSetEvent(
                   item.deviceId,
                   value,
                 ),
@@ -143,7 +143,7 @@ class OwnKeysPage extends StatelessWidget {
               'This means that contacts will not be able to encrypt for that device. Continue?',
               context,
               () {
-                context.read<OwnKeysBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
+                context.read<OwnDevicesBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
                 Navigator.of(context).pop();
               },
             );
@@ -159,7 +159,7 @@ class OwnKeysPage extends StatelessWidget {
       'This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.',
       context,
       () {
-        context.read<OwnKeysBloc>().add(OwnSessionsRecreatedEvent());
+        context.read<OwnDevicesBloc>().add(OwnSessionsRecreatedEvent());
       },
     );
   }
@@ -170,26 +170,26 @@ class OwnKeysPage extends StatelessWidget {
       "This will recreate this device's cryptographic identity. It might take some time and will cause decryption errors until you sent a message to your contacts. If they verified your device, they will have to do it again. Continue?",
       context,
       () {
-        context.read<OwnKeysBloc>().add(OwnDeviceRegeneratedEvent());
+        context.read<OwnDevicesBloc>().add(OwnDeviceRegeneratedEvent());
       },
     );
   }
   
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<OwnKeysBloc, OwnKeysState>(
+    return BlocBuilder<OwnDevicesBloc, OwnDevicesState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
           'Own Devices',
           extra: [
             const Spacer(),
             PopupMenuButton(
-              onSelected: (OwnKeysOptions result) {
+              onSelected: (OwnDevicesOptions result) {
                 switch (result) {
-                  case OwnKeysOptions.recreateSessions:
+                  case OwnDevicesOptions.recreateSessions:
                     _recreateSessions(context);
                     break;
-                  case OwnKeysOptions.recreateDevice:
+                  case OwnDevicesOptions.recreateDevice:
                     _recreateDevice(context);
                     break;
                 }
@@ -197,12 +197,12 @@ class OwnKeysPage extends StatelessWidget {
               icon: const Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
                 PopupMenuItem(
-                  value: OwnKeysOptions.recreateSessions,
+                  value: OwnDevicesOptions.recreateSessions,
                   enabled: state.keys.isNotEmpty,
                   child: const Text('Rebuild sessions'),
                 ),
                 const PopupMenuItem(
-                  value: OwnKeysOptions.recreateDevice,
+                  value: OwnDevicesOptions.recreateDevice,
                   child: Text('Recreate identity'),
                 ),
               ],

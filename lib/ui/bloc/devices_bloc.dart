@@ -4,28 +4,28 @@ import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/omemo_key.dart';
+import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-part 'keys_bloc.freezed.dart';
-part 'keys_event.dart';
-part 'keys_state.dart';
+part 'devices_bloc.freezed.dart';
+part 'devices_event.dart';
+part 'devices_state.dart';
 
-class KeysBloc extends Bloc<KeysEvent, KeysState> {
+class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
 
-  KeysBloc() : super(KeysState()) {
-    on<KeysRequestedEvent>(_onRequested);
-    on<KeyEnabledSetEvent>(_onKeyEnabledSet);
+  DevicesBloc() : super(DevicesState()) {
+    on<DevicesRequestedEvent>(_onRequested);
+    on<DeviceEnabledSetEvent>(_onDeviceEnabledSet);
     on<SessionsRecreatedEvent>(_onSessionsRecreated);
   }
 
-  Future<void> _onRequested(KeysRequestedEvent event, Emitter<KeysState> emit) async {
+  Future<void> _onRequested(DevicesRequestedEvent event, Emitter<DevicesState> emit) async {
     emit(state.copyWith(working: true, jid: event.jid));
 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
-        const NavigationDestination(keysRoute),
+        const NavigationDestination(devicesRoute),
       ),
     );
 
@@ -39,30 +39,30 @@ class KeysBloc extends Bloc<KeysEvent, KeysState> {
     emit(
       state.copyWith(
         working: false,
-        keys: result.fingerprints,
+        devices: result.fingerprints,
       ),
     );
   }
 
-  Future<void> _onKeyEnabledSet(KeyEnabledSetEvent event, Emitter<KeysState> emit) async {
+  Future<void> _onDeviceEnabledSet(DeviceEnabledSetEvent event, Emitter<DevicesState> emit) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetOmemoKeyEnabledCommand(
+      SetOmemoDeviceEnabledCommand(
         jid: state.jid,
         deviceId: event.deviceId,
         enabled: event.enabled,
       ),
     ) as GetConversationOmemoFingerprintsResult;
-    emit(state.copyWith(keys: result.fingerprints));  
+    emit(state.copyWith(devices: result.fingerprints));  
   }
 
-  Future<void> _onSessionsRecreated(SessionsRecreatedEvent event, Emitter<KeysState> emit) async {
+  Future<void> _onSessionsRecreated(SessionsRecreatedEvent event, Emitter<DevicesState> emit) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
       RecreateSessionsCommand(jid: state.jid),
       awaitable: false,
     );
-    emit(state.copyWith(keys: <OmemoKey>[]));
+    emit(state.copyWith(devices: <OmemoDevice>[]));
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }

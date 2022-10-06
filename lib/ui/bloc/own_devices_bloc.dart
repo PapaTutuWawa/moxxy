@@ -4,31 +4,31 @@ import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/omemo_key.dart';
+import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 
-part 'own_keys_bloc.freezed.dart';
-part 'own_keys_event.dart';
-part 'own_keys_state.dart';
+part 'own_devices_bloc.freezed.dart';
+part 'own_devices_event.dart';
+part 'own_devices_state.dart';
 
-class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
+class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
 
-  OwnKeysBloc() : super(OwnKeysState()) {
-    on<OwnKeysRequestedEvent>(_onRequested);
-    on<OwnKeyEnabledSetEvent>(_onKeyEnabledSet);
+  OwnDevicesBloc() : super(OwnDevicesState()) {
+    on<OwnDevicesRequestedEvent>(_onRequested);
+    on<OwnDeviceEnabledSetEvent>(_onDeviceEnabledSet);
     on<OwnSessionsRecreatedEvent>(_onSessionsRecreated);
     on<OwnDeviceRemovedEvent>(_onDeviceRemoved);
     on<OwnDeviceRegeneratedEvent>(_onDeviceRegenerated);
   }
 
-  Future<void> _onRequested(OwnKeysRequestedEvent event, Emitter<OwnKeysState> emit) async {
+  Future<void> _onRequested(OwnDevicesRequestedEvent event, Emitter<OwnDevicesState> emit) async {
     emit(state.copyWith(working: true));
 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedEvent(
-        const NavigationDestination(ownKeysRoute),
+        const NavigationDestination(ownDevicesRoute),
       ),
     );
 
@@ -47,10 +47,10 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
     );
   }
   
-  Future<void> _onKeyEnabledSet(OwnKeyEnabledSetEvent event, Emitter<OwnKeysState> emit) async {
+  Future<void> _onDeviceEnabledSet(OwnDeviceEnabledSetEvent event, Emitter<OwnDevicesState> emit) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetOmemoKeyEnabledCommand(
+      SetOmemoDeviceEnabledCommand(
         jid: GetIt.I.get<UIDataService>().ownJid!,
         deviceId: event.deviceId,
         enabled: event.enabled,
@@ -71,7 +71,7 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
     );
   }
 
-  Future<void> _onSessionsRecreated(OwnSessionsRecreatedEvent event, Emitter<OwnKeysState> emit) async {
+  Future<void> _onSessionsRecreated(OwnSessionsRecreatedEvent event, Emitter<OwnDevicesState> emit) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
       RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
@@ -90,7 +90,7 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
 
-  Future<void> _onDeviceRemoved(OwnDeviceRemovedEvent event, Emitter<OwnKeysState> emit) async {
+  Future<void> _onDeviceRemoved(OwnDeviceRemovedEvent event, Emitter<OwnDevicesState> emit) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
       RemoveOwnDeviceCommand(deviceId: event.deviceId),
@@ -107,7 +107,7 @@ class OwnKeysBloc extends Bloc<OwnKeysEvent, OwnKeysState> {
     );
   }
 
-  Future<void> _onDeviceRegenerated(OwnDeviceRegeneratedEvent event, Emitter<OwnKeysState> emit) async {
+  Future<void> _onDeviceRegenerated(OwnDeviceRegeneratedEvent event, Emitter<OwnDevicesState> emit) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
       RegenerateOwnDeviceCommand(),

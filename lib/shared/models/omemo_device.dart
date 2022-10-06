@@ -1,12 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'omemo_key.freezed.dart';
-part 'omemo_key.g.dart';
+part 'omemo_device.freezed.dart';
+part 'omemo_device.g.dart';
 
 /// This model is just for communication between UI and the backend.
 @freezed
-class OmemoKey with _$OmemoKey {
-  factory OmemoKey(
+class OmemoDevice with _$OmemoDevice {
+  factory OmemoDevice(
     String fingerprint,
     bool trusted,
     bool verified,
@@ -15,8 +15,8 @@ class OmemoKey with _$OmemoKey {
     {
       @Default(true) bool hasSessionWith, 
     }
-  ) = _OmemoKey;
+  ) = _OmemoDevice;
 
   /// JSON
-  factory OmemoKey.fromJson(Map<String, dynamic> json) => _$OmemoKeyFromJson(json);
+  factory OmemoDevice.fromJson(Map<String, dynamic> json) => _$OmemoDeviceFromJson(json);
 }
