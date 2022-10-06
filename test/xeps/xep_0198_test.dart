@@ -39,14 +39,13 @@ Future<void> runOutgoingStanzaHandlers(StreamManagementManager man, Stanza stanz
 
 XmppManagerAttributes mkAttributes(void Function(Stanza) callback) {
   return XmppManagerAttributes(
-    sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool encrypted = false, bool awaitable = true }) async {
+    sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true, bool encrypted = false }) async {
       callback(stanza);
 
       return Stanza.message();
     },
     sendNonza: (nonza) {},
     sendEvent: (event) {},
-    sendRawXml: (raw) {},
     getManagerById: getManagerNullStub,
     getConnectionSettings: () => ConnectionSettings(
       jid: JID.fromString('hallo@example.server'),

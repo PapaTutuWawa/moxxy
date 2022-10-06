@@ -13,7 +13,7 @@ final stanza2 = Stanza.message(children: [
 
 void main() {
   test('match all', () {
-      final handler = StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true,stanza));
+      final handler = StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true, false, null, stanza));
 
       expect(handler.matches(Stanza.iq()), true);
       expect(handler.matches(Stanza.message()), true);
@@ -23,7 +23,7 @@ void main() {
   });
   test('xmlns matching', () {
       final handler = StanzaHandler(
-        callback: (stanza, _) async => StanzaHandlerData(true, stanza),
+        callback: (stanza, _) async => StanzaHandlerData(true, false, null, stanza),
         tagXmlns: 'owo',
       );
 
@@ -37,7 +37,7 @@ void main() {
       var run = false;
       final handler = StanzaHandler(callback: (stanza, _) async {
           run = true;
-          return StanzaHandlerData(true, stanza);
+          return StanzaHandlerData(true, false, null, stanza);
       }, stanzaTag: 'iq',);
 
       expect(handler.matches(Stanza.iq()), true);
@@ -46,12 +46,12 @@ void main() {
       expect(handler.matches(stanza1), true);
       expect(handler.matches(stanza2), false);
 
-      handler.callback(stanza2, StanzaHandlerData(false, stanza2));
+      handler.callback(stanza2, StanzaHandlerData(false, false, null, stanza2));
       expect(run, true);
   });
   test('tagName matching', () {
       final handler = StanzaHandler(
-        callback: (stanza, _) async => StanzaHandlerData(true, stanza),
+        callback: (stanza, _) async => StanzaHandlerData(true, false, null, stanza),
         tagName: 'tag',
       );
 
@@ -63,7 +63,7 @@ void main() {
   });
   test('combined matching', () {
       final handler = StanzaHandler(
-        callback: (stanza, _) async => StanzaHandlerData(true, stanza),
+        callback: (stanza, _) async => StanzaHandlerData(true, false, null, stanza),
         tagName: 'tag',
         stanzaTag: 'iq',
         tagXmlns: 'owo',
@@ -78,9 +78,9 @@ void main() {
 
   test('sorting', () {
       final handlerList = [
-        StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true, stanza), tagName: '1', priority: 100),
-        StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true, stanza), tagName: '2'),
-        StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true, stanza), tagName: '3', priority: 50)
+        StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true, false, null, stanza), tagName: '1', priority: 100),
+        StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true, false, null, stanza), tagName: '2'),
+        StanzaHandler(callback: (stanza, _) async => StanzaHandlerData(true, false, null, stanza), tagName: '3', priority: 50)
       ];
 
       handlerList.sort(stanzaHandlerSortComparator);

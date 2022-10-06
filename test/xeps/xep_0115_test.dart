@@ -2,7 +2,7 @@ import 'package:cryptography/cryptography.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0004.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0115.dart';
 import 'package:test/test.dart';
 

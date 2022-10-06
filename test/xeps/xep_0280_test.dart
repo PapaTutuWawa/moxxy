@@ -12,14 +12,13 @@ import '../helpers/xmpp.dart';
 void main() {
   test("Test if we're vulnerable against CVE-2020-26547 style vulnerabilities", () async {
       final attributes = XmppManagerAttributes(
-        sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async {
+        sendStanza: (stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true, bool encrypted = false }) async {
           // ignore: avoid_print
           print('==> ${stanza.toXml()}');
           return XMLNode(tag: 'iq', attributes: { 'type': 'result' });
         },
         sendNonza: (nonza) {},
         sendEvent: (event) {},
-        sendRawXml: (raw) {},
         getManagerById: getManagerNullStub,
         getConnectionSettings: () => ConnectionSettings(
           jid: JID.fromString('bob@xmpp.example'),

@@ -43,12 +43,11 @@ void main() {
           var nonzaSent = false;
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
-              sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async => XMLNode(tag: 'hallo'),
+              sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true, bool encrypted = false }) async => XMLNode(tag: 'hallo'),
               sendEvent: (event) {},
               sendNonza: (nonza) {
                 nonzaSent = true;
               },
-              sendRawXml: (_) {},
               getConnectionSettings: () => ConnectionSettings(
                 jid: JID.fromString('some.user@example.server'),
                 password: 'password',
@@ -72,12 +71,11 @@ void main() {
       test('Test setting the CSI state when CSI is supported', () {
           final csi = CSIManager();
           csi.register(XmppManagerAttributes(
-              sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async => XMLNode(tag: 'hallo'),
+              sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true, bool encrypted = false }) async => XMLNode(tag: 'hallo'),
               sendEvent: (event) {},
               sendNonza: (nonza) {
                 expect(nonza.attributes['xmlns'] == csiXmlns, true, reason: "Expected only nonzas with XMLNS '$csiXmlns'");
               },
-              sendRawXml: (_) {},
               getConnectionSettings: () => ConnectionSettings(
                 jid: JID.fromString('some.user@example.server'),
                 password: 'password',
