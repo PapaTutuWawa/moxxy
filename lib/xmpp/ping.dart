@@ -36,13 +36,13 @@ class PingManager extends XmppManagerBase {
           stream.sendAckRequestPing();
         } else if (attrs.getSocket().whitespacePingAllowed()) {
           logger.finest('Sending a whitespace ping as Stream Management is not enabled');
-          attrs.sendRawXml('');
+          attrs.getConnection().sendWhitespacePing();
         } else {
           _logWarning();
         }
       } else {
         if (attrs.getSocket().whitespacePingAllowed()) {
-          attrs.sendRawXml('');
+          attrs.getConnection().sendWhitespacePing();
         } else {
           _logWarning();
         }

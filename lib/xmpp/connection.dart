@@ -197,10 +197,6 @@ class XmppConnection {
       XmppManagerAttributes(
         sendStanza: sendStanza,
         sendNonza: sendRawXML,
-        sendRawXml: (xml) {
-          _log.finest('==> $xml');
-          _socket.write(xml);
-        },
         sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
@@ -247,7 +243,7 @@ class XmppConnection {
     _outgoingPreStanzaHandlers.sort(stanzaHandlerSortComparator);
     _outgoingPostStanzaHandlers.sort(stanzaHandlerSortComparator);
   }
-
+  
   /// Register a list of negotiator with the connection.
   void registerFeatureNegotiators(List<XmppFeatureNegotiatorBase> negotiators) {
     for (final negotiator in negotiators) {
@@ -893,6 +889,11 @@ class XmppConnection {
         _log.warning('Received data while in non-receiving state');
         break;
     }
+  }
+
+  /// Sends an empty String over the socket.
+  void sendWhitespacePing() {
+    _socket.write('');
   }
   
   /// Sends an event to the connection's event stream.
