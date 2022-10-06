@@ -612,10 +612,11 @@ class DatabaseService {
       final json = jsonDecode(ratchet['mkskipped']! as String) as List<dynamic>;
       final mkskipped = List<Map<String, dynamic>>.empty(growable: true);
       for (final i in json) {
+        final element = i as Map<String, dynamic>;
         mkskipped.add({
-          'key': i['key']! as String,
-          'public': i['public']! as String,
-          'n': i['n']! as int,
+          'key': element['key']! as String,
+          'public': element['public']! as String,
+          'n': element['n']! as int,
         });
       }
 
