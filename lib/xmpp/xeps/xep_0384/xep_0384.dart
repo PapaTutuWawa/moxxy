@@ -72,12 +72,14 @@ abstract class OmemoManager extends XmppManagerBase {
       tagXmlns: omemoXmlns,
       tagName: 'encrypted',
       callback: _onIncomingStanza,
+      priority: 9999,
     ),
     StanzaHandler(
       stanzaTag: 'presence',
       tagXmlns: omemoXmlns,
       tagName: 'encrypted',
       callback: _onIncomingStanza,
+      priority: 9999,
     ),
     StanzaHandler(
       stanzaTag: 'message',
@@ -92,14 +94,10 @@ abstract class OmemoManager extends XmppManagerBase {
   List<StanzaHandler> getOutgoingPreStanzaHandlers() => [
     StanzaHandler(
       stanzaTag: 'iq',
-      tagXmlns: omemoXmlns,
-      tagName: 'encrypted',
       callback: _onOutgoingStanza,
     ),
     StanzaHandler(
       stanzaTag: 'presence',
-      tagXmlns: omemoXmlns,
-      tagName: 'encrypted',
       callback: _onIncomingStanza,
     ),
     StanzaHandler(
@@ -469,6 +467,7 @@ abstract class OmemoManager extends XmppManagerBase {
   
   Future<StanzaHandlerData> _onOutgoingStanza(Stanza stanza, StanzaHandlerData state) async {
     if (state.encrypted) {
+      logger.finest('Not encrypting since state.encrypted is true');
       return state;
     }
 
