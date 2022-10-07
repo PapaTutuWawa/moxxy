@@ -98,7 +98,7 @@ abstract class OmemoManager extends XmppManagerBase {
     ),
     StanzaHandler(
       stanzaTag: 'presence',
-      callback: _onIncomingStanza,
+      callback: _onOutgoingStanza,
     ),
     StanzaHandler(
       stanzaTag: 'message',
