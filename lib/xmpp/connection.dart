@@ -81,7 +81,7 @@ class XmppConnection {
       BaseSocketWrapper? socket,
       this.connectionPingDuration = const Duration(minutes: 3),
       this.connectingTimeout = const Duration(minutes: 2),
-      bool socketLogging = false,
+      bool socketLogging = true,
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,

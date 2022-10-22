@@ -93,7 +93,7 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $omemoRatchetsTable (
-      id         INTEGER PRIMARY KEY,
+      id         INTEGER NOT NULL,
       jid        TEXT NOT NULL,
       dhs        TEXT NOT NULL,
       dhs_pub    TEXT NOT NULL,
@@ -108,7 +108,9 @@ Future<void> createDatabase(Database db, int version) async {
       session_ad TEXT NOT NULL,
       acknowledged INTEGER NOT NULL,
       mkskipped  TEXT NOT NULL,
-      kex_timestamp INTEGER NOT NULL
+      kex_timestamp INTEGER NOT NULL,
+      kex        TEXT,
+      PRIMARY KEY (jid, id)
     )''',
   );
   await db.execute(

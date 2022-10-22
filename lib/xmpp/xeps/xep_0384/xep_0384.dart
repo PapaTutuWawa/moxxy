@@ -184,7 +184,7 @@ abstract class OmemoManager extends XmppManagerBase {
   /// - XEP-0334 elements (<store/>, <no-copy/>, <no-store/>, <no-permanent-store/>)
   /// - XEP-0359 elements (<origin-id />, <stanza-id />)
   @visibleForOverriding
-  bool shouldEncrypt(XMLNode element) {
+  bool shouldEncryptElement(XMLNode element) {
     for (final ignore in _doNotEncryptList) {
       final xmlns = element.attributes['xmlns'] ?? '';
       if (element.tag == ignore.tag && xmlns == ignore.xmlns) {
@@ -331,8 +331,6 @@ abstract class OmemoManager extends XmppManagerBase {
     }
 
     final newSessions = List<OmemoBundle>.empty(growable: true);
-    final ignoreUnacked = shouldIgnoreUnackedRatchets(children);
-    final unackedRatchets = await session.getUnacknowledgedRatchets(toJid.toString());
     final sessionAvailable = await _hasSessionWith(toJid.toString());   
     if (!sessionAvailable) {
       logger.finest('No session for $toJid. Retrieving bundles to build a new session.');
@@ -353,17 +351,6 @@ abstract class OmemoManager extends XmppManagerBase {
 
       if (!_subscriptionMap.containsKey(toJid)) {
         await subscribeToDeviceList(toJid);
-      }
-    } else if (unackedRatchets != null && unackedRatchets.isNotEmpty && !ignoreUnacked) {
-      logger.finest('Got unacked ratchets');
-      for (final id in unackedRatchets) {
-        logger.finest('Retrieving bundle for $toJid:$id');
-        final bundle = await retrieveDeviceBundle(toJid, id);
-        if (!bundle.isType<OmemoError>()) {
-          newSessions.add(bundle.get<OmemoBundle>());
-        } else {
-          logger.warning('Failed to retrieve device bundles for $toJid:$id');
-        }
       }
     } else {
       final map = await session.getDeviceMap();
@@ -514,7 +501,7 @@ abstract class OmemoManager extends XmppManagerBase {
     final toEncrypt = List<XMLNode>.empty(growable: true);
     final children = List<XMLNode>.empty(growable: true);
     for (final child in stanza.children) {
-      if (!shouldEncrypt(child)) {
+      if (!shouldEncryptElement(child)) {
         children.add(child);
       } else {
         toEncrypt.add(child);

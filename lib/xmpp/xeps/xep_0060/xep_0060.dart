@@ -132,11 +132,19 @@ class PubSubManager extends XmppManagerBase {
         }
       }
 
+      final nodeMultiItemsSupported = result.isType<DiscoInfo>() && result.get<DiscoInfo>().features.contains(pubsubNodeConfigMultiItems);
       final nodeMaxSupported = result.isType<DiscoInfo>() && result.get<DiscoInfo>().features.contains(pubsubNodeConfigMax);
-      if (options.maxItems == 'max' && !nodeMaxSupported) {
+      if (options.maxItems != null && !nodeMultiItemsSupported) {
+        // TODO(PapaTutuWawa): Here, we need to admit defeat
+        logger.finest('PubSub host does not support multi-items!');
+
+        return PubSubPublishOptions(
+          accessModel: options.accessModel,
+        );
+      } else if (options.maxItems == 'max' && !nodeMaxSupported) {
+        logger.finest('PubSub host does not support node-config-max. Working around it');
         final count = await _getNodeItemCount(jid, node) + 1;
 
-        logger.finest('PubSub host does not support node-config-max. Working around it');
         return PubSubPublishOptions(
           accessModel: options.accessModel,
           maxItems: '$count',

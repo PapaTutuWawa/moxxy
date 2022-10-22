@@ -58,7 +58,8 @@ class StableIdManager extends XmppManagerBase {
     String? stanzaIdBy;
     final originIdTag = message.firstTag('origin-id', xmlns: stableIdXmlns);
     final stanzaIdTag = message.firstTag('stanza-id', xmlns: stableIdXmlns);
-    if (originIdTag != null || stanzaIdTag != null) {
+//  if (originIdTag != null || stanzaIdTag != null) {
+    if (false) {
       logger.finest('Found Unique and Stable Stanza Id tag');
       final attrs = getAttributes();
       final disco = attrs.getManagerById<DiscoManager>(discoManager)!;
