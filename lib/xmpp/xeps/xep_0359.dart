@@ -58,8 +58,7 @@ class StableIdManager extends XmppManagerBase {
     String? stanzaIdBy;
     final originIdTag = message.firstTag('origin-id', xmlns: stableIdXmlns);
     final stanzaIdTag = message.firstTag('stanza-id', xmlns: stableIdXmlns);
-//  if (originIdTag != null || stanzaIdTag != null) {
-    if (false) {
+    if (originIdTag != null || stanzaIdTag != null) {
       logger.finest('Found Unique and Stable Stanza Id tag');
       final attrs = getAttributes();
       final disco = attrs.getManagerById<DiscoManager>(discoManager)!;
@@ -81,6 +80,8 @@ class StableIdManager extends XmppManagerBase {
         } else {
           logger.finest('${from.toString()} does not support $stableIdXmlns. Ignoring... ');
         }
+      } else {
+        logger.finest('Failed to find out if ${from.toString()} supports $stableIdXmlns. Ignoring... ');
       }
     }
 

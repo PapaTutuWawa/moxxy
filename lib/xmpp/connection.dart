@@ -668,7 +668,7 @@ class XmppConnection {
     var awaited = false;
     await _awaitingResponseLock.synchronized(() async {
       if (id != null && _awaitingResponse.containsKey(id)) {
-        _awaitingResponse[id]!.complete(stanza);
+        _awaitingResponse[id]!.complete(incomingHandlers.stanza);
         _awaitingResponse.remove(id);
         awaited = true;
       }

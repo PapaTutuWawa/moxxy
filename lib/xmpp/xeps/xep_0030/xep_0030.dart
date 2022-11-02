@@ -345,7 +345,7 @@ class DiscoManager extends XmppManagerBase {
       // Remove from the request cache
       _runningInfoQueries.remove(cacheKey);
     });
-    
+
     return Result(result);
   }
 
