@@ -74,6 +74,7 @@ class ShareSelectionPage extends StatelessWidget {
                   maxTextWidth,
                   timestampNever,
                   false,
+                  showLock: item.isEncrypted,
                   extra: Checkbox(
                     value: isSelected,
                     onChanged: (_) {

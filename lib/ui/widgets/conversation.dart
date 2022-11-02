@@ -18,6 +18,7 @@ class ConversationsListRow extends StatefulWidget {
     this.maxTextWidth,
     this.lastChangeTimestamp,
     this.update, {
+      this.showLock = false,
       this.typingIndicator = false,
       this.extra,
       Key? key,
@@ -31,6 +32,7 @@ class ConversationsListRow extends StatefulWidget {
   final int lastChangeTimestamp;
   final bool update; // Should a timer run to update the timestamp
   final bool typingIndicator;
+  final bool showLock;
   final Widget? extra;
 
   @override
@@ -130,6 +132,16 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                      ),
+                      Visibility(
+                        visible: widget.showLock,
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(
+                            Icons.lock,
+                            size: 17,
+                          ),
+                        ),
                       ),
                       Visibility(
                         visible: showTimestamp,
