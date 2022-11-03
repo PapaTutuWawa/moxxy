@@ -311,13 +311,9 @@ class DiscoManager extends XmppManagerBase {
     });
 
     if (info != null) {
-      final result = Result<DiscoError, DiscoInfo>(info);
-      await _exitDiscoInfoCriticalSection(cacheKey, result);
-      return result;
+      return Result<DiscoError, DiscoInfo>(info);
     } else if (completer != null) {
-      final result = Result<DiscoError, DiscoInfo>(await completer!.future);
-      await _exitDiscoInfoCriticalSection(cacheKey, result);
-      return result;
+      return Result<DiscoError, DiscoInfo>(await completer!.future);
     }
 
     final stanza = await getAttributes().sendStanza(

@@ -111,7 +111,8 @@ abstract class OmemoManager extends XmppManagerBase {
   Future<void> onXmppEvent(XmppEvent event) async {
     if (event is PubSubNotificationEvent) {
       if (event.item.node != omemoDevicesXmlns) return;
-      
+
+      logger.finest('Received PubSub notification for ${event.from}');
       final ownJid = getAttributes().getFullJID().toBare().toString();
       final ids = event.item.payload.children
         .map((child) => int.parse(child.attributes['id']! as String))
