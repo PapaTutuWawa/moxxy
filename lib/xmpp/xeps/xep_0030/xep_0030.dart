@@ -271,6 +271,25 @@ class DiscoManager extends XmppManagerBase {
     return state.copyWith(done: true);
   }
 
+  Future<void> _exitDiscoInfoCriticalSection(DiscoCacheKey key, Result<DiscoError, DiscoInfo> result) async {
+    return _cacheLock.synchronized(() async {
+      final r = result.isType<DiscoInfo>() ? result.get<DiscoInfo>() : null;
+
+      // Complete all futures
+      for (final completer in _runningInfoQueries[key]!) {
+        completer.complete(r);
+      }
+
+      // Add to cache if it is a result
+      if (result.isType<DiscoInfo>()) {
+        _discoInfoCache[key] = result.get<DiscoInfo>();
+      }
+      
+      // Remove from the request cache
+      _runningInfoQueries.remove(key);
+    });
+  }
+  
   /// Sends a disco info query to the (full) jid [entity], optionally with node=[node].
   Future<Result<DiscoError, DiscoInfo>> discoInfoQuery(String entity, { String? node}) async {
     final cacheKey = DiscoCacheKey(entity, node);
@@ -292,21 +311,30 @@ class DiscoManager extends XmppManagerBase {
     });
 
     if (info != null) {
-      return Result(info);
+      final result = Result<DiscoError, DiscoInfo>(info);
+      await _exitDiscoInfoCriticalSection(cacheKey, result);
+      return result;
     } else if (completer != null) {
-      return Result(await completer!.future);
+      final result = Result<DiscoError, DiscoInfo>(await completer!.future);
+      await _exitDiscoInfoCriticalSection(cacheKey, result);
+      return result;
     }
 
     final stanza = await getAttributes().sendStanza(
       buildDiscoInfoQueryStanza(entity, node),
     );
     final query = stanza.firstTag('query');
-    if (query == null) return Result(InvalidResponseDiscoError());
+    if (query == null) {
+      final result = Result<DiscoError, DiscoInfo>(InvalidResponseDiscoError());
+      await _exitDiscoInfoCriticalSection(cacheKey, result);
+      return result;
+    }
 
     final error = stanza.firstTag('error');
     if (error != null && stanza.attributes['type'] == 'error') {
-      //print("Disco Items error: " + error.toXml());
-      return Result(ErrorResponseDiscoError());
+      final result = Result<DiscoError, DiscoInfo>(ErrorResponseDiscoError());
+      await _exitDiscoInfoCriticalSection(cacheKey, result);
+      return result;
     }
     
     final features = List<String>.empty(growable: true);
@@ -321,32 +349,19 @@ class DiscoManager extends XmppManagerBase {
           type: element.attributes['type']! as String,
           name: element.attributes['name'] as String?,
         ),);
-      } else {
-        //print("Unknown disco tag: " + element.tag);
       }
     }
 
-    final result = DiscoInfo(
-      features,
-      identities,
-      query.findTags('x', xmlns: dataFormsXmlns).map(parseDataForm).toList(),
-      JID.fromString(stanza.attributes['from']! as String),
+    final result = Result<DiscoError, DiscoInfo>(
+      DiscoInfo(
+        features,
+        identities,
+        query.findTags('x', xmlns: dataFormsXmlns).map(parseDataForm).toList(),
+        JID.fromString(stanza.attributes['from']! as String),
+      ),
     );
-
-    await _cacheLock.synchronized(() async {
-      // Complete all futures
-      for (final completer in _runningInfoQueries[cacheKey]!) {
-        completer.complete(result);
-      }
-
-      // Add to cache
-      _discoInfoCache[cacheKey] = result;
-      
-      // Remove from the request cache
-      _runningInfoQueries.remove(cacheKey);
-    });
-
-    return Result(result);
+    await _exitDiscoInfoCriticalSection(cacheKey, result);
+    return result;
   }
 
   /// Sends a disco items query to the (full) jid [entity], optionally with node=[node].
