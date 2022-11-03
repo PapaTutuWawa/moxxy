@@ -162,8 +162,7 @@ class OmemoService {
 
   /// Requests our device list and checks if the current device is in it. If not, then
   /// it will be published.
-  // TODO(PapaTutuWawa): Somehow notify when we failed.
-  Future<void> publishDeviceIfNeeded() async {
+  Future<Object?> publishDeviceIfNeeded() async {
     _log.finest('publishDeviceIfNeeded: Waiting for initialization...');
     await ensureInitialized();
     _log.finest('publishDeviceIfNeeded: Done');
@@ -180,7 +179,7 @@ class OmemoService {
     );
     if (bundlesRaw.isType<DiscoError>()) {
       await omemo.publishBundle(await device.toBundle());
-      return;
+      return bundlesRaw.get<DiscoError>();
     }
 
     final bundleIds = bundlesRaw
@@ -188,16 +187,20 @@ class OmemoService {
       .where((item) => item.name != null)
       .map((item) => int.parse(item.name!));
     if (!bundleIds.contains(device.id)) {
-      await omemo.publishBundle(await device.toBundle());
-      return;
+      final result = await omemo.publishBundle(await device.toBundle());
+      if (result.isType<OmemoError>()) return result.get<OmemoError>();
+      return null;
     }
     
     final idsRaw = await omemo.getDeviceList(bareJid);
     final ids = idsRaw.isType<OmemoError>() ? <int>[] : idsRaw.get<List<int>>();
     if (!ids.contains(device.id)) {
-      await omemo.publishBundle(await device.toBundle());
-      return;
+      final result = await omemo.publishBundle(await device.toBundle());
+      if (result.isType<OmemoError>()) return result.get<OmemoError>();
+      return null;
     }
+
+    return null;
   }
 
   Future<List<OmemoDevice>> getOmemoKeysForJid(String jid) async {

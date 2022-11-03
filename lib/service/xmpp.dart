@@ -563,6 +563,18 @@ class XmppService {
 
     _log.finest('File upload done');
   }
+
+  Future<void> _initializeOmemoService(String jid) async {
+    await GetIt.I.get<OmemoService>().initializeIfNeeded(jid);
+    final result = await GetIt.I.get<OmemoService>().publishDeviceIfNeeded();
+    if (result != null) {
+      // Notify the user that we could not publish the Omemo ~identity~ titty
+      await GetIt.I.get<NotificationsService>().showWarningNotification(
+        'Encryption',
+        'Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work.',
+      );
+    }
+  }
   
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
     switch (event.state) {
@@ -607,8 +619,7 @@ class XmppService {
       ),);
       
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
-      unawaited(GetIt.I.get<OmemoService>().initializeIfNeeded(settings.jid.toString()));
-      unawaited(GetIt.I.get<OmemoService>().publishDeviceIfNeeded());
+      unawaited(_initializeOmemoService(settings.jid.toString()));
 
       if (!event.resumed) {
         // In section 5 of XEP-0198 it says that a client should not request the roster
