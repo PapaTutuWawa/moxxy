@@ -94,8 +94,6 @@ class ConversationSettingsPage extends StatelessWidget {
                       context,
                       () async {
                         await _removeBackgroundImage(context, state);
-                        // ignore: use_build_context_synchronously
-                        Navigator.of(context).pop();
                       }
                     );
                   },

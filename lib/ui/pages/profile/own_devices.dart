@@ -144,7 +144,6 @@ class OwnDevicesPage extends StatelessWidget {
               context,
               () {
                 context.read<OwnDevicesBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
-                Navigator.of(context).pop();
               },
             );
           },

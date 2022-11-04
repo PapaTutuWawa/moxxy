@@ -131,7 +131,6 @@ class ConversationTopbarWidget extends StatelessWidget {
                         context.read<ConversationsBloc>().add(
                           ConversationClosedEvent(state.conversation!.jid),
                         );
-                        Navigator.of(context).pop();
                       }
                     );
                   }

@@ -96,7 +96,7 @@ class OmemoService {
     });
   }
 
-  Future<void> regenerateDevice(String jid) async {
+  Future<OmemoDevice> regenerateDevice(String jid) async {
     // Prevent access to the session manager as it is (mostly) guarded ensureInitialized
     await _lock.synchronized(() {
       _initialized = false;
@@ -132,6 +132,15 @@ class OmemoService {
       }
       _waitingForInitialization.clear();
     });
+
+    // Return the OmemoDevice
+    return OmemoDevice(
+      await getDeviceFingerprint(),
+      true,
+      true,
+      true,
+      await getDeviceId(),
+    );
   }
   
   /// Ensures that the code following this *AWAITED* call can access every method

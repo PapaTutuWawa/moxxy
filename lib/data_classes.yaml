@@ -189,6 +189,14 @@ files:
           fingerprints:
             type: List<OmemoDevice>
             deserialise: true
+      - name: RegenerateOwnDeviceResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          device:
+            type: OmemoDevice
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

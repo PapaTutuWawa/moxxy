@@ -535,10 +535,15 @@ Future<void> performRemoveOwnDevice(RemoveOwnDeviceCommand command, { dynamic ex
 }
 
 Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dynamic extra }) async {
+  final id = extra as String;
   final jid = GetIt.I.get<XmppConnection>()
     .getConnectionSettings()
     .jid.toBare()
     .toString();
-  await GetIt.I.get<OmemoService>()
-    .regenerateDevice(jid);
+  final device = await GetIt.I.get<OmemoService>().regenerateDevice(jid);
+
+  sendEvent(
+    RegenerateOwnDeviceResult(device: device),
+    id: id,
+  );
 }

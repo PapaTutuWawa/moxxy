@@ -24,7 +24,10 @@ Future<void> showConfirmationDialog(String title, String body, BuildContext cont
       content: Text(body),
       actions: [
         TextButton(
-          onPressed: callback,
+          onPressed: () {
+            Navigator.of(context).pop();
+            callback();
+          },
           child: const Text('Yes'),
         ),
         TextButton(
