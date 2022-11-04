@@ -107,7 +107,7 @@ class StreamManagementNegotiator extends XmppFeatureNegotiatorBase {
             // We have to do this because we otherwise get a stanza stuck in the queue,
             // thus spamming the server on every <a /> nonza we receive.
             // ignore: cascade_invocations
-            sm.setState(StreamManagementState(0, 0));
+            await sm.setState(StreamManagementState(0, 0));
             await sm.commitState();
 
             _resumeFailed = true;

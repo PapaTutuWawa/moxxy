@@ -60,7 +60,6 @@ class SettingsPage extends StatelessWidget {
                   context,
                   () async {
                     GetIt.I.get<PreferencesBloc>().add(SignedOutEvent());
-                    Navigator.of(context).pop();
                   },
                 ),
               )

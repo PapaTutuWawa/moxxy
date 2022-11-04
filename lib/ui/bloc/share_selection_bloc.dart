@@ -10,6 +10,7 @@ import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
@@ -26,11 +27,12 @@ enum ShareSelectionType {
 
 /// Create a common ground between Conversations and RosterItems
 class ShareListItem {
-  const ShareListItem(this.avatarPath, this.jid, this.title, this.isConversation);
+  const ShareListItem(this.avatarPath, this.jid, this.title, this.isConversation, this.isEncrypted);
   final String avatarPath;
   final String jid;
   final String title;
   final bool isConversation;
+  final bool isEncrypted;
 }
 
 class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> {
@@ -65,6 +67,7 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
           c.jid,
           c.title,
           true,
+          c.encrypted,
         );
       }),
     );
@@ -80,6 +83,7 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
             rosterItem.jid,
             rosterItem.title,
             false,
+            GetIt.I.get<PreferencesBloc>().state.enableOmemoByDefault,
           ),
         );
       } else {
@@ -88,6 +92,7 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
           rosterItem.jid,
           rosterItem.title,
           false,
+          items[index].isEncrypted,
         );
       }
     }

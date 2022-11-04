@@ -6,6 +6,7 @@ import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as navigation;
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
@@ -73,6 +74,7 @@ class ShareSelectionPage extends StatelessWidget {
                   maxTextWidth,
                   timestampNever,
                   false,
+                  showLock: item.isEncrypted,
                   extra: Checkbox(
                     value: isSelected,
                     onChanged: (_) {
@@ -88,7 +90,28 @@ class ShareSelectionPage extends StatelessWidget {
           floatingActionButton: state.selection.isNotEmpty ?
             FloatingActionButton(
               onPressed: () {
-                context.read<ShareSelectionBloc>().add(SubmittedEvent());
+                final bloc = context.read<ShareSelectionBloc>();
+                final hasUnencrypted = bloc.state.selection.any((selection) {
+                  return !bloc.state.items[selection].isEncrypted;
+                });
+                final hasEncrypted = bloc.state.selection.any((selection) {
+                  return bloc.state.items[selection].isEncrypted;
+                });
+
+                // Warn the user
+                if (hasUnencrypted && hasEncrypted) {
+                  showConfirmationDialog(
+                    'Send file',
+                    'One or more chats are unencrypted. This means that the file will be leaked to the server. Do you still want to continue?',
+                    context,
+                    () {
+                      bloc.add(SubmittedEvent());
+                    }
+                  );
+                  return;
+                }
+
+                bloc.add(SubmittedEvent());
               },
               child: const Icon(
                 Icons.send,

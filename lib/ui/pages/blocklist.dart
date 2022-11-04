@@ -64,7 +64,6 @@ class BlocklistPage extends StatelessWidget {
                   context,
                   () {
                     context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
-                    Navigator.of(context).pop();
                   }
                 ),
               )

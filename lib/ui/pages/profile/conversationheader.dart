@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -87,6 +88,36 @@ class ConversationProfileHeader extends StatelessWidget {
                         'Unmute' :
                         'Mute',
                       style: const TextStyle(
+                        fontSize: fontsizeAppbar,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // TODO(PapaTutuWawa): Only show when the chat partner has OMEMO keys
+              Tooltip(
+                message: 'Devices',
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    SharedMediaContainer(
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: ColoredBox(
+                          color: getTileColor(context),
+                          child: const Icon(
+                            Icons.security_outlined,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        GetIt.I.get<DevicesBloc>().add(DevicesRequestedEvent(conversation.jid));
+                      },
+                    ),
+                    const Text(
+                      'Devices',
+                      style: TextStyle(
                         fontSize: fontsizeAppbar,
                       ),
                     ),

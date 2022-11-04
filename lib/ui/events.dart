@@ -29,7 +29,7 @@ void setupEventHandler() {
       EventTypeMatcher<ProgressEvent>(onProgress),
       EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged),
       EventTypeMatcher<PreStartDoneEvent>(preStartDone),
-      EventTypeMatcher<ServiceReadyEvent>(onServiceReady)
+      EventTypeMatcher<ServiceReadyEvent>(onServiceReady),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);

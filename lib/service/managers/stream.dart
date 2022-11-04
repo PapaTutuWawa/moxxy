@@ -9,13 +9,13 @@ import 'package:moxxyv2/xmpp/xeps/xep_0198/xep_0198.dart';
 class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
   bool shouldTriggerAckedEvent(Stanza stanza) {
-    // TODO(PapaTutuWawa): Once OMEMO is supported, add the encrypted element here
     return stanza.tag == 'message' &&
       stanza.id != null && (
         stanza.firstTag('body') != null ||
         stanza.firstTag('x', xmlns: oobDataXmlns) != null ||
         stanza.firstTag('file-sharing', xmlns: sfsXmlns) != null ||
-        stanza.firstTag('file-upload', xmlns: fileUploadNotificationXmlns) != null
+        stanza.firstTag('file-upload', xmlns: fileUploadNotificationXmlns) != null ||
+        stanza.firstTag('encrypted', xmlns: omemoXmlns) != null
       );
   }
   
@@ -30,7 +30,7 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
   Future<void> loadState() async {
     final state = await GetIt.I.get<XmppService>().getXmppState();
     if (state.smState != null) {
-      setState(state.smState!);
+      await setState(state.smState!);
     }
   }
 }

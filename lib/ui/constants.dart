@@ -15,6 +15,7 @@ const Color bubbleColorSent = Color(0xffa139f0);
 const Color bubbleColorSentQuoted = bubbleColorSent;
 const Color bubbleColorReceived = Color(0xff222222);
 const Color bubbleColorReceivedQuoted = bubbleColorReceived;
+const Color bubbleColorUnencrypted = Color(0xffd40101);
 
 const double paddingVeryLarge = 64;
 
@@ -56,3 +57,5 @@ const String conversationSettingsRoute = '$settingsRoute/conversation';
 const String blocklistRoute = '/blocklist';
 const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';
+const String devicesRoute = '$profileRoute/devices';
+const String ownDevicesRoute = '$profileRoute/own_devices';

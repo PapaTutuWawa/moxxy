@@ -1,8 +1,23 @@
+import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/shared/error_types.dart';
+import 'package:moxxyv2/shared/warning_types.dart';
 
 part 'message.freezed.dart';
 part 'message.g.dart';
+
+Map<String, String>? _optionalJsonDecode(String? data) {
+  if (data == null) return null;
+
+  return jsonDecode(data) as Map<String, String>;
+}
+
+String? _optionalJsonEncode(Map<String, String>? data) {
+  if (data == null) return null;
+
+  return jsonEncode(data);
+}
 
 @freezed
 class Message with _$Message {
@@ -19,8 +34,10 @@ class Message with _$Message {
     String conversationJid,
     bool isMedia,
     bool isFileUploadNotification,
+    bool encrypted,
     {
       int? errorType,
+      int? warningType,
       String? mediaUrl,
       @Default(false) bool isDownloading,
       @Default(false) bool isUploading,
@@ -29,12 +46,17 @@ class Message with _$Message {
       int? mediaWidth,
       int? mediaHeight,
       String? srcUrl,
+      String? key,
+      String? iv,
+      String? encryptionScheme,
       @Default(false) bool received,
       @Default(false) bool displayed,
       @Default(false) bool acked,
       String? originId,
       Message? quotes,
       String? filename,
+      Map<String, String>? plaintextHashes,
+      Map<String, String>? ciphertextHashes,
     }
   ) = _Message;
 
@@ -51,15 +73,18 @@ class Message with _$Message {
       'acked': intToBool(json['acked']! as int),
       'isMedia': intToBool(json['isMedia']! as int),
       'isFileUploadNotification': intToBool(json['isFileUploadNotification']! as int),
+      'encrypted': intToBool(json['encrypted']! as int),
+      'plaintextHashes': _optionalJsonDecode(json['plaintextHashes'] as String?),
+      'ciphertextHashes': _optionalJsonDecode(json['ciphertextHashes'] as String?),
+      'isDownloading': intToBool(json['isDownloading']! as int),
+      'isUploading': intToBool(json['isUploading']! as int),
     }).copyWith(quotes: quotes);
   }
   
   Map<String, dynamic> toDatabaseJson(int? quoteId) {
     final map = toJson()
       ..remove('id')
-      ..remove('quotes')
-      ..remove('isDownloading')
-      ..remove('isUploading');
+      ..remove('quotes');
 
     return {
       ...map,
@@ -68,7 +93,22 @@ class Message with _$Message {
       'received': boolToInt(received),
       'displayed': boolToInt(displayed),
       'acked': boolToInt(acked),
+      'encrypted': boolToInt(encrypted),
       'quote_id': quoteId,
+      'plaintextHashes': _optionalJsonEncode(plaintextHashes),
+      'ciphertextHashes': _optionalJsonEncode(ciphertextHashes),
+      'isDownloading': boolToInt(isDownloading),
+      'isUploading': boolToInt(isUploading),
     };
+  }
+
+  /// Returns true if the message is an error. If not, then returns false.
+  bool isError() {
+    return errorType != null && errorType != noError;
+  }
+
+  /// Returns true if the message is a warning. If not, then returns false.
+  bool isWarning() {
+    return warningType != null && warningType != noWarning;
   }
 }

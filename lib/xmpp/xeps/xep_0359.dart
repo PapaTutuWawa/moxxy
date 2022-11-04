@@ -6,6 +6,7 @@ import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
 import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 
 /// Represents data provided by XEP-0359.
@@ -61,8 +62,9 @@ class StableIdManager extends XmppManagerBase {
       logger.finest('Found Unique and Stable Stanza Id tag');
       final attrs = getAttributes();
       final disco = attrs.getManagerById<DiscoManager>(discoManager)!;
-      final info = await disco.discoInfoQuery(from.toString());
-      if (info != null) {
+      final result = await disco.discoInfoQuery(from.toString());
+      if (result.isType<DiscoInfo>()) {
+        final info = result.get<DiscoInfo>();
         logger.finest('Got info for ${from.toString()}');
         if (info.features.contains(stableIdXmlns)) {
           logger.finest('${from.toString()} supports $stableIdXmlns.');
@@ -78,6 +80,8 @@ class StableIdManager extends XmppManagerBase {
         } else {
           logger.finest('${from.toString()} does not support $stableIdXmlns. Ignoring... ');
         }
+      } else {
+        logger.finest('Failed to find out if ${from.toString()} supports $stableIdXmlns. Ignoring... ');
       }
     }
 

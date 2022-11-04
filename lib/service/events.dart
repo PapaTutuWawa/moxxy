@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/avatars.dart';
@@ -9,8 +9,10 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
+import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
@@ -30,6 +32,7 @@ import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
@@ -56,6 +59,13 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SignOutCommand>(performSignOut),
       EventTypeMatcher<SendFilesCommand>(performSendFiles),
       EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
+      EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(performGetOmemoFingerprints),
+      EventTypeMatcher<SetOmemoDeviceEnabledCommand>(performEnableOmemoKey),
+      EventTypeMatcher<RecreateSessionsCommand>(performRecreateSessions),
+      EventTypeMatcher<SetOmemoEnabledCommand>(performSetOmemoEnabled),
+      EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(performGetOwnOmemoFingerprints),
+      EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
+      EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -193,6 +203,7 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,
+      (await GetIt.I.get<PreferencesService>().getPreferences()).enableOmemoByDefault,
     );
 
     sendEvent(
@@ -296,6 +307,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       true,
       // TODO(PapaTutuWawa): Take as an argument
       false,
+      (await GetIt.I.get<PreferencesService>().getPreferences()).enableOmemoByDefault,
     );
     sendEvent(
       AddContactResultEvent(conversation: c, added: true),
@@ -311,22 +323,36 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
 }
 
 Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic extra }) async {
-  sendEvent(MessageUpdatedEvent(message: command.message.copyWith(isDownloading: true)));
-
+  final ms = GetIt.I.get<MessageService>();
   final srv = GetIt.I.get<HttpFileTransferService>();
+
+  final message = await ms.updateMessage(
+    command.message.id,
+    isDownloading: true,
+  );
+  sendEvent(MessageUpdatedEvent(message: message));
+
   final metadata = await peekFile(command.message.srcUrl!);
 
   // TODO(Unknown): Maybe deduplicate with the code in the xmpp service
   // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
   //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-  final ext = command.message.srcUrl!.split('.').last;
+  final ext = message.srcUrl!.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
 
   await srv.downloadFile(
     FileDownloadJob(
-      command.message.srcUrl!,
-      command.message.id,
-      command.message.conversationJid,
+      MediaFileLocation(
+        message.srcUrl!,
+        message.filename ?? filenameFromUrl(message.srcUrl!),
+        message.encryptionScheme,
+        message.key != null ? base64Decode(message.key!) : null,
+        message.iv != null ? base64Decode(message.iv!) : null,
+        message.plaintextHashes,
+        message.ciphertextHashes,
+      ),
+      message.id,
+      message.conversationJid,
       mimeGuess,
     ),
   );
@@ -440,4 +466,84 @@ Future<void> performSetMuteState(SetConversationMuteStatusCommand command, { dyn
   );
 
   sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+}
+
+Future<void> performGetOmemoFingerprints(GetConversationOmemoFingerprintsCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final omemo = GetIt.I.get<OmemoService>();
+  sendEvent(
+    GetConversationOmemoFingerprintsResult(
+      fingerprints: await omemo.getOmemoKeysForJid(command.jid),
+    ),
+    id: id,
+  );
+}
+
+Future<void> performEnableOmemoKey(SetOmemoDeviceEnabledCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final omemo = GetIt.I.get<OmemoService>();
+  await omemo.setOmemoKeyEnabled(command.jid, command.deviceId, command.enabled);
+
+  await performGetOmemoFingerprints(
+    GetConversationOmemoFingerprintsCommand(jid: command.jid),
+    extra: id,
+  );
+}
+
+Future<void> performRecreateSessions(RecreateSessionsCommand command, { dynamic extra }) async {
+  await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
+
+  final conn = GetIt.I.get<XmppConnection>();
+  await conn.getManagerById<OmemoManager>(omemoManager)!.sendEmptyMessage(
+    JID.fromString(command.jid),
+    findNewSessions: true,
+  );
+}
+
+Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command, { dynamic extra }) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(command.jid);
+  await cs.updateConversation(
+    conversation!.id,
+    encrypted: command.enabled,
+  );
+}
+
+Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand command, { dynamic extra }) async {
+  final id = extra as String;
+  final os = GetIt.I.get<OmemoService>();
+  final xs = GetIt.I.get<XmppService>();
+  await os.ensureInitialized();
+
+  final jid = (await xs.getConnectionSettings())!.jid;
+  sendEvent(
+    GetOwnOmemoFingerprintsResult(
+      ownDeviceFingerprint: await os.getDeviceFingerprint(),
+      ownDeviceId: await os.getDeviceId(),
+      fingerprints: await os.getOwnFingerprints(jid),
+    ),
+    id: id,
+  );
+}
+
+Future<void> performRemoveOwnDevice(RemoveOwnDeviceCommand command, { dynamic extra }) async {
+  await GetIt.I.get<XmppConnection>()
+    .getManagerById<OmemoManager>(omemoManager)!
+    .deleteDevice(command.deviceId);
+}
+
+Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dynamic extra }) async {
+  final id = extra as String;
+  final jid = GetIt.I.get<XmppConnection>()
+    .getConnectionSettings()
+    .jid.toBare()
+    .toString();
+  final device = await GetIt.I.get<OmemoService>().regenerateDevice(jid);
+
+  sendEvent(
+    RegenerateOwnDeviceResult(device: device),
+    id: id,
+  );
 }

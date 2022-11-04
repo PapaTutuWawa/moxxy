@@ -36,8 +36,12 @@ class MessageService {
     bool isMedia,
     String sid,
     bool isFileUploadNotification,
+    bool encrypted,
     {
       String? srcUrl,
+      String? key,
+      String? iv,
+      String? encryptionScheme,
       String? mediaUrl,
       String? mediaType,
       String? thumbnailData,
@@ -46,6 +50,12 @@ class MessageService {
       String? originId,
       String? quoteId,
       String? filename,
+      int? errorType,
+      int? warningType,
+      Map<String, String>? plaintextHashes,
+      Map<String, String>? ciphertextHashes,
+      bool isDownloading = false,
+      bool isUploading = false,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -56,7 +66,11 @@ class MessageService {
       isMedia,
       sid,
       isFileUploadNotification,
+      encrypted,
       srcUrl: srcUrl,
+      key: key,
+      iv: iv,
+      encryptionScheme: encryptionScheme,
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       thumbnailData: thumbnailData,
@@ -65,6 +79,12 @@ class MessageService {
       originId: originId,
       quoteId: quoteId,
       filename: filename,
+      errorType: errorType,
+      warningType: warningType,
+      plaintextHashes: plaintextHashes,
+      ciphertextHashes: ciphertextHashes,
+      isUploading: isUploading,
+      isDownloading: isDownloading,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents
@@ -86,6 +106,17 @@ class MessageService {
       (message) => message.sid == stanzaId,
     );
   }
+
+  Future<Message?> getMessageById(String conversationJid, int id) async {
+    if (!_messageCache.containsKey(conversationJid)) {
+      await getMessagesForJid(conversationJid);
+    }
+    
+    return firstWhereOrNull(
+      _messageCache[conversationJid]!,
+      (message) => message.id == id,
+    );
+  }
   
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
   Future<Message> updateMessage(int id, {
@@ -95,10 +126,16 @@ class MessageService {
     bool? displayed,
     bool? acked,
     int? errorType,
+    int? warningType,
     bool? isFileUploadNotification,
     String? srcUrl,
+    String? key,
+    String? iv,
+    String? encryptionScheme,
     int? mediaWidth,
     int? mediaHeight,
+    bool? isUploading,
+    bool? isDownloading,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -108,17 +145,23 @@ class MessageService {
       displayed: displayed,
       acked: acked,
       errorType: errorType,
+      warningType: warningType,
       isFileUploadNotification: isFileUploadNotification,
       srcUrl: srcUrl,
+      key: key,
+      iv: iv,
+      encryptionScheme: encryptionScheme,
       mediaWidth: mediaWidth,
       mediaHeight: mediaHeight,
+      isUploading: isUploading,
+      isDownloading: isDownloading,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {
       _messageCache[newMessage.conversationJid] = _messageCache[newMessage.conversationJid]!.map((m) {
-          if (m.id == newMessage.id) return newMessage;
+        if (m.id == newMessage.id) return newMessage;
 
-          return m;
+        return m;
       }).toList();
     }
     

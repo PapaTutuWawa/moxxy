@@ -94,8 +94,6 @@ class ConversationSettingsPage extends StatelessWidget {
                       context,
                       () async {
                         await _removeBackgroundImage(context, state);
-                        // ignore: use_build_context_synchronously
-                        Navigator.of(context).pop();
                       }
                     );
                   },
@@ -111,6 +109,15 @@ class ConversationSettingsPage extends StatelessWidget {
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(defaultMuteState: value),
+                    ),
+                  ),
+                ),
+                SettingsTile.switchTile(
+                  title: const Text('Enable end-to-end encryption by default. WARNING: Experimental'),
+                  initialValue: state.enableOmemoByDefault,
+                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(enableOmemoByDefault: value),
                     ),
                   ),
                 ),

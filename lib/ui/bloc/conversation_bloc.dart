@@ -45,6 +45,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
     on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
     on<OwnJidReceivedEvent>(_onOwnJidReceived);
+    on<OmemoSetEvent>(_onOmemoSet);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -325,5 +326,20 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onOwnJidReceived(OwnJidReceivedEvent event, Emitter<ConversationState> emit) async {
     emit(state.copyWith(jid: event.jid));
+  }
+
+  Future<void> _onOmemoSet(OmemoSetEvent event, Emitter<ConversationState> emit) async {
+    emit(
+      state.copyWith(
+        conversation: state.conversation!.copyWith(
+          encrypted: event.enabled,
+        ),
+      ),
+    );
+
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      SetOmemoEnabledCommand(enabled: event.enabled, jid: state.conversation!.jid),
+      awaitable: false,
+    );
   }
 }

@@ -1,23 +1,25 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:native_imaging/native_imaging.dart' as native;
 
-/// Generate a blurhash thumbnail using native_imaging.
-Future<String?> generateBlurhashThumbnail(String path) async {
+Future<String?> _generateBlurhashThumbnailImpl(String path) async {
   await native.init();
 
   final bytes = await File(path).readAsBytes();
 
   native.Image image;
+  int width;
+  int height;
   try {
     final dartCodec = await instantiateImageCodec(bytes);
     final dartFrame = await dartCodec.getNextFrame();
     final rgbaData = await dartFrame.image.toByteData();
     if (rgbaData == null) return null;
 
-    final width = dartFrame.image.width;
-    final height = dartFrame.image.height;
+    width = dartFrame.image.width;
+    height = dartFrame.image.height;
 
     dartFrame.image.dispose();
     dartCodec.dispose();
@@ -36,7 +38,24 @@ Future<String?> generateBlurhashThumbnail(String path) async {
     return null;
   }
 
-  final blurhash = image.toBlurhash(3, 3);
+  // Scale the image down as recommended by
+  // https://github.com/woltapp/blurhash#how-fast-is-encoding-decoding
+  final scaled = image.resample(
+    20,
+    (height * (width / height)).toInt(),
+    native.Transform.bilinear,
+  );
+
+  // Calculate the blurhash
+  final blurhash = scaled.toBlurhash(3, 3);
+
+  // Free resources
   image.free();
+  scaled.free();
   return blurhash;
+}
+
+/// Generate a blurhash thumbnail using native_imaging.
+Future<String?> generateBlurhashThumbnail(String path) async {
+  return compute(_generateBlurhashThumbnailImpl, path);
 }

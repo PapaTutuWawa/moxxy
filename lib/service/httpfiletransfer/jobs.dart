@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 
@@ -6,10 +7,12 @@ import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 @immutable
 class FileUploadJob {
 
-  const FileUploadJob(this.recipients, this.path, this.mime, this.messageMap, this.thumbnails);
+  const FileUploadJob(this.recipients, this.path, this.mime, this.encryptMap, this.messageMap, this.thumbnails);
   final List<String> recipients;
   final String path;
   final String? mime;
+  // Recipient -> Should encrypt
+  final Map<String, bool> encryptMap;
   // Recipient -> Message
   final Map<String, Message> messageMap;
   final List<Thumbnail> thumbnails;
@@ -21,19 +24,26 @@ class FileUploadJob {
       path == other.path &&
       messageMap == other.messageMap &&
       mime == other.mime &&
-      thumbnails == other.thumbnails;
+      thumbnails == other.thumbnails &&
+      encryptMap == other.encryptMap;
   }
 
   @override
-  int get hashCode => path.hashCode ^ recipients.hashCode ^ messageMap.hashCode ^ mime.hashCode ^ thumbnails.hashCode;
+  int get hashCode => path.hashCode ^ recipients.hashCode ^ messageMap.hashCode ^ mime.hashCode ^ thumbnails.hashCode ^ encryptMap.hashCode;
 }
 
 /// A job describing the upload of a file.
 @immutable
 class FileDownloadJob {
 
-  const FileDownloadJob(this.url, this.mId, this.conversationJid, this.mimeGuess, {this.shouldShowNotification = true});
-  final String url;
+  const FileDownloadJob(
+    this.location,
+    this.mId,
+    this.conversationJid,
+    this.mimeGuess, {
+      this.shouldShowNotification = true,
+  });
+  final MediaFileLocation location;
   final int mId;
   final String conversationJid;
   final String? mimeGuess;
@@ -42,12 +52,13 @@ class FileDownloadJob {
   @override
   bool operator ==(Object other) {
     return other is FileDownloadJob &&
-      url == other.url &&
+      location == other.location &&
       mId == other.mId &&
       conversationJid == other.conversationJid &&
       mimeGuess == other.mimeGuess &&
       shouldShowNotification == other.shouldShowNotification;
   }
+
   @override
-  int get hashCode => url.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode;
+  int get hashCode => location.hashCode ^ mId.hashCode ^ conversationJid.hashCode ^ mimeGuess.hashCode ^ shouldShowNotification.hashCode;
 }

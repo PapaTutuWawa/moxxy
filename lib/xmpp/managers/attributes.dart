@@ -17,7 +17,6 @@ class XmppManagerAttributes {
     required this.sendNonza,
     required this.getManagerById,
     required this.sendEvent,
-    required this.sendRawXml,
     required this.getConnectionSettings,
     required this.isFeatureSupported,
     required this.getFullJID,
@@ -26,16 +25,13 @@ class XmppManagerAttributes {
     required this.getNegotiatorById,
   });
   /// Send a stanza whose response can be awaited.
-  final Future<XMLNode> Function(Stanza stanza, { StanzaFromType addFrom, bool addId, bool awaitable}) sendStanza;
+  final Future<XMLNode> Function(Stanza stanza, { StanzaFromType addFrom, bool addId, bool awaitable, bool encrypted}) sendStanza;
 
   /// Send a nonza.
   final void Function(XMLNode) sendNonza;
 
   /// Send an event to the connection's event channel.
   final void Function(XmppEvent) sendEvent;
-
-  /// Inject a raw string into the XML stream to the server.
-  final void Function(String) sendRawXml;
 
   /// Get the connection settings of the attached connection.
   final ConnectionSettings Function() getConnectionSettings;

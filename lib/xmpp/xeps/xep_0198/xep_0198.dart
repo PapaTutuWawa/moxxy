@@ -93,22 +93,24 @@ class StreamManagementManager extends XmppManagerBase {
   Future<void> commitState() async {}
   Future<void> loadState() async {}
 
-  void setState(StreamManagementState state) {
-    _state = state;
+  Future<void> setState(StreamManagementState state) async {
+    await _stateLock.synchronized(() async {
+      _state = state;
+      await commitState();
+    });
   }
 
   /// Resets the state such that a resumption is no longer possible without creating
   /// a new session. Primarily useful for clearing the state after disconnecting
   Future<void> resetState() async {
-    await _stateLock.synchronized(() async {
-      setState(_state.copyWith(
-          c2s: 0,
-          s2c: 0,
-          streamResumptionLocation: null,
-          streamResumptionId: null,
-      ),);
-      await commitState();
-    });
+    await setState(
+      _state.copyWith(
+        c2s: 0,
+        s2c: 0,
+        streamResumptionLocation: null,
+        streamResumptionId: null,
+      ),
+    );
 
     await _ackLock.synchronized(() async {
       _pendingAcks = 0;
@@ -143,6 +145,7 @@ class StreamManagementManager extends XmppManagerBase {
   List<StanzaHandler> getIncomingStanzaHandlers() => [
     StanzaHandler(
       callback: _onServerStanzaReceived,
+      priority: 9999,
     )
   ];
 
@@ -170,15 +173,14 @@ class StreamManagementManager extends XmppManagerBase {
         _pendingAcks = 0;
       });
 
-      await _stateLock.synchronized(() async {
-        setState(StreamManagementState(
+      await setState(
+        StreamManagementState(
           0,
           0,
           streamResumptionId: event.id,
           streamResumptionLocation: event.location,
-        ),);
-        await commitState();
-      });
+        ),
+      );
     } else if (event is ConnectingEvent) {
       _disableStreamManagement();
       _streamResumed = false;
@@ -265,7 +267,7 @@ class StreamManagementManager extends XmppManagerBase {
     final attrs = getAttributes();
     logger.finest('Sending ack response');
     await _stateLock.synchronized(() async {
-        attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
+      attrs.sendNonza(StreamManagementAckNonza(_state.s2c));
     });
 
     return true;

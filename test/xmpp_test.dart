@@ -28,12 +28,11 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
   var eventTriggered = false;
   final roster = RosterManager();
   roster.register(XmppManagerAttributes(
-      sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async => XMLNode(tag: 'hallo'),
+      sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true, bool encrypted = false }) async => XMLNode(tag: 'hallo'),
       sendEvent: (event) {
         eventTriggered = true;
       },
       sendNonza: (_) {},
-      sendRawXml: (_) {},
       getConnectionSettings: () => ConnectionSettings(
         jid: JID.fromString(bareJid),
         password: 'password',
@@ -50,7 +49,7 @@ Future<bool> testRosterManager(String bareJid, String resource, String stanzaStr
 
   final stanza = Stanza.fromXMLNode(XMLNode.fromString(stanzaString));
   for (final handler in roster.getIncomingStanzaHandlers()) {
-    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, stanza));
+    if (handler.matches(stanza)) await handler.callback(stanza, StanzaHandlerData(false, false, null, stanza));
   }
 
   return eventTriggered;
@@ -330,12 +329,11 @@ void main() {
           var eventTriggered = false;
           final roster = RosterManager();
           roster.register(XmppManagerAttributes(
-              sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true }) async => XMLNode(tag: 'hallo'),
+              sendStanza: (_, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool retransmitted = false, bool awaitable = true, bool encrypted = false }) async => XMLNode(tag: 'hallo'),
               sendEvent: (event) {
                 eventTriggered = true;
               },
               sendNonza: (_) {},
-              sendRawXml: (_) {},
               getConnectionSettings: () => ConnectionSettings(
                 jid: JID.fromString('some.user@example.server'),
                 password: 'password',
@@ -355,7 +353,7 @@ void main() {
           final maliciousStanza = Stanza.fromXMLNode(XMLNode.fromString("<iq type=\"set\" from=\"eve@siacs.eu/bbbbb\" to=\"some.user@example.server/aaaaa\"><query xmlns='jabber:iq:roster'><item subscription=\"both\" jid=\"eve@siacs.eu\" name=\"Bob\" /></query></iq>"));
 
           for (final handler in roster.getIncomingStanzaHandlers()) {
-            if (handler.matches(maliciousStanza)) await handler.callback(maliciousStanza, StanzaHandlerData(false, maliciousStanza));
+            if (handler.matches(maliciousStanza)) await handler.callback(maliciousStanza, StanzaHandlerData(false, false, null, maliciousStanza));
           }
 
           expect(eventTriggered, false, reason: 'Was able to inject a malicious roster push');

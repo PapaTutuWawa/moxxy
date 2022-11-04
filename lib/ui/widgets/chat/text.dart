@@ -1,11 +1,23 @@
 import 'package:dart_emoji/dart_emoji.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/redirects.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+String errorTypeToText(int errorType) {
+  switch (errorType) {
+    case messageNotEncryptedForDevice: return 'Message not encrypted for device';
+    case messageInvalidHMAC: return 'Could not decrypt message';
+    case messageNoDecryptionKey: return 'No decryption key available';
+    case messageInvalidAffixElements: return 'Invalid encrypted message';
+    case messageInvalidNumber: return 'lol';
+    default: return '';
+  }
+}
 
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
@@ -28,7 +40,10 @@ class TextChatWidget extends StatelessWidget {
     final fontsize = EmojiUtil.hasOnlyEmojis(
       message.body,
       ignoreWhitespace: true,
-    ) ? fontsizeBodyOnlyEmojis : fontsizeBody;
+    ) && !message.isError() ?
+      fontsizeBodyOnlyEmojis :
+      fontsizeBody;
+
     return IntrinsicWidth(child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -36,9 +51,13 @@ class TextChatWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ParsedText(
-              text: message.body,
+              text: message.isError() ?
+                errorTypeToText(message.errorType!) :
+                message.body,
               style: TextStyle(
-                color: const Color(0xf9ebffff),
+                color: message.isError() ?
+                  Colors.grey :
+                  const Color(0xf9ebffff),
                 fontSize: fontsize,
               ),
               parse: [

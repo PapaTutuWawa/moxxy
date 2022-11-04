@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/events.dart';
 import 'package:moxxyv2/xmpp/jid.dart';
@@ -10,7 +11,6 @@ import 'package:moxxyv2/xmpp/stanza.dart';
 import 'package:moxxyv2/xmpp/stringxml.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0297.dart';
-
 
 class CarbonsManager extends XmppManagerBase {
 
@@ -51,17 +51,11 @@ class CarbonsManager extends XmppManagerBase {
 
     // Query the server
     final disco = getAttributes().getManagerById<DiscoManager>(discoManager)!;
-    final result = await disco.discoInfoQuery(
-      getAttributes().getConnectionSettings().jid.toBare().toString(),
+    _supported = await disco.supportsFeature(
+      getAttributes().getConnectionSettings().jid.toBare(),
+      carbonsXmlns,
     );
-
     _gotSupported = true;
-    if (result == null) {
-      _supported = false;
-    } else {
-      _supported = result.features.contains(carbonsXmlns);
-    }
-
     return _supported;
   }
 
@@ -165,6 +159,11 @@ class CarbonsManager extends XmppManagerBase {
     return true;
   }
 
+  @visibleForTesting
+  void forceEnable() {
+    _isEnabled = true;
+  }
+  
   bool isCarbonValid(JID senderJid) {
     return _isEnabled && senderJid == getAttributes().getConnectionSettings().jid.toBare();
   }

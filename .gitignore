@@ -56,3 +56,6 @@ app.*.map.json
 # Direnv
 .envrc
 .direnv/
+
+# Android artifacts
+.android

@@ -16,7 +16,8 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/xmpp/connection.dart';
 import 'package:moxxyv2/xmpp/managers/namespaces.dart';
 import 'package:moxxyv2/xmpp/namespaces.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/helpers.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';
@@ -93,7 +94,10 @@ class AvatarService {
   }
   
   Future<void> fetchAndUpdateAvatarForJid(String jid, String oldHash) async {
-    final items = (await _getDiscoManager().discoItemsQuery(jid)) ?? [];
+    final response = await _getDiscoManager().discoItemsQuery(jid);
+    final items = response.isType<DiscoError>() ?
+      <DiscoItem>[] :
+      response.get<List<DiscoItem>>();
     final itemNodes = items.map((i) => i.node);
 
     _log.finest('Disco items for $jid:');

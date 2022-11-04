@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -12,6 +11,7 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -19,8 +19,10 @@ import 'package:moxxyv2/service/managers/disco.dart';
 import 'package:moxxyv2/service/managers/roster.dart';
 import 'package:moxxyv2/service/managers/stream.dart';
 import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/notifications.dart';
+import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/xmpp.dart';
@@ -41,19 +43,21 @@ import 'package:moxxyv2/xmpp/presence.dart';
 import 'package:moxxyv2/xmpp/roster.dart';
 import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0060.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0060/xep_0060.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0203.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0280.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0385.dart';
+import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0461.dart';
 
@@ -158,7 +162,7 @@ Future<void> entrypoint() async {
 
   setupLogging();
   setupBackgroundEventHandler();
-
+  
   // Initialize the database
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
   await GetIt.I.get<DatabaseService>().initialize();
@@ -171,6 +175,8 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<RosterService>(RosterService());
   GetIt.I.registerSingleton<ConversationService>(ConversationService());
   GetIt.I.registerSingleton<MessageService>(MessageService());
+  GetIt.I.registerSingleton<OmemoService>(OmemoService());
+  GetIt.I.registerSingleton<CryptographyService>(CryptographyService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
@@ -178,13 +184,14 @@ Future<void> entrypoint() async {
   
   // Init the UDPLogger
   await initUDPLogger();
-
+  
   GetIt.I.registerSingleton<MoxxyReconnectionPolicy>(MoxxyReconnectionPolicy());
   final connection = XmppConnection(GetIt.I.get<MoxxyReconnectionPolicy>())
     ..registerManagers([
       MoxxyStreamManagementManager(),
       MoxxyDiscoManager(),
       MoxxyRosterManager(),
+      MoxxyOmemoManager(),
       PingManager(),
       MessageManager(),
       PresenceManager(),
@@ -194,7 +201,6 @@ Future<void> entrypoint() async {
       VCardManager(),
       UserAvatarManager(),
       StableIdManager(),
-      SIMSManager(),
       MessageDeliveryReceiptManager(),
       ChatMarkerManager(),
       OOBManager(),
@@ -204,6 +210,9 @@ Future<void> entrypoint() async {
       ChatStateManager(),
       HttpFileUploadManager(),
       FileUploadNotificationManager(),
+      EmeManager(),
+      CryptographicHashManager(),
+      DelayedDeliveryManager(),
     ])
     ..registerFeatureNegotiators([
       ResourceBindingNegotiator(),
@@ -229,6 +238,8 @@ Future<void> entrypoint() async {
 
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
+    unawaited(GetIt.I.get<OmemoService>().initializeIfNeeded(settings.jid.toBare().toString()));
+
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
     await connection.getManagerById<MoxxyStreamManagementManager>(smManager)!.loadState();

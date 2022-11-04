@@ -686,21 +686,21 @@ packages:
       name: moxplatform
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.11+2"
+    version: "0.1.15"
   moxplatform_android:
     dependency: transitive
     description:
       name: moxplatform_android
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.11+2"
+    version: "0.1.15"
   moxplatform_platform_interface:
     dependency: transitive
     description:
       name: moxplatform_platform_interface
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.11+2"
+    version: "0.1.15"
   moxxyv2_builders:
     dependency: "direct main"
     description:
@@ -736,6 +736,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  omemo_dart:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "1472624b1d80ef94663114ac4273e51daed65882"
+      url: "https://codeberg.org/PapaTutuWawa/omemo_dart.git"
+    source: git
+    version: "0.3.1"
   package_config:
     dependency: transitive
     description:
@@ -862,6 +871,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.4.0"
+  pinenacl:
+    dependency: transitive
+    description:
+      name: pinenacl
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.1"
   platform:
     dependency: transitive
     description:
@@ -1162,7 +1178,7 @@ packages:
       name: synchronized
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.0+2"
   term_glyph:
     dependency: transitive
     description:

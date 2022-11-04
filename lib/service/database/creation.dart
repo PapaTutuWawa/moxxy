@@ -19,19 +19,28 @@ Future<void> createDatabase(Database db, int version) async {
       conversationJid TEXT NOT NULL,
       isMedia INTEGER NOT NULL,
       isFileUploadNotification INTEGER NOT NULL,
+      encrypted INTEGER NOT NULL,
       errorType INTEGER,
+      warningType INTEGER,
       mediaUrl TEXT,
       mediaType TEXT,
       thumbnailData TEXT,
       mediaWidth INTEGER,
       mediaHeight INTEGER,
       srcUrl TEXT,
+      key TEXT,
+      iv TEXT,
+      encryptionScheme TEXT,
       received INTEGER,
       displayed INTEGER,
       acked INTEGER,
       originId TEXT,
       quote_id INTEGER,
       filename TEXT,
+      plaintextHashes TEXT,
+      ciphertextHashes TEXT,
+      isDownloading INTEGER NOT NULL,
+      isUploading INTEGER NOT NULL,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messsagesTable (id)
     )''',
   );
@@ -48,7 +57,8 @@ Future<void> createDatabase(Database db, int version) async {
       unreadCounter INTEGER NOT NULL,
       lastMessageBody TEXT NOT NULL,
       open INTEGER NOT NULL,
-      muted INTEGER NOT NULL
+      muted INTEGER NOT NULL,
+      encrypted INTEGER NOT NULL
     )''',
   );
 
@@ -79,6 +89,69 @@ Future<void> createDatabase(Database db, int version) async {
     )''',
   );
 
+  // OMEMO
+  await db.execute(
+    '''
+    CREATE TABLE $omemoRatchetsTable (
+      id         INTEGER NOT NULL,
+      jid        TEXT NOT NULL,
+      dhs        TEXT NOT NULL,
+      dhs_pub    TEXT NOT NULL,
+      dhr        TEXT,
+      rk         TEXT NOT NULL,
+      cks        TEXT,
+      ckr        TEXT,
+      ns         INTEGER NOT NULL,
+      nr         INTEGER NOT NULL,
+      pn         INTEGER NOT NULL,
+      ik_pub     TEXT NOT NULL,
+      session_ad TEXT NOT NULL,
+      acknowledged INTEGER NOT NULL,
+      mkskipped  TEXT NOT NULL,
+      kex_timestamp INTEGER NOT NULL,
+      kex        TEXT,
+      PRIMARY KEY (jid, id)
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTrustCacheTable (
+      key   TEXT PRIMARY KEY NOT NULL,
+      trust INTEGER NOT NULL
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTrustDeviceListTable (
+      jid    TEXT NOT NULL,
+      device INTEGER NOT NULL
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTrustEnableListTable (
+      key     TEXT PRIMARY KEY NOT NULL,
+      enabled INTEGER NOT NULL
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoDeviceTable (
+      jid  TEXT NOT NULL,
+      id   INTEGER NOT NULL,
+      data TEXT NOT NULL,
+      PRIMARY KEY (jid, id)
+    )''',
+  );
+   await db.execute(
+    '''
+    CREATE TABLE $omemoDeviceListTable (
+      jid  TEXT NOT NULL,
+      id   INTEGER NOT NULL,
+      PRIMARY KEY (jid, id)
+    )''',
+  );
+ 
   // Settings
   await db.execute(
     '''
@@ -86,8 +159,7 @@ Future<void> createDatabase(Database db, int version) async {
       key TEXT NOT NULL PRIMARY KEY,
       type INTEGER NOT NULL,
       value TEXT NOT NULL
-    );
-    ''',
+    )''',
   );
   await db.insert(
     preferenceTable,
@@ -229,6 +301,14 @@ Future<void> createDatabase(Database db, int version) async {
     preferenceTable,
     Preference(
       'defaultMuteState',
+      typeBool,
+      'false',
+    ).toDatabaseJson(),
+  );
+  await db.insert(
+    preferenceTable,
+    Preference(
+      'enableOmemoByDefault',
       typeBool,
       'false',
     ).toDatabaseJson(),

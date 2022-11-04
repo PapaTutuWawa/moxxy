@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
@@ -6,14 +7,15 @@ import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/roster.dart';
-import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
+import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as path;
 import 'package:random_string/random_string.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -128,6 +130,7 @@ class DatabaseService {
       String? avatarUrl,
       ChatState? chatState,
       bool? muted,
+      bool? encrypted,
     }
   ) async {
     final cd = (await _db.query(
@@ -163,6 +166,9 @@ class DatabaseService {
     if (muted != null) {
       c['muted'] = boolToInt(muted);
     }
+    if (encrypted != null) {
+      c['encrypted'] = boolToInt(encrypted);
+    }
 
     await _db.update(
       'Conversations',
@@ -191,6 +197,7 @@ class DatabaseService {
     int lastChangeTimestamp,
     bool open,
     bool muted,
+    bool encrypted,
   ) async {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
@@ -206,6 +213,7 @@ class DatabaseService {
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
       muted,
+      encrypted,
       ChatState.gone,
     );
 
@@ -237,8 +245,12 @@ class DatabaseService {
     bool isMedia,
     String sid,
     bool isFileUploadNotification,
+    bool encrypted,
     {
       String? srcUrl,
+      String? key,
+      String? iv,
+      String? encryptionScheme,
       String? mediaUrl,
       String? mediaType,
       String? thumbnailData,
@@ -247,6 +259,12 @@ class DatabaseService {
       String? originId,
       String? quoteId,
       String? filename,
+      int? errorType,
+      int? warningType,
+      Map<String, String>? plaintextHashes,
+      Map<String, String>? ciphertextHashes,
+      bool isDownloading = false,
+      bool isUploading = false,
     }
   ) async {
     final m = Message(
@@ -258,8 +276,13 @@ class DatabaseService {
       conversationJid,
       isMedia,
       isFileUploadNotification,
-      errorType: noError,
+      encrypted,
+      errorType: errorType,
+      warningType: warningType,
       mediaUrl: mediaUrl,
+      key: key,
+      iv: iv,
+      encryptionScheme: encryptionScheme,
       mediaType: mediaType,
       thumbnailData: thumbnailData,
       mediaWidth: mediaWidth,
@@ -270,6 +293,10 @@ class DatabaseService {
       acked: false,
       originId: originId,
       filename: filename,
+      plaintextHashes: plaintextHashes,
+      ciphertextHashes: ciphertextHashes,
+      isUploading: isUploading,
+      isDownloading: isDownloading,
     );
 
     Message? quotes;
@@ -324,10 +351,16 @@ class DatabaseService {
     bool? displayed,
     bool? acked,
     int? errorType,
+    int? warningType,
     bool? isFileUploadNotification,
     String? srcUrl,
+    String? key,
+    String? iv,
+    String? encryptionScheme,
     int? mediaWidth,
     int? mediaHeight,
+    bool? isDownloading,
+    bool? isUploading,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -355,6 +388,9 @@ class DatabaseService {
     if (errorType != null) {
       m['errorType'] = errorType;
     }
+    if (warningType != null) {
+      m['warningType'] = warningType;
+    }
     if (isFileUploadNotification != null) {
       m['isFileUploadNotification'] = boolToInt(isFileUploadNotification);
     }
@@ -366,6 +402,21 @@ class DatabaseService {
     }
     if (mediaHeight != null) {
       m['mediaHeight'] = mediaHeight;
+    }
+    if (key != null) {
+      m['key'] = key;
+    }
+    if (iv != null) {
+      m['iv'] = iv;
+    }
+    if (encryptionScheme != null) {
+      m['encryptionScheme'] = encryptionScheme;
+    }
+    if (isDownloading != null) {
+      m['isDownloading'] = boolToInt(isDownloading);
+    }
+    if (isUploading != null) {
+      m['isUploading'] = boolToInt(isUploading);
     }
 
     await _db.update(
@@ -536,6 +587,254 @@ class DatabaseService {
       );
     }
     
+    await batch.commit();
+  }
+
+  Future<void> saveRatchet(OmemoDoubleRatchetWrapper ratchet) async {
+    final json = await ratchet.ratchet.toJson();
+    await _db.insert(
+      omemoRatchetsTable,
+      {
+        ...json,
+        'mkskipped': jsonEncode(json['mkskipped']),
+        'acknowledged': boolToInt(json['acknowledged']! as bool),
+        'jid': ratchet.jid,
+        'id': ratchet.id,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<OmemoDoubleRatchetWrapper>> loadRatchets() async {
+    final results = await _db.query(omemoRatchetsTable);
+
+    return results.map((ratchet) {
+      final json = jsonDecode(ratchet['mkskipped']! as String) as List<dynamic>;
+      final mkskipped = List<Map<String, dynamic>>.empty(growable: true);
+      for (final i in json) {
+        final element = i as Map<String, dynamic>;
+        mkskipped.add({
+          'key': element['key']! as String,
+          'public': element['public']! as String,
+          'n': element['n']! as int,
+        });
+      }
+
+      return OmemoDoubleRatchetWrapper(
+        OmemoDoubleRatchet.fromJson(
+          {
+            ...ratchet,
+            'acknowledged': intToBool(ratchet['acknowledged']! as int),
+            'mkskipped': mkskipped,
+          },
+        ),
+        ratchet['id']! as int,
+        ratchet['jid']! as String,
+      );
+    }).toList();
+  }
+
+  Future<Map<RatchetMapKey, BTBVTrustState>> loadTrustCache() async {
+    final entries = await _db.query(omemoTrustCacheTable);
+
+    final mapEntries = entries.map<MapEntry<RatchetMapKey, BTBVTrustState>>((entry) {
+      // TODO(PapaTutuWawa): Expose this from omemo_dart
+      BTBVTrustState state;
+      final value = entry['trust']! as int;
+      if (value == 1) {
+        state = BTBVTrustState.notTrusted;
+      } else if (value == 2) {
+        state = BTBVTrustState.blindTrust;
+      } else if (value == 3) {
+        state = BTBVTrustState.verified;
+      } else {
+        state = BTBVTrustState.notTrusted;
+      }
+
+      return MapEntry(
+        RatchetMapKey.fromJsonKey(entry['key']! as String),
+        state,
+      );
+    });
+
+    return Map.fromEntries(mapEntries);
+  }
+
+  Future<void> saveTrustCache(Map<String, int> cache) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustCacheTable);
+    for (final entry in cache.entries) {
+      batch.insert(
+        omemoTrustCacheTable,
+        {
+          'key': entry.key,
+          'trust': entry.value,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    
+    await batch.commit();
+  }
+  
+  Future<Map<RatchetMapKey, bool>> loadTrustEnablementList() async {
+    final entries = await _db.query(omemoTrustEnableListTable);
+
+    final mapEntries = entries.map<MapEntry<RatchetMapKey, bool>>((entry) {
+      return MapEntry(
+        RatchetMapKey.fromJsonKey(entry['key']! as String),
+        intToBool(entry['enabled']! as int),
+      );
+    });
+
+    return Map.fromEntries(mapEntries);
+  }
+
+  Future<void> saveTrustEnablementList(Map<String, bool> list) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustEnableListTable);
+    for (final entry in list.entries) {
+      batch.insert(
+        omemoTrustEnableListTable,
+        {
+          'key': entry.key,
+          'enabled': boolToInt(entry.value),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    
+    await batch.commit();
+  }
+  
+  Future<Map<String, List<int>>> loadTrustDeviceList() async {
+    final entries = await _db.query(omemoTrustDeviceListTable);
+
+    final map = <String, List<int>>{};
+    for (final entry in entries) {
+      final key = entry['jid']! as String;
+      final device = entry['device']! as int;
+
+      if (map.containsKey(key)) {
+        map[key]!.add(device);
+      } else {
+        map[key] = [device];
+      }
+    }
+    
+    return map;
+  }
+
+  Future<void> saveTrustDeviceList(Map<String, List<int>> list) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustDeviceListTable);
+    for (final entry in list.entries) {
+      for (final device in entry.value) {
+        batch.insert(
+          omemoTrustDeviceListTable,
+          {
+            'jid': entry.key,
+            'device': device,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    }
+    
+    await batch.commit();
+  }
+
+  Future<void> saveOmemoDevice(Device device) async {
+    await _db.insert(
+      omemoDeviceTable,
+      {
+        'jid': device.jid,
+        'id': device.id,
+        'data': jsonEncode(await device.toJson()),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<Device?> loadOmemoDevice(String jid) async {
+    final data = await _db.query(
+      omemoDeviceTable,
+      where: 'jid = ?',
+      whereArgs: [jid],
+      limit: 1,
+    );
+    if (data.isEmpty) return null;
+
+    final deviceJson = jsonDecode(data.first['data']! as String) as Map<String, dynamic>;
+    // NOTE: We need to do this because Dart otherwise complains about not being able
+    //       to cast dynamic to List<int>.
+    final opks = List<Map<String, dynamic>>.empty(growable: true);
+    final opksIter = deviceJson['opks']! as List<dynamic>;
+    for (final _opk in opksIter) {
+      final opk = _opk as Map<String, dynamic>;
+      opks.add(<String, dynamic>{
+        'id': opk['id']! as int,
+        'public': opk['public']! as String,
+        'private': opk['private']! as String,
+      });
+    }
+    deviceJson['opks'] = opks;
+    return Device.fromJson(deviceJson);
+  }
+
+  Future<Map<String, List<int>>> loadOmemoDeviceList() async {
+    final list = await _db.query(omemoDeviceListTable);
+    final map = <String, List<int>>{};
+    for (final entry in list) {
+      final key = entry['jid']! as String;
+      final id = entry['id']! as int;
+
+      if (map.containsKey(key)) {
+        map[key]!.add(id);
+      } else {
+        map[key] = [id];
+      }
+    }
+
+    return map;
+  }
+  
+  Future<void> saveOmemoDeviceList(Map<String, List<int>> list) async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoDeviceListTable);
+    for (final entry in list.entries) {
+      for (final id in entry.value) {
+        batch.insert(
+          omemoDeviceListTable,
+          {
+            'jid': entry.key,
+            'id': id,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    }
+
+    await batch.commit();
+  }
+
+  Future<void> emptyOmemoSessionTables() async {
+    final batch = _db.batch();
+
+    // ignore: cascade_invocations
+    batch
+      ..delete(omemoRatchetsTable)
+      ..delete(omemoTrustCacheTable)
+      ..delete(omemoTrustEnableListTable);
+
     await batch.commit();
   }
 }

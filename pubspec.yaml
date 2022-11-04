@@ -56,11 +56,14 @@ dependencies:
     version: 0.1.4
   moxplatform:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.11+2
+    version: 0.1.15
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.0
   native_imaging: 0.1.0
+  omemo_dart:
+    hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
+    version: 0.3.1
   page_transition: 2.0.9
   path: 1.8.1
   path_provider: 2.0.11
@@ -79,7 +82,7 @@ dependencies:
     git:
       url: https://github.com/PapaTutuWawa/swipeable_tile.git
       ref: bfab5e28f1f1ea624232002f0d05481cb2bd9997
-  synchronized: 3.0.0
+  synchronized: 3.0.0+2
   udp: 5.0.3
   url_launcher: 6.1.5
   #unifiedpush: 3.0.1
@@ -113,6 +116,10 @@ dependency_overrides:
   flutter:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 3.0.1
+  omemo_dart:
+    git:
+      url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
+      rev: c68471349ab1b347ec9ad54651265710842c50b7
  
 extra_licenses:
   - name: undraw.co
@@ -125,6 +132,10 @@ extra_licenses:
  
 flutter:
   uses-material-design: true
+  fonts:
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
   assets:
     - assets/images/logo.png
     - assets/images/begin_chat.png

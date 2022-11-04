@@ -13,9 +13,11 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
+import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -36,6 +38,8 @@ import 'package:moxxyv2/ui/pages/crop.dart';
 import 'package:moxxyv2/ui/pages/intro.dart';
 import 'package:moxxyv2/ui/pages/login.dart';
 import 'package:moxxyv2/ui/pages/newconversation.dart';
+import 'package:moxxyv2/ui/pages/profile/devices.dart';
+import 'package:moxxyv2/ui/pages/profile/own_devices.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/server_info.dart';
@@ -76,8 +80,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
   GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
-  GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
-  GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
+  GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc()); GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
   GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
   GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
   GetIt.I.registerSingleton<SharedMediaBloc>(SharedMediaBloc());
@@ -86,6 +89,8 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
   GetIt.I.registerSingleton<ShareSelectionBloc>(ShareSelectionBloc());
   GetIt.I.registerSingleton<ServerInfoBloc>(ServerInfoBloc());
+  GetIt.I.registerSingleton<DevicesBloc>(DevicesBloc());
+  GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -151,6 +156,12 @@ void main() async {
         ),
         BlocProvider<ServerInfoBloc>(
           create: (_) => GetIt.I.get<ServerInfoBloc>(),
+        ),
+        BlocProvider<DevicesBloc>(
+          create: (_) => GetIt.I.get<DevicesBloc>(),
+        ),
+        BlocProvider<OwnDevicesBloc>(
+          create: (_) => GetIt.I.get<OwnDevicesBloc>(),
         ),
       ],
       child: MyApp(navKey),
@@ -314,6 +325,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case shareSelectionRoute: return ShareSelectionPage.route;
           case serverInfoRoute: return ServerInfoPage.route;
           case conversationSettingsRoute: return ConversationSettingsPage.route;
+          case devicesRoute: return DevicesPage.route;
+          case ownDevicesRoute: return OwnDevicesPage.route;
         }
 
         return null;

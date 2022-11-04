@@ -12,18 +12,20 @@ import 'package:swipeable_tile/swipeable_tile.dart';
 class ChatBubble extends StatefulWidget {
 
   const ChatBubble({
-      required this.message,
-      required this.sentBySelf,
-      required this.between,
-      required this.start,
-      required this.end,
-      required this.maxWidth,
-      required this.lastMessageTimestamp,
-      required this.onSwipedCallback,
-      Key? key,
+    required this.message,
+    required this.sentBySelf,
+    required this.chatEncrypted,
+    required this.between,
+    required this.start,
+    required this.end,
+    required this.maxWidth,
+    required this.lastMessageTimestamp,
+    required this.onSwipedCallback,
+    Key? key,
   }) : super(key: key);
   final Message message;
   final bool sentBySelf;
+  final bool chatEncrypted;
   // For rendering the corners
   final bool between;
   final bool start;
@@ -71,6 +73,11 @@ class ChatBubbleState extends State<ChatBubble>
   Color? _getBubbleColor(BuildContext context) {
     if (_shouldNotColorBubble()) return null;
 
+    // Color the bubble red if it should be encrypted but is not.
+    if (widget.chatEncrypted && !widget.message.encrypted) {
+      return bubbleColorUnencrypted;
+    }
+    
     if (widget.sentBySelf) {
       return bubbleColorSent;
     } else {

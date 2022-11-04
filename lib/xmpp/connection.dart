@@ -81,6 +81,7 @@ class XmppConnection {
       BaseSocketWrapper? socket,
       this.connectionPingDuration = const Duration(minutes: 3),
       this.connectingTimeout = const Duration(minutes: 2),
+      bool socketLogging = true,
     }
   ) :
     _connectionState = XmppConnectionState.notConnected,
@@ -89,7 +90,7 @@ class XmppConnection {
     _resource = '',
     _streamBuffer = XmlStreamBuffer(),
     _uuid = const Uuid(),
-    _socket = socket ?? TCPSocketWrapper(),
+    _socket = socket ?? TCPSocketWrapper(socketLogging),
     _awaitingResponse = {},
     _awaitingResponseLock = Lock(),
     _xmppManagers = {},
@@ -196,7 +197,6 @@ class XmppConnection {
       XmppManagerAttributes(
         sendStanza: sendStanza,
         sendNonza: sendRawXML,
-        sendRawXml: _socket.write,
         sendEvent: _sendEvent,
         getConnectionSettings: () => _connectionSettings,
         getManagerById: getManagerById,
@@ -243,7 +243,7 @@ class XmppConnection {
     _outgoingPreStanzaHandlers.sort(stanzaHandlerSortComparator);
     _outgoingPostStanzaHandlers.sort(stanzaHandlerSortComparator);
   }
-
+  
   /// Register a list of negotiator with the connection.
   void registerFeatureNegotiators(List<XmppFeatureNegotiatorBase> negotiators) {
     for (final negotiator in negotiators) {
@@ -380,7 +380,9 @@ class XmppConnection {
   
   /// Sends an [XMLNode] without any further processing to the server.
   void sendRawXML(XMLNode node, { String? redact }) {
-    _socket.write(node.toXml(), redact: redact);
+    final string = node.toXml();
+    _log.finest('==> $string');
+    _socket.write(string, redact: redact);
   }
 
   /// Sends [raw] to the server.
@@ -405,7 +407,7 @@ class XmppConnection {
   /// If addId is true, then an 'id' attribute will be added to the stanza if [stanza] has
   /// none.
   // TODO(Unknown): if addId = false, the function crashes.
-  Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true }) async {
+  Future<XMLNode> sendStanza(Stanza stanza, { StanzaFromType addFrom = StanzaFromType.full, bool addId = true, bool awaitable = true, bool encrypted = false }) async {
     var stanza_ = stanza;
     
     // Add extra data in case it was not set
@@ -426,20 +428,53 @@ class XmppConnection {
       }
     }
 
-    final stanzaString = stanza_.toXml();
     final id = stanza_.id!;
 
+    _log.fine('Running pre stanza handlers..');
+    final data = await _runOutgoingPreStanzaHandlers(
+      stanza_,
+      initial: StanzaHandlerData(
+        false,
+        false,
+        null,
+        stanza_,
+        encrypted: encrypted,
+      ),
+    );
+    _log.fine('Done');
+
+    if (data.cancel) {
+      _log.fine('A stanza handler indicated that it wants to cancel sending.');
+      await _sendEvent(StanzaSendingCancelledEvent(data));
+      return Stanza(
+        tag: data.stanza.tag,
+        to: data.stanza.from,
+        from: data.stanza.to,
+        attributes: <String, String>{
+          'type': 'error',
+          ...data.stanza.id != null ? {
+            'id': data.stanza.id!,
+          } : {},
+        },
+      );
+    }
+
+    final prefix = data.encrypted ?
+      '(Encrypted) ' :
+      '';
+    _log.finest('==> $prefix${stanza_.toXml()}');
+
+    final stanzaString = data.stanza.toXml();
+
+    // ignore: cascade_invocations
     _log.fine('Attempting to acquire lock for $id...');
+    // TODO(PapaTutuWawa): Handle this much more graceful
     var future = Future.value(XMLNode(tag: 'not-used'));
     await _awaitingResponseLock.synchronized(() async {
         _log.fine('Lock acquired for $id');
         if (awaitable) {
           _awaitingResponse[id] = Completer();
         }
-
-        _log.fine('Running pre stanza handlers..');
-        await _runOutgoingPreStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_));
-        _log.fine('Done');
 
         // This uses the StreamManager to behave like a send queue
         if (await _canSendData()) {
@@ -452,7 +487,15 @@ class XmppConnection {
         }
 
         _log.fine('Running post stanza handlers..');
-        await _runOutgoingPostStanzaHandlers(stanza_, initial: StanzaHandlerData(false, stanza_));
+        await _runOutgoingPostStanzaHandlers(
+          stanza_,
+          initial: StanzaHandlerData(
+            false,
+            false,
+            null,
+            stanza_,
+          ),
+        );
         _log.fine('Done');
 
         if (awaitable) {
@@ -559,34 +602,41 @@ class XmppConnection {
   /// Iterate over [handlers] and check if the handler matches [stanza]. If it does,
   /// call its callback and end the processing if the callback returned true; continue
   /// if it returned false.
-  Future<bool> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
-    var state = initial ?? StanzaHandlerData(false, stanza);
+  Future<StanzaHandlerData> _runStanzaHandlers(List<StanzaHandler> handlers, Stanza stanza, { StanzaHandlerData? initial }) async {
+    var state = initial ?? StanzaHandlerData(false, false, null, stanza);
     for (final handler in handlers) {
       if (handler.matches(state.stanza)) {
         state = await handler.callback(state.stanza, state);
-        if (state.done) return true;
+        if (state.done || state.cancel) return state;
       }
     }
 
-    return false;
+    return state;
   }
 
-  Future<bool> _runIncomingStanzaHandlers(Stanza stanza) async {
-    return _runStanzaHandlers(_incomingStanzaHandlers, stanza,);
+  Future<StanzaHandlerData> _runIncomingStanzaHandlers(Stanza stanza) async {
+    return _runStanzaHandlers(_incomingStanzaHandlers, stanza);
   }
 
-  Future<bool> _runOutgoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
+  Future<StanzaHandlerData> _runOutgoingPreStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
     return _runStanzaHandlers(_outgoingPreStanzaHandlers, stanza, initial: initial);
   }
 
   Future<bool> _runOutgoingPostStanzaHandlers(Stanza stanza, { StanzaHandlerData? initial }) async {
-    return _runStanzaHandlers(_outgoingPostStanzaHandlers, stanza, initial: initial);
+    final data = await _runStanzaHandlers(
+      _outgoingPostStanzaHandlers,
+      stanza,
+      initial: initial,
+    );
+    return data.done;
   }
   
   /// Called whenever we receive a stanza after resource binding or stream resumption.
   Future<void> _handleStanza(XMLNode nonza) async {
     // Process nonzas separately
     if (!['message', 'iq', 'presence'].contains(nonza.tag)) {
+      _log.finest('<== ${nonza.toXml()}');
+
       var nonzaHandled = false;
       await Future.forEach(
         _xmppManagers.values,
@@ -603,25 +653,33 @@ class XmppConnection {
       return;
     }
 
-    // See if we are waiting for this stanza
     final stanza = Stanza.fromXMLNode(nonza);
+
+    // Run the incoming stanza handlers and bounce with an error if no manager handled
+    // it.
+    final incomingHandlers = await _runIncomingStanzaHandlers(stanza);
+    final prefix = incomingHandlers.encrypted ?
+      '(Encrypted) ' :
+      '';
+    _log.finest('<== $prefix${incomingHandlers.stanza.toXml()}');
+
+    // See if we are waiting for this stanza
     final id = stanza.attributes['id'] as String?;
     var awaited = false;
     await _awaitingResponseLock.synchronized(() async {
       if (id != null && _awaitingResponse.containsKey(id)) {
-        _awaitingResponse[id]!.complete(stanza);
+        _awaitingResponse[id]!.complete(incomingHandlers.stanza);
         _awaitingResponse.remove(id);
         awaited = true;
       }
     });
+
     if (awaited) {
       return;
     }
 
-    // Run the incoming stanza handlers and bounce with an error if no manager handled
-    // it.
-    final stanzaHandled = await _runIncomingStanzaHandlers(stanza);
-    if (!stanzaHandled) {
+    // Only bounce if the stanza has neither been awaited, nor handled.
+    if (!incomingHandlers.done) {
       handleUnhandledStanza(this, stanza);
     }
   }
@@ -751,7 +809,9 @@ class XmppConnection {
   Future<void> handleXmlStream(XMLNode node) async {
     // Check if we received a stream error
     if (node.tag == 'stream:error') {
-      _log.severe('Received a stream error! Attempting reconnection');
+      _log
+        ..finest('<== ${node.toXml()}')
+        ..severe('Received a stream error! Attempting reconnection');
       await handleError('Stream error');
       
       return;
@@ -759,6 +819,8 @@ class XmppConnection {
 
     switch (_routingState) {
       case RoutingState.negotiating:
+        _log.finest('<== ${node.toXml()}');
+
         // Why lock here? The problem is that if we do stream resumption, then we might
         // receive "<resumed .../><iq .../>...", which will all be fed into the negotiator,
         // causing (a) the negotiator to become confused and (b) the stanzas/nonzas to be
@@ -827,6 +889,11 @@ class XmppConnection {
         _log.warning('Received data while in non-receiving state');
         break;
     }
+  }
+
+  /// Sends an empty String over the socket.
+  void sendWhitespacePing() {
+    _socket.write('');
   }
   
   /// Sends an event to the connection's event stream.

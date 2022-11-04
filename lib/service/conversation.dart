@@ -1,8 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/xmpp/jid.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 class ConversationService {
@@ -62,6 +64,7 @@ class ConversationService {
       String? avatarUrl,
       ChatState? chatState,
       bool? muted,
+      bool? encrypted,
     }
   ) async {
     final conversation = await _getConversationById(id);
@@ -74,6 +77,7 @@ class ConversationService {
       avatarUrl: avatarUrl,
       chatState: conversation?.chatState ?? ChatState.gone,
       muted: muted,
+      encrypted: encrypted,
     );
 
     _conversationCache.cache(id, newConversation);
@@ -90,6 +94,7 @@ class ConversationService {
     int lastChangeTimestamp,
     bool open,
     bool muted,
+    bool encrypted,
   ) async {
     final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
       title,
@@ -100,9 +105,21 @@ class ConversationService {
       lastChangeTimestamp,
       open,
       muted,
+      encrypted,
     );
 
     _conversationCache.cache(newConversation.id, newConversation);
     return newConversation;
+  }
+
+  /// Returns true if the stanzas to the conversation with [jid] should be encrypted.
+  /// If not, returns false.
+  ///
+  /// If the conversation does not exist, then the value of the preference for
+  /// enableOmemoByDefault is used.
+  Future<bool> shouldEncryptForConversation(JID jid) async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    final conversation = await getConversationByJid(jid.toString());
+    return conversation?.encrypted ?? prefs.enableOmemoByDefault;
   }
 }

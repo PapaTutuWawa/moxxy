@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
+
+const _bubbleBottomIconSize = fontsizeSubbody * 1.5;
 
 class MessageBubbleBottom extends StatefulWidget {
 
@@ -86,13 +86,32 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ),
-        ...widget.message.errorType != noError ? [
+        ...widget.message.encrypted ? [
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.lock,
+              size: _bubbleBottomIconSize,
+            ),
+          ),
+        ] : [],
+        ...widget.message.isError() ? [
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
               Icons.info_outline,
-              size: fontsizeSubbody * 2,
+              size: _bubbleBottomIconSize,
               color: Colors.red,
+            ),
+          ),
+        ] : [],
+        ...widget.message.isWarning() ? [
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.warning,
+              size: _bubbleBottomIconSize,
+              color: Colors.yellow,
             ),
           ),
         ] : [],
@@ -101,7 +120,7 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
               padding: EdgeInsets.only(left: 3),
               child: Icon(
                 Icons.done,
-                size: fontsizeSubbody * 2,
+                size: _bubbleBottomIconSize,
               ),
             ),
           ] : [],
@@ -110,7 +129,7 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
               padding: EdgeInsets.only(left: 3),
               child: Icon(
                 Icons.done_all,
-                size: fontsizeSubbody * 2,
+                size: _bubbleBottomIconSize,
               ),
             ),
           ] : [],
@@ -119,7 +138,7 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
               padding: const EdgeInsets.only(left: 3),
               child: Icon(
                 Icons.done_all,
-                size: fontsizeSubbody * 2,
+                size: _bubbleBottomIconSize,
                 color: Colors.blue.shade700,
               ),
             ),

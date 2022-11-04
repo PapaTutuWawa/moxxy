@@ -66,7 +66,7 @@ abstract class BaseSocketWrapper {
 /// TCP socket implementation for XmppConnection
 class TCPSocketWrapper extends BaseSocketWrapper {
   
-  TCPSocketWrapper()
+  TCPSocketWrapper(this._logData)
   : _log = Logger('TCPSocketWrapper'),
     _dataStream = StreamController.broadcast(),
     _eventStream = StreamController.broadcast(),
@@ -79,6 +79,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
   StreamSubscription<dynamic>? _socketSubscription;
 
   final Logger _log;
+  final bool _logData;
 
   bool _secure;
 
@@ -235,7 +236,9 @@ class TCPSocketWrapper extends BaseSocketWrapper {
     _socketSubscription = _socket!.listen(
       (List<int> event) {
         final data = utf8.decode(event);
-        _log.finest('<== $data');
+        if (_logData) {
+          _log.finest('<== $data');
+        }
         _dataStream.add(data);
       },
       onError: (Object error) {
@@ -318,7 +321,7 @@ class TCPSocketWrapper extends BaseSocketWrapper {
       return;
     }
 
-    if (data != null && data is String) {
+    if (data != null && data is String && _logData) {
       if (redact != null) {
         _log.finest('**> $redact');
       } else {

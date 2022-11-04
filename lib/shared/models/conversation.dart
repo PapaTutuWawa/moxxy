@@ -39,6 +39,8 @@ class Conversation with _$Conversation {
     String subscription,
     // Whether the chat is muted (true = muted, false = not muted)
     bool muted,
+    // Whether the conversation is encrypted or not (true = encrypted, false = unencrypted)
+    bool encrypted,
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState,
   ) = _Conversation;
@@ -56,6 +58,7 @@ class Conversation with _$Conversation {
       'sharedMedia': sharedMedia,
       'inRoster': inRoster,
       'subscription': subscription,
+      'encrypted': intToBool(json['encrypted']! as int),
       'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
     });
   }
@@ -72,6 +75,7 @@ class Conversation with _$Conversation {
       ...map,
       'open': boolToInt(open),
       'muted': boolToInt(muted),
+      'encrypted': boolToInt(encrypted),
     };
   }
 }
