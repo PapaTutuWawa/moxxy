@@ -112,11 +112,13 @@ abstract class OmemoManager extends XmppManagerBase {
     if (event is PubSubNotificationEvent) {
       if (event.item.node != omemoDevicesXmlns) return;
 
-      logger.finest('Received PubSub notification for ${event.from}');
+      // TODO(PapaTutuWawa): Trigger an event
+      logger.finest('Received PubSub device notification for ${event.from}');
       final ownJid = getAttributes().getFullJID().toBare().toString();
       final ids = event.item.payload.children
         .map((child) => int.parse(child.attributes['id']! as String))
         .toList();
+
       if (event.from == ownJid) {
         // Another client published to our device list node
         if (!ids.contains(await _getDeviceId())) {
@@ -125,7 +127,8 @@ abstract class OmemoManager extends XmppManagerBase {
         }
       } else {
         // Someone published to their device list node
-        _deviceMap[JID.fromString(event.from)] = ids;
+        logger.finest('Got devices $ids');
+        _deviceMap[JID.fromString(event.from).toBare()] = ids;
       } 
     }
   }
@@ -354,40 +357,35 @@ abstract class OmemoManager extends XmppManagerBase {
         await subscribeToDeviceList(toJid);
       }
     } else {
-      final map = await session.getDeviceMap();
-      final devices = map[toJid.toString()]!;
-      final ratchetSessionsRaw = await getDeviceList(toJid);
-
-      if (!_subscriptionMap.containsKey(toJid)) {
-        await subscribeToDeviceList(toJid);
+      final toBare = toJid.toBare();
+      final ratchetSessions = (await session.getDeviceMap())[toBare.toString()]!;
+      final deviceMapRaw = await getDeviceList(toBare);
+      if (!_subscriptionMap.containsKey(toBare)) {
+        unawaited(subscribeToDeviceList(toBare));
       }
 
-      if (ratchetSessionsRaw.isType<OmemoError>()) return Result(UnknownOmemoError());
+      if (deviceMapRaw.isType<OmemoError>()) {
+        logger.warning('Failed to get device list');
+        return Result(UnknownOmemoError());
+      }
 
-      final ratchetSessions = ratchetSessionsRaw.get<List<int>>();
-      final expectedDeviceNumber = toJid != ownJid ?
-        // We should have a session with every device of [jid] if it's not us
-        ratchetSessions.length :
-        // We should have a session with every device of [jid] except for one if it's us
-        ratchetSessions.length - 1;
-      if (devices.length > expectedDeviceNumber) {
-        logger.finest('Mismatch between devices we have a session with and published devices');
-        for (final id in devices) {
-          if (ratchetSessions.contains(id)) continue;
+      final deviceList = deviceMapRaw.get<List<int>>();
+      for (final id in deviceList) {
+        // We already have a session with that device
+        if (ratchetSessions.contains(id)) continue;
 
-          // Ignore requests for our own device.
-          if (toJid == ownJid && id == ownId) {
-            logger.finest('Attempted to request bundle for our own device $id, which is the current device. Skipping request...');
-            continue;
-          }
-          
-          logger.finest('Retrieving bundle for $toJid:$id');
-          final bundle = await retrieveDeviceBundle(toJid, id);
-          if (bundle.isType<OmemoBundle>()) {
-            newSessions.add(bundle.get<OmemoBundle>());
-          } else {
-            logger.warning('Failed to retrieve bundle for $toJid:$id');
-          }
+        // Ignore requests for our own device.
+        if (toJid == ownJid && id == ownId) {
+          logger.finest('Attempted to request bundle for our own device $id, which is the current device. Skipping request...');
+          continue;
+        }
+
+        logger.finest('Retrieving bundle for $toJid:$id');
+        final bundle = await retrieveDeviceBundle(toJid, id);
+        if (bundle.isType<OmemoBundle>()) {
+          newSessions.add(bundle.get<OmemoBundle>());
+        } else {
+          logger.warning('Failed to retrieve bundle for $toJid:$id');
         }
       }
     }
