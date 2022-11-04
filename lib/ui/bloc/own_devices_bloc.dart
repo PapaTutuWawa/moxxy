@@ -108,6 +108,8 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   }
 
   Future<void> _onDeviceRegenerated(OwnDeviceRegeneratedEvent event, Emitter<OwnDevicesState> emit) async {
+    emit(state.copyWith(working: true));
+
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       RegenerateOwnDeviceCommand(),
@@ -118,6 +120,7 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
       state.copyWith(
         deviceId: result.device.deviceId,
         deviceFingerprint: result.device.fingerprint,
+        working: false,
       ),
     );
   }
