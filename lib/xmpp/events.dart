@@ -17,7 +17,6 @@ abstract class XmppEvent {}
 /// Triggered when the connection state of the XmppConnection has
 /// changed.
 class ConnectionStateChangedEvent extends XmppEvent {
-
   ConnectionStateChangedEvent(this.state, this.before, this.resumed);
   final XmppConnectionState before;
   final XmppConnectionState state;
@@ -26,14 +25,12 @@ class ConnectionStateChangedEvent extends XmppEvent {
 
 /// Triggered when we encounter a stream error.
 class StreamErrorEvent extends XmppEvent {
-
   StreamErrorEvent({ required this.error });
   final String error;
 }
 
 /// Triggered after the SASL authentication has failed.
 class AuthenticationFailedEvent extends XmppEvent {
-
   AuthenticationFailedEvent(this.saslError);
   final String saslError;
 }
@@ -46,7 +43,6 @@ class SendPingEvent extends XmppEvent {}
 
 /// Triggered when the stream resumption was successful
 class StreamResumedEvent extends XmppEvent {
-
   StreamResumedEvent({ required this.h });
   final int h;
 }
@@ -55,7 +51,6 @@ class StreamResumedEvent extends XmppEvent {
 class StreamResumeFailedEvent extends XmppEvent {}
 
 class MessageEvent extends XmppEvent {
-
   MessageEvent({
     required this.body,
     required this.fromJid,
@@ -100,14 +95,12 @@ class MessageEvent extends XmppEvent {
 
 /// Triggered when a client responds to our delivery receipt request
 class DeliveryReceiptReceivedEvent extends XmppEvent {
-
   DeliveryReceiptReceivedEvent({ required this.from, required this.id });
   final JID from;
   final String id;
 }
 
 class ChatMarkerEvent extends XmppEvent {
-
   ChatMarkerEvent({
     required this.type,
     required this.from,
@@ -120,7 +113,6 @@ class ChatMarkerEvent extends XmppEvent {
 
 // Triggered when we received a Stream resumption ID
 class StreamManagementEnabledEvent extends XmppEvent {
-
   StreamManagementEnabledEvent({
       required this.resource,
       this.id,
@@ -133,14 +125,12 @@ class StreamManagementEnabledEvent extends XmppEvent {
 
 /// Triggered when we bound a resource
 class ResourceBindingSuccessEvent extends XmppEvent {
-
   ResourceBindingSuccessEvent({ required this.resource });
   final String resource;
 }
 
 /// Triggered when we receive presence
 class PresenceReceivedEvent extends XmppEvent {
-
   PresenceReceivedEvent(this.jid, this.presence);
   final JID jid;
   final Stanza presence;
@@ -153,21 +143,18 @@ class ConnectingEvent extends XmppEvent {}
 class ServerDiscoDoneEvent extends XmppEvent {}
 
 class ServerItemDiscoEvent extends XmppEvent {
-
   ServerItemDiscoEvent(this.info);
   final DiscoInfo info;
 }
 
 /// Triggered when we receive a subscription request
 class SubscriptionRequestReceivedEvent extends XmppEvent {
-
   SubscriptionRequestReceivedEvent({ required this.from });
   final JID from;
 }
 
 /// Triggered when we receive a new or updated avatar
 class AvatarUpdatedEvent extends XmppEvent {
-
   AvatarUpdatedEvent({ required this.jid, required this.base64, required this.hash });
   final String jid;
   final String base64;
@@ -176,7 +163,6 @@ class AvatarUpdatedEvent extends XmppEvent {
 
 /// Triggered when a PubSub notification has been received
 class PubSubNotificationEvent extends XmppEvent {
-
   PubSubNotificationEvent({ required this.item, required this.from });
   final PubSubItem item;
   final String from;
@@ -184,35 +170,37 @@ class PubSubNotificationEvent extends XmppEvent {
 
 /// Triggered by the StreamManagementManager if a stanza has been acked
 class StanzaAckedEvent extends XmppEvent {
-
   StanzaAckedEvent(this.stanza);
   final Stanza stanza;
 }
 
 /// Triggered when receiving a push of the blocklist
 class BlocklistBlockPushEvent extends XmppEvent {
-
   BlocklistBlockPushEvent({ required this.items });
   final List<String> items;
 }
 
 /// Triggered when receiving a push of the blocklist
 class BlocklistUnblockPushEvent extends XmppEvent {
-
   BlocklistUnblockPushEvent({ required this.items });
   final List<String> items;
 }
 
 /// Triggered when receiving a push of the blocklist
 class BlocklistUnblockAllPushEvent extends XmppEvent {
-
   BlocklistUnblockAllPushEvent();
 }
 
 /// Triggered when a stanza has not been sent because a stanza handler
 /// wanted to cancel the entire process.
 class StanzaSendingCancelledEvent extends XmppEvent {
-
   StanzaSendingCancelledEvent(this.data);
   final StanzaHandlerData data;
+}
+
+/// Triggered when the device list of a Jid is updated
+class OmemoDeviceListUpdatedEvent extends XmppEvent {
+  OmemoDeviceListUpdatedEvent(this.jid, this.deviceList);
+  final JID jid;
+  final List<int> deviceList;
 }

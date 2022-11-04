@@ -112,9 +112,9 @@ abstract class OmemoManager extends XmppManagerBase {
     if (event is PubSubNotificationEvent) {
       if (event.item.node != omemoDevicesXmlns) return;
 
-      // TODO(PapaTutuWawa): Trigger an event
       logger.finest('Received PubSub device notification for ${event.from}');
       final ownJid = getAttributes().getFullJID().toBare().toString();
+      final jid = JID.fromString(event.from).toBare();
       final ids = event.item.payload.children
         .map((child) => int.parse(child.attributes['id']! as String))
         .toList();
@@ -123,13 +123,16 @@ abstract class OmemoManager extends XmppManagerBase {
         // Another client published to our device list node
         if (!ids.contains(await _getDeviceId())) {
           // Attempt to publish again
-          await publishBundle(await _getDeviceBundle());
+          unawaited(publishBundle(await _getDeviceBundle()));
         }
       } else {
         // Someone published to their device list node
         logger.finest('Got devices $ids');
-        _deviceMap[JID.fromString(event.from).toBare()] = ids;
-      } 
+        _deviceMap[jid] = ids;
+      }
+
+      // Generate an event
+      getAttributes().sendEvent(OmemoDeviceListUpdatedEvent(jid, ids));
     }
   }
   
