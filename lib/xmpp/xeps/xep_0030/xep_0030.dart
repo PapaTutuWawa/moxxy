@@ -54,7 +54,7 @@ class DiscoManager extends XmppManagerBase {
   // Map full JID to Disco Info
   final Map<DiscoCacheKey, DiscoInfo> _discoInfoCache;
   // Mapping the full JID to a list of running requests
-  final Map<DiscoCacheKey, List<Completer<DiscoInfo?>>> _runningInfoQueries;
+  final Map<DiscoCacheKey, List<Completer<Result<DiscoError, DiscoInfo>>>> _runningInfoQueries;
   // Cache lock
   final Lock _cacheLock;
 
@@ -62,7 +62,7 @@ class DiscoManager extends XmppManagerBase {
   bool hasInfoQueriesRunning() => _runningInfoQueries.isNotEmpty;
 
   @visibleForTesting
-  List<Completer<DiscoInfo?>> getRunningInfoQueries(DiscoCacheKey key) => _runningInfoQueries[key]!;
+  List<Completer<Result<DiscoError, DiscoInfo>>> getRunningInfoQueries(DiscoCacheKey key) => _runningInfoQueries[key]!;
   
   @override
   List<StanzaHandler> getIncomingStanzaHandlers() => [
@@ -273,11 +273,9 @@ class DiscoManager extends XmppManagerBase {
 
   Future<void> _exitDiscoInfoCriticalSection(DiscoCacheKey key, Result<DiscoError, DiscoInfo> result) async {
     return _cacheLock.synchronized(() async {
-      final r = result.isType<DiscoInfo>() ? result.get<DiscoInfo>() : null;
-
       // Complete all futures
       for (final completer in _runningInfoQueries[key]!) {
-        completer.complete(r);
+        completer.complete(result);
       }
 
       // Add to cache if it is a result
@@ -294,7 +292,7 @@ class DiscoManager extends XmppManagerBase {
   Future<Result<DiscoError, DiscoInfo>> discoInfoQuery(String entity, { String? node}) async {
     final cacheKey = DiscoCacheKey(entity, node);
     DiscoInfo? info;
-    Completer<DiscoInfo?>? completer;
+    Completer<Result<DiscoError, DiscoInfo>>? completer;
     await _cacheLock.synchronized(() async {
       // Check if we already know what the JID supports
       if (_discoInfoCache.containsKey(cacheKey)) {
@@ -313,7 +311,7 @@ class DiscoManager extends XmppManagerBase {
     if (info != null) {
       return Result<DiscoError, DiscoInfo>(info);
     } else if (completer != null) {
-      return Result<DiscoError, DiscoInfo>(await completer!.future);
+      return completer!.future;
     }
 
     final stanza = await getAttributes().sendStanza(
