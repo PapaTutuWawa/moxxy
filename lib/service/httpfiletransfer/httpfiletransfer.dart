@@ -183,7 +183,7 @@ class HttpFileTransferService {
     }
 
     final file = File(path);
-    final data = await file.readAsBytes();
+    final data = file.openRead();
     final stat = file.statSync();
 
     // Request the upload slot
@@ -206,7 +206,6 @@ class HttpFileTransferService {
         options: dio.Options(
           headers: slot.headers,
           contentType: 'application/octet-stream',
-          requestEncoder: (_, __) => data,
         ),
         data: data,
         onSendProgress: (count, total) {
