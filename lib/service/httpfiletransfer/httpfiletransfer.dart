@@ -357,22 +357,55 @@ class HttpFileTransferService {
       final tempDir = await getTemporaryDirectory();
       downloadPath = pathlib.join(tempDir.path, filename);
     }
+    
 
-    dio.Response<dynamic>? response;
+    final dio.Response<dio.ResponseBody>? response;
     try {
-      response = await dio.Dio().downloadUri(
-        Uri.parse(job.location.url),
-        downloadPath,
-        onReceiveProgress: (count, total) {
-          final progress = count.toDouble() / total.toDouble();
-          sendEvent(
-            ProgressEvent(
-              id: job.mId,
-              progress: progress == 1 ? 0.99 : progress,
-            ),
-          );
-        },
+      response = await dio.Dio().get<dio.ResponseBody>(
+        job.location.url,
+        options: dio.Options(
+          responseType: dio.ResponseType.stream,
+        ),
       );
+
+      final downloadStream = response.data?.stream;
+
+      if ( downloadStream != null) {
+        final totalFileSizeString = response.headers['Content-Length']?.first;
+        final totalFileSize = int.parse(totalFileSizeString!);
+        final file = File(downloadedPath);
+        // Since acting on downloadStream events like to fire progress events
+        // causes memory spikes relative to the file size, I chose to listen to
+        // the created file instead. This does not cause memory spikes, but see
+        // below.
+        final fileSink = file.openWrite(mode: FileMode.writeOnlyAppend);
+        file.watch().listen((FileSystemEvent event) {
+           if (event is FileSystemCreateEvent || event is FileSystemModifyEvent) {
+             final fileSize = file.lengthSync();
+            final progress = fileSize / totalFileSize;
+            sendEvent(
+              ProgressEvent(
+                  id: job.mId,
+                  progress: progress == 1 ? 0.99 : progress,
+              ),
+            );
+          }
+        });
+
+        // TODO(Unknown): Find some way to pause execution until the download
+        // has finished. Because now, ProgressEvents are sent when the job is
+        // already deleted. Below, a list of solutions I tried (for both this
+        // problem and the problem I tried to solve with this workaround).
+
+        downloadStream.listen(fileSink.add); // .onDone would cause memory spikes
+
+        // while (! downloadStream.isEmpty) causes memory spikes
+        // while (file.lengthSync() / totalFileSize != 1) causes memory spikes
+        // using a controller on downloadStream causes memory spikes
+        // using a controller and piping causes memory spikes
+        // fileSink.addStream(downloadStream) causes memory spikes
+
+      }
     } on dio.DioError catch(err) {
       // TODO(PapaTutuWawa): React if we received an error that is not related to the
       //                     connection.
