@@ -2,6 +2,7 @@
 // TODO(Unknown): The timestamp is too small
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -85,9 +86,18 @@ class ChatBubbleState extends State<ChatBubble>
     }
   }
 
+  SwipeDirection _getSwipeDirection() {
+    // Error messages should not be able to be quoted
+    if (widget.message.errorType != null && widget.message.errorType != noError) {
+      return SwipeDirection.none;
+    }
+
+    return widget.sentBySelf ? SwipeDirection.endToStart : SwipeDirection.startToEnd;
+  }
+  
   Widget _buildBubble(BuildContext context) {
     return SwipeableTile.swipeToTrigger(
-      direction: widget.sentBySelf ? SwipeDirection.endToStart : SwipeDirection.startToEnd,
+      direction: _getSwipeDirection(),
       swipeThreshold: 0.2,
       onSwiped: (_) => widget.onSwipedCallback(widget.message),
       backgroundBuilder: (_, direction, progress) {
