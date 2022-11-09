@@ -87,7 +87,7 @@ class ChatBubbleState extends State<ChatBubble>
 
   Widget _buildBubble(BuildContext context) {
     return SwipeableTile.swipeToTrigger(
-      direction: SwipeDirection.horizontal,
+      direction: widget.sentBySelf ? SwipeDirection.endToStart : SwipeDirection.startToEnd,
       swipeThreshold: 0.2,
       onSwiped: (_) => widget.onSwipedCallback(widget.message),
       backgroundBuilder: (_, direction, progress) {
