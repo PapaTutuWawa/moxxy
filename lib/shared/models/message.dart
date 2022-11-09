@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 
 part 'message.freezed.dart';
@@ -57,11 +59,12 @@ class Message with _$Message {
       String? filename,
       Map<String, String>? plaintextHashes,
       Map<String, String>? ciphertextHashes,
+      int? mediaSize,
     }
   ) = _Message;
 
   const Message._();
-  
+
   /// JSON
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 
@@ -110,5 +113,11 @@ class Message with _$Message {
   /// Returns true if the message is a warning. If not, then returns false.
   bool isWarning() {
     return warningType != null && warningType != noWarning;
+  }
+
+  /// Returns a representative emoji for a message. Its primary purpose is
+  /// to provide a universal fallback for quoted media messages.
+  String get messageEmoji {
+    return mimeTypeToEmoji(mediaType, addTypeName: false);
   }
 }

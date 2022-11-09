@@ -162,7 +162,7 @@ class HttpFileTransferService {
 
     await _pickNextUploadTask();
   }
-  
+
   /// Actually attempt to upload the file described by the job [job].
   Future<void> _performFileUpload(FileUploadJob job) async {
     _log.finest('Beginning upload of ${job.path}');
@@ -194,7 +194,7 @@ class HttpFileTransferService {
     final file = File(path);
     final data = await file.readAsBytes();
     final stat = file.statSync();
-    
+
     // Request the upload slot
     final conn = GetIt.I.get<XmppConnection>();
     final httpManager = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
@@ -244,7 +244,10 @@ class HttpFileTransferService {
 
         for (final recipient in job.recipients) {
           // Notify UI of upload completion
-          var msg = job.messageMap[recipient]!;
+          var msg = await ms.updateMessage(
+            job.messageMap[recipient]!.id,
+            mediaSize: stat.size,
+          );
 
           // Reset a stored error, if there was one
           msg = await ms.updateMessage(
@@ -281,7 +284,7 @@ class HttpFileTransferService {
               _log.warning('Failed to hash file ${job.path} using SHA-256: $ex');
             }
           }
-          
+
           // Send the message to the recipient
           conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
             MessageDetails(
@@ -347,7 +350,7 @@ class HttpFileTransferService {
 
     await _pickNextDownloadTask();
   }
-  
+
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
     final filename = job.location.filename;
@@ -360,7 +363,7 @@ class HttpFileTransferService {
       final tempDir = await getTemporaryDirectory();
       downloadPath = pathlib.join(tempDir.path, filename);
     }
-    
+
     dio.Response<dynamic>? response;
     try {
       response = await dio.Dio().downloadUri(
@@ -456,13 +459,14 @@ class HttpFileTransferService {
           MoxplatformPlugin.media.scanFile(downloadedPath);
         }
       }
-      
+
       final msg = await GetIt.I.get<MessageService>().updateMessage(
         job.mId,
         mediaUrl: downloadedPath,
         mediaType: mime,
         mediaWidth: mediaWidth,
         mediaHeight: mediaHeight,
+        mediaSize: File(downloadedPath).lengthSync(),
         isFileUploadNotification: false,
         warningType: integrityCheckPassed ?
           warningFileIntegrityCheckFailed :

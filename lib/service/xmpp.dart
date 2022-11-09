@@ -249,7 +249,7 @@ class XmppService {
           requestDeliveryReceipt: true,
           id: sid,
           originId: originId,
-          quoteBody: quotedMessage?.body,
+          quoteBody: createFallbackBodyForQuotedMessage(quotedMessage),
           quoteFrom: quotedMessage?.sender,
           quoteId: quotedMessage?.sid,
           chatState: chatState,
@@ -272,7 +272,7 @@ class XmppService {
         },
       );
 
-      final name = event.sfs?.metadata.name; 
+      final name = event.sfs?.metadata.name;
       if (source is StatelessFileSharingUrlSource) {
         return MediaFileLocation(
           source.url,
@@ -468,7 +468,7 @@ class XmppService {
         // Update conversation
         final updatedConversation = await cs.updateConversation(
           conversation.id,
-          lastMessageBody: mimeTypeToConversationBody(lastFileMime),
+          lastMessageBody: mimeTypeToEmoji(lastFileMime),
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
           open: true,
         );
@@ -490,7 +490,7 @@ class XmppService {
         final newConversation = await cs.addConversationFromData(
           // TODO(Unknown): Should we use the JID parser?
           rosterItem?.title ?? recipient.split('@').first,
-          mimeTypeToConversationBody(lastFileMime),
+          mimeTypeToEmoji(lastFileMime),
           rosterItem?.avatarUrl ?? '',
           recipient,
           0,
@@ -575,7 +575,7 @@ class XmppService {
       );
     }
   }
-  
+
   Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
     switch (event.state) {
       case XmppConnectionState.connected:
@@ -617,7 +617,7 @@ class XmppService {
           jid: settings.jid.toString(),
           password: settings.password,
       ),);
-      
+
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
       unawaited(_initializeOmemoService(settings.jid.toString()));
 
@@ -625,7 +625,7 @@ class XmppService {
         // In section 5 of XEP-0198 it says that a client should not request the roster
         // in case of a stream resumption.
         await GetIt.I.get<RosterService>().requestRoster();
- 
+
         // TODO(Unknown): Once groupchats come into the equation, this gets trickier
         final roster = await GetIt.I.get<RosterService>().getRoster();
         for (final item in roster) {
@@ -833,7 +833,7 @@ class XmppService {
     
     // Stop the processing here if the event does not describe a displayable message
     if (!_isMessageEventMessage(event) && event.other['encryption_error'] == null) return;
-    
+
     final state = await getXmppState();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     // The (portential) roster item of the chat partner
@@ -939,7 +939,7 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final ns = GetIt.I.get<NotificationsService>();
     // The body to be displayed in the conversations list
-    final conversationBody = isFileEmbedded || message.isFileUploadNotification ? mimeTypeToConversationBody(mimeGuess) : messageBody;
+    final conversationBody = isFileEmbedded || message.isFileUploadNotification ? mimeTypeToEmoji(mimeGuess) : messageBody;
     // Specifies if we have the conversation this message goes to opened
     final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
     // The conversation we're about to modify, if it exists
@@ -1135,5 +1135,46 @@ class XmppService {
 
     // Tell the UI
     sendEvent(MessageUpdatedEvent(message: newMessage));
+  }
+
+  /// Creates the fallback body for quoted messages.
+  /// If the quoted message contains text, it simply quotes the text.
+  /// If it contains a media file, the messageEmoji (usually an emoji
+  /// representing the mime type) is shown together with the file size
+  /// (from experience this information is sufficient, as most clients show
+  /// the file size, and including time information might be confusing and a
+  /// potential privacy issue).
+  /// This information is complemented either the srcUrl or – if unavailable –
+  /// by the body of the quoted message. For non-media messages, we always use
+  /// the body as fallback.
+  String? createFallbackBodyForQuotedMessage(Message? quotedMessage) {
+    if (quotedMessage == null) {
+      return null;
+    }
+
+    if (quotedMessage.isMedia) {
+      // Create formatted size string, if size is stored
+      String quoteMessageSize;
+      if (quotedMessage.mediaSize != null && quotedMessage.mediaSize! > 0) {
+        quoteMessageSize = '(${fileSizeToString(quotedMessage.mediaSize!)}) ';
+      } else {
+        quoteMessageSize = '';
+      }
+
+      // Create media url string, or use body if no srcUrl is stored
+      String quotedMediaUrl;
+      if (quotedMessage.srcUrl != null && quotedMessage.srcUrl!.isNotEmpty) {
+        quotedMediaUrl = '• ${quotedMessage.srcUrl!}';
+      } else if (quotedMessage.body.isNotEmpty){
+        quotedMediaUrl = '• ${quotedMessage.body}';
+      } else {
+        quotedMediaUrl = '';
+      }
+
+      // Concatenate emoji, size string, and media url and return
+      return '${quotedMessage.messageEmoji} $quoteMessageSize$quotedMediaUrl';
+    } else {
+      return quotedMessage.body;
+    }
   }
 }

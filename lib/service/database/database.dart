@@ -265,6 +265,7 @@ class DatabaseService {
       Map<String, String>? ciphertextHashes,
       bool isDownloading = false,
       bool isUploading = false,
+      int? mediaSize,
     }
   ) async {
     final m = Message(
@@ -297,6 +298,7 @@ class DatabaseService {
       ciphertextHashes: ciphertextHashes,
       isUploading: isUploading,
       isDownloading: isDownloading,
+      mediaSize: mediaSize,
     );
 
     Message? quotes;
@@ -361,6 +363,7 @@ class DatabaseService {
     int? mediaHeight,
     bool? isDownloading,
     bool? isUploading,
+    int? mediaSize,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -402,6 +405,9 @@ class DatabaseService {
     }
     if (mediaHeight != null) {
       m['mediaHeight'] = mediaHeight;
+    }
+    if (mediaSize != null) {
+      m['mediaSize'] = mediaSize;
     }
     if (key != null) {
       m['key'] = key;
@@ -675,10 +681,10 @@ class DatabaseService {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-    
+
     await batch.commit();
   }
-  
+
   Future<Map<RatchetMapKey, bool>> loadTrustEnablementList() async {
     final entries = await _db.query(omemoTrustEnableListTable);
 
@@ -707,10 +713,10 @@ class DatabaseService {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-    
+
     await batch.commit();
   }
-  
+
   Future<Map<String, List<int>>> loadTrustDeviceList() async {
     final entries = await _db.query(omemoTrustDeviceListTable);
 
@@ -725,7 +731,7 @@ class DatabaseService {
         map[key] = [device];
       }
     }
-    
+
     return map;
   }
 
@@ -746,7 +752,7 @@ class DatabaseService {
         );
       }
     }
-    
+
     await batch.commit();
   }
 
@@ -804,7 +810,7 @@ class DatabaseService {
 
     return map;
   }
-  
+
   Future<void> saveOmemoDeviceList(Map<String, List<int>> list) async {
     final batch = _db.batch();
 

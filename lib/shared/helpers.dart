@@ -1,4 +1,5 @@
 import 'dart:core';
+
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:synchronized/synchronized.dart';
@@ -218,19 +219,19 @@ String? guessMimeTypeFromExtension(String ext) {
   return null;
 }
 
-/// Show a combinatio of an emoji and its file type
-String mimeTypeToConversationBody(String? mime) {
+/// Return an emoji for a MIME type, per default accompanied by the name of the
+/// type.
+String mimeTypeToEmoji(String? mime, {bool addTypeName = true}) {
   if (mime != null) {
-    if (mime.startsWith('image/')) {
-      return '📷 Image';
-    } else if (mime.startsWith('video/')) {
-      return '🎞️ Video';
-    } else if (mime.startsWith('audio/')) {
-      return '🎵 Audio';
+    if (mime.startsWith('image')) {
+      return '🖼️${addTypeName ?  " Image" : ""}';
+    } else if (mime.startsWith('audio')) {
+      return '🎙${addTypeName ?  " Audio" : ""}';
+    } else if (mime.startsWith('video')) {
+      return '🎬${addTypeName ?  " Video" : ""}';
     }
   }
-
-  return '📁 File';
+  return '📁${addTypeName ?  " File" : ""}';
 }
 
 /// Parse an Uri and return the "filename".
@@ -318,4 +319,17 @@ extension ExceptionSafeLock on Lock {
 bool isSent(Message message, String jid) {
   // TODO(PapaTutuWawa): Does this work?
   return message.sender.split('/').first == jid.split('/').first;
+}
+
+/// Logic from:
+/// @author iNPUTmice
+/// https://github.com/iNPUTmice/Conversations/blob/d435c1f2aef1454141d4f5099224b5a03d579dba/src/main/java/eu/siacs/conversations/utils/UIHelper.java#L605
+String fileSizeToString(int size) {
+  if (size > (1.5 * 1024 * 1024)) {
+    return '${(size * 1.0 / (1024 * 1024)).round()} MiB';
+  } else if (size >= 1024) {
+    return '${(size * 1.0 / 1024).round()} KiB';
+  } else {
+    return '$size B';
+  }
 }

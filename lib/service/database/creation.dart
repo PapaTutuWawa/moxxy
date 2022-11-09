@@ -41,6 +41,7 @@ Future<void> createDatabase(Database db, int version) async {
       ciphertextHashes TEXT,
       isDownloading INTEGER NOT NULL,
       isUploading INTEGER NOT NULL,
+      mediaSize INTEGER,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messsagesTable (id)
     )''',
   );
@@ -151,7 +152,7 @@ Future<void> createDatabase(Database db, int version) async {
       PRIMARY KEY (jid, id)
     )''',
   );
- 
+
   // Settings
   await db.execute(
     '''
