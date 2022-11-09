@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;

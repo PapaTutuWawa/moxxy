@@ -1,8 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';

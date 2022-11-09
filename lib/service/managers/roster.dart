@@ -1,8 +1,7 @@
 import 'dart:async';
-
 import 'package:get_it/get_it.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/xmpp.dart';
-import 'package:moxxyv2/xmpp/roster.dart';
 
 class MoxxyRosterManager extends RosterManager {
   @override

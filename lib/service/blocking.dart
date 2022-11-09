@@ -1,9 +1,7 @@
 import 'package:get_it/get_it.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/xmpp/connection.dart';
-import 'package:moxxyv2/xmpp/managers/namespaces.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
 
 enum BlockPushType {
   block,

@@ -1,7 +1,7 @@
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
-import 'package:moxxyv2/xmpp/roster.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:test/test.dart';
 
 AddRosterItemFunction mkAddRosterItem(void Function(String) callback) {

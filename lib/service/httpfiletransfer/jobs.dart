@@ -1,12 +1,11 @@
 import 'package:meta/meta.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/xmpp/xeps/staging/extensible_file_thumbnails.dart';
 
 /// A job describing the download of a file.
 @immutable
 class FileUploadJob {
-
   const FileUploadJob(this.recipients, this.path, this.mime, this.encryptMap, this.messageMap, this.thumbnails);
   final List<String> recipients;
   final String path;
@@ -35,7 +34,6 @@ class FileUploadJob {
 /// A job describing the upload of a file.
 @immutable
 class FileDownloadJob {
-
   const FileDownloadJob(
     this.location,
     this.mId,

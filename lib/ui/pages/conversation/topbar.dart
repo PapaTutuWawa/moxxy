@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
@@ -9,7 +10,6 @@ import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 enum ConversationOption {
   close,

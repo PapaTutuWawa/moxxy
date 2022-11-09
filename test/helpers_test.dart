@@ -1,5 +1,5 @@
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/xmpp/stringxml.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:test/test.dart';
 
 import './helpers/xml.dart';

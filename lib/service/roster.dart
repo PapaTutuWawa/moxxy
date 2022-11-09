@@ -1,21 +1,17 @@
 import 'dart:async';
 import 'dart:collection';
-
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
-import 'package:moxxyv2/xmpp/connection.dart';
-import 'package:moxxyv2/xmpp/managers/namespaces.dart';
-import 'package:moxxyv2/xmpp/roster.dart';
-import 'package:moxxyv2/xmpp/types/error.dart';
 
 /// Closure which returns true if the jid of a [RosterItem] is equal to [jid].
 bool Function(RosterItem) _jidEqualsWrapper(String jid) {

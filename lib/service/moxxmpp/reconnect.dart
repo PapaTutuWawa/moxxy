@@ -4,8 +4,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/connectivity.dart';
-import 'package:moxxyv2/xmpp/reconnect.dart';
 import 'package:synchronized/synchronized.dart';
 
 /// This class implements a reconnection policy that is connectivity aware with a random

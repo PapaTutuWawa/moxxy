@@ -50,13 +50,19 @@ dependencies:
       ref: e5cc2eefd1667e8ef22f21f41b0ef012b060be6c
   moxdns:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.4
+    version: 0.1.4+1
   moxlib:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.4
+    version: 0.1.5
   moxplatform:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.15
+  moxxmpp:
+    hosted: https://git.polynom.me/api/packages/Moxxy/pub
+    version: 0.1.1
+  moxxmpp_socket_tcp:
+    hosted: https://git.polynom.me/api/packages/Moxxy/pub
+    version: 0.1.1
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.0
@@ -90,7 +96,6 @@ dependencies:
   video_thumbnail:
     git: https://github.com/ajbcoder/video_thumbnail
   #video_thumbnail: ^0.5.2
-  xml: ^6.1.0
     
 dev_dependencies:
   build_runner: ^2.1.11

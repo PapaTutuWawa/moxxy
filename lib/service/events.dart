@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
@@ -22,17 +23,6 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/xmpp/connection.dart';
-import 'package:moxxyv2/xmpp/jid.dart';
-import 'package:moxxyv2/xmpp/managers/namespaces.dart';
-import 'package:moxxyv2/xmpp/negotiators/namespaces.dart';
-import 'package:moxxyv2/xmpp/settings.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0384/xep_0384.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {

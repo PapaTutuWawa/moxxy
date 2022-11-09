@@ -1,5 +1,4 @@
-import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 
 class MoxxyDiscoManager extends DiscoManager {
   @override

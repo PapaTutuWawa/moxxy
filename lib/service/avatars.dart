@@ -5,6 +5,8 @@ import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 import 'package:logging/logging.dart';
+import 'package:moxlib/moxlib.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -12,15 +14,6 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/xmpp/connection.dart';
-import 'package:moxxyv2/xmpp/managers/namespaces.dart';
-import 'package:moxxyv2/xmpp/namespaces.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/errors.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/types.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0030/xep_0030.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';
 
 /// Removes line breaks and spaces from [original]. This might happen when we request the
 /// avatar data. Returns the cleaned version.

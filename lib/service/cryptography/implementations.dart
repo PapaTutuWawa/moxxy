@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:cryptography/cryptography.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/cryptography/types.dart';
-import 'package:moxxyv2/xmpp/namespaces.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
 
 Future<List<int>> hashFileImpl(HashRequest request) async {
   final data = await File(request.path).readAsBytes();

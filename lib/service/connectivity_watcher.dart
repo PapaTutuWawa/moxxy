@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/notifications.dart';
-import 'package:moxxyv2/xmpp/connection.dart';
 
 class ConnectivityWatcherService {
 

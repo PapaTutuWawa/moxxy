@@ -1,6 +1,5 @@
 import 'package:meta/meta.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0448.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 
 @immutable
 class EncryptionResult {

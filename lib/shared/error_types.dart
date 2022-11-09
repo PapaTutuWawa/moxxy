@@ -1,4 +1,4 @@
-import 'package:moxxyv2/xmpp/xeps/xep_0384/errors.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
 const noError = 0;

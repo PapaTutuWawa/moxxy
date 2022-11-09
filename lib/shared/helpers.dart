@@ -1,7 +1,5 @@
 import 'dart:core';
-
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 import 'package:synchronized/synchronized.dart';
 
 /// Add a leading zero, if required, to ensure that an integer is rendered
@@ -14,23 +12,6 @@ String padInt(int i) {
   }
 
   return i.toString();
-}
-
-/// A wrapper around List<T>.firstWhere that does not throw but instead just
-/// returns true if [test] returns true for an element or false if [test] never
-/// returned true.
-bool listContains<T>(List<T> list, bool Function(T element) test) {
-  return firstWhereOrNull<T>(list, test) != null;
-}
-
-/// A wrapper around [List<T>.firstWhere] that does not throw but instead just
-/// return null if [test] never returned true
-T? firstWhereOrNull<T>(List<T> list, bool Function(T element) test) {
-  try {
-    return list.firstWhere(test);
-  } catch(e) {
-    return null;
-  }
 }
 
 /// Format the timestamp of a conversation change into a nice string.
@@ -248,31 +229,6 @@ String escapeFilename(String filename) {
     .replaceAll('\\', '%5C')
     .replaceAll('../', '..%2F');
 }
-
-ChatState chatStateFromString(String raw) {
-  switch(raw) {
-    case 'active': {
-      return ChatState.active;
-    }
-    case 'composing': {
-      return ChatState.composing;
-    } 
-    case 'paused': {
-      return ChatState.paused;
-    }
-    case 'inactive': {
-      return ChatState.inactive;
-    }
-    case 'gone': {
-      return ChatState.gone;
-    }
-    default: {
-      return ChatState.gone;
-    }
-  }
-}
-
-String chatStateToString(ChatState state) => state.toString().split('.').last;
 
 /// Return a version of the filename [filename] with [suffix] attached to the file's
 /// name while keeping the extension in [filename] intact.

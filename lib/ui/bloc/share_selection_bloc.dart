@@ -3,8 +3,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:move_to_background/move_to_background.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -13,7 +13,6 @@ import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 part 'share_selection_bloc.freezed.dart';
 part 'share_selection_event.dart';

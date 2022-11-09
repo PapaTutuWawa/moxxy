@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0198/state.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 
 part 'state.freezed.dart';
 part 'state.g.dart';

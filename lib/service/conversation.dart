@@ -1,11 +1,10 @@
 import 'package:get_it/get_it.dart';
+import 'package:moxlib/moxlib.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/cache.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/xmpp/jid.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
 
 class ConversationService {
 

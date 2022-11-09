@@ -3,9 +3,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxlib/awaitabledatasender.dart';
+import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
@@ -21,6 +22,7 @@ import 'package:moxxyv2/service/managers/stream.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+import 'package:moxxyv2/service/moxxmpp/socket.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -31,35 +33,6 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/logging.dart';
 import 'package:moxxyv2/ui/events.dart' as ui_events;
-import 'package:moxxyv2/xmpp/connection.dart';
-import 'package:moxxyv2/xmpp/managers/namespaces.dart';
-import 'package:moxxyv2/xmpp/message.dart';
-import 'package:moxxyv2/xmpp/negotiators/resource_binding.dart';
-import 'package:moxxyv2/xmpp/negotiators/sasl/plain.dart';
-import 'package:moxxyv2/xmpp/negotiators/sasl/scram.dart';
-import 'package:moxxyv2/xmpp/negotiators/starttls.dart';
-import 'package:moxxyv2/xmpp/ping.dart';
-import 'package:moxxyv2/xmpp/presence.dart';
-import 'package:moxxyv2/xmpp/roster.dart';
-import 'package:moxxyv2/xmpp/xeps/staging/file_upload_notification.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0054.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0060/xep_0060.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0066.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0084.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0085.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0184.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0191.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0198/negotiator.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0203.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0280.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0300.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0333.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0352.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0359.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0363.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0380.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0447.dart';
-import 'package:moxxyv2/xmpp/xeps/xep_0461.dart';
 
 Future<void> initializeServiceIfNeeded() async {
   final logger = GetIt.I.get<Logger>();
@@ -186,8 +159,10 @@ Future<void> entrypoint() async {
   await initUDPLogger();
   
   GetIt.I.registerSingleton<MoxxyReconnectionPolicy>(MoxxyReconnectionPolicy());
-  final connection = XmppConnection(GetIt.I.get<MoxxyReconnectionPolicy>())
-    ..registerManagers([
+  final connection = XmppConnection(
+    GetIt.I.get<MoxxyReconnectionPolicy>(),
+    MoxxyTCPSocketWrapper(),
+  )..registerManagers([
       MoxxyStreamManagementManager(),
       MoxxyDiscoManager(),
       MoxxyRosterManager(),
