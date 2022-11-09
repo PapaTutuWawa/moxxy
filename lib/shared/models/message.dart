@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';

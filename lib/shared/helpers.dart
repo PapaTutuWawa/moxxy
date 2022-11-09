@@ -219,8 +219,8 @@ String? guessMimeTypeFromExtension(String ext) {
   return null;
 }
 
-/// Return an emoji for a MIME type, per default accompanied by the name of the
-/// type.
+/// Return an emoji for the MIME type [mime]. If [addTypeName] id true, then a human readable
+/// name for the MIME type will be appended.
 String mimeTypeToEmoji(String? mime, {bool addTypeName = true}) {
   if (mime != null) {
     if (mime.startsWith('image')) {
@@ -321,10 +321,10 @@ bool isSent(Message message, String jid) {
   return message.sender.split('/').first == jid.split('/').first;
 }
 
-/// Logic from:
-/// @author iNPUTmice
-/// https://github.com/iNPUTmice/Conversations/blob/d435c1f2aef1454141d4f5099224b5a03d579dba/src/main/java/eu/siacs/conversations/utils/UIHelper.java#L605
+/// Convert the file size [size] in bytes to a human readable string. This is what
+/// Conversations does.
 String fileSizeToString(int size) {
+  // See https://github.com/iNPUTmice/Conversations/blob/d435c1f2aef1454141d4f5099224b5a03d579dba/src/main/java/eu/siacs/conversations/utils/UIHelper.java#L605
   if (size > (1.5 * 1024 * 1024)) {
     return '${(size * 1.0 / (1024 * 1024)).round()} MiB';
   } else if (size >= 1024) {
