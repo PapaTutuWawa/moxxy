@@ -169,7 +169,7 @@ Future<void> entrypoint() async {
       MoxxyOmemoManager(),
       PingManager(),
       MessageManager(),
-      PresenceManager(),
+      PresenceManager('http://moxxy.im'),
       CSIManager(),
       CarbonsManager(),
       PubSubManager(),
