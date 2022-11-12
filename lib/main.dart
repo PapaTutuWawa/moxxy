@@ -56,6 +56,7 @@ import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
+import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:share_handler/share_handler.dart';
 
@@ -258,43 +259,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Moxxy',
-      theme: ThemeData(
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            primary: primaryColor,
-            onPrimary: Colors.white,
-          ),
-        ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            primary: primaryColor,
-          ),
-        ),
-        // NOTE: Mainly for the SettingsSection
-        colorScheme: const ColorScheme.light(
-          secondary: primaryColor,
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            primary: primaryColor,
-            onPrimary: Colors.white,
-          ),
-        ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            primary: primaryColor,
-          ),
-        ),
-        // NOTE: Mainly for the SettingsSection
-        colorScheme: const ColorScheme.dark(
-          secondary: primaryColor,
-        ),
-
-        backgroundColor: const Color(0xff303030),
-      ),
+      theme: getThemeData(context, Brightness.light),
+      darkTheme: getThemeData(context, Brightness.dark),
       navigatorKey: widget.navigationKey,
       onGenerateRoute: (settings) {
         switch (settings.name) {

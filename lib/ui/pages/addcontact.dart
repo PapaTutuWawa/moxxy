@@ -63,9 +63,9 @@ class AddContactPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: RoundedButton(
-                      color: Colors.purple,
                       cornerRadius: 32,
                       onTap: () => context.read<AddContactBloc>().add(AddedContactEvent()),
+                      enabled: !state.working,
                       child: const Text('Add to contacts'),
                     ),
                   )

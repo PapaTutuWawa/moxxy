@@ -9,7 +9,13 @@ const EdgeInsetsGeometry textfieldPaddingRegular = EdgeInsets.only(top: 4, botto
 const EdgeInsetsGeometry textfieldPaddingConversation = EdgeInsets.all(10);
 
 const int primaryColorHexRGBO = 0xffcf4aff;
+const int primaryColorAltHexRGB = 0xff9c18cd;
+const int primaryColorDisabledHexRGB = 0xff9a7fa9;
+const int textColorDisabledHexRGB = 0xffcacaca;
 const Color primaryColor = Color(primaryColorHexRGBO);
+const Color primaryColorAlt = Color(primaryColorAltHexRGB);
+const Color primaryColorDisabled = Color(primaryColorDisabledHexRGB);
+const Color textColorDisabled = Color(textColorDisabledHexRGB);
 
 const Color bubbleColorSent = Color(0xffa139f0);
 const Color bubbleColorSentQuoted = bubbleColorSent;

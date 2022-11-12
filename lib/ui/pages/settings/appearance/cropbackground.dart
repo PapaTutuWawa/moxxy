@@ -205,11 +205,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         RoundedButton(
-                          color: primaryColor,
                           cornerRadius: 100,
                           onTap: () {
-                            if (state.isWorking) return;
-
                             context.read<CropBackgroundBloc>().add(
                               BackgroundSetEvent(
                                 _x,
@@ -220,6 +217,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                               ),
                             );
                           },
+                          enabled: !state.isWorking,
                           child: const Text('Set as background image'),
                         ),
                       ],

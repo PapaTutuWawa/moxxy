@@ -59,7 +59,6 @@ class CropPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               RoundedButton(
-                color: primaryColor,
                 cornerRadius: 100,
                 onTap: _controller.crop,
                 child: const Text('Set as profile picture'),

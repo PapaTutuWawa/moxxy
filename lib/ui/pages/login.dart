@@ -92,9 +92,9 @@ class Login extends StatelessWidget {
                   children: [
                     Expanded(
                       child: RoundedButton(
-                        color: Colors.purple,
                         cornerRadius: 32,
-                        onTap: state.working ? null : () => context.read<LoginBloc>().add(LoginSubmittedEvent()),
+                        enabled: !state.working,
+                        onTap: () => context.read<LoginBloc>().add(LoginSubmittedEvent()),
                         child: const Text('Login'),
                       ),
                     )

@@ -51,7 +51,6 @@ class Intro extends StatelessWidget {
                 children: [
                   Expanded(
                     child: RoundedButton(
-                      color: Colors.purple,
                       cornerRadius: 32,
                       onTap: () => Navigator.of(context).pushNamed(
                         loginRoute,

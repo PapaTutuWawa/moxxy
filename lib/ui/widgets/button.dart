@@ -3,29 +3,34 @@ import 'package:flutter/material.dart';
 class RoundedButton extends StatelessWidget {
 
   const RoundedButton({
-      required this.color,
-      required this.child,
-      required this.cornerRadius,
-      this.onTap,
-      Key? key,
+    required this.child,
+    required this.cornerRadius,
+    required this.onTap,
+    this.enabled = true,
+    Key? key,
   }) : super(key: key);
-  final Color color;
   final Widget child;
   final double cornerRadius;
   final void Function()? onTap;
+  final bool enabled;
 
-  // TODO(Unknown): Make the colors gray if onTap == null
   @override
   Widget build(BuildContext context) {
     return Material(
       type: MaterialType.transparency,
       child: Ink(
         decoration: BoxDecoration(
-          color: color,
+          color: Theme.of(context).elevatedButtonTheme.style!.backgroundColor!.resolve(
+            // ignore: prefer_collection_literals
+            Set.from([
+              // ignore: prefer_if_elements_to_conditional_expressions
+              enabled ? MaterialState.selected : MaterialState.disabled,
+            ]),
+          ),
           borderRadius: BorderRadius.circular(cornerRadius),
         ),
         child: InkWell(
-          onTap: onTap,
+          onTap: enabled ? onTap : null,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Center(
