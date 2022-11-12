@@ -44,9 +44,7 @@
 	      ripgrep # General utilities
       ];
 
-      ANDROID_HOME = "/home/alexander/Development/Moxxy/moxxyv2/.android/sdk";
       JAVA_HOME = pinnedJDK;
-      ANDROID_AVD_HOME = (toString ./.) + "/.android/avd";
     };
   });
 }

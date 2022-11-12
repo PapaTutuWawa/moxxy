@@ -17,7 +17,8 @@ Clone using `git clone --recursive https://github.com/Polynomdivision/moxxyv2.gi
 
 In order to build Moxxy, you need to have [Flutter](https://docs.flutter.dev/get-started/install) set
 up. If you are running NixOS or using Nix, you can also use the Flake at the root of the repository
-by running `nix develop` to get a development shell including everything that is needed.
+by running `nix develop` to get a development shell including everything that is needed. Note
+that if you decide to use the Flake, `ANDROID_HOME` and `ANDROID_AVD_HOME` must be set to the respective directories.
 
 Before building Moxxy, you need to generate all needed data classes. To do this, run
 `flutter pub get` to install all dependencies. Then run `flutter pub run build_runner build` to generate
