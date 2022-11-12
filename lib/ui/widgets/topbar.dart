@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class TopbarTitleText extends StatelessWidget {
-
   const TopbarTitleText(this.text, { Key? key }) : super(key: key);
   final String text;
 
@@ -17,7 +16,6 @@ class TopbarTitleText extends StatelessWidget {
 }
 
 class TopbarAvatarAndName extends StatelessWidget {
-
   const TopbarAvatarAndName(
     this.title,
     this.avatar,
@@ -42,18 +40,16 @@ class TopbarAvatarAndName extends StatelessWidget {
           visible: showBackButton,
           child: const BackButton(),
         ),
-        Center(
-          child: InkWell(
-            onTap: onTap,
-            child: Row(
-              children: [
-                avatar,
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: title,
-                ),
-              ],
-            ),
+        InkWell(
+          onTap: onTap,
+          child: Row(
+            children: [
+              avatar,
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: title,
+              ),
+            ],
           ),
         ),
         const Spacer(),

@@ -36,11 +36,15 @@ PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData ic
   );
 }
 
-/// A custom version of the Topbar NameAndAvatar style to integrate with
-/// bloc.
-// TODO(Unknown): If the display name is too long, then it will cause an overflow.
-class ConversationTopbarWidget extends StatelessWidget {
-  const ConversationTopbarWidget({ Key? key }) : super(key: key);
+/// A custom version of the BorderlessTopbar to display the conversation topbar
+/// as it should
+// TODO(PapaTutuWawa): The conversation title may overflow the Topbar
+// TODO(Unknown): Maybe merge with BorderlessTopbar
+class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget {
+  const ConversationTopbar({ Key? key }) : super(key: key);
+
+  @override
+  Size get preferredSize => const Size.fromHeight(60);
 
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
     return prev.conversation?.title != next.conversation?.title
@@ -49,7 +53,7 @@ class ConversationTopbarWidget extends StatelessWidget {
       || prev.conversation?.jid != next.conversation?.jid
       || prev.conversation?.encrypted != next.conversation?.encrypted;
   }
-
+  
   Widget _buildChatState(ChatState state) {
     switch (state) {
       case ChatState.paused:
@@ -74,80 +78,95 @@ class ConversationTopbarWidget extends StatelessWidget {
     return BlocBuilder<ConversationBloc, ConversationState>(
       buildWhen: _shouldRebuild,
       builder: (context, state) {
-        return TopbarAvatarAndName(
-          IntrinsicHeight(
-            child: Column(
-              children: [
-                TopbarTitleText(state.conversation!.title),
-                _buildChatState(state.conversation!.chatState)
-              ],
-            ),
-          ),
-          Hero(
-            tag: 'conversation_profile_picture',
-            child: Material(
-              color: const Color.fromRGBO(0, 0, 0, 0),
-              child: AvatarWrapper(
-                radius: 25,
-                avatarUrl: state.conversation!.avatarUrl,
-                altText: state.conversation!.title,
+        return SizedBox(
+          width: MediaQuery.of(context).size.width,
+          child: SafeArea(
+            child: ColoredBox(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Flex(
+                  direction: Axis.horizontal,
+                  children: [
+                    const BackButton(),
+                    Hero(
+                      tag: 'conversation_profile_picture',
+                      child: Material(
+                        color: const Color.fromRGBO(0, 0, 0, 0),
+                        child: AvatarWrapper(
+                          radius: 25,
+                          avatarUrl: state.conversation!.avatarUrl,
+                          altText: state.conversation!.title,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => GetIt.I.get<profile.ProfileBloc>().add(
+                          profile.ProfilePageRequestedEvent(
+                            false,
+                            conversation: context.read<ConversationBloc>().state.conversation,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            TopbarTitleText(state.conversation!.title),
+                            _buildChatState(state.conversation!.chatState),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // ignore: implicit_dynamic_type
+                    PopupMenuButton(
+                      onSelected: (result) {
+                        if (result == EncryptionOption.omemo && state.conversation!.encrypted == false) {
+                          context.read<ConversationBloc>().add(OmemoSetEvent(true));
+                        } else if (result == EncryptionOption.none && state.conversation!.encrypted == true) {
+                          context.read<ConversationBloc>().add(OmemoSetEvent(false));
+                        }
+                      },
+                      icon: state.conversation!.encrypted ?
+                      const Icon(Icons.lock) :
+                      const Icon(Icons.lock_open),
+                      itemBuilder: (BuildContext c) => [
+                        popupItemWithIcon(EncryptionOption.none, 'Unencrypted', Icons.lock_open),
+                        popupItemWithIcon(EncryptionOption.omemo, 'Encrypted', Icons.lock),
+                      ],
+                    ),
+                    // ignore: implicit_dynamic_type
+                    PopupMenuButton(
+                      onSelected: (result) {
+                        switch (result) {
+                          case ConversationOption.close: {
+                            showConfirmationDialog(
+                              'Close Chat',
+                              'Are you sure you want to close this chat?',
+                              context,
+                              () {
+                                context.read<ConversationsBloc>().add(
+                                  ConversationClosedEvent(state.conversation!.jid),
+                                );
+                              }
+                            );
+                          }
+                          break;
+                          case ConversationOption.block: {
+                            blockJid(state.conversation!.jid, context);
+                          }
+                          break;
+                        }
+                      },
+                      icon: const Icon(Icons.more_vert),
+                      itemBuilder: (BuildContext c) => [
+                        popupItemWithIcon(ConversationOption.close, 'Close chat', Icons.close),
+                        popupItemWithIcon(ConversationOption.block, 'Block contact', Icons.block)
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ),   
           ),
-          () => GetIt.I.get<profile.ProfileBloc>().add(
-            profile.ProfilePageRequestedEvent(
-              false,
-              conversation: context.read<ConversationBloc>().state.conversation,
-            ),
-          ),
-          extra: [
-            // ignore: implicit_dynamic_type
-            PopupMenuButton(
-              onSelected: (result) {
-                if (result == EncryptionOption.omemo && state.conversation!.encrypted == false) {
-                  context.read<ConversationBloc>().add(OmemoSetEvent(true));
-                } else if (result == EncryptionOption.none && state.conversation!.encrypted == true) {
-                  context.read<ConversationBloc>().add(OmemoSetEvent(false));
-                }
-              },
-              icon: state.conversation!.encrypted ?
-                    const Icon(Icons.lock) :
-                    const Icon(Icons.lock_open),
-              itemBuilder: (BuildContext c) => [
-                popupItemWithIcon(EncryptionOption.none, 'Unencrypted', Icons.lock_open),
-                popupItemWithIcon(EncryptionOption.omemo, 'Encrypted', Icons.lock),
-              ],
-            ),
-            // ignore: implicit_dynamic_type
-            PopupMenuButton(
-              onSelected: (result) {
-                switch (result) {
-                  case ConversationOption.close: {
-                    showConfirmationDialog(
-                      'Close Chat',
-                      'Are you sure you want to close this chat?',
-                      context,
-                      () {
-                        context.read<ConversationsBloc>().add(
-                          ConversationClosedEvent(state.conversation!.jid),
-                        );
-                      }
-                    );
-                  }
-                  break;
-                  case ConversationOption.block: {
-                    blockJid(state.conversation!.jid, context);
-                  }
-                  break;
-                }
-              },
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (BuildContext c) => [
-                popupItemWithIcon(ConversationOption.close, 'Close chat', Icons.close),
-                popupItemWithIcon(ConversationOption.block, 'Block contact', Icons.block)
-              ],
-            )
-          ],
         );
       },
     );

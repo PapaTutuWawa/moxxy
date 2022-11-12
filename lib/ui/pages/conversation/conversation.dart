@@ -10,7 +10,6 @@ import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
-import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class ConversationPage extends StatefulWidget {
   const ConversationPage({ Key? key }) : super(key: key);
@@ -214,7 +213,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             child: Scaffold(
               // TODO(Unknown): Maybe replace the scaffold itself to prevent transparency
               backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
-              appBar: const BorderlessTopbar(ConversationTopbarWidget()),
+              appBar: const ConversationTopbar(),
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
