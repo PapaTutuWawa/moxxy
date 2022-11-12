@@ -83,7 +83,7 @@ class Message with _$Message {
     }).copyWith(quotes: quotes);
   }
   
-  Map<String, dynamic> toDatabaseJson(int? quoteId) {
+  Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
       ..remove('id')
       ..remove('quotes');
@@ -96,7 +96,8 @@ class Message with _$Message {
       'displayed': boolToInt(displayed),
       'acked': boolToInt(acked),
       'encrypted': boolToInt(encrypted),
-      'quote_id': quoteId,
+      // NOTE: Message.quote_id is a foreign-key
+      'quote_id': quotes?.id,
       'plaintextHashes': _optionalJsonEncode(plaintextHashes),
       'ciphertextHashes': _optionalJsonEncode(ciphertextHashes),
       'isDownloading': boolToInt(isDownloading),

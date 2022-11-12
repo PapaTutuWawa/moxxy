@@ -110,7 +110,7 @@ class DatabaseService {
         final rawQuote = (await _db.query(
           'Messages',
           where: 'conversationJid = ? AND id = ?',
-          whereArgs: [jid, m['id']! as int],
+          whereArgs: [jid, m['quote_id']! as int],
         )).first;
         quotes = Message.fromDatabaseJson(rawQuote, null);
       }
@@ -268,7 +268,7 @@ class DatabaseService {
       int? mediaSize,
     }
   ) async {
-    final m = Message(
+    var m = Message(
       sender,
       body,
       timestamp,
@@ -301,17 +301,17 @@ class DatabaseService {
       mediaSize: mediaSize,
     );
 
-    Message? quotes;
     if (quoteId != null) {
-      quotes = await getMessageByXmppId(quoteId, conversationJid);
+      final quotes = await getMessageByXmppId(quoteId, conversationJid);
       if (quotes == null) {
         _log.warning('Failed to add quote for message with id $quoteId');
+      } else {
+        m = m.copyWith(quotes: quotes);
       }
     }
 
     return m.copyWith(
-      id: await _db.insert('Messages', m.toDatabaseJson(quotes?.id)),
-      quotes: quotes,
+      id: await _db.insert('Messages', m.toDatabaseJson()),
     );
   }
 
