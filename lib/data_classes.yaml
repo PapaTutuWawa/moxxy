@@ -7,7 +7,9 @@ files:
           - JsonImplementation
         attributes:
           jid: String
-          displayName: String
+          preStart:
+            type: PreStartDoneEvent
+            deserialise: true
       - name: LoginFailureEvent
         extends: BackgroundEvent
         implements:

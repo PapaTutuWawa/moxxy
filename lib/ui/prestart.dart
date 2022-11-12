@@ -24,9 +24,9 @@ Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
 
   if (result.state == preStartLoggedInState) {
     // Set up the data service
-    GetIt.I.get<UIDataService>().isLoggedIn = true;
-    GetIt.I.get<UIDataService>().ownJid = result.jid;
+    GetIt.I.get<UIDataService>().processPreStartDoneEvent(result);
 
+    // Set up the BLoCs
     GetIt.I.get<ConversationsBloc>().add(
       ConversationsInitEvent(
         result.displayName!,

@@ -23,6 +23,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
@@ -79,12 +80,13 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
 
   // ignore: avoid_dynamic_calls
   if (result.success) {
+    final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
     GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(true);
     final settings = GetIt.I.get<XmppConnection>().getConnectionSettings();
     sendEvent(
       LoginSuccessfulEvent(
         jid: settings.jid.toString(),
-        displayName: settings.jid.local,
+        preStart: await _buildPreStartDoneEvent(preferences),
       ),
       id:id,
     );
@@ -101,6 +103,36 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
   }
 }
 
+Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) async {
+  final xmpp = GetIt.I.get<XmppService>();
+  final state = await xmpp.getXmppState();
+
+  await GetIt.I.get<RosterService>().loadRosterFromDatabase();
+
+  // Check some permissions
+  final storagePerm = await Permission.storage.status;
+  final permissions = List<int>.empty(growable: true);
+  if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
+    permissions.add(Permission.storage.value);
+
+    await xmpp.modifyXmppState((state) => state.copyWith(
+        askedStoragePermission: true,
+    ),);
+  }
+
+  return PreStartDoneEvent(
+    state: 'logged_in',
+    jid: state.jid,
+    displayName: state.displayName ?? state.jid!.split('@').first,
+    avatarUrl: state.avatarUrl,
+    avatarHash: state.avatarHash,
+    permissionsToRequest: permissions,
+    preferences: preferences,
+    conversations: (await GetIt.I.get<DatabaseService>().loadConversations()).where((c) => c.open).toList(),
+    roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
+  );
+}
+
 Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) async {
   final id = extra as String;
 
@@ -110,37 +142,11 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
   await GetIt.I.get<Completer<void>>().future;
   GetIt.I.get<Logger>().finest('PreStart future done');
 
-  final xmpp = GetIt.I.get<XmppService>();
-  final settings = await xmpp.getConnectionSettings();
-  final state = await xmpp.getXmppState();
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
-
+  final settings = await GetIt.I.get<XmppService>().getConnectionSettings();
   if (settings != null) {
-    await GetIt.I.get<RosterService>().loadRosterFromDatabase();
-
-    // Check some permissions
-    final storagePerm = await Permission.storage.status;
-    final permissions = List<int>.empty(growable: true);
-    if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
-      permissions.add(Permission.storage.value);
-
-      await xmpp.modifyXmppState((state) => state.copyWith(
-          askedStoragePermission: true,
-      ),);
-    }
-    
     sendEvent(
-      PreStartDoneEvent(
-        state: 'logged_in',
-        jid: state.jid,
-        displayName: state.displayName ?? state.jid!.split('@').first,
-        avatarUrl: state.avatarUrl,
-        avatarHash: state.avatarHash,
-        permissionsToRequest: permissions,
-        preferences: preferences,
-        conversations: (await GetIt.I.get<DatabaseService>().loadConversations()).where((c) => c.open).toList(),
-        roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
-      ),
+      await _buildPreStartDoneEvent(preferences),
       id: id,
     );
   } else {

@@ -5,7 +5,6 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -73,16 +72,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
 
     if (result is LoginSuccessfulEvent) {
-      GetIt.I.get<UIDataService>().isLoggedIn = true;
       emit(state.copyWith(working: false));
 
-      GetIt.I.get<UIDataService>().ownJid = state.jid;
+      // Update the UIDataService
+      GetIt.I.get<UIDataService>().processPreStartDoneEvent(result.preStart);
+
+      // Set up BLoCs
       GetIt.I.get<ConversationsBloc>().add(
         ConversationsInitEvent(
-          result.displayName,
+          result.preStart.displayName!,
           state.jid,
-          // TODO(Unknown): ???
-          <Conversation>[],
+          result.preStart.conversations!,
         ),
       );
       GetIt.I.get<NavigationBloc>().add(
