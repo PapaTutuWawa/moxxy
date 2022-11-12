@@ -1,12 +1,9 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/service/thumbnail.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
@@ -116,34 +113,15 @@ Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? re
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 child: Stack(
                   alignment: Alignment.center,
-                  children: [
-                    FutureBuilder<Uint8List>(
-                      future: GetIt.I.get<ThumbnailCacheService>().getVideoThumbnail(message.mediaUrl!),
-                      builder: (context, snapshot) {
-                        // TODO(PapaTutuWawa): Fix the thumbnail being weirdly put in there
-                        //                     instead of being put in a squircle. See
-                        //                     the MessageType.image version for guidance.
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          if (snapshot.data != null) {
-                            return Image.memory(
-                              snapshot.data!,
-                              fit: BoxFit.cover,
-                            );
-                          } else {
-                            return const Padding(
-                              padding: EdgeInsets.all(32),
-                              child: Icon(
-                                Icons.error_outline,
-                                size: 32,
-                              ),
-                            );
-                          }
-                        } else {
-                          return const CircularProgressIndicator();
-                        }
-                      },
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Icon(
+                        Icons.error_outline,
+                        size: 32,
+                      ),
                     ),
-                    const PlayButton(size: 16)
+                    PlayButton(size: 16)
                   ],
                 ),
               ),

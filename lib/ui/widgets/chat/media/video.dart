@@ -13,7 +13,6 @@ import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
-import 'package:moxxyv2/ui/widgets/chat/thumbnail.dart';
 
 class VideoChatWidget extends StatelessWidget {
 
@@ -32,11 +31,19 @@ class VideoChatWidget extends StatelessWidget {
   final bool sent;
 
   Widget _buildUploading() {
+    // TODO(PapaTutuWawa): Fix
     return MediaBaseChatWidget(
-      VideoThumbnailWidget(
+      const Padding(
+        padding: EdgeInsets.all(32),
+        child: Icon(
+          Icons.error_outline,
+          size: 32,
+        ),
+      ),
+      /*VideoThumbnailWidget(
         message.mediaUrl!,
         Image.memory,
-      ),
+      ),*/
       MessageBubbleBottom(message, sent),
       radius,
       extra: ProgressWidget(id: message.id),
@@ -75,11 +82,19 @@ class VideoChatWidget extends StatelessWidget {
 
   /// The video exists locally
   Widget _buildVideo() {
+    // TODO(PapaTutuWawa): Fix
     return MediaBaseChatWidget(
-      VideoThumbnailWidget(
+      const Padding(
+        padding: EdgeInsets.all(32),
+        child: Icon(
+          Icons.error_outline,
+          size: 32,
+        ),
+      ),
+      /*VideoThumbnailWidget(
         message.mediaUrl!,
         Image.memory,
-      ),
+      ),*/
       MessageBubbleBottom(message, sent),
       radius,
       onTap: () {
