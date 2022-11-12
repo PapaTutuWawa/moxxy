@@ -364,6 +364,8 @@ class DatabaseService {
     bool? isDownloading,
     bool? isUploading,
     int? mediaSize,
+    String? originId,
+    String? sid,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -423,6 +425,12 @@ class DatabaseService {
     }
     if (isUploading != null) {
       m['isUploading'] = boolToInt(isUploading);
+    }
+    if (sid != null) {
+      m['sid'] = sid;
+    }
+    if (originId != null) {
+      m['originId'] = originId;
     }
 
     await _db.update(

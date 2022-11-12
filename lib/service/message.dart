@@ -137,6 +137,8 @@ class MessageService {
     int? mediaSize,
     bool? isUploading,
     bool? isDownloading,
+    String? originId,
+    String? sid,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -157,6 +159,8 @@ class MessageService {
       mediaSize: mediaSize,
       isUploading: isUploading,
       isDownloading: isDownloading,
+      originId: originId,
+      sid: sid,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

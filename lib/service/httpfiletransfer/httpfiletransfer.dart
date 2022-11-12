@@ -30,6 +30,7 @@ import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
 import 'package:random_string/random_string.dart';
 import 'package:synchronized/synchronized.dart';
+import 'package:uuid/uuid.dart';
 
 /// This service is responsible for managing the up- and download of files using Http.
 class HttpFileTransferService {
@@ -234,16 +235,12 @@ class HttpFileTransferService {
       } else {
         _log.fine('Upload was successful');
 
+        const uuid = Uuid();
         for (final recipient in job.recipients) {
           // Notify UI of upload completion
           var msg = await ms.updateMessage(
             job.messageMap[recipient]!.id,
             mediaSize: stat.size,
-          );
-
-          // Reset a stored error, if there was one
-          msg = await ms.updateMessage(
-            msg.id,
             errorType: noError,
             encryptionScheme: encryption != null ?
               SFSEncryptionType.aes256GcmNoPadding.toNamespace() :
@@ -252,6 +249,13 @@ class HttpFileTransferService {
             iv: encryption != null ? base64Encode(encryption.iv) : null,
             isUploading: false,
             srcUrl: slot.getUrl,
+          );
+          // TODO(Unknown): Maybe batch those two together?
+          final oldSid = msg.sid;
+          msg = await ms.updateMessage(
+            msg.id,
+            sid: uuid.v4(),
+            originId: uuid.v4(),
           );
           sendEvent(MessageUpdatedEvent(message: msg));
 
@@ -283,6 +287,7 @@ class HttpFileTransferService {
               to: recipient,
               body: slot.getUrl,
               requestDeliveryReceipt: true,
+              id: msg.sid,
               originId: msg.originId,
               sfs: StatelessFileSharingData(
                 FileMetadataData(
@@ -295,7 +300,7 @@ class HttpFileTransferService {
                 <StatelessFileSharingSource>[source],
               ),
               shouldEncrypt: job.encryptMap[recipient]!,
-              funReplacement: msg.sid,
+              funReplacement: oldSid,
             ),
           );
           _log.finest('Sent message with file upload for ${job.path} to $recipient');
