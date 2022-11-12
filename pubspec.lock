@@ -707,14 +707,14 @@ packages:
       name: moxxmpp
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   moxxmpp_socket_tcp:
     dependency: "direct main"
     description:
       name: moxxmpp_socket_tcp
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.2"
   moxxyv2_builders:
     dependency: "direct main"
     description:
