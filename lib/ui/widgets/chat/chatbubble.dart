@@ -87,8 +87,13 @@ class ChatBubbleState extends State<ChatBubble>
   }
 
   SwipeDirection _getSwipeDirection() {
-    // Error messages should not be able to be quoted
+    // Error messages should not be quoted
     if (widget.message.errorType != null && widget.message.errorType != noError) {
+      return SwipeDirection.none;
+    }
+
+    // File Upload Notifications should not be quoted
+    if (widget.message.isFileUploadNotification) {
       return SwipeDirection.none;
     }
 
