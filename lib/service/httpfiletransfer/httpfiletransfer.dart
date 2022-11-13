@@ -357,7 +357,11 @@ class HttpFileTransferService {
       final tempDir = await getTemporaryDirectory();
       downloadPath = pathlib.join(tempDir.path, filename);
     }
-    
+
+    // Prepare file and completer.
+    final file = await File(downloadedPath).create();
+    final fileSink = file.openWrite(mode: FileMode.writeOnlyAppend);
+    final downloadCompleter = Completer();
 
     final dio.Response<dio.ResponseBody>? response;
     try {
@@ -373,15 +377,15 @@ class HttpFileTransferService {
       if ( downloadStream != null) {
         final totalFileSizeString = response.headers['Content-Length']?.first;
         final totalFileSize = int.parse(totalFileSizeString!);
-        final file = File(downloadedPath);
+
         // Since acting on downloadStream events like to fire progress events
         // causes memory spikes relative to the file size, I chose to listen to
         // the created file instead. This does not cause memory spikes, but see
         // below.
-        final fileSink = file.openWrite(mode: FileMode.writeOnlyAppend);
-        file.watch().listen((FileSystemEvent event) {
+
+        file.watch().listen((FileSystemEvent event) async {
            if (event is FileSystemCreateEvent || event is FileSystemModifyEvent) {
-             final fileSize = file.lengthSync();
+             final fileSize = await File(downloadedPath).length();
             final progress = fileSize / totalFileSize;
             sendEvent(
               ProgressEvent(
@@ -389,12 +393,15 @@ class HttpFileTransferService {
                   progress: progress == 1 ? 0.99 : progress,
               ),
             );
+             if (progress >= 1 && !downloadCompleter.isCompleted) {
+               downloadCompleter.complete();
+             }
           }
         });
 
         // TODO(Unknown): Find some way to pause execution until the download
         // has finished. Because now, ProgressEvents are sent when the job is
-        // already deleted. Below, a list of solutions I tried (for both this
+        // already deleted. Find below a list of solutions I tried (for both this
         // problem and the problem I tried to solve with this workaround).
 
         downloadStream.listen(fileSink.add); // .onDone would cause memory spikes
@@ -409,10 +416,15 @@ class HttpFileTransferService {
     } on dio.DioError catch(err) {
       // TODO(PapaTutuWawa): React if we received an error that is not related to the
       //                     connection.
+      downloadCompleter.completeError('Failed to download: $err');
       _log.finest('Failed to download: $err');
       await _fileDownloadFailed(job, fileDownloadFailedError);
       return;
     }
+
+    await downloadCompleter.future;
+    await fileSink.flush();
+    await fileSink.close();
 
     if (!isRequestOkay(response.statusCode)) {
       _log.warning('HTTP GET of ${job.location.url} returned ${response.statusCode}');
