@@ -98,7 +98,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return emit(
         state.copyWith(
           working: false,
-          passwordState: LoginFormState(false, error: result.reason),
+          passwordState: LoginFormState(
+            false,
+            error: result.reason ?? 'Failed to connect',
+          ),
         ),
       );
     }
