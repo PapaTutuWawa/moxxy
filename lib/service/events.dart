@@ -96,7 +96,7 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
     GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
     sendEvent(
       LoginFailureEvent(
-        reason: result.reason!,
+        reason: result.reason,
       ),
       id: id,
     );

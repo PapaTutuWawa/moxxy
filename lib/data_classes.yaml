@@ -15,7 +15,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          reason: String
+          reason: String?
       - name: PreStartDoneEvent
         extends: BackgroundEvent
         implements:
