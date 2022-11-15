@@ -8,8 +8,10 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/service/state.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -52,9 +54,15 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 1,
+      version: 2,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          _log.finest('Running migration for database version 2');
+          await upgradeFromV1ToV2(db);
+        }
+      },
     );
 
     _log.finest('Database setup done');
@@ -604,6 +612,29 @@ class DatabaseService {
     await batch.commit();
   }
 
+  Future<XmppState> getXmppState() async {
+    final json = <String, String?>{};
+    for (final row in await _db.query(xmppStateTable)) {
+      json[row['key']! as String] = row['value'] as String?;
+    }
+
+    return XmppState.fromDatabaseTuples(json);
+  }
+
+  Future<void> saveXmppState(XmppState state) async {
+    final batch = _db.batch();
+
+    for (final tuple in state.toDatabaseTuples().entries) {
+      batch.insert(
+        xmppStateTable,
+        <String, String?>{ 'key': tuple.key, 'value': tuple.value },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    
+    await batch.commit();
+  }
+  
   Future<void> saveRatchet(OmemoDoubleRatchetWrapper ratchet) async {
     final json = await ratchet.ratchet.toJson();
     await _db.insert(

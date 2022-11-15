@@ -7,6 +7,15 @@ Future<void> configureDatabase(Database db) async {
 }
 
 Future<void> createDatabase(Database db, int version) async {
+  // XMPP state
+  await db.execute(
+    '''
+    CREATE TABLE $xmppStateTable (
+      key   TEXT PRIMARY KEY,
+      value TEXT
+    )''',
+  );
+
   // Messages
   await db.execute(
     '''

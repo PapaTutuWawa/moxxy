@@ -9,6 +9,7 @@ const omemoRatchetsTable = 'OmemoSessions';
 const omemoTrustCacheTable = 'OmemoTrustCacheList';
 const omemoTrustDeviceListTable = 'OmemoTrustDeviceList';
 const omemoTrustEnableListTable = 'OmemoTrustEnableList';
+const xmppStateTable = 'XmppState';
 
 const typeString = 0;
 const typeInt = 1;

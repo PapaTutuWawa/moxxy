@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 
@@ -29,6 +30,39 @@ class XmppState with _$XmppState {
       @Default(false) bool askedStoragePermission,
   }) = _XmppState;
 
+  const XmppState._();
+
   // JSON serialization
   factory XmppState.fromJson(Map<String, dynamic> json) => _$XmppStateFromJson(json);
+
+  factory XmppState.fromDatabaseTuples(Map<String, String?> tuples) {
+    final smStateString = tuples['smState'];
+
+    final json = <String, dynamic>{
+      'smState': smStateString != null ? jsonDecode(smStateString) as Map<String, dynamic> : null,
+      'srid': tuples['srid'],
+      'resource': tuples['resource'],
+      'jid': tuples['jid'],
+      'displayName': tuples['displayName'],
+      'password': tuples['password'],
+      'lastRosterVersion': tuples['lastRosterVersion'],
+      'avatarUrl': tuples['avatarUrl'],
+      'avatarHash': tuples['avatarHash'],
+      'askedStoragePermission': tuples['askedStoragePermission'] == 'true',
+    };
+
+    return XmppState.fromJson(json);
+  }
+  
+  Map<String, String?> toDatabaseTuples() {
+    final json = toJson()
+      ..remove('smState')
+      ..remove('askedStoragePermission');
+      
+    return {
+      ...json.cast<String, String?>(),
+      'smState': jsonEncode(smState?.toJson()),
+      'askedStoragePermission': askedStoragePermission ? 'true' : 'false',
+    };
+  }
 }

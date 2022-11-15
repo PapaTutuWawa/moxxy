@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_size_getter/file_input.dart';
 import 'package:image_size_getter/image_size_getter.dart' as image_size;
@@ -34,62 +32,10 @@ import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/shared/migrator.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
-
-const currentXmppStateVersion = 1;
-const xmppStateKey = 'xmppState';
-const xmppStateVersionKey = 'xmppState_version';
-
-// TODO(PapaTutuWawa): Move the XmppState into the database
-class _XmppStateMigrator extends Migrator<XmppState> {
-
-  _XmppStateMigrator() : super(currentXmppStateVersion, []);
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    // TODO(Unknown): Set other options
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
-
-  // TODO(Unknown): Deduplicate
-  Future<String?> _readKeyOrNull(String key) async {
-    if (await _storage.containsKey(key: key)) {
-      return _storage.read(key: key);
-    } else {
-      return null;
-    }
-  }
-
-  @override
-  Future<Map<String, dynamic>?> loadRawData() async {
-    final raw = await _readKeyOrNull(xmppStateKey);
-    if (raw != null) return json.decode(raw) as Map<String, dynamic>;
-
-    return null;
-  }
-
-  @override
-  Future<int?> loadVersion() async {
-    final raw = await _readKeyOrNull(xmppStateVersionKey);
-    if (raw != null) return int.parse(raw);
-
-    return null;
-  }
-
-  @override
-  XmppState fromData(Map<String, dynamic> data) => XmppState.fromJson(data);
-
-  @override
-  XmppState fromDefault() => XmppState();
-  
-  @override
-  Future<void> commit(int version, XmppState data) async {
-    await _storage.write(key: xmppStateVersionKey, value: currentXmppStateVersion.toString());
-    await _storage.write(key: xmppStateKey, value: json.encode(data.toJson()));
-  }
-}
 
 class XmppService {
   
@@ -100,7 +46,6 @@ class XmppService {
     _eventHandler = EventHandler(),
     _appOpen = true,
     _loginTriggeredFromUI = false,
-    _migrator = _XmppStateMigrator(),
     _log = Logger('XmppService') {
       _eventHandler.addMatchers([
         EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
@@ -120,7 +65,6 @@ class XmppService {
     }
   final Logger _log;
   final EventHandler _eventHandler;
-  final _XmppStateMigrator _migrator;
   bool _loginTriggeredFromUI;
   bool _appOpen;
   String _currentlyOpenedChatJid;
@@ -130,14 +74,14 @@ class XmppService {
   Future<XmppState> getXmppState() async {
     if (_state != null) return _state!;
 
-    _state = await _migrator.load();
+    _state = await GetIt.I.get<DatabaseService>().getXmppState();
     return _state!;
   }
 
   /// A wrapper to modify the [XmppState] and commit it.
   Future<void> modifyXmppState(XmppState Function(XmppState) func) async {
     _state = func(_state!);
-    await _migrator.commit(currentXmppStateVersion, _state!);
+    await GetIt.I.get<DatabaseService>().saveXmppState(_state!);
   }
 
   /// Stores whether the app is open or not. Useful for notifications.
