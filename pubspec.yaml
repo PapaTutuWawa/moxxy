@@ -10,7 +10,7 @@ environment:
   flutter: ">=2.13.0-0.1"
 
 dependencies:
-  archive: 3.3.1
+  archive: 3.1.11
   badges: 2.0.3
   better_open_file: 3.6.3
   bloc: 8.1.0
@@ -99,6 +99,8 @@ dev_dependencies:
   #flutter_test:
   #  sdk: flutter
   freezed: ^2.1.0+1
+  integration_test:
+    sdk: flutter
   json_serializable: ^6.3.1
   meta: ^1.7.0
   test: ^1.21.1

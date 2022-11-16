@@ -13,10 +13,10 @@ import 'package:synchronized/synchronized.dart';
 /// connected. Otherwise, we idle until we have a connection again.
 class MoxxyReconnectionPolicy extends ReconnectionPolicy {
 
-  MoxxyReconnectionPolicy({ bool isTesting = false })
+  MoxxyReconnectionPolicy({ bool isTesting = false, this.maxBackoffTime })
   : _isTesting = isTesting,
     _timerLock = Lock(),
-    _log = Logger('MoxxyReconnectionPolicy'),
+    _log = Logger('MoxxyReconnectionPolicy'), 
     super();
   final Logger _log;
 
@@ -27,6 +27,9 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
 
   /// Just for testing purposes
   final bool _isTesting;
+
+  /// Maximum backoff time
+  final int? maxBackoffTime;
   
   /// To be called when the conectivity changes
   Future<void> onConnectivityChanged(bool regained, bool lost) async {
@@ -78,7 +81,18 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
   Future<void> _attemptReconnection(bool immediately) async {
     if (await testAndSetIsReconnecting()) {
       // Attempt reconnecting
-      final seconds = _isTesting ? 9999 : Random().nextInt(15);
+      int seconds;
+      if (_isTesting) {
+        seconds = 9999;
+      } else {
+        final r = Random().nextInt(15);
+        if (maxBackoffTime != null) {
+          seconds = min(maxBackoffTime!, r);
+        } else {
+          seconds = r;
+        }
+      }
+
       await _stopTimer();
       if (immediately) {
         _log.finest('Immediately attempting reconnection...');
