@@ -16,7 +16,7 @@ class SettingsAboutPage extends StatelessWidget {
   );
   
   Future<void> _openUrl(String url) async {
-    if (!await launchUrl(Uri.parse(url))) {
+    if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
       // TODO(Unknown): Show a popup to copy the url
     }
   }
