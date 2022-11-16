@@ -38,8 +38,24 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
       fillColor: MaterialStateProperty.all(primaryColor),
     ),
     switchTheme: SwitchTheme.of(context).copyWith(
-      trackColor: _makeEnabledDisabledProperty(primaryColorAlt, primaryColorDisabled),
-      thumbColor: _makeEnabledDisabledProperty(primaryColor, primaryColorDisabled),
+      trackColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+        if (states.contains(MaterialState.disabled)) {
+          return primaryColorDisabled;
+        } else if (!states.contains(MaterialState.selected)) {
+          return primaryColorDisabled;
+        }
+
+        return primaryColorAlt;
+      }),
+      thumbColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+        if (states.contains(MaterialState.disabled)) {
+          return Colors.white;
+        } else if (!states.contains(MaterialState.selected)) {
+          return Colors.white;
+        }
+
+        return primaryColor;
+      }),
     ),
   );
 }
