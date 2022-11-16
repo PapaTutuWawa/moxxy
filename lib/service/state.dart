@@ -37,9 +37,11 @@ class XmppState with _$XmppState {
 
   factory XmppState.fromDatabaseTuples(Map<String, String?> tuples) {
     final smStateString = tuples['smState'];
-
+    final isSmStateNotNull = smStateString != null && smStateString != 'null';
     final json = <String, dynamic>{
-      'smState': smStateString != null ? jsonDecode(smStateString) as Map<String, dynamic> : null,
+      'smState': isSmStateNotNull ?
+        jsonDecode(smStateString) as Map<String, dynamic> :
+        null,
       'srid': tuples['srid'],
       'resource': tuples['resource'],
       'jid': tuples['jid'],
