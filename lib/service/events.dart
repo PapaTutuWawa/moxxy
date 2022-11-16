@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
@@ -268,6 +269,11 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
 
 Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extra }) async {
   await GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
+
+  if (!kDebugMode) {
+    final enableDebug = command.preferences.debugEnabled;
+    Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
+  }
 }
 
 Future<void> performAddContact(AddContactCommand command, { dynamic extra }) async {

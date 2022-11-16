@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -61,7 +61,7 @@ import 'package:page_transition/page_transition.dart';
 import 'package:share_handler/share_handler.dart';
 
 void setupLogging() {
-  Logger.root.level = Level.ALL;
+  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.onRecord.listen((record) {
     // ignore: avoid_print
     print('[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}');

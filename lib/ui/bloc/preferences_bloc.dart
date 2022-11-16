@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
@@ -40,6 +41,11 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
       );
     }
 
+    if (!kDebugMode) {
+      final enableDebug = event.preferences.debugEnabled;
+      Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
+    }
+    
     emit(event.preferences);
   }
 

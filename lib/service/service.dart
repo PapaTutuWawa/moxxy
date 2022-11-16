@@ -72,8 +72,7 @@ void sendEvent(BackgroundEvent event, { String? id }) {
 }
 
 void setupLogging() {
-  //Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
-  Logger.root.level = Level.ALL;
+  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.onRecord.listen((record) {
       final logMessageHeader = '[${record.level.name}] (${record.loggerName}) ${record.time}: ';
       var msg = record.message;
@@ -154,6 +153,11 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
   await GetIt.I.get<NotificationsService>().init();
+
+  if (!kDebugMode) {
+    final enableDebug = (await GetIt.I.get<PreferencesService>().getPreferences()).debugEnabled;
+    Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
+  }
   
   // Init the UDPLogger
   await initUDPLogger();
