@@ -199,11 +199,10 @@ Future<void> entrypoint() async {
       StreamManagementNegotiator(),
       CSINegotiator(),
       RosterFeatureNegotiator(),
-      // TODO(Unknown): This one may not work
-      //SaslScramNegotiator(10, '', '', ScramHashType.sha512),
-      SaslPlainNegotiator(),
+      SaslScramNegotiator(10, '', '', ScramHashType.sha512),
       SaslScramNegotiator(9, '', '', ScramHashType.sha256),
       SaslScramNegotiator(8, '', '', ScramHashType.sha1),
+      SaslPlainNegotiator(),
     ]);
     
   GetIt.I.registerSingleton<XmppConnection>(connection);
