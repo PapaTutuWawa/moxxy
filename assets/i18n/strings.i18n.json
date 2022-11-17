@@ -6,12 +6,50 @@
 	    "loginButton": "Login",
 	    "registerButton": "Register"
 	},
+	"login": {
+	    "title": "Login",
+	    "xmppAddress": "XMPP-Address",
+	    "password": "Password",
+	    "advancedOptions": "Advanced options",
+	    "createAccount": "Create account on server"
+	},
 	"conversations": {
 	    "speeddialNewChat": "New chat",
 	    "speeddialJoinGroupchat": "Join groupchat",
 	    "overlaySettings": "Settings",
 	    "noOpenChats": "You have no open chats",
 	    "startChat": "Start a chat"
+	},
+	"addcontact": {
+	    "title": "Add new contact",
+	    "xmppAddress": "XMPP-Address",
+	    "subtitle": "You can add a contact either by typing in their XMPP address or by scanning their QR code",
+	    "buttonAddToContact": "Add to contacts"
+	},
+	"newconversation": {
+	    "title": "Start new chat",
+	    "addContact": "Add contact",
+	    "createGroupchat": "Create groupchat"
+	},
+	"crop": {
+	    "setProfilePicture": "Set as profile picture"
+	},
+	"shareselection": {
+	    "shareWith": "Share with...",
+	    "confirmTitle": "Send file",
+	    "confirmBody": "One or more chats are unencrypted. This means that the file will be leaked to the server. Do you still want to continue?"
+	},
+	"profile": {
+	    "self": {
+		"devices": "Devices"
+	    },
+	    "conversation": {
+		"muteChatTooltip": "Mute chat",
+		"unmuteChatTooltip": "Unmute chat",
+		"muteChat": "Mute",
+		"unmuteChat": "Unmute",
+		"devices": "Devices"
+	    }
 	}
     }
 }

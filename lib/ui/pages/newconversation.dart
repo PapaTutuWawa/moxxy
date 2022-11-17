@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -49,7 +50,7 @@ class NewConversationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
     return Scaffold(
-      appBar: BorderlessTopbar.simple('Start new chat'),
+      appBar: BorderlessTopbar.simple(t.pages.newconversation.title),
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
         builder: (BuildContext context, NewConversationState state) => ListView.builder(
           itemCount: state.roster.length + 2,
@@ -57,12 +58,12 @@ class NewConversationPage extends StatelessWidget {
             switch(index) {
               case 0: return _renderIconEntry(
                 Icons.person_add,
-                'Add contact',
+                t.pages.newconversation.addContact,
                 () => Navigator.pushNamed(context, addContactRoute),
               );
               case 1: return _renderIconEntry(
                 Icons.group_add,
-                'Create groupchat',
+                t.pages.newconversation.createGroupchat,
                 () => showNotImplementedDialog('groupchat', context),
               );
               default:

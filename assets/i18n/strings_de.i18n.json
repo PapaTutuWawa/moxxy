@@ -6,12 +6,50 @@
 	    "loginButton": "Einloggen",
 	    "registerButton": "Registrieren"
 	},
+	"login": {
+	    "title": "Login",
+	    "xmppAddress": "XMPP-Adresse",
+	    "password": "Passwort",
+	    "advancedOptions": "Fortgeschrittene Optionen",
+	    "createAccount": "Account auf dem Server erstellen"
+	},
 	"conversations": {
 	    "speeddialNewChat": "Neuer chat",
 	    "speeddialJoinGroupchat": "Gruppenchat beitreten",
 	    "overlaySettings": "Einstellungen",
 	    "noOpenChats": "Du hast keine offenen chats",
 	    "startChat": "Einen chat anfangen"
+	},
+	"addcontact": {
+	    "title": "Neuen Kontakt hinzufügen",
+	    "xmppAddress": "XMPP-Adresse",
+	    "subtitle": "Du kannst einen Kontakt hinzufügen, indem Du entweder die XMPP-Adresse eingibst oder den QR-Code deines Kontaktes scannst",
+	    "buttonAddToContact": "Kontakt hinzufügen"
+	},
+	"newconversation": {
+	    "title": "Neuer chat",
+	    "addContact": "Kontakt hinzufügen",
+	    "createGroupchat": "Gruppenchat erstellen"
+	},
+	"crop": {
+	    "setProfilePicture": "Als Profilbild festlegen"
+	},
+	"shareselection": {
+	    "shareWith": "Teilen mit...",
+	    "confirmTitle": "Dateien senden?",
+	    "confirmTitle": "Einer oder mehr Chats sind unverschlüsselt. Das bedeutet, dass die Dateien dem Server unverschlüsselt vorliegen. Dateien trotzdem senden?"
+	},
+	"profile": {
+	    "self": {
+		"devices": "Geräte"
+	    },
+	    "conversation": {
+		"muteChatTooltip": "Chat stummschalten",
+		"unmuteChatTooltip": "Chat lautstellen",
+		"muteChat": "Stummschalten",
+		"unmuteChat": "Lautstellen",
+		"devices": "Geräte"
+	    }
 	}
     }
 }

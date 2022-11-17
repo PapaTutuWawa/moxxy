@@ -1,6 +1,7 @@
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
@@ -60,7 +61,7 @@ class CropPage extends StatelessWidget {
               RoundedButton(
                 cornerRadius: 100,
                 onTap: _controller.crop,
-                child: const Text('Set as profile picture'),
+                child: Text(t.pages.crop.setProfilePicture),
               ),
             ],
           ),
