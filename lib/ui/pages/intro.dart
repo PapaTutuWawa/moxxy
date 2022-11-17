@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
@@ -36,11 +37,11 @@ class Intro extends StatelessWidget {
                 ),
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: paddingVeryLarge),
               child: Text(
-                'An experiment into building a modern, easy and beautiful XMPP client.',
-                style: TextStyle(
+                t.pages.intro.subtitle,
+                style: const TextStyle(
                   fontSize: fontsizeBody,
                 ),
               ),
@@ -55,18 +56,18 @@ class Intro extends StatelessWidget {
                       onTap: () => Navigator.of(context).pushNamed(
                         loginRoute,
                       ),
-                      child: const Text('Login'),
+                      child: Text(t.pages.intro.loginButton),
                     ),
                   )
                 ],
               ),
             ),
             const Spacer(),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: paddingVeryLarge),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
               child: Text(
-                'Have no XMPP account? No worries, creating one is really easy.',
-                style: TextStyle(
+                t.pages.intro.noAccount,
+                style: const TextStyle(
                   fontSize: fontsizeBody,
                 ),
               ),
@@ -77,7 +78,7 @@ class Intro extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(bottom: paddingVeryLarge)),
                     child: TextButton(
-                      child: const Text('Register'),
+                      child: Text(t.pages.intro.registerButton),
                       onPressed: () {
                         // Navigator.pushNamed(context, registrationRoute);
                         showNotImplementedDialog('registration', context);

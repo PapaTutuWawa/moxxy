@@ -52,6 +52,7 @@ app.*.map.json
 **/*.g.dart
 **/*.freezed.dart
 **/*.moxxy.dart
+lib/i18n/*.dart
 
 # Direnv
 .envrc

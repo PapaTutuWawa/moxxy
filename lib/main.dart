@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
@@ -107,7 +109,10 @@ void main() async {
   setupBlocs(navKey);
 
   await initializeServiceIfNeeded();
-    
+
+  WidgetsFlutterBinding.ensureInitialized();
+  LocaleSettings.useDeviceLocale();
+  
   runApp(
     MultiBlocProvider(
       providers: [
@@ -163,7 +168,9 @@ void main() async {
           create: (_) => GetIt.I.get<OwnDevicesBloc>(),
         ),
       ],
-      child: MyApp(navKey),
+      child: TranslationProvider(
+        child: MyApp(navKey),
+      ),
     ),
   );
 }
@@ -258,6 +265,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: TranslationProvider.of(context).flutterLocale,
+      supportedLocales: LocaleSettings.supportedLocales,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       title: 'Moxxy',
       theme: getThemeData(context, Brightness.light),
       darkTheme: getThemeData(context, Brightness.dark),

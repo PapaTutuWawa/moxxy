@@ -15,3 +15,4 @@ analyzer:
     - "test/"
     - "integration_test/"
     - "lib/service/database/migrations/*.dart"
+    - "lib/i18n/*.dart"

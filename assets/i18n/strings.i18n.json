@@ -1,0 +1,10 @@
+{
+    "pages": {
+	"intro": {
+	    "subtitle": "An experiment into building a modern, easy and beautiful XMPP client.",
+	    "noAccount": "Have no XMPP account? No worries, creating one is really easy.",
+	    "loginButton": "Login",
+	    "registerButton": "Register"
+	}
+    }
+}
