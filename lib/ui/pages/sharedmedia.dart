@@ -8,7 +8,7 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class SharedMediaPage extends StatelessWidget {
-  const SharedMediaPage({ Key? key }) : super(key: key);
+  const SharedMediaPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const SharedMediaPage(),

@@ -42,7 +42,7 @@ PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData ic
 // TODO(Unknown): Maybe merge with BorderlessTopbar
 // TODO(PapaTutuWawa): Make the conversation title go up, when we display "online" and down if we don't have to anymore
 class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget {
-  const ConversationTopbar({ Key? key }) : super(key: key);
+  const ConversationTopbar({ super.key });
 
   @override
   Size get preferredSize => const Size.fromHeight(60);

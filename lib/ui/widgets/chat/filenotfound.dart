@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class FileNotFound extends StatelessWidget {
-  const FileNotFound({ Key? key }) : super(key: key);
+  const FileNotFound({ super.key });
 
   @override
   Widget build(BuildContext context) {

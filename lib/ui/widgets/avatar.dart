@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
 class AvatarWrapper extends StatelessWidget {
-
-  const AvatarWrapper({ required this.radius, this.avatarUrl, this.altText, this.altIcon, this.onTapFunction, this.showEditButton = false, Key? key })
+  const AvatarWrapper({ required this.radius, this.avatarUrl, this.altText, this.altIcon, this.onTapFunction, this.showEditButton = false, super.key })
     : assert(avatarUrl != null || (avatarUrl == null || avatarUrl == '') && (altText != null && altText != '' || altIcon != null), 'avatarUrl and either altText or altIcon must be set'),
-      assert(showEditButton ? onTapFunction != null : true, 'If the edit button is shown, then a onTap handler must be set'),
-      super(key: key);
+      assert(showEditButton ? onTapFunction != null : true, 'If the edit button is shown, then a onTap handler must be set');
   final String? avatarUrl;
   final String? altText;
   final IconData? altIcon;

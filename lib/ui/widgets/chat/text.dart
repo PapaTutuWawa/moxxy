@@ -22,15 +22,14 @@ String errorTypeToText(int errorType) {
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
 class TextChatWidget extends StatelessWidget {
-
   const TextChatWidget(
     this.message,
     this.sent,
     {
       this.topWidget,
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final Message message;
   final bool sent;
   final Widget? topWidget;

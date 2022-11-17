@@ -14,10 +14,8 @@ class SelfProfileHeader extends StatelessWidget {
     this.avatarUrl,
     this.displayName,
     this.setAvatar,
-    {
-      Key? key,
-    }
-  ) : super(key: key);
+    { super.key, }
+  );
   final String jid;
   final String avatarUrl;
   final String displayName;

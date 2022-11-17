@@ -10,8 +10,7 @@ import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
-
-  const ConversationProfileHeader(this.conversation, { Key? key }) : super(key: key);
+  const ConversationProfileHeader(this.conversation, { super.key });
   final Conversation conversation;
 
   @override

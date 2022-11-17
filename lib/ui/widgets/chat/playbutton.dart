@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 class PlayButton extends StatelessWidget {
   const PlayButton({
-      Key? key,
-      this.size = 64.0,
-  }) : super(key: key);
+    this.size = 64.0,
+    super.key,
+  });
   final double size;
 
   @override

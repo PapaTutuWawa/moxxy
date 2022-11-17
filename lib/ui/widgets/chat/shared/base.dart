@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 /// NOTE: https://stackoverflow.com/a/55833281; Thank you kind stranger
 class TransparentBoxShadow extends BoxShadow {
   const TransparentBoxShadow({
-      required double blurRadius,
-  }) : super(blurRadius: blurRadius);
+    required super.blurRadius,
+  });
 
   @override
   Paint toPaint() {
@@ -23,8 +23,7 @@ const sharedMediaContainerDimension = 75.0;
 
 /// A widget to show a message that was sent within a chat or is about to be sent.
 class SharedMediaContainer extends StatelessWidget {
-
-  const SharedMediaContainer(this.child, { this.onTap, Key? key }) : super(key: key);
+  const SharedMediaContainer(this.child, { this.onTap, super.key });
   final Widget? child;
   final void Function()? onTap;
 

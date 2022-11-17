@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 // TODO(PapaTutuWawa): Include license text
 // TODO(Unknown): Maybe include the version number
 class SettingsAboutPage extends StatelessWidget {
-  const SettingsAboutPage({ Key? key }) : super(key: key);
+  const SettingsAboutPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const SettingsAboutPage(),

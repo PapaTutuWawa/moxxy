@@ -8,7 +8,7 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class AddContactPage extends StatelessWidget {
-  const AddContactPage({ Key? key }) : super(key: key);
+  const AddContactPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const AddContactPage(),

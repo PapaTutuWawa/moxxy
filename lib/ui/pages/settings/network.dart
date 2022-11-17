@@ -22,8 +22,7 @@ const _autoDownloadSizes = <_AutoDownloadSizes>[
 ];
 
 class NetworkPage extends StatelessWidget {
-
-  const NetworkPage({ Key? key }): super(key: key);
+  const NetworkPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const NetworkPage(),

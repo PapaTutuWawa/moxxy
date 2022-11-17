@@ -5,7 +5,7 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 
 class Intro extends StatelessWidget {
-  const Intro({ Key? key }) : super(key: key);
+  const Intro({ super.key });
  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const Intro(),
@@ -38,7 +38,7 @@ class Intro extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: paddingVeryLarge),
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
               child: Text(
                 t.pages.intro.subtitle,
                 style: const TextStyle(

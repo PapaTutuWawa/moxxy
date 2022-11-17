@@ -15,16 +15,15 @@ import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 
 class VideoChatWidget extends StatelessWidget {
-
   const VideoChatWidget(
     this.message,
     this.radius,
     this.maxWidth,
     this.sent,
     {
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final Message message;
   final double maxWidth;
   final BorderRadius radius;

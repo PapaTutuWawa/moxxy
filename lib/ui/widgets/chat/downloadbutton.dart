@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 class DownloadButton extends StatelessWidget {
-
-  const DownloadButton({ required this.onPressed, Key? key }) : super(key: key);
+  const DownloadButton({
+    required this.onPressed,
+    super.key,
+  });
   final void Function() onPressed;
 
   @override

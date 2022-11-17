@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class SharedFileWidget extends StatelessWidget {
-
-  const SharedFileWidget(this.path, { Key? key }) : super(key: key);
+  const SharedFileWidget(this.path, { super.key });
   final String path;
 
   @override

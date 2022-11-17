@@ -7,7 +7,6 @@ import 'package:moxxyv2/ui/pages/settings/privacy/redirect_dialog.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class RedirectSettingsTile extends AbstractSettingsTile {
-
   const RedirectSettingsTile(
     this.serviceName,
     this.exampleProxy,
@@ -15,8 +14,8 @@ class RedirectSettingsTile extends AbstractSettingsTile {
     this.setProxy,
     this.getEnabled,
     this.setEnabled,
-    {Key? key,}
-  ) : super(key: key);
+    { super.key, }
+  );
   final String serviceName;
   final String exampleProxy;
   final String Function(PreferencesState state) getProxy;

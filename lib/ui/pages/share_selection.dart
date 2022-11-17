@@ -11,7 +11,7 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class ShareSelectionPage extends StatelessWidget {
-  const ShareSelectionPage({ Key? key }) : super(key: key);
+  const ShareSelectionPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const ShareSelectionPage(),

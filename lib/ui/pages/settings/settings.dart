@@ -8,7 +8,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({ Key? key }) : super(key: key);
+  const SettingsPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const SettingsPage(),

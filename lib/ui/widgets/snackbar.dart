@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
+// TODO(PapaTutuWawa): Remove
 class PermanentSnackBar extends StatefulWidget {
-
   // TODO(Unknown): Remove linter ignore
   // ignore: prefer_const_constructors_in_immutables
-  PermanentSnackBar({ required this.text, required this.actionText, required this.onPressed, Key? key }) : super(key: key);
+  PermanentSnackBar({ required this.text, required this.actionText, required this.onPressed, super.key });
   final String text;
   final String actionText;
   final void Function() onPressed;

@@ -7,7 +7,7 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class Login extends StatelessWidget {
-  const Login({ Key? key }) : super(key: key);
+  const Login({ super.key });
  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const Login(),

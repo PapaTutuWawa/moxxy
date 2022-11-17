@@ -8,7 +8,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class PrivacyPage extends StatelessWidget {
-  const PrivacyPage({ Key? key }): super(key: key);
+  const PrivacyPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const PrivacyPage(),

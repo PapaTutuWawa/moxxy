@@ -8,7 +8,10 @@ import 'package:settings_ui/settings_ui.dart';
 
 class DebuggingPage extends StatelessWidget {
 
-  DebuggingPage({ Key? key }) : _ipController = TextEditingController(), _passphraseController = TextEditingController(), _portController = TextEditingController(), super(key: key);
+  DebuggingPage({ super.key })
+    : _ipController = TextEditingController(),
+      _passphraseController = TextEditingController(),
+      _portController = TextEditingController();
   final TextEditingController _ipController;
   final TextEditingController _portController;
   final TextEditingController _passphraseController;

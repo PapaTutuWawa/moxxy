@@ -10,7 +10,7 @@ enum BlocklistOptions {
 }
 
 class BlocklistPage extends StatelessWidget {
-  const BlocklistPage({ Key? key }) : super(key: key);
+  const BlocklistPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const BlocklistPage(),

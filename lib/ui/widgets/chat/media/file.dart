@@ -22,9 +22,9 @@ class FileChatBaseWidget extends StatelessWidget {
     {
       this.extra,
       this.onTap,
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final Message message;
   final IconData icon;
   final String filename;
@@ -65,16 +65,15 @@ class FileChatBaseWidget extends StatelessWidget {
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
 class FileChatWidget extends StatelessWidget {
-
   const FileChatWidget(
     this.message,
     this.radius,
     this.sent,
     {
       this.extra,
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final Message message;
   final BorderRadius radius;
   final bool sent;

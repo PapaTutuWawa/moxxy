@@ -9,7 +9,7 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class NewConversationPage extends StatelessWidget {
-  const NewConversationPage({ Key? key }) : super(key: key);
+  const NewConversationPage({ super.key });
  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const NewConversationPage(),

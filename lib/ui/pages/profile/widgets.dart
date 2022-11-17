@@ -12,9 +12,9 @@ class FingerprintListItem extends StatelessWidget {
       this.onEnableValueChanged,
       this.onShowQrCodePressed,
       this.onDeletePressed,
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final String fingerprint;
   final bool enabled;
   final bool verified;

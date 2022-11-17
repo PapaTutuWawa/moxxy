@@ -15,7 +15,7 @@ enum OwnDevicesOptions {
 }
 
 class OwnDevicesPage extends StatelessWidget {
-  const OwnDevicesPage({ Key? key }) : super(key: key);
+  const OwnDevicesPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (context) => const OwnDevicesPage(),

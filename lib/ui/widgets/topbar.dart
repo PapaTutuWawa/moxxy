@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TopbarTitleText extends StatelessWidget {
-  const TopbarTitleText(this.text, { Key? key }) : super(key: key);
+  const TopbarTitleText(this.text, { super.key });
   final String text;
 
   @override
@@ -23,9 +23,9 @@ class TopbarAvatarAndName extends StatelessWidget {
     {
       this.showBackButton = true,
       this.extra = const [],
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final Widget title;
   final Widget avatar;
   final List<Widget> extra;
@@ -61,10 +61,8 @@ class TopbarAvatarAndName extends StatelessWidget {
 
 /// Provides a Signal-like topbar without borders or anything else
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
-
-  const BorderlessTopbar(this.child, { Key? key })
-    : preferredSize = const Size.fromHeight(60),
-      super(key: key);
+  const BorderlessTopbar(this.child, { super.key })
+    : preferredSize = const Size.fromHeight(60);
 
   factory BorderlessTopbar.justBackButton({ Key? key }) {
     return BorderlessTopbar(

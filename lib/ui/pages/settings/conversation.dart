@@ -14,8 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class ConversationSettingsPage extends StatelessWidget {
-
-  const ConversationSettingsPage({ Key? key }): super(key: key);
+  const ConversationSettingsPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const ConversationSettingsPage(),

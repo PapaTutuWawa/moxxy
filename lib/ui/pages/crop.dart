@@ -6,8 +6,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 
 class CropPage extends StatelessWidget {
-
-  CropPage({ Key? key }) : _controller = CropController(), super(key: key);
+  CropPage({ super.key }) : _controller = CropController();
   final CropController _controller;
  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(

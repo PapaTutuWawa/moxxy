@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/constants.dart';
@@ -9,7 +8,6 @@ import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 
 class ConversationsListRow extends StatefulWidget {
-  
   const ConversationsListRow(
     this.avatarUrl,
     this.name,
@@ -21,9 +19,9 @@ class ConversationsListRow extends StatefulWidget {
       this.showLock = false,
       this.typingIndicator = false,
       this.extra,
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final String avatarUrl;
   final String name;
   final String lastMessageBody;

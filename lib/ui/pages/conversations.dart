@@ -17,7 +17,7 @@ enum ConversationsOptions {
 }
 
 class ConversationsPage extends StatelessWidget {
-  const ConversationsPage({ Key? key }) : super(key: key);
+  const ConversationsPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (context) => const ConversationsPage(),

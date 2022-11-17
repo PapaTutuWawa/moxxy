@@ -23,8 +23,7 @@ Widget _deleteIconWithShadow() {
 }
 
 class SendFilesPage extends StatelessWidget {
- 
-  const SendFilesPage({ Key? key }) : super(key: key);
+  const SendFilesPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (context) => const SendFilesPage(),
