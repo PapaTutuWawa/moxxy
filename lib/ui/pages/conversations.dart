@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
@@ -82,12 +83,12 @@ class ConversationsPage extends StatelessWidget {
             // TODO(Unknown): Maybe somehow render the svg
             child: Image.asset('assets/images/begin_chat.png'),
           ),
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: Text('You have no open chats'),
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(t.pages.conversations.noOpenChats),
           ),
           TextButton(
-            child: const Text('Start a chat'),
+            child: Text(t.pages.conversations.startChat),
             onPressed: () => Navigator.pushNamed(context, newConversationRoute),
           )
         ],
@@ -132,9 +133,9 @@ class ConversationsPage extends StatelessWidget {
                 },
                 icon: const Icon(Icons.more_vert),
                 itemBuilder: (BuildContext context) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: ConversationsOptions.settings,
-                    child: Text('Settings'),
+                    child: Text(t.pages.conversations.overlaySettings),
                   )
                 ],
               )
@@ -155,7 +156,7 @@ class ConversationsPage extends StatelessWidget {
               backgroundColor: primaryColor,
               // TODO(Unknown): Theme dependent?
               foregroundColor: Colors.white,
-              label: 'Join groupchat',
+              label: t.pages.conversations.speeddialJoinGroupchat,
             ),
             SpeedDialChild(
               child: const Icon(Icons.person_add),
@@ -163,7 +164,7 @@ class ConversationsPage extends StatelessWidget {
               backgroundColor: primaryColor,
               // TODO(Unknown): Theme dependent?
               foregroundColor: Colors.white,
-              label: 'New chat',
+              label: t.pages.conversations.speeddialNewChat,
             )
           ],
         ),

@@ -5,6 +5,13 @@
 	    "noAccount": "Kein XMPP-Account vorhanden? Einen zu erstellen ist sehr einfach.",
 	    "loginButton": "Einloggen",
 	    "registerButton": "Registrieren"
+	},
+	"conversations": {
+	    "speeddialNewChat": "Neuer chat",
+	    "speeddialJoinGroupchat": "Gruppenchat beitreten",
+	    "overlaySettings": "Einstellungen",
+	    "noOpenChats": "Du hast keine offenen chats",
+	    "startChat": "Einen chat anfangen"
 	}
     }
 }
