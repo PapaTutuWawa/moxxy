@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
@@ -59,9 +60,9 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
     switch (state) {
       case ChatState.paused:
       case ChatState.active:
-        return const Text(
-          'Online',
-          style: TextStyle(
+        return Text(
+          t.pages.conversation.online,
+          style: const TextStyle(
             color: Colors.green,
           ),
         );
@@ -130,8 +131,8 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                       const Icon(Icons.lock) :
                       const Icon(Icons.lock_open),
                       itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(EncryptionOption.none, 'Unencrypted', Icons.lock_open),
-                        popupItemWithIcon(EncryptionOption.omemo, 'Encrypted', Icons.lock),
+                        popupItemWithIcon(EncryptionOption.none, t.pages.conversation.unencrypted, Icons.lock_open),
+                        popupItemWithIcon(EncryptionOption.omemo, t.pages.conversation.encrypted, Icons.lock),
                       ],
                     ),
                     // ignore: implicit_dynamic_type
@@ -140,8 +141,8 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                         switch (result) {
                           case ConversationOption.close: {
                             showConfirmationDialog(
-                              'Close Chat',
-                              'Are you sure you want to close this chat?',
+                              t.pages.conversation.closeChatConfirmTitle,
+                              t.pages.conversation.closeChatConfirmSubtext,
                               context,
                               () {
                                 context.read<ConversationsBloc>().add(
@@ -159,8 +160,8 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                       },
                       icon: const Icon(Icons.more_vert),
                       itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(ConversationOption.close, 'Close chat', Icons.close),
-                        popupItemWithIcon(ConversationOption.block, 'Block contact', Icons.block)
+                        popupItemWithIcon(ConversationOption.close, t.pages.conversation.closeChat, Icons.close),
+                        popupItemWithIcon(ConversationOption.block, t.pages.conversation.blockUser, Icons.block)
                       ],
                     ),
                   ],

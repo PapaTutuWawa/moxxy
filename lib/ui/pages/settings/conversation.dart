@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
@@ -63,16 +64,16 @@ class ConversationSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple('Chat'),
+      appBar: BorderlessTopbar.simple(t.pages.settings.conversation.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
           sections: [
             SettingsSection(
-              title: const Text('Appearance'),
+              title: Text(t.pages.settings.conversation.appearance),
               tiles: [
                 SettingsTile(
-                  title: const Text('Select background image'),
-                  description: const Text('This image will be the background of all your chats'),
+                  title: Text(t.pages.settings.conversation.selectBackgroundImage),
+                  description: Text(t.pages.settings.conversation.selectBackgroundImageDescription),
                   onPressed: (context) async {
                     final backgroundPath = await _pickBackgroundImage();
 
@@ -85,11 +86,11 @@ class ConversationSettingsPage extends StatelessWidget {
                   },
                 ),
                 SettingsTile(
-                  title: const Text('Remove background image'),
+                  title: Text(t.pages.settings.conversation.removeBackgroundImage),
                   onPressed: (context) {
                     showConfirmationDialog(
-                      'Are you sure?',
-                      'Are you sure you want to remove your conversation background image?',
+                      t.pages.settings.conversation.removeBackgroundImageConfirmTitle,
+                      t.pages.settings.conversation.removeBackgroundImageConfirmBody,
                       context,
                       () async {
                         await _removeBackgroundImage(context, state);
@@ -100,10 +101,10 @@ class ConversationSettingsPage extends StatelessWidget {
               ],
             ),
             SettingsSection(
-              title: const Text('New Conversations'),
+              title: Text(t.pages.settings.conversation.newChatsSection),
               tiles: [
                 SettingsTile.switchTile(
-                  title: const Text('Mute new chats by default'),
+                  title: Text(t.pages.settings.conversation.newChatsMuteByDefault),
                   initialValue: state.defaultMuteState,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
@@ -112,7 +113,7 @@ class ConversationSettingsPage extends StatelessWidget {
                   ),
                 ),
                 SettingsTile.switchTile(
-                  title: const Text('Enable end-to-end encryption by default. WARNING: Experimental'),
+                  title: Text(t.pages.settings.conversation.newChatsE2EE),
                   initialValue: state.enableOmemoByDefault,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 
@@ -22,7 +23,7 @@ class RedirectDialogState extends State<RedirectDialog> {
 
     if (value.isEmpty) {
       setState(() {
-        errorText = 'URL cannot be empty';
+        errorText = t.pages.settings.privacy.urlEmpty;
       });
       return false;
     }
@@ -30,7 +31,7 @@ class RedirectDialogState extends State<RedirectDialog> {
     final parsed = Uri.tryParse(value);
     if (parsed == null) {
       setState(() {
-        errorText = 'Invalid URL';
+        errorText = t.pages.settings.privacy.urlInvalid;
       });
       return false;
     }
@@ -48,7 +49,9 @@ class RedirectDialogState extends State<RedirectDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('${widget.serviceName} Redirect'),
+      title: Text(
+        t.pages.settings.privacy.redirectDialogTitle(serviceName: widget.serviceName),
+      ),
       content: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -76,7 +79,7 @@ class RedirectDialogState extends State<RedirectDialog> {
       ),
       actions: [
         TextButton(
-          child: const Text('Okay'),
+          child: Text(t.global.dialogAccept),
           onPressed: () {
             if (_validateUrl()) {
               Navigator.of(context).pop();
@@ -86,7 +89,7 @@ class RedirectDialogState extends State<RedirectDialog> {
           },
         ),
         TextButton(
-          child: const Text('Cancel'),
+          child: Text(t.global.dialogCancel),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -65,15 +66,15 @@ class OwnDevicesPage extends StatelessWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: EdgeInsets.only(
+                  padding: const EdgeInsets.only(
                     left: 16,
                   ),
                   child: Text(
-                    'This device',
-                    style: TextStyle(
+                    t.pages.profile.owndevices.thisDevice,
+                    style: const TextStyle(
                       fontSize: fontsizeSubtitle,
                     ),
                   ),
@@ -90,16 +91,16 @@ class OwnDevicesPage extends StatelessWidget {
               ),
               ...state.keys.isNotEmpty ?
                 [
-                  const Align(
+                  Align(
                     alignment: Alignment.centerLeft,
                     child: Padding(
-                      padding: EdgeInsets.only(
+                      padding: const EdgeInsets.only(
                         top: 32,
                         left: 16,
                       ),
                       child: Text(
-                        'Other devices',
-                        style: TextStyle(
+                        t.pages.profile.owndevices.otherDevices,
+                        style: const TextStyle(
                           fontSize: fontsizeSubtitle,
                         ),
                       ),
@@ -139,8 +140,8 @@ class OwnDevicesPage extends StatelessWidget {
             },
           onDeletePressed: () {
             showConfirmationDialog(
-              'Delete device',
-              'This means that contacts will not be able to encrypt for that device. Continue?',
+              t.pages.profile.owndevices.deleteDeviceConfirmTitle,
+              t.pages.profile.owndevices.deleteDeviceConfirmBody,
               context,
               () {
                 context.read<OwnDevicesBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
@@ -154,8 +155,8 @@ class OwnDevicesPage extends StatelessWidget {
 
   void _recreateSessions(BuildContext context) {
     showConfirmationDialog(
-      'Recreate own sessions?',
-      'This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.',
+      t.pages.profile.owndevices.recreateOwnSessionsConfirmTitle,
+      t.pages.profile.owndevices.recreateOwnSessionsConfirmBody,
       context,
       () {
         context.read<OwnDevicesBloc>().add(OwnSessionsRecreatedEvent());
@@ -165,8 +166,8 @@ class OwnDevicesPage extends StatelessWidget {
 
   void _recreateDevice(BuildContext context) {
     showConfirmationDialog(
-      'Recreate own device?',
-      "This will recreate this device's cryptographic identity. It might take some time and will cause decryption errors until you sent a message to your contacts. If they verified your device, they will have to do it again. Continue?",
+      t.pages.profile.owndevices.recreateOwnDeviceConfirmTitle,
+      t.pages.profile.owndevices.recreateOwnDeviceConfirmBody,
       context,
       () {
         context.read<OwnDevicesBloc>().add(OwnDeviceRegeneratedEvent());
@@ -179,7 +180,7 @@ class OwnDevicesPage extends StatelessWidget {
     return BlocBuilder<OwnDevicesBloc, OwnDevicesState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
-          'Own Devices',
+          t.pages.profile.owndevices.title,
           extra: [
             const Spacer(),
             PopupMenuButton(
@@ -198,11 +199,11 @@ class OwnDevicesPage extends StatelessWidget {
                 PopupMenuItem(
                   value: OwnDevicesOptions.recreateSessions,
                   enabled: state.keys.isNotEmpty,
-                  child: const Text('Rebuild sessions'),
+                  child: Text(t.pages.profile.owndevices.recreateOwnSessions),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: OwnDevicesOptions.recreateDevice,
-                  child: Text('Recreate identity'),
+                  child: Text(t.pages.profile.owndevices.recreateOwnDevice),
                 ),
               ],
             ),

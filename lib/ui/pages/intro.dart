@@ -40,7 +40,7 @@ class Intro extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
               child: Text(
-                t.pages.intro.subtitle,
+                t.global.moxxySubtitle,
                 style: const TextStyle(
                   fontSize: fontsizeBody,
                 ),

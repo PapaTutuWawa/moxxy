@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -66,18 +67,18 @@ class NetworkPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple('Network'),
+      appBar: BorderlessTopbar.simple(t.pages.settings.network.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
           sections: [
             SettingsSection(
-              title: const Text('Automatic Downloads'),
+              title: Text(t.pages.settings.network.automaticDownloadsSection),
               tiles: [
                 SettingsTile(
-                  title: const Text('Moxxy will automatically download files on...'),
+                  title: Text(t.pages.settings.network.automaticDownloadsText),
                 ),
                 SettingsTile.switchTile(
-                  title: const Text('Wifi'),
+                  title: Text(t.pages.settings.network.wifi),
                   initialValue: state.autoDownloadWifi,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
@@ -86,7 +87,7 @@ class NetworkPage extends StatelessWidget {
                   ),
                 ),
                 SettingsTile.switchTile(
-                  title: const Text('Mobile Data'),
+                  title: Text(t.pages.settings.network.mobileData),
                   initialValue: state.autoDownloadMobile,
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
@@ -95,8 +96,8 @@ class NetworkPage extends StatelessWidget {
                   ),
                 ),
                 SettingsTile(
-                  title: const Text('Maximum Download Size'),
-                  description: const Text('The maximum file size for a file to be automatically downloaded'),
+                  title: Text(t.pages.settings.network.automaticDownloadsMaximumSize),
+                  description: Text(t.pages.settings.network.automaticDownloadsMaximumSizeSubtext),
                   onPressed: (context) {
                     showModalBottomSheet<dynamic>(
                       context: context,

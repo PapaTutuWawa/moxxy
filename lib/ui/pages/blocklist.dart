@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -30,9 +31,9 @@ class BlocklistPage extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: Image.asset('assets/images/happy_news.png'),
             ),
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: Text('You have no users blocked'),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(t.pages.blocklist.noUsersBlocked),
             )
           ],
         ),
@@ -59,8 +60,8 @@ class BlocklistPage extends StatelessWidget {
                 icon: const Icon(Icons.delete),
                 color: Colors.red,
                 onPressed: () => showConfirmationDialog(
-                  'Unblock $jid?',
-                  'Are you sure you want to unblock $jid? You will receive messages from this user again.',
+                  t.pages.blocklist.unblockJidConfirmTitle(jid: jid),
+                  t.pages.blocklist.unblockJidConfirmBody(jid: jid),
                   context,
                   () {
                     context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
@@ -79,15 +80,15 @@ class BlocklistPage extends StatelessWidget {
     return BlocBuilder<BlocklistBloc, BlocklistState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
-          'Blocklist',
+          t.pages.blocklist.title,
           extra: [
             Expanded(child: Container()),
             PopupMenuButton(
               onSelected: (BlocklistOptions result) {
                 if (result == BlocklistOptions.unblockAll) {
                   showConfirmationDialog(
-                    'Are you sure?',
-                    'Are you sure you want to unblock all users?',
+                    t.pages.blocklist.unblockAllConfirmTitle,
+                    t.pages.blocklist.unblockAllConfirmBody,
                     context,
                     () {
                       context.read<BlocklistBloc>().add(UnblockedAllEvent());
@@ -98,10 +99,10 @@ class BlocklistPage extends StatelessWidget {
               },
               icon: const Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: BlocklistOptions.unblockAll,
-                  child: Text('Unblock all'),
-                )
+                  child: Text(t.pages.blocklist.unblockAll),
+                ),
               ],
             )
           ],
