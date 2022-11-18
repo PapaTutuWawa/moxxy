@@ -7,6 +7,23 @@
 	"yes": "Yes",
 	"no": "No"
     },
+    "notifications": {
+	"permanent": {
+	    "idle": "Idle",
+	    "ready": "Ready to receive messages",
+	    "connecting": "Connecting...",
+	    "disconnect": "Disconnected",
+	    "error": "Error"
+	}
+    },
+    "errors": {
+	"omemo": {
+	    "couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work."
+	},
+	"connection": {
+	    "connectionTimeout": "Could not connect to server"
+	}
+    },
     "pages": {
 	"intro": {
 	    "noAccount": "Have no XMPP account? No worries, creating one is really easy.",

@@ -10,6 +10,7 @@ import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
@@ -498,7 +499,7 @@ class XmppService {
       // Notify the user that we could not publish the Omemo ~identity~ titty
       await GetIt.I.get<NotificationsService>().showWarningNotification(
         'Encryption',
-        'Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work.',
+        t.errors.omemo.couldNotPublish,
       );
     }
   }
@@ -508,25 +509,25 @@ class XmppService {
       case XmppConnectionState.connected:
         GetIt.I.get<BackgroundService>().setNotification(
           'Moxxy',
-          'Ready to receive messages',
+          t.notifications.permanent.ready,
         );
       break;
       case XmppConnectionState.connecting:
         GetIt.I.get<BackgroundService>().setNotification(
           'Moxxy',
-          'Connecting...',
+          t.notifications.permanent.connecting,
         );
       break;
       case XmppConnectionState.notConnected:
         GetIt.I.get<BackgroundService>().setNotification(
           'Moxxy',
-          'Disconnected',
+          t.notifications.permanent.disconnect,
         );
       break;
       case XmppConnectionState.error:
         GetIt.I.get<BackgroundService>().setNotification(
           'Moxxy',
-          'Error',
+          t.notifications.permanent.error,
         );
       break;
     }

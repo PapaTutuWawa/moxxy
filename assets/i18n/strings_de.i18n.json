@@ -7,6 +7,23 @@
 	"yes": "Ja",
 	"no": "Nein"
     },
+    "notifications": {
+	"permanent": {
+	    "idle": "Bereit",
+	    "ready": "Bereit zum Nachrichtenempfang",
+	    "connecting": "Verbinde...",
+	    "disconnect": "Keine Verbindung",
+	    "error": "Fehler"
+	}
+    },
+    "errors": {
+	"omemo": {
+	    "couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht."
+	},
+	"connection": {
+	    "connectionTimeout": "Verbindung zum Server nicht möglich"
+	}
+    },
     "pages": {
 	"intro": {
 	    "noAccount": "Kein XMPP-Account vorhanden? Einen zu erstellen ist sehr einfach.",
