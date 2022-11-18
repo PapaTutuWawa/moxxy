@@ -16,6 +16,12 @@
 	    "error": "Error"
 	}
     },
+    "messages": {
+	"image": "Image",
+	"video": "Video",
+	"audio": "Audio",
+	"file": "File"
+    },
     "errors": {
 	"omemo": {
 	    "couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work."

@@ -16,6 +16,12 @@
 	    "error": "Fehler"
 	}
     },
+    "messages": {
+	"image": "Bild",
+	"video": "Video",
+	"audio": "Audio",
+	"file": "Datei"
+    },
     "errors": {
 	"omemo": {
 	    "couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht."
