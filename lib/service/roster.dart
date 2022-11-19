@@ -339,7 +339,7 @@ class RosterService {
 
   Future<void> requestRoster() async {
     final roster = GetIt.I.get<XmppConnection>().getManagerById<RosterManager>(rosterManager)!;
-    MayFail<RosterRequestResult?> result;
+    Result<RosterRequestResult?, RosterError> result;
     if (roster.rosterVersioningAvailable()) {
       _log.fine('Stream supports roster versioning');
       result = await roster.requestRosterPushes();
@@ -349,17 +349,18 @@ class RosterService {
       result = await roster.requestRoster();
     }
 
-    if (result.isError()) {
+    if (result.isType<RosterError>()) {
       _log.warning('Failed to request roster');
       return;
     }
 
-    if (result.getValue() != null) {
+    final value = result.get<RosterRequestResult?>();
+    if (value != null) {
       final currentRoster = await getRoster();
       sendEvent(
         await processRosterDiff(
           currentRoster,
-          result.getValue()!.items,
+          value.items,
           false,
           addRosterItemFromData,
           updateRosterItem,

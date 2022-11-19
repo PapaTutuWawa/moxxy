@@ -91,13 +91,13 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
       ),
       id:id,
     );
-
-    // TODO(Unknown): Send the data of the [PreStartDoneEvent]
   } else {
     GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
+
+    // TODO(PapaTutuWawa): Get a localized error here
     sendEvent(
       LoginFailureEvent(
-        reason: result.reason,
+        reason: '',
       ),
       id: id,
     );

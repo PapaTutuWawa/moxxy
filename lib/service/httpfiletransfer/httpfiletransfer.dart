@@ -196,12 +196,12 @@ class HttpFileTransferService {
       stat.size,
     );
 
-    if (slotResult.isError()) {
+    if (slotResult.isType<HttpFileUploadError>()) {
       _log.severe('Failed to request upload slot for ${job.path}!');
       await _fileUploadFailed(job, fileUploadFailedError);
       return;
     }
-    final slot = slotResult.getValue();
+    final slot = slotResult.get<HttpFileUploadSlot>();
     try {
       final response = await dio.Dio().putUri<dynamic>(
         Uri.parse(slot.putUrl),

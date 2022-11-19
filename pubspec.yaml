@@ -60,10 +60,10 @@ dependencies:
     version: 0.1.15
   moxxmpp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.2+3
+    version: 0.1.3
   moxxmpp_socket_tcp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.2+3
+    version: 0.1.2+4
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.0
