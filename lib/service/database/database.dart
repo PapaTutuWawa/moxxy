@@ -8,6 +8,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -54,13 +55,17 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 2,
+      version: 3,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           _log.finest('Running migration for database version 2');
           await upgradeFromV1ToV2(db);
+        }
+        if (oldVersion < 3) {
+          _log.finest('Running migration for database version 3');
+          await upgradeFromV2ToV3(db);
         }
       },
     );

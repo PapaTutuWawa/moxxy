@@ -70,6 +70,11 @@ class SettingsPage extends StatelessWidget {
             title: Text(t.pages.settings.settings.miscellaneousSection),
             tiles: [
               SettingsTile(
+                title: Text(t.pages.settings.appearance.title),
+                leading: const Icon(Icons.brush),
+                onPressed: (context) => Navigator.pushNamed(context, appearanceRoute),
+              ),
+              SettingsTile(
                 title: Text(t.pages.settings.about.title),
                 leading: const Icon(Icons.info),
                 onPressed: (context) => Navigator.pushNamed(context, aboutRoute),

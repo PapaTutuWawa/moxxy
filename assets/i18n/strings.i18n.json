@@ -140,6 +140,13 @@
 		"licensed": "Licensed under GPL3",
 		"viewSourceCode": "View source code"
 	    },
+	    "appearance": {
+		"title": "Appearance",
+		"languageSection": "Language",
+		"language": "App language",
+		"languageSubtext": "Currently selected: $selectedLanguage",
+		"systemLanguage": "Default language"
+	    },
 	    "licenses": {
 		"title": "Open-Source Licenses",
 		"licensedUnder": "Licensed under $license"

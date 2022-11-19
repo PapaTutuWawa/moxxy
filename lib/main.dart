@@ -46,6 +46,7 @@ import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/server_info.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
+import 'package:moxxyv2/ui/pages/settings/appearance/appearance.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
 import 'package:moxxyv2/ui/pages/settings/conversation.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
@@ -109,10 +110,7 @@ void main() async {
   setupBlocs(navKey);
 
   await initializeServiceIfNeeded();
-
-  WidgetsFlutterBinding.ensureInitialized();
-  LocaleSettings.useDeviceLocale();
-  
+ 
   runApp(
     MultiBlocProvider(
       providers: [
@@ -301,6 +299,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case conversationSettingsRoute: return ConversationSettingsPage.route;
           case devicesRoute: return DevicesPage.route;
           case ownDevicesRoute: return OwnDevicesPage.route;
+          case appearanceRoute: return AppearanceSettingsPage.route;
         }
 
         return null;

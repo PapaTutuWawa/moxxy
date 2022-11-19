@@ -166,3 +166,16 @@ Color getTileColor(BuildContext context) {
     case Brightness.dark: return tileColorDark;
   }
 }
+
+/// Return the corresponding language name (in its language) for the given
+/// language code [localeCode], e.g. "de", "en", ...
+String localeCodeToLanguageName(String localeCode) {
+  switch (localeCode) {
+    case 'de': return 'Deutsch';
+    case 'en': return 'English';
+    case 'default': return t.pages.settings.appearance.systemLanguage;
+  }
+
+  assert(false, 'Language code $localeCode has no name');
+  return '';
+}
