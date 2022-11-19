@@ -28,6 +28,12 @@
 	},
 	"connection": {
 	    "connectionTimeout": "Verbindung zum Server nicht möglich"
+	},
+	"login": {
+	    "saslFailed": "Ungültige Logindaten",
+	    "startTlsFailed": "Konnte keine sichere Verbindung zum Server aufbauen",
+	    "noConnection": "Konnte keine Verbindung zum Server aufbauen",
+	    "unspecified": "Unbestimmter Fehler"
 	}
     },
     "pages": {

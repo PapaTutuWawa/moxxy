@@ -28,6 +28,12 @@
 	},
 	"connection": {
 	    "connectionTimeout": "Could not connect to server"
+	},
+	"login": {
+	    "saslFailed": "Invalid login credentials",
+	    "startTlsFailed": "Failed to establish a secure connection",
+	    "noConnection": "Failed to establish a connection",
+	    "unspecified": "Unspecified error"
 	}
     },
     "pages": {

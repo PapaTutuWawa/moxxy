@@ -8,6 +8,7 @@ import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
@@ -93,11 +94,9 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
     );
   } else {
     GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
-
-    // TODO(PapaTutuWawa): Get a localized error here
     sendEvent(
       LoginFailureEvent(
-        reason: '',
+        reason: xmppErrorToTranslatableString(result.error!),
       ),
       id: id,
     );
