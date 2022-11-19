@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
@@ -135,7 +136,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
 
 Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) async {
   final id = extra as String;
-
+  
   // Prevent a race condition where the UI sends the prestart command before the service
   // has finished setting everything up
   GetIt.I.get<Logger>().finest('Waiting for preStart future to complete..');
@@ -143,6 +144,17 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
   GetIt.I.get<Logger>().finest('PreStart future done');
 
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+
+  // Set the locale very early
+  if (preferences.languageLocaleCode == 'default') {
+    LocaleSettings.setLocaleRaw(command.systemLocaleCode);
+  } else {
+    LocaleSettings.setLocaleRaw(preferences.languageLocaleCode);
+  }
+  GetIt.I.get<XmppService>().setNotificationText(
+    await GetIt.I.get<XmppConnection>().getConnectionState(),
+  );
+
   final settings = await GetIt.I.get<XmppService>().getConnectionSettings();
   if (settings != null) {
     sendEvent(

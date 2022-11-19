@@ -39,7 +39,6 @@ import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
 class XmppService {
-  
   XmppService() :
     _currentlyOpenedChatJid = '',
     _xmppConnectionSubscription = null,
@@ -504,8 +503,10 @@ class XmppService {
     }
   }
 
-  Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
-    switch (event.state) {
+  /// Sets the permanent notification's title to the corresponding one for the
+  /// XmppConnection's state [state].
+  void setNotificationText(XmppConnectionState state) {
+    switch (state) {
       case XmppConnectionState.connected:
         GetIt.I.get<BackgroundService>().setNotification(
           'Moxxy',
@@ -531,6 +532,10 @@ class XmppService {
         );
       break;
     }
+  }
+  
+  Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event, { dynamic extra }) async {
+    setNotificationText(event.state);
 
     await GetIt.I.get<ConnectivityWatcherService>().onConnectionStateChanged(
       event.before, event.state,

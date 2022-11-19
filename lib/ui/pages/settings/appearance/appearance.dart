@@ -87,7 +87,12 @@ class AppearanceSettingsPage extends StatelessWidget {
                         state.copyWith(languageLocaleCode: result),
                       ),
                     );
-                    LocaleSettings.setLocaleRaw(result);
+
+                    if (result == 'default') {
+                      LocaleSettings.useDeviceLocale();
+                    } else {
+                      LocaleSettings.setLocaleRaw(result);
+                    }
                   },
                 ),
               ],

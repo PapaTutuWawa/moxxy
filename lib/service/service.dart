@@ -52,7 +52,9 @@ Future<void> initializeServiceIfNeeded() async {
     // ignore: cascade_invocations
     logger.info('Service is running. Sending pre start command');
     await handler.getDataSender().sendData(
-      PerformPreStartCommand(),
+      PerformPreStartCommand(
+        systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+      ),
       awaitable: false,
     );
   } else {
