@@ -1,14 +1,36 @@
 // TODO(Unknown): The timestamp may be too light
 // TODO(Unknown): The timestamp is too small
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
+
+Widget _buildMessageOption(IconData icon, String text, void Function() callback) {
+  return InkResponse(
+    onTap: callback,
+    child: Row(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(
+            top: 8,
+            right: 8,
+            bottom: 8,
+          ),
+          child: Icon(icon),
+        ),
+        Text(text),
+      ],
+    ),
+  );
+}
 
 class ChatBubble extends StatefulWidget {
   const ChatBubble({
@@ -41,8 +63,22 @@ class ChatBubble extends StatefulWidget {
 }
 
 class ChatBubbleState extends State<ChatBubble>
-  with AutomaticKeepAliveClientMixin<ChatBubble> {
+  with AutomaticKeepAliveClientMixin<ChatBubble>, TickerProviderStateMixin {
 
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(milliseconds: 200),
+    vsync: this,
+  );
+
+  late Animation<double> _msgY;
+  //late Animation<double> _msgX;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+  
   @override
   bool get wantKeepAlive => true;
     
@@ -102,6 +138,20 @@ class ChatBubbleState extends State<ChatBubble>
     }
 
     return widget.sentBySelf ? SwipeDirection.endToStart : SwipeDirection.startToEnd;
+  }
+
+  /// Called when the user wants to retract the message
+  Future<void> _retractMessage(BuildContext context) async {
+    await showConfirmationDialog(
+      'Retract message',
+      'Are you sure you want to retract the message? Keep in mind that this is only a request that the client does not have to honour.',
+      context,
+      () {
+        context.read<ConversationBloc>().add(
+          MessageRetractedEvent(widget.message.originId!),
+        );
+      },
+    );
   }
   
   Widget _buildBubble(BuildContext context) {
@@ -171,20 +221,119 @@ class ChatBubbleState extends State<ChatBubble>
         child: Row(
           mainAxisAlignment: widget.sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
           children: [
-            Container(
-              constraints: BoxConstraints(
-                maxWidth: widget.maxWidth,
+            GestureDetector(
+              onLongPressStart: (event) async {
+                // TODO(PapaTutuWawa): Move this into the message model?
+                if (widget.message.isRetracted) {
+                  return;
+                }
+
+                Vibrate.feedback(FeedbackType.selection);
+
+                _msgY = Tween<double>(
+                  begin: event.globalPosition.dy - 20,
+                  end: 200,
+                ).animate(_controller);
+                // TODO(PapaTutuWawa): Animate the message to the center?
+                /*_msgX = Tween<double>(
+                  begin: 8,
+                  end: (MediaQuery.of(context).size.width - obj.paintBounds.width) / 2,
+                ).animate(_controller);*/
+
+                await _controller.forward();
+                await showDialog<void>(
+                  context: context,
+                  builder: (context) {
+                    return Stack(
+                      children: [
+                        AnimatedBuilder(
+                          animation: _msgY,
+                          builder: (context, child) {
+                            return Positioned(
+                              top: _msgY.value,
+                              // TODO(PapaTutuWawa): See above
+                              //right: widget.sentBySelf ? _msgX.value : null,
+                              //left: widget.sentBySelf ? null : _msgX.value,
+                              right: widget.sentBySelf ? 8 : null,
+                              left: widget.sentBySelf ? null : 8,
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: widget.maxWidth,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _getBubbleColor(context),
+                                  borderRadius: _getBorderRadius(),
+                                ),
+                                child: Padding(
+                                  // NOTE: Images don't work well with padding here
+                                  padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
+                                  child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius(), widget.sentBySelf),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        Positioned(
+                          bottom: 50,
+                          right: widget.sentBySelf ? 8 : null,
+                          left: widget.sentBySelf ? null : 8,
+                          child: Row(
+                            children: [
+                              Material(
+                                borderRadius: const BorderRadius.all(radiusLarge),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: IntrinsicHeight(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        ...widget.message.originId != null ? [
+                                          _buildMessageOption(
+                                            Icons.delete,
+                                            'Retract message',
+                                            () => _retractMessage(context),
+                                          ),
+                                        ] : [],
+                                        _buildMessageOption(
+                                          Icons.share,
+                                          'Share',
+                                          () {
+                                            showNotImplementedDialog(
+                                              'sharing',
+                                              context,
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+
+                await _controller.reverse();
+              },
+              child: Container(
+                constraints: BoxConstraints(
+                  maxWidth: widget.maxWidth,
+                ),
+                decoration: BoxDecoration(
+                  color: _getBubbleColor(context),
+                  borderRadius: _getBorderRadius(),
+                ),
+                child: Padding(
+                  // NOTE: Images don't work well with padding here
+                  padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
+                  child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius(), widget.sentBySelf),
+                ),
               ),
-              decoration: BoxDecoration(
-                color: _getBubbleColor(context),
-                borderRadius: _getBorderRadius(),
-              ),
-              child: Padding(
-                // NOTE: Images don't work well with padding here
-                padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
-                child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius(), widget.sentBySelf),
-              ),
-            )
+            ), 
           ],
         ),
       ),

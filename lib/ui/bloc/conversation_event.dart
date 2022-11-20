@@ -125,3 +125,9 @@ class OmemoSetEvent extends ConversationEvent {
   OmemoSetEvent(this.enabled);
   final bool enabled;
 }
+
+/// Triggered when a message should be retracted
+class MessageRetractedEvent extends ConversationEvent {
+  MessageRetractedEvent(this.id);
+  final String id;
+}

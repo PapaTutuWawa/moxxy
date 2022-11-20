@@ -46,6 +46,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
     on<OwnJidReceivedEvent>(_onOwnJidReceived);
     on<OmemoSetEvent>(_onOmemoSet);
+    on<MessageRetractedEvent>(_onMessageRetracted);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -341,5 +342,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       SetOmemoEnabledCommand(enabled: event.enabled, jid: state.conversation!.jid),
       awaitable: false,
     );
+  }
+
+  Future<void> _onMessageRetracted(MessageRetractedEvent event, Emitter<ConversationState> emit) async {
+    // TODO(PapaTutuWawa): TODO
   }
 }
