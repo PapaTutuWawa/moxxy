@@ -61,6 +61,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(performGetOwnOmemoFingerprints),
       EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
       EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
+      EventTypeMatcher<RetractMessageComment>(performMessageRetraction),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -571,4 +572,46 @@ Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dy
     RegenerateOwnDeviceResult(device: device),
     id: id,
   );
+}
+
+Future<void> performMessageRetraction(RetractMessageComment command, { dynamic extra }) async {
+  final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
+    command.originId,
+    command.conversationJid,
+  );
+
+  if (msg == null) {
+    // TODO(PapaTutuWawa): Log
+    return;
+  }
+
+  // Send the retraction
+  (GetIt.I.get<XmppConnection>().getManagerById(messageManager)! as MessageManager)
+    .sendMessage(
+      MessageDetails(
+        to: command.conversationJid,
+        messageRetraction: MessageRetractionData(
+          command.originId,
+          t.messages.retractedFallback,
+        ),
+      ),
+    );
+  
+  // Update the database
+  final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
+    msg.id,
+    mediaUrl: null,
+    mediaType: null,
+    warningType: null,
+    errorType: null,
+    srcUrl: null,
+    key: null,
+    iv: null,
+    encryptionScheme: null,
+    mediaWidth: null,
+    mediaHeight: null,
+    mediaSize: null,
+    isRetracted: true,
+  );
+  sendEvent(MessageUpdatedEvent(message: retractedMessage));
 }

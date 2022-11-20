@@ -387,6 +387,13 @@ files:
         implements:
           - JsonImplementation
         attributes:
+      - name: RetractMessageComment
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          originId: String
+          conversationJid: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

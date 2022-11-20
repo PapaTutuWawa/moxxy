@@ -22,7 +22,8 @@
 	"video": "Video",
 	"audio": "Audio",
 	"file": "Datei",
-	"retracted": "Die Nachricht wurde zurückgezogen"
+	"retracted": "Die Nachricht wurde zurückgezogen",
+	"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht"
     },
     "errors": {
 	"omemo": {
