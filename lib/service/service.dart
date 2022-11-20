@@ -18,6 +18,7 @@ import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
+import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/disco.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
@@ -135,6 +136,7 @@ Future<void> entrypoint() async {
   // Register singletons
   GetIt.I.registerSingleton<Logger>(Logger('MoxxyService'));
   GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
+  GetIt.I.registerSingleton<LanguageService>(LanguageService());
 
   setupLogging();
   setupBackgroundEventHandler();

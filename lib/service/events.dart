@@ -14,6 +14,7 @@ import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
+import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -146,6 +147,7 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
 
   // Set the locale very early
+  GetIt.I.get<LanguageService>().defaultLocale = command.systemLocaleCode;
   if (preferences.languageLocaleCode == 'default') {
     LocaleSettings.setLocaleRaw(command.systemLocaleCode);
   } else {
@@ -281,10 +283,20 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
 Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extra }) async {
   await GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
 
+  // Set the logging mode
   if (!kDebugMode) {
     final enableDebug = command.preferences.debugEnabled;
     Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
   }
+
+  // Set the locale
+  final locale = command.preferences.languageLocaleCode == 'default' ?
+    GetIt.I.get<LanguageService>().defaultLocale :
+    command.preferences.languageLocaleCode;
+  LocaleSettings.setLocaleRaw(locale);
+  GetIt.I.get<XmppService>().setNotificationText(
+    await GetIt.I.get<XmppConnection>().getConnectionState(),
+  );
 }
 
 Future<void> performAddContact(AddContactCommand command, { dynamic extra }) async {
