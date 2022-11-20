@@ -288,7 +288,7 @@ class ChatBubbleState extends State<ChatBubble>
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        ...widget.message.originId != null ? [
+                                        ...widget.message.originId != null && widget.sentBySelf ? [
                                           _buildMessageOption(
                                             Icons.delete,
                                             t.pages.conversation.retract,
