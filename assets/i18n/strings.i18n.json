@@ -21,7 +21,8 @@
 	"image": "Image",
 	"video": "Video",
 	"audio": "Audio",
-	"file": "File"
+	"file": "File",
+	"retracted": "The message has been retracted"
     },
     "errors": {
 	"omemo": {
