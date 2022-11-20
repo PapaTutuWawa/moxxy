@@ -13,4 +13,6 @@ analyzer:
     - "**/*.freezed.dart"
     - "**/*.moxxy.dart"
     - "test/"
+    - "integration_test/"
     - "lib/service/database/migrations/*.dart"
+    - "lib/i18n/*.dart"

@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -205,14 +206,14 @@ String? guessMimeTypeFromExtension(String ext) {
 String mimeTypeToEmoji(String? mime, {bool addTypeName = true}) {
   if (mime != null) {
     if (mime.startsWith('image')) {
-      return '🖼️${addTypeName ?  " Image" : ""}';
+      return '🖼️${addTypeName ?  " ${t.messages.image}" : ""}';
     } else if (mime.startsWith('audio')) {
-      return '🎙${addTypeName ?  " Audio" : ""}';
+      return '🎙${addTypeName ?  " ${t.messages.audio}" : ""}';
     } else if (mime.startsWith('video')) {
-      return '🎬${addTypeName ?  " Video" : ""}';
+      return '🎬${addTypeName ?  " ${t.messages.video}" : ""}';
     }
   }
-  return '📁${addTypeName ?  " File" : ""}';
+  return '📁${addTypeName ?  " ${t.messages.file}" : ""}';
 }
 
 /// Parse an Uri and return the "filename".

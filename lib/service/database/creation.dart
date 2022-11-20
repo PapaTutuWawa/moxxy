@@ -323,4 +323,12 @@ Future<void> createDatabase(Database db, int version) async {
       'false',
     ).toDatabaseJson(),
   );
+  await db.insert(
+    preferenceTable,
+    Preference(
+      'languageLocaleCode',
+      typeString,
+      'default',
+    ).toDatabaseJson(),
+  );
 }

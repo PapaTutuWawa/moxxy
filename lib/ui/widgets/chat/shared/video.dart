@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class SharedVideoWidget extends StatelessWidget {
-
-  const SharedVideoWidget(this.path, this.onTap, { this.borderColor, this.child, Key? key }) : super(key: key);
+  const SharedVideoWidget(this.path, this.onTap, { this.borderColor, this.child, super.key });
   final String path;
   final Color? borderColor;
   final void Function() onTap;

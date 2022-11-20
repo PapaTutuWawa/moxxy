@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:move_to_background/move_to_background.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as navigation;
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
@@ -11,7 +12,7 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class ShareSelectionPage extends StatelessWidget {
-  const ShareSelectionPage({ Key? key }) : super(key: key);
+  const ShareSelectionPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const ShareSelectionPage(),
@@ -53,7 +54,7 @@ class ShareSelectionPage extends StatelessWidget {
       child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
         buildWhen: _buildWhen, 
         builder: (context, state) => Scaffold(
-          appBar: BorderlessTopbar.simple('Share with...'),
+          appBar: BorderlessTopbar.simple(t.pages.shareselection.shareWith),
           body: ListView.builder(
             itemCount: state.items.length,
             itemBuilder: (context, index) {
@@ -101,8 +102,8 @@ class ShareSelectionPage extends StatelessWidget {
                 // Warn the user
                 if (hasUnencrypted && hasEncrypted) {
                   showConfirmationDialog(
-                    'Send file',
-                    'One or more chats are unencrypted. This means that the file will be leaked to the server. Do you still want to continue?',
+                    t.pages.shareselection.confirmTitle,
+                    t.pages.shareselection.confirmBody,
                     context,
                     () {
                       bloc.add(SubmittedEvent());

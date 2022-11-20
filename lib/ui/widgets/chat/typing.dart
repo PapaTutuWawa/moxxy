@@ -3,17 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 /// Based on https://docs.flutter.dev/cookbook/effects/typing-indicator
-
 class _FlashingCircle extends StatelessWidget {
-
   const _FlashingCircle(
     this.controller,
     this.animation,
     this.interval,
     this.colorLight,
     this.colorDark,
-    { Key? key, }
-  ) : super(key: key);
+  );
   final AnimationController controller;
   final Animation<double> animation;
   final Interval interval;
@@ -46,8 +43,7 @@ class _FlashingCircle extends StatelessWidget {
 }
 
 class TypingIndicatorWidget extends StatefulWidget {
-
-  const TypingIndicatorWidget(this.colorLight, this.colorDark, { Key? key }) : super(key: key);
+  const TypingIndicatorWidget(this.colorLight, this.colorDark, { super.key });
   final Color colorLight;
   final Color colorDark;
   

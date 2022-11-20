@@ -7,8 +7,7 @@ import 'package:moxxyv2/ui/constants.dart';
 const _bubbleBottomIconSize = fontsizeSubbody * 1.5;
 
 class MessageBubbleBottom extends StatefulWidget {
-
-  const MessageBubbleBottom(this.message, this.sent, { Key? key }): super(key: key);
+  const MessageBubbleBottom(this.message, this.sent, { super.key });
   final Message message;
   final bool sent;
 

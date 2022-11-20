@@ -1,0 +1,213 @@
+{
+    "@@name": "Deutsch",
+    "global": {
+	"title": "Moxxy",
+	"moxxySubtitle": "Ein Experiment im Entwickeln eines modernen, einfachen und schönen XMPP-Clients.",
+	"dialogAccept": "Okay",
+	"dialogCancel": "Abbrechen",
+	"yes": "Ja",
+	"no": "Nein"
+    },
+    "notifications": {
+	"permanent": {
+	    "idle": "Bereit",
+	    "ready": "Bereit zum Nachrichtenempfang",
+	    "connecting": "Verbinde...",
+	    "disconnect": "Keine Verbindung",
+	    "error": "Fehler"
+	}
+    },
+    "messages": {
+	"image": "Bild",
+	"video": "Video",
+	"audio": "Audio",
+	"file": "Datei"
+    },
+    "errors": {
+	"omemo": {
+	    "couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht."
+	},
+	"connection": {
+	    "connectionTimeout": "Verbindung zum Server nicht möglich"
+	},
+	"login": {
+	    "saslFailed": "Ungültige Logindaten",
+	    "startTlsFailed": "Konnte keine sichere Verbindung zum Server aufbauen",
+	    "noConnection": "Konnte keine Verbindung zum Server aufbauen",
+	    "unspecified": "Unbestimmter Fehler"
+	}
+    },
+    "pages": {
+	"intro": {
+	    "noAccount": "Kein XMPP-Account vorhanden? Einen zu erstellen ist sehr einfach.",
+	    "loginButton": "Einloggen",
+	    "registerButton": "Registrieren"
+	},
+	"login": {
+	    "title": "Login",
+	    "xmppAddress": "XMPP-Adresse",
+	    "password": "Passwort",
+	    "advancedOptions": "Fortgeschrittene Optionen",
+	    "createAccount": "Account auf dem Server erstellen"
+	},
+	"conversations": {
+	    "speeddialNewChat": "Neuer chat",
+	    "speeddialJoinGroupchat": "Gruppenchat beitreten",
+	    "overlaySettings": "Einstellungen",
+	    "noOpenChats": "Du hast keine offenen chats",
+	    "startChat": "Einen chat anfangen"
+	},
+	"conversation": {
+	    "unencrypted": "Unverschlüsselt",
+	    "encrypted": "Verschlüsselt",
+	    "closeChat": "Chat schließen",
+	    "closeChatConfirmTitle": "Chat schließen",
+	    "closeChatConfirmSubtext": "Bist Du dir sicher, dass du den Chat schließen möchtest?",
+	    "blockUser": "Nutzer blockieren",
+	    "online": "Online"
+	},
+	"addcontact": {
+	    "title": "Neuen Kontakt hinzufügen",
+	    "xmppAddress": "XMPP-Adresse",
+	    "subtitle": "Du kannst einen Kontakt hinzufügen, indem Du entweder die XMPP-Adresse eingibst oder den QR-Code deines Kontaktes scannst",
+	    "buttonAddToContact": "Kontakt hinzufügen"
+	},
+	"newconversation": {
+	    "title": "Neuer chat",
+	    "addContact": "Kontakt hinzufügen",
+	    "createGroupchat": "Gruppenchat erstellen"
+	},
+	"crop": {
+	    "setProfilePicture": "Als Profilbild festlegen"
+	},
+	"shareselection": {
+	    "shareWith": "Teilen mit...",
+	    "confirmTitle": "Dateien senden?",
+	    "confirmBody": "Einer oder mehr Chats sind unverschlüsselt. Das bedeutet, dass die Dateien dem Server unverschlüsselt vorliegen. Dateien trotzdem senden?"
+	},
+	"profile": {
+	    "self": {
+		"devices": "Geräte"
+	    },
+	    "conversation": {
+		"muteChatTooltip": "Chat stummschalten",
+		"unmuteChatTooltip": "Chat lautstellen",
+		"muteChat": "Stummschalten",
+		"unmuteChat": "Lautstellen",
+		"devices": "Geräte"
+	    },
+	    "owndevices": {
+		"title": "Eigene Geräte",
+		"thisDevice": "Dieses Gerät",
+		"otherDevices": "Andere Geräte",
+		"deleteDeviceConfirmTitle": "Gerät löschen",
+		"deleteDeviceConfirmBody": "Das bedeutet, dass Kontakte für dieses Gerät nichtmehr verschlüsseln können. Fortfahren?",
+		"recreateOwnSessions": "Sessions neuerstellen",
+		"recreateOwnSessionsConfirmTitle": "Eigene Sessions neuerstellen?",
+		"recreateOwnSessionsConfirmBody": "Das wird alle kryptographischen Sessions mit den eigenen Geräten neuerstellen. Verwende dies nur, wenn deine eigenen Geräte Entschlüsselungsfehler erzeugen.",
+		"recreateOwnDevice": "Gerät neuerstellen",
+		"recreateOwnDeviceConfirmTitle": "Gerät neuerstellen?",
+		"recreateOwnDeviceConfirmBody": "Das wird die kryptographische Identität dieses Geräts neu erstellen. Wenn Kontakte die kryptographische Indentität verifiziert haben, dann müssen diese es erneut tun. Fortfahren?"
+	    },
+	    "devices": {
+		"title": "Devices",
+		"recreateSessions": "Rebuild sessions",
+		"recreateSessionsConfirmTitle": "Rebuild sessions?",
+		"recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors."
+	    }
+	},
+	"blocklist": {
+	    "title": "Blockliste",
+	    "noUsersBlocked": "Du hast niemanden blockiert",
+	    "unblockAll": "Alle entblocken",
+	    "unblockAllConfirmTitle": "Alle entblocken",
+	    "unblockAllConfirmBody": "Bist Du dir sicher, dass du alle geblockten Personen entblocken möchtest?",
+	    "unblockJidConfirmTitle": "${jid} entblocken?",
+	    "unblockJidConfirmBody": "Bist du dir sicher, dass du ${jid} entblocken möchtest? Du wirst wieder Nachrichten von dieser Person erhalten können."
+	},
+	"settings": {
+	    "settings": {
+		"title": "Einstellungen",
+		"conversationsSection": "Unterhaltungen",
+		"accountSection": "Account",
+		"signOut": "Abmelden",
+		"signOutConfirmTitle": "Abmelden",
+		"signOutConfirmBody": "Du bist dabei dich abzumelden. Fortfahren?",
+		"miscellaneousSection": "Unterschiedlich",
+		"debuggingSection": "Debugging"
+	    },
+	    "about": {
+		"title": "Über",
+		"licensed": "Lizensiert unter GPL3",
+		"viewSourceCode": "Quellcode anschauen"
+	    },
+	    "appearance": {
+		"title": "Aussehen",
+		"languageSection": "Sprache",
+		"language": "Appsprache",
+		"languageSubtext": "Aktuell ausgewählt: $selectedLanguage",
+		"systemLanguage": "Systemsprache"
+	    },
+	    "licenses": {
+		"title": "Open-Source Lizenzen",
+		"licensedUnder": "Lizensiert unter $license"
+	    },
+	    "conversation": {
+		"title": "Chat",
+		"appearance": "Aussehen",
+		"selectBackgroundImage": "Hintergrundbild auswählen",
+		"selectBackgroundImageDescription": "Dieses Bild wird als Hintergrundbild in allen Chats verwendet",
+		"removeBackgroundImage": "Hintergrundbild entfernen",
+		"removeBackgroundImageConfirmTitle": "Hintergrundbild entfernen",
+		"removeBackgroundImageConfirmBody": "Bist Du dir sicher, dass Du das Hintergrundbild entfernen möchtest?",
+		"newChatsSection": "Neue Chats",
+		"newChatsMuteByDefault": "Neue Chats standardmäßig stummschalten",
+		"newChatsE2EE": "Ende-zu-Ende-Verschlüsselung standardmäßig aktivieren. WARNUNG: Experimentell"
+	    },
+	    "debugging": {
+		"title": "Debuggingoptionen",
+		"generalSection": "Generell",
+		"generalEnableDebugging": "Debugging einschalten",
+		"generalEncryptionPassword": "Verschlüsselungspasswort",
+		"generalEncryptionPasswordSubtext": "Die Logs enthalten eventuell sensible Daten. Wähle also daher eine starke Passphrase",
+		"generalLoggingIp": "Logging-IP",
+		"generalLoggingIpSubtext": "Die IP-Adresse an die die Logs gesendet werden",
+		"generalLoggingPort": "Logging-Port",
+		"generalLoggingPortSubtext": "Der Port an den die Logs gesendet werden"
+	    },
+	    "network": {
+		"title": "Netzwerk",
+		"automaticDownloadsSection": "Automatische Downloads",
+		"automaticDownloadsText": "Moxxy läd Dateien automatisch herunter, wenn verbunden mit...",
+		"automaticDownloadsMaximumSize": "Maximale Downloadgröße",
+		"automaticDownloadsMaximumSizeSubtext": "Die maximale Dateigröße, die automatisch heruntergeladen werden soll",
+		"wifi": "Wifi",
+		"mobileData": "Mobile Daten"
+	    },
+	    "privacy": {
+		"title": "Privatsphäre",
+		"generalSection": "Generell",
+		"showContactRequests": "Kontaktanfragen zeigen",
+		"showContactRequestsSubtext": "Dies zeigt Personen in der Chatübersicht an, die Dich zu ihrer Kontaktliste hinzugefügt haben, aber noch keine Nachricht gesendet haben",
+		"profilePictureVisibility": "Öffentliches Profilbild",
+		"profilePictureVisibilitSubtext": "Wenn aktiviert, dann kann jeder Dein Profilbild sehen. Wenn deaktiviert, dann können nur Personen aus deiner Kontaktliste kein Profilbild sehen",
+		"autoAcceptSubscriptionRequests": "Subscriptionanfragen automatisch annehmen",
+		"autoAcceptSubscriptionRequestsSubtext": "Wenn aktiviert, dann werden Subscriptionanfragen automatisch angenommen, wenn die Person in deiner Kontaktliste ist",
+		"conversationsSection": "Unterhaltungen",
+		"sendChatMarkers": "Chatmarker senden",
+		"sendChatMarkersSubtext": "Dies teilt Deinem Gesprächspartner mit, ob du Nachrichten empfangen oder gelesen hast",
+		"sendChatStates": "Chatstates senden",
+		"sendChatStatesSubtext": "Dies teilt Deinem Gesprächspartner mit, ob du gerade im Chat aktiv bist oder schreibst",
+		"redirectsSection": "Weiterleitungen",
+		"redirectText": "Dies leitet Links von $serviceName, die du öffnest, an einen Proxydienst weiter, wie zum Beispiel $exampleProxy",
+		"currentlySelected": "Aktuell ausgewählt: $proxy",
+		"redirectsTitle": "${serviceName}weiterleitung",
+		"cannotEnableRedirect": "Kann ${serviceName}weiterleitung nicht aktivieren",
+		"cannotEnableRedirectSubtext": "Du must zuerst einen Proxydienst auswählen. Dazu berühre das Feld neben dem Schalter.",
+		"urlEmpty": "URL kann nicht leer sein",
+		"urlInvalid": "Ungültige URL",
+		"redirectDialogTitle": "${serviceName}weiterleitung"
+	    }
+	}
+    }
+}

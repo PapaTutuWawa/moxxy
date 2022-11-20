@@ -4,8 +4,7 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/summary.dart';
 
 class SharedMediaDisplay extends StatelessWidget {
-
-  const SharedMediaDisplay(this.sharedMedia, this.jid, { Key? key }) : super(key: key);
+  const SharedMediaDisplay(this.sharedMedia, this.jid, { super.key });
   final List<SharedMedium> sharedMedia;
   final String jid;
 

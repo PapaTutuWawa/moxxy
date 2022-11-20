@@ -12,8 +12,7 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationBottomRow extends StatelessWidget {
-
-  const ConversationBottomRow(this.controller, this.isSpeedDialOpen, {Key? key}) : super(key: key);
+  const ConversationBottomRow(this.controller, this.isSpeedDialOpen, { super.key });
   final TextEditingController controller;
   final ValueNotifier<bool> isSpeedDialOpen;
 

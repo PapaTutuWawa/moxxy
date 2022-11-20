@@ -1,7 +1,8 @@
 import 'dart:async';
-
+import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
@@ -22,6 +23,13 @@ Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
     PreferencesChangedEvent(result.preferences),
   );
 
+  WidgetsFlutterBinding.ensureInitialized();
+  if (result.preferences.languageLocaleCode == 'default') {
+    LocaleSettings.useDeviceLocale();
+  } else {
+    LocaleSettings.setLocaleRaw(result.preferences.languageLocaleCode);
+  }
+  
   if (result.state == preStartLoggedInState) {
     // Set up the data service
     GetIt.I.get<UIDataService>().processPreStartDoneEvent(result);

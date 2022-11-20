@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
@@ -16,6 +18,7 @@ import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
+import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/disco.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
@@ -50,7 +53,9 @@ Future<void> initializeServiceIfNeeded() async {
     // ignore: cascade_invocations
     logger.info('Service is running. Sending pre start command');
     await handler.getDataSender().sendData(
-      PerformPreStartCommand(),
+      PerformPreStartCommand(
+        systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+      ),
       awaitable: false,
     );
   } else {
@@ -131,6 +136,7 @@ Future<void> entrypoint() async {
   // Register singletons
   GetIt.I.registerSingleton<Logger>(Logger('MoxxyService'));
   GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
+  GetIt.I.registerSingleton<LanguageService>(LanguageService());
 
   setupLogging();
   setupBackgroundEventHandler();
@@ -214,6 +220,12 @@ Future<void> entrypoint() async {
   
   final settings = await xmpp.getConnectionSettings();
 
+  // Ensure we can access translations here
+  // TODO(Unknown): This does *NOT* allow us to get the system's locale as we have no
+  //                window here.
+  WidgetsFlutterBinding.ensureInitialized();
+  LocaleSettings.useDeviceLocale();
+  
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
     unawaited(GetIt.I.get<OmemoService>().initializeIfNeeded(settings.jid.toBare().toString()));
@@ -225,7 +237,7 @@ Future<void> entrypoint() async {
   } else {
     GetIt.I.get<BackgroundService>().setNotification(
       'Moxxy',
-      'Idle',
+      t.notifications.permanent.idle,
     );
   }
 

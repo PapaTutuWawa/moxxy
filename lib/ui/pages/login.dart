@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
@@ -7,7 +8,7 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class Login extends StatelessWidget {
-  const Login({ Key? key }) : super(key: key);
+  const Login({ super.key });
  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const Login(),
@@ -21,7 +22,7 @@ class Login extends StatelessWidget {
       builder: (BuildContext context, LoginState state) => WillPopScope(
         onWillPop: () async => !state.working,
         child: Scaffold(
-          appBar: BorderlessTopbar.simple('Login'),
+          appBar: BorderlessTopbar.simple(t.pages.login.title),
           body: Column(
             children: [
               Visibility(
@@ -35,7 +36,7 @@ class Login extends StatelessWidget {
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
                   errorText: state.jidState.error,
-                  labelText: 'XMPP-Address',
+                  labelText: t.pages.login.xmppAddress,
                   enabled: !state.working,
                   cornerRadius: textfieldRadiusRegular,
                   borderColor: primaryColor,
@@ -49,7 +50,7 @@ class Login extends StatelessWidget {
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
                   errorText: state.passwordState.error,
-                  labelText: 'Password',
+                  labelText: t.pages.login.password,
                   suffixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(end: 8),
                     child: InkWell(
@@ -71,12 +72,12 @@ class Login extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
                 child: ExpansionTile(
-                  title: const Text('Advanced options'),
+                  title: Text(t.pages.login.advancedOptions),
                   children: [
                     Column(
                       children: [
                         SwitchListTile(
-                          title: const Text('Create account on server'),
+                          title: Text(t.pages.login.createAccount),
                           value: false,
                           // TODO(Unknown): Implement
                           onChanged: state.working ? null : (value) {},

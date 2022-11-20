@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/notifications.dart';
 
@@ -17,7 +18,7 @@ class ConnectivityWatcherService {
   Future<void> _onTimerElapsed() async {
     await GetIt.I.get<NotificationsService>().showWarningNotification(
       'Moxxy',
-      'Could not connect to server',
+      t.errors.connection.connectionTimeout,
     );
     _stopTimer();
   }

@@ -9,7 +9,6 @@ const maxNotificationId = 2147483647;
 
 // TODO(Unknown): Add resolution dependent drawables for the notification icon
 class NotificationsService {
-
   NotificationsService() : _log = Logger('NotificationsService');
   // ignore: unused_field
   final Logger _log;

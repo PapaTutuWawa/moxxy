@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -11,7 +12,7 @@ enum DevicesOptions {
 }
 
 class DevicesPage extends StatelessWidget {
-  const DevicesPage({ Key? key }) : super(key: key);
+  const DevicesPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (context) => const DevicesPage(),
@@ -60,8 +61,8 @@ class DevicesPage extends StatelessWidget {
 
   void _recreateSessions(BuildContext context) {
     showConfirmationDialog(
-      'Recreate sessions?',
-      "This will recreate the cryptographic sessions with the contact. Use only if this device throws decryption errors or your contact's devices throw decryption errors.",
+      t.pages.profile.devices.recreateSessionsConfirmTitle,
+      t.pages.profile.devices.recreateSessionsConfirmBody,
       context,
       () {
         context.read<DevicesBloc>().add(SessionsRecreatedEvent());
@@ -74,7 +75,7 @@ class DevicesPage extends StatelessWidget {
     return BlocBuilder<DevicesBloc, DevicesState>(
       builder: (context, state) => Scaffold(
         appBar: BorderlessTopbar.simple(
-          'Devices',
+          t.pages.profile.devices.title,
           extra: [
             const Spacer(),
             PopupMenuButton(
@@ -88,7 +89,7 @@ class DevicesPage extends StatelessWidget {
                 PopupMenuItem(
                   value: DevicesOptions.recreateSessions,
                   enabled: state.devices.isNotEmpty,
-                  child: const Text('Rebuild sessions'),
+                  child: Text(t.pages.profile.devices.recreateSessions),
                 )
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 // TODO(PapaTutuWawa): Include license text
 // TODO(Unknown): Maybe include the version number
 class SettingsAboutPage extends StatelessWidget {
-  const SettingsAboutPage({ Key? key }) : super(key: key);
+  const SettingsAboutPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const SettingsAboutPage(),
@@ -24,7 +25,7 @@ class SettingsAboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple('About'),
+      appBar: BorderlessTopbar.simple(t.pages.settings.about.title),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(
@@ -33,26 +34,26 @@ class SettingsAboutPage extends StatelessWidget {
               'assets/images/logo.png',
               width: 200, height: 200,
             ),
-            const Text(
-              'moxxy',
-              style: TextStyle(
+            Text(
+              t.global.title,
+              style: const TextStyle(
                 fontSize: 40,
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'An experimental XMPP client that is beautiful, modern and easy to use',
-                style: TextStyle(
+                t.global.moxxySubtitle,
+                style: const TextStyle(
                   fontSize: 15,
                 ),
               ),
             ),
-            const Text('Licensed under GPL3'),
+            Text(t.pages.settings.about.licensed),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: ElevatedButton(
-                child: const Text('View source code'),
+                child: Text(t.pages.settings.about.viewSourceCode),
                 onPressed: () => _openUrl('https://github.com/PapaTutuWawa/moxxyv2'),
               ),
             ) 

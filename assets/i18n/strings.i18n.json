@@ -1,0 +1,213 @@
+{
+    "@@name": "English",
+    "global": {
+	"title": "Moxxy",
+	"moxxySubtitle": "An experiment into building a modern, easy and beautiful XMPP client.",
+	"dialogAccept": "Okay",
+	"dialogCancel": "Cancel",
+	"yes": "Yes",
+	"no": "No"
+    },
+    "notifications": {
+	"permanent": {
+	    "idle": "Idle",
+	    "ready": "Ready to receive messages",
+	    "connecting": "Connecting...",
+	    "disconnect": "Disconnected",
+	    "error": "Error"
+	}
+    },
+    "messages": {
+	"image": "Image",
+	"video": "Video",
+	"audio": "Audio",
+	"file": "File"
+    },
+    "errors": {
+	"omemo": {
+	    "couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work."
+	},
+	"connection": {
+	    "connectionTimeout": "Could not connect to server"
+	},
+	"login": {
+	    "saslFailed": "Invalid login credentials",
+	    "startTlsFailed": "Failed to establish a secure connection",
+	    "noConnection": "Failed to establish a connection",
+	    "unspecified": "Unspecified error"
+	}
+    },
+    "pages": {
+	"intro": {
+	    "noAccount": "Have no XMPP account? No worries, creating one is really easy.",
+	    "loginButton": "Login",
+	    "registerButton": "Register"
+	},
+	"login": {
+	    "title": "Login",
+	    "xmppAddress": "XMPP-Address",
+	    "password": "Password",
+	    "advancedOptions": "Advanced options",
+	    "createAccount": "Create account on server"
+	},
+	"conversations": {
+	    "speeddialNewChat": "New chat",
+	    "speeddialJoinGroupchat": "Join groupchat",
+	    "overlaySettings": "Settings",
+	    "noOpenChats": "You have no open chats",
+	    "startChat": "Start a chat"
+	},
+	"conversation": {
+	    "unencrypted": "Unencrypted",
+	    "encrypted": "Encrypted",
+	    "closeChat": "Close chat",
+	    "closeChatConfirmTitle": "Close chat",
+	    "closeChatConfirmSubtext": "Are you sure you want to close this chat?",
+	    "blockUser": "Block user",
+	    "online": "Online"
+	},
+	"addcontact": {
+	    "title": "Add new contact",
+	    "xmppAddress": "XMPP-Address",
+	    "subtitle": "You can add a contact either by typing in their XMPP address or by scanning their QR code",
+	    "buttonAddToContact": "Add to contacts"
+	},
+	"newconversation": {
+	    "title": "Start new chat",
+	    "addContact": "Add contact",
+	    "createGroupchat": "Create groupchat"
+	},
+	"crop": {
+	    "setProfilePicture": "Set as profile picture"
+	},
+	"shareselection": {
+	    "shareWith": "Share with...",
+	    "confirmTitle": "Send file",
+	    "confirmBody": "One or more chats are unencrypted. This means that the file will be leaked to the server. Do you still want to continue?"
+	},
+	"profile": {
+	    "self": {
+		"devices": "Devices"
+	    },
+	    "conversation": {
+		"muteChatTooltip": "Mute chat",
+		"unmuteChatTooltip": "Unmute chat",
+		"muteChat": "Mute",
+		"unmuteChat": "Unmute",
+		"devices": "Devices"
+	    },
+	    "owndevices": {
+		"title": "Own Devices",
+		"thisDevice": "This device",
+		"otherDevices": "Other devices",
+		"deleteDeviceConfirmTitle": "Delete device",
+		"deleteDeviceConfirmBody": "This means that contacts will not be able to encrypt for that device. Continue?",
+		"recreateOwnSessions": "Rebuild sessions",
+		"recreateOwnSessionsConfirmTitle": "Recreate own sessions?",
+		"recreateOwnSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",
+		"recreateOwnDevice": "Recreate device",
+		"recreateOwnDeviceConfirmTitle": "Recreate own device?",
+		"recreateOwnDeviceConfirmBody": "This will recreate this device's cryptographic identity. It will take some time. If contacts verified your device, they will have to do it again. Continue?"
+	    },
+	    "devices": {
+		"title": "Devices",
+		"recreateSessions": "Rebuild sessions",
+		"recreateSessionsConfirmTitle": "Rebuild sessions?",
+		"recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors."
+	    }
+	},
+	"blocklist": {
+	    "title": "Blocklist",
+	    "noUsersBlocked": "You have no users blocked",
+	    "unblockAll": "Unblock all",
+	    "unblockAllConfirmTitle": "Are you sure?",
+	    "unblockAllConfirmBody": "Are you sure you want to unblock all users?",
+	    "unblockJidConfirmTitle": "Unblock ${jid}?",
+	    "unblockJidConfirmBody": "Are you sure you want to unblock ${jid}? You will receive messages from this user again."
+	},
+	"settings": {
+	    "settings": {
+		"title": "Settings",
+		"conversationsSection": "Conversations",
+		"accountSection": "Account",
+		"signOut": "Sign out",
+		"signOutConfirmTitle": "Sign Out",
+		"signOutConfirmBody": "You are about to sign out. Proceed?",
+		"miscellaneousSection": "Miscellaneous",
+		"debuggingSection": "Debugging"
+	    },
+	    "about": {
+		"title": "About",
+		"licensed": "Licensed under GPL3",
+		"viewSourceCode": "View source code"
+	    },
+	    "appearance": {
+		"title": "Appearance",
+		"languageSection": "Language",
+		"language": "App language",
+		"languageSubtext": "Currently selected: $selectedLanguage",
+		"systemLanguage": "Default language"
+	    },
+	    "licenses": {
+		"title": "Open-Source Licenses",
+		"licensedUnder": "Licensed under $license"
+	    },
+	    "conversation": {
+		"title": "Chat",
+		"appearance": "Appearance",
+		"selectBackgroundImage": "Select background image",
+		"selectBackgroundImageDescription": "This image will be the background of all your chats",
+		"removeBackgroundImage": "Remove background image",
+		"removeBackgroundImageConfirmTitle": "Remove background image",
+		"removeBackgroundImageConfirmBody": "Are you sure you want to remove your conversation background image?",
+		"newChatsSection": "New Conversations",
+		"newChatsMuteByDefault": "Mute new chats by default",
+		"newChatsE2EE": "Enable end-to-end encryption by default. WARNING: Experimental"
+	    },
+	    "debugging": {
+		"title": "Debugging options",
+		"generalSection": "General",
+		"generalEnableDebugging": "Enable debugging",
+		"generalEncryptionPassword": "Encryption password",
+		"generalEncryptionPasswordSubtext": "The logs may contain sensitive information so pick a strong passphrase",
+		"generalLoggingIp": "Logging IP",
+		"generalLoggingIpSubtext": "The IP the logs should be sent to",
+		"generalLoggingPort": "Logging Port",
+		"generalLoggingPortSubtext": "The IP the logs should be sent to"
+	    },
+	    "network": {
+		"title": "Network",
+		"automaticDownloadsSection": "Automatic Downloads",
+		"automaticDownloadsText": "Moxxy will automatically download files on...",
+		"automaticDownloadsMaximumSize": "Maximum Download Size",
+		"automaticDownloadsMaximumSizeSubtext": "The maximum file size for a file to be automatically downloaded",
+		"wifi": "Wifi",
+		"mobileData": "Mobile data"
+	    },
+	    "privacy": {
+		"title": "Pricacy",
+		"generalSection": "General",
+		"showContactRequests": "Show contact requests",
+		"showContactRequestsSubtext": "This will show people who added you to their contact list but sent no message yet",
+		"profilePictureVisibility": "Make profile picture public",
+		"profilePictureVisibilitSubtext": "If enabled, everyone can see your profile picture. If disabled, only users on your contact list can see your profile picture.",
+		"autoAcceptSubscriptionRequests": "Auto-accept subscription requests",
+		"autoAcceptSubscriptionRequestsSubtext": "If enabled, subscription requests will be automatically accepted if the user is in the contact list.",
+		"conversationsSection": "Conversation",
+		"sendChatMarkers": "Send chat markers",
+		"sendChatMarkersSubtext": "This will tell your conversation partner if you received or read a message",
+		"sendChatStates": "Send chat states",
+		"sendChatStatesSubtext": "This will show your conversation partner if you are typing or looking at the chat",
+		"redirectsSection": "Redirects",
+		"redirectText": "This will redirect $serviceName links that you tap to a proxy service, e.g. $exampleProxy",
+		"currentlySelected": "Currently selected: $proxy",
+		"redirectsTitle": "$serviceName Redirect",
+		"cannotEnableRedirect": "Cannot enable $serviceName redirects",
+		"cannotEnableRedirectSubtext": "You must first set a proxy service to redirect to. To do so, tap the field next to the switch.",
+		"urlEmpty": "URL cannot be empty",
+		"urlInvalid": "Invalid URL",
+		"redirectDialogTitle": "$serviceName Redirect"
+	    }
+	}
+    }
+}

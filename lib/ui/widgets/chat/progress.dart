@@ -7,10 +7,8 @@ import 'package:moxxyv2/ui/service/progress.dart';
 //       we would have to redraw the entire widget everytime the progress updates. If
 //       we, for example, use blurhash, then we compute the image from the blurhash on every
 //       update.
-
 class ProgressWidget extends StatefulWidget {
-
-  const ProgressWidget({ required this.id, Key? key }) : super(key: key);
+  const ProgressWidget({ required this.id, super.key });
   final int id;
 
   @override
@@ -19,7 +17,6 @@ class ProgressWidget extends StatefulWidget {
 }
 
 class ProgressWidgetState extends State<ProgressWidget> {
-
   ProgressWidgetState({ required this.id });
   final int id;
 

@@ -11,7 +11,6 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
 class ChatBubble extends StatefulWidget {
-
   const ChatBubble({
     required this.message,
     required this.sentBySelf,
@@ -22,8 +21,8 @@ class ChatBubble extends StatefulWidget {
     required this.maxWidth,
     required this.lastMessageTimestamp,
     required this.onSwipedCallback,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   final Message message;
   final bool sentBySelf;
   final bool chatEncrypted;

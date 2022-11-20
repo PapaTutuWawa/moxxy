@@ -6,7 +6,6 @@ import 'package:moxxyv2/ui/widgets/chat/gradient.dart';
 /// set, then it will be called as soon as the bubble is tapped. If extra is set, then
 /// it will be put on top of the bubble in the center.
 class MediaBaseChatWidget extends StatelessWidget {
-
   const MediaBaseChatWidget(
     this.background,
     this.bottom,
@@ -15,9 +14,9 @@ class MediaBaseChatWidget extends StatelessWidget {
       this.onTap,
       this.extra,
       this.gradient = true,
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final Widget background;
   final Widget? extra;
   final MessageBubbleBottom bottom;

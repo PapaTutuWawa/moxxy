@@ -9,7 +9,7 @@ import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/media.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({ Key? key }) : super(key: key);
+  const ProfilePage({ super.key });
  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const ProfilePage(),

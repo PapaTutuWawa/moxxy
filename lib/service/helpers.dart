@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
+import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:native_imaging/native_imaging.dart' as native;
 
 Future<String?> _generateBlurhashThumbnailImpl(String path) async {
@@ -58,4 +60,17 @@ Future<String?> _generateBlurhashThumbnailImpl(String path) async {
 /// Generate a blurhash thumbnail using native_imaging.
 Future<String?> generateBlurhashThumbnail(String path) async {
   return compute(_generateBlurhashThumbnailImpl, path);
+}
+
+/// Turn a XmppError into its corresponding translated string.
+String xmppErrorToTranslatableString(XmppError error) {
+  if (error is StartTLSFailedError) {
+    return t.errors.login.startTlsFailed;
+  } else if (error is SaslFailedError) {
+    return t.errors.login.saslFailed;
+  } else if (error is NoConnectionError) {
+    return t.errors.login.noConnection;
+  }
+  
+  return t.errors.login.unspecified;
 }

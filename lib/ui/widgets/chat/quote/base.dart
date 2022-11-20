@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-
 /// This Widget is used to show that a message has been quoted.
 class QuoteBaseWidget extends StatelessWidget {
-
   /// [message]: The message used to quote
   /// [resetQuotedMessage]: Function to reset the quoted message
   const QuoteBaseWidget(
@@ -14,9 +12,9 @@ class QuoteBaseWidget extends StatelessWidget {
     this.sent,
     {
       this.resetQuotedMessage,
-      Key? key,
+      super.key,
     }
-  ) : super(key: key);
+  );
   final Message message;
   final Widget child;
   final bool sent;

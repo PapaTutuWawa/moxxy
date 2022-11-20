@@ -9,8 +9,7 @@ import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropBackgroundPage extends StatefulWidget {
-
-  const CropBackgroundPage({ Key? key }) : super(key: key);
+  const CropBackgroundPage({ super.key });
   
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (context) => const CropBackgroundPage(),

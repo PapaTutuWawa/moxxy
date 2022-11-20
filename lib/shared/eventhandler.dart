@@ -20,7 +20,7 @@ abstract class EventMatcher<E> {
 
 /// Matches an event according to if the event "is T".
 class EventTypeMatcher<T> extends EventMatcher<T> {
-  EventTypeMatcher(EventCallbackType<T> callback) : super(callback);
+  EventTypeMatcher(super.callback);
 
   @override
   bool matches(dynamic event) => event is T;
@@ -34,7 +34,6 @@ class EventTypeMatcher<T> extends EventMatcher<T> {
 /// A simple system for registering event handlers. Those handlers are checked whenever
 /// [run] is called.
 class EventHandler {
-
   EventHandler() : _matchers = List.empty(growable: true);
   final List<EventMatcher<dynamic>> _matchers;
 

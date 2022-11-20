@@ -12,7 +12,7 @@ import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 
 class ConversationPage extends StatefulWidget {
-  const ConversationPage({ Key? key }) : super(key: key);
+  const ConversationPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (context) => const ConversationPage(),
@@ -26,7 +26,6 @@ class ConversationPage extends StatefulWidget {
 }
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
-
   ConversationPageState() :
     _isSpeedDialOpen = ValueNotifier(false),
     _controller = TextEditingController(),

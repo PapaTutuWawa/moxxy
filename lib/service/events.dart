@@ -4,14 +4,17 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
+import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -91,13 +94,11 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
       ),
       id:id,
     );
-
-    // TODO(Unknown): Send the data of the [PreStartDoneEvent]
   } else {
     GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
     sendEvent(
       LoginFailureEvent(
-        reason: result.reason,
+        reason: xmppErrorToTranslatableString(result.error!),
       ),
       id: id,
     );
@@ -136,7 +137,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
 
 Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) async {
   final id = extra as String;
-
+  
   // Prevent a race condition where the UI sends the prestart command before the service
   // has finished setting everything up
   GetIt.I.get<Logger>().finest('Waiting for preStart future to complete..');
@@ -144,6 +145,18 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
   GetIt.I.get<Logger>().finest('PreStart future done');
 
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+
+  // Set the locale very early
+  GetIt.I.get<LanguageService>().defaultLocale = command.systemLocaleCode;
+  if (preferences.languageLocaleCode == 'default') {
+    LocaleSettings.setLocaleRaw(command.systemLocaleCode);
+  } else {
+    LocaleSettings.setLocaleRaw(preferences.languageLocaleCode);
+  }
+  GetIt.I.get<XmppService>().setNotificationText(
+    await GetIt.I.get<XmppConnection>().getConnectionState(),
+  );
+
   final settings = await GetIt.I.get<XmppService>().getConnectionSettings();
   if (settings != null) {
     sendEvent(
@@ -270,10 +283,20 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
 Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extra }) async {
   await GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
 
+  // Set the logging mode
   if (!kDebugMode) {
     final enableDebug = command.preferences.debugEnabled;
     Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
   }
+
+  // Set the locale
+  final locale = command.preferences.languageLocaleCode == 'default' ?
+    GetIt.I.get<LanguageService>().defaultLocale :
+    command.preferences.languageLocaleCode;
+  LocaleSettings.setLocaleRaw(locale);
+  GetIt.I.get<XmppService>().setNotificationText(
+    await GetIt.I.get<XmppConnection>().getConnectionState(),
+  );
 }
 
 Future<void> performAddContact(AddContactCommand command, { dynamic extra }) async {

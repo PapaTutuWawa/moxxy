@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -7,7 +8,6 @@ import 'package:moxxyv2/ui/pages/settings/privacy/redirect_dialog.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class RedirectSettingsTile extends AbstractSettingsTile {
-
   const RedirectSettingsTile(
     this.serviceName,
     this.exampleProxy,
@@ -15,8 +15,8 @@ class RedirectSettingsTile extends AbstractSettingsTile {
     this.setProxy,
     this.getEnabled,
     this.setEnabled,
-    {Key? key,}
-  ) : super(key: key);
+    { super.key, }
+  );
   final String serviceName;
   final String exampleProxy;
   final String Function(PreferencesState state) getProxy;
@@ -28,16 +28,23 @@ class RedirectSettingsTile extends AbstractSettingsTile {
   Widget build(BuildContext context) {
     return BlocBuilder<PreferencesBloc, PreferencesState>(
       builder: (context, state) => SettingsTile(
-        title: Text('$serviceName Redirect'),
+        title: Text(t.pages.settings.privacy.redirectsTitle(serviceName: serviceName)),
         description: Column(
           children: [
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('This will redirect $serviceName links that you tap to a proxy service, e.g. $exampleProxy'),
+              child: Text(
+                t.pages.settings.privacy.redirectText(
+                  serviceName: serviceName,
+                  exampleProxy: exampleProxy,
+                ),
+              ),
             ),
             Align(
               alignment: Alignment.centerLeft,
-              child: Text('Currently selected: ${getProxy(state)}'),
+              child: Text(
+                t.pages.settings.privacy.currentlySelected(proxy: getProxy(state)),
+              ),
             ),
           ],
         ),
@@ -59,8 +66,8 @@ class RedirectSettingsTile extends AbstractSettingsTile {
           onChanged: (value) {
             if (getProxy(state).isEmpty) {
               showInfoDialog(
-                'Cannot enable $serviceName redirects',
-                'You must first set a proxy service to redirect to. To do so, tap the field next to the switch.',
+                t.pages.settings.privacy.cannotEnableRedirect(serviceName: serviceName),
+                t.pages.settings.privacy.cannotEnableRedirectSubtext,
                 context,
               );
               return;

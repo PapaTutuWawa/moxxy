@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -28,11 +29,11 @@ Future<void> showConfirmationDialog(String title, String body, BuildContext cont
             Navigator.of(context).pop();
             callback();
           },
-          child: const Text('Yes'),
+          child: Text(t.global.yes),
         ),
         TextButton(
           onPressed: Navigator.of(context).pop,
-          child: const Text('No'),
+          child: Text(t.global.no),
         )
       ],
     ),
@@ -59,7 +60,7 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
         ),
         actions: [
           TextButton(
-            child: const Text('Okay'),
+            child: Text(t.global.dialogAccept),
             onPressed: () => Navigator.of(context).pop(),
           )
         ],
@@ -82,7 +83,7 @@ Future<void> showInfoDialog(String title, String body, BuildContext context) asy
       actions: [
         TextButton(
           onPressed: Navigator.of(context).pop,
-          child: const Text('Okay'),
+          child: Text(t.global.dialogAccept),
         )
       ],
     ),
@@ -164,4 +165,17 @@ Color getTileColor(BuildContext context) {
     case Brightness.light: return tileColorLight;
     case Brightness.dark: return tileColorDark;
   }
+}
+
+/// Return the corresponding language name (in its language) for the given
+/// language code [localeCode], e.g. "de", "en", ...
+String localeCodeToLanguageName(String localeCode) {
+  switch (localeCode) {
+    case 'de': return 'Deutsch';
+    case 'en': return 'English';
+    case 'default': return t.pages.settings.appearance.systemLanguage;
+  }
+
+  assert(false, 'Language code $localeCode has no name');
+  return '';
 }

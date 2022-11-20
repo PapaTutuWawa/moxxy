@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
@@ -44,6 +46,7 @@ import 'package:moxxyv2/ui/pages/profile/profile.dart';
 import 'package:moxxyv2/ui/pages/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/server_info.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
+import 'package:moxxyv2/ui/pages/settings/appearance/appearance.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/cropbackground.dart';
 import 'package:moxxyv2/ui/pages/settings/conversation.dart';
 import 'package:moxxyv2/ui/pages/settings/debugging.dart';
@@ -107,7 +110,7 @@ void main() async {
   setupBlocs(navKey);
 
   await initializeServiceIfNeeded();
-    
+ 
   runApp(
     MultiBlocProvider(
       providers: [
@@ -163,14 +166,16 @@ void main() async {
           create: (_) => GetIt.I.get<OwnDevicesBloc>(),
         ),
       ],
-      child: MyApp(navKey),
+      child: TranslationProvider(
+        child: MyApp(navKey),
+      ),
     ),
   );
 }
 
 class MyApp extends StatefulWidget {
 
-  const MyApp(this.navigationKey, { Key? key }) : super(key: key);
+  const MyApp(this.navigationKey, { super.key });
   final GlobalKey<NavigatorState> navigationKey;
 
   @override
@@ -258,6 +263,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: TranslationProvider.of(context).flutterLocale,
+      supportedLocales: LocaleSettings.supportedLocales,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       title: 'Moxxy',
       theme: getThemeData(context, Brightness.light),
       darkTheme: getThemeData(context, Brightness.dark),
@@ -291,6 +299,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case conversationSettingsRoute: return ConversationSettingsPage.route;
           case devicesRoute: return DevicesPage.route;
           case ownDevicesRoute: return OwnDevicesPage.route;
+          case appearanceRoute: return AppearanceSettingsPage.route;
         }
 
         return null;

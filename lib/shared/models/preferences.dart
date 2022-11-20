@@ -25,6 +25,9 @@ class PreferencesState with _$PreferencesState {
     @Default(false) bool enableYoutubeRedirect,
     @Default(false) bool defaultMuteState,
     @Default(false) bool enableOmemoByDefault,
+    // NOTE: A value of 'default' means that the system's configured language should
+    //       be used
+    @Default('default') String languageLocaleCode,
   }) = _PreferencesState;
   
   // JSON serialization

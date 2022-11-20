@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
@@ -10,8 +11,7 @@ import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
-
-  const ConversationProfileHeader(this.conversation, { Key? key }) : super(key: key);
+  const ConversationProfileHeader(this.conversation, { super.key });
   final Conversation conversation;
 
   @override
@@ -56,8 +56,8 @@ class ConversationProfileHeader extends StatelessWidget {
             children: [
               Tooltip(
                 message: conversation.muted ?
-                  'Unmute chat' :
-                  'Mute chat',
+                  t.pages.profile.conversation.unmuteChatTooltip :
+                  t.pages.profile.conversation.muteChatTooltip,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -85,8 +85,8 @@ class ConversationProfileHeader extends StatelessWidget {
                     ),
                     Text(
                       conversation.muted ?
-                        'Unmute' :
-                        'Mute',
+                        t.pages.profile.conversation.unmuteChat :
+                        t.pages.profile.conversation.muteChat,
                       style: const TextStyle(
                         fontSize: fontsizeAppbar,
                       ),
@@ -96,7 +96,7 @@ class ConversationProfileHeader extends StatelessWidget {
               ),
               // TODO(PapaTutuWawa): Only show when the chat partner has OMEMO keys
               Tooltip(
-                message: 'Devices',
+                message: t.pages.profile.conversation.devices,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -115,9 +115,9 @@ class ConversationProfileHeader extends StatelessWidget {
                         GetIt.I.get<DevicesBloc>().add(DevicesRequestedEvent(conversation.jid));
                       },
                     ),
-                    const Text(
-                      'Devices',
-                      style: TextStyle(
+                    Text(
+                      t.pages.profile.conversation.devices,
+                      style: const TextStyle(
                         fontSize: fontsizeAppbar,
                       ),
                     ),

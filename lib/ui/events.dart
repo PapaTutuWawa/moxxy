@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/painting.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/awaitabledatasender.dart';
@@ -139,7 +139,9 @@ Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
   await GetIt.I.get<Completer<void>>().future;
   GetIt.I.get<Logger>().fine('onServiceReady: Done');
   await MoxplatformPlugin.handler.getDataSender().sendData(
-    PerformPreStartCommand(),
+    PerformPreStartCommand(
+      systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+    ),
     awaitable: false,
   );
 }

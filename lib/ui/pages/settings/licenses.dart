@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,8 +15,7 @@ class Library {
 }
 
 class LicenseRow extends StatelessWidget {
-
-  const LicenseRow({ required this.library, Key? key }) : super(key: key);
+  const LicenseRow({ required this.library, super.key });
   final Library library;
 
   Future<void> _openUrl() async {
@@ -32,14 +32,14 @@ class LicenseRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(library.name),
-      subtitle: Text('Licensed under ${library.license}'),
+      subtitle: Text(t.pages.settings.licenses.licensedUnder(license: library.license)),
       onTap: _openUrl,
    );
   }
 }
 
 class SettingsLicensesPage extends StatelessWidget {
-  const SettingsLicensesPage({ Key? key }) : super(key: key);
+  const SettingsLicensesPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const SettingsLicensesPage(),
@@ -51,7 +51,7 @@ class SettingsLicensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple('Licenses'),
+      appBar: BorderlessTopbar.simple(t.pages.settings.licenses.title),
       body: ListView.builder(
         itemCount: usedLibraryList.length,
         itemBuilder: (context, index) => LicenseRow(library: usedLibraryList[index]),

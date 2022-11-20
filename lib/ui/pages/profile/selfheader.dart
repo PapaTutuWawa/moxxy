@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -14,10 +15,8 @@ class SelfProfileHeader extends StatelessWidget {
     this.avatarUrl,
     this.displayName,
     this.setAvatar,
-    {
-      Key? key,
-    }
-  ) : super(key: key);
+    { super.key, }
+  );
   final String jid;
   final String avatarUrl;
   final String displayName;
@@ -113,7 +112,7 @@ class SelfProfileHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Tooltip(
-                message: 'Devices',
+                message: t.pages.profile.self.devices,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -132,9 +131,9 @@ class SelfProfileHeader extends StatelessWidget {
                         GetIt.I.get<OwnDevicesBloc>().add(OwnDevicesRequestedEvent());
                       },
                     ),
-                    const Text(
-                      'Devices',
-                      style: TextStyle(
+                    Text(
+                      t.pages.profile.self.devices,
+                      style: const TextStyle(
                         fontSize: fontsizeAppbar,
                       ),
                     ),

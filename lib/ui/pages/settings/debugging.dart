@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -7,8 +8,10 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class DebuggingPage extends StatelessWidget {
-
-  DebuggingPage({ Key? key }) : _ipController = TextEditingController(), _passphraseController = TextEditingController(), _portController = TextEditingController(), super(key: key);
+  DebuggingPage({ super.key })
+    : _ipController = TextEditingController(),
+      _passphraseController = TextEditingController(),
+      _portController = TextEditingController();
   final TextEditingController _ipController;
   final TextEditingController _portController;
   final TextEditingController _passphraseController;
@@ -23,15 +26,15 @@ class DebuggingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple('Debugging'),
+      appBar: BorderlessTopbar.simple(t.pages.settings.debugging.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
           sections: [
             SettingsSection(
-              title: const Text('General'),
+              title: Text(t.pages.settings.debugging.generalSection),
               tiles: [
                 SettingsTile.switchTile(
-                  title: const Text('Enable debugging'),
+                  title: Text(t.pages.settings.debugging.generalEnableDebugging),
                   onToggle: (value) => context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(debugEnabled: value),
@@ -40,14 +43,14 @@ class DebuggingPage extends StatelessWidget {
                   initialValue: state.debugEnabled,
                 ),
                 SettingsTile(
-                  title: const Text('Encryption password'),
-                  description: const Text('The logs may contain sensitive information so pick a strong passphrase'),
+                  title: Text(t.pages.settings.debugging.generalEncryptionPassword),
+                  description: Text(t.pages.settings.debugging.generalEncryptionPasswordSubtext),
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
                       barrierDismissible: true,
                       builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Debug Passphrase'),
+                        title: Text(t.pages.settings.debugging.generalEncryptionPassword),
                         content: TextField(
                           minLines: 1,
                           obscureText: true,
@@ -55,7 +58,7 @@ class DebuggingPage extends StatelessWidget {
                         ),
                         actions: [
                           TextButton(
-                            child: const Text('Okay'),
+                            child: Text(t.global.dialogAccept),
                             onPressed: () {
                               context.read<PreferencesBloc>().add(
                                 PreferencesChangedEvent(
@@ -71,21 +74,21 @@ class DebuggingPage extends StatelessWidget {
                   },
                 ),
                 SettingsTile(
-                  title: const Text('Logging IP'),
-                  description: const Text('The IP the logs should be sent to'),
+                  title: Text(t.pages.settings.debugging.generalLoggingIp),
+                  description: Text(t.pages.settings.debugging.generalLoggingIpSubtext),
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
                       barrierDismissible: true,
                       builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Logging IP'),
+                        title: Text(t.pages.settings.debugging.generalLoggingIp),
                         content: TextField(
                           minLines: 1,
                           controller: _ipController,
                         ),
                         actions: [
                           TextButton(
-                            child: const Text('Okay'),
+                            child: Text(t.global.dialogAccept),
                             onPressed: () {
                               context.read<PreferencesBloc>().add(
                                 PreferencesChangedEvent(
@@ -101,14 +104,14 @@ class DebuggingPage extends StatelessWidget {
                   },
                 ),
                 SettingsTile(
-                  title: const Text('Logging Port'),
-                  description: const Text('The Port the logs should be sent to'),
+                  title: Text(t.pages.settings.debugging.generalLoggingPort),
+                  description: Text(t.pages.settings.debugging.generalLoggingPortSubtext),
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
                       barrierDismissible: true,
                       builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Logging Port'),
+                        title: Text(t.pages.settings.debugging.generalLoggingPort),
                         content: TextField(
                           minLines: 1,
                           controller: _portController,
@@ -116,7 +119,7 @@ class DebuggingPage extends StatelessWidget {
                         ),
                         actions: [
                           TextButton(
-                            child: const Text('Okay'),
+                            child: Text(t.global.dialogAccept),
                             onPressed: () {
                               context.read<PreferencesBloc>().add(
                                 PreferencesChangedEvent(

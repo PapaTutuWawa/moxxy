@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 
 class BlurhashChatWidget extends StatelessWidget {
-
   const BlurhashChatWidget({
     required this.borderRadius,
     this.child,
     required this.width,
     required this.height,
     required this.thumbnailData,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
   final BorderRadius borderRadius;
   final int width;
   final int height;
