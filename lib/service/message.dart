@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
 class MessageService {
@@ -120,28 +121,31 @@ class MessageService {
 
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
   Future<Message> updateMessage(int id, {
-    String? mediaUrl,
-    String? mediaType,
+    Object? body = notSpecified,
+    Object? mediaUrl = notSpecified,
+    Object? mediaType = notSpecified,
     bool? received,
     bool? displayed,
     bool? acked,
-    int? errorType,
-    int? warningType,
+    Object? errorType = notSpecified,
+    Object? warningType = notSpecified,
     bool? isFileUploadNotification,
-    String? srcUrl,
-    String? key,
-    String? iv,
-    String? encryptionScheme,
-    int? mediaWidth,
-    int? mediaHeight,
-    int? mediaSize,
+    Object? srcUrl = notSpecified,
+    Object? key = notSpecified,
+    Object? iv = notSpecified,
+    Object? encryptionScheme = notSpecified,
+    Object? mediaWidth = notSpecified,
+    Object? mediaHeight = notSpecified,
+    Object? mediaSize = notSpecified,
     bool? isUploading,
     bool? isDownloading,
-    String? originId,
-    String? sid,
+    Object? originId = notSpecified,
+    Object? sid = notSpecified,
+    bool? isRetracted,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
+      body: body,
       mediaUrl: mediaUrl,
       mediaType: mediaType,
       received: received,
@@ -161,6 +165,7 @@ class MessageService {
       isDownloading: isDownloading,
       originId: originId,
       sid: sid,
+      isRetracted: isRetracted,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

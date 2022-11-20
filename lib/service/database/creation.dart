@@ -51,6 +51,7 @@ Future<void> createDatabase(Database db, int version) async {
       isDownloading INTEGER NOT NULL,
       isUploading INTEGER NOT NULL,
       mediaSize INTEGER,
+      isRetracted INTEGER,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messsagesTable (id)
     )''',
   );

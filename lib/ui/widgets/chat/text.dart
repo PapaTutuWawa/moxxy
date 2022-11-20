@@ -34,6 +34,18 @@ class TextChatWidget extends StatelessWidget {
   final bool sent;
   final Widget? topWidget;
 
+  String getMessageText() {
+    if (message.isError()) {
+      return errorTypeToText(message.errorType!);
+    }
+
+    if (message.isRetracted) {
+      return 'RETRACTED';
+    }
+
+    return message.body;
+  }
+  
   @override
   Widget build(BuildContext context) {
     final fontsize = EmojiUtil.hasOnlyEmojis(
@@ -50,11 +62,9 @@ class TextChatWidget extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ParsedText(
-              text: message.isError() ?
-                errorTypeToText(message.errorType!) :
-                message.body,
+              text: getMessageText(),
               style: TextStyle(
-                color: message.isError() ?
+                color: message.isError() || message.isRetracted ?
                   Colors.grey :
                   const Color(0xf9ebffff),
                 fontSize: fontsize,

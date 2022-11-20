@@ -53,6 +53,7 @@ class Message with _$Message {
       @Default(false) bool received,
       @Default(false) bool displayed,
       @Default(false) bool acked,
+      @Default(false) bool isRetracted,
       String? originId,
       Message? quotes,
       String? filename,
@@ -80,6 +81,7 @@ class Message with _$Message {
       'ciphertextHashes': _optionalJsonDecode(json['ciphertextHashes'] as String?),
       'isDownloading': intToBool(json['isDownloading']! as int),
       'isUploading': intToBool(json['isUploading']! as int),
+      'isRetracted': intToBool(json['isRetracted']! as int),
     }).copyWith(quotes: quotes);
   }
   
@@ -102,6 +104,7 @@ class Message with _$Message {
       'ciphertextHashes': _optionalJsonEncode(ciphertextHashes),
       'isDownloading': boolToInt(isDownloading),
       'isUploading': boolToInt(isUploading),
+      'isRetracted': boolToInt(isRetracted),
     };
   }
 

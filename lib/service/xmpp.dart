@@ -740,6 +740,37 @@ class XmppService {
       && implies(event.oob != null, event.body == event.oob?.url);
   }
 
+  /// Handle a message retraction given the MessageEvent [event].
+  Future<void> _handleMessageRetraction(MessageEvent event, String conversationJid) async {
+    final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
+      event.messageRetraction!.id,
+      conversationJid,
+    );
+
+    if (msg == null) {
+      _log.finest('Got message retraction for origin Id ${event.messageRetraction!.id}, but did not find the message');
+      return;
+    }
+
+    // TODO(PapaTutuWawa): Change the lastMessageBody of the conversation if that message was retracted
+    final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
+      msg.id,
+      mediaUrl: null,
+      mediaType: null,
+      warningType: null,
+      errorType: null,
+      srcUrl: null,
+      key: null,
+      iv: null,
+      encryptionScheme: null,
+      mediaWidth: null,
+      mediaHeight: null,
+      mediaSize: null,
+      isRetracted: true,
+    );
+    sendEvent(MessageUpdatedEvent(message: retractedMessage));
+  }
+  
   /// Returns true if a file should be automatically downloaded. If it should not, it
   /// returns false.
   /// [conversationJid] refers to the JID of the conversation the message was received in.
@@ -761,6 +792,11 @@ class XmppService {
     // Process File Upload Notifications replacements separately
     if (event.funReplacement != null) {
       await _handleFileUploadNotificationReplacement(event, conversationJid);
+      return;
+    }
+
+    if (event.messageRetraction != null) {
+      await _handleMessageRetraction(event, conversationJid);
       return;
     }
     
