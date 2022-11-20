@@ -1,4 +1,5 @@
 {
+    "@@name": "English",
     "global": {
 	"title": "Moxxy",
 	"moxxySubtitle": "An experiment into building a modern, easy and beautiful XMPP client.",
