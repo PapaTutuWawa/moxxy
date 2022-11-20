@@ -752,6 +752,12 @@ class XmppService {
       return;
     }
 
+    // Check if the retraction was sent by the original sender
+    if (msg.sender != event.fromJid.toBare().toString()) {
+      _log.warning('Received invalid message retraction from ${event.fromJid.toBare().toString()} but its original sender is ${msg.sender}');
+      return;
+    }
+    
     // TODO(PapaTutuWawa): Change the lastMessageBody of the conversation if that message was retracted
     final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
       msg.id,
