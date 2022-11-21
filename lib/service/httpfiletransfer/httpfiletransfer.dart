@@ -466,8 +466,8 @@ class HttpFileTransferService {
         mediaSize: File(downloadedPath).lengthSync(),
         isFileUploadNotification: false,
         warningType: integrityCheckPassed ?
-          warningFileIntegrityCheckFailed :
-          null,
+          null :
+          warningFileIntegrityCheckFailed,
         errorType: conv.encrypted && !decryptionKeysAvailable ?
           messageChatEncryptedButFileNot :
           null,
