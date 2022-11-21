@@ -26,16 +26,19 @@ class SelfProfileHeader extends StatelessWidget {
     await showDialog<dynamic>(
       context: context,
       builder: (BuildContext context) => Center(
-        child: SizedBox(
-          width: 220,
-          height: 220,
-          child: QrImage(
-            data: 'xmpp:$jid',
-            size: 220,
-            backgroundColor: Colors.white,
-            embeddedImage: const AssetImage('assets/images/logo.png'),
-            embeddedImageStyle: QrEmbeddedImageStyle(
-              size: const Size(50, 50),
+        child: ClipRRect(
+          borderRadius: BorderRadius.all(radiusLarge),
+          child: SizedBox(
+            width: 220,
+            height: 220,
+            child: QrImage(
+              data: 'xmpp:$jid',
+              size: 220,
+              backgroundColor: Colors.white,
+              embeddedImage: const AssetImage('assets/images/logo.png'),
+              embeddedImageStyle: QrEmbeddedImageStyle(
+                size: const Size(50, 50),
+              ),
             ),
           ),
         ),
