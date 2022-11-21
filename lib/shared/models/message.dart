@@ -123,4 +123,23 @@ class Message with _$Message {
   String get messageEmoji {
     return mimeTypeToEmoji(mediaType, addTypeName: false);
   }
+
+  /// Returns true if the message can be quoted. False if not.
+  bool get isQuotable => !isError() && !isRetracted && !isFileUploadNotification;
+
+  /// Returns true if the message can be retracted. False if not.
+  /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
+  bool canRetract(bool sentBySelf) {
+    return originId != null && sentBySelf;
+  }
+
+  /// Returns true if the message can be edited. False if not.
+  /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
+  bool canEdit(bool sentBySelf) {
+    return sentBySelf;
+  }
+
+  /// Returns true if the message can open the selection menu by longpressing. False if
+  /// not.
+  bool get isLongpressable => !isRetracted;
 }

@@ -123,18 +123,8 @@ class ChatBubbleState extends State<ChatBubble>
   }
 
   SwipeDirection _getSwipeDirection() {
-    // Error messages should not be quoted
-    if (widget.message.errorType != null && widget.message.errorType != noError) {
-      return SwipeDirection.none;
-    }
-
-    // Retracted messages should not be quoted
-    if (widget.message.isRetracted) {
-      return SwipeDirection.none;
-    }
-
-    // File Upload Notifications should not be quoted
-    if (widget.message.isFileUploadNotification) {
+    // Should the message be quotable?
+    if (!widget.message.isQuotable) {
       return SwipeDirection.none;
     }
 
@@ -224,8 +214,7 @@ class ChatBubbleState extends State<ChatBubble>
           children: [
             GestureDetector(
               onLongPressStart: (event) async {
-                // TODO(PapaTutuWawa): Move this into the message model?
-                if (widget.message.isRetracted) {
+                if (widget.message.isLongpressable) {
                   return;
                 }
 
@@ -290,14 +279,14 @@ class ChatBubbleState extends State<ChatBubble>
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        ...widget.message.originId != null && widget.sentBySelf ? [
+                                        ...widget.message.canRetract(widget.sentBySelf) ? [
                                           _buildMessageOption(
                                             Icons.delete,
                                             t.pages.conversation.retract,
                                             () => _retractMessage(context),
                                           ),
                                         ] : [],
-                                        ...widget.sentBySelf ? [
+                                        ...widget.message.canEdit(widget.sentBySelf) ? [
                                           _buildMessageOption(
                                             Icons.edit,
                                             t.pages.conversation.edit,
