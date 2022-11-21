@@ -266,6 +266,7 @@ class ChatBubbleState extends State<ChatBubble>
                               right: widget.sentBySelf ? 8 : null,
                               left: widget.sentBySelf ? null : 8,
                               child: Material(
+                                borderRadius: _getBorderRadius(),
                                 child: Container(
                                   constraints: BoxConstraints(
                                     maxWidth: widget.maxWidth,
