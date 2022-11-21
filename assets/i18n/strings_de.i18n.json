@@ -21,7 +21,9 @@
 	"image": "Bild",
 	"video": "Video",
 	"audio": "Audio",
-	"file": "Datei"
+	"file": "Datei",
+	"retracted": "Die Nachricht wurde zurückgezogen",
+	"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht"
     },
     "errors": {
 	"omemo": {
@@ -35,6 +37,11 @@
 	    "startTlsFailed": "Konnte keine sichere Verbindung zum Server aufbauen",
 	    "noConnection": "Konnte keine Verbindung zum Server aufbauen",
 	    "unspecified": "Unbestimmter Fehler"
+	}
+    },
+    "warnings": {
+	"message": {
+	    "integrityCheckFailed": "Konnte Integrität der Datei nicht überprüfen"
 	}
     },
     "pages": {
@@ -64,7 +71,11 @@
 	    "closeChatConfirmTitle": "Chat schließen",
 	    "closeChatConfirmSubtext": "Bist Du dir sicher, dass du den Chat schließen möchtest?",
 	    "blockUser": "Nutzer blockieren",
-	    "online": "Online"
+	    "online": "Online",
+	    "retract": "Nachricht löschen",
+	    "retractBody": "Bist du dir sicher, dass du die Nachricht löschen willst? Bedenke, dass dies nur eine Bitte ist, die dein gegenüber nicht beachten muss.",
+	    "forward": "Weiterleiten",
+	    "edit": "Bearbeiten"
 	},
 	"addcontact": {
 	    "title": "Neuen Kontakt hinzufügen",

@@ -59,15 +59,19 @@ class BlocklistPage extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete),
                 color: Colors.red,
-                onPressed: () => showConfirmationDialog(
-                  t.pages.blocklist.unblockJidConfirmTitle(jid: jid),
-                  t.pages.blocklist.unblockJidConfirmBody(jid: jid),
-                  context,
-                  () {
+                onPressed: () async {
+                  final result = await showConfirmationDialog(
+                    t.pages.blocklist.unblockJidConfirmTitle(jid: jid),
+                    t.pages.blocklist.unblockJidConfirmBody(jid: jid),
+                    context,
+                  );
+
+                  if (result) {
+                    // ignore: use_build_context_synchronously
                     context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
                   }
-                ),
-              )
+                },
+              ),
             ],
           ),
         );
@@ -84,17 +88,21 @@ class BlocklistPage extends StatelessWidget {
           extra: [
             Expanded(child: Container()),
             PopupMenuButton(
-              onSelected: (BlocklistOptions result) {
+              onSelected: (BlocklistOptions result) async {
                 if (result == BlocklistOptions.unblockAll) {
-                  showConfirmationDialog(
+                  final result = await showConfirmationDialog(
                     t.pages.blocklist.unblockAllConfirmTitle,
                     t.pages.blocklist.unblockAllConfirmBody,
                     context,
-                    () {
-                      context.read<BlocklistBloc>().add(UnblockedAllEvent());
-                      Navigator.of(context).pop();
-                    }
                   );
+
+                  if (result) {
+                    // ignore: use_build_context_synchronously
+                    context.read<BlocklistBloc>().add(UnblockedAllEvent());
+
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pop();
+                  }
                 }
               },
               icon: const Icon(Icons.more_vert),

@@ -61,6 +61,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(performGetOwnOmemoFingerprints),
       EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
       EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
+      EventTypeMatcher<RetractMessageComment>(performMessageRetraction),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -205,6 +206,8 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
   } else {
     final conversation = await cs.addConversationFromData(
       command.title,
+      -1,
+      false,
       command.lastMessageBody,
       command.avatarUrl,
       command.jid,
@@ -324,6 +327,8 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
   } else {            
     final c = await cs.addConversationFromData(
       jid.split('@')[0],
+      -1,
+      false,
       '',
       '',
       jid,
@@ -571,4 +576,60 @@ Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dy
     RegenerateOwnDeviceResult(device: device),
     id: id,
   );
+}
+
+Future<void> performMessageRetraction(RetractMessageComment command, { dynamic extra }) async {
+  final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
+    command.originId,
+    command.conversationJid,
+  );
+
+  if (msg == null) {
+    GetIt.I.get<Logger>().warning('Failed to find message ${command.conversationJid}#${command.originId} for message retraction');
+    return;
+  }
+
+  // Send the retraction
+  (GetIt.I.get<XmppConnection>().getManagerById(messageManager)! as MessageManager)
+    .sendMessage(
+      MessageDetails(
+        to: command.conversationJid,
+        messageRetraction: MessageRetractionData(
+          command.originId,
+          t.messages.retractedFallback,
+        ),
+      ),
+    );
+  
+  // Update the database
+  final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
+    msg.id,
+    isMedia: false,
+    mediaUrl: null,
+    mediaType: null,
+    warningType: null,
+    errorType: null,
+    srcUrl: null,
+    key: null,
+    iv: null,
+    encryptionScheme: null,
+    mediaWidth: null,
+    mediaHeight: null,
+    mediaSize: null,
+    isRetracted: true,
+  );
+  sendEvent(MessageUpdatedEvent(message: retractedMessage));
+
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(
+    command.conversationJid,
+  );
+  if (conversation != null && conversation.lastMessageId == msg.id) {
+    final newConversation = await cs.updateConversation(
+      conversation.id,
+      lastMessageBody: '',
+      lastMessageRetracted: true,
+    );
+    sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+  }
 }

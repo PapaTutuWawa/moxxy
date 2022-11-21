@@ -49,9 +49,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     emit(
       state.copyWith(
         conversations: List.from(state.conversations.map((c) {
-            if (c.jid == event.conversation.jid) return event.conversation;
+          if (c.jid == event.conversation.jid) return event.conversation;
 
-            return c;
+          return c;
         }).toList()..sort(compareConversation),),
       ),
     );

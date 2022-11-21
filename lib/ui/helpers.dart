@@ -12,9 +12,10 @@ import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
-/// action.
-Future<void> showConfirmationDialog(String title, String body, BuildContext context, void Function() callback) async {
-  await showDialog<void>(
+/// action. Resolves to true if the user pressed the confirm button. Returns false if
+/// the cancel button was pressed.
+Future<bool> showConfirmationDialog(String title, String body, BuildContext context) async {
+  final result = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
     builder: (context) => AlertDialog(
@@ -25,10 +26,7 @@ Future<void> showConfirmationDialog(String title, String body, BuildContext cont
       content: Text(body),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-            callback();
-          },
+          onPressed: () => Navigator.of(context).pop(true),
           child: Text(t.global.yes),
         ),
         TextButton(
@@ -38,6 +36,8 @@ Future<void> showConfirmationDialog(String title, String body, BuildContext cont
       ],
     ),
   );
+
+  return result != null;
 }
 
 /// Shows a dialog telling the user that the [feature] feature is not implemented.

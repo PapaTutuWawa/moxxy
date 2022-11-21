@@ -21,7 +21,9 @@
 	"image": "Image",
 	"video": "Video",
 	"audio": "Audio",
-	"file": "File"
+	"file": "File",
+	"retracted": "The message has been retracted",
+	"retractedFallback": "A previous message has been retracted but your client does not support it"
     },
     "errors": {
 	"omemo": {
@@ -35,6 +37,11 @@
 	    "startTlsFailed": "Failed to establish a secure connection",
 	    "noConnection": "Failed to establish a connection",
 	    "unspecified": "Unspecified error"
+	}
+    },
+    "warnings": {
+	"message": {
+	    "integrityCheckFailed": "Could not verify file integrity"
 	}
     },
     "pages": {
@@ -64,7 +71,11 @@
 	    "closeChatConfirmTitle": "Close chat",
 	    "closeChatConfirmSubtext": "Are you sure you want to close this chat?",
 	    "blockUser": "Block user",
-	    "online": "Online"
+	    "online": "Online",
+	    "retract": "Retract message",
+	    "retractBody": "Are you sure you want to retract the message? Keep in mind that this is only a request that the client does not have to honour.",
+	    "forward": "Forward",
+	    "edit": "Edit"
 	},
 	"addcontact": {
 	    "title": "Add new contact",

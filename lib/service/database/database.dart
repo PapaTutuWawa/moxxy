@@ -9,7 +9,10 @@ import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
+import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
+import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
+import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/state.dart';
@@ -26,7 +29,6 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 const databasePasswordKey = 'database_encryption_password';
 
 class DatabaseService {
-  
   DatabaseService() : _log = Logger('DatabaseService');
   late Database _db;
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
@@ -55,7 +57,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 3,
+      version: 5,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -66,6 +68,14 @@ class DatabaseService {
         if (oldVersion < 3) {
           _log.finest('Running migration for database version 3');
           await upgradeFromV2ToV3(db);
+        }
+        if (oldVersion < 4) {
+          _log.finest('Running migration for database version 4');
+          await upgradeFromV3ToV4(db);
+        }
+        if (oldVersion < 5) {
+          _log.finest('Running migration for database version 5');
+          await upgradeFromV4ToV5(db);
         }
       },
     );
@@ -136,16 +146,17 @@ class DatabaseService {
   
   /// Updates the conversation with id [id] inside the database.
   Future<Conversation> updateConversation(int id, {
-      String? lastMessageBody,
-      int? lastChangeTimestamp,
-      bool? open,
-      int? unreadCounter,
-      String? avatarUrl,
-      ChatState? chatState,
-      bool? muted,
-      bool? encrypted,
-    }
-  ) async {
+    String? lastMessageBody,
+    int? lastChangeTimestamp,
+    bool? lastMessageRetracted,
+    int? lastMessageId,
+    bool? open,
+    int? unreadCounter,
+    String? avatarUrl,
+    ChatState? chatState,
+    bool? muted,
+    bool? encrypted,
+  }) async {
     final cd = (await _db.query(
       'Conversations',
       where: 'id = ?',
@@ -163,6 +174,12 @@ class DatabaseService {
     //await c.sharedMedia.load();
     if (lastMessageBody != null) {
       c['lastMessageBody'] = lastMessageBody;
+    }
+    if (lastMessageRetracted != null) {
+      c['lastMessageRetracted'] = boolToInt(lastMessageRetracted);
+    }
+    if (lastMessageId != null) {
+      c['lastMessageId'] = lastMessageId;
     }
     if (lastChangeTimestamp != null) {
       c['lastChangeTimestamp'] = lastChangeTimestamp;
@@ -203,6 +220,8 @@ class DatabaseService {
   /// [Conversation] object can carry its database id.
   Future<Conversation> addConversationFromData(
     String title,
+    int lastMessageId,
+    bool lastMessageRetracted,
     String lastMessageBody,
     String avatarUrl,
     String jid,
@@ -215,6 +234,8 @@ class DatabaseService {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
       title,
+      lastMessageId,
+      lastMessageRetracted,
       lastMessageBody,
       avatarUrl,
       jid,
@@ -357,28 +378,46 @@ class DatabaseService {
     final msg = messagesRaw.first;
     return Message.fromDatabaseJson(msg, null);
   }
-  
+
+  Future<Message?> getMessageByOriginId(String id, String conversationJid) async {
+    final messagesRaw = await _db.query(
+      'Messages',
+      where: 'conversationJid = ? AND originId = ?',
+      whereArgs: [conversationJid, id],
+      limit: 1,
+    );
+
+    if (messagesRaw.isEmpty) return null;
+
+    // TODO(PapaTutuWawa): Load the quoted message
+    final msg = messagesRaw.first;
+    return Message.fromDatabaseJson(msg, null);
+  }
+
   /// Updates the message item with id [id] inside the database.
   Future<Message> updateMessage(int id, {
-    String? mediaUrl,
-    String? mediaType,
+    Object? body = notSpecified,
+    Object? mediaUrl = notSpecified,
+    Object? mediaType = notSpecified,
+    bool? isMedia,
     bool? received,
     bool? displayed,
     bool? acked,
-    int? errorType,
-    int? warningType,
+    Object? errorType = notSpecified,
+    Object? warningType = notSpecified,
     bool? isFileUploadNotification,
-    String? srcUrl,
-    String? key,
-    String? iv,
-    String? encryptionScheme,
-    int? mediaWidth,
-    int? mediaHeight,
+    Object? srcUrl = notSpecified,
+    Object? key = notSpecified,
+    Object? iv = notSpecified,
+    Object? encryptionScheme = notSpecified,
+    Object? mediaWidth = notSpecified,
+    Object? mediaHeight = notSpecified,
     bool? isDownloading,
     bool? isUploading,
-    int? mediaSize,
-    String? originId,
-    String? sid,
+    Object? mediaSize = notSpecified,
+    Object? originId = notSpecified,
+    Object? sid = notSpecified,
+    bool? isRetracted,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -388,11 +427,14 @@ class DatabaseService {
     )).first;
     final m = Map<String, dynamic>.from(md);
 
-    if (mediaUrl != null) {
-      m['mediaUrl'] = mediaUrl;
+    if (mediaUrl != notSpecified) {
+      m['mediaUrl'] = mediaUrl as String?;
     }
-    if (mediaType != null) {
-      m['mediaType'] = mediaType;
+    if (mediaType != notSpecified) {
+      m['mediaType'] = mediaType as String?;
+    }
+    if (isMedia != null) {
+      m['isMedia'] = boolToInt(isMedia);
     }
     if (received != null) {
       m['received'] = boolToInt(received);
@@ -403,35 +445,35 @@ class DatabaseService {
     if (acked != null) {
       m['acked'] = boolToInt(acked);
     }
-    if (errorType != null) {
-      m['errorType'] = errorType;
+    if (errorType != notSpecified) {
+      m['errorType'] = errorType as int?;
     }
-    if (warningType != null) {
-      m['warningType'] = warningType;
+    if (warningType != notSpecified) {
+      m['warningType'] = warningType as int?;
     }
     if (isFileUploadNotification != null) {
       m['isFileUploadNotification'] = boolToInt(isFileUploadNotification);
     }
-    if (srcUrl != null) {
-      m['srcUrl'] = srcUrl;
+    if (srcUrl != notSpecified) {
+      m['srcUrl'] = srcUrl as String?;
     }
-    if (mediaWidth != null) {
-      m['mediaWidth'] = mediaWidth;
+    if (mediaWidth != notSpecified) {
+      m['mediaWidth'] = mediaWidth as int?;
     }
-    if (mediaHeight != null) {
-      m['mediaHeight'] = mediaHeight;
+    if (mediaHeight != notSpecified) {
+      m['mediaHeight'] = mediaHeight as int?;
     }
-    if (mediaSize != null) {
-      m['mediaSize'] = mediaSize;
+    if (mediaSize != notSpecified) {
+      m['mediaSize'] = mediaSize as int?;
     }
-    if (key != null) {
-      m['key'] = key;
+    if (key != notSpecified) {
+      m['key'] = key as String?;
     }
-    if (iv != null) {
-      m['iv'] = iv;
+    if (iv != notSpecified) {
+      m['iv'] = iv as String?;
     }
-    if (encryptionScheme != null) {
-      m['encryptionScheme'] = encryptionScheme;
+    if (encryptionScheme != notSpecified) {
+      m['encryptionScheme'] = encryptionScheme as String?;
     }
     if (isDownloading != null) {
       m['isDownloading'] = boolToInt(isDownloading);
@@ -439,11 +481,14 @@ class DatabaseService {
     if (isUploading != null) {
       m['isUploading'] = boolToInt(isUploading);
     }
-    if (sid != null) {
-      m['sid'] = sid;
+    if (sid != notSpecified) {
+      m['sid'] = sid as String?;
     }
-    if (originId != null) {
-      m['originId'] = originId;
+    if (originId != notSpecified) {
+      m['originId'] = originId as String?;
+    }
+    if (isRetracted != null) {
+      m['isRetracted'] = boolToInt(isRetracted);
     }
 
     await _db.update(

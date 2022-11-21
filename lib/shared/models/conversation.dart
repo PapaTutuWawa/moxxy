@@ -22,6 +22,9 @@ class ConversationChatStateConverter implements JsonConverter<ChatState, Map<Str
 class Conversation with _$Conversation {
   factory Conversation(
     String title,
+    // NOTE: The internal database Id of the message
+    int lastMessageId,
+    bool lastMessageRetracted,
     String lastMessageBody,
     String avatarUrl,
     String jid,
@@ -59,6 +62,7 @@ class Conversation with _$Conversation {
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
+      'lastMessageRetracted': intToBool(json['lastMessageRetracted']! as int)
     });
   }
   
@@ -75,6 +79,7 @@ class Conversation with _$Conversation {
       'open': boolToInt(open),
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
+      'lastMessageRetracted': boolToInt(lastMessageRetracted),
     };
   }
 }

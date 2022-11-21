@@ -198,6 +198,7 @@ Future<void> entrypoint() async {
       EmeManager(),
       CryptographicHashManager(),
       DelayedDeliveryManager(),
+      MessageRetractionManager(),
     ])
     ..registerFeatureNegotiators([
       ResourceBindingNegotiator(),

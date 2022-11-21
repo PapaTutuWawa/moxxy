@@ -105,21 +105,25 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             Expanded(
               child: TextButton(
                 child: const Text('Add to contacts'),
-                onPressed: () {
+                onPressed: () async {
                   final jid = state.conversation!.jid;
-                  showConfirmationDialog(
+                  final result = await showConfirmationDialog(
                     'Add $jid to your contacts?',
                     'Are you sure you want to add $jid to your conacts?',
                     context,
-                    () {
-                      // TODO(Unknown): Maybe show a progress indicator
-                      // TODO(Unknown): Have the page update its state once the addition is done
-                      context.read<ConversationBloc>().add(
-                        JidAddedEvent(jid),
-                      );
-                      Navigator.of(context).pop();
-                    }
                   );
+
+                  if (result) {
+                    // TODO(Unknown): Maybe show a progress indicator
+                    // TODO(Unknown): Have the page update its state once the addition is done
+                    // ignore: use_build_context_synchronously
+                    context.read<ConversationBloc>().add(
+                      JidAddedEvent(jid),
+                    );
+
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pop();
+                  }
                 },
               ),
             ),

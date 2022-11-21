@@ -144,12 +144,6 @@ class XmppService {
       final sid = conn.generateId();
       final originId = conn.generateId();
       final conversation = await cs.getConversationByJid(recipient);
-      final newConversation = await cs.updateConversation(
-        conversation!.id,
-        lastMessageBody: body,
-        lastChangeTimestamp: timestamp,
-      );
-
       final message = await ms.addMessageFromData(
         body,
         timestamp,
@@ -158,9 +152,16 @@ class XmppService {
         false,
         sid,
         false,
-        newConversation.encrypted,
+        conversation!.encrypted,
         originId: originId,
         quoteId: quotedMessage?.sid,
+      );
+      final newConversation = await cs.updateConversation(
+        conversation.id,
+        lastMessageBody: body,
+        lastMessageId: message.id,
+        lastMessageRetracted: false,
+        lastChangeTimestamp: timestamp,
       );
 
       // Using the same ID should be fine.
@@ -334,6 +335,8 @@ class XmppService {
     final dimensions = <String, Size>{};
     // Recipient -> Should encrypt
     final encrypt = <String, bool>{};
+    // Recipient -> Last message Id
+    final lastMessageIds = <String, int>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -380,6 +383,10 @@ class XmppService {
           messages[path] = { recipient: msg };
         }
 
+        if (path == paths.last) {
+          lastMessageIds[recipient] = msg.id;
+        }
+
         sendEvent(MessageAddedEvent(message: msg));
       }
     }
@@ -396,6 +403,7 @@ class XmppService {
         final updatedConversation = await cs.updateConversation(
           conversation.id,
           lastMessageBody: mimeTypeToEmoji(lastFileMime),
+          lastMessageId: lastMessageIds[recipient],
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
           open: true,
         );
@@ -417,6 +425,8 @@ class XmppService {
         final newConversation = await cs.addConversationFromData(
           // TODO(Unknown): Should we use the JID parser?
           rosterItem?.title ?? recipient.split('@').first,
+          lastMessageIds[recipient]!,
+          false,
           mimeTypeToEmoji(lastFileMime),
           rosterItem?.avatarUrl ?? '',
           recipient,
@@ -617,6 +627,8 @@ class XmppService {
       final bare = event.from.toBare();
       final conv = await cs.addConversationFromData(
         bare.toString().split('@')[0],
+        -1,
+        false,
         '',
         '', // TODO(Unknown): avatarUrl
         bare.toString(),
@@ -740,6 +752,58 @@ class XmppService {
       && implies(event.oob != null, event.body == event.oob?.url);
   }
 
+  /// Handle a message retraction given the MessageEvent [event].
+  Future<void> _handleMessageRetraction(MessageEvent event, String conversationJid) async {
+    final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
+      event.messageRetraction!.id,
+      conversationJid,
+    );
+
+    if (msg == null) {
+      _log.finest('Got message retraction for origin Id ${event.messageRetraction!.id}, but did not find the message');
+      return;
+    }
+
+    // Check if the retraction was sent by the original sender
+    if (JID.fromString(msg.sender).toBare().toString() != event.fromJid.toBare().toString()) {
+      _log.warning('Received invalid message retraction from ${event.fromJid.toBare().toString()} but its original sender is ${msg.sender}');
+      return;
+    }
+    
+    final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
+      msg.id,
+      isMedia: false,
+      mediaUrl: null,
+      mediaType: null,
+      warningType: null,
+      errorType: null,
+      srcUrl: null,
+      key: null,
+      iv: null,
+      encryptionScheme: null,
+      mediaWidth: null,
+      mediaHeight: null,
+      mediaSize: null,
+      isRetracted: true,
+    );
+    sendEvent(MessageUpdatedEvent(message: retractedMessage));
+
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = await cs.getConversationByJid(conversationJid);
+    if (conversation != null) {
+      if (conversation.lastMessageId == msg.id) {
+        final newConversation = await cs.updateConversation(
+          conversation.id,
+          lastMessageBody: '',
+          lastMessageRetracted: true,
+        );
+        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+      }
+    } else {
+      _log.warning('Failed to find conversation with conversationJid $conversationJid');
+    }
+  }
+  
   /// Returns true if a file should be automatically downloaded. If it should not, it
   /// returns false.
   /// [conversationJid] refers to the JID of the conversation the message was received in.
@@ -761,6 +825,11 @@ class XmppService {
     // Process File Upload Notifications replacements separately
     if (event.funReplacement != null) {
       await _handleFileUploadNotificationReplacement(event, conversationJid);
+      return;
+    }
+
+    if (event.messageRetraction != null) {
+      await _handleMessageRetraction(event, conversationJid);
       return;
     }
     
@@ -837,6 +906,7 @@ class XmppService {
       mediaWidth: dimensions?.width.toInt(),
       mediaHeight: dimensions?.height.toInt(),
       quoteId: replyId,
+      originId: event.stanzaId.originId,
       errorType: errorTypeFromException(event.other['encryption_error']),
     );
     
@@ -887,6 +957,8 @@ class XmppService {
         conversation.id,
         lastMessageBody: conversationBody,
         lastChangeTimestamp: messageTimestamp,
+        lastMessageId: message.id,
+        lastMessageRetracted: false,
         // Do not increment the counter for messages we sent ourselves (via Carbons)
         // or if we have the chat currently opened
         unreadCounter: isConversationOpened || sent
@@ -910,6 +982,8 @@ class XmppService {
       // The conversation does not exist, so we must create it
       final newConversation = await cs.addConversationFromData(
         rosterItem?.title ?? conversationJid.split('@')[0],
+        message.id,
+        false,
         conversationBody,
         rosterItem?.avatarUrl ?? '',
         conversationJid,
@@ -971,36 +1045,31 @@ class XmppService {
     final isFileEmbedded = _isFileEmbedded(event, embeddedFile);
 
     if (isFileEmbedded) {
-      if (await _shouldDownloadFile(conversationJid)) {
-        message = await ms.updateMessage(
-          message.id,
-          isDownloading: true,
-        );
+      final shouldDownload = await _shouldDownloadFile(conversationJid);
+      message = await ms.updateMessage(
+        message.id,
+        srcUrl: embeddedFile!.url,
+        key: embeddedFile.keyBase64,
+        iv: embeddedFile.ivBase64,
+        isFileUploadNotification: false,
+        isDownloading: shouldDownload,
+        sid: event.sid,
+        originId: event.stanzaId.originId,
+      );
 
-        // Tell the UI
-        sendEvent(MessageUpdatedEvent(message: message));
+      // Tell the UI
+      sendEvent(MessageUpdatedEvent(message: message));
 
+      if (shouldDownload) {
         await GetIt.I.get<HttpFileTransferService>().downloadFile(
           FileDownloadJob(
-            embeddedFile!,
+            embeddedFile,
             message.id,
             conversationJid,
             null,
             shouldShowNotification: false,
           ),
         );
-      } else {
-        message = await ms.updateMessage(
-          message.id,
-          srcUrl: embeddedFile!.url,
-          key: embeddedFile.keyBase64,
-          iv: embeddedFile.ivBase64,
-          isFileUploadNotification: false,
-          isDownloading: false,
-        );
-
-        // Tell the UI
-        sendEvent(MessageUpdatedEvent(message: message));
       }
     } else {
       _log.warning('Received a File Upload Notification replacement but the replacement contains no file!');

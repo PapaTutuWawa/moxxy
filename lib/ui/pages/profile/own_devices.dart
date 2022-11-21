@@ -138,41 +138,47 @@ class OwnDevicesPage extends StatelessWidget {
                 ),
               );
             },
-          onDeletePressed: () {
-            showConfirmationDialog(
+          onDeletePressed: () async {
+            final result = await showConfirmationDialog(
               t.pages.profile.owndevices.deleteDeviceConfirmTitle,
               t.pages.profile.owndevices.deleteDeviceConfirmBody,
               context,
-              () {
-                context.read<OwnDevicesBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
-              },
             );
+
+            if (result) {
+              // ignore: use_build_context_synchronously
+              context.read<OwnDevicesBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
+            }
           },
         );
       },
     );
   }
 
-  void _recreateSessions(BuildContext context) {
-    showConfirmationDialog(
+  Future<void> _recreateSessions(BuildContext context) async {
+    final result = await showConfirmationDialog(
       t.pages.profile.owndevices.recreateOwnSessionsConfirmTitle,
       t.pages.profile.owndevices.recreateOwnSessionsConfirmBody,
       context,
-      () {
-        context.read<OwnDevicesBloc>().add(OwnSessionsRecreatedEvent());
-      },
     );
+
+    if (result) {
+      // ignore: use_build_context_synchronously
+      context.read<OwnDevicesBloc>().add(OwnSessionsRecreatedEvent());
+    }
   }
 
-  void _recreateDevice(BuildContext context) {
-    showConfirmationDialog(
+  Future<void> _recreateDevice(BuildContext context) async {
+    final result = await showConfirmationDialog(
       t.pages.profile.owndevices.recreateOwnDeviceConfirmTitle,
       t.pages.profile.owndevices.recreateOwnDeviceConfirmBody,
       context,
-      () {
-        context.read<OwnDevicesBloc>().add(OwnDeviceRegeneratedEvent());
-      },
     );
+
+    if (result) {
+      // ignore: use_build_context_synchronously
+      context.read<OwnDevicesBloc>().add(OwnDeviceRegeneratedEvent());
+    }
   }
   
   @override

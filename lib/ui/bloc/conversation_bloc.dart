@@ -46,6 +46,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
     on<OwnJidReceivedEvent>(_onOwnJidReceived);
     on<OmemoSetEvent>(_onOmemoSet);
+    on<MessageRetractedEvent>(_onMessageRetracted);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -339,6 +340,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SetOmemoEnabledCommand(enabled: event.enabled, jid: state.conversation!.jid),
+      awaitable: false,
+    );
+  }
+
+  Future<void> _onMessageRetracted(MessageRetractedEvent event, Emitter<ConversationState> emit) async {
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      RetractMessageComment(
+        originId: event.id,
+        conversationJid: state.conversation!.jid,
+      ),
       awaitable: false,
     );
   }

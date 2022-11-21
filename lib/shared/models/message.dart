@@ -53,6 +53,7 @@ class Message with _$Message {
       @Default(false) bool received,
       @Default(false) bool displayed,
       @Default(false) bool acked,
+      @Default(false) bool isRetracted,
       String? originId,
       Message? quotes,
       String? filename,
@@ -80,6 +81,7 @@ class Message with _$Message {
       'ciphertextHashes': _optionalJsonDecode(json['ciphertextHashes'] as String?),
       'isDownloading': intToBool(json['isDownloading']! as int),
       'isUploading': intToBool(json['isUploading']! as int),
+      'isRetracted': intToBool(json['isRetracted']! as int),
     }).copyWith(quotes: quotes);
   }
   
@@ -102,6 +104,7 @@ class Message with _$Message {
       'ciphertextHashes': _optionalJsonEncode(ciphertextHashes),
       'isDownloading': boolToInt(isDownloading),
       'isUploading': boolToInt(isUploading),
+      'isRetracted': boolToInt(isRetracted),
     };
   }
 
@@ -120,4 +123,23 @@ class Message with _$Message {
   String get messageEmoji {
     return mimeTypeToEmoji(mediaType, addTypeName: false);
   }
+
+  /// Returns true if the message can be quoted. False if not.
+  bool get isQuotable => !isError() && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading;
+
+  /// Returns true if the message can be retracted. False if not.
+  /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
+  bool canRetract(bool sentBySelf) {
+    return originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading;
+  }
+
+  /// Returns true if the message can be edited. False if not.
+  /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
+  bool canEdit(bool sentBySelf) {
+    return sentBySelf && !isMedia && !isFileUploadNotification && !isUploading && !isDownloading;
+  }
+
+  /// Returns true if the message can open the selection menu by longpressing. False if
+  /// not.
+  bool get isLongpressable => !isRetracted;
 }

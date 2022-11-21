@@ -59,15 +59,17 @@ class DevicesPage extends StatelessWidget {
     );
   }
 
-  void _recreateSessions(BuildContext context) {
-    showConfirmationDialog(
+  Future<void> _recreateSessions(BuildContext context) async {
+    final result = await showConfirmationDialog(
       t.pages.profile.devices.recreateSessionsConfirmTitle,
       t.pages.profile.devices.recreateSessionsConfirmBody,
       context,
-      () {
-        context.read<DevicesBloc>().add(SessionsRecreatedEvent());
-      },
     );
+
+    if (result) {
+      // ignore: use_build_context_synchronously
+      context.read<DevicesBloc>().add(SessionsRecreatedEvent());
+    }
   }
   
   @override

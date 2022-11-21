@@ -1,6 +1,7 @@
 import 'package:dart_emoji/dart_emoji.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -34,6 +35,18 @@ class TextChatWidget extends StatelessWidget {
   final bool sent;
   final Widget? topWidget;
 
+  String getMessageText() {
+    if (message.isError()) {
+      return errorTypeToText(message.errorType!);
+    }
+
+    if (message.isRetracted) {
+      return t.messages.retracted;
+    }
+
+    return message.body;
+  }
+  
   @override
   Widget build(BuildContext context) {
     final fontsize = EmojiUtil.hasOnlyEmojis(
@@ -43,20 +56,17 @@ class TextChatWidget extends StatelessWidget {
       fontsizeBodyOnlyEmojis :
       fontsizeBody;
 
-    return IntrinsicWidth(child: Column(
+    return IntrinsicWidth(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ...topWidget != null ? [ topWidget! ] : [],
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ParsedText(
-              text: message.isError() ?
-                errorTypeToText(message.errorType!) :
-                message.body,
+              text: getMessageText(),
               style: TextStyle(
-                color: message.isError() ?
-                  Colors.grey :
-                  const Color(0xf9ebffff),
+                color: const Color(0xffffffff),
                 fontSize: fontsize,
               ),
               parse: [
@@ -76,7 +86,9 @@ class TextChatWidget extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: topWidget != null ? const EdgeInsets.only(left: 8, right: 8, bottom: 8) : EdgeInsets.zero,
+            padding: topWidget != null ?
+              const EdgeInsets.only(left: 8, right: 8, bottom: 8) :
+              EdgeInsets.zero,
             child: MessageBubbleBottom(message, sent),
           )
         ],
