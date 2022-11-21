@@ -254,18 +254,23 @@ class ChatBubbleState extends State<ChatBubble>
                               left: widget.sentBySelf ? null : 8,
                               child: Material(
                                 child: Container(
-                                constraints: BoxConstraints(
-                                  maxWidth: widget.maxWidth,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getBubbleColor(context),
-                                  borderRadius: _getBorderRadius(),
-                                ),
-                                child: Padding(
-                                  // NOTE: Images don't work well with padding here
-                                  padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
-                                  child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius(), widget.sentBySelf),
-                                ),
+                                  constraints: BoxConstraints(
+                                    maxWidth: widget.maxWidth,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _getBubbleColor(context),
+                                    borderRadius: _getBorderRadius(),
+                                  ),
+                                  child: Padding(
+                                    // NOTE: Images don't work well with padding here
+                                    padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
+                                    child: buildMessageWidget(
+                                      widget.message,
+                                      widget.maxWidth,
+                                      _getBorderRadius(),
+                                      widget.sentBySelf,
+                                    ),
+                                  ),
                                 ),
                               ),
                             );
@@ -352,8 +357,15 @@ class ChatBubbleState extends State<ChatBubble>
                 ),
                 child: Padding(
                   // NOTE: Images don't work well with padding here
-                  padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
-                  child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius(), widget.sentBySelf),
+                  padding: !widget.message.isRetracted && (widget.message.isMedia || widget.message.quotes != null) ?
+                    EdgeInsets.zero :
+                    const EdgeInsets.all(8),
+                  child: buildMessageWidget(
+                    widget.message,
+                    widget.maxWidth,
+                    _getBorderRadius(),
+                    widget.sentBySelf,
+                  ),
                 ),
               ),
             ), 

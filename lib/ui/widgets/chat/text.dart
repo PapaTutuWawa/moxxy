@@ -56,7 +56,8 @@ class TextChatWidget extends StatelessWidget {
       fontsizeBodyOnlyEmojis :
       fontsizeBody;
 
-    return IntrinsicWidth(child: Column(
+    return IntrinsicWidth(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ...topWidget != null ? [ topWidget! ] : [],
@@ -87,7 +88,9 @@ class TextChatWidget extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: topWidget != null ? const EdgeInsets.only(left: 8, right: 8, bottom: 8) : EdgeInsets.zero,
+            padding: topWidget != null ?
+              const EdgeInsets.only(left: 8, right: 8, bottom: 8) :
+              EdgeInsets.zero,
             child: MessageBubbleBottom(message, sent),
           )
         ],
