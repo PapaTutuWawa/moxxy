@@ -232,7 +232,7 @@ class ChatBubbleState extends State<ChatBubble>
                   return;
                 }
 
-                Vibrate.feedback(FeedbackType.selection);
+                Vibrate.feedback(FeedbackType.medium);
 
                 _msgY = Tween<double>(
                   begin: event.globalPosition.dy - 20,
