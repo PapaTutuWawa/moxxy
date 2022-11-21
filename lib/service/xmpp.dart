@@ -144,12 +144,6 @@ class XmppService {
       final sid = conn.generateId();
       final originId = conn.generateId();
       final conversation = await cs.getConversationByJid(recipient);
-      final newConversation = await cs.updateConversation(
-        conversation!.id,
-        lastMessageBody: body,
-        lastChangeTimestamp: timestamp,
-      );
-
       final message = await ms.addMessageFromData(
         body,
         timestamp,
@@ -158,9 +152,16 @@ class XmppService {
         false,
         sid,
         false,
-        newConversation.encrypted,
+        conversation!.encrypted,
         originId: originId,
         quoteId: quotedMessage?.sid,
+      );
+      final newConversation = await cs.updateConversation(
+        conversation.id,
+        lastMessageBody: body,
+        lastMessageId: message.id,
+        lastMessageRetracted: false,
+        lastChangeTimestamp: timestamp,
       );
 
       // Using the same ID should be fine.
@@ -952,6 +953,7 @@ class XmppService {
         conversation.id,
         lastMessageBody: conversationBody,
         lastChangeTimestamp: messageTimestamp,
+        lastMessageRetracted: false,
         // Do not increment the counter for messages we sent ourselves (via Carbons)
         // or if we have the chat currently opened
         unreadCounter: isConversationOpened || sent

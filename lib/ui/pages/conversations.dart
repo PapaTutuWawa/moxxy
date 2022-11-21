@@ -35,6 +35,7 @@ class ConversationsPage extends StatelessWidget {
         itemCount: state.conversations.length,
         itemBuilder: (_context, index) {
           final item = state.conversations[index];
+
           return Dismissible(
             key: ValueKey('conversation;$item'),
             onDismissed: (direction) => context.read<ConversationsBloc>().add(
@@ -66,6 +67,7 @@ class ConversationsPage extends StatelessWidget {
                 item.lastChangeTimestamp,
                 true,
                 typingIndicator: item.chatState == ChatState.composing,
+                lastMessageRetracted: item.lastMessageRetracted,
                 key: ValueKey('conversationRow;${item.jid}'),
               ),
             ), 

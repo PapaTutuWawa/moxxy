@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -19,11 +20,13 @@ class ConversationsListRow extends StatefulWidget {
       this.showLock = false,
       this.typingIndicator = false,
       this.extra,
+      this.lastMessageRetracted = false,
       super.key,
     }
   );
   final String avatarUrl;
   final String name;
+  final bool lastMessageRetracted;
   final String lastMessageBody;
   final int unreadCount;
   final double maxTextWidth;
@@ -89,7 +92,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     }
 
     return Text(
-      widget.lastMessageBody,
+      widget.lastMessageRetracted ?
+        t.messages.retracted :
+        widget.lastMessageBody,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
