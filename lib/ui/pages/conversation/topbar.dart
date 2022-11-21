@@ -41,7 +41,6 @@ PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData ic
 /// as it should
 // TODO(PapaTutuWawa): The conversation title may overflow the Topbar
 // TODO(Unknown): Maybe merge with BorderlessTopbar
-// TODO(PapaTutuWawa): Make the conversation title go up, when we display "online" and down if we don't have to anymore
 class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget {
   const ConversationTopbar({ super.key });
 
@@ -73,6 +72,10 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
       case ChatState.gone:
         return Container();
     } 
+  }
+
+  bool _isChatStateVisible(ChatState state) {
+    return state != ChatState.inactive && state != ChatState.gone;
   }
   
   @override
@@ -110,10 +113,39 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                             conversation: context.read<ConversationBloc>().state.conversation,
                           ),
                         ),
-                        child: Column(
+                        child: Stack(
                           children: [
-                            TopbarTitleText(state.conversation!.title),
-                            _buildChatState(state.conversation!.chatState),
+                            AnimatedPositioned(
+                              duration: const Duration(milliseconds: 200),
+                              top: _isChatStateVisible(state.conversation!.chatState) ?
+                                0 :
+                                10,
+                              left: 0,
+                              right: 0,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  TopbarTitleText(state.conversation!.title),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: AnimatedOpacity(
+                                opacity: _isChatStateVisible(state.conversation!.chatState) ?
+                                  1.0 :
+                                  0.0,
+                                duration: const Duration(milliseconds: 100),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    _buildChatState(state.conversation!.chatState),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),

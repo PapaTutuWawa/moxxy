@@ -4,12 +4,14 @@ class TopbarTitleText extends StatelessWidget {
   const TopbarTitleText(this.text, { super.key });
   final String text;
 
+  static const double fontSize = 20;
+  
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
       style: const TextStyle(
-        fontSize: 20,
+        fontSize: fontSize,
       ),
     );
   }
