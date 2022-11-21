@@ -418,6 +418,7 @@ class DatabaseService {
     Object? originId = notSpecified,
     Object? sid = notSpecified,
     bool? isRetracted,
+    Object? thumbnailData = notSpecified,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -489,6 +490,9 @@ class DatabaseService {
     }
     if (isRetracted != null) {
       m['isRetracted'] = boolToInt(isRetracted);
+    }
+    if (thumbnailData != notSpecified) {
+      m['thumbnailData'] = thumbnailData as String?;
     }
 
     await _db.update(

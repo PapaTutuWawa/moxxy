@@ -785,6 +785,7 @@ class XmppService {
       mediaHeight: null,
       mediaSize: null,
       isRetracted: true,
+      thumbnailData: null,
     );
     sendEvent(MessageUpdatedEvent(message: retractedMessage));
 

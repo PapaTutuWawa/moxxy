@@ -617,6 +617,7 @@ Future<void> performMessageRetraction(RetractMessageComment command, { dynamic e
     mediaHeight: null,
     mediaSize: null,
     isRetracted: true,
+    thumbnailData: null,
   );
   sendEvent(MessageUpdatedEvent(message: retractedMessage));
 
