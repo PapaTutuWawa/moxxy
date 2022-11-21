@@ -124,6 +124,7 @@ class MessageService {
     Object? body = notSpecified,
     Object? mediaUrl = notSpecified,
     Object? mediaType = notSpecified,
+    bool? isMedia,
     bool? received,
     bool? displayed,
     bool? acked,
@@ -166,6 +167,7 @@ class MessageService {
       originId: originId,
       sid: sid,
       isRetracted: isRetracted,
+      isMedia: isMedia,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

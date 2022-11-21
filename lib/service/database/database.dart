@@ -399,6 +399,7 @@ class DatabaseService {
     Object? body = notSpecified,
     Object? mediaUrl = notSpecified,
     Object? mediaType = notSpecified,
+    bool? isMedia,
     bool? received,
     bool? displayed,
     bool? acked,
@@ -431,6 +432,9 @@ class DatabaseService {
     }
     if (mediaType != notSpecified) {
       m['mediaType'] = mediaType as String?;
+    }
+    if (isMedia != null) {
+      m['isMedia'] = boolToInt(isMedia);
     }
     if (received != null) {
       m['received'] = boolToInt(received);

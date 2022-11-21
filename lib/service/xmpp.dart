@@ -772,6 +772,7 @@ class XmppService {
     
     final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
       msg.id,
+      isMedia: false,
       mediaUrl: null,
       mediaType: null,
       warningType: null,
