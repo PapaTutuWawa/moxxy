@@ -257,7 +257,8 @@ class ChatBubbleState extends State<ChatBubble>
                               //left: widget.sentBySelf ? null : _msgX.value,
                               right: widget.sentBySelf ? 8 : null,
                               left: widget.sentBySelf ? null : 8,
-                              child: Container(
+                              child: Material(
+                                child: Container(
                                 constraints: BoxConstraints(
                                   maxWidth: widget.maxWidth,
                                 ),
@@ -269,6 +270,7 @@ class ChatBubbleState extends State<ChatBubble>
                                   // NOTE: Images don't work well with padding here
                                   padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
                                   child: buildMessageWidget(widget.message, widget.maxWidth, _getBorderRadius(), widget.sentBySelf),
+                                ),
                                 ),
                               ),
                             );
@@ -293,6 +295,18 @@ class ChatBubbleState extends State<ChatBubble>
                                             Icons.delete,
                                             t.pages.conversation.retract,
                                             () => _retractMessage(context),
+                                          ),
+                                        ] : [],
+                                        ...widget.sentBySelf ? [
+                                          _buildMessageOption(
+                                            Icons.edit,
+                                            t.pages.conversation.edit,
+                                            () {
+                                              showNotImplementedDialog(
+                                                'editing',
+                                                context,
+                                              );
+                                            },
                                           ),
                                         ] : [],
                                         _buildMessageOption(

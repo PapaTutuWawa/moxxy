@@ -69,7 +69,8 @@
 	    "online": "Online",
 	    "retract": "Nachricht löschen",
 	    "retractBody": "Bist du dir sicher, dass du die Nachricht löschen willst? Bedenke, dass dies nur eine Bitte ist, die dein gegenüber nicht beachten muss.",
-	    "forward": "Weiterleiten"
+	    "forward": "Weiterleiten",
+	    "edit": "Bearbeiten"
 	},
 	"addcontact": {
 	    "title": "Neuen Kontakt hinzufügen",
