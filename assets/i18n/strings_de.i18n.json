@@ -39,6 +39,11 @@
 	    "unspecified": "Unbestimmter Fehler"
 	}
     },
+    "warnings": {
+	"message": {
+	    "integrityCheckFailed": "Konnte Integrität der Datei nicht überprüfen"
+	}
+    },
     "pages": {
 	"intro": {
 	    "noAccount": "Kein XMPP-Account vorhanden? Einen zu erstellen ist sehr einfach.",

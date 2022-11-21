@@ -39,6 +39,11 @@
 	    "unspecified": "Unspecified error"
 	}
     },
+    "warnings": {
+	"message": {
+	    "integrityCheckFailed": "Could not verify file integrity"
+	}
+    },
     "pages": {
 	"intro": {
 	    "noAccount": "Have no XMPP account? No worries, creating one is really easy.",
