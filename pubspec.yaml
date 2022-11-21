@@ -60,10 +60,10 @@ dependencies:
     version: 0.1.15
   moxxmpp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.3+1
+    version: 0.1.4
   moxxmpp_socket_tcp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.2+5
+    version: 0.1.2+6
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.1.0
@@ -127,8 +127,6 @@ dependency_overrides:
     git:
       url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
       rev: c68471349ab1b347ec9ad54651265710842c50b7
-  moxxmpp:
-    path: ../moxxmpp/packages/moxxmpp
  
 extra_licenses:
   - name: undraw.co

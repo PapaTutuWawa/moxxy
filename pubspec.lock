@@ -750,17 +750,17 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      path: "../moxxmpp/packages/moxxmpp"
-      relative: true
-    source: path
-    version: "0.1.3+1"
+      name: moxxmpp
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
+    version: "0.1.4"
   moxxmpp_socket_tcp:
     dependency: "direct main"
     description:
       name: moxxmpp_socket_tcp
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.2+5"
+    version: "0.1.2+6"
   moxxyv2_builders:
     dependency: "direct main"
     description:
