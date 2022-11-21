@@ -7,7 +7,6 @@ import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 
 class ConversationService {
-
   ConversationService()
     : _conversationCache = LRUCache(100),
       _loadedConversations = false;
@@ -56,20 +55,23 @@ class ConversationService {
   
   /// Wrapper around [DatabaseService]'s [updateConversation] that modifies the cache.
   Future<Conversation> updateConversation(int id, {
-      String? lastMessageBody,
-      int? lastChangeTimestamp,
-      bool? open,
-      int? unreadCounter,
-      String? avatarUrl,
-      ChatState? chatState,
-      bool? muted,
-      bool? encrypted,
-    }
-  ) async {
+    String? lastMessageBody,
+    int? lastChangeTimestamp,
+    bool? lastMessageRetracted,
+    int? lastMessageId,
+    bool? open,
+    int? unreadCounter,
+    String? avatarUrl,
+    ChatState? chatState,
+    bool? muted,
+    bool? encrypted,
+  }) async {
     final conversation = await _getConversationById(id);
     final newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
       id,
       lastMessageBody: lastMessageBody,
+      lastMessageRetracted: lastMessageRetracted,
+      lastMessageId: lastMessageId,
       lastChangeTimestamp: lastChangeTimestamp,
       open: open,
       unreadCounter: unreadCounter,
@@ -86,6 +88,8 @@ class ConversationService {
   /// Wrapper around [DatabaseService]'s [addConversationFromData] that updates the cache.
   Future<Conversation> addConversationFromData(
     String title,
+    int lastMessageId,
+    bool lastMessageRetracted,
     String lastMessageBody,
     String avatarUrl,
     String jid,
@@ -97,6 +101,8 @@ class ConversationService {
   ) async {
     final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
       title,
+      lastMessageId,
+      lastMessageRetracted,
       lastMessageBody,
       avatarUrl,
       jid,

@@ -334,6 +334,8 @@ class XmppService {
     final dimensions = <String, Size>{};
     // Recipient -> Should encrypt
     final encrypt = <String, bool>{};
+    // Recipient -> Last message Id
+    final lastMessageIds = <String, int>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -380,6 +382,10 @@ class XmppService {
           messages[path] = { recipient: msg };
         }
 
+        if (path == paths.last) {
+          lastMessageIds[recipient] = msg.id;
+        }
+
         sendEvent(MessageAddedEvent(message: msg));
       }
     }
@@ -396,6 +402,7 @@ class XmppService {
         final updatedConversation = await cs.updateConversation(
           conversation.id,
           lastMessageBody: mimeTypeToEmoji(lastFileMime),
+          lastMessageId: lastMessageIds[recipient],
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
           open: true,
         );
@@ -417,6 +424,8 @@ class XmppService {
         final newConversation = await cs.addConversationFromData(
           // TODO(Unknown): Should we use the JID parser?
           rosterItem?.title ?? recipient.split('@').first,
+          lastMessageIds[recipient]!,
+          false,
           mimeTypeToEmoji(lastFileMime),
           rosterItem?.avatarUrl ?? '',
           recipient,
@@ -617,6 +626,8 @@ class XmppService {
       final bare = event.from.toBare();
       final conv = await cs.addConversationFromData(
         bare.toString().split('@')[0],
+        -1,
+        false,
         '',
         '', // TODO(Unknown): avatarUrl
         bare.toString(),
@@ -758,7 +769,6 @@ class XmppService {
       return;
     }
     
-    // TODO(PapaTutuWawa): Change the lastMessageBody of the conversation if that message was retracted
     final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
       msg.id,
       mediaUrl: null,
@@ -775,6 +785,19 @@ class XmppService {
       isRetracted: true,
     );
     sendEvent(MessageUpdatedEvent(message: retractedMessage));
+
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = await cs.getConversationByJid(
+      event.fromJid.toBare().toString(),
+    );
+    if (conversation != null && conversation.lastMessageId == msg.id) {
+      final newConversation = await cs.updateConversation(
+        conversation.id,
+        lastMessageBody: '',
+        lastMessageRetracted: true,
+      );
+      sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+    }
   }
   
   /// Returns true if a file should be automatically downloaded. If it should not, it
@@ -952,6 +975,8 @@ class XmppService {
       // The conversation does not exist, so we must create it
       final newConversation = await cs.addConversationFromData(
         rosterItem?.title ?? conversationJid.split('@')[0],
+        message.id,
+        false,
         conversationBody,
         rosterItem?.avatarUrl ?? '',
         conversationJid,

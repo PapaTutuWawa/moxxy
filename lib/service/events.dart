@@ -206,6 +206,8 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
   } else {
     final conversation = await cs.addConversationFromData(
       command.title,
+      -1,
+      false,
       command.lastMessageBody,
       command.avatarUrl,
       command.jid,
@@ -325,6 +327,8 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
   } else {            
     final c = await cs.addConversationFromData(
       jid.split('@')[0],
+      -1,
+      false,
       '',
       '',
       jid,
@@ -581,7 +585,7 @@ Future<void> performMessageRetraction(RetractMessageComment command, { dynamic e
   );
 
   if (msg == null) {
-    // TODO(PapaTutuWawa): Log
+    GetIt.I.get<Logger>().warning('Failed to find message ${command.conversationJid}#${command.originId} for message retraction');
     return;
   }
 
@@ -614,4 +618,17 @@ Future<void> performMessageRetraction(RetractMessageComment command, { dynamic e
     isRetracted: true,
   );
   sendEvent(MessageUpdatedEvent(message: retractedMessage));
+
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(
+    command.conversationJid,
+  );
+  if (conversation != null && conversation.lastMessageId == msg.id) {
+    final newConversation = await cs.updateConversation(
+      conversation.id,
+      lastMessageBody: '',
+      lastMessageRetracted: true,
+    );
+    sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+  }
 }

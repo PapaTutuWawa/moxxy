@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
+import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -56,7 +57,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 4,
+      version: 5,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -71,6 +72,10 @@ class DatabaseService {
         if (oldVersion < 4) {
           _log.finest('Running migration for database version 4');
           await upgradeFromV3ToV4(db);
+        }
+        if (oldVersion < 5) {
+          _log.finest('Running migration for database version 5');
+          await upgradeFromV4ToV5(db);
         }
       },
     );
@@ -141,16 +146,17 @@ class DatabaseService {
   
   /// Updates the conversation with id [id] inside the database.
   Future<Conversation> updateConversation(int id, {
-      String? lastMessageBody,
-      int? lastChangeTimestamp,
-      bool? open,
-      int? unreadCounter,
-      String? avatarUrl,
-      ChatState? chatState,
-      bool? muted,
-      bool? encrypted,
-    }
-  ) async {
+    String? lastMessageBody,
+    int? lastChangeTimestamp,
+    bool? lastMessageRetracted,
+    int? lastMessageId,
+    bool? open,
+    int? unreadCounter,
+    String? avatarUrl,
+    ChatState? chatState,
+    bool? muted,
+    bool? encrypted,
+  }) async {
     final cd = (await _db.query(
       'Conversations',
       where: 'id = ?',
@@ -168,6 +174,12 @@ class DatabaseService {
     //await c.sharedMedia.load();
     if (lastMessageBody != null) {
       c['lastMessageBody'] = lastMessageBody;
+    }
+    if (lastMessageRetracted != null) {
+      c['lastMessageRetracted'] = boolToInt(lastMessageRetracted);
+    }
+    if (lastMessageId != null) {
+      c['lastMessageId'] = lastMessageId;
     }
     if (lastChangeTimestamp != null) {
       c['lastChangeTimestamp'] = lastChangeTimestamp;
@@ -208,6 +220,8 @@ class DatabaseService {
   /// [Conversation] object can carry its database id.
   Future<Conversation> addConversationFromData(
     String title,
+    int lastMessageId,
+    bool lastMessageRetracted,
     String lastMessageBody,
     String avatarUrl,
     String jid,
@@ -220,6 +234,8 @@ class DatabaseService {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
       title,
+      lastMessageId,
+      lastMessageRetracted,
       lastMessageBody,
       avatarUrl,
       jid,
