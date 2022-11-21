@@ -134,16 +134,21 @@ class ChatBubbleState extends State<ChatBubble>
 
   /// Called when the user wants to retract the message
   Future<void> _retractMessage(BuildContext context) async {
-    await showConfirmationDialog(
+    final result = await showConfirmationDialog(
       t.pages.conversation.retract,
       t.pages.conversation.retractBody,
       context,
-      () {
-        context.read<ConversationBloc>().add(
-          MessageRetractedEvent(widget.message.originId!),
-        );
-      },
     );
+
+    if (result) {
+      // ignore: use_build_context_synchronously
+      context.read<ConversationBloc>().add(
+        MessageRetractedEvent(widget.message.originId!),
+      );
+
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop();
+    }
   }
   
   Widget _buildBubble(BuildContext context) {

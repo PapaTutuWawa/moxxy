@@ -90,7 +90,7 @@ class ShareSelectionPage extends StatelessWidget {
           ),
           floatingActionButton: state.selection.isNotEmpty ?
             FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
                 final bloc = context.read<ShareSelectionBloc>();
                 final hasUnencrypted = bloc.state.selection.any((selection) {
                   return !bloc.state.items[selection].isEncrypted;
@@ -101,14 +101,15 @@ class ShareSelectionPage extends StatelessWidget {
 
                 // Warn the user
                 if (hasUnencrypted && hasEncrypted) {
-                  showConfirmationDialog(
+                  final result = await showConfirmationDialog(
                     t.pages.shareselection.confirmTitle,
                     t.pages.shareselection.confirmBody,
                     context,
-                    () {
-                      bloc.add(SubmittedEvent());
-                    }
                   );
+
+                  if (result) {
+                    bloc.add(SubmittedEvent());
+                  }
                   return;
                 }
 

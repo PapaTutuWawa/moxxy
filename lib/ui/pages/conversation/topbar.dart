@@ -137,23 +137,25 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                     ),
                     // ignore: implicit_dynamic_type
                     PopupMenuButton(
-                      onSelected: (result) {
+                      onSelected: (result) async {
                         switch (result) {
                           case ConversationOption.close: {
-                            showConfirmationDialog(
+                            final result = await showConfirmationDialog(
                               t.pages.conversation.closeChatConfirmTitle,
                               t.pages.conversation.closeChatConfirmSubtext,
                               context,
-                              () {
-                                context.read<ConversationsBloc>().add(
-                                  ConversationClosedEvent(state.conversation!.jid),
-                                );
-                              }
                             );
+
+                            if (result) {
+                              // ignore: use_build_context_synchronously
+                              context.read<ConversationsBloc>().add(
+                                ConversationClosedEvent(state.conversation!.jid),
+                              );
+                            }
                           }
                           break;
                           case ConversationOption.block: {
-                            blockJid(state.conversation!.jid, context);
+                            await blockJid(state.conversation!.jid, context);
                           }
                           break;
                         }

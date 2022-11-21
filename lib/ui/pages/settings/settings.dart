@@ -55,14 +55,17 @@ class SettingsPage extends StatelessWidget {
               SettingsTile(
                 title: Text(t.pages.settings.settings.signOut),
                 leading: const Icon(Icons.logout),
-                onPressed: (context) => showConfirmationDialog(
-                  t.pages.settings.settings.signOutConfirmTitle,
-                  t.pages.settings.settings.signOutConfirmBody,
-                  context,
-                  () async {
+                onPressed: (context) async {
+                  final result = await showConfirmationDialog(
+                    t.pages.settings.settings.signOutConfirmTitle,
+                    t.pages.settings.settings.signOutConfirmBody,
+                    context,
+                  );
+
+                  if (result) {
                     GetIt.I.get<PreferencesBloc>().add(SignedOutEvent());
-                  },
-                ),
+                  }
+                },
               )
             ],
           ),

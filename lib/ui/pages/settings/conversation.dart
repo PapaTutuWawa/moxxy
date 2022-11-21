@@ -87,15 +87,17 @@ class ConversationSettingsPage extends StatelessWidget {
                 ),
                 SettingsTile(
                   title: Text(t.pages.settings.conversation.removeBackgroundImage),
-                  onPressed: (context) {
-                    showConfirmationDialog(
+                  onPressed: (context) async {
+                    final result = await showConfirmationDialog(
                       t.pages.settings.conversation.removeBackgroundImageConfirmTitle,
                       t.pages.settings.conversation.removeBackgroundImageConfirmBody,
                       context,
-                      () async {
-                        await _removeBackgroundImage(context, state);
-                      }
                     );
+
+                    if (result) {
+                      // ignore: use_build_context_synchronously
+                      await _removeBackgroundImage(context, state);
+                    }
                   },
                 ),
               ],
