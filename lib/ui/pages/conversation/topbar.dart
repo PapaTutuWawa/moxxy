@@ -122,6 +122,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                                 10,
                               left: 0,
                               right: 0,
+                              curve: Curves.easeInOutCubic,
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -137,6 +138,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                                 opacity: _isChatStateVisible(state.conversation!.chatState) ?
                                   1.0 :
                                   0.0,
+                                curve: Curves.easeInOutCubic,
                                 duration: const Duration(milliseconds: 100),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,

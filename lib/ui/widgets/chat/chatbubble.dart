@@ -237,7 +237,12 @@ class ChatBubbleState extends State<ChatBubble>
                 _msgY = Tween<double>(
                   begin: event.globalPosition.dy - 20,
                   end: 200,
-                ).animate(_controller);
+                ).animate(
+                  CurvedAnimation(
+                    parent: _controller,
+                    curve: Curves.easeInOutCubic,
+                  ),
+                );
                 // TODO(PapaTutuWawa): Animate the message to the center?
                 /*_msgX = Tween<double>(
                   begin: 8,
