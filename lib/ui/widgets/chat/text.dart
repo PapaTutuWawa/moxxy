@@ -66,9 +66,7 @@ class TextChatWidget extends StatelessWidget {
             child: ParsedText(
               text: getMessageText(),
               style: TextStyle(
-                color: message.isError() || message.isRetracted ?
-                  Colors.grey :
-                  const Color(0xf9ebffff),
+                color: const Color(0xffffffff),
                 fontSize: fontsize,
               ),
               parse: [

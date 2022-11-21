@@ -17,11 +17,11 @@ const Color primaryColorAlt = Color(primaryColorAltHexRGB);
 const Color primaryColorDisabled = Color(primaryColorDisabledHexRGB);
 const Color textColorDisabled = Color(textColorDisabledHexRGB);
 
-const Color bubbleColorSent = Color(0xffa139f0);
+const Color bubbleColorSent = Color(0xff7e0bce);
 const Color bubbleColorSentQuoted = bubbleColorSent;
 const Color bubbleColorReceived = Color(0xff222222);
 const Color bubbleColorReceivedQuoted = bubbleColorReceived;
-const Color bubbleColorUnencrypted = Color(0xffd40101);
+const Color bubbleColorUnencrypted = Color(0xffd40000);
 
 const double paddingVeryLarge = 64;
 

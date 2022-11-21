@@ -115,6 +115,14 @@ class ChatBubbleState extends State<ChatBubble>
     if (widget.chatEncrypted && !widget.message.encrypted) {
       return bubbleColorUnencrypted;
     }
+
+    if (widget.message.isRetracted) {
+      if (widget.sentBySelf) {
+        return const Color(0xff614d91);
+      } else {
+        return const Color(0xff585858);
+      }
+    }
     
     if (widget.sentBySelf) {
       return bubbleColorSent;
@@ -357,7 +365,7 @@ class ChatBubbleState extends State<ChatBubble>
                 ),
                 child: Padding(
                   // NOTE: Images don't work well with padding here
-                  padding: !widget.message.isRetracted && (widget.message.isMedia || widget.message.quotes != null) ?
+                  padding: widget.message.isMedia || widget.message.quotes != null ?
                     EdgeInsets.zero :
                     const EdgeInsets.all(8),
                   child: buildMessageWidget(
