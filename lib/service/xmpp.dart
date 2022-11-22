@@ -779,6 +779,11 @@ class XmppService {
 
   /// Handles receiving a message stanza of type error.
   Future<void> _handleErrorMessage(MessageEvent event) async {
+    if (event.error == null) {
+      _log.warning('Received error for message ${event.sid} without an error element');
+      return;
+    }
+
     final ms = GetIt.I.get<MessageService>();
     final msg = await ms.getMessageByStanzaId(
       event.fromJid.toBare().toString(),
@@ -790,8 +795,21 @@ class XmppService {
       return;
     }
 
-    // TODO(PapaTutuWawa): Figure out the error reason
-    var error = unspecifiedError;
+    int error;
+    switch (event.error!.error) {
+      case 'service-unavailable':
+      error = messageServiceUnavailable;
+      break;
+      case 'remote-server-timeout':
+      error = messageRemoteServerTimeout;
+      break;
+      case 'remote-server-not-found':
+      error = messageRemoteServerNotFound;
+      break;
+      default:
+      error = unspecifiedError;
+      break;
+    }
     
     final newMsg = await ms.updateMessage(
       msg.id,
