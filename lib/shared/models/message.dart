@@ -144,7 +144,7 @@ class Message with _$Message {
   bool get errorMenuVisible {
     return hasError && (
       errorType! < messageNotEncryptedForDevice ||
-      errorType! > messageInvalidNumber
+      errorType! > messageInvalidAffixElements
     );
   }
 }

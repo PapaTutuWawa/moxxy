@@ -9,7 +9,7 @@ const messageNotEncryptedForDevice = 2;
 const messageInvalidHMAC = 3;
 const messageNoDecryptionKey = 4;
 const messageInvalidAffixElements = 5;
-const messageInvalidNumber = 6;
+// const messageInvalidNumber = 6;
 const messageFailedToEncrypt = 7;
 const messageFailedToDecryptFile = 8;
 const messageContactDoesNotSupportOmemo = 9;
@@ -42,6 +42,10 @@ String errorToTranslatableString(int error) {
   assert(error != noError, 'Calling errorToTranslatableString with noError makes no sense');
 
   switch (error) {
+    case messageNotEncryptedForDevice: return t.errors.omemo.notEncryptedForDevice;
+    case messageInvalidHMAC: return t.errors.omemo.invalidHmac;
+    case messageNoDecryptionKey: return t.errors.omemo.noDecryptionKey;
+    case messageInvalidAffixElements: return t.errors.omemo.messageInvalidAfixElement;
     case fileUploadFailedError: return t.errors.message.fileUploadFailed;
     case messageContactDoesNotSupportOmemo: return t.errors.message.contactDoesntSupportOmemo;
     case fileDownloadFailedError: return t.errors.message.fileDownloadFailed;

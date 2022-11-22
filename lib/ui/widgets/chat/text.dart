@@ -9,17 +9,6 @@ import 'package:moxxyv2/ui/redirects.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-String errorTypeToText(int errorType) {
-  switch (errorType) {
-    case messageNotEncryptedForDevice: return 'Message not encrypted for device';
-    case messageInvalidHMAC: return 'Could not decrypt message';
-    case messageNoDecryptionKey: return 'No decryption key available';
-    case messageInvalidAffixElements: return 'Invalid encrypted message';
-    case messageInvalidNumber: return 'lol';
-    default: return '';
-  }
-}
-
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
 class TextChatWidget extends StatelessWidget {
@@ -36,8 +25,10 @@ class TextChatWidget extends StatelessWidget {
   final Widget? topWidget;
 
   String getMessageText() {
-    if (message.hasError) {
-      return errorTypeToText(message.errorType!);
+    if (message.hasError &&
+        message.errorType! >= messageNotEncryptedForDevice &&
+        message.errorType! <= messageInvalidAffixElements) {
+      return errorToTranslatableString(message.errorType!);
     }
 
     if (message.isRetracted) {

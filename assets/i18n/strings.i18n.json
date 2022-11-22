@@ -27,7 +27,11 @@
     },
     "errors": {
 	"omemo": {
-	    "couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work."
+	    "couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work.",
+	    "notEncryptedForDevice": "This message was not encrypted for this device",
+	    "invalidHmac": "Could not decrypt message",
+	    "noDecryptionKey": "No decryption key available",
+	    "messageInvalidAfixElement": "Invalid encrypted message"
 	},
 	"connection": {
 	    "connectionTimeout": "Could not connect to server"

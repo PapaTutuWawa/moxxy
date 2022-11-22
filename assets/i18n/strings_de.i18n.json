@@ -27,7 +27,11 @@
     },
     "errors": {
 	"omemo": {
-	    "couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht."
+	    "couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht.",
+	    "notEncryptedForDevice": "Die Nachricht wurde nicht für dieses Gerät verschlüsselt",
+	    "invalidHmac": "Die Nachricht konnte nicht entschlüsselt werden",
+	    "noDecryptionKey": "Kein Schlüssel zum Entschlüsseln vorhanden",
+	    "messageInvalidAfixElement": "Ungültige verschlüsselte Nachricht"
 	},
 	"connection": {
 	    "connectionTimeout": "Verbindung zum Server nicht möglich"
