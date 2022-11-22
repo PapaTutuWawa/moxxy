@@ -776,6 +776,32 @@ class XmppService {
       && await _automaticFileDownloadAllowed()
       && await GetIt.I.get<RosterService>().isInRoster(conversationJid);
   }
+
+  /// Handles receiving a message stanza of type error.
+  Future<void> _handleErrorMessage(MessageEvent event) async {
+    final ms = GetIt.I.get<MessageService>();
+    final msg = await ms.getMessageByStanzaId(
+      event.fromJid.toBare().toString(),
+      event.sid,
+    );
+
+    if (msg == null) {
+      _log.warning('Received error for message ${event.sid} we cannot find');
+      return;
+    }
+
+    // TODO(PapaTutuWawa): Figure out the error reason
+    var error = unspecifiedError;
+    
+    final newMsg = await ms.updateMessage(
+      msg.id,
+      errorType: error,
+    );
+
+    // TODO(PapaTutuWawa): Show a notification for certain error types, i.e. those
+    //                     that mean that the message could not be delivered.
+    sendEvent(MessageUpdatedEvent(message: newMsg));
+  }
   
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
     // The jid this message event is meant for
@@ -783,6 +809,12 @@ class XmppService {
       ? event.toJid.toBare().toString()
       : event.fromJid.toBare().toString();
 
+    if (event.type == 'error') {
+      await _handleErrorMessage(event);
+      _log.finest('Processed error message. Ending event processing here.');
+      return;
+    }
+      
     // Process the chat state update. Can also be attached to other messages
     if (event.chatState != null) await _onChatState(event.chatState!, conversationJid);
 
