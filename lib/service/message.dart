@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
@@ -220,6 +222,7 @@ class MessageService {
     }
 
     final isMedia = msg.isMedia;
+    final mediaUrl = msg.mediaUrl;
     final retractedMessage = await updateMessage(
       msg.id,
       isMedia: false,
@@ -250,7 +253,6 @@ class MessageService {
         );
 
         if (isMedia) {
-          // TODO(PapaTutuWawa): Delete the file referenced by the shared media entry
           await GetIt.I.get<DatabaseService>().removeSharedMediumByMessageId(msg.id);
 
           newConversation = newConversation.copyWith(
@@ -259,6 +261,14 @@ class MessageService {
             }).toList(),
           );
           GetIt.I.get<ConversationService>().setConversation(newConversation);
+
+          // Delete the file if we downloaded it
+          if (mediaUrl != null) {
+            final file = File(mediaUrl);
+            if (file.existsSync()) {
+              unawaited(file.delete());
+            }
+          }
         }
 
         sendEvent(
