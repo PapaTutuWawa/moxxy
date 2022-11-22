@@ -28,11 +28,11 @@ class SharedMediaPage extends StatelessWidget {
 
         final rows = List<List<SharedMedium>>.empty(growable: true);
         var currentRow = List<SharedMedium>.empty(growable: true);
-        for (var i = state.sharedMedia.length - 1; i >= 0; i--) {
+        for (var i = 0; i <= state.sharedMedia.length - 1; i++) {
           final item = state.sharedMedia[i];
           final thisMediaDateTime = DateTime.fromMillisecondsSinceEpoch(item.timestamp);
-          final lastMediaDateTime = i < state.sharedMedia.length - 1 ?
-            DateTime.fromMillisecondsSinceEpoch(state.sharedMedia[i + 1].timestamp) :
+          final lastMediaDateTime = i > 0 ?
+            DateTime.fromMillisecondsSinceEpoch(state.sharedMedia[i - 1].timestamp) :
             null;
 
           final newDay = lastMediaDateTime != null && (

@@ -408,7 +408,7 @@ class XmppService {
       final conversation = await cs.getConversationByJid(recipient);
       if (conversation != null) {
         // Update conversation
-        final updatedConversation = await cs.updateConversation(
+        var updatedConversation = await cs.updateConversation(
           conversation.id,
           lastMessageBody: mimeTypeToEmoji(lastFileMime),
           lastMessageId: lastMessageIds[recipient],
@@ -417,20 +417,19 @@ class XmppService {
         );
 
         sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, conversation.id);
-        sendEvent(
-          ConversationUpdatedEvent(
-            conversation: updatedConversation.copyWith(
-              sharedMedia: [
-                ...sharedMediaMap[recipient]!,
-                ...conversation.sharedMedia,
-              ],
-            ),
-          ),
+
+        updatedConversation = updatedConversation.copyWith(
+          sharedMedia: [
+            ...sharedMediaMap[recipient]!,
+            ...conversation.sharedMedia,
+          ],
         );
+        cs.setConversation(updatedConversation);
+        sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
       } else {
         // Create conversation
         final rosterItem = await rs.getRosterItemByJid(recipient);
-        final newConversation = await cs.addConversationFromData(
+        var newConversation = await cs.addConversationFromData(
           // TODO(Unknown): Should we use the JID parser?
           rosterItem?.title ?? recipient.split('@').first,
           lastMessageIds[recipient]!,
@@ -445,15 +444,14 @@ class XmppService {
           prefs.enableOmemoByDefault,
         );
 
-        // Notify the UI
         sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, newConversation.id);
-        sendEvent(
-          ConversationAddedEvent(
-            conversation: newConversation.copyWith(
-              sharedMedia: sharedMediaMap[recipient]!,
-            ),
-          ),
+        newConversation = newConversation.copyWith(
+          sharedMedia: sharedMediaMap[recipient]!,
         );
+        cs.setConversation(newConversation);
+
+        // Notify the UI
+        sendEvent(ConversationAddedEvent(conversation: newConversation));
       }
     }
 
@@ -762,55 +760,12 @@ class XmppService {
 
   /// Handle a message retraction given the MessageEvent [event].
   Future<void> _handleMessageRetraction(MessageEvent event, String conversationJid) async {
-    final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
-      event.messageRetraction!.id,
+    await GetIt.I.get<MessageService>().retractMessage(
       conversationJid,
+      event.messageRetraction!.id,
+      event.fromJid.toBare().toString(),
+      false,
     );
-
-    if (msg == null) {
-      _log.finest('Got message retraction for origin Id ${event.messageRetraction!.id}, but did not find the message');
-      return;
-    }
-
-    // Check if the retraction was sent by the original sender
-    if (JID.fromString(msg.sender).toBare().toString() != event.fromJid.toBare().toString()) {
-      _log.warning('Received invalid message retraction from ${event.fromJid.toBare().toString()} but its original sender is ${msg.sender}');
-      return;
-    }
-    
-    final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
-      msg.id,
-      isMedia: false,
-      mediaUrl: null,
-      mediaType: null,
-      warningType: null,
-      errorType: null,
-      srcUrl: null,
-      key: null,
-      iv: null,
-      encryptionScheme: null,
-      mediaWidth: null,
-      mediaHeight: null,
-      mediaSize: null,
-      isRetracted: true,
-      thumbnailData: null,
-    );
-    sendEvent(MessageUpdatedEvent(message: retractedMessage));
-
-    final cs = GetIt.I.get<ConversationService>();
-    final conversation = await cs.getConversationByJid(conversationJid);
-    if (conversation != null) {
-      if (conversation.lastMessageId == msg.id) {
-        final newConversation = await cs.updateConversation(
-          conversation.id,
-          lastMessageBody: '',
-          lastMessageRetracted: true,
-        );
-        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
-      }
-    } else {
-      _log.warning('Failed to find conversation with conversationJid $conversationJid');
-    }
   }
   
   /// Returns true if a file should be automatically downloaded. If it should not, it

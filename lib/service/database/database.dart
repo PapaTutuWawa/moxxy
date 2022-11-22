@@ -275,6 +275,16 @@ class DatabaseService {
       id: await _db.insert('SharedMedia', s.toDatabaseJson(conversationId)),
     );
   }
+
+  /// Remove a SharedMedium from the database based on the message it
+  /// references [messageId].
+  Future<void> removeSharedMediumByMessageId(int messageId) async {
+    await _db.delete(
+      mediaTable,
+      where: 'message_id = ?',
+      whereArgs: [messageId],
+    );
+  }
   
   /// Same as [addConversationFromData] but for a [Message].
   Future<Message> addMessageFromData(

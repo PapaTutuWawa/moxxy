@@ -579,15 +579,12 @@ Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dy
 }
 
 Future<void> performMessageRetraction(RetractMessageComment command, { dynamic extra }) async {
-  final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
-    command.originId,
+  await GetIt.I.get<MessageService>().retractMessage( 
     command.conversationJid,
+    command.originId,
+    '',
+    true,
   );
-
-  if (msg == null) {
-    GetIt.I.get<Logger>().warning('Failed to find message ${command.conversationJid}#${command.originId} for message retraction');
-    return;
-  }
 
   // Send the retraction
   (GetIt.I.get<XmppConnection>().getManagerById(messageManager)! as MessageManager)
@@ -600,37 +597,4 @@ Future<void> performMessageRetraction(RetractMessageComment command, { dynamic e
         ),
       ),
     );
-  
-  // Update the database
-  final retractedMessage = await GetIt.I.get<MessageService>().updateMessage(
-    msg.id,
-    isMedia: false,
-    mediaUrl: null,
-    mediaType: null,
-    warningType: null,
-    errorType: null,
-    srcUrl: null,
-    key: null,
-    iv: null,
-    encryptionScheme: null,
-    mediaWidth: null,
-    mediaHeight: null,
-    mediaSize: null,
-    isRetracted: true,
-    thumbnailData: null,
-  );
-  sendEvent(MessageUpdatedEvent(message: retractedMessage));
-
-  final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(
-    command.conversationJid,
-  );
-  if (conversation != null && conversation.lastMessageId == msg.id) {
-    final newConversation = await cs.updateConversation(
-      conversation.id,
-      lastMessageBody: '',
-      lastMessageRetracted: true,
-    );
-    sendEvent(ConversationUpdatedEvent(conversation: newConversation));
-  }
 }

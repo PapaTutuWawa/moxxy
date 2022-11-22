@@ -53,6 +53,12 @@ class LRUCache<K, V> extends Cache<K, V> {
     if (_cache.length + 1 <= _maxSize) {
       // Fall through
     } else {
+      if (inCache(key)) {
+        _cache[key] = _LRUCacheEntry<V>(value, _t);
+        _t++;
+        return;
+      }
+
       var lowestKey = _cache.keys.first;
       var t = _cache[lowestKey]!.t;
       _cache

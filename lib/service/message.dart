@@ -2,8 +2,13 @@ import 'dart:collection';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
+import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/not_specified.dart';
+import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
 class MessageService {
@@ -181,5 +186,89 @@ class MessageService {
     }
     
     return newMessage;
+  }
+
+  /// Helper function that manages everything related to retracting a message. It
+  /// - Replaces all metadata of the message with null values and marks it as retracted
+  /// - Modified the conversation, if the retracted message was the newest message
+  /// - Remove the SharedMedium from the database, if one referenced the retracted message
+  /// - Update the UI
+  ///
+  /// [conversationJid] is the bare JID of the conversation this message belongs to.
+  /// [originId] is the origin Id of the message that is to be retracted.
+  /// [bareSender] is the bare JID of the sender of the retraction message.
+  /// [selfRetract] indicates whether the message retraction came from the UI. If true,
+  /// then the sender check (see security considerations of XEP-0424) is skipped as
+  /// the UI already verifies it.
+  Future<void> retractMessage(String conversationJid, String originId, String bareSender, bool selfRetract) async {
+    final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
+      originId,
+      conversationJid,
+    );
+
+    if (msg == null) {
+      _log.finest('Got message retraction for origin Id $originId, but did not find the message');
+      return;
+    }
+
+    // Check if the retraction was sent by the original sender
+    if (!selfRetract) {
+      if (JID.fromString(msg.sender).toBare().toString() != bareSender) {
+        _log.warning('Received invalid message retraction from $bareSender but its original sender is ${msg.sender}');
+        return;
+      }
+    }
+
+    final isMedia = msg.isMedia;
+    final retractedMessage = await updateMessage(
+      msg.id,
+      isMedia: false,
+      mediaUrl: null,
+      mediaType: null,
+      warningType: null,
+      errorType: null,
+      srcUrl: null,
+      key: null,
+      iv: null,
+      encryptionScheme: null,
+      mediaWidth: null,
+      mediaHeight: null,
+      mediaSize: null,
+      isRetracted: true,
+      thumbnailData: null,
+    );
+    sendEvent(MessageUpdatedEvent(message: retractedMessage));
+
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = await cs.getConversationByJid(conversationJid);
+    if (conversation != null) {
+      if (conversation.lastMessageId == msg.id) {
+        var newConversation = await cs.updateConversation(
+          conversation.id,
+          lastMessageBody: '',
+          lastMessageRetracted: true,
+        );
+
+        if (isMedia) {
+          // TODO(PapaTutuWawa): Delete the file referenced by the shared media entry
+          await GetIt.I.get<DatabaseService>().removeSharedMediumByMessageId(msg.id);
+
+          newConversation = newConversation.copyWith(
+            sharedMedia: newConversation.sharedMedia.where((SharedMedium medium) {
+              return medium.messageId != msg.id;
+            }).toList(),
+          );
+          GetIt.I.get<ConversationService>().setConversation(newConversation);
+        }
+
+        sendEvent(
+          ConversationUpdatedEvent(
+            conversation: newConversation,
+          ),
+        );
+      }      
+    } else {
+      _log.warning('Failed to find conversation with conversationJid $conversationJid');
+    }
   }
 }

@@ -15,5 +15,10 @@ void main() {
       expect(cache.inCache('a'), false);
       expect(cache.inCache('b'), true);
       expect(cache.inCache('c'), true);
+
+      cache.cache('c', 4);
+      expect(cache.inCache('b'), true);
+      expect(cache.inCache('c'), true);
+      expect(cache.getValue('c'), 4);
   });
 }

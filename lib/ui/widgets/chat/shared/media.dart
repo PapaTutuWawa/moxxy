@@ -11,10 +11,10 @@ class SharedMediaDisplay extends StatelessWidget {
   List<Widget> _renderItems() {
     final tmp = List<Widget>.empty(growable: true);
 
-    final clampedStartIndex = sharedMedia.length >= 8 ? sharedMedia.length - 7 : 0;
-    final clampedEndIndex = sharedMedia.length - 1;
-
-    for (var i = clampedEndIndex; i >= clampedStartIndex; i--) {
+    // NOTE: 6, since that lets us iterate from 0 to 6 (7 elements), thus leaving
+    //       one space for the summary button
+    final clampedEndIndex = sharedMedia.length >= 8 ? 6 : sharedMedia.length - 1;
+    for (var i = 0; i <= clampedEndIndex; i++) {
       tmp.add(buildSharedMediaWidget(sharedMedia[i], jid));
     }
 

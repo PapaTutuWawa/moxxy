@@ -24,7 +24,6 @@ import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -489,8 +488,12 @@ class HttpFileTransferService {
         mime: mime,
       );
       final newConv = conv.copyWith(
-        sharedMedia: List<SharedMedium>.from(conv.sharedMedia)..add(sharedMedium),
+        sharedMedia: [
+          sharedMedium,
+          ...conv.sharedMedia,
+        ],
       );
+      GetIt.I.get<ConversationService>().setConversation(newConv);
       sendEvent(ConversationUpdatedEvent(conversation: newConv));
     }
 
