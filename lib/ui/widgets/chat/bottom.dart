@@ -78,7 +78,9 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
         Padding(
           padding: const EdgeInsets.only(top: 3),
           child: Text(
-            _timestampString,
+            widget.message.isMedia && widget.message.mediaSize != null ?
+              '${fileSizeToString(widget.message.mediaSize!)} • $_timestampString' :
+              _timestampString,
             style: const TextStyle(
               fontSize: fontsizeSubbody,
               color: Color(0xffddfdfd),
