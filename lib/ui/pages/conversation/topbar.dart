@@ -52,7 +52,8 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
       || prev.conversation?.avatarUrl != next.conversation?.avatarUrl
       || prev.conversation?.chatState != next.conversation?.chatState
       || prev.conversation?.jid != next.conversation?.jid
-      || prev.conversation?.encrypted != next.conversation?.encrypted;
+      || prev.conversation?.encrypted != next.conversation?.encrypted
+      || prev.conversation?.sharedMedia != next.conversation?.sharedMedia;
   }
   
   Widget _buildChatState(ChatState state) {
