@@ -1,6 +1,8 @@
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
+const unspecifiedError = -1;
 const noError = 0;
 const fileUploadFailedError = 1;
 const messageNotEncryptedForDevice = 2;
@@ -14,6 +16,9 @@ const messageContactDoesNotSupportOmemo = 9;
 const messageChatEncryptedButFileNot = 10;
 const messageFailedToEncryptFile = 11;
 const fileDownloadFailedError = 12;
+const messageServiceUnavailable = 13;
+const messageRemoteServerTimeout = 14;
+const messageRemoteServerNotFound = 15;
 
 int errorTypeFromException(dynamic exception) {
   if (exception is NoDecryptionKeyException) {
@@ -31,4 +36,25 @@ int errorTypeFromException(dynamic exception) {
   }
 
   return noError;
+}
+
+String errorToTranslatableString(int error) {
+  assert(error != noError, 'Calling errorToTranslatableString with noError makes no sense');
+
+  switch (error) {
+    case fileUploadFailedError: return t.errors.message.fileUploadFailed;
+    case messageContactDoesNotSupportOmemo: return t.errors.message.contactDoesntSupportOmemo;
+    case fileDownloadFailedError: return t.errors.message.fileDownloadFailed;
+    case messageServiceUnavailable: return t.errors.message.serviceUnavailable;
+    case messageRemoteServerTimeout: return t.errors.message.remoteServerTimeout;
+    case messageRemoteServerNotFound: return t.errors.message.remoteServerNotFound;
+    case messageFailedToEncrypt: return t.errors.message.failedToEncrypt;
+    case messageFailedToDecryptFile: return t.errors.message.failedToDecryptFile;
+    case messageChatEncryptedButFileNot: return t.errors.message.fileNotEncrypted;
+    case messageFailedToEncryptFile: return t.errors.message.failedToEncryptFile;
+    case unspecifiedError: return t.errors.message.unspecified;
+  }
+
+  assert(false, 'Invalid error code $error used');
+  return '';
 }

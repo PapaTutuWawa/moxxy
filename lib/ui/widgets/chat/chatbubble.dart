@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-//import 'package:moxxyv2/shared/error_types.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
@@ -318,6 +318,19 @@ class ChatBubbleState extends State<ChatBubble>
                                             () {
                                               showNotImplementedDialog(
                                                 'editing',
+                                                context,
+                                              );
+                                            },
+                                          ),
+                                        ] : [],
+                                        ...widget.message.errorMenuVisible ? [
+                                          _buildMessageOption(
+                                            Icons.info_outline,
+                                            'Show Error',
+                                            () {
+                                              showInfoDialog(
+                                                'Error',
+                                                errorToTranslatableString(widget.message.errorType!),
                                                 context,
                                               );
                                             },

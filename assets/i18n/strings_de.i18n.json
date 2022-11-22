@@ -37,6 +37,19 @@
 	    "startTlsFailed": "Konnte keine sichere Verbindung zum Server aufbauen",
 	    "noConnection": "Konnte keine Verbindung zum Server aufbauen",
 	    "unspecified": "Unbestimmter Fehler"
+	},
+	"message": {
+	    "unspecified": "Unbekannter Fehler",
+	    "fileUploadFailed": "Das Hochladen der Datei ist fehlgeschlagen",
+	    "contactDoesntSupportOmemo": "Der Kontakt unterstützt Verschlüsselung mit OMEMO:2 nicht",
+	    "fileDownloadFailed": "Das Herunterladen der Datei ist fehlgeschlagen",
+	    "serviceUnavailable": "Die Nachricht konnte nicht gesendet werden",
+	    "remoteServerTimeout": "Die Nachricht konnte nicht zugestellt werden",
+	    "remoteServerNotFound": "Die Nachricht konnte nicht gesendet werden, da der Empfängerserver unbekannt ist",
+	    "failedToEncrypt": "Die Nachricht konnte nicht verschlüsselt werden",
+	    "failedToEncryptFile": "Die Datei konnte nicht verschlüsselt werden",
+	    "failedToDecryptFile": "Die Datei konnte nicht entschlüsselt werden",
+	    "fileNotEncrypted": "Der Chat ist verschlüsselt, aber die Datei wurde unverschlüsselt übertragen"
 	}
     },
     "warnings": {

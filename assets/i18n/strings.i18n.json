@@ -37,6 +37,19 @@
 	    "startTlsFailed": "Failed to establish a secure connection",
 	    "noConnection": "Failed to establish a connection",
 	    "unspecified": "Unspecified error"
+	},
+	"message": {
+	    "unspecified": "Unknown error",
+	    "fileUploadFailed": "The file upload failed",
+	    "contactDoesntSupportOmemo": "The contact does not support encryption using OMEMO:2",
+	    "fileDownloadFailed": "The file download failed",
+	    "serviceUnavailable": "The message could not be delivered to the contact",
+	    "remoteServerTimeout": "The message could not be delivered to the contact's server",
+	    "remoteServerNotFound": "The message could not be delivered to the contact's server as it cannot be found",
+	    "failedToEncrypt": "The message could not be encrypted",
+	    "failedToEncryptFile": "The file could not be encrypted",
+	    "failedToDecryptFile": "The file could not be decrypted",
+	    "fileNotEncrypted": "The chat is encrypted but the file is not encrypted"
 	}
     },
     "warnings": {

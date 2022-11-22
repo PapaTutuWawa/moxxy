@@ -142,4 +142,13 @@ class Message with _$Message {
   /// Returns true if the message can open the selection menu by longpressing. False if
   /// not.
   bool get isLongpressable => !isRetracted;
+
+  /// Returns true if the menu item to show the error should be shown in the
+  /// longpress menu.
+  bool get errorMenuVisible {
+    return isError() && (
+      errorType! < messageNotEncryptedForDevice ||
+      errorType! > messageInvalidNumber
+    );
+  }
 }
