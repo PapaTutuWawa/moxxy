@@ -36,7 +36,7 @@ class TextChatWidget extends StatelessWidget {
   final Widget? topWidget;
 
   String getMessageText() {
-    if (message.isError()) {
+    if (message.hasError) {
       return errorTypeToText(message.errorType!);
     }
 
@@ -52,7 +52,7 @@ class TextChatWidget extends StatelessWidget {
     final fontsize = EmojiUtil.hasOnlyEmojis(
       message.body,
       ignoreWhitespace: true,
-    ) && !message.isError() ?
+    ) && !message.hasError ?
       fontsizeBodyOnlyEmojis :
       fontsizeBody;
 

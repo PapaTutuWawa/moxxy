@@ -96,7 +96,7 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ] : [],
-        ...widget.message.isError() ? [
+        ...widget.message.hasError ? [
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
@@ -106,7 +106,7 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ] : [],
-        ...widget.message.isWarning() ? [
+        ...widget.message.hasWarning ? [
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(

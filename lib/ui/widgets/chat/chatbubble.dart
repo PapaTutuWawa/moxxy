@@ -336,7 +336,7 @@ class ChatBubbleState extends State<ChatBubble>
                                             },
                                           ),
                                         ] : [],
-                                        ...widget.message.isWarning() ? [
+                                        ...widget.message.hasWarning ? [
                                           _buildMessageOption(
                                             Icons.warning,
                                             'Show warning',

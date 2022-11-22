@@ -109,14 +109,10 @@ class Message with _$Message {
   }
 
   /// Returns true if the message is an error. If not, then returns false.
-  bool isError() {
-    return errorType != null && errorType != noError;
-  }
+  bool get hasError => errorType != null && errorType != noError;
 
   /// Returns true if the message is a warning. If not, then returns false.
-  bool isWarning() {
-    return warningType != null && warningType != noWarning;
-  }
+  bool get hasWarning => warningType != null && warningType != noWarning;
 
   /// Returns a representative emoji for a message. Its primary purpose is
   /// to provide a universal fallback for quoted media messages.
@@ -125,7 +121,7 @@ class Message with _$Message {
   }
 
   /// Returns true if the message can be quoted. False if not.
-  bool get isQuotable => !isError() && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading;
+  bool get isQuotable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading;
 
   /// Returns true if the message can be retracted. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
@@ -146,7 +142,7 @@ class Message with _$Message {
   /// Returns true if the menu item to show the error should be shown in the
   /// longpress menu.
   bool get errorMenuVisible {
-    return isError() && (
+    return hasError && (
       errorType! < messageNotEncryptedForDevice ||
       errorType! > messageInvalidNumber
     );
