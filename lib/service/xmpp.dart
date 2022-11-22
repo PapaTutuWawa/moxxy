@@ -306,7 +306,14 @@ class XmppService {
     return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
   }
 
-  Future<List<SharedMedium>> _createSharedMedia(List<String> paths, int conversationId) async {
+  /// Wrapper function for creating shared media entries for the given paths.
+  /// [messages] is the mapping of "File path -> Recipient -> Message" required for
+  /// setting the single shared medium's message Id attribute.
+  /// [paths] is the list of paths to create shared media entries for.
+  /// [recipient] is the bare string JID that the messages will be sent to.
+  /// [conversationId] is the database id of the conversation these shared media entries
+  /// belong to.
+  Future<List<SharedMedium>> _createSharedMedia(Map<String, Map<String, Message>> messages, List<String> paths, String recipient, int conversationId) async {
     final sharedMedia = List<SharedMedium>.empty(growable: true);
     for (final path in paths) {
       sharedMedia.add(
@@ -314,6 +321,7 @@ class XmppService {
           path,
           DateTime.now().millisecondsSinceEpoch,
           conversationId,
+          messages[path]![recipient]!.id,
           mime: lookupMimeType(path),
         ),
       );
@@ -408,7 +416,7 @@ class XmppService {
           open: true,
         );
 
-        sharedMediaMap[recipient] = await _createSharedMedia(paths, conversation.id);
+        sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, conversation.id);
         sendEvent(
           ConversationUpdatedEvent(
             conversation: updatedConversation.copyWith(
@@ -438,7 +446,7 @@ class XmppService {
         );
 
         // Notify the UI
-        sharedMediaMap[recipient] = await _createSharedMedia(paths, newConversation.id);
+        sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, newConversation.id);
         sendEvent(
           ConversationAddedEvent(
             conversation: newConversation.copyWith(

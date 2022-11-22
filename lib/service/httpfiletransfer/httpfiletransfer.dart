@@ -485,6 +485,7 @@ class HttpFileTransferService {
         downloadedPath,
         msg.timestamp,
         conv.id,
+        job.mId,
         mime: mime,
       );
       final newConv = conv.copyWith(

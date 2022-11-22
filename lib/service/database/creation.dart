@@ -84,7 +84,9 @@ Future<void> createDatabase(Database db, int version) async {
       mime TEXT,
       timestamp INTEGER NOT NULL,
       conversation_id INTEGER NOT NULL,
-      FOREIGN KEY (conversation_id) REFERENCES $conversationsTable (id)
+      message_id INTEGER,
+      FOREIGN KEY (conversation_id) REFERENCES $conversationsTable (id),
+      FOREIGN KEY (message_id) REFERENCES $messsagesTable (id)
     )''',
   );
 

@@ -11,6 +11,7 @@ import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
+import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -57,7 +58,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 5,
+      version: 6,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -76,6 +77,10 @@ class DatabaseService {
         if (oldVersion < 5) {
           _log.finest('Running migration for database version 5');
           await upgradeFromV4ToV5(db);
+        }
+        if (oldVersion < 6) {
+          _log.finest('Running migration for database version 6');
+          await upgradeFromV5ToV6(db);
         }
       },
     );
@@ -257,12 +262,13 @@ class DatabaseService {
   }
 
   /// Like [addConversationFromData] but for [SharedMedium].
-  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, int conversationId, { String? mime }) async {
+  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, int conversationId, int messageId, { String? mime }) async {
     final s = SharedMedium(
       -1,
       path,
       timestamp,
       mime: mime,
+      messageId: messageId,
     );
 
     return s.copyWith(

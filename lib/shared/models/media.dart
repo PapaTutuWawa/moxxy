@@ -9,7 +9,10 @@ class SharedMedium with _$SharedMedium {
     int id,
     String path,
     int timestamp,
-    { String? mime, }
+    {
+      String? mime,
+      int? messageId,
+    }
   ) = _SharedMedia;
 
   const SharedMedium._();
@@ -18,14 +21,19 @@ class SharedMedium with _$SharedMedium {
   factory SharedMedium.fromJson(Map<String, dynamic> json) => _$SharedMediumFromJson(json);
 
   factory SharedMedium.fromDatabaseJson(Map<String, dynamic> json) {
-    return SharedMedium.fromJson(json);
+    return SharedMedium.fromJson({
+      ...json,
+      'messageId': json['message_id'] as int?,
+    });
   }
 
   Map<String, dynamic> toDatabaseJson(int conversationId) {
     return {
       ...toJson()
-        ..remove('id'),
+        ..remove('id')
+        ..remove('messageId'),
       'conversation_id': conversationId,
+      'message_id': messageId,
     };
   }
 }
