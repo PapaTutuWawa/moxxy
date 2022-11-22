@@ -27,7 +27,7 @@ class SelfProfileHeader extends StatelessWidget {
       context: context,
       builder: (BuildContext context) => Center(
         child: ClipRRect(
-          borderRadius: BorderRadius.all(radiusLarge),
+          borderRadius: const BorderRadius.all(radiusLarge),
           child: SizedBox(
             width: 220,
             height: 220,
