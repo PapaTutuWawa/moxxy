@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
@@ -11,13 +12,14 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
+import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum ConversationsOptions {
   settings
 }
 
-class ConversationsPage extends StatelessWidget {
+class ConversationsPage extends StatefulWidget {
   const ConversationsPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
@@ -26,6 +28,23 @@ class ConversationsPage extends StatelessWidget {
       name: conversationsRoute,
     ),
   );
+
+  @override
+  ConversationsPageState createState() => ConversationsPageState();
+}
+
+class ConversationsPageState extends State<ConversationsPage> with TickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(milliseconds: 200),
+    vsync: this,
+  );
+  late Animation<double> _convY;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
   
   Widget _listWrapper(BuildContext context, ConversationsState state) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
@@ -35,7 +54,19 @@ class ConversationsPage extends StatelessWidget {
         itemCount: state.conversations.length,
         itemBuilder: (_context, index) {
           final item = state.conversations[index];
-
+          final row = ConversationsListRow(
+            item.avatarUrl,
+            item.title,
+            item.lastMessageBody,
+            item.unreadCounter,
+            maxTextWidth,
+            item.lastChangeTimestamp,
+            true,
+            typingIndicator: item.chatState == ChatState.composing,
+            lastMessageRetracted: item.lastMessageRetracted,
+            key: ValueKey('conversationRow;${item.jid}'),
+          );
+          
           return Dismissible(
             key: ValueKey('conversation;$item'),
             onDismissed: (direction) => context.read<ConversationsBloc>().add(
@@ -54,23 +85,66 @@ class ConversationsPage extends StatelessWidget {
                 ),
               ),
             ),
-            child: InkWell(
-              onTap: () => GetIt.I.get<ConversationBloc>().add(
-                RequestedConversationEvent(item.jid, item.title, item.avatarUrl),
+            child: GestureDetector(
+              onLongPressStart: (event) async {
+                Vibrate.feedback(FeedbackType.medium);
+                
+                _convY = Tween<double>(
+                  begin: event.globalPosition.dy - 20,
+                  end: 200,
+                ).animate(
+                  CurvedAnimation(
+                    parent: _controller,
+                    curve: Curves.easeInOutCubic,
+                  ),
+                );
+                
+                await _controller.forward();
+                await showDialog<void>(
+                  context: context,
+                  builder: (context) => OverviewMenu(
+                    _convY,
+                    highlight: row,
+                    left: 0,
+                    right: 0,
+                    children: [
+                      ...item.unreadCounter != 0 ? [
+                        OverviewMenuItem(
+                          icon: Icons.done_all,
+                          text: 'Mark as read',
+                          onPressed: () {
+                            // TODO(PapaTutuWawa): Implement
+                            showNotImplementedDialog(
+                              'marking as read',
+                              context,
+                            );
+                          },
+                        ),
+                      ] : [],
+                      OverviewMenuItem(
+                        icon: Icons.close,
+                        text: 'Close chat',
+                        onPressed: () {
+                          // TODO(PapaTutuWawa): Implement
+                          showNotImplementedDialog(
+                            'closing the chat from here',
+                            context,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+
+                await _controller.reverse();
+              },
+              child: InkWell(
+                onTap: () => GetIt.I.get<ConversationBloc>().add(
+                  RequestedConversationEvent(item.jid, item.title, item.avatarUrl),
+                ),
+                child: row,
               ),
-              child: ConversationsListRow(
-                item.avatarUrl,
-                item.title,
-                item.lastMessageBody,
-                item.unreadCounter,
-                maxTextWidth,
-                item.lastChangeTimestamp,
-                true,
-                typingIndicator: item.chatState == ChatState.composing,
-                lastMessageRetracted: item.lastMessageRetracted,
-                key: ValueKey('conversationRow;${item.jid}'),
-              ),
-            ), 
+            ),
           );
         },
       );

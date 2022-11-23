@@ -13,6 +13,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
+import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
 Widget _buildMessageOption(IconData icon, String text, void Function() callback) {
@@ -160,6 +161,28 @@ class ChatBubbleState extends State<ChatBubble>
   }
   
   Widget _buildBubble(BuildContext context) {
+    final message = Container(
+      constraints: BoxConstraints(
+        maxWidth: widget.maxWidth,
+      ),
+      decoration: BoxDecoration(
+        color: _getBubbleColor(context),
+        borderRadius: _getBorderRadius(),
+      ),
+      child: Padding(
+        // NOTE: Images don't work well with padding here
+        padding: widget.message.isMedia || widget.message.quotes != null ?
+        EdgeInsets.zero :
+        const EdgeInsets.all(8),
+        child: buildMessageWidget(
+          widget.message,
+          widget.maxWidth,
+          _getBorderRadius(),
+          widget.sentBySelf,
+        ),
+      ),
+    );
+
     return SwipeableTile.swipeToTrigger(
       direction: _getSwipeDirection(),
       swipeThreshold: 0.2,
@@ -252,159 +275,86 @@ class ChatBubbleState extends State<ChatBubble>
                 await _controller.forward();
                 await showDialog<void>(
                   context: context,
-                  builder: (context) {
-                    return Stack(
-                      children: [
-                        AnimatedBuilder(
-                          animation: _msgY,
-                          builder: (context, child) {
-                            return Positioned(
-                              top: _msgY.value,
-                              // TODO(PapaTutuWawa): See above
-                              //right: widget.sentBySelf ? _msgX.value : null,
-                              //left: widget.sentBySelf ? null : _msgX.value,
-                              right: widget.sentBySelf ? 8 : null,
-                              left: widget.sentBySelf ? null : 8,
-                              child: Material(
-                                borderRadius: _getBorderRadius(),
-                                child: Container(
-                                  constraints: BoxConstraints(
-                                    maxWidth: widget.maxWidth,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _getBubbleColor(context),
-                                    borderRadius: _getBorderRadius(),
-                                  ),
-                                  child: Padding(
-                                    // NOTE: Images don't work well with padding here
-                                    padding: widget.message.isMedia || widget.message.quotes != null ? EdgeInsets.zero : const EdgeInsets.all(8),
-                                    child: buildMessageWidget(
-                                      widget.message,
-                                      widget.maxWidth,
-                                      _getBorderRadius(),
-                                      widget.sentBySelf,
-                                    ),
-                                  ),
-                                ),
-                              ),
+                  builder: (context) => OverviewMenu(
+                    _msgY,
+                    rightBorder: widget.sentBySelf,
+                    left: widget.sentBySelf ? null : 8,
+                    right: widget.sentBySelf ? 8 : null,
+                    highlightMaterialBorder: _getBorderRadius(),
+                    highlight: message,
+                    children: [
+                      ...widget.message.canRetract(widget.sentBySelf) ? [
+                        _buildMessageOption(
+                          Icons.delete,
+                          t.pages.conversation.retract,
+                          () => _retractMessage(context),
+                        ),
+                      ] : [],
+                      ...widget.message.canEdit(widget.sentBySelf) ? [
+                        _buildMessageOption(
+                          Icons.edit,
+                          t.pages.conversation.edit,
+                          () {
+                            showNotImplementedDialog(
+                              'editing',
+                              context,
                             );
                           },
                         ),
-                        Positioned(
-                          bottom: 50,
-                          right: widget.sentBySelf ? 8 : null,
-                          left: widget.sentBySelf ? null : 8,
-                          child: Row(
-                            children: [
-                              Material(
-                                borderRadius: const BorderRadius.all(radiusLarge),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: IntrinsicHeight(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        ...widget.message.canRetract(widget.sentBySelf) ? [
-                                          _buildMessageOption(
-                                            Icons.delete,
-                                            t.pages.conversation.retract,
-                                            () => _retractMessage(context),
-                                          ),
-                                        ] : [],
-                                        ...widget.message.canEdit(widget.sentBySelf) ? [
-                                          _buildMessageOption(
-                                            Icons.edit,
-                                            t.pages.conversation.edit,
-                                            () {
-                                              showNotImplementedDialog(
-                                                'editing',
-                                                context,
-                                              );
-                                            },
-                                          ),
-                                        ] : [],
-                                        ...widget.message.errorMenuVisible ? [
-                                          _buildMessageOption(
-                                            Icons.info_outline,
-                                            'Show Error',
-                                            () {
-                                              showInfoDialog(
-                                                'Error',
-                                                errorToTranslatableString(widget.message.errorType!),
-                                                context,
-                                              );
-                                            },
-                                          ),
-                                        ] : [],
-                                        ...widget.message.hasWarning ? [
-                                          _buildMessageOption(
-                                            Icons.warning,
-                                            'Show warning',
-                                            () {
-                                              showInfoDialog(
-                                                'Warning',
-                                                warningToTranslatableString(widget.message.warningType!),
-                                                context,
-                                              );
-                                            },
-                                          ),
-                                        ] : [],
-                                        ...widget.message.isQuotable ? [
-                                          _buildMessageOption(
-                                            Icons.forward,
-                                            t.pages.conversation.forward,
-                                            () {
-                                              showNotImplementedDialog(
-                                                'sharing',
-                                                context,
-                                              );
-                                            },
-                                          ),
-                                        ] : [],
-                                        _buildMessageOption(
-                                          Icons.reply,
-                                          t.pages.conversation.quote,
-                                          () {
-                                            widget.onSwipedCallback(widget.message);
-                                            Navigator.of(context).pop();
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      ] : [],
+                      ...widget.message.errorMenuVisible ? [
+                        _buildMessageOption(
+                          Icons.info_outline,
+                          'Show Error',
+                          () {
+                            showInfoDialog(
+                              'Error',
+                              errorToTranslatableString(widget.message.errorType!),
+                              context,
+                            );
+                          },
                         ),
-                      ],
-                    );
-                  },
+                      ] : [],
+                      ...widget.message.hasWarning ? [
+                        _buildMessageOption(
+                          Icons.warning,
+                          'Show warning',
+                          () {
+                            showInfoDialog(
+                              'Warning',
+                              warningToTranslatableString(widget.message.warningType!),
+                              context,
+                            );
+                          },
+                        ),
+                      ] : [],
+                      ...widget.message.isQuotable ? [
+                        _buildMessageOption(
+                          Icons.forward,
+                          t.pages.conversation.forward,
+                          () {
+                            showNotImplementedDialog(
+                              'sharing',
+                              context,
+                            );
+                          },
+                        ),
+                      ] : [],
+                      _buildMessageOption(
+                        Icons.reply,
+                        t.pages.conversation.quote,
+                        () {
+                          widget.onSwipedCallback(widget.message);
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
                 );
 
                 await _controller.reverse();
               },
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: widget.maxWidth,
-                ),
-                decoration: BoxDecoration(
-                  color: _getBubbleColor(context),
-                  borderRadius: _getBorderRadius(),
-                ),
-                child: Padding(
-                  // NOTE: Images don't work well with padding here
-                  padding: widget.message.isMedia || widget.message.quotes != null ?
-                    EdgeInsets.zero :
-                    const EdgeInsets.all(8),
-                  child: buildMessageWidget(
-                    widget.message,
-                    widget.maxWidth,
-                    _getBorderRadius(),
-                    widget.sentBySelf,
-                  ),
-                ),
-              ),
+              child: message,
             ), 
           ],
         ),
