@@ -69,7 +69,9 @@ class NotificationsService {
         ),
       ],
     );
-    
+
+    // TODO(PapaTutuWawa): Make the user decide whether the notification should be
+    //                     public (fully visible on the lockscreen) or secret (redacted)
     final androidDetails = AndroidNotificationDetails(
       'message_channel', 'Message channel',
       channelDescription: 'The notification channel for received messages',
