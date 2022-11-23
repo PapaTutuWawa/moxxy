@@ -475,11 +475,6 @@ class HttpFileTransferService {
 
       sendEvent(MessageUpdatedEvent(message: msg));
 
-      if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
-        _log.finest('Creating notification with bigPicture $downloadedPath');
-        await notification.showNotification(msg, '');
-      }
-
       final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
         downloadedPath,
         msg.timestamp,
@@ -494,6 +489,13 @@ class HttpFileTransferService {
         ],
       );
       GetIt.I.get<ConversationService>().setConversation(newConv);
+
+      // Show a notification
+      if (notification.shouldShowNotification(msg.conversationJid) && job.shouldShowNotification) {
+        _log.finest('Creating notification with bigPicture $downloadedPath');
+        await notification.showNotification(newConv, msg, '');
+      }
+      
       sendEvent(ConversationUpdatedEvent(conversation: newConv));
     }
 

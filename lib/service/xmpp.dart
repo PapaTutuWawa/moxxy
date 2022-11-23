@@ -987,6 +987,7 @@ class XmppService {
       // Create the notification if we the user does not already know about the message
       if (sendNotification) {
         await ns.showNotification(
+          newConversation,
           message,
           isInRoster ? newConversation.title : conversationJid,
           body: conversationBody,
@@ -1014,6 +1015,7 @@ class XmppService {
       // Creat the notification
       if (sendNotification) {
         await ns.showNotification(
+          newConversation,
           message,
           isInRoster ? newConversation.title : conversationJid,
           body: messageBody,

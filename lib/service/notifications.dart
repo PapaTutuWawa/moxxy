@@ -3,7 +3,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/xmpp.dart';
-import 'package:moxxyv2/shared/models/message.dart' as model;
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
+import 'package:moxxyv2/shared/models/message.dart' as modelm;
 
 const maxNotificationId = 2147483647;
 
@@ -34,29 +36,49 @@ class NotificationsService {
   /// Show a notification for a message [m] grouped by its conversationJid
   /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
   /// then Android's BigPicture will be used.
-  Future<void> showNotification(model.Message m, String title, { String? body }) async {
+  Future<void> showNotification(modelc.Conversation c, modelm.Message m, String title, { String? body }) async {
     // TODO(Unknown): Keep track of notifications to create a summary notification
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
     // TODO(Unknown): Also allow this with a generated video thumbnail
-    final isImage = m.mediaType?.startsWith('image/') == true;
-
-    final androidDetails = AndroidNotificationDetails(
-      'message_channel', 'Message channel',
-      channelDescription: 'The notification channel for received messages',
-      styleInformation: (m.isMedia && m.mediaUrl != null && isImage) ? BigPictureStyleInformation(
-        FilePathAndroidBitmap(m.mediaUrl!),
-      ) : null,
-      groupKey: m.conversationJid,
-    );
+    final canShowMedia = m.mediaType != null && m.mediaUrl != null;
     String bodyToShow;
     if (body != null) {
       bodyToShow = body;
     } else {
-      bodyToShow = (m.isMedia && m.mediaUrl != null) ? '📷 Image' : m.body;
+      bodyToShow = canShowMedia ?
+        mimeTypeToEmoji(m.mediaType) :
+        m.body;
     }
+
+    final person = Person(
+      name: c.title,
+      icon: c.avatarUrl.isNotEmpty ? BitmapFilePathAndroidIcon(c.avatarUrl) : null,
+      key: c.jid,
+    );
+    final styleInformation = MessagingStyleInformation(
+      person,
+      conversationTitle: c.title,
+      groupConversation: true,
+      messages: [
+        Message(
+          bodyToShow,
+          DateTime.now(),
+          person,
+          dataMimeType: canShowMedia ? m.mediaType : null,
+          dataUri: canShowMedia ? 'file://${m.mediaUrl}' : null,
+        ),
+      ],
+    );
+    
+    final androidDetails = AndroidNotificationDetails(
+      'message_channel', 'Message channel',
+      channelDescription: 'The notification channel for received messages',
+      styleInformation: styleInformation,
+      groupKey: m.conversationJid,
+    );
     final details = NotificationDetails(android: androidDetails);
     await GetIt.I.get<FlutterLocalNotificationsPlugin>().show(
-      m.id, title, bodyToShow, details,
+      m.id, null, null, details,
     );
   }
 
