@@ -349,14 +349,24 @@ class ChatBubbleState extends State<ChatBubble>
                                             },
                                           ),
                                         ] : [],
+                                        ...widget.message.isQuotable ? [
+                                          _buildMessageOption(
+                                            Icons.forward,
+                                            t.pages.conversation.forward,
+                                            () {
+                                              showNotImplementedDialog(
+                                                'sharing',
+                                                context,
+                                              );
+                                            },
+                                          ),
+                                        ] : [],
                                         _buildMessageOption(
-                                          Icons.forward,
-                                          t.pages.conversation.forward,
+                                          Icons.reply,
+                                          t.pages.conversation.quote,
                                           () {
-                                            showNotImplementedDialog(
-                                              'sharing',
-                                              context,
-                                            );
+                                            widget.onSwipedCallback(widget.message);
+                                            Navigator.of(context).pop();
                                           },
                                         ),
                                       ],
