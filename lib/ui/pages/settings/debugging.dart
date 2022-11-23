@@ -48,7 +48,6 @@ class DebuggingPage extends StatelessWidget {
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
-                      barrierDismissible: true,
                       builder: (BuildContext context) => AlertDialog(
                         title: Text(t.pages.settings.debugging.generalEncryptionPassword),
                         content: TextField(
@@ -79,7 +78,6 @@ class DebuggingPage extends StatelessWidget {
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
-                      barrierDismissible: true,
                       builder: (BuildContext context) => AlertDialog(
                         title: Text(t.pages.settings.debugging.generalLoggingIp),
                         content: TextField(
@@ -109,7 +107,6 @@ class DebuggingPage extends StatelessWidget {
                   onPressed: (context) {
                     showDialog<void>(
                       context: context,
-                      barrierDismissible: true,
                       builder: (BuildContext context) => AlertDialog(
                         title: Text(t.pages.settings.debugging.generalLoggingPort),
                         content: TextField(

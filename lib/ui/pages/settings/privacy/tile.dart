@@ -51,7 +51,6 @@ class RedirectSettingsTile extends AbstractSettingsTile {
         onPressed: (context) {
           showDialog<void>(
             context: context,
-            barrierDismissible: true,
             builder: (BuildContext context) => RedirectDialog(
               (value) {
                 context.read<PreferencesBloc>().add(PreferencesChangedEvent(setProxy(state, value)));

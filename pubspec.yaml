@@ -7,10 +7,10 @@ version: 0.3.0+5
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
-  flutter: ">=2.13.0-0.1"
+  flutter: "3.3.8"
 
 dependencies:
-  archive: 3.1.11
+  archive: 3.3.0
   badges: 2.0.3
   better_open_file: 3.6.3
   bloc: 8.1.0
@@ -72,7 +72,7 @@ dependencies:
     hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
     version: 0.3.1
   page_transition: 2.0.9
-  path: 1.8.1
+  path: 1.8.2
   path_provider: 2.0.11
   permission_handler: 10.0.0
   phosphor_flutter: 1.4.0
@@ -120,9 +120,11 @@ dependency_overrides:
   #
   # My fork adds a callback function that is called whenever the soft keyboard is about to be
   # summoned, with which we can tell flutter whether it should summon it or not.
+  #
+  # The code can be found here: https://git.polynom.me/Moxxy/flutter
   flutter:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 3.0.1
+    version: 3.3.8
   omemo_dart:
     git:
       url: https://codeberg.org/PapaTutuWawa/omemo_dart.git

@@ -116,7 +116,6 @@ class NetworkPage extends StatelessWidget {
                           ),
                         );
                       },
-                      isDismissible: true,
                     );
                   },
                 ),

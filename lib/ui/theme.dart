@@ -29,11 +29,6 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
         backgroundColor: _makeEnabledDisabledProperty(primaryColor, primaryColorDisabled),
       ),
     ),
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        primary: primaryColor,
-      ),
-    ),
     checkboxTheme: CheckboxTheme.of(context).copyWith(
       fillColor: MaterialStateProperty.all(primaryColor),
     ),
