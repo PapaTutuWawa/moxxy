@@ -147,4 +147,11 @@ class Message with _$Message {
       errorType! > messageInvalidAffixElements
     );
   }
+
+  /// Returns true if the message contains media that can be thumbnailed, i.e. videos or
+  /// images.
+  bool get thumbnailable => isMedia && mediaType != null && (
+    mediaType!.startsWith('image/') ||
+    mediaType!.startsWith('video/')
+  );
 }

@@ -11,6 +11,7 @@ environment:
 
 dependencies:
   archive: 3.3.0
+  awesome_notifications: 0.7.4+1
   badges: 2.0.3
   better_open_file: 3.6.3
   bloc: 8.1.0
@@ -30,7 +31,6 @@ dependencies:
   flutter_blurhash: 0.7.0
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
-  flutter_local_notifications: 9.7.0
   flutter_localizations:
     sdk: flutter
   flutter_parsed_text: 2.2.1

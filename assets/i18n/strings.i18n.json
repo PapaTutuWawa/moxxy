@@ -15,6 +15,16 @@
 	    "connecting": "Connecting...",
 	    "disconnect": "Disconnected",
 	    "error": "Error"
+	},
+	"message": {
+	    "reply": "Reply",
+	    "markAsRead": "Mark as read"
+	},
+	"channels": {
+	    "messagesChannelName": "Messages",
+	    "messagesChannelDescription": "The notification channel for received messages",
+	    "warningChannelName": "Warnings",
+	    "warningChannelDescription": "Warnings related to Moxxy"
 	}
     },
     "messages": {

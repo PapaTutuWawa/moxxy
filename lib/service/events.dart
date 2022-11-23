@@ -17,6 +17,7 @@ import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -241,6 +242,7 @@ Future<void> performGetMessagesForJid(GetMessagesForJidCommand command, { dynami
 
 Future<void> performSetOpenConversation(SetOpenConversationCommand command, { dynamic extra }) async {
   await GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? '');
+  await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(command.jid!);
 }
 
 Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) async {
