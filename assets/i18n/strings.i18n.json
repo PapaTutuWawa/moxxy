@@ -228,7 +228,7 @@
 		"mobileData": "Mobile data"
 	    },
 	    "privacy": {
-		"title": "Pricacy",
+		"title": "Privacy",
 		"generalSection": "General",
 		"showContactRequests": "Show contact requests",
 		"showContactRequestsSubtext": "This will show people who added you to their contact list but sent no message yet",
