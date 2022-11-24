@@ -112,13 +112,12 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
                       ...item.unreadCounter != 0 ? [
                         OverviewMenuItem(
                           icon: Icons.done_all,
-                          text: 'Mark as read',
+                          text: t.pages.conversations.markAsRead,
                           onPressed: () {
-                            // TODO(PapaTutuWawa): Implement
-                            showNotImplementedDialog(
-                              'marking as read',
-                              context,
+                            context.read<ConversationsBloc>().add(
+                              ConversationMarkedAsReadEvent(item.id),
                             );
+                            Navigator.of(context).pop();
                           },
                         ),
                       ] : [],

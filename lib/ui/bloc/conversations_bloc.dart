@@ -17,6 +17,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     on<ConversationsUpdatedEvent>(_onConversationsUpdated);
     on<AvatarChangedEvent>(_onAvatarChanged);
     on<ConversationClosedEvent>(_onConversationClosed);
+    on<ConversationMarkedAsReadEvent>(_onConversationMarkedAsRead);
   }
 
   Future<void> _onInit(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
@@ -80,5 +81,12 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
         conversations: state.conversations.where((c) => c.jid != event.jid).toList(),
       ),
     );
+  }
+
+  Future<void> _onConversationMarkedAsRead(ConversationMarkedAsReadEvent event, Emitter<ConversationsState> emit) async {
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      MarkConversationAsReadCommand(conversationId: event.id),
+      awaitable: false,
+    );   
   }
 }

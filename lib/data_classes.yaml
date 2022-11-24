@@ -394,6 +394,12 @@ files:
         attributes:
           originId: String
           conversationJid: String
+      - name: MarkConversationAsReadCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          conversationId: int
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

@@ -91,7 +91,8 @@
 	    "noOpenChats": "Du hast keine offenen chats",
 	    "startChat": "Einen chat anfangen",
 	    "closeChat": "Chat schließen",
-	    "closeChatBody": "Bist du dir sicher, dass du den Chat mit ${conversationTitle} schließen möchtest?"
+	    "closeChatBody": "Bist du dir sicher, dass du den Chat mit ${conversationTitle} schließen möchtest?",
+	    "markAsRead": "Als gelesen markieren"
 	},
 	"conversation": {
 	    "unencrypted": "Unverschlüsselt",

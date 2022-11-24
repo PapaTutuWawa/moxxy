@@ -63,6 +63,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
       EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
       EventTypeMatcher<RetractMessageComment>(performMessageRetraction),
+      EventTypeMatcher<MarkConversationAsReadCommand>(performMarkConversationAsRead),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -603,4 +604,19 @@ Future<void> performMessageRetraction(RetractMessageComment command, { dynamic e
         ),
       ),
     );
+}
+
+Future<void> performMarkConversationAsRead(MarkConversationAsReadCommand command, { dynamic extra }) async {
+  final conversation = await GetIt.I.get<ConversationService>().updateConversation(
+    command.conversationId,
+    unreadCounter: 0,
+  );
+
+  // TODO(PapaTutuWawa): Send read marker as well
+  sendEvent(ConversationUpdatedEvent(conversation: conversation));
+
+  // Dismiss notifications for that chat
+  await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
+    conversation.jid,
+  );
 }

@@ -91,7 +91,8 @@
 	    "noOpenChats": "You have no open chats",
 	    "startChat": "Start a chat",
 	    "closeChat": "Close chat",
-	    "closeChatBody": "Are you sure you want to close the chat with ${conversationTitle}?"
+	    "closeChatBody": "Are you sure you want to close the chat with ${conversationTitle}?",
+	    "markAsRead": "Mark as read"
 	},
 	"conversation": {
 	    "unencrypted": "Unencrypted",
