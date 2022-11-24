@@ -242,7 +242,11 @@ Future<void> performGetMessagesForJid(GetMessagesForJidCommand command, { dynami
 
 Future<void> performSetOpenConversation(SetOpenConversationCommand command, { dynamic extra }) async {
   await GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? '');
-  await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(command.jid!);
+
+  // Null just means that the chat has been closed
+  if (command.jid != null) {
+    await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(command.jid!);
+  }
 }
 
 Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) async {
