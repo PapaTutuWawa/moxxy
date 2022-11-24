@@ -89,7 +89,9 @@
 	    "speeddialJoinGroupchat": "Join groupchat",
 	    "overlaySettings": "Settings",
 	    "noOpenChats": "You have no open chats",
-	    "startChat": "Start a chat"
+	    "startChat": "Start a chat",
+	    "closeChat": "Close chat",
+	    "closeChatBody": "Are you sure you want to close the chat with ${conversationTitle}?"
 	},
 	"conversation": {
 	    "unencrypted": "Unencrypted",

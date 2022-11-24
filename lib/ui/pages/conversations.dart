@@ -69,6 +69,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
           
           return Dismissible(
             key: ValueKey('conversation;$item'),
+            // TODO(Unknown): Show a snackbar allowing the user to revert the action
             onDismissed: (direction) => context.read<ConversationsBloc>().add(
               ConversationClosedEvent(item.jid),
             ),
@@ -123,13 +124,27 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
                       ] : [],
                       OverviewMenuItem(
                         icon: Icons.close,
-                        text: 'Close chat',
-                        onPressed: () {
-                          // TODO(PapaTutuWawa): Implement
-                          showNotImplementedDialog(
-                            'closing the chat from here',
+                        text: t.pages.conversations.closeChat,
+                        onPressed: () async {
+                          // ignore: use_build_context_synchronously
+                          final result = await showConfirmationDialog(
+                            t.pages.conversations.closeChat,
+                            t.pages.conversations.closeChatBody(
+                              conversationTitle: item.title,
+                            ),
                             context,
                           );
+
+                          if (result) {
+                            // TODO(Unknown): Show a snackbar allowing the user to revert the action
+                            // ignore: use_build_context_synchronously
+                            context.read<ConversationsBloc>().add(
+                              ConversationClosedEvent(item.jid),
+                            );
+
+                            // ignore: use_build_context_synchronously
+                            Navigator.of(context).pop();
+                          }
                         },
                       ),
                     ],
