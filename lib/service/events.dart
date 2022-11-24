@@ -62,7 +62,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(performGetOwnOmemoFingerprints),
       EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
       EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
-      EventTypeMatcher<RetractMessageComment>(performMessageRetraction),
+      EventTypeMatcher<RetractMessageCommentCommand>(performMessageRetraction),
       EventTypeMatcher<MarkConversationAsReadCommand>(performMarkConversationAsRead),
   ]);
 
@@ -585,7 +585,7 @@ Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dy
   );
 }
 
-Future<void> performMessageRetraction(RetractMessageComment command, { dynamic extra }) async {
+Future<void> performMessageRetraction(RetractMessageCommentCommand command, { dynamic extra }) async {
   await GetIt.I.get<MessageService>().retractMessage( 
     command.conversationJid,
     command.originId,

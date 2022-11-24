@@ -346,7 +346,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onMessageRetracted(MessageRetractedEvent event, Emitter<ConversationState> emit) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      RetractMessageComment(
+      RetractMessageCommentCommand(
         originId: event.id,
         conversationJid: state.conversation!.jid,
       ),

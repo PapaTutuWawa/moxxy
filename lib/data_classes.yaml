@@ -387,7 +387,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-      - name: RetractMessageComment
+      - name: RetractMessageCommentCommand
         extends: BackgroundCommand
         implements:
           - JsonImplementation
