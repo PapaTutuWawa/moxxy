@@ -30,6 +30,7 @@ void setupEventHandler() {
       EventTypeMatcher<SelfAvatarChangedEvent>(onSelfAvatarChanged),
       EventTypeMatcher<PreStartDoneEvent>(preStartDone),
       EventTypeMatcher<ServiceReadyEvent>(onServiceReady),
+      EventTypeMatcher<MessageNotificationTappedEvent>(onNotificationTappend),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -143,5 +144,15 @@ Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
       systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
     ),
     awaitable: false,
+  );
+}
+
+Future<void> onNotificationTappend(MessageNotificationTappedEvent event, { dynamic extra }) async {
+  GetIt.I.get<conversation.ConversationBloc>().add(
+    conversation.RequestedConversationEvent(
+      event.conversationJid,
+      event.title,
+      event.avatarUrl,
+    ),
   );
 }

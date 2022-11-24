@@ -5,8 +5,10 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/events.dart';
+import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
 import 'package:moxxyv2/shared/models/message.dart' as modelm;
@@ -27,7 +29,16 @@ class NotificationsService {
   static Future<void> onReceivedAction(ReceivedAction action) async {
     final logger = Logger('NotificationHandler');
 
-    if (action.buttonKeyPressed == _notificationActionKeyRead) {
+    if (action.buttonKeyPressed.isEmpty && action.buttonKeyInput.isEmpty) {
+      // The notification has been tapped
+      sendEvent(
+        MessageNotificationTappedEvent(
+          conversationJid: action.payload!['conversationJid']!,
+          title: action.payload!['title']!,
+          avatarUrl: action.payload!['avatarUrl']!,
+        ),
+      );
+    } else if (action.buttonKeyPressed == _notificationActionKeyRead) {
       // TODO(Unknown): Maybe refactor this call such that we don't have to use
       //                a command.
       await performMarkMessageAsRead(
@@ -97,6 +108,8 @@ class NotificationsService {
         payload: <String, String>{
           'conversationJid': c.jid,
           'sid': m.sid,
+          'title': c.title,
+          'avatarUrl': c.avatarUrl,
         },
       ),
       actionButtons: [

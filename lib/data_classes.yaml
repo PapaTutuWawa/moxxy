@@ -199,6 +199,14 @@ files:
           device:
             type: OmemoDevice
             deserialise: true
+      - name: MessageNotificationTappedEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          conversationJid: String
+          title: String
+          avatarUrl: String
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

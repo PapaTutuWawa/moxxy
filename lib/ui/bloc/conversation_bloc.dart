@@ -22,7 +22,6 @@ part 'conversation_event.dart';
 part 'conversation_state.dart';
 
 class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
-
   ConversationBloc()
     : _currentChatState = ChatState.gone,
       _lastChangeTimestamp = 0,
