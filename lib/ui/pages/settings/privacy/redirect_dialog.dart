@@ -49,6 +49,9 @@ class RedirectDialogState extends State<RedirectDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(radiusLarge),
+      ),
       title: Text(
         t.pages.settings.privacy.redirectDialogTitle(serviceName: widget.serviceName),
       ),
