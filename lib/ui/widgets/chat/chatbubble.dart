@@ -16,25 +16,6 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
-Widget _buildMessageOption(IconData icon, String text, void Function() callback) {
-  return InkResponse(
-    onTap: callback,
-    child: Row(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(
-            top: 8,
-            right: 8,
-            bottom: 8,
-          ),
-          child: Icon(icon),
-        ),
-        Text(text),
-      ],
-    ),
-  );
-}
-
 class ChatBubble extends StatefulWidget {
   const ChatBubble({
     required this.message,
@@ -284,17 +265,17 @@ class ChatBubbleState extends State<ChatBubble>
                     highlight: message,
                     children: [
                       ...widget.message.canRetract(widget.sentBySelf) ? [
-                        _buildMessageOption(
-                          Icons.delete,
-                          t.pages.conversation.retract,
-                          () => _retractMessage(context),
+                        OverviewMenuItem(
+                          icon: Icons.delete,
+                          text: t.pages.conversation.retract,
+                          onPressed: () => _retractMessage(context),
                         ),
                       ] : [],
                       ...widget.message.canEdit(widget.sentBySelf) ? [
-                        _buildMessageOption(
-                          Icons.edit,
-                          t.pages.conversation.edit,
-                          () {
+                        OverviewMenuItem(
+                          icon: Icons.edit,
+                          text: t.pages.conversation.edit,
+                          onPressed: () {
                             showNotImplementedDialog(
                               'editing',
                               context,
@@ -303,10 +284,10 @@ class ChatBubbleState extends State<ChatBubble>
                         ),
                       ] : [],
                       ...widget.message.errorMenuVisible ? [
-                        _buildMessageOption(
-                          Icons.info_outline,
-                          'Show Error',
-                          () {
+                        OverviewMenuItem(
+                          icon: Icons.info_outline,
+                          text: 'Show Error',
+                          onPressed: () {
                             showInfoDialog(
                               'Error',
                               errorToTranslatableString(widget.message.errorType!),
@@ -316,10 +297,10 @@ class ChatBubbleState extends State<ChatBubble>
                         ),
                       ] : [],
                       ...widget.message.hasWarning ? [
-                        _buildMessageOption(
-                          Icons.warning,
-                          'Show warning',
-                          () {
+                        OverviewMenuItem(
+                          icon: Icons.warning,
+                          text: 'Show warning',
+                          onPressed: () {
                             showInfoDialog(
                               'Warning',
                               warningToTranslatableString(widget.message.warningType!),
@@ -329,10 +310,10 @@ class ChatBubbleState extends State<ChatBubble>
                         ),
                       ] : [],
                       ...widget.message.isQuotable ? [
-                        _buildMessageOption(
-                          Icons.forward,
-                          t.pages.conversation.forward,
-                          () {
+                        OverviewMenuItem(
+                          icon: Icons.forward,
+                          text: t.pages.conversation.forward,
+                          onPressed: () {
                             showNotImplementedDialog(
                               'sharing',
                               context,
@@ -340,10 +321,10 @@ class ChatBubbleState extends State<ChatBubble>
                           },
                         ),
                       ] : [],
-                      _buildMessageOption(
-                        Icons.reply,
-                        t.pages.conversation.quote,
-                        () {
+                      OverviewMenuItem(
+                        icon: Icons.reply,
+                        text: t.pages.conversation.quote,
+                        onPressed: () {
                           widget.onSwipedCallback(widget.message);
                           Navigator.of(context).pop();
                         },
