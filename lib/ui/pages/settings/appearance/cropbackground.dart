@@ -22,6 +22,8 @@ class CropBackgroundPage extends StatefulWidget {
   CropBackgroundPageState createState() => CropBackgroundPageState();
 }
 
+// TODO(PapaTutuWawa): Replace the custom code with InteractiveViewer, once
+//                     https://github.com/flutter/flutter/issues/107855 gets fixed.
 class CropBackgroundPageState extends State<CropBackgroundPage> {
 
   CropBackgroundPageState() : _x = 0, _y = 0, _track = false, super();
@@ -29,19 +31,27 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   double _y = 0;
   bool _track = false;
   double _scale = -1;
-
+  double _scaleExtra = 0;
+  double? _scaleNOld;
+  double _scaleNNew = 1;
+  double? _scalingFactorCached;
+  
   double _scalingFactor(BuildContext context, CropBackgroundState state) {
+    if (_scalingFactorCached != null) return _scalingFactorCached!;
+
     final query = MediaQuery.of(context);
     final width = query.size.width;// * query.devicePixelRatio;
     final height = query.size.height;// * query.devicePixelRatio;
 
     final q = height / state.imageHeight;
     final delta = width - state.imageWidth * q;
+    var qp = q;
     if (delta > 0) {
-      return width / state.imageWidth;
-    } else {
-      return q;
+      qp = width / state.imageWidth;
     }
+
+    _scalingFactorCached = qp;
+    return qp;
   }
   
   Widget _buildImage(BuildContext context, CropBackgroundState state) {
@@ -62,8 +72,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
           ),
           child: Image.memory(
             state.image!,
-            width: state.imageWidth * _scale,
-            height: state.imageHeight * _scale,
+            width: state.imageWidth * _scale * _scaleExtra,
+            height: state.imageHeight * _scale * _scaleExtra,
             fit: BoxFit.contain,
           ),
         ),
@@ -74,8 +84,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
         left: _x,
         child: Image.memory(
           state.image!,
-          width: state.imageWidth * _scale,
-          height: state.imageHeight * _scale,
+          width: state.imageWidth * (_scale + _scaleExtra),
+          height: state.imageHeight * (_scale + _scaleExtra),
           fit: BoxFit.contain,
         ),
       );
@@ -120,7 +130,12 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
           child: SafeArea(
             child: GestureDetector(
               onScaleStart: (_) => _track = true,
-              onScaleEnd: (_) => _track = false,
+              onScaleEnd: (_) {
+                _track = false;
+                _scale += _scaleExtra;
+                _scaleExtra = 0;
+                _scaleNOld = null;
+              },
               onScaleUpdate: (event) {
                 if (!_track) return;
 
@@ -141,7 +156,18 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     );
 
                     if (event.pointerCount == 2) {
-                      _scale = max(event.scale, _scalingFactor(context, state));
+                      if (_scaleNOld == null) {
+                        _scaleNOld = event.scale;
+                        _scaleNNew = event.scale;
+                        _scaleExtra = 0;
+                      } else {
+                        _scaleNOld = _scaleNNew;
+                        _scaleNNew = event.scale;
+                      }
+
+                      if (_scaleExtra + _scaleNNew - _scaleNOld! + _scale >= _scalingFactor(context, state)) {
+                        _scaleExtra += _scaleNNew - _scaleNOld!;
+                      }
                     }
                 });
               },
