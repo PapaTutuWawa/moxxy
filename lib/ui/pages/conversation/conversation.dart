@@ -1,8 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -10,6 +15,7 @@ import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
+import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 class ConversationPage extends StatefulWidget {
   const ConversationPage({ super.key });
@@ -35,7 +41,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   final TextEditingController _controller;
   final ValueNotifier<bool> _isSpeedDialOpen;
   final ScrollController _scrollController;
-  late final AnimationController _animationController;
+  late final AnimationController _animationController; 
+  late final AnimationController _overviewAnimationController;
+  late Animation<double> _overviewMsgAnimation;
   late final Animation<double> _scrollToBottom;
   bool _scrolledToBottomState;
 
@@ -44,10 +52,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     super.initState();
     _scrollController.addListener(_onScroll);
 
+    _overviewAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    
     // Values taken from here: https://stackoverflow.com/questions/45539395/flutter-float-action-button-hiding-the-visibility-of-items#45598028
     _animationController = AnimationController(
-      vsync: this,
       duration: const Duration(milliseconds: 180),
+      vsync: this,
     );
     _scrollToBottom = CurvedAnimation(
       parent: _animationController,
@@ -62,10 +75,33 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       ..removeListener(_onScroll)
       ..dispose();
     _animationController.dispose();
-      
+    _overviewAnimationController.dispose();
+
     super.dispose();
   }
 
+  void _quoteMessage(BuildContext context, Message message) {
+    context.read<ConversationBloc>().add(MessageQuotedEvent(message));
+  }
+
+  Future<void> _retractMessage(BuildContext context, String originId) async {
+    final result = await showConfirmationDialog(
+      t.pages.conversation.retract,
+      t.pages.conversation.retractBody,
+      context,
+    );
+
+    if (result) {
+      // ignore: use_build_context_synchronously
+      context.read<ConversationBloc>().add(
+        MessageRetractedEvent(originId),
+      );
+
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop();
+    }
+  }
+  
   Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth, String jid) {
     // TODO(Unknown): Since we reverse the list: Fix start, end and between
     final index = state.messages.length - 1 - _index;
@@ -78,17 +114,134 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       isSent(state.messages[index + 1], jid) != isSent(item, jid);
     final between = !start && !end;
     final lastMessageTimestamp = index > 0 ? state.messages[index - 1].timestamp : null;
+    final sentBySelf = isSent(item, jid);
+    
+    final bubble = RawChatBubble(
+      item,
+      maxWidth,
+      sentBySelf,
+      state.conversation!.encrypted,
+      start,
+      between,
+      end,
+    );
     
     return ChatBubble(
+      bubble: bubble,
       message: item,
-      sentBySelf: isSent(item, jid),
-      chatEncrypted: state.conversation!.encrypted,
-      start: start,
-      end: end,
-      between: between,
+      sentBySelf: sentBySelf,
       maxWidth: maxWidth,
       lastMessageTimestamp: lastMessageTimestamp,
-      onSwipedCallback: (_) => context.read<ConversationBloc>().add(MessageQuotedEvent(item)),
+      onSwipedCallback: (_) => _quoteMessage(context, item),
+      onLongPressed: (event) async {
+        if (!item.isLongpressable) {
+          return;
+        }
+
+        Vibrate.feedback(FeedbackType.medium);
+
+        _overviewMsgAnimation = Tween<double>(
+          begin: event.globalPosition.dy - 20,
+          end: 200,
+        ).animate(
+          CurvedAnimation(
+            parent: _overviewAnimationController,
+            curve: Curves.easeInOutCubic,
+          ),
+        );
+        // TODO(PapaTutuWawa): Animate the message to the center?
+        //_msgX = Tween<double>(
+        //  begin: 8,
+        //  end: (MediaQuery.of(context).size.width - obj.paintBounds.width) / 2,
+        //).animate(_controller);
+
+        await _overviewAnimationController.forward();
+        await showDialog<void>(
+          context: context,
+          builder: (context) => OverviewMenu(
+            _overviewMsgAnimation,
+            rightBorder: sentBySelf,
+            left: sentBySelf ? null : 8,
+            right: sentBySelf ? 8 : null,
+            highlightMaterialBorder: RawChatBubble.getBorderRadius(
+              sentBySelf,
+              start,
+              between,
+              end,
+            ),
+            highlight: bubble,
+            children: [
+              ...item.canRetract(sentBySelf) ? [
+                OverviewMenuItem(
+                  icon: Icons.delete,
+                  text: t.pages.conversation.retract,
+                  onPressed: () => _retractMessage(context, item.originId!),
+                ),
+              ] : [],
+              ...item.canEdit(sentBySelf) ? [
+                OverviewMenuItem(
+                  icon: Icons.edit,
+                  text: t.pages.conversation.edit,
+                  onPressed: () {
+                    showNotImplementedDialog(
+                      'editing',
+                      context,
+                    );
+                  },
+                ),
+              ] : [],
+              ...item.errorMenuVisible ? [
+                OverviewMenuItem(
+                  icon: Icons.info_outline,
+                  text: 'Show Error',
+                  onPressed: () {
+                    showInfoDialog(
+                      'Error',
+                      errorToTranslatableString(item.errorType!),
+                      context,
+                    );
+                  },
+                ),
+              ] : [],
+              ...item.hasWarning ? [
+                OverviewMenuItem(
+                  icon: Icons.warning,
+                  text: 'Show warning',
+                  onPressed: () {
+                    showInfoDialog(
+                      'Warning',
+                      warningToTranslatableString(item.warningType!),
+                      context,
+                    );
+                  },
+                ),
+              ] : [],
+              ...item.isQuotable ? [
+                OverviewMenuItem(
+                  icon: Icons.forward,
+                  text: t.pages.conversation.forward,
+                  onPressed: () {
+                    showNotImplementedDialog(
+                      'sharing',
+                      context,
+                    );
+                  },
+                ),
+              ] : [],
+              OverviewMenuItem(
+                icon: Icons.reply,
+                text: t.pages.conversation.quote,
+                onPressed: () {
+                  _quoteMessage(context, item);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+
+        await _overviewAnimationController.reverse();
+      },
     );
   }
   
