@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
 import 'package:moxxyv2/shared/models/message.dart' as modelm;
@@ -12,6 +14,8 @@ import 'package:moxxyv2/shared/models/message.dart' as modelm;
 const _maxNotificationId = 2147483647;
 const _messageChannelKey = 'message_channel';
 const _warningChannelKey = 'warning_channel';
+const _notificationActionKeyRead = 'markAsRead';
+const _notificationActionKeyReply = 'reply';
 
 // TODO(Unknown): Add resolution dependent drawables for the notification icon
 class NotificationsService {
@@ -19,8 +23,28 @@ class NotificationsService {
   // ignore: unused_field
   final Logger _log;
 
+  @pragma('vm:entry-point')
+  static Future<void> onReceivedAction(ReceivedAction action) async {
+    final logger = Logger('NotificationHandler');
+
+    if (action.buttonKeyPressed == _notificationActionKeyRead) {
+      // TODO(Unknown): Maybe refactor this call such that we don't have to use
+      //                a command.
+      await performMarkMessageAsRead(
+        MarkMessageAsReadCommand(
+          conversationJid: action.payload!['conversationJid']!,
+          sid: action.payload!['sid']!,
+          newUnreadCounter: 0,
+        ),
+      );
+    } else {
+      logger.warning('Received unknown notification action key ${action.buttonKeyPressed}');
+    }
+  }
+  
   Future<void> init() async {
-    await AwesomeNotifications().initialize(
+    final an = AwesomeNotifications();
+    await an.initialize(
       'resource://drawable/ic_service_icon',
       [
         NotificationChannel(
@@ -36,7 +60,10 @@ class NotificationsService {
       ],
       debug: kDebugMode,
     );
-   }
+    await an.setListeners(
+      onActionReceivedMethod: onReceivedAction,
+    );
+  }
 
   /// Returns true if a notification should be shown. false otherwise.
   bool shouldShowNotification(String jid) {
@@ -67,18 +94,21 @@ class NotificationsService {
           NotificationLayout.Messaging,
         category: NotificationCategory.Message,
         bigPicture: m.thumbnailable ? 'file://${m.mediaUrl}' : null,
+        payload: <String, String>{
+          'conversationJid': c.jid,
+          'sid': m.sid,
+        },
       ),
       actionButtons: [
         NotificationActionButton(
-          key: 'REPLY',
+          key: _notificationActionKeyReply,
           label: t.notifications.message.reply,
           requireInputText: true,
           autoDismissible: false,
         ),
         NotificationActionButton(
-          key: 'READ',
+          key: _notificationActionKeyRead,
           label: t.notifications.message.markAsRead,
-          requireInputText: true,
         )
       ],
     );
