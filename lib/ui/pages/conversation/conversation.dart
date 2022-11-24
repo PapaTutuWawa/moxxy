@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
@@ -213,6 +214,17 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       warningToTranslatableString(item.warningType!),
                       context,
                     );
+                  },
+                ),
+              ] : [],
+              ...item.isCopyable ? [
+                OverviewMenuItem(
+                  icon: Icons.content_copy,
+                  text: t.pages.conversation.copy,
+                  onPressed: () {
+                    // TODO(Unknown): Show a toast saying the message has been copied
+                    Clipboard.setData(ClipboardData(text: item.body));
+                    Navigator.of(context).pop();
                   },
                 ),
               ] : [],

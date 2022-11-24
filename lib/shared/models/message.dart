@@ -154,4 +154,7 @@ class Message with _$Message {
     mediaType!.startsWith('image/') ||
     mediaType!.startsWith('video/')
   );
+
+  /// Returns true if the message can be copied to the clipboard.
+  bool get isCopyable => !isMedia && body.isNotEmpty;
 }

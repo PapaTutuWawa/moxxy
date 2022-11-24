@@ -103,7 +103,8 @@
 	    "retractBody": "Bist du dir sicher, dass du die Nachricht löschen willst? Bedenke, dass dies nur eine Bitte ist, die dein gegenüber nicht beachten muss.",
 	    "forward": "Weiterleiten",
 	    "edit": "Bearbeiten",
-	    "quote": "Zitieren"
+	    "quote": "Zitieren",
+	    "copy": "Inhalt kopieren"
 	},
 	"addcontact": {
 	    "title": "Neuen Kontakt hinzufügen",
