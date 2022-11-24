@@ -64,6 +64,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
       EventTypeMatcher<RetractMessageCommentCommand>(performMessageRetraction),
       EventTypeMatcher<MarkConversationAsReadCommand>(performMarkConversationAsRead),
+      EventTypeMatcher<MarkMessageAsReadCommand>(performMarkMessageAsRead),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -607,16 +608,42 @@ Future<void> performMessageRetraction(RetractMessageCommentCommand command, { dy
 }
 
 Future<void> performMarkConversationAsRead(MarkConversationAsReadCommand command, { dynamic extra }) async {
+  // Update the database
   final conversation = await GetIt.I.get<ConversationService>().updateConversation(
     command.conversationId,
     unreadCounter: 0,
   );
 
-  // TODO(PapaTutuWawa): Send read marker as well
-  sendEvent(ConversationUpdatedEvent(conversation: conversation));
-
   // Dismiss notifications for that chat
   await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
     conversation.jid,
+  );
+
+  sendEvent(ConversationUpdatedEvent(conversation: conversation));
+
+  final msg = await GetIt.I.get<MessageService>().getMessageById(
+    conversation.jid,
+    conversation.lastMessageId,
+  );
+  if (msg != null) {
+    await GetIt.I.get<XmppService>().sendReadMarker(
+      conversation.jid,
+      msg.sid,
+    );
+  }
+}
+
+Future<void> performMarkMessageAsRead(MarkMessageAsReadCommand command, { dynamic extra }) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final oldConversation = await cs.getConversationByJid(command.conversationJid);
+  final conversation = await cs.updateConversation(
+    oldConversation!.id,
+    unreadCounter: command.newUnreadCounter,
+  );
+  sendEvent(ConversationUpdatedEvent(conversation: conversation));
+
+  await GetIt.I.get<XmppService>().sendReadMarker(
+    command.conversationJid,
+    command.sid,
   );
 }

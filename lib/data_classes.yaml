@@ -400,6 +400,14 @@ files:
           - JsonImplementation
         attributes:
           conversationId: int
+      - name: MarkMessageAsReadCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          conversationJid: String
+          sid: String
+          newUnreadCounter: int
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

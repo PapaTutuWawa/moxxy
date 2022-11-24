@@ -274,6 +274,26 @@ class XmppService {
     }
   }
 
+  /// Send a read marker to [to] in order to mark the message with stanza id [sid]
+  /// as read. If sending chat markers is disabled in the preferences, then this
+  /// function will do nothing.
+  Future<void> sendReadMarker(String to, String sid) async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    if (!prefs.sendChatMarkers) return;
+
+    unawaited(
+      GetIt.I.get<XmppConnection>().sendStanza(
+        Stanza.message(
+          to: to,
+          type: 'chat',
+          children: [
+            makeChatMarker('displayed', sid),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// Returns true if we are allowed to automatically download a file
   Future<bool> _automaticFileDownloadAllowed() async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
