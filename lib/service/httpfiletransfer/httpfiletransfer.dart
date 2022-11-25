@@ -483,6 +483,9 @@ class HttpFileTransferService {
         mime: mime,
       );
       final newConv = conv.copyWith(
+        lastMessage: conv.lastMessage?.id == job.mId ?
+          msg :
+          conv.lastMessage,
         sharedMedia: [
           sharedMedium,
           ...conv.sharedMedia,
