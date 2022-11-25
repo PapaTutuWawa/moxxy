@@ -665,7 +665,9 @@ class XmppService {
     _log.finest('Received delivery receipt from ${event.from.toString()}');
     final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
-    final dbMsg = await db.getMessageByXmppId(event.id, event.from.toBare().toString());
+    final cs = GetIt.I.get<ConversationService>();
+    final sender = event.from.toBare().toString();
+    final dbMsg = await db.getMessageByXmppId(event.id, sender);
     if (dbMsg == null) {
       _log.warning('Did not find the message with id ${event.id} in the database!');
       return;
@@ -675,8 +677,16 @@ class XmppService {
       dbMsg.id,
       received: true,
     );
-
     sendEvent(MessageUpdatedEvent(message: msg));
+
+    // Update the conversation
+    final conv = await cs.getConversationByJid(sender);
+    if (conv != null && conv.lastMessage?.id == msg.id) {
+      final newConv = conv.copyWith(lastMessage: msg);
+      cs.setConversation(newConv);
+      _log.finest('Updating conversation');
+      sendEvent(ConversationUpdatedEvent(conversation: newConv));
+    }
   }
 
   Future<void> _onChatMarker(ChatMarkerEvent event, { dynamic extra }) async {
@@ -700,11 +710,13 @@ class XmppService {
     );
     sendEvent(MessageUpdatedEvent(message: msg));
 
+    
     // Update the conversation
     final conv = await cs.getConversationByJid(sender);
     if (conv != null && conv.lastMessage?.id == msg.id) {
       final newConv = conv.copyWith(lastMessage: msg);
       cs.setConversation(newConv);
+      _log.finest('Updating conversation');
       sendEvent(ConversationUpdatedEvent(conversation: newConv));
     }
   }
