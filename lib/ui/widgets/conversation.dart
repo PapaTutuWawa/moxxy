@@ -126,8 +126,6 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final badgeText = widget.conversation.unreadCounter > 99 ?
       '99+' :
       widget.conversation.unreadCounter.toString();
-    // TODO(Unknown): Maybe turn this into an attribute of the widget to prevent calling this
-    //                for every conversation
     final screenWidth = MediaQuery.of(context).size.width;
     final width = screenWidth - 24 - 70;
     final textWidth = screenWidth * 0.6;
