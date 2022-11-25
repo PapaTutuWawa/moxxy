@@ -374,46 +374,34 @@ class HttpFileTransferService {
 
       final downloadStream = response.data?.stream;
 
-      if ( downloadStream != null) {
+      if (downloadStream != null) {
         final totalFileSizeString = response.headers['Content-Length']?.first;
         final totalFileSize = int.parse(totalFileSizeString!);
 
         // Since acting on downloadStream events like to fire progress events
         // causes memory spikes relative to the file size, I chose to listen to
-        // the created file instead. This does not cause memory spikes, but see
-        // below.
+        // the created file instead and wait for its completion.
 
         file.watch().listen((FileSystemEvent event) async {
-           if (event is FileSystemCreateEvent || event is FileSystemModifyEvent) {
-             final fileSize = await File(downloadedPath).length();
+          if (event is FileSystemCreateEvent ||
+              event is FileSystemModifyEvent) {
+            final fileSize = await File(downloadedPath).length();
             final progress = fileSize / totalFileSize;
             sendEvent(
               ProgressEvent(
-                  id: job.mId,
-                  progress: progress == 1 ? 0.99 : progress,
+                id: job.mId,
+                progress: progress == 1 ? 0.99 : progress,
               ),
             );
-             if (progress >= 1 && !downloadCompleter.isCompleted) {
-               downloadCompleter.complete();
-             }
+            if (progress >= 1 && !downloadCompleter.isCompleted) {
+              downloadCompleter.complete();
+            }
           }
         });
-
-        // TODO(Unknown): Find some way to pause execution until the download
-        // has finished. Because now, ProgressEvents are sent when the job is
-        // already deleted. Find below a list of solutions I tried (for both this
-        // problem and the problem I tried to solve with this workaround).
-
-        downloadStream.listen(fileSink.add); // .onDone would cause memory spikes
-
-        // while (! downloadStream.isEmpty) causes memory spikes
-        // while (file.lengthSync() / totalFileSize != 1) causes memory spikes
-        // using a controller on downloadStream causes memory spikes
-        // using a controller and piping causes memory spikes
-        // fileSink.addStream(downloadStream) causes memory spikes
-
+        downloadStream
+            .listen(fileSink.add); // .onDone would cause memory spikes
       }
-    } on dio.DioError catch(err) {
+    } on dio.DioError catch (err) {
       // TODO(PapaTutuWawa): React if we received an error that is not related to the
       //                     connection.
       downloadCompleter.completeError('Failed to download: $err');
