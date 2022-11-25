@@ -209,10 +209,7 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
   } else {
     final conversation = await cs.addConversationFromData(
       command.title,
-      -1,
-      false,
-      command.lastMessageBody,
-      command.jid,
+      null,
       command.avatarUrl,
       command.jid,
       0,
@@ -336,10 +333,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
   } else {            
     final c = await cs.addConversationFromData(
       jid.split('@')[0],
-      -1,
-      false,
-      '',
-      jid,
+      null,
       '',
       jid,
       0,
@@ -623,14 +617,10 @@ Future<void> performMarkConversationAsRead(MarkConversationAsReadCommand command
 
   sendEvent(ConversationUpdatedEvent(conversation: conversation));
 
-  final msg = await GetIt.I.get<MessageService>().getMessageById(
-    conversation.jid,
-    conversation.lastMessageId,
-  );
-  if (msg != null) {
+  if (conversation.lastMessage != null) {
     await GetIt.I.get<XmppService>().sendReadMarker(
       conversation.jid,
-      msg.sid,
+      conversation.lastMessage!.sid,
     );
   }
 }

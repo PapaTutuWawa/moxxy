@@ -19,7 +19,7 @@ Future<void> createDatabase(Database db, int version) async {
   // Messages
   await db.execute(
     '''
-    CREATE TABLE $messsagesTable (
+    CREATE TABLE $messagesTable (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sender TEXT NOT NULL,
       body TEXT,
@@ -52,7 +52,7 @@ Future<void> createDatabase(Database db, int version) async {
       isUploading INTEGER NOT NULL,
       mediaSize INTEGER,
       isRetracted INTEGER,
-      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messsagesTable (id)
+      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
     )''',
   );
 
@@ -66,12 +66,11 @@ Future<void> createDatabase(Database db, int version) async {
       avatarUrl TEXT NOT NULL,
       lastChangeTimestamp INTEGER NOT NULL,
       unreadCounter INTEGER NOT NULL,
-      lastMessageBody TEXT NOT NULL,
       open INTEGER NOT NULL,
       muted INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       lastMessageId INTEGER NOT NULL,
-      lastMessageRetracted INTEGER NOT NULL,
+      CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id)
     )''',
   );
 
@@ -86,7 +85,7 @@ Future<void> createDatabase(Database db, int version) async {
       conversation_id INTEGER NOT NULL,
       message_id INTEGER,
       FOREIGN KEY (conversation_id) REFERENCES $conversationsTable (id),
-      FOREIGN KEY (message_id) REFERENCES $messsagesTable (id)
+      FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
     )''',
   );
 

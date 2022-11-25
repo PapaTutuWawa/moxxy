@@ -2,14 +2,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';
-
-const lastMessageStateNothing = 0;
-const lastMessageStateSent = 1;
-const lastMessageStateReceived = 2;
-const lastMessageStateRead = 3;
 
 class ConversationChatStateConverter implements JsonConverter<ChatState, Map<String, dynamic>> {
   const ConversationChatStateConverter();
@@ -27,13 +23,7 @@ class ConversationChatStateConverter implements JsonConverter<ChatState, Map<Str
 class Conversation with _$Conversation {
   factory Conversation(
     String title,
-    // NOTE: The internal database Id of the message
-    int lastMessageId,
-    bool lastMessageRetracted,
-    String lastMessageBody,
-    // 0: Nothing, 1: Sent, 2: Received, 3: Read
-    int lastMessageState,
-    String lastMessageSender,
+    Message? lastMessage,
     String avatarUrl,
     String jid,
     int unreadCounter,
@@ -60,7 +50,7 @@ class Conversation with _$Conversation {
   /// JSON
   factory Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
 
-  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<Map<String, dynamic>> sharedMedia) {
+  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<Map<String, dynamic>> sharedMedia, Message? lastMessage) {
     return Conversation.fromJson({
       ...json,
       'muted': intToBool(json['muted']! as int),
@@ -70,7 +60,7 @@ class Conversation with _$Conversation {
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
-      'lastMessageRetracted': intToBool(json['lastMessageRetracted']! as int)
+      'lastMessage': lastMessage,
     });
   }
   
@@ -80,14 +70,15 @@ class Conversation with _$Conversation {
       ..remove('chatState')
       ..remove('sharedMedia')
       ..remove('inRoster')
-      ..remove('subscription');
+      ..remove('subscription')
+      ..remove('lastMessage');
 
     return {
       ...map,
       'open': boolToInt(open),
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
-      'lastMessageRetracted': boolToInt(lastMessageRetracted),
+      'lastMessage': lastMessage?.id,
     };
   }
 }

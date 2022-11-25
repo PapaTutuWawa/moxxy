@@ -1,5 +1,5 @@
 const conversationsTable = 'Conversations';
-const messsagesTable = 'Messages';
+const messagesTable = 'Messages';
 const rosterTable = 'RosterItems';
 const mediaTable = 'SharedMedia';
 const preferenceTable = 'Preferences';

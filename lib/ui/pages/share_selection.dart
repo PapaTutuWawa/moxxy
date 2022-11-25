@@ -72,11 +72,7 @@ class ShareSelectionPage extends StatelessWidget {
                   maxTextWidth,
                   Conversation(
                     item.title,
-                    0,
-                    false,
-                    '',
-                    lastMessageStateNothing,
-                    '',
+                    null,
                     item.avatarPath,
                     item.jid,
                     0,

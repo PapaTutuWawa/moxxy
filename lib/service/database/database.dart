@@ -9,6 +9,7 @@ import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
+import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
@@ -59,7 +60,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 7,
+      version: 8,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -87,7 +88,10 @@ class DatabaseService {
           _log.finest('Running migration for database version 7');
           await upgradeFromV6ToV7(db);
         }
-
+        if (oldVersion < 8) {
+          _log.finest('Running migration for database version 8');
+          await upgradeFromV7ToV8(db);
+        }
       },
     );
 
@@ -113,17 +117,21 @@ class DatabaseService {
       final rosterItem = await GetIt.I.get<RosterService>()
         .getRosterItemByJid(c['jid']! as String);
 
+      Message? lastMessage;
+      if (c['lastMessageId'] != null) {
+        lastMessage = await getMessageById(c['lastMessageId']! as int);
+      }
+        
       tmp.add(
         Conversation.fromDatabaseJson(
           c,
           rosterItem != null,
           rosterItem?.subscription ?? 'none',
           sharedMediaRaw,
+          lastMessage,
         ),
       );
     }
-
-    _log.finest(tmp.toString());
     
     return tmp;
   }
@@ -157,12 +165,8 @@ class DatabaseService {
   
   /// Updates the conversation with id [id] inside the database.
   Future<Conversation> updateConversation(int id, {
-    String? lastMessageBody,
     int? lastChangeTimestamp,
-    bool? lastMessageRetracted,
-    int? lastMessageState,
-    String? lastMessageSender,
-    int? lastMessageId,
+    Message? lastMessage,
     bool? open,
     int? unreadCounter,
     String? avatarUrl,
@@ -184,21 +188,8 @@ class DatabaseService {
       orderBy: 'timestamp DESC',
     )).map(SharedMedium.fromDatabaseJson);
     
-    //await c.sharedMedia.load();
-    if (lastMessageBody != null) {
-      c['lastMessageBody'] = lastMessageBody;
-    }
-    if (lastMessageRetracted != null) {
-      c['lastMessageRetracted'] = boolToInt(lastMessageRetracted);
-    }
-    if (lastMessageId != null) {
-      c['lastMessageId'] = lastMessageId;
-    }
-    if (lastMessageState != null) {
-      c['lastMessageState'] = lastMessageState;
-    }
-    if (lastMessageSender != null) {
-      c['lastMessageSender'] = lastMessageSender;
+    if (lastMessage != null) {
+      c['lastMessageId'] = lastMessage.id;
     }
     if (lastChangeTimestamp != null) {
       c['lastChangeTimestamp'] = lastChangeTimestamp;
@@ -232,6 +223,7 @@ class DatabaseService {
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
       sharedMedia.map((m) => m.toJson()).toList(),
+      lastMessage,
     );
   }
 
@@ -239,10 +231,7 @@ class DatabaseService {
   /// [Conversation] object can carry its database id.
   Future<Conversation> addConversationFromData(
     String title,
-    int lastMessageId,
-    bool lastMessageRetracted,
-    String lastMessageSender,
-    String lastMessageBody,
+    Message? lastMessage,
     String avatarUrl,
     String jid,
     int unreadCounter,
@@ -254,11 +243,7 @@ class DatabaseService {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
       title,
-      lastMessageId,
-      lastMessageRetracted,
-      lastMessageBody,
-      lastMessageStateNothing,
-      lastMessageSender,
+      lastMessage,
       avatarUrl,
       jid,
       unreadCounter,

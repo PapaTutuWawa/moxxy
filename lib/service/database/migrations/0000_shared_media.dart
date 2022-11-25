@@ -5,6 +5,6 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 Future<void> upgradeFromV5ToV6(Database db) async {
   // Allow shared media to reference a message
   await db.execute(
-    'ALTER TABLE $mediaTable ADD COLUMN message_id INTEGER REFERENCES $messsagesTable (id);',
+    'ALTER TABLE $mediaTable ADD COLUMN message_id INTEGER REFERENCES $messagesTable (id);',
   );
 }

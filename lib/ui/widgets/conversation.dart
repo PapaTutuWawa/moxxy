@@ -85,27 +85,40 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       return const TypingIndicatorWidget(Colors.black, Colors.white);
     }
 
+    String body;
+    if (widget.conversation.lastMessage == null) {
+      body = '';
+    } else {
+      if (widget.conversation.lastMessage!.isRetracted) {
+        body = t.messages.retracted;
+      } else {
+        body = widget.conversation.lastMessage!.body;
+      }
+    }
+       
     return Text(
-      widget.conversation.lastMessageRetracted ?
-        t.messages.retracted :
-        widget.conversation.lastMessageBody,
+      body,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
   }
 
   Widget _getLastMessageIcon() {
-    switch (widget.conversation.lastMessageState) {
-      case lastMessageStateSent: return Icon(Icons.check);
-      case lastMessageStateReceived: return Icon(Icons.done_all);
-      case lastMessageStateRead: return Icon(
+    final lastMessage = widget.conversation.lastMessage;
+    if (lastMessage == null) return const SizedBox();
+
+    if (lastMessage.displayed) {
+      return Icon(
         Icons.done_all,
         color: Colors.blue.shade700,
       );
-      case lastMessageStateNothing:
-      default:
-        return SizedBox();
+    } else if (lastMessage.received) {
+      return const Icon(Icons.done_all);
+    } else if (lastMessage.acked) {
+      return const Icon(Icons.done);
     }
+
+    return const SizedBox();
   }
   
   @override
@@ -120,7 +133,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final textWidth = screenWidth * 0.6;
 
     final showTimestamp = widget.conversation.lastChangeTimestamp != timestampNever && widget.showTimestamp;
-    final sentBySelf = widget.conversation.lastMessageSender == GetIt.I.get<UIDataService>().ownJid!;
+    final sentBySelf = widget.conversation.lastMessage?.sender == GetIt.I.get<UIDataService>().ownJid!;
 
     final showBadge = widget.conversation.unreadCounter > 0 && !sentBySelf;
     return Padding(

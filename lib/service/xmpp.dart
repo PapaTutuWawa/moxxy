@@ -33,7 +33,6 @@ import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as pathlib;
@@ -140,7 +139,6 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final state = await getXmppState();
     
     for (final recipient in recipients) {
       final sid = conn.generateId();
@@ -160,10 +158,7 @@ class XmppService {
       );
       final newConversation = await cs.updateConversation(
         conversation.id,
-        lastMessageBody: body,
-        lastMessageSender: state.jid,
-        lastMessageId: message.id,
-        lastMessageRetracted: false,
+        lastMessage: message,
         lastChangeTimestamp: timestamp,
       );
 
@@ -357,7 +352,6 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    final state = await getXmppState();
 
     // Path -> Recipient -> Message
     final messages = <String, Map<String, Message>>{};
@@ -368,7 +362,7 @@ class XmppService {
     // Recipient -> Should encrypt
     final encrypt = <String, bool>{};
     // Recipient -> Last message Id
-    final lastMessageIds = <String, int>{};
+    final lastMessages = <String, Message>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -416,7 +410,7 @@ class XmppService {
         }
 
         if (path == paths.last) {
-          lastMessageIds[recipient] = msg.id;
+          lastMessages[recipient] = msg;
         }
 
         sendEvent(MessageAddedEvent(message: msg));
@@ -428,15 +422,12 @@ class XmppService {
     final sharedMediaMap = <String, List<SharedMedium>>{};
     final rs = GetIt.I.get<RosterService>();
     for (final recipient in recipients) {
-      final lastFileMime = lookupMimeType(paths.last);
       final conversation = await cs.getConversationByJid(recipient);
       if (conversation != null) {
         // Update conversation
         var updatedConversation = await cs.updateConversation(
           conversation.id,
-          lastMessageSender: state.jid,
-          lastMessageBody: mimeTypeToEmoji(lastFileMime),
-          lastMessageId: lastMessageIds[recipient],
+          lastMessage: lastMessages[recipient],
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
           open: true,
         );
@@ -457,10 +448,7 @@ class XmppService {
         var newConversation = await cs.addConversationFromData(
           // TODO(Unknown): Should we use the JID parser?
           rosterItem?.title ?? recipient.split('@').first,
-          lastMessageIds[recipient]!,
-          false,
-          state.jid!,
-          mimeTypeToEmoji(lastFileMime),
+          lastMessages[recipient],
           rosterItem?.avatarUrl ?? '',
           recipient,
           0,
@@ -659,10 +647,7 @@ class XmppService {
       final bare = event.from.toBare();
       final conv = await cs.addConversationFromData(
         bare.toString().split('@')[0],
-        -1,
-        false,
-        bare.toString(),
-        '',
+        null,
         '', // TODO(Unknown): avatarUrl
         bare.toString(),
         0,
@@ -715,22 +700,11 @@ class XmppService {
     );
     sendEvent(MessageUpdatedEvent(message: msg));
 
-    // Ack the conversation
+    // Update the conversation
     final conv = await cs.getConversationByJid(sender);
-    if (conv != null) {
-      int state;
-      if (dbMsg.displayed || event.type == 'displayed') {
-        state = lastMessageStateRead;
-      } else if (dbMsg.received || event.type == 'received' || event.type == 'displayed') {
-        state = lastMessageStateReceived;
-      } else {
-        state = conv.lastMessageState;
-      }
-
-      final newConv = await cs.updateConversation(
-        conv.id,
-        lastMessageState: state,
-      );
+    if (conv != null && conv.lastMessage?.id == msg.id) {
+      final newConv = conv.copyWith(lastMessage: msg);
+      cs.setConversation(newConv);
       sendEvent(ConversationUpdatedEvent(conversation: newConv));
     }
   }
@@ -1016,11 +990,8 @@ class XmppService {
       // The conversation exists, so we can just update it
       final newConversation = await cs.updateConversation(
         conversation.id,
-        lastMessageSender: conversationJid,
-        lastMessageBody: conversationBody,
+        lastMessage: message,
         lastChangeTimestamp: messageTimestamp,
-        lastMessageId: message.id,
-        lastMessageRetracted: false,
         // Do not increment the counter for messages we sent ourselves (via Carbons)
         // or if we have the chat currently opened
         unreadCounter: isConversationOpened || sent
@@ -1045,10 +1016,7 @@ class XmppService {
       // The conversation does not exist, so we must create it
       final newConversation = await cs.addConversationFromData(
         rosterItem?.title ?? conversationJid.split('@')[0],
-        message.id,
-        false,
-        conversationJid,
-        conversationBody,
+        message,
         rosterItem?.avatarUrl ?? '',
         conversationJid,
         sent ? 0 : 1,
@@ -1166,11 +1134,9 @@ class XmppService {
 
       // Ack the conversation
       final conv = await cs.getConversationByJid(jid);
-      if (conv != null) {
-        final newConv = await cs.updateConversation(
-          conv.id,
-          lastMessageState: lastMessageStateSent,
-        );
+      if (conv != null && conv.lastMessage?.id == newMsg.id) {
+        final newConv = conv.copyWith(lastMessage: msg);
+        cs.setConversation(newConv);
         sendEvent(ConversationUpdatedEvent(conversation: newConv));
       }
     } else {

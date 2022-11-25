@@ -99,11 +99,7 @@ class NewConversationPage extends StatelessWidget {
                       maxTextWidth,
                       Conversation(
                         item.title,
-                        0,
-                        false,
-                        '',
-                        lastMessageStateNothing,
-                        '',
+                        null,
                         item.avatarUrl,
                         item.jid,
                         0,

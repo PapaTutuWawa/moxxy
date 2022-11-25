@@ -239,17 +239,16 @@ class MessageService {
       mediaSize: null,
       isRetracted: true,
       thumbnailData: null,
+      body: '',
     );
     sendEvent(MessageUpdatedEvent(message: retractedMessage));
 
     final cs = GetIt.I.get<ConversationService>();
     final conversation = await cs.getConversationByJid(conversationJid);
     if (conversation != null) {
-      if (conversation.lastMessageId == msg.id) {
-        var newConversation = await cs.updateConversation(
-          conversation.id,
-          lastMessageBody: '',
-          lastMessageRetracted: true,
+      if (conversation.lastMessage?.id == msg.id) {
+        var newConversation = conversation.copyWith(
+          lastMessage: retractedMessage,
         );
 
         if (isMedia) {
@@ -260,7 +259,6 @@ class MessageService {
               return medium.messageId != msg.id;
             }).toList(),
           );
-          GetIt.I.get<ConversationService>().setConversation(newConversation);
 
           // Delete the file if we downloaded it
           if (mediaUrl != null) {
@@ -271,6 +269,7 @@ class MessageService {
           }
         }
 
+        cs.setConversation(newConversation);
         sendEvent(
           ConversationUpdatedEvent(
             conversation: newConversation,
