@@ -2,7 +2,6 @@ import 'package:moxxyv2/service/database/constants.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV7ToV8(Database db) async {
-  // TODO(PapaTutuWawa): Make lastMessageId a foreign key constraint
   await db.execute(
     'ALTER TABLE $conversationsTable DROP COLUMN lastMessageState;'
   );

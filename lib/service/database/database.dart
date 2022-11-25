@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
+import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
@@ -60,9 +61,18 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 8,
+      version: 9,
       onCreate: createDatabase,
-      onConfigure: configureDatabase,
+      onConfigure: (db) async {
+        // In order to do schema changes during database upgrades, we disable foreign
+        // keys in the onConfigure phase, but re-enable them here.
+        // See https://github.com/tekartik/sqflite/issues/624#issuecomment-813324273
+        // for the "solution".
+        await db.execute('PRAGMA foreign_keys = OFF');
+      },
+      onOpen: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           _log.finest('Running migration for database version 2');
@@ -91,6 +101,10 @@ class DatabaseService {
         if (oldVersion < 8) {
           _log.finest('Running migration for database version 8');
           await upgradeFromV7ToV8(db);
+        }
+        if (oldVersion < 9) {
+          _log.finest('Running migration for database version 9');
+          await upgradeFromV8ToV9(db);
         }
       },
     );

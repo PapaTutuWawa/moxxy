@@ -3,7 +3,7 @@ import 'package:moxxyv2/shared/models/preference.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> configureDatabase(Database db) async {
-  await db.execute('PRAGMA foreign_keys = ON');
+  await db.execute('PRAGMA foreign_keys = OFF');
 }
 
 Future<void> createDatabase(Database db, int version) async {
