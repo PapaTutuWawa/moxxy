@@ -25,7 +25,6 @@ class CropBackgroundPage extends StatefulWidget {
 // TODO(PapaTutuWawa): Replace the custom code with InteractiveViewer, once
 //                     https://github.com/flutter/flutter/issues/107855 gets fixed.
 class CropBackgroundPageState extends State<CropBackgroundPage> {
-
   CropBackgroundPageState() : _x = 0, _y = 0, _track = false, super();
   double _x = 0;
   double _y = 0;
@@ -35,6 +34,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   double? _scaleNOld;
   double _scaleNNew = 1;
   double? _scalingFactorCached;
+  TransformationController? _controller;
   
   double _scalingFactor(BuildContext context, CropBackgroundState state) {
     if (_scalingFactorCached != null) return _scalingFactorCached!;
@@ -61,35 +61,20 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
       );
     }
 
-    if (state.blurEnabled) {
-      return Positioned(
-        top: _y,
-        left: _x,
-        child: ImageFiltered(
-          imageFilter: ImageFilter.blur(
-            sigmaX: 10,
-            sigmaY: 10,
-          ),
-          child: Image.memory(
-            state.image!,
-            width: state.imageWidth * _scale * _scaleExtra,
-            height: state.imageHeight * _scale * _scaleExtra,
-            fit: BoxFit.contain,
-          ),
-        ),
-      );
-    } else {
-      return Positioned(
-        top: _y,
-        left: _x,
-        child: Image.memory(
-          state.image!,
-          width: state.imageWidth * (_scale + _scaleExtra),
-          height: state.imageHeight * (_scale + _scaleExtra),
-          fit: BoxFit.contain,
-        ),
-      );
-    }
+    final q = _scalingFactor(context, state);
+    _controller ??= TransformationController(Matrix4.identity()..scale(q, q, 1));
+    return InteractiveViewer(
+      constrained: false,
+      maxScale: 4.0,
+      minScale: 1.0,
+      panEnabled: true,
+      scaleEnabled: true,
+      transformationController: _controller!,
+      child: Image.memory(
+        state.image!,
+        fit: BoxFit.contain,
+      ),
+    );
   }
 
   Widget _buildLoadingSpinner(CropBackgroundState state) {
@@ -128,129 +113,97 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
             return true;
           },
           child: SafeArea(
-            child: GestureDetector(
-              onScaleStart: (_) => _track = true,
-              onScaleEnd: (_) {
-                _track = false;
-                _scale += _scaleExtra;
-                _scaleExtra = 0;
-                _scaleNOld = null;
-              },
-              onScaleUpdate: (event) {
-                if (!_track) return;
-
-                setState(() {
-                    _x = min(
-                      max(
-                        _x + event.focalPointDelta.dx,
-                        query.size.width - state.imageWidth * _scale,
+            child: Stack(
+              children: [
+                // ignore: prefer_if_elements_to_conditional_expressions
+                state.imageHeight != 0 && state.imageWidth != 0 ?
+                  _buildImage(context, state) :
+                  const SizedBox(),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Material(
+                    color: const Color.fromRGBO(0, 0, 0, 0),
+                    child: CancelButton(
+                      onPressed: () {
+                        context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
+                        context.read<NavigationBloc>().add(PoppedRouteEvent());
+                      },
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Material(
+                    color: const Color.fromRGBO(0, 0, 0, 0),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color.fromRGBO(0, 0, 0, 0.6),
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      0,
-                    );
-                    _y = min(
-                      max(
-                        _y + event.focalPointDelta.dy,
-                        query.size.height - state.imageHeight * _scale,
+                      child: IntrinsicWidth(
+                        child: Row(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Text('Blur background'),
+                            ),
+                            Switch(
+                              value: state.blurEnabled,
+                              onChanged: (_) {
+                                if (state.isWorking) return;
+                                
+                                context.read<CropBackgroundBloc>()
+                                .add(BlurToggledEvent());
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      0,
-                    );
-
-                    if (event.pointerCount == 2) {
-                      if (_scaleNOld == null) {
-                        _scaleNOld = event.scale;
-                        _scaleNNew = event.scale;
-                        _scaleExtra = 0;
-                      } else {
-                        _scaleNOld = _scaleNNew;
-                        _scaleNNew = event.scale;
-                      }
-
-                      if (_scaleExtra + _scaleNNew - _scaleNOld! + _scale >= _scalingFactor(context, state)) {
-                        _scaleExtra += _scaleNNew - _scaleNOld!;
-                      }
-                    }
-                });
-              },
-              child: Stack(
-                children: [
-                  // ignore: prefer_if_elements_to_conditional_expressions
-                  state.imageHeight != 0 && state.imageWidth != 0 ?
-                    _buildImage(context, state) :
-                    const SizedBox(),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: Material(
-                      color: const Color.fromRGBO(0, 0, 0, 0),
-                      child: CancelButton(
-                        onPressed: () {
-                          context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
-                          context.read<NavigationBloc>().add(PoppedRouteEvent());
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 8,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      RoundedButton(
+                        cornerRadius: 100,
+                        onTap: () {
+                          var translation;
+                          double scale;
+                          if (_controller == null) {
+                            final q = _scalingFactor(context, state);
+                            translation = Matrix4.identity()
+                              ..scale(q, q, 1)
+                              ..getTranslation();
+                            scale = 1.0;
+                          } else {
+                            translation = _controller!.value.getTranslation();
+                            scale = _controller!.value.entry(0, 0);
+                          }
+                          context.read<CropBackgroundBloc>().add(
+                            BackgroundSetEvent(
+                              translation.x,
+                              translation.y,
+                              scale,
+                              MediaQuery.of(context).size.height,
+                              MediaQuery.of(context).size.width,
+                            ),
+                          );
                         },
+                        enabled: !state.isWorking,
+                        child: const Text('Set as background image'),
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Material(
-                      color: const Color.fromRGBO(0, 0, 0, 0),
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(0, 0, 0, 0.6),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: IntrinsicWidth(
-                          child: Row(
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.only(left: 8),
-                                child: Text('Blur background'),
-                              ),
-                              Switch(
-                                value: state.blurEnabled,
-                                onChanged: (_) {
-                                  if (state.isWorking) return;
-                                  
-                                  context.read<CropBackgroundBloc>()
-                                  .add(BlurToggledEvent());
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 8,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        RoundedButton(
-                          cornerRadius: 100,
-                          onTap: () {
-                            context.read<CropBackgroundBloc>().add(
-                              BackgroundSetEvent(
-                                _x,
-                                _y,
-                                _scale,
-                                MediaQuery.of(context).size.height,
-                                MediaQuery.of(context).size.width,
-                              ),
-                            );
-                          },
-                          enabled: !state.isWorking,
-                          child: const Text('Set as background image'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildLoadingSpinner(state),
-                ],
-              ),
+                ),
+                _buildLoadingSpinner(state),
+              ],
             ),
           ),
         );
