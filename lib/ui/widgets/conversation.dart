@@ -10,6 +10,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 
 class ConversationsListRow extends StatefulWidget {
@@ -93,7 +94,13 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       if (lastMessage.isRetracted) {
         body = t.messages.retracted;
       } else if (lastMessage.isMedia) {
-        body = mimeTypeToEmoji(lastMessage.mediaType);
+        // If the file is thumbnailable, we display a small preview on the left of the
+        // body, so we don't need the emoji then.
+        if (lastMessage.isThumbnailable) {
+          body = mimeTypeToName(lastMessage.mediaType);
+        } else {
+          body = mimeTypeToEmoji(lastMessage.mediaType);
+        }
       } else {
         body = widget.conversation.lastMessage!.body;
       }
@@ -189,6 +196,17 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      ...widget.conversation.lastMessage?.isThumbnailable == true ? [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 5),
+                          child: SharedImageWidget(
+                            widget.conversation.lastMessage!.mediaUrl!,
+                            () {},
+                            borderRadius: 5,
+                            size: 20,
+                          ),
+                        ),
+                      ] : [],
                       LimitedBox(
                         maxWidth: textWidth,
                         child: _buildLastMessageBody(),

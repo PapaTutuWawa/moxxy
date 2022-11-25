@@ -201,19 +201,46 @@ String? guessMimeTypeFromExtension(String ext) {
   return null;
 }
 
+/// Return the translated name describing the MIME type [mime]. If [mime] is null or
+/// the MIME type is neither image, video or audio, then it falls back to the
+/// translation of "file".
+String mimeTypeToName(String? mime) {
+  if (mime != null) {
+    if (mime.startsWith('image')) {
+      return t.messages.image;
+    } else if (mime.startsWith('audio')) {
+      return t.messages.audio;
+    } else if (mime.startsWith('video')) {
+      return t.messages.video;
+    }
+  }
+
+  return t.messages.file;
+}
+
 /// Return an emoji for the MIME type [mime]. If [addTypeName] id true, then a human readable
 /// name for the MIME type will be appended.
 String mimeTypeToEmoji(String? mime, {bool addTypeName = true}) {
+  String value;
   if (mime != null) {
     if (mime.startsWith('image')) {
-      return '🖼️${addTypeName ?  " ${t.messages.image}" : ""}';
+      value = '🖼️';
     } else if (mime.startsWith('audio')) {
-      return '🎙${addTypeName ?  " ${t.messages.audio}" : ""}';
+      value = '🎙';
     } else if (mime.startsWith('video')) {
-      return '🎬${addTypeName ?  " ${t.messages.video}" : ""}';
+      value = '🎬';
+    } else {
+      value = '📁';
     }
+  } else {
+    value = '📁';
   }
-  return '📁${addTypeName ?  " ${t.messages.file}" : ""}';
+
+  if (addTypeName) {
+    value += ' ${mimeTypeToName(mime)}';
+  }
+
+  return value;
 }
 
 /// Parse an Uri and return the "filename".
