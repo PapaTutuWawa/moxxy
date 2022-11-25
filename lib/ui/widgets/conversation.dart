@@ -85,12 +85,15 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       return const TypingIndicatorWidget(Colors.black, Colors.white);
     }
 
+    final lastMessage = widget.conversation.lastMessage;
     String body;
-    if (widget.conversation.lastMessage == null) {
+    if (lastMessage == null) {
       body = '';
     } else {
-      if (widget.conversation.lastMessage!.isRetracted) {
+      if (lastMessage.isRetracted) {
         body = t.messages.retracted;
+      } else if (lastMessage.isMedia) {
+        body = mimeTypeToEmoji(lastMessage.mediaType);
       } else {
         body = widget.conversation.lastMessage!.body;
       }

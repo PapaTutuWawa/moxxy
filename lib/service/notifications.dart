@@ -100,11 +100,11 @@ class NotificationsService {
         title: c.title,
         body: body,
         largeIcon: c.avatarUrl.isNotEmpty ? 'file://${c.avatarUrl}' : null,
-        notificationLayout: m.thumbnailable ?
+        notificationLayout: m.isThumbnailable ?
           NotificationLayout.BigPicture :
           NotificationLayout.Messaging,
         category: NotificationCategory.Message,
-        bigPicture: m.thumbnailable ? 'file://${m.mediaUrl}' : null,
+        bigPicture: m.isThumbnailable ? 'file://${m.mediaUrl}' : null,
         payload: <String, String>{
           'conversationJid': c.jid,
           'sid': m.sid,
