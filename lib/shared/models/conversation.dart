@@ -19,11 +19,27 @@ class ConversationChatStateConverter implements JsonConverter<ChatState, Map<Str
   };
 }
 
+class ConversationMessageConverter implements JsonConverter<Message?, Map<String, dynamic>> {
+  const ConversationMessageConverter();
+
+  @override
+  Message? fromJson(Map<String, dynamic> json) {
+    if (json['message'] == null) return null;
+
+    return Message.fromJson(json['message']! as Map<String, dynamic>);
+  }
+  
+  @override
+  Map<String, dynamic> toJson(Message? message) => <String, dynamic>{
+    'message': message?.toJson(),
+  };
+}
+
 @freezed
 class Conversation with _$Conversation {
   factory Conversation(
     String title,
-    Message? lastMessage,
+    @ConversationMessageConverter() Message? lastMessage,
     String avatarUrl,
     String jid,
     int unreadCounter,
@@ -60,7 +76,9 @@ class Conversation with _$Conversation {
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
-      'lastMessage': lastMessage,
+      'lastMessage': <String, dynamic>{
+        'message': lastMessage?.toJson(),
+      },
     });
   }
   

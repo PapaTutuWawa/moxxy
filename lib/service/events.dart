@@ -29,6 +29,7 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
+import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
@@ -68,6 +69,9 @@ void setupBackgroundEventHandler() {
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
+  GetIt.I.registerSingleton<SynchronizedQueue<Map<String, dynamic>?>>(
+    SynchronizedQueue<Map<String, dynamic>?>(handleUIEvent),
+  );
 }
 
 Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
@@ -141,13 +145,6 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
 
 Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) async {
   final id = extra as String;
-  
-  // Prevent a race condition where the UI sends the prestart command before the service
-  // has finished setting everything up
-  GetIt.I.get<Logger>().finest('Waiting for preStart future to complete..');
-  await GetIt.I.get<Completer<void>>().future;
-  GetIt.I.get<Logger>().finest('PreStart future done');
-
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
 
   // Set the locale very early

@@ -56,7 +56,6 @@ class ConversationService {
   
   /// Wrapper around [DatabaseService]'s [updateConversation] that modifies the cache.
   Future<Conversation> updateConversation(int id, {
-    String? lastMessageBody,
     int? lastChangeTimestamp,
     Message? lastMessage,
     bool? open,
@@ -66,19 +65,24 @@ class ConversationService {
     bool? muted,
     bool? encrypted,
   }) async {
-    final conversation = await _getConversationById(id);
-    final newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
+    final conversation = (await _getConversationById(id))!;
+    var newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
       id,
       lastMessage: lastMessage,
       lastChangeTimestamp: lastChangeTimestamp,
       open: open,
       unreadCounter: unreadCounter,
       avatarUrl: avatarUrl,
-      chatState: conversation?.chatState ?? ChatState.gone,
+      chatState: conversation.chatState,
       muted: muted,
       encrypted: encrypted,
     );
 
+    // Copy over the old lastMessage if a new one was not set
+    if (conversation.lastMessage != null && lastMessage == null) {
+      newConversation = newConversation.copyWith(lastMessage: conversation.lastMessage);
+    }
+    
     _conversationCache.cache(id, newConversation);
     return newConversation;
   }

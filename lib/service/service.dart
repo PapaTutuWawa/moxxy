@@ -35,6 +35,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/logging.dart';
+import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/events.dart' as ui_events;
 
 Future<void> initializeServiceIfNeeded() async {
@@ -47,7 +48,7 @@ Future<void> initializeServiceIfNeeded() async {
     }
 
     logger.info('Attaching to service...');
-    await handler.attach(ui_events.handleIsolateEvent);
+    await handler.attach(ui_events.receiveIsolateEvent);
     logger.info('Done');
 
     // ignore: cascade_invocations
@@ -62,7 +63,7 @@ Future<void> initializeServiceIfNeeded() async {
     logger.info('Service is not running. Initializing service... ');
     await handler.start(
       entrypoint,
-      handleUiEvent,
+      receiveUIEvent,
       ui_events.handleIsolateEvent,
     );
   }
@@ -72,7 +73,7 @@ Future<void> initializeServiceIfNeeded() async {
 /// logging what we send.
 void sendEvent(BackgroundEvent event, { String? id }) {
   // NOTE: *S*erver to *F*oreground
-  GetIt.I.get<Logger>().fine('S2F: ${event.toJson()}');
+  GetIt.I.get<Logger>().fine('--> ${event.toJson()["type"]}');
   GetIt.I.get<BackgroundService>().sendEvent(event, id: id);
 }
 
@@ -130,16 +131,13 @@ Future<void> initUDPLogger() async {
 /// The entrypoint for all platforms after the platform specific initilization is done.
 @pragma('vm:entry-point')
 Future<void> entrypoint() async {
-  // Register the lock
-  GetIt.I.registerSingleton<Completer<void>>(Completer());
+  setupLogging();
+  setupBackgroundEventHandler();
 
   // Register singletons
   GetIt.I.registerSingleton<Logger>(Logger('MoxxyService'));
   GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
   GetIt.I.registerSingleton<LanguageService>(LanguageService());
-
-  setupLogging();
-  setupBackgroundEventHandler();
   
   // Initialize the database
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
@@ -242,13 +240,15 @@ Future<void> entrypoint() async {
     );
   }
 
-  GetIt.I.get<Logger>().finest('Resolving startup future');
-  GetIt.I.get<Completer<void>>().complete();
-
+  unawaited(GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().removeQueueLock());
   sendEvent(ServiceReadyEvent());
 }
 
-Future<void> handleUiEvent(Map<String, dynamic>? data) async {
+Future<void> receiveUIEvent(Map<String, dynamic>? data) async {
+  await GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().add(data);
+}
+
+Future<void> handleUIEvent(Map<String, dynamic>? data) async {
   // NOTE: *F*oreground to *S*ervice
   final log = GetIt.I.get<Logger>();
 

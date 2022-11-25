@@ -15,10 +15,6 @@ import 'package:share_handler/share_handler.dart';
 
 /// Handler for when we received a [PreStartDoneEvent].
 Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
-  GetIt.I.get<Logger>().finest('Waiting for UI setup future to complete...');
-  await GetIt.I.get<Completer<void>>().future;
-  GetIt.I.get<Logger>().finest('Done');
-
   GetIt.I.get<PreferencesBloc>().add(
     PreferencesChangedEvent(result.preferences),
   );

@@ -9,6 +9,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -99,8 +100,6 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
 //                Padding(padding: ..., child: Column(children: [ ... ]))
 // TODO(Unknown): Theme the switches
 void main() async {
-  GetIt.I.registerSingleton<Completer<void>>(Completer());
-
   setupLogging();
   await setupUIServices();
 
@@ -190,10 +189,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Lift the UI block
-    GetIt.I.get<Completer<void>>().complete();
-
     _setupSharingHandler();
+    
+    // Lift the UI block
+    GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().removeQueueLock();
   }
 
   Future<void> _handleSharedMedia(SharedMedia media) async {

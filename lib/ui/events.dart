@@ -8,6 +8,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart' as blocklist;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart' as conversations;
@@ -34,6 +35,11 @@ void setupEventHandler() {
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
+  GetIt.I.registerSingleton<SynchronizedQueue<Map<String, dynamic>?>>(SynchronizedQueue<Map<String, dynamic>?>(handleIsolateEvent));
+}
+
+Future<void> receiveIsolateEvent(Map<String, dynamic>? json) async {
+  await GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().add(json);
 }
 
 Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
@@ -50,7 +56,7 @@ Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
     event,
   );
 
-  log.finest('S2F: $event');
+  log.finest('<-- ${(event).toString()}');
 
   // First attempt to deal with awaitables
   var found = false;
@@ -136,9 +142,6 @@ Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }
 }
 
 Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
-  GetIt.I.get<Logger>().fine('onServiceReady: Waiting for UI future to resolve...');
-  await GetIt.I.get<Completer<void>>().future;
-  GetIt.I.get<Logger>().fine('onServiceReady: Done');
   await MoxplatformPlugin.handler.getDataSender().sendData(
     PerformPreStartCommand(
       systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
