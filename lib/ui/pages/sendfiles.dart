@@ -41,7 +41,7 @@ class SendFilesPage extends StatelessWidget {
         padding: const EdgeInsets.only(right: 4),
         child: SharedImageWidget(
           path,
-          () {
+          onTap: () {
             if (selected) {
               // The trash can icon has been tapped
               context.read<SendFilesBloc>().add(

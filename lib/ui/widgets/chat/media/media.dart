@@ -182,9 +182,14 @@ Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? re
 
 Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
   if (medium.mime == null) {
-    return SharedFileWidget(medium.path);
+    return SharedFileWidget(
+      medium.path,
+    );
   } else if (medium.mime!.startsWith('image/')) {
-    return SharedImageWidget(medium.path, () => OpenFile.open(medium.path));
+    return SharedImageWidget(
+      medium.path,
+      onTap: () => OpenFile.open(medium.path),
+    );
   } else if (medium.mime!.startsWith('video/')) {
     return SharedVideoWidget(
       medium.path,

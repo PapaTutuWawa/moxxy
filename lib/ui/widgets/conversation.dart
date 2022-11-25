@@ -193,37 +193,41 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     ],
                   ),
 
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ...widget.conversation.lastMessage?.isThumbnailable == true ? [
-                        Padding(
-                          padding: const EdgeInsets.only(right: 5),
-                          child: SharedImageWidget(
-                            widget.conversation.lastMessage!.mediaUrl!,
-                            () {},
-                            borderRadius: 5,
-                            size: 20,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 5),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ...widget.conversation.lastMessage?.isThumbnailable == true ? [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 5),
+                            child: SharedImageWidget(
+                              widget.conversation.lastMessage!.mediaUrl!,
+                              borderRadius: 5,
+                              size: 30,
+                            ),
+                          ),
+                        ] : [
+                          const SizedBox(height: 30),
+                        ],
+                        LimitedBox(
+                          maxWidth: textWidth,
+                          child: _buildLastMessageBody(),
+                        ),
+                        const Spacer(),
+                        Visibility(
+                          visible: showBadge,
+                          child: Badge(
+                            badgeContent: Text(badgeText),
+                            badgeColor: bubbleColorSent,
                           ),
                         ),
-                      ] : [],
-                      LimitedBox(
-                        maxWidth: textWidth,
-                        child: _buildLastMessageBody(),
-                      ),
-                      const Spacer(),
-                      Visibility(
-                        visible: showBadge,
-                        child: Badge(
-                          badgeContent: Text(badgeText),
-                          badgeColor: bubbleColorSent,
+                        Visibility(
+                          visible: sentBySelf,
+                          child: _getLastMessageIcon(),
                         ),
-                      ),
-                      Visibility(
-                        visible: sentBySelf,
-                        child: _getLastMessageIcon(),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
