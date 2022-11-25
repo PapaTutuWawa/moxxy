@@ -1,39 +1,33 @@
 import 'dart:async';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 
 class ConversationsListRow extends StatefulWidget {
   const ConversationsListRow(
-    this.avatarUrl,
-    this.name,
-    this.lastMessageBody,
-    this.unreadCount,
     this.maxTextWidth,
-    this.lastChangeTimestamp,
+    this.conversation,
     this.update, {
+      this.showTimestamp = true,
       this.showLock = false,
-      this.typingIndicator = false,
       this.extra,
-      this.lastMessageRetracted = false,
       super.key,
     }
   );
-  final String avatarUrl;
-  final String name;
-  final bool lastMessageRetracted;
-  final String lastMessageBody;
-  final int unreadCount;
+  final Conversation conversation;
   final double maxTextWidth;
-  final int lastChangeTimestamp;
   final bool update; // Should a timer run to update the timestamp
-  final bool typingIndicator;
   final bool showLock;
+  final bool showTimestamp;
   final Widget? extra;
 
   @override
@@ -51,23 +45,23 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final _now = DateTime.now().millisecondsSinceEpoch;
 
     _timestampString = formatConversationTimestamp(
-      widget.lastChangeTimestamp,
+      widget.conversation.lastChangeTimestamp,
       _now,
     );
 
     // NOTE: We could also check and run the timer hourly, but who has a messenger on the
     //       conversation screen open for hours on end?
-    if (widget.update && widget.lastChangeTimestamp > -1 && _now - widget.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+    if (widget.update && widget.conversation.lastChangeTimestamp > -1 && _now - widget.conversation.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
       _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
         final now = DateTime.now().millisecondsSinceEpoch;
         setState(() {
           _timestampString = formatConversationTimestamp(
-            widget.lastChangeTimestamp,
+            widget.conversation.lastChangeTimestamp,
             now,
           );
         });
 
-        if (now - widget.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+        if (now - widget.conversation.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
           _updateTimer!.cancel();
           _updateTimer = null;
         }
@@ -87,38 +81,56 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   }
 
   Widget _buildLastMessageBody() {
-    if (widget.typingIndicator) {
+    if (widget.conversation.chatState == ChatState.composing) {
       return const TypingIndicatorWidget(Colors.black, Colors.white);
     }
 
     return Text(
-      widget.lastMessageRetracted ?
+      widget.conversation.lastMessageRetracted ?
         t.messages.retracted :
-        widget.lastMessageBody,
+        widget.conversation.lastMessageBody,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
   }
+
+  Widget _getLastMessageIcon() {
+    switch (widget.conversation.lastMessageState) {
+      case lastMessageStateSent: return Icon(Icons.check);
+      case lastMessageStateReceived: return Icon(Icons.done_all);
+      case lastMessageStateRead: return Icon(
+        Icons.done_all,
+        color: Colors.blue.shade700,
+      );
+      case lastMessageStateNothing:
+      default:
+        return SizedBox();
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
-    final badgeText = widget.unreadCount > 99 ? '99+' : widget.unreadCount.toString();
+    final badgeText = widget.conversation.unreadCounter > 99 ?
+      '99+' :
+      widget.conversation.unreadCounter.toString();
     // TODO(Unknown): Maybe turn this into an attribute of the widget to prevent calling this
     //                for every conversation
     final screenWidth = MediaQuery.of(context).size.width;
     final width = screenWidth - 24 - 70;
     final textWidth = screenWidth * 0.6;
 
-    final showTimestamp = widget.lastChangeTimestamp != timestampNever;
-    final showBadge = widget.unreadCount > 0;
+    final showTimestamp = widget.conversation.lastChangeTimestamp != timestampNever && widget.showTimestamp;
+    final sentBySelf = widget.conversation.lastMessageSender == GetIt.I.get<UIDataService>().ownJid!;
+
+    final showBadge = widget.conversation.unreadCounter > 0 && !sentBySelf;
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           AvatarWrapper(
             radius: 35,
-            avatarUrl: widget.avatarUrl,
-            altText: widget.name,
+            avatarUrl: widget.conversation.avatarUrl,
+            altText: widget.conversation.title,
           ),
           Padding(
             padding: const EdgeInsets.only(left: 8),
@@ -131,8 +143,11 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        widget.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                        widget.conversation.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -164,16 +179,17 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                         maxWidth: textWidth,
                         child: _buildLastMessageBody(),
                       ),
+                      const Spacer(),
                       Visibility(
                         visible: showBadge,
-                        child: const Spacer(),
-                      ),
-                      Visibility(
-                        visible: widget.unreadCount > 0,
                         child: Badge(
                           badgeContent: Text(badgeText),
                           badgeColor: bubbleColorSent,
                         ),
+                      ),
+                      Visibility(
+                        visible: sentBySelf,
+                        child: _getLastMessageIcon(),
                       ),
                     ],
                   ),

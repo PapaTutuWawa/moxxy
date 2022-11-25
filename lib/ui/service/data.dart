@@ -5,7 +5,6 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 // TODO(Unknown): Maybe manage this as a sort-of proxy service between the BLoCs and
 //                the event receiver
 class UIDataService {
-
   UIDataService() : isLoggedIn = false;
 
   bool isLoggedIn;

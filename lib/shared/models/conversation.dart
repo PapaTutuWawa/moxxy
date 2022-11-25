@@ -6,6 +6,11 @@ import 'package:moxxyv2/shared/models/media.dart';
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';
 
+const lastMessageStateNothing = 0;
+const lastMessageStateSent = 1;
+const lastMessageStateReceived = 2;
+const lastMessageStateRead = 3;
+
 class ConversationChatStateConverter implements JsonConverter<ChatState, Map<String, dynamic>> {
   const ConversationChatStateConverter();
 
@@ -26,6 +31,9 @@ class Conversation with _$Conversation {
     int lastMessageId,
     bool lastMessageRetracted,
     String lastMessageBody,
+    // 0: Nothing, 1: Sent, 2: Received, 3: Read
+    int lastMessageState,
+    String lastMessageSender,
     String avatarUrl,
     String jid,
     int unreadCounter,

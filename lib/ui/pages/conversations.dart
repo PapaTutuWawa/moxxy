@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -55,15 +54,9 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
         itemBuilder: (_context, index) {
           final item = state.conversations[index];
           final row = ConversationsListRow(
-            item.avatarUrl,
-            item.title,
-            item.lastMessageBody,
-            item.unreadCounter,
             maxTextWidth,
-            item.lastChangeTimestamp,
+            item,
             true,
-            typingIndicator: item.chatState == ChatState.composing,
-            lastMessageRetracted: item.lastMessageRetracted,
             key: ValueKey('conversationRow;${item.jid}'),
           );
           

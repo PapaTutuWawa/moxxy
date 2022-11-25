@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:move_to_background/move_to_background.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as navigation;
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -68,14 +69,30 @@ class ShareSelectionPage extends StatelessWidget {
                   );
                 },
                 child: ConversationsListRow(
-                  item.avatarPath,
-                  item.title,
-                  item.jid,
-                  0,
                   maxTextWidth,
-                  timestampNever,
+                  Conversation(
+                    item.title,
+                    0,
+                    false,
+                    '',
+                    lastMessageStateNothing,
+                    '',
+                    item.avatarPath,
+                    item.jid,
+                    0,
+                    0,
+                    [],
+                    0,
+                    true,
+                    true,
+                    '',
+                    false,
+                    false,
+                    ChatState.gone,
+                  ),
                   false,
                   showLock: item.isEncrypted,
+                  showTimestamp: false,
                   extra: Checkbox(
                     value: isSelected,
                     onChanged: (_) {

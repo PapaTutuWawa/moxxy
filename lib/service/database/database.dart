@@ -8,6 +8,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
@@ -58,7 +59,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 6,
+      version: 7,
       onCreate: createDatabase,
       onConfigure: configureDatabase,
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -82,6 +83,11 @@ class DatabaseService {
           _log.finest('Running migration for database version 6');
           await upgradeFromV5ToV6(db);
         }
+        if (oldVersion < 7) {
+          _log.finest('Running migration for database version 7');
+          await upgradeFromV6ToV7(db);
+        }
+
       },
     );
 
@@ -154,6 +160,8 @@ class DatabaseService {
     String? lastMessageBody,
     int? lastChangeTimestamp,
     bool? lastMessageRetracted,
+    int? lastMessageState,
+    String? lastMessageSender,
     int? lastMessageId,
     bool? open,
     int? unreadCounter,
@@ -185,6 +193,12 @@ class DatabaseService {
     }
     if (lastMessageId != null) {
       c['lastMessageId'] = lastMessageId;
+    }
+    if (lastMessageState != null) {
+      c['lastMessageState'] = lastMessageState;
+    }
+    if (lastMessageSender != null) {
+      c['lastMessageSender'] = lastMessageSender;
     }
     if (lastChangeTimestamp != null) {
       c['lastChangeTimestamp'] = lastChangeTimestamp;
@@ -227,6 +241,7 @@ class DatabaseService {
     String title,
     int lastMessageId,
     bool lastMessageRetracted,
+    String lastMessageSender,
     String lastMessageBody,
     String avatarUrl,
     String jid,
@@ -242,6 +257,8 @@ class DatabaseService {
       lastMessageId,
       lastMessageRetracted,
       lastMessageBody,
+      lastMessageStateNothing,
+      lastMessageSender,
       avatarUrl,
       jid,
       unreadCounter,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -94,7 +95,31 @@ class NewConversationPage extends StatelessWidget {
                         item.avatarUrl,
                       ),
                     ),
-                    child: ConversationsListRow(item.avatarUrl, item.title, item.jid, 0, maxTextWidth, timestampNever, false),
+                    child: ConversationsListRow(
+                      maxTextWidth,
+                      Conversation(
+                        item.title,
+                        0,
+                        false,
+                        '',
+                        lastMessageStateNothing,
+                        '',
+                        item.avatarUrl,
+                        item.jid,
+                        0,
+                        0,
+                        [],
+                        0,
+                        true,
+                        true,
+                        '',
+                        false,
+                        false,
+                        ChatState.gone,
+                      ),
+                      false,
+                      showTimestamp: false,
+                    ),
                   ),
                 );
             }
