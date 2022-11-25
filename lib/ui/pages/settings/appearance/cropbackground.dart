@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,17 +21,8 @@ class CropBackgroundPage extends StatefulWidget {
   CropBackgroundPageState createState() => CropBackgroundPageState();
 }
 
-// TODO(PapaTutuWawa): Replace the custom code with InteractiveViewer, once
-//                     https://github.com/flutter/flutter/issues/107855 gets fixed.
 class CropBackgroundPageState extends State<CropBackgroundPage> {
-  CropBackgroundPageState() : _x = 0, _y = 0, _track = false, super();
-  double _x = 0;
-  double _y = 0;
-  bool _track = false;
-  double _scale = -1;
-  double _scaleExtra = 0;
-  double? _scaleNOld;
-  double _scaleNNew = 1;
+  CropBackgroundPageState() : super();
   double? _scalingFactorCached;
   TransformationController? _controller;
   
@@ -61,19 +51,35 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
       );
     }
 
+    Widget image;
+    if (state.blurEnabled) {
+      image = ImageFiltered(
+        imageFilter: ImageFilter.blur(
+          sigmaX: 10,
+          sigmaY: 10,
+        ),
+        child: Image.memory(
+          state.image!,
+          fit: BoxFit.contain,
+        ),
+      );
+    } else {
+      image = Image.memory(
+        state.image!,
+        fit: BoxFit.contain,
+      );
+    }
+    
     final q = _scalingFactor(context, state);
     _controller ??= TransformationController(Matrix4.identity()..scale(q, q, 1));
     return InteractiveViewer(
       constrained: false,
-      maxScale: 4.0,
-      minScale: 1.0,
-      panEnabled: true,
-      scaleEnabled: true,
-      transformationController: _controller!,
-      child: Image.memory(
-        state.image!,
-        fit: BoxFit.contain,
-      ),
+      maxScale: 4,
+      minScale: 1,
+      panEnabled: !state.isWorking,
+      scaleEnabled: !state.isWorking,
+      transformationController: _controller,
+      child: image,
     );
   }
 
@@ -98,13 +104,8 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   
   @override
   Widget build(BuildContext context) {
-    final query = MediaQuery.of(context);
     return BlocBuilder<CropBackgroundBloc, CropBackgroundState>(
       builder: (BuildContext context, CropBackgroundState state) {
-        if (_scale == -1 && state.imageWidth != 0 && state.imageHeight != 0) {
-          _scale = _scalingFactor(context, state);
-        }
-
         return WillPopScope(
           onWillPop: () async {
             if (state.isWorking) return false;
@@ -174,18 +175,15 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                       RoundedButton(
                         cornerRadius: 100,
                         onTap: () {
-                          var translation;
-                          double scale;
-                          if (_controller == null) {
-                            final q = _scalingFactor(context, state);
-                            translation = Matrix4.identity()
-                              ..scale(q, q, 1)
-                              ..getTranslation();
-                            scale = 1.0;
-                          } else {
-                            translation = _controller!.value.getTranslation();
-                            scale = _controller!.value.entry(0, 0);
-                          }
+                          final q = _scalingFactor(context, state);
+                          final value = _controller == null ?
+                            (Matrix4.identity()..scale(q, q, 1)) :
+                            _controller!.value;
+                          final translation = value.getTranslation();
+                          final scale = _controller == null ?
+                            1.0 :
+                            value.entry(0, 0);
+
                           context.read<CropBackgroundBloc>().add(
                             BackgroundSetEvent(
                               translation.x,
