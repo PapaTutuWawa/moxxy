@@ -112,19 +112,37 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     );
   }
 
-  Widget _getLastMessageIcon() {
+  Widget _getLastMessageIcon(bool sentBySelf) {
     final lastMessage = widget.conversation.lastMessage;
     if (lastMessage == null) return const SizedBox();
 
-    if (lastMessage.displayed) {
-      return Icon(
-        Icons.done_all,
-        color: Colors.blue.shade700,
-      );
-    } else if (lastMessage.received) {
-      return const Icon(Icons.done_all);
-    } else if (lastMessage.acked) {
-      return const Icon(Icons.done);
+    Widget? icon;
+    if (sentBySelf) {
+      if (lastMessage.displayed) {
+        icon = Icon(
+          Icons.done_all,
+          color: Colors.blue.shade700,
+        );
+      } else if (lastMessage.received) {
+        icon = const Icon(Icons.done_all);
+      } else if (lastMessage.acked) {
+        icon = const Icon(Icons.done);
+      }
+    } else {
+      if (lastMessage.isEdited) {
+        icon = const Icon(Icons.edit);
+      }
+    }
+
+    if (icon != null) {
+      if (widget.conversation.unreadCounter > 0) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 5),
+          child: icon,
+        );
+      } else {
+        return icon;
+      }
     }
 
     return const SizedBox();
@@ -214,16 +232,15 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                           child: _buildLastMessageBody(),
                         ),
                         const Spacer(),
+
+                        _getLastMessageIcon(sentBySelf),
+
                         Visibility(
                           visible: showBadge,
                           child: Badge(
                             badgeContent: Text(badgeText),
                             badgeColor: bubbleColorSent,
                           ),
-                        ),
-                        Visibility(
-                          visible: sentBySelf,
-                          child: _getLastMessageIcon(),
                         ),
                       ],
                     ),

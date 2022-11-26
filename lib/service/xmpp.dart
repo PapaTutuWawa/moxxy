@@ -935,9 +935,8 @@ class XmppService {
 
     final conv = await cs.getConversationByJid(msg.conversationJid);
     if (conv != null && conv.lastMessage?.id == msg.id) {
-      final newConv = await cs.updateConversation(
-        conv.id,
-        lastMessage: msg,
+      final newConv = conv.copyWith(
+        lastMessage: newMsg,
       );
       cs.setConversation(newConv);
       sendEvent(ConversationUpdatedEvent(conversation: newConv));
@@ -960,7 +959,6 @@ class XmppService {
     if (event.chatState != null) await _onChatState(event.chatState!, conversationJid);
 
     // Process message corrections separately
-    _log.finest('=================================== ${event.messageCorrectionId}');
     if (event.messageCorrectionId != null) {
       await _handleMessageCorrection(event, conversationJid);
       return;
