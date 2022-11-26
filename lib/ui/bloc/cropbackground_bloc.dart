@@ -46,7 +46,7 @@ void _cropImage(List<dynamic> data) {
     stackBlurRgba(cropped.data, cropped.width, cropped.height, 20);
   }
 
-  File(destination).writeAsBytesSync(encodePng(cropped));
+  File(destination).writeAsBytesSync(encodeJpg(cropped, quality: 85));
   port.send(true);
 }
 
