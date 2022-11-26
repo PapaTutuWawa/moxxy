@@ -3,8 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
-import 'package:image_size_getter/file_input.dart';
-import 'package:image_size_getter/image_size_getter.dart' as image_size;
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
@@ -375,13 +373,13 @@ class XmppService {
 
         // TODO(Unknown): Do the same for videos
         if (pathMime != null && pathMime.startsWith('image/')) {
-          try {
-            final imageSize = image_size.ImageSizeGetter.getSize(FileInput(File(path)));
+          final imageSize = await getImageSizeFromPath(path);
+          if (imageSize != null) {
             dimensions[path] = Size(
-              imageSize.width.toDouble(),
-              imageSize.height.toDouble(),
+              imageSize.width,
+              imageSize.height,
             );
-          } catch (ex) {
+          } else {
             _log.warning('Failed to get image dimensions for $path');
           }
         }

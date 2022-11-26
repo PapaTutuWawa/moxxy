@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
-import 'package:image_size_getter/image_size_getter.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
@@ -14,6 +13,7 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 
 /// Removes line breaks and spaces from [original]. This might happen when we request the
 /// avatar data. Returns the cleaned version.
@@ -158,7 +158,7 @@ class AvatarService {
     final public = prefs.isAvatarPublic;
 
     // Read the image metadata
-    final imageSize = ImageSizeGetter.getSize(MemoryInput(bytes));
+    final imageSize = (await getImageSizeFromData(bytes))!;
     
     // Publish data and metadata
     final manager = _getUserAvatarManager();
@@ -171,8 +171,8 @@ class AvatarService {
       UserAvatarMetadata(
         hash,
         bytes.length,
-        imageSize.width,
-        imageSize.height,
+        imageSize.width.toInt(),
+        imageSize.height.toInt(),
         // TODO(PapaTutuWawa): Maybe do a check here
         'image/png',
       ),

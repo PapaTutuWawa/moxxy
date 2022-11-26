@@ -5,7 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart';
-import 'package:image_size_getter/image_size_getter.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -81,13 +81,13 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
     );
     
     final data = await File(event.path).readAsBytes();
-    final imageSize = ImageSizeGetter.getSize(MemoryInput(data));
+    final imageSize = (await getImageSizeFromData(data))!;
     emit(
       state.copyWith(
         image: data,
         imagePath: event.path,
-        imageWidth: imageSize.width,
-        imageHeight: imageSize.height,
+        imageWidth: imageSize.width.toInt(),
+        imageHeight: imageSize.height.toInt(),
       ),
     );
   }

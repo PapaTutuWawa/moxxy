@@ -1,4 +1,7 @@
 import 'dart:core';
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:synchronized/synchronized.dart';
@@ -315,5 +318,33 @@ String fileSizeToString(int size) {
     return '${(size * 1.0 / 1024).round()} KiB';
   } else {
     return '$size B';
+  }
+}
+
+/// Load [path] into memory and determine its width and height. Returns null in case
+/// of an error.
+Future<Size?> getImageSizeFromPath(String path) async {
+  final bytes = await File(path).readAsBytes();
+  return getImageSizeFromData(bytes);
+}
+
+/// Like getImageSizeFromPath but taking the image's bytes directly.
+Future<Size?> getImageSizeFromData(Uint8List bytes) async {
+  try {
+    final dartCodec = await instantiateImageCodec(bytes);
+    final dartFrame = await dartCodec.getNextFrame();
+
+    final size = Size(
+      dartFrame.image.width.toDouble(),
+      dartFrame.image.height.toDouble(),
+    );
+
+    dartFrame.image.dispose();
+    dartCodec.dispose();
+
+    return size;
+  } catch (_) {
+    // TODO(PapaTutuWawa): Log error
+    return null;
   }
 }

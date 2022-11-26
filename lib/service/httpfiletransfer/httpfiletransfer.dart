@@ -6,8 +6,6 @@ import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:get_it/get_it.dart';
-import 'package:image_size_getter/file_input.dart';
-import 'package:image_size_getter/image_size_getter.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -24,6 +22,7 @@ import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -438,16 +437,13 @@ class HttpFileTransferService {
           MoxplatformPlugin.media.scanFile(downloadedPath);
 
           // Find out the dimensions
-          // TODO(Unknown): Restrict to the library's supported file types
-          Size? size;
-          try {
-            size = ImageSizeGetter.getSize(FileInput(File(downloadedPath)));
-          } catch (ex) {
-            _log.warning('Failed to get image size for $downloadedPath: $ex');
+          final imageSize = await getImageSizeFromPath(downloadedPath);
+          if (imageSize == null) {
+            _log.warning('Failed to get image size for $downloadedPath');
           }
 
-          mediaWidth = size?.width;
-          mediaHeight = size?.height;
+          mediaWidth = imageSize?.width.toInt();
+          mediaHeight = imageSize?.height.toInt();
         } else if (mime.startsWith('video/')) {
           // TODO(Unknown): Also figure out the thumbnail size here
           MoxplatformPlugin.media.scanFile(downloadedPath);
