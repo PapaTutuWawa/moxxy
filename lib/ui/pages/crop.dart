@@ -5,6 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
+import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropPage extends StatelessWidget {
   CropPage({ super.key }) : _controller = CropController();
@@ -42,11 +43,7 @@ class CropPage extends StatelessWidget {
           top: 10,
           child: Material(
             color: const Color.fromRGBO(0, 0, 0, 0),
-            child: IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                size: 32,
-              ),
+            child: CancelButton(
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),
