@@ -5,6 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
@@ -84,25 +85,6 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
     );
   }
 
-  Widget _buildLoadingSpinner(CropBackgroundState state) {
-    if (state.isWorking) {
-      return Center(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: backdropBlack,
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: const Padding(
-            padding: EdgeInsets.all(12),
-            child: CircularProgressIndicator(),
-          ),
-        ),
-      );
-    }
-
-    return const SizedBox();
-  }
-  
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CropBackgroundBloc, CropBackgroundState>(
@@ -201,7 +183,10 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     ],
                   ),
                 ),
-                _buildLoadingSpinner(state),
+
+                BackdropSpinner(
+                  enabled: state.isWorking,
+                ),
               ],
             ),
           ),

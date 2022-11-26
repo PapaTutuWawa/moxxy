@@ -1,18 +1,18 @@
-import 'package:crop_your_image/crop_your_image.dart';
+import 'package:cropperx/cropperx.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/backdrop_spinner.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropPage extends StatelessWidget {
-  CropPage({ super.key }) : _controller = CropController();
-  final CropController _controller;
+  const CropPage({ super.key });
  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => CropPage(),
+    builder: (_) => const CropPage(),
     settings: const RouteSettings(
       name: cropRoute,
     ),
@@ -26,16 +26,11 @@ class CropPage extends StatelessWidget {
           right: 0,
           top: 0,
           bottom: 0,
-          child: Crop(
-            image: state.image!,
-            controller: _controller,
-            onCropped: (image) {
-              context.read<CropBloc>().add(ImageCroppedEvent(image));
-            },
-            aspectRatio: 1,
-            withCircleUi: true,
-            initialSize: 0.8,
-            baseColor: Colors.black,
+          child: Cropper(
+            backgroundColor: Colors.black,
+            image: Image.memory(state.image!),
+            cropperKey: context.read<CropBloc>().cropKey,
+            overlayType: OverlayType.circle,
           ),
         ),
         Positioned(
@@ -57,12 +52,21 @@ class CropPage extends StatelessWidget {
             children: [
               RoundedButton(
                 cornerRadius: 100,
-                onTap: _controller.crop,
+                enabled: !state.isWorking,
+                onTap: () async {
+                  context.read<CropBloc>().add(
+                    ImageCroppedEvent(),
+                  );
+                },
                 child: Text(t.pages.crop.setProfilePicture),
               ),
             ],
           ),
-        )
+        ),
+
+        BackdropSpinner(
+          enabled: state.isWorking,
+        ),
       ],
     );
   }
@@ -83,7 +87,9 @@ class CropPage extends StatelessWidget {
             return true;
           },
           child: SafeArea(
-            child: state.image != null ? _buildImageBody(context, state) : _buildLoadingBody(),
+            child: state.image != null ?
+              _buildImageBody(context, state) :
+              _buildLoadingBody(),
           ),
         );
       },

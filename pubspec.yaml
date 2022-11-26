@@ -16,7 +16,7 @@ dependencies:
   better_open_file: 3.6.3
   bloc: 8.1.0
   connectivity_plus: 2.3.6
-  crop_your_image: 0.7.2
+  cropperx: 1.1.1
   cryptography: 2.0.5
   #cupertino_icons: 1.0.2
   dart_emoji: 0.2.0+2
