@@ -12,5 +12,8 @@ class ConversationState with _$ConversationState {
     @Default(null) Conversation? conversation,
     @Default('') String backgroundPath,
     @Default(false) bool emojiPickerVisible,
+    @Default(false) bool messageEditing,
+    @Default('') String messageEditingOriginalBody,
+    @Default(null) String? messageEditingId,
   }) = _ConversationState;
 }

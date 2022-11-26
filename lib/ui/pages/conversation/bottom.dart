@@ -24,6 +24,16 @@ class ConversationBottomRow extends StatelessWidget {
 
     return Colors.black;
   }
+
+  bool _shouldCancelEdit(ConversationState state) {
+    return state.messageEditing && controller.text == state.messageEditingOriginalBody;
+  }
+  
+  IconData _getSpeeddialIcon(ConversationState state) {
+    if (_shouldCancelEdit(state)) return Icons.clear;
+
+    return state.showSendButton ? Icons.send : Icons.add;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -34,7 +44,7 @@ class ConversationBottomRow extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8),
             child: BlocBuilder<ConversationBloc, ConversationState>(
-              buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible || prev.messageText != next.messageText,
+              buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody,
               builder: (context, state) => Row(
                 children: [
                   Expanded(
@@ -131,13 +141,19 @@ class ConversationBottomRow extends StatelessWidget {
                       width: 45,
                       child: FittedBox(
                         child: SpeedDial(
-                          icon: state.showSendButton ? Icons.send : Icons.add,
+                          icon: _getSpeeddialIcon(state),
                           curve: Curves.bounceInOut,
                           backgroundColor: primaryColor,
                           // TODO(Unknown): Theme dependent?
                           foregroundColor: Colors.white,
                           openCloseDial: isSpeedDialOpen,
                           onPress: () {
+                            if (_shouldCancelEdit(state)) {
+                              context.read<ConversationBloc>().add(MessageEditCancelledEvent());
+                              controller.text = '';
+                              return;
+                            }
+
                             if (state.showSendButton) {
                               context.read<ConversationBloc>().add(MessageSentEvent());
                               controller.text = '';

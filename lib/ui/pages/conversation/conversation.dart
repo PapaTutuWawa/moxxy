@@ -184,10 +184,11 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   icon: Icons.edit,
                   text: t.pages.conversation.edit,
                   onPressed: () {
-                    showNotImplementedDialog(
-                      'editing',
-                      context,
+                    context.read<ConversationBloc>().add(
+                      MessageEditSelectedEvent(item),
                     );
+                    _controller.text = item.body;
+                    Navigator.of(context).pop();
                   },
                 ),
               ] : [],

@@ -260,6 +260,7 @@ files:
           quotedMessage:
             type: Message?
             deserialise: true
+          editId: String?
       - name: SendFilesCommand
         extends: BackgroundCommand
         implements:

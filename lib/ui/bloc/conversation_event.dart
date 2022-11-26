@@ -120,3 +120,14 @@ class MessageRetractedEvent extends ConversationEvent {
   MessageRetractedEvent(this.id);
   final String id;
 }
+
+/// Triggered when a message has been selected for editing
+class MessageEditSelectedEvent extends ConversationEvent {
+  MessageEditSelectedEvent(this.message);
+  final Message message;
+}
+
+/// Triggered when a message edit has been cancelled
+class MessageEditCancelledEvent extends ConversationEvent {
+  MessageEditCancelledEvent();
+}

@@ -46,6 +46,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<OwnJidReceivedEvent>(_onOwnJidReceived);
     on<OmemoSetEvent>(_onOmemoSet);
     on<MessageRetractedEvent>(_onMessageRetracted);
+    on<MessageEditSelectedEvent>(_onMessageEditSelected);
+    on<MessageEditCancelledEvent>(_onMessageEditCancelled);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -115,6 +117,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         conversation: conversation,
         quotedMessage: null,
+        messageEditing: false,
+        messageEditingOriginalBody: '',
+        messageEditingId: null,
+        showSendButton: false,
       ),
     );
 
@@ -180,6 +186,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         body: state.messageText,
         quotedMessage: state.quotedMessage,
         chatState: chatStateToString(ChatState.active),
+        editId: state.messageEditingId,
       ),
     ) as events.MessageAddedEvent;
 
@@ -190,6 +197,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         quotedMessage: null,
         showSendButton: false,
         emojiPickerVisible: false,
+        messageEditing: false,
+        messageEditingOriginalBody: '',
+        messageEditingId: null,
       ),
     );
   }
@@ -350,6 +360,31 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         conversationJid: state.conversation!.jid,
       ),
       awaitable: false,
+    );
+  }
+
+  Future<void> _onMessageEditSelected(MessageEditSelectedEvent event, Emitter<ConversationState> emit) async {
+    emit(
+      state.copyWith(
+        messageText: event.message.body,
+        quotedMessage: event.message.quotes,
+        messageEditing: true,
+        messageEditingOriginalBody: event.message.body,
+        messageEditingId: event.message.sid,
+      ),
+    );
+  }
+
+  Future<void> _onMessageEditCancelled(MessageEditCancelledEvent event, Emitter<ConversationState> emit) async {
+    emit(
+      state.copyWith(
+        messageText: '',
+        quotedMessage: null,
+        messageEditing: false,
+        messageEditingOriginalBody: '',
+        messageEditingId: null,
+        showSendButton: false,
+      ),
     );
   }
 }
