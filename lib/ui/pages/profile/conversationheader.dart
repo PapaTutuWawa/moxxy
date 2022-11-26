@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
@@ -14,6 +15,34 @@ class ConversationProfileHeader extends StatelessWidget {
   const ConversationProfileHeader(this.conversation, { super.key });
   final Conversation conversation;
 
+  Future<void> _showAvatarFullsize(BuildContext context) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return IgnorePointer(
+          child: Image.file(File(conversation.avatarUrl)),
+        );
+      },
+    );
+  }
+  
+  Widget _buildAvatar(BuildContext context) {
+    final avatar = AvatarWrapper(
+      radius: 110,
+      avatarUrl: conversation.avatarUrl,
+      altText: conversation.title,
+    );
+
+    if (conversation.avatarUrl.isNotEmpty) {
+      return InkWell(
+        onTap: () => _showAvatarFullsize(context),
+        child: avatar,
+      );
+    }
+
+    return avatar;
+  }
+  
   @override
   Widget build(BuildContext context) {
     //final subscribed = conversation.subscription == 'both' || conversation.subscription == 'to';
@@ -23,11 +52,7 @@ class ConversationProfileHeader extends StatelessWidget {
         Hero(
           tag: 'conversation_profile_picture',
           child: Material(
-            child: AvatarWrapper(
-              radius: 110,
-              avatarUrl: conversation.avatarUrl,
-              altText: conversation.title,
-            ),
+            child: _buildAvatar(context),
           ),
         ),
         Padding(
