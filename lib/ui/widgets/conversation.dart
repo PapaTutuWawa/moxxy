@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -82,7 +81,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   }
 
   Widget _buildLastMessageBody() {
-    if (widget.conversation.chatState == ChatState.composing) {
+    if (widget.conversation.isTyping) {
       return const TypingIndicatorWidget(Colors.black, Colors.white);
     }
 
@@ -198,7 +197,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ...widget.conversation.lastMessage?.isThumbnailable == true ? [
+                        ...widget.conversation.lastMessage?.isThumbnailable == true && !widget.conversation.isTyping ? [
                           Padding(
                             padding: const EdgeInsets.only(right: 5),
                             child: SharedImageWidget(

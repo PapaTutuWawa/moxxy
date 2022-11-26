@@ -99,6 +99,9 @@ class Conversation with _$Conversation {
       'lastMessage': lastMessage?.id,
     };
   }
+
+  /// True, when the chat state of the conversation indicates typing. False, if not.
+  bool get isTyping => chatState == ChatState.composing;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.
