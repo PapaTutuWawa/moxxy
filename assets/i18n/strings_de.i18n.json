@@ -107,7 +107,12 @@
 	    "forward": "Weiterleiten",
 	    "edit": "Bearbeiten",
 	    "quote": "Zitieren",
-	    "copy": "Inhalt kopieren"
+	    "copy": "Inhalt kopieren",
+	    "showError": "Fehler anzeigen",
+	    "showWarning": "Warnung anzeigen",
+	    "addToContacts": "Zu Kontaken hinzufügen",
+	    "addToContactsTitle": "${jid} zu Kontakten hinzufügen",
+	    "addToContactsBody": "Bist du dir sicher, dass du ${jid} zu deinen Kontakten hinzufügen möchtest?"
 	},
 	"addcontact": {
 	    "title": "Neuen Kontakt hinzufügen",
@@ -167,6 +172,10 @@
 	    "unblockAllConfirmBody": "Bist Du dir sicher, dass du alle geblockten Personen entblocken möchtest?",
 	    "unblockJidConfirmTitle": "${jid} entblocken?",
 	    "unblockJidConfirmBody": "Bist du dir sicher, dass du ${jid} entblocken möchtest? Du wirst wieder Nachrichten von dieser Person erhalten können."
+	},
+	"cropbackground": {
+	    "blur": "Hintergrund weichzeichnen",
+	    "setAsBackground": "Als Hintergrundbild festlegen"
 	},
 	"settings": {
 	    "settings": {

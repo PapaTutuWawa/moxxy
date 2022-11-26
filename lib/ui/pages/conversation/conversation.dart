@@ -196,7 +196,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               ...item.errorMenuVisible ? [
                 OverviewMenuItem(
                   icon: Icons.info_outline,
-                  text: 'Show Error',
+                  text: t.pages.conversation.showError,
                   onPressed: () {
                     showInfoDialog(
                       'Error',
@@ -209,7 +209,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               ...item.hasWarning ? [
                 OverviewMenuItem(
                   icon: Icons.warning,
-                  text: 'Show warning',
+                  text: t.pages.conversation.showWarning,
                   onPressed: () {
                     showInfoDialog(
                       'Warning',
@@ -271,12 +271,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           children: [
             Expanded(
               child: TextButton(
-                child: const Text('Add to contacts'),
+                child: Text(t.pages.conversation.addToContacts),
                 onPressed: () async {
                   final jid = state.conversation!.jid;
                   final result = await showConfirmationDialog(
-                    'Add $jid to your contacts?',
-                    'Are you sure you want to add $jid to your conacts?',
+                    t.pages.conversation.addToContactsTitle(jid: jid),
+                    t.pages.conversation.addToContactsBody(jid: jid),
                     context,
                   );
 
@@ -296,7 +296,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             ),
             Expanded(
               child: TextButton(
-                child: const Text('Block'),
+                child: Text(t.pages.conversation.blockShort),
                 onPressed: () => blockJid(state.conversation!.jid, context),
               ),
             )

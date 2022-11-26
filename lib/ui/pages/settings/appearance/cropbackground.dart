@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -146,9 +147,9 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                       child: IntrinsicWidth(
                         child: Row(
                           children: [
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Text('Blur background'),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Text(t.pages.cropbackground.blur),
                             ),
                             Switch(
                               value: state.blurEnabled,
@@ -195,7 +196,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                           );
                         },
                         enabled: !state.isWorking,
-                        child: const Text('Set as background image'),
+                        child: Text(t.pages.cropbackground.setAsBackground),
                       ),
                     ],
                   ),

@@ -100,6 +100,7 @@
 	    "closeChat": "Close chat",
 	    "closeChatConfirmTitle": "Close chat",
 	    "closeChatConfirmSubtext": "Are you sure you want to close this chat?",
+	    "blockShort": "Block",
 	    "blockUser": "Block user",
 	    "online": "Online",
 	    "retract": "Retract message",
@@ -107,7 +108,12 @@
 	    "forward": "Forward",
 	    "edit": "Edit",
 	    "quote": "Quote",
-	    "copy": "Copy content"
+	    "copy": "Copy content",
+	    "showError": "Show error",
+	    "showWarning": "Show warning",
+	    "addToContacts": "Add to contacts",
+	    "addToContactsTitle": "Add ${jid} to contacts",
+	    "addToContactsBody": "Are you sure you want to add ${jid} to your contacts?"
 	},
 	"addcontact": {
 	    "title": "Add new contact",
@@ -167,6 +173,10 @@
 	    "unblockAllConfirmBody": "Are you sure you want to unblock all users?",
 	    "unblockJidConfirmTitle": "Unblock ${jid}?",
 	    "unblockJidConfirmBody": "Are you sure you want to unblock ${jid}? You will receive messages from this user again."
+	},
+	"cropbackground": {
+	    "blur": "Blur background",
+	    "setAsBackground": "Set as background image"
 	},
 	"settings": {
 	    "settings": {
