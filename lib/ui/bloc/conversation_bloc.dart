@@ -120,6 +120,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageEditing: false,
         messageEditingOriginalBody: '',
         messageEditingId: null,
+        messageEditingSid: null,
         showSendButton: false,
       ),
     );
@@ -180,28 +181,33 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     _stopComposeTimer();
 
     // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+    final r = await MoxplatformPlugin.handler.getDataSender().sendData(
       SendMessageCommand(
         recipients: [state.conversation!.jid],
         body: state.messageText,
         quotedMessage: state.quotedMessage,
         chatState: chatStateToString(ChatState.active),
         editId: state.messageEditingId,
-      ),
-    ) as events.MessageAddedEvent;
-
-    emit(
-      state.copyWith(
-        messages: List<Message>.from(<Message>[ ...state.messages, result.message ]),
-        messageText: '',
-        quotedMessage: null,
-        showSendButton: false,
-        emojiPickerVisible: false,
-        messageEditing: false,
-        messageEditingOriginalBody: '',
-        messageEditingId: null,
+        editSid: state.messageEditingSid,
       ),
     );
+
+    if (!state.messageEditing) {
+      final result = r! as events.MessageAddedEvent;
+      emit(
+        state.copyWith(
+          messages: List<Message>.from(<Message>[ ...state.messages, result.message ]),
+          messageText: '',
+          quotedMessage: null,
+          showSendButton: false,
+          emojiPickerVisible: false,
+          messageEditing: false,
+          messageEditingOriginalBody: '',
+          messageEditingId: null,
+          messageEditingSid: null,
+        ),
+      );
+    }
   }
 
   Future<void> _onMessageQuoted(MessageQuotedEvent event, Emitter<ConversationState> emit) async {
@@ -370,7 +376,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         quotedMessage: event.message.quotes,
         messageEditing: true,
         messageEditingOriginalBody: event.message.body,
-        messageEditingId: event.message.sid,
+        messageEditingId: event.message.id,
+        messageEditingSid: event.message.sid,
       ),
     );
   }
@@ -383,6 +390,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageEditing: false,
         messageEditingOriginalBody: '',
         messageEditingId: null,
+        messageEditingSid: null,
         showSendButton: false,
       ),
     );

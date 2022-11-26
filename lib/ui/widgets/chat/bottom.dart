@@ -87,6 +87,15 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ),
+        ...widget.message.isEdited ? [
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.edit,
+              size: _bubbleBottomIconSize,
+            ),
+          ),
+        ] : [],
         ...widget.message.encrypted ? [
           const Padding(
             padding: EdgeInsets.only(left: 3),

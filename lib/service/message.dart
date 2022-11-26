@@ -151,6 +151,7 @@ class MessageService {
     Object? sid = notSpecified,
     Object? thumbnailData = notSpecified,
     bool? isRetracted,
+    bool? isEdited,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -177,6 +178,7 @@ class MessageService {
       isRetracted: isRetracted,
       isMedia: isMedia,
       thumbnailData: thumbnailData,
+      isEdited: isEdited,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {

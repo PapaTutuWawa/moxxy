@@ -124,6 +124,49 @@ class XmppService {
 
   /// Returns the JID of the chat that is currently opened. Null, if none is open.
   String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
+
+  /// Sends a message correction to [recipient] regarding the message with stanza id
+  /// [oldId]. The old message's body gets corrected to [newBody]. [id] is the message's
+  /// database id. [chatState] can be optionally specified to also include a chat state
+  /// in the message.
+  ///
+  /// This function handles updating the message and optionally the corresponding
+  /// conversation.
+  Future<void> sendMessageCorrection(int id, String newBody, String oldId, String recipient, ChatState? chatState) async {
+    final ms = GetIt.I.get<MessageService>();
+    final cs = GetIt.I.get<ConversationService>();
+    final conn = GetIt.I.get<XmppConnection>();
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+
+    // Update the database
+    final msg = await ms.updateMessage(
+      id,
+      isEdited: true,
+      body: newBody,
+    );
+    sendEvent(MessageUpdatedEvent(message: msg));
+
+    final conv = await cs.getConversationByJid(msg.conversationJid);
+    if (conv != null && conv.lastMessage?.id == id) {
+      final newConv = await cs.updateConversation(
+        conv.id,
+        lastChangeTimestamp: timestamp,
+        lastMessage: msg,
+      );
+      cs.setConversation(newConv);
+      sendEvent(ConversationUpdatedEvent(conversation: newConv));
+    }
+    
+    // Send the correction
+    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+      MessageDetails(
+        to: recipient,
+        body: newBody,
+        lastMessageCorrectionId: oldId,
+        chatState: chatState,
+      ),
+    );
+  }
   
   /// Sends a message to JIDs in [recipients] with the body of [body].
   Future<void> sendMessage({

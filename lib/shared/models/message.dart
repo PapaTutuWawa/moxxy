@@ -54,6 +54,7 @@ class Message with _$Message {
       @Default(false) bool displayed,
       @Default(false) bool acked,
       @Default(false) bool isRetracted,
+      @Default(false) bool isEdited,
       String? originId,
       Message? quotes,
       String? filename,
@@ -82,6 +83,7 @@ class Message with _$Message {
       'isDownloading': intToBool(json['isDownloading']! as int),
       'isUploading': intToBool(json['isUploading']! as int),
       'isRetracted': intToBool(json['isRetracted']! as int),
+      'isEdited': intToBool(json['isEdited']! as int),
     }).copyWith(quotes: quotes);
   }
   
@@ -105,6 +107,7 @@ class Message with _$Message {
       'isDownloading': boolToInt(isDownloading),
       'isUploading': boolToInt(isUploading),
       'isRetracted': boolToInt(isRetracted),
+      'isEdited': boolToInt(isEdited),
     };
   }
 

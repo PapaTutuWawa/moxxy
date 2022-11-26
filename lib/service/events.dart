@@ -247,11 +247,23 @@ Future<void> performSetOpenConversation(SetOpenConversationCommand command, { dy
 }
 
 Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) async {
-  if (command.editId != null) {
+  final xs = GetIt.I.get<XmppService>();
+  if (command.editSid != null && command.editId != null) {
     assert(command.recipients.length == 1, 'Edits must not be sent to multiple recipients');
+
+    await xs.sendMessageCorrection(
+      command.editId!,
+      command.body,
+      command.editSid!,
+      command.recipients.first,
+      command.chatState.isNotEmpty
+        ? chatStateFromString(command.chatState)
+        : null,
+    );
+    return;
   }
 
-  await GetIt.I.get<XmppService>().sendMessage(
+  await xs.sendMessage(
     body: command.body,
     recipients: command.recipients,
     chatState: command.chatState.isNotEmpty

@@ -14,6 +14,7 @@ class ConversationState with _$ConversationState {
     @Default(false) bool emojiPickerVisible,
     @Default(false) bool messageEditing,
     @Default('') String messageEditingOriginalBody,
-    @Default(null) String? messageEditingId,
+    @Default(null) String? messageEditingSid,
+    @Default(null) int? messageEditingId,
   }) = _ConversationState;
 }

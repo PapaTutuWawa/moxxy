@@ -179,7 +179,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   onPressed: () => _retractMessage(context, item.originId!),
                 ),
               ] : [],
-              ...item.canEdit(sentBySelf) ? [
+              // TODO(Unknown): Also allow correcting older messages
+              ...item.canEdit(sentBySelf) && state.conversation!.lastMessage?.id == item.id ? [
                 OverviewMenuItem(
                   icon: Icons.edit,
                   text: t.pages.conversation.edit,

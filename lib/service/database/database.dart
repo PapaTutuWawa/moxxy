@@ -12,6 +12,7 @@ import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
+import 'package:moxxyv2/service/database/migrations/0000_lmc.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
@@ -61,7 +62,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 9,
+      version: 10,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -105,6 +106,10 @@ class DatabaseService {
         if (oldVersion < 9) {
           _log.finest('Running migration for database version 9');
           await upgradeFromV8ToV9(db);
+        }
+        if (oldVersion < 10) {
+          _log.finest('Running migration for database version 10');
+          await upgradeFromV9ToV10(db);
         }
       },
     );
@@ -451,6 +456,7 @@ class DatabaseService {
     Object? sid = notSpecified,
     bool? isRetracted,
     Object? thumbnailData = notSpecified,
+    bool? isEdited,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -460,6 +466,9 @@ class DatabaseService {
     )).first;
     final m = Map<String, dynamic>.from(md);
 
+    if (body != notSpecified) {
+      m['body'] = body as String?;
+    }
     if (mediaUrl != notSpecified) {
       m['mediaUrl'] = mediaUrl as String?;
     }
@@ -525,6 +534,9 @@ class DatabaseService {
     }
     if (thumbnailData != notSpecified) {
       m['thumbnailData'] = thumbnailData as String?;
+    }
+    if (isEdited != null) {
+      m['isEdited'] = boolToInt(isEdited);
     }
 
     await _db.update(
