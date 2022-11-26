@@ -8,5 +8,6 @@ class ServerInfoState with _$ServerInfoState {
     @Default(false) bool userBlockingSupported,
     @Default(false) bool httpFileUploadSupported,
     @Default(false) bool csiSupported,
+    @Default(false) bool carbonsSupported,
   }) = _ServerInfoState;
 }

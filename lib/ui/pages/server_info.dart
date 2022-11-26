@@ -75,6 +75,15 @@ class ServerInfoPage extends StatelessWidget {
                       ),
                     ],
                   ),
+                  TableRow(
+                    children: [
+                      const Text('Message Carbons', style: _labelStyle),
+                      Checkbox(
+                        value: state.carbonsSupported,
+                        onChanged: (_) {},
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

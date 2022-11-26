@@ -163,6 +163,7 @@ files:
           supportsCsi: bool
           supportsUserBlocking: bool
           supportsHttpFileUpload: bool
+          supportsCarbons: bool
       # Returned by [SignOutCommand]
       - name: SignedOutEvent
         extends: BackgroundEvent

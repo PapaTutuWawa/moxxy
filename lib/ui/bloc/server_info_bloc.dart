@@ -34,6 +34,7 @@ class ServerInfoBloc extends Bloc<ServerInfoEvent, ServerInfoState> {
         csiSupported: result.supportsCsi,
         httpFileUploadSupported: result.supportsHttpFileUpload,
         userBlockingSupported: result.supportsUserBlocking,
+        carbonsSupported: result.supportsCarbons,
         working: false,
       ),
     );   

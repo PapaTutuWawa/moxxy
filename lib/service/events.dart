@@ -459,12 +459,14 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
   final csi = conn.getNegotiatorById<CSINegotiator>(csiNegotiator)!;
   final httpFileUpload = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
   final userBlocking = conn.getManagerById<BlockingManager>(blockingManager)!;
+  final carbons = conn.getManagerById<CarbonsManager>(carbonsManager)!;
   sendEvent(
     GetFeaturesEvent(
       supportsStreamManagement: sm.isSupported,
       supportsCsi: csi.isSupported,
       supportsHttpFileUpload: await httpFileUpload.isSupported(),
       supportsUserBlocking: await userBlocking.isSupported(),
+      supportsCarbons: await carbons.isSupported(),
     ),
     id: id,
   );

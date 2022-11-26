@@ -583,6 +583,14 @@ class XmppService {
       unawaited(_initializeOmemoService(settings.jid.toString()));
 
       if (!event.resumed) {
+        // Enable carbons
+        final carbonsResult = await connection
+          .getManagerById<CarbonsManager>(carbonsManager)!
+          .enableCarbons();
+        if (!carbonsResult) {
+          _log.warning('Failed to enable carbons');
+        }
+
         // In section 5 of XEP-0198 it says that a client should not request the roster
         // in case of a stream resumption.
         await GetIt.I.get<RosterService>().requestRoster();
