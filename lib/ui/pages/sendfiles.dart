@@ -64,7 +64,7 @@ class SendFilesPage extends StatelessWidget {
         child: SharedVideoWidget(
           path,
           // TODO(PapaTutuWawa): Fix
-          'aaaa',
+          'sendfiles',
           onTap: () {
             if (selected) {
               // The trash can icon has been tapped
