@@ -193,8 +193,9 @@ Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
   } else if (medium.mime!.startsWith('video/')) {
     return SharedVideoWidget(
       medium.path,
-      () => OpenFile.open(medium.path),
-      child: const PlayButton(),
+      conversationJid,
+      onTap: () => OpenFile.open(medium.path),
+      child: const PlayButton(size: 32),
     );
   }
   // TODO(Unknown): Audio

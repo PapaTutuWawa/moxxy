@@ -30,19 +30,23 @@ class VideoChatWidget extends StatelessWidget {
   final bool sent;
 
   Widget _buildUploading() {
-    // TODO(PapaTutuWawa): Fix
     return MediaBaseChatWidget(
-      const Padding(
-        padding: EdgeInsets.all(32),
-        child: Icon(
-          Icons.error_outline,
-          size: 32,
-        ),
+      FutureBuilder<String>(
+        future: getVideoThumbnailPath(message.mediaUrl!, message.conversationJid),
+        builder: (context, snapshot) {
+          Widget widget;
+          if (snapshot.hasData) {
+            widget = Image.file(File(snapshot.data!));
+          } else {
+            widget = const Padding(
+              padding: EdgeInsets.all(32),
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          return widget;
+        },
       ),
-      /*VideoThumbnailWidget(
-        message.mediaUrl!,
-        Image.memory,
-      ),*/
       MessageBubbleBottom(message, sent),
       radius,
       extra: ProgressWidget(id: message.id),
@@ -81,19 +85,23 @@ class VideoChatWidget extends StatelessWidget {
 
   /// The video exists locally
   Widget _buildVideo() {
-    // TODO(PapaTutuWawa): Fix
     return MediaBaseChatWidget(
-      const Padding(
-        padding: EdgeInsets.all(32),
-        child: Icon(
-          Icons.error_outline,
-          size: 32,
-        ),
+      FutureBuilder<String>(
+        future: getVideoThumbnailPath(message.mediaUrl!, message.conversationJid),
+        builder: (context, snapshot) {
+          Widget widget;
+          if (snapshot.hasData) {
+            widget = Image.file(File(snapshot.data!));
+          } else {
+            widget = const Padding(
+              padding: EdgeInsets.all(32),
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          return widget;
+        },
       ),
-      /*VideoThumbnailWidget(
-        message.mediaUrl!,
-        Image.memory,
-      ),*/
       MessageBubbleBottom(message, sent),
       radius,
       onTap: () {

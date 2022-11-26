@@ -63,7 +63,9 @@ class SendFilesPage extends StatelessWidget {
         padding: const EdgeInsets.only(right: 4),
         child: SharedVideoWidget(
           path,
-          () {
+          // TODO(PapaTutuWawa): Fix
+          'aaaa',
+          onTap: () {
             if (selected) {
               // The trash can icon has been tapped
               context.read<SendFilesBloc>().add(

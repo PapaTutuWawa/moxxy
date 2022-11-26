@@ -10,6 +10,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 
 class ConversationsListRow extends StatefulWidget {
@@ -97,6 +98,29 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     }
 
     return avatar;
+  }
+
+  Widget _buildLastMessagePreview() {
+    Widget? preview;
+    if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
+      preview = SharedImageWidget(
+        widget.conversation.lastMessage!.mediaUrl!,
+        borderRadius: 5,
+        size: 30,
+      );
+    } else if (widget.conversation.lastMessage!.mediaType!.startsWith('video/')) {
+      preview = SharedVideoWidget(
+        widget.conversation.lastMessage!.mediaUrl!,
+        widget.conversation.jid,
+        borderRadius: 5,
+        size: 30,
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(right: 5),
+      child: preview,
+    );
   }
   
   Widget _buildLastMessageBody() {
@@ -233,11 +257,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                         ...widget.conversation.lastMessage?.isThumbnailable == true && !widget.conversation.isTyping ? [
                           Padding(
                             padding: const EdgeInsets.only(right: 5),
-                            child: SharedImageWidget(
-                              widget.conversation.lastMessage!.mediaUrl!,
-                              borderRadius: 5,
-                              size: 30,
-                            ),
+                            child: _buildLastMessagePreview(),
                           ),
                         ] : [
                           const SizedBox(height: 30),

@@ -1,3 +1,4 @@
+import 'package:decorated_icon/decorated_icon.dart';
 import 'package:flutter/material.dart';
 
 class PlayButton extends StatelessWidget {
@@ -9,17 +10,11 @@ class PlayButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.black45,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Icon(
-          Icons.play_arrow,
-          size: size,
-        ),
+    return Align(
+      child: DecoratedIcon(
+        Icons.play_arrow,
+        shadows: const [ BoxShadow(blurRadius: 16) ],
+        size: size,
       ),
     );
   }

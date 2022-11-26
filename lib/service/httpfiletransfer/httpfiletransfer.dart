@@ -445,8 +445,23 @@ class HttpFileTransferService {
           mediaWidth = imageSize?.width.toInt();
           mediaHeight = imageSize?.height.toInt();
         } else if (mime.startsWith('video/')) {
-          // TODO(Unknown): Also figure out the thumbnail size here
           MoxplatformPlugin.media.scanFile(downloadedPath);
+
+          /*
+          // Generate thumbnail
+          final thumbnailPath = await getVideoThumbnailPath(
+            downloadedPath,
+            job.conversationJid,
+          );
+
+          // Find out the dimensions
+          final imageSize = await getImageSizeFromPath(thumbnailPath);
+          if (imageSize == null) {
+            _log.warning('Failed to get image size for $downloadedPath ($thumbnailPath)');
+          }
+          
+          mediaWidth = imageSize?.width.toInt();
+          mediaHeight = imageSize?.height.toInt();*/
         } else if (mime.startsWith('audio/')) {
           MoxplatformPlugin.media.scanFile(downloadedPath);
         }
