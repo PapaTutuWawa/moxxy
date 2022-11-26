@@ -44,11 +44,27 @@ class SettingsAboutPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 t.global.moxxySubtitle,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 15,
                 ),
               ),
             ),
+
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                // TODO(Unknown): Generate this at build time
+                t.pages.settings.about.version(
+                  version: '0.3.0',
+                ),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 15,
+                ),
+              ),
+            ),
+
             Text(t.pages.settings.about.licensed),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),

@@ -192,6 +192,7 @@
 	    "about": {
 		"title": "About",
 		"licensed": "Licensed under GPL3",
+		"version": "Version ${version}",
 		"viewSourceCode": "View source code"
 	    },
 	    "appearance": {
