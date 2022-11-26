@@ -20,6 +20,7 @@ class ConversationsListRow extends StatefulWidget {
       this.showTimestamp = true,
       this.showLock = false,
       this.extra,
+      this.avatarOnTap,
       super.key,
     }
   );
@@ -28,6 +29,7 @@ class ConversationsListRow extends StatefulWidget {
   final bool update; // Should a timer run to update the timestamp
   final bool showLock;
   final bool showTimestamp;
+  final void Function()? avatarOnTap;
   final Widget? extra;
 
   @override
@@ -80,6 +82,23 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     super.dispose();
   }
 
+  Widget _buildAvatar() {
+    final avatar = AvatarWrapper(
+      radius: 35,
+      avatarUrl: widget.conversation.avatarUrl,
+      altText: widget.conversation.title,
+    );
+
+    if (widget.avatarOnTap != null) {
+      return InkWell(
+        onTap: widget.avatarOnTap,
+        child: avatar,
+      );
+    }
+
+    return avatar;
+  }
+  
   Widget _buildLastMessageBody() {
     if (widget.conversation.isTyping) {
       return const TypingIndicatorWidget(Colors.black, Colors.white);
@@ -165,11 +184,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       padding: const EdgeInsets.all(8),
       child: Row(
         children: [
-          AvatarWrapper(
-            radius: 35,
-            avatarUrl: widget.conversation.avatarUrl,
-            altText: widget.conversation.title,
-          ),
+          _buildAvatar(),
           Padding(
             padding: const EdgeInsets.only(left: 8),
             child: LimitedBox(

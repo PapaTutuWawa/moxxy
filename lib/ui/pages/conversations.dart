@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -44,6 +45,17 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
     _controller.dispose();
     super.dispose();
   }
+
+  Future<void> _showAvatarFullsize(BuildContext context, String path) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return IgnorePointer(
+          child: Image.file(File(path)),
+        );
+      },
+    );
+  }
   
   Widget _listWrapper(BuildContext context, ConversationsState state) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
@@ -57,6 +69,9 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
             maxTextWidth,
             item,
             true,
+            avatarOnTap: item.avatarUrl.isNotEmpty ?
+              () => _showAvatarFullsize(context, item.avatarUrl) :
+              null,
             key: ValueKey('conversationRow;${item.jid}'),
           );
           
