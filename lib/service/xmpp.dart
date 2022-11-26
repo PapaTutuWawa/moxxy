@@ -902,6 +902,47 @@ class XmppService {
     //                     that mean that the message could not be delivered.
     sendEvent(MessageUpdatedEvent(message: newMsg));
   }
+
+  Future<void> _handleMessageCorrection(MessageEvent event, String conversationJid) async {
+    final ms = GetIt.I.get<MessageService>();
+    final cs = GetIt.I.get<ConversationService>();
+    final msg = await ms.getMessageByStanzaId(conversationJid, event.messageCorrectionId!);
+    if (msg == null) {
+      _log.warning('Received message correction for message ${event.messageCorrectionId} we cannot find.');
+      return;
+    }
+
+    // Check if the Jid is allowed to do correct the message
+    // TODO(Unknown): Maybe use the JID parser?
+    final bareSender = event.fromJid.toBare().toString();
+    if (msg.sender.split('/').first != bareSender) {
+      _log.warning('Received a message correction from $bareSender for message that is not sent by $bareSender');
+      return;
+    }
+    
+    // Check if the message can be corrected
+    if (!msg.canEdit(true)) {
+      _log.warning('Received a message correction for a message that cannot be edited');
+      return;
+    }
+
+    final newMsg = await ms.updateMessage(
+      msg.id,
+      body: event.body,
+      isEdited: true,
+    );
+    sendEvent(MessageUpdatedEvent(message: newMsg));
+
+    final conv = await cs.getConversationByJid(msg.conversationJid);
+    if (conv != null && conv.lastMessage?.id == msg.id) {
+      final newConv = await cs.updateConversation(
+        conv.id,
+        lastMessage: msg,
+      );
+      cs.setConversation(newConv);
+      sendEvent(ConversationUpdatedEvent(conversation: newConv));
+    }
+  }
   
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
     // The jid this message event is meant for
@@ -918,6 +959,13 @@ class XmppService {
     // Process the chat state update. Can also be attached to other messages
     if (event.chatState != null) await _onChatState(event.chatState!, conversationJid);
 
+    // Process message corrections separately
+    _log.finest('=================================== ${event.messageCorrectionId}');
+    if (event.messageCorrectionId != null) {
+      await _handleMessageCorrection(event, conversationJid);
+      return;
+    }
+    
     // Process File Upload Notifications replacements separately
     if (event.funReplacement != null) {
       await _handleFileUploadNotificationReplacement(event, conversationJid);
