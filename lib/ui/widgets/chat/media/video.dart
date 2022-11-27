@@ -13,6 +13,7 @@ import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
+import 'package:moxxyv2/ui/widgets/chat/video_thumbnail.dart';
 
 class VideoChatWidget extends StatelessWidget {
   const VideoChatWidget(
@@ -31,21 +32,14 @@ class VideoChatWidget extends StatelessWidget {
 
   Widget _buildUploading() {
     return MediaBaseChatWidget(
-      FutureBuilder<String>(
-        future: getVideoThumbnailPath(message.mediaUrl!, message.conversationJid),
-        builder: (context, snapshot) {
-          Widget widget;
-          if (snapshot.hasData) {
-            widget = Image.file(File(snapshot.data!));
-          } else {
-            widget = const Padding(
-              padding: EdgeInsets.all(32),
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          return widget;
-        },
+      VideoThumbnail(
+        path: message.mediaUrl!,
+        conversationJid: message.conversationJid,
+        size: Size(
+          maxWidth,
+          0.6 * maxWidth,
+        ),
+        borderRadius: radius,
       ),
       MessageBubbleBottom(message, sent),
       radius,
@@ -86,21 +80,14 @@ class VideoChatWidget extends StatelessWidget {
   /// The video exists locally
   Widget _buildVideo() {
     return MediaBaseChatWidget(
-      FutureBuilder<String>(
-        future: getVideoThumbnailPath(message.mediaUrl!, message.conversationJid),
-        builder: (context, snapshot) {
-          Widget widget;
-          if (snapshot.hasData) {
-            widget = Image.file(File(snapshot.data!));
-          } else {
-            widget = const Padding(
-              padding: EdgeInsets.all(32),
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          return widget;
-        },
+      VideoThumbnail(
+        path: message.mediaUrl!,
+        conversationJid: message.conversationJid,
+        size: Size(
+          maxWidth,
+          0.6 * maxWidth,
+        ),
+        borderRadius: radius,
       ),
       MessageBubbleBottom(message, sent),
       radius,

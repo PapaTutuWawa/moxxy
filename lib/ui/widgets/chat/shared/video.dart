@@ -1,7 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/video_thumbnail.dart';
 
 class SharedVideoWidget extends StatelessWidget {
   const SharedVideoWidget(
@@ -26,28 +25,14 @@ class SharedVideoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SharedMediaContainer(
-      FutureBuilder<String>(
-        future: getVideoThumbnailPath(path, conversationJid),
-        builder: (context, snapshot) {
-          Widget widget;
-          if (snapshot.hasData) {
-            widget = Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius),
-                image: DecorationImage(
-                  fit: BoxFit.cover,
-                  image: FileImage(File(snapshot.data!)),
-                ),
-              ),
-              clipBehavior: Clip.hardEdge,
-              child: child,
-            );
-          } else {
-            widget = const CircularProgressIndicator();
-          }
-
-          return widget;
-        },
+      VideoThumbnail(
+        path: path,
+        conversationJid: conversationJid,
+        size: Size(
+          size,
+          size,
+        ),
+        borderRadius: BorderRadius.circular(borderRadius), 
       ),
       size: size,
       onTap: onTap,
