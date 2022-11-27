@@ -83,7 +83,7 @@ class SharedMediaPage extends StatelessWidget {
                         spacing: 5,
                         runSpacing: 5,
                         children: row.map((medium) {
-                            return buildSharedMediaWidget(medium, state.jid);
+                          return buildSharedMediaWidget(medium, state.jid);
                         }).toList(),
                       ),
                     ),
