@@ -181,7 +181,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     _stopComposeTimer();
 
     // ignore: cast_nullable_to_non_nullable
-    final r = await MoxplatformPlugin.handler.getDataSender().sendData(
+    await MoxplatformPlugin.handler.getDataSender().sendData(
       SendMessageCommand(
         recipients: [state.conversation!.jid],
         body: state.messageText,
