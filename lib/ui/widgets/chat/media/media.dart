@@ -10,6 +10,7 @@ import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
@@ -198,9 +199,12 @@ Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
       onTap: () => OpenFile.open(medium.path),
       child: const PlayButton(size: 32),
     );
+  } else if (medium.mime!.startsWith('audio/')) {
+    return SharedAudioWidget(
+      medium.path,
+      onTap: () => OpenFile.open(medium.path),
+    );
   }
-  // TODO(Unknown): Audio
-  //if (message.mime!.startsWith("audio/")) return const SizedBox();
 
   return SharedFileWidget(medium.path);
 }
