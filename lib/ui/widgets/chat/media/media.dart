@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
@@ -18,7 +19,7 @@ enum MessageType {
   text,
   image,
   video,
-  // audio
+  audio,
   file
 }
 
@@ -33,9 +34,9 @@ MessageType getMessageType(Message message) {
       return MessageType.image;
     } else if (mime.startsWith('video/')) {
       return MessageType.video;
+    } else if (mime.startsWith('audio/')) {
+      return MessageType.audio;
     }
-    // TODO(Unknown): Implement audio
-    //else if (mime.startswith("audio/")) return MessageType.audio;
 
     return MessageType.file;
   }
@@ -70,8 +71,8 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
     case MessageType.video: {
       return VideoChatWidget(message, radius, maxWidth, sent);
     }
-    // TODO(Unknown): Implement audio
-    //case MessageType.audio: return buildImageMessageWidget(message);
+    case MessageType.audio:
+      return AudioChatWidget(message, radius, maxWidth, sent);
     case MessageType.file: {
       return FileChatWidget(message, radius, sent);
     }
@@ -143,7 +144,7 @@ Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? re
         resetQuotedMessage: resetQuote,
       );
     // TODO(Unknown): Implement audio
-    //case MessageType.audio: return const SizedBox();
+    case MessageType.audio:
     case MessageType.file:
       return QuoteBaseWidget(
         message,

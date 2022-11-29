@@ -26,30 +26,38 @@ class MediaBaseChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: InkResponse(
-        onTap: onTap,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: radius,
-              child: background,
-            ),
-            ...gradient ? [BottomGradient(radius)] : [],
-            ...extra != null ? [ extra! ] : [],
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 3, right: 6),
-                child: bottom,
-              ),
-            ) 
-          ],
+    final content = Stack(
+      alignment: Alignment.center,
+      children: [
+        ClipRRect(
+          borderRadius: radius,
+          child: background,
         ),
-      ),
+        ...gradient ? [BottomGradient(radius)] : [],
+        ...extra != null ? [ extra! ] : [],
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 3, right: 6),
+            child: bottom,
+          ),
+        ),
+      ],
     );
+
+    if (onTap != null) {
+      return IntrinsicWidth(
+        child: InkResponse(
+          onTap: onTap,
+          child: content,
+        ),
+      );
+    } else {
+      return IntrinsicWidth(
+        child: content,
+      );
+    }
   }
 }

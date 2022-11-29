@@ -36,6 +36,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.9.0"
+  audiofileplayer:
+    dependency: "direct main"
+    description:
+      name: audiofileplayer
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
   awesome_notifications:
     dependency: "direct main"
     description:

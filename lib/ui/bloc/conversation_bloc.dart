@@ -190,24 +190,21 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         editId: state.messageEditingId,
         editSid: state.messageEditingSid,
       ),
+      awaitable: false,
     );
 
-    if (!state.messageEditing) {
-      final result = r! as events.MessageAddedEvent;
-      emit(
-        state.copyWith(
-          messages: List<Message>.from(<Message>[ ...state.messages, result.message ]),
-          messageText: '',
-          quotedMessage: null,
-          showSendButton: false,
-          emojiPickerVisible: false,
-          messageEditing: false,
-          messageEditingOriginalBody: '',
-          messageEditingId: null,
-          messageEditingSid: null,
-        ),
-      );
-    }
+    emit(
+      state.copyWith(
+        messageText: '',
+        quotedMessage: null,
+        showSendButton: false,
+        emojiPickerVisible: false,
+        messageEditing: false,
+        messageEditingOriginalBody: '',
+        messageEditingId: null,
+        messageEditingSid: null,
+      ),
+    );
   }
 
   Future<void> _onMessageQuoted(MessageQuotedEvent event, Emitter<ConversationState> emit) async {

@@ -216,7 +216,7 @@ class ChatBubbleState extends State<ChatBubble>
             GestureDetector(
               onLongPressStart: widget.onLongPressed,
               child: widget.bubble,
-            ), 
+            ),
           ],
         ),
       ),

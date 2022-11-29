@@ -96,7 +96,7 @@ class Conversation with _$Conversation {
       'open': boolToInt(open),
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
-      'lastMessage': lastMessage?.id,
+      'lastMessageId': lastMessage?.id,
     };
   }
 
