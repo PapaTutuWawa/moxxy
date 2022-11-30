@@ -22,7 +22,6 @@ class QuotedFileWidget extends StatelessWidget {
       message,
       SharedFileWidget(
         message.mediaUrl!,
-        enableOnTap: false,
         size: 48,
         borderRadius: 8,
       ),

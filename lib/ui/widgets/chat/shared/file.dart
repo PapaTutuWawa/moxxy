@@ -1,18 +1,17 @@
-import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class SharedFileWidget extends StatelessWidget {
   const SharedFileWidget(
     this.path, {
-      this.enableOnTap = true,
+      this.onTap,
       this.borderRadius = 10,
       this.size = sharedMediaContainerDimension,
       super.key,
     }
   );
   final String path;
-  final bool enableOnTap;
+  final void Function()? onTap;
   final double borderRadius;
   final double size;
 
@@ -30,9 +29,7 @@ class SharedFileWidget extends StatelessWidget {
         ),
       ),
       size: size,
-      onTap: enableOnTap ?
-        () => OpenFile.open(path) :
-        null,
+      onTap: onTap,
     );
   }
 }

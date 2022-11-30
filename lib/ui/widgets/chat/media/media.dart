@@ -104,11 +104,7 @@ Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? re
 }
 
 Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
-  if (medium.mime == null) {
-    return SharedFileWidget(
-      medium.path,
-    );
-  } else if (medium.mime!.startsWith('image/')) {
+  if (medium.mime!.startsWith('image/')) {
     return SharedImageWidget(
       medium.path,
       onTap: () => OpenFile.open(medium.path),
@@ -127,5 +123,8 @@ Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
     );
   }
 
-  return SharedFileWidget(medium.path);
+  return SharedFileWidget(
+    medium.path,
+    onTap: () => OpenFile.open(medium.path),
+  );
 }
