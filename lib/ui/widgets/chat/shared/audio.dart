@@ -30,9 +30,9 @@ class SharedAudioWidget extends StatelessWidget {
           ) : null,
         ),
         clipBehavior: Clip.hardEdge,
-        child: const Icon(
+        child: Icon(
           Icons.music_note,
-          size: 48,
+          size: size * 2/3,
         ),
       ),
       size: size,

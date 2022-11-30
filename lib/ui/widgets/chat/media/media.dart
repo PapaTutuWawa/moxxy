@@ -1,7 +1,5 @@
-import 'dart:io';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/audio.dart';
@@ -9,7 +7,11 @@ import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -84,101 +86,20 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
 Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? resetQuote}) {
   switch (getMessageType(message)) {
     case MessageType.text:
-      return QuoteBaseWidget(message, Text(message.body), sent, resetQuotedMessage: resetQuote);
+      return QuoteBaseWidget(
+        message,
+        Text(message.body),
+        sent,
+        resetQuotedMessage: resetQuote,
+      );
     case MessageType.image:
-      return QuoteBaseWidget(
-        message,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            SizedBox(
-              width: 48,
-              height: 48,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: FileImage(File(message.mediaUrl!)),
-                    ),
-                  ),
-                  clipBehavior: Clip.hardEdge,
-                ),
-              ),
-            ),
-          ],
-        ),
-        sent,
-        resetQuotedMessage: resetQuote,
-      );
+      return QuotedImageWidget(message, sent, resetQuote: resetQuote);
     case MessageType.video:
-      return QuoteBaseWidget(
-        message,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            SizedBox(
-              width: 48,
-              height: 48,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Icon(
-                        Icons.error_outline,
-                        size: 32,
-                      ),
-                    ),
-                    PlayButton(size: 16)
-                  ],
-                ),
-              ),
-            )
-          ],
-        ),
-        sent,
-        resetQuotedMessage: resetQuote,
-      );
-    // TODO(Unknown): Implement audio
+      return QuotedVideoWidget(message, sent, resetQuote: resetQuote);
     case MessageType.audio:
+      return QuotedAudioWidget(message, sent, resetQuote: resetQuote);
     case MessageType.file:
-      return QuoteBaseWidget(
-        message,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Text(filenameFromUrl(message.srcUrl!)),
-            ),
-            SizedBox(
-              width: 48,
-              height: 48,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(8)),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: const [
-                    ColoredBox(
-                      color: Colors.white60,
-                    ),
-                    Icon(
-                      Icons.file_present,
-                    ),
-                  ],
-                ),
-              ),
-            )
-          ],
-        ),
-        sent,
-        resetQuotedMessage: resetQuote,
-      );
+      return QuotedFileWidget(message, sent, resetQuote: resetQuote);
   }
 }
 
