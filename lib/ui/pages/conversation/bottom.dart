@@ -89,7 +89,7 @@ class ConversationBottomRow extends StatelessWidget {
                               },
                             ),
                             Visibility(
-                              visible: state.messageText.isEmpty,
+                              visible: state.messageText.isEmpty && state.quotedMessage == null,
                               child: InkWell(
                                 child: const Padding(
                                   padding: EdgeInsets.only(right: 8),
@@ -111,7 +111,7 @@ class ConversationBottomRow extends StatelessWidget {
                         minWidth: 24,
                         minHeight: 24,
                       ),
-                      suffixIcon: state.messageText.isEmpty ?
+                      suffixIcon: state.messageText.isEmpty && state.quotedMessage == null ?
                         InkWell(
                           child: const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8),
