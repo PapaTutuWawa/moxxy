@@ -5,7 +5,8 @@ import 'package:moxxyv2/ui/widgets/chat/video_thumbnail.dart';
 class SharedVideoWidget extends StatelessWidget {
   const SharedVideoWidget(
     this.path,
-    this.conversationJid, {
+    this.conversationJid,
+    this.mime, {
       this.onTap,
       this.borderColor,
       this.child,
@@ -16,6 +17,7 @@ class SharedVideoWidget extends StatelessWidget {
   );
   final String path;
   final String conversationJid;
+  final String mime;
   final Color? borderColor;
   final void Function()? onTap;
   final Widget? child;
@@ -28,6 +30,7 @@ class SharedVideoWidget extends StatelessWidget {
       VideoThumbnail(
         path: path,
         conversationJid: conversationJid,
+        mime: mime,
         size: Size(
           size,
           size,

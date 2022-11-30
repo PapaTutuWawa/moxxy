@@ -65,6 +65,7 @@ class SendFilesPage extends StatelessWidget {
           path,
           // TODO(PapaTutuWawa): Fix
           'sendfiles',
+          mime,
           onTap: () {
             if (selected) {
               // The trash can icon has been tapped

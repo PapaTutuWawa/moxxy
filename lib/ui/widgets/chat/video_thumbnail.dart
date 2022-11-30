@@ -9,25 +9,27 @@ class VideoThumbnail extends StatelessWidget {
     required this.conversationJid,
     required this.size,
     required this.borderRadius,
+    required this.mime,
     super.key,
   });
   final String path;
   final String conversationJid;
   final Size size;
   final BorderRadius borderRadius;
+  final String mime;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: getVideoThumbnailPath(path, conversationJid),
+    return FutureBuilder<String?>(
+      future: getVideoThumbnailPath(path, conversationJid, mime),
       builder: (context, snapshot) {
         Widget widget;
-        if (snapshot.hasData) {
+        if (snapshot.hasData && snapshot.data != null) {
           widget = Image.file(
             File(snapshot.data!),
             fit: BoxFit.cover,
           );
-        } else if (snapshot.hasError) {
+        } else if (snapshot.hasError || snapshot.hasData && snapshot.data == null) {
           widget = SizedBox(
             width: size.width,
             height: size.height,

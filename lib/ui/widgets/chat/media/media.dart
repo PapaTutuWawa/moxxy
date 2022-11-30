@@ -113,6 +113,7 @@ Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
     return SharedVideoWidget(
       medium.path,
       conversationJid,
+      medium.mime!,
       onTap: () => OpenFile.open(medium.path),
       child: const PlayButton(size: 32),
     );

@@ -112,6 +112,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       preview = SharedVideoWidget(
         widget.conversation.lastMessage!.mediaUrl!,
         widget.conversation.jid,
+        widget.conversation.lastMessage!.mediaType!,
         borderRadius: 5,
         size: 30,
       );

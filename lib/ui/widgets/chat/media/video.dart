@@ -35,6 +35,7 @@ class VideoChatWidget extends StatelessWidget {
       VideoThumbnail(
         path: message.mediaUrl!,
         conversationJid: message.conversationJid,
+        mime: message.mediaType!,
         size: Size(
           maxWidth,
           0.6 * maxWidth,
@@ -83,6 +84,7 @@ class VideoChatWidget extends StatelessWidget {
       VideoThumbnail(
         path: message.mediaUrl!,
         conversationJid: message.conversationJid,
+        mime: message.mediaType!,
         size: Size(
           maxWidth,
           0.6 * maxWidth,

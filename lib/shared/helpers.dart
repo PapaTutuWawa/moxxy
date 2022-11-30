@@ -356,7 +356,12 @@ Future<Size?> getImageSizeFromData(Uint8List bytes) async {
 /// to the JID of the conversation the file comes from.
 /// If the thumbnail already exists, then just its path is returned. If not, then
 /// it gets generated first.
-Future<String> getVideoThumbnailPath(String path, String conversationJid) async {
+Future<String?> getVideoThumbnailPath(String path, String conversationJid, String mime) async {
+  //print('getVideoThumbnailPath: Mime type: $mime');
+
+  // Ignore mime types that may be wacky
+  if (mime == 'video/webm') return null;
+
   final tempDir = await getTemporaryDirectory();
   final thumbnailFilenameNoExtension = p.withoutExtension(
     p.basename(path),

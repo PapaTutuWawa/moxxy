@@ -23,6 +23,7 @@ class QuotedVideoWidget extends StatelessWidget {
       SharedVideoWidget(
         message.mediaUrl!,
         message.conversationJid,
+        message.mediaType!,
         size: 48,
         borderRadius: 8,
       ),
