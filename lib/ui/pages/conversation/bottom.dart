@@ -3,6 +3,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -12,9 +13,20 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationBottomRow extends StatelessWidget {
-  const ConversationBottomRow(this.controller, this.isSpeedDialOpen, { super.key });
+  const ConversationBottomRow(
+    this.controller,
+    this.isSpeedDialOpen,
+    this.recordingStart,
+    this.recordingStop,
+    this.focusNode, { 
+      super.key,
+    }
+  );
   final TextEditingController controller;
   final ValueNotifier<bool> isSpeedDialOpen;
+  final void Function(Offset position) recordingStart;
+  final void Function() recordingStop;
+  final FocusNode focusNode;
 
   Color _getTextColor(BuildContext context) {
     // TODO(Unknown): Work on the colors
@@ -69,6 +81,7 @@ class ConversationBottomRow extends StatelessWidget {
                         isSent(state.quotedMessage!, state.jid),
                         resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
                       ) : null,
+                      focusNode: focusNode,
                       shouldSummonKeyboard: () => !state.emojiPickerVisible,
                       prefixIcon: IntrinsicWidth(
                         child: Row(
@@ -112,7 +125,7 @@ class ConversationBottomRow extends StatelessWidget {
                         minHeight: 24,
                       ),
                       suffixIcon: state.messageText.isEmpty && state.quotedMessage == null ?
-                        InkWell(
+                        GestureDetector(
                           child: const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 8),
                             child: Icon(
@@ -123,6 +136,14 @@ class ConversationBottomRow extends StatelessWidget {
                           ),
                           onTap: () {
                             showNotImplementedDialog('audio recording', context);
+                          },
+                          onLongPressStart: (details) {
+                            Vibrate.feedback(FeedbackType.heavy);
+                            recordingStart(details.globalPosition);
+                          },
+                          onLongPressEnd: (_) {
+                            Vibrate.feedback(FeedbackType.heavy);
+                            recordingStop();
                           },
                         ) :
                         null,

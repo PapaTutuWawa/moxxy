@@ -47,10 +47,14 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   late Animation<double> _overviewMsgAnimation;
   late final Animation<double> _scrollToBottom;
   bool _scrolledToBottomState;
+  bool _recording = false;
+  //Offset _touchPosition = Offset.zero;
+  late FocusNode _textfieldFocus;
 
   @override
   void initState() {
     super.initState();
+    _textfieldFocus = FocusNode();
     _scrollController.addListener(_onScroll);
 
     _overviewAnimationController = AnimationController(
@@ -77,7 +81,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       ..dispose();
     _animationController.dispose();
     _overviewAnimationController.dispose();
-
+    _textfieldFocus.dispose();
     super.dispose();
   }
 
@@ -327,9 +331,14 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
-   
+    
     return WillPopScope(
       onWillPop: () async {
+        if (_textfieldFocus.hasFocus) {
+          _textfieldFocus.unfocus();
+          return false;
+        }
+
         final bloc = GetIt.I.get<ConversationBloc>();
 
         if (bloc.state.emojiPickerVisible) {
@@ -417,12 +426,48 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     ),
                   ),
 
-                  ConversationBottomRow(_controller, _isSpeedDialOpen)
+                  ConversationBottomRow(
+                    _controller,
+                    _isSpeedDialOpen,
+                    (offset) {
+                      setState(() {
+                        _recording = true;
+                        //_touchPosition = offset;
+                      });
+                    },
+                    () {
+                      setState(() => _recording = false);
+                    },
+                    _textfieldFocus,
+                  )
                 ],
               ),
             ),
           ),
 
+          Positioned(
+            right: -15,
+            bottom: -55,
+            child: IgnorePointer(
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 300),
+                scale: _recording ?
+                  1 :
+                  0,
+                child: SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade600,
+                    borderRadius: BorderRadius.circular(140),
+                  ),
+                ),
+                ),
+              ),
+            ),
+          ),
+          
           Positioned(
             right: 8,
             bottom: 80,

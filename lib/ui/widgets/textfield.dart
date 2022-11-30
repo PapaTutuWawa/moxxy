@@ -30,6 +30,7 @@ class CustomTextField extends StatelessWidget {
     this.suffixIconConstraints,
     this.onTap,
     this.shouldSummonKeyboard,
+    this.focusNode,
     super.key,
   });
   final double cornerRadius;
@@ -59,6 +60,7 @@ class CustomTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final void Function()? onTap;
   final bool Function()? shouldSummonKeyboard;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +93,7 @@ class CustomTextField extends StatelessWidget {
                 style: style,
                 onTap: onTap,
                 shouldSummonKeyboard: shouldSummonKeyboard,
+                focusNode: focusNode,
                 decoration: InputDecoration(
                   labelText: labelText,
                   hintText: hintText,
