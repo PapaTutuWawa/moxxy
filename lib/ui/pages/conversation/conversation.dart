@@ -47,8 +47,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   late Animation<double> _overviewMsgAnimation;
   late final Animation<double> _scrollToBottom;
   bool _scrolledToBottomState;
-  bool _recording = false;
-  //Offset _touchPosition = Offset.zero;
   late FocusNode _textfieldFocus;
 
   @override
@@ -429,15 +427,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   ConversationBottomRow(
                     _controller,
                     _isSpeedDialOpen,
-                    (offset) {
-                      setState(() {
-                        _recording = true;
-                        //_touchPosition = offset;
-                      });
-                    },
-                    () {
-                      setState(() => _recording = false);
-                    },
                     _textfieldFocus,
                   )
                 ],
@@ -445,29 +434,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             ),
           ),
 
-          Positioned(
-            right: -15,
-            bottom: -55,
-            child: IgnorePointer(
-              child: AnimatedScale(
-                duration: const Duration(milliseconds: 300),
-                scale: _recording ?
-                  1 :
-                  0,
-                child: SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade600,
-                    borderRadius: BorderRadius.circular(140),
-                  ),
-                ),
-                ),
-              ),
-            ),
-          ),
-          
           Positioned(
             right: 8,
             bottom: 80,
