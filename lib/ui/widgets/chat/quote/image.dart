@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -24,7 +25,7 @@ class QuotedImageWidget extends StatelessWidget {
         size: 48,
         borderRadius: 8,
       ),
-      'Image',
+      t.messages.image,
       sent,
       resetQuote: resetQuote,
     );
