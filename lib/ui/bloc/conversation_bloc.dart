@@ -48,6 +48,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<MessageRetractedEvent>(_onMessageRetracted);
     on<MessageEditSelectedEvent>(_onMessageEditSelected);
     on<MessageEditCancelledEvent>(_onMessageEditCancelled);
+    on<SendButtonDragStartedEvent>(_onDragStarted);
+    on<SendButtonDragEndedEvent>(_onDragEnded);
+    on<SendButtonLockedEvent>(_onSendButtonLocked);
+    on<SendButtonLockPressedEvent>(_onSendButtonLockPressed);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -123,6 +127,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageEditingId: null,
         messageEditingSid: null,
         sendButtonState: defaultSendButtonState,
+        isLocked: false,
+        isDragging: false,
       ),
     );
 
@@ -402,6 +408,32 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageEditingId: null,
         messageEditingSid: null,
         sendButtonState: defaultSendButtonState,
+      ),
+    );
+  }
+
+  Future<void> _onDragStarted(SendButtonDragStartedEvent event, Emitter<ConversationState> emit) async {
+    emit(state.copyWith(isDragging: true));
+  }
+
+  Future<void> _onDragEnded(SendButtonDragEndedEvent event, Emitter<ConversationState> emit) async {
+    emit(
+      state.copyWith(
+        isDragging: false,
+        isLocked: false,
+      ),
+    );
+  }
+
+  Future<void> _onSendButtonLocked(SendButtonLockedEvent event, Emitter<ConversationState> emit) async {
+    emit(state.copyWith(isLocked: true));
+  }
+
+  Future<void> _onSendButtonLockPressed(SendButtonLockPressedEvent event, Emitter<ConversationState> emit) async {
+    emit(
+      state.copyWith(
+        isLocked: false,
+        isDragging: false,
       ),
     );
   }

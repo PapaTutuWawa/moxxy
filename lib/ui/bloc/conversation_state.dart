@@ -23,5 +23,9 @@ class ConversationState with _$ConversationState {
     @Default('') String messageEditingOriginalBody,
     @Default(null) String? messageEditingSid,
     @Default(null) int? messageEditingId,
+
+    // For recording
+    @Default(false) bool isDragging,
+    @Default(false) bool isLocked,
   }) = _ConversationState;
 }

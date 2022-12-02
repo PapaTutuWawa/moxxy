@@ -34,12 +34,18 @@ class ConversationsPage extends StatefulWidget {
 }
 
 class ConversationsPageState extends State<ConversationsPage> with TickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    duration: const Duration(milliseconds: 200),
-    vsync: this,
-  );
+  late final AnimationController _controller; 
   late Animation<double> _convY;
 
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+  }
+  
   @override
   void dispose() {
     _controller.dispose();

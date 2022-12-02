@@ -131,3 +131,15 @@ class MessageEditSelectedEvent extends ConversationEvent {
 class MessageEditCancelledEvent extends ConversationEvent {
   MessageEditCancelledEvent();
 }
+
+/// Triggered when the dragging began
+class SendButtonDragStartedEvent extends ConversationEvent {}
+
+/// Triggered when the dragging ended
+class SendButtonDragEndedEvent extends ConversationEvent {}
+
+/// Triggered when the dragging ended
+class SendButtonLockedEvent extends ConversationEvent {}
+
+/// Triggered when the FAB has been locked
+class SendButtonLockPressedEvent extends ConversationEvent {} 

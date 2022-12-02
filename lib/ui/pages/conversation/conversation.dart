@@ -12,6 +12,7 @@ import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
@@ -330,6 +331,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     
     return WillPopScope(
       onWillPop: () async {
+        // TODO(PapaTutuWawa): Check if we are recording an audio message and handle
+        //                     that accordingly
         if (_textfieldFocus.hasFocus) {
           _textfieldFocus.unfocus();
           return false;
@@ -425,7 +428,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   ConversationBottomRow(
                     _controller,
                     _textfieldFocus,
-                  )
+                  ),
                 ],
               ),
             ),
@@ -452,6 +455,44 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   ),
                 ),
               ),
+            ),
+          ),
+
+          Positioned(
+            right: 8,
+            bottom: 300,
+            child: BlocBuilder<ConversationBloc, ConversationState>(
+              builder: (context, state) {
+                return DragTarget<int>(
+                  onWillAccept: (data) => true,
+                  builder: (context, _, __) {
+                    return AnimatedScale(
+                      scale: state.isDragging || state.isLocked ? 1 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: SizedBox(
+                        height: 45,
+                        width: 45,
+                        child: FloatingActionButton(
+                          heroTag: 'fabLock',
+                          onPressed: state.isLocked ?
+                          () {
+                            context.read<ConversationBloc>().add(
+                              SendButtonLockPressedEvent(),
+                            );
+                          } :
+                          null,
+                          backgroundColor: state.isLocked ?
+                            Colors.red.shade600 :
+                            Colors.grey,
+                          child: state.isLocked ?
+                            const BlinkingMicrophoneIcon() :
+                            const Icon(Icons.lock, color: Colors.white),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],

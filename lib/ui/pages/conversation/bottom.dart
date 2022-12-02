@@ -7,6 +7,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -35,7 +36,7 @@ class _TextFieldIconButton extends StatelessWidget {
 class ConversationBottomRow extends StatefulWidget {
   const ConversationBottomRow(
     this.controller,
-    this.focusNode, { 
+    this.focusNode, {
       super.key,
     }
   );
@@ -47,9 +48,6 @@ class ConversationBottomRow extends StatefulWidget {
 }
 
 class ConversationBottomRowState extends State<ConversationBottomRow> {
-  //bool _recording = false;
-  //Offset _touchedPosition = Offset.zero;
-  
   Color _getTextColor(BuildContext context) {
     // TODO(Unknown): Work on the colors
     if (MediaQuery.of(context).platformBrightness == Brightness.dark) {
@@ -187,55 +185,13 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                             ),
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          // NOTE: https://stackoverflow.com/a/52786741
-                          //       Thank you kind sir
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8),
                           child: SizedBox(
                             height: 45,
                             width: 45,
-                            child: FittedBox(
-                              child: GestureDetector(
-                                onTap: () {
-                                  switch (state.sendButtonState) {
-                                    case SendButtonState.audio: return;
-                                    case SendButtonState.cancelCorrection:
-                                      context.read<ConversationBloc>().add(
-                                        MessageEditCancelledEvent(),
-                                      );
-                                      widget.controller.text = '';
-                                      return;
-                                    case SendButtonState.send:
-                                      context.read<ConversationBloc>().add(
-                                        MessageSentEvent(),
-                                      );
-                                      widget.controller.text = '';
-                                      return;
-                                  }
-                                },
-                                onLongPressStart: (d) {
-                                  if (state.sendButtonState != SendButtonState.audio) return;
-                                  
-                                  Vibrate.feedback(FeedbackType.heavy);
-                                  //print('Start');
-                                },
-                                onLongPressEnd: (d) {
-                                  if (state.sendButtonState != SendButtonState.audio) return;
-
-                                  Vibrate.feedback(FeedbackType.heavy);
-                                  //print('Done');
-                                },
-                                child: FloatingActionButton(
-                                  onPressed: null,
-                                  child: Icon(
-                                    _getSendButtonIcon(state),
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -300,27 +256,86 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
         ),
 
         Positioned(
-          // <dx|dy> - final size of circle / 2
-          //top: _touchedPosition.dy - 100,
-          //right: _touchedPosition.dx,
-          bottom: -70,
-          right: -15,
-          child: IgnorePointer(
-            child: AnimatedScale(
-              duration: const Duration(milliseconds: 300),
-              //scale: _recording ? 1 : 0,
-              scale: 0,
-              child: SizedBox(
-                width: 200,
-                height: 200,
-                child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.red.shade600,
-                  borderRadius: BorderRadius.circular(140),
+          right: 8,
+          bottom: 8,
+          child: BlocBuilder<ConversationBloc, ConversationState>(
+            buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState ||
+              prev.isDragging != next.isDragging ||
+              prev.isLocked != next.isLocked,
+            builder: (context, state) {
+              return Visibility(
+                visible: !state.isDragging && !state.isLocked,
+                child: LongPressDraggable<int>(
+                  data: 1,
+                  axis: Axis.vertical,
+                  onDragStarted: () {
+                    Vibrate.feedback(FeedbackType.heavy);
+                    context.read<ConversationBloc>().add(
+                      SendButtonDragStartedEvent(),
+                    );
+                  },
+                  onDraggableCanceled: (_, __) {
+                    Vibrate.feedback(FeedbackType.heavy);
+                    context.read<ConversationBloc>().add(
+                      SendButtonDragEndedEvent(),
+                    );
+                  },
+                  onDragCompleted: () {
+                    context.read<ConversationBloc>().add(
+                      SendButtonLockedEvent(),
+                    );
+                  },
+                  feedback: SizedBox(
+                    height: 45,
+                    width: 45,
+                    child: FloatingActionButton(
+                      onPressed: null,
+                      heroTag: 'fabDragged',
+                      backgroundColor: Colors.red.shade600,
+                      child: const BlinkingMicrophoneIcon(),
+                    ),
+                  ),
+                  childWhenDragging: SizedBox(
+                    height: 45,
+                    width: 45,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(45),
+                      ),
+                    ),
+                  ),
+                  child: SizedBox(
+                    height: 45,
+                    width: 45,
+                    child: FloatingActionButton(
+                      heroTag: 'fabRest',
+                      onPressed: () {
+                        switch (state.sendButtonState) {
+                          case SendButtonState.audio: return;
+                          case SendButtonState.cancelCorrection:
+                            context.read<ConversationBloc>().add(
+                              MessageEditCancelledEvent(),
+                            );
+                            widget.controller.text = '';
+                            return;
+                          case SendButtonState.send:
+                            context.read<ConversationBloc>().add(
+                              MessageSentEvent(),
+                            );
+                            widget.controller.text = '';
+                            return;
+                        }
+                      },
+                      child: Icon(
+                        _getSendButtonIcon(state),
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ],
