@@ -34,13 +34,11 @@ class ConversationPage extends StatefulWidget {
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
   ConversationPageState() :
-    _isSpeedDialOpen = ValueNotifier(false),
     _controller = TextEditingController(),
     _scrollController = ScrollController(),
     _scrolledToBottomState = true,
     super();
   final TextEditingController _controller;
-  final ValueNotifier<bool> _isSpeedDialOpen;
   final ScrollController _scrollController;
   late final AnimationController _animationController; 
   late final AnimationController _overviewAnimationController;
@@ -426,7 +424,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
                   ConversationBottomRow(
                     _controller,
-                    _isSpeedDialOpen,
                     _textfieldFocus,
                   )
                 ],

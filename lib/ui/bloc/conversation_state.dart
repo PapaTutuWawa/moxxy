@@ -1,12 +1,19 @@
 part of 'conversation_bloc.dart';
 
+enum SendButtonState {
+  audio,
+  send,
+  cancelCorrection,
+}
+const defaultSendButtonState = SendButtonState.audio;
+
 @freezed
 class ConversationState with _$ConversationState {
   factory ConversationState({
     // Our own JID
     @Default('') String jid,
     @Default('') String messageText,
-    @Default(false) bool showSendButton,
+    @Default(defaultSendButtonState) SendButtonState sendButtonState,
     @Default(null) Message? quotedMessage,
     @Default(<Message>[]) List<Message> messages,
     @Default(null) Conversation? conversation,

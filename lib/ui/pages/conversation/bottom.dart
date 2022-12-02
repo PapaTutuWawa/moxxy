@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -12,16 +11,35 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+class _TextFieldIconButton extends StatelessWidget {
+  const _TextFieldIconButton(this.icon, this.onTap);
+  final void Function() onTap;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Icon(
+          icon,
+          size: 20,
+          color: primaryColor,
+        ),
+      ),
+    );
+  }
+}
+
 class ConversationBottomRow extends StatefulWidget {
   const ConversationBottomRow(
     this.controller,
-    this.isSpeedDialOpen,
     this.focusNode, { 
       super.key,
     }
   );
   final TextEditingController controller;
-  final ValueNotifier<bool> isSpeedDialOpen;
   final FocusNode focusNode;
 
   @override
@@ -29,7 +47,7 @@ class ConversationBottomRow extends StatefulWidget {
 }
 
 class ConversationBottomRowState extends State<ConversationBottomRow> {
-  bool _recording = false;
+  //bool _recording = false;
   //Offset _touchedPosition = Offset.zero;
   
   Color _getTextColor(BuildContext context) {
@@ -41,14 +59,12 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
     return Colors.black;
   }
 
-  bool _shouldCancelEdit(ConversationState state) {
-    return state.messageEditing && widget.controller.text == state.messageEditingOriginalBody;
-  }
-  
-  IconData _getSpeeddialIcon(ConversationState state) {
-    if (_shouldCancelEdit(state)) return Icons.clear;
-
-    return state.showSendButton ? Icons.send : Icons.add;
+  IconData _getSendButtonIcon(ConversationState state) {
+    switch (state.sendButtonState) {
+      case SendButtonState.audio: return Icons.mic;
+      case SendButtonState.send: return Icons.send;
+      case SendButtonState.cancelCorrection: return Icons.clear;
+    }
   }
   
   @override
@@ -64,7 +80,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.showSendButton != next.showSendButton || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody,
+                    buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody,
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
@@ -99,8 +115,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                       padding: const EdgeInsets.symmetric(horizontal: 8),
                                       child: Icon(
                                         state.emojiPickerVisible ? 
-                                        Icons.keyboard :
-                                        Icons.insert_emoticon,
+                                          Icons.keyboard :
+                                          Icons.insert_emoticon,
                                         color: primaryColor,
                                         size: 24,
                                       ),
@@ -133,32 +149,31 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                               minHeight: 24,
                             ),
                             suffixIcon: state.messageText.isEmpty && state.quotedMessage == null ?
-                            GestureDetector(
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 8),
-                                child: Icon(
-                                  Icons.mic_rounded,
-                                  color: primaryColor,
-                                  size: 24,
+                              IntrinsicWidth(
+                                child: Row(
+                                  children: [
+                                    _TextFieldIconButton(
+                                      Icons.attach_file,
+                                      () {
+                                        //print('Määäääh');
+                                      },
+                                    ),
+                                    _TextFieldIconButton(
+                                      Icons.photo_camera,
+                                      () {
+                                        //print('Määäääh');
+                                      },
+                                    ),
+                                    _TextFieldIconButton(
+                                      Icons.image,
+                                      () {
+                                        //print('Määäääh');
+                                      },
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              onLongPressStart: (details) {
-                                Vibrate.feedback(FeedbackType.heavy);
-
-                                setState(() {
-                                    _recording = true;
-                                    //_touchedPosition = details.localPosition;
-                                });
-                              },
-                              onLongPressUp: () {
-                                Vibrate.feedback(FeedbackType.heavy);
-
-                                setState(() {
-                                    _recording = false;
-                                });
-                              },
-                            ) :
-                            null,
+                              ) :
+                              null,
                             suffixIconConstraints: const BoxConstraints(
                               minWidth: 24,
                               minHeight: 24,
@@ -173,59 +188,43 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                             height: 45,
                             width: 45,
                             child: FittedBox(
-                              child: SpeedDial(
-                                icon: _getSpeeddialIcon(state),
-                                curve: Curves.bounceInOut,
-                                backgroundColor: primaryColor,
-                                // TODO(Unknown): Theme dependent?
-                                foregroundColor: Colors.white,
-                                openCloseDial: widget.isSpeedDialOpen,
-                                onPress: () {
-                                  if (_shouldCancelEdit(state)) {
-                                    context.read<ConversationBloc>().add(MessageEditCancelledEvent());
-                                    widget.controller.text = '';
-                                    return;
-                                  }
-
-                                  if (state.showSendButton) {
-                                    context.read<ConversationBloc>().add(MessageSentEvent());
-                                    widget.controller.text = '';
-                                  } else {
-                                    widget.isSpeedDialOpen.value = true;
+                              child: GestureDetector(
+                                onTap: () {
+                                  switch (state.sendButtonState) {
+                                    case SendButtonState.audio: return;
+                                    case SendButtonState.cancelCorrection:
+                                      context.read<ConversationBloc>().add(
+                                        MessageEditCancelledEvent(),
+                                      );
+                                      widget.controller.text = '';
+                                      return;
+                                    case SendButtonState.send:
+                                      context.read<ConversationBloc>().add(
+                                        MessageSentEvent(),
+                                      );
+                                      widget.controller.text = '';
+                                      return;
                                   }
                                 },
-                                children: [
-                                  SpeedDialChild(
-                                    child: const Icon(Icons.image),
-                                    onTap: () {
-                                      context.read<ConversationBloc>().add(ImagePickerRequestedEvent());
-                                    },
-                                    backgroundColor: primaryColor,
-                                    // TODO(Unknown): Theme dependent?
-                                    foregroundColor: Colors.white,
-                                    label: 'Send Images',
+                                onLongPressStart: (d) {
+                                  if (state.sendButtonState != SendButtonState.audio) return;
+                                  
+                                  Vibrate.feedback(FeedbackType.heavy);
+                                  //print('Start');
+                                },
+                                onLongPressEnd: (d) {
+                                  if (state.sendButtonState != SendButtonState.audio) return;
+
+                                  Vibrate.feedback(FeedbackType.heavy);
+                                  //print('Done');
+                                },
+                                child: FloatingActionButton(
+                                  onPressed: null,
+                                  child: Icon(
+                                    _getSendButtonIcon(state),
+                                    color: Colors.white,
                                   ),
-                                  SpeedDialChild(
-                                    child: const Icon(Icons.photo_camera),
-                                    onTap: () {
-                                      showNotImplementedDialog('taking photos', context);
-                                    },
-                                    backgroundColor: primaryColor,
-                                    // TODO(Unknown): Theme dependent?
-                                    foregroundColor: Colors.white,
-                                    label: 'Take photo',
-                                  ),
-                                  SpeedDialChild(
-                                    child: const Icon(Icons.attach_file),
-                                    onTap: () {
-                                      context.read<ConversationBloc>().add(FilePickerRequestedEvent());
-                                    },
-                                    backgroundColor: primaryColor,
-                                    // TODO(Unknown): Theme dependent?
-                                    foregroundColor: Colors.white,
-                                    label: 'Send files',
-                                  )
-                                ],
+                                ),
                               ),
                             ),
                           ),
@@ -302,7 +301,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
           child: IgnorePointer(
             child: AnimatedScale(
               duration: const Duration(milliseconds: 300),
-              scale: _recording ? 1 : 0,
+              //scale: _recording ? 1 : 0,
+              scale: 0,
               child: SizedBox(
                 width: 200,
                 height: 200,

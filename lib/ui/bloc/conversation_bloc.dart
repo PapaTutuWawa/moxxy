@@ -119,9 +119,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         quotedMessage: null,
         messageEditing: false,
         messageEditingOriginalBody: '',
+        messageText: '',
         messageEditingId: null,
         messageEditingSid: null,
-        showSendButton: false,
+        sendButtonState: defaultSendButtonState,
       ),
     );
 
@@ -167,10 +168,21 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     _startComposeTimer();
     _updateChatState(ChatState.composing);
 
+    SendButtonState sendButtonState;
+    if (state.messageEditing) {
+      sendButtonState = event.value == state.messageEditingOriginalBody ?
+        SendButtonState.cancelCorrection :
+        SendButtonState.send;
+    } else {
+      sendButtonState = event.value.isEmpty ?
+        defaultSendButtonState :
+        SendButtonState.send;
+    }
+    
     return emit(
       state.copyWith(
         messageText: event.value,
-        showSendButton: event.value.isNotEmpty,
+        sendButtonState: sendButtonState,
       ),
     );
   }
@@ -197,7 +209,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         messageText: '',
         quotedMessage: null,
-        showSendButton: false,
+        sendButtonState: defaultSendButtonState,
         emojiPickerVisible: false,
         messageEditing: false,
         messageEditingOriginalBody: '',
@@ -375,6 +387,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageEditingOriginalBody: event.message.body,
         messageEditingId: event.message.id,
         messageEditingSid: event.message.sid,
+        sendButtonState: SendButtonState.cancelCorrection,
       ),
     );
   }
@@ -388,7 +401,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageEditingOriginalBody: '',
         messageEditingId: null,
         messageEditingSid: null,
-        showSendButton: false,
+        sendButtonState: defaultSendButtonState,
       ),
     );
   }
