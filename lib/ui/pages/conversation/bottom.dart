@@ -155,19 +155,26 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                     _TextFieldIconButton(
                                       Icons.attach_file,
                                       () {
-                                        //print('Määäääh');
+                                        context.read<ConversationBloc>().add(
+                                          FilePickerRequestedEvent(),
+                                        );
                                       },
                                     ),
                                     _TextFieldIconButton(
                                       Icons.photo_camera,
                                       () {
-                                        //print('Määäääh');
+                                        showNotImplementedDialog(
+                                          'taking photos',
+                                          context,
+                                        );
                                       },
                                     ),
                                     _TextFieldIconButton(
                                       Icons.image,
                                       () {
-                                        //print('Määäääh');
+                                        context.read<ConversationBloc>().add(
+                                          ImagePickerRequestedEvent(),
+                                        );
                                       },
                                     ),
                                   ],
