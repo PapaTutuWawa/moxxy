@@ -8,6 +8,7 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
+import 'package:moxxyv2/ui/pages/conversation/timer.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -332,6 +333,42 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         color: Colors.white,
                       ),
                     ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        Positioned(
+          left: 8,
+          bottom: 11,
+          right: 61,
+          child: BlocBuilder<ConversationBloc, ConversationState>(
+            buildWhen: (prev, next) => prev.isRecording != next.isRecording,
+            builder: (context, state) {
+              return AnimatedOpacity(
+                opacity: state.isRecording ? 1 : 0,
+                duration: const Duration(milliseconds: 300),
+                child: SizedBox(
+                  height: 38,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(textfieldRadiusConversation),
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                    ),
+                    // NOTE: We use a comprehension here so that the widget gets
+                    //       created and destroyed to prevent the timer from running
+                    //       until the user closes the page.
+                    child: state.isRecording ?
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 16),
+                          child: TimerWidget(),
+                        ),
+                      ) :
+                      null,
                   ),
                 ),
               );

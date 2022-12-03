@@ -495,6 +495,35 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               },
             ),
           ),
+
+          Positioned(
+            right: 8 + 45 + 32,
+            bottom: 300,
+            child: BlocBuilder<ConversationBloc, ConversationState>(
+              builder: (context, state) {
+                return AnimatedScale(
+                  scale: state.isLocked ? 1 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: SizedBox(
+                    height: 45,
+                    width: 45,
+                    child: FloatingActionButton(
+                      heroTag: 'fabCancel',
+                      onPressed: state.isLocked ?
+                        () {
+                          context.read<ConversationBloc>().add(
+                            RecordingCanceledEvent(),
+                          );
+                        } :
+                        null,
+                      backgroundColor: Colors.grey,
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

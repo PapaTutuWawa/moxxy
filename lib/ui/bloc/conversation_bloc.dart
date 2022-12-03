@@ -52,6 +52,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<SendButtonDragEndedEvent>(_onDragEnded);
     on<SendButtonLockedEvent>(_onSendButtonLocked);
     on<SendButtonLockPressedEvent>(_onSendButtonLockPressed);
+    on<RecordingCanceledEvent>(_onRecordingCanceled);
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -129,6 +130,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         sendButtonState: defaultSendButtonState,
         isLocked: false,
         isDragging: false,
+        isRecording: false,
       ),
     );
 
@@ -413,7 +415,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onDragStarted(SendButtonDragStartedEvent event, Emitter<ConversationState> emit) async {
-    emit(state.copyWith(isDragging: true));
+    // TODO(PapaTutuWawa): Start recording after 500ms elapsed
+    emit(
+      state.copyWith(
+        isDragging: true,
+        isRecording: true,
+      ),
+    );
   }
 
   Future<void> _onDragEnded(SendButtonDragEndedEvent event, Emitter<ConversationState> emit) async {
@@ -421,6 +429,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         isDragging: false,
         isLocked: false,
+        isRecording: false,
       ),
     );
   }
@@ -430,10 +439,25 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onSendButtonLockPressed(SendButtonLockPressedEvent event, Emitter<ConversationState> emit) async {
+    // TODO(PapaTutuWawa): Actually send the recording
+    // TODO(PapaTutuWawa): Actually send the recording
+    // TODO(PapaTutuWawa): Actually send the recording
+    // TODO(PapaTutuWawa): Actually send the recording
     emit(
       state.copyWith(
         isLocked: false,
         isDragging: false,
+        isRecording: false,
+      ),
+    );
+  }
+
+  Future<void> _onRecordingCanceled(RecordingCanceledEvent event, Emitter<ConversationState> emit) async {
+    emit(
+      state.copyWith(
+        isLocked: false,
+        isDragging: false,
+        isRecording: false,
       ),
     );
   }

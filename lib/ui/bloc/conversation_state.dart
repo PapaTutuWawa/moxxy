@@ -27,5 +27,6 @@ class ConversationState with _$ConversationState {
     // For recording
     @Default(false) bool isDragging,
     @Default(false) bool isLocked,
+    @Default(false) bool isRecording,
   }) = _ConversationState;
 }
