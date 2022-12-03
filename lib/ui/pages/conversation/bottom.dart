@@ -283,11 +283,6 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       SendButtonDragEndedEvent(),
                     );
                   },
-                  onDragCompleted: () {
-                    context.read<ConversationBloc>().add(
-                      SendButtonLockedEvent(),
-                    );
-                  },
                   feedback: SizedBox(
                     height: 45,
                     width: 45,

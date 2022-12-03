@@ -460,11 +460,16 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
           Positioned(
             right: 8,
-            bottom: 300,
+            bottom: 250,
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
                 return DragTarget<int>(
                   onWillAccept: (data) => true,
+                  onAccept: (_) {
+                    context.read<ConversationBloc>().add(
+                      SendButtonLockedEvent(),
+                    );
+                  },
                   builder: (context, _, __) {
                     return AnimatedScale(
                       scale: state.isDragging || state.isLocked ? 1 : 0,
@@ -497,29 +502,39 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           ),
 
           Positioned(
-            right: 8 + 45 + 32,
-            bottom: 300,
+            right: 8,
+            bottom: 380,
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
-                return AnimatedScale(
-                  scale: state.isLocked ? 1 : 0,
-                  duration: const Duration(milliseconds: 200),
-                  child: SizedBox(
-                    height: 45,
-                    width: 45,
-                    child: FloatingActionButton(
-                      heroTag: 'fabCancel',
-                      onPressed: state.isLocked ?
-                        () {
-                          context.read<ConversationBloc>().add(
-                            RecordingCanceledEvent(),
-                          );
-                        } :
-                        null,
-                      backgroundColor: Colors.grey,
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                  ),
+                return DragTarget<int>(
+                  onWillAccept: (_) => true,
+                  onAccept: (_) {
+                    context.read<ConversationBloc>().add(
+                      RecordingCanceledEvent(),
+                    );
+                  },
+                  builder: (context, _, __) {
+                    return AnimatedScale(
+                      scale: state.isDragging || state.isLocked ? 1 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: SizedBox(
+                        height: 45,
+                        width: 45,
+                        child: FloatingActionButton(
+                          heroTag: 'fabCancel',
+                          onPressed: state.isLocked ?
+                          () {
+                            context.read<ConversationBloc>().add(
+                              RecordingCanceledEvent(),
+                            );
+                          } :
+                          null,
+                          backgroundColor: Colors.grey,
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

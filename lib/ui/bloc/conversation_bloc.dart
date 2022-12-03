@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
@@ -435,13 +436,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onSendButtonLocked(SendButtonLockedEvent event, Emitter<ConversationState> emit) async {
+    Vibrate.feedback(FeedbackType.light);
+
     emit(state.copyWith(isLocked: true));
   }
 
   Future<void> _onSendButtonLockPressed(SendButtonLockPressedEvent event, Emitter<ConversationState> emit) async {
-    // TODO(PapaTutuWawa): Actually send the recording
-    // TODO(PapaTutuWawa): Actually send the recording
-    // TODO(PapaTutuWawa): Actually send the recording
     // TODO(PapaTutuWawa): Actually send the recording
     emit(
       state.copyWith(
@@ -453,6 +453,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onRecordingCanceled(RecordingCanceledEvent event, Emitter<ConversationState> emit) async {
+    Vibrate.feedback(FeedbackType.heavy);
+
     emit(
       state.copyWith(
         isLocked: false,
