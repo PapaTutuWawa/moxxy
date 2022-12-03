@@ -14,7 +14,7 @@ class OverviewMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkResponse(
+    return InkWell(
       onTap: onPressed,
       child: Row(
         children: [
