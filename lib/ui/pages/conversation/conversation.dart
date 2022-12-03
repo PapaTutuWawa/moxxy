@@ -445,16 +445,20 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               child: ScaleTransition(
                 scale: _scrollToBottom,
                 alignment: FractionalOffset.center,
-                child: Ink(
-                  decoration: ShapeDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    shape: const CircleBorder(),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_downward),
+                child: SizedBox(
+                  width: 45,
+                  height: 45,
+                  child: FloatingActionButton(
+                    heroTag: 'fabScrollDown',
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     onPressed: () {
                       _scrollController.jumpTo(0);
                     },
+                    child: const Icon(
+                      Icons.arrow_downward,
+                      // TODO(Unknown): Theme dependent
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
