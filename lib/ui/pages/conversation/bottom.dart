@@ -359,17 +359,19 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
               return AnimatedOpacity(
                 opacity: state.isRecording ? 1 : 0,
                 duration: const Duration(milliseconds: 300),
-                child: SizedBox(
-                  height: 38,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(textfieldRadiusConversation),
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                    ),
-                    // NOTE: We use a comprehension here so that the widget gets
-                    //       created and destroyed to prevent the timer from running
-                    //       until the user closes the page.
-                    child: state.isRecording ?
+                child: IgnorePointer(
+                  ignoring: !state.isRecording,
+                  child: SizedBox(
+                    height: 38,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(textfieldRadiusConversation),
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                      ),
+                      // NOTE: We use a comprehension here so that the widget gets
+                      //       created and destroyed to prevent the timer from running
+                      //       until the user closes the page.
+                      child: state.isRecording ?
                       const Align(
                         alignment: Alignment.centerLeft,
                         child: Padding(
@@ -378,6 +380,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         ),
                       ) :
                       null,
+                    ),
                   ),
                 ),
               );
