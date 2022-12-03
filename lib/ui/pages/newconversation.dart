@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -99,7 +100,17 @@ class NewConversationPage extends StatelessWidget {
                       maxTextWidth,
                       Conversation(
                         item.title,
-                        null,
+                        Message(
+                          '',
+                          item.jid,
+                          0,
+                          '',
+                          0,
+                          '',
+                          false,
+                          false,
+                          false,
+                        ),
                         item.avatarUrl,
                         item.jid,
                         0,
