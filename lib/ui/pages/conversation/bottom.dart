@@ -290,7 +290,12 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       onPressed: null,
                       heroTag: 'fabDragged',
                       backgroundColor: Colors.red.shade600,
-                      child: const BlinkingMicrophoneIcon(),
+                      child: BlinkingIcon(
+                        icon: Icons.mic,
+                        duration: const Duration(milliseconds: 600),
+                        start: Colors.white,
+                        end: Colors.red.shade600,
+                      ),
                     ),
                   ),
                   childWhenDragging: SizedBox(

@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
 
-class BlinkingMicrophoneIcon extends StatefulWidget {
-  const BlinkingMicrophoneIcon({ super.key });
+class BlinkingIcon extends StatefulWidget {
+  const BlinkingIcon({
+    required this.icon,
+    required this.duration,
+    required this.start,
+    required this.end,
+    this.size,
+    this.delay = Duration.zero,
+    super.key,
+  });
+  final IconData icon;
+  final double? size;
+  final Duration delay;
+  final Duration duration;
+  final Color start;
+  final Color end;
 
   @override
-  BlinkingMicrophoneIconState createState() => BlinkingMicrophoneIconState();
+  BlinkingIconState createState() => BlinkingIconState();
 }
 
-class BlinkingMicrophoneIconState extends State<BlinkingMicrophoneIcon> with TickerProviderStateMixin {
+class BlinkingIconState extends State<BlinkingIcon> with TickerProviderStateMixin {
   late final AnimationController _recordingBlinkController;
   late final Animation<Color?> _recordingBlink;
   bool _blinkForward = true;
@@ -17,13 +31,13 @@ class BlinkingMicrophoneIconState extends State<BlinkingMicrophoneIcon> with Tic
     super.initState();
 
      _recordingBlinkController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: widget.duration,
       vsync: this,
     );
 
     _recordingBlink = ColorTween(
-      begin: Colors.white,
-      end: Colors.red.shade600,
+      begin: widget.start,
+      end: widget.end,
     ).animate(_recordingBlinkController)
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed ||
@@ -38,9 +52,14 @@ class BlinkingMicrophoneIconState extends State<BlinkingMicrophoneIcon> with Tic
         }
       });
 
-    _recordingBlinkController.forward();
+      _startBlinking();
   }
 
+  Future<void> _startBlinking() async {
+    await Future<void>.delayed(widget.delay);
+    await _recordingBlinkController.forward();
+  }
+  
   @override
   void dispose() {
     _recordingBlinkController.dispose();
@@ -53,8 +72,9 @@ class BlinkingMicrophoneIconState extends State<BlinkingMicrophoneIcon> with Tic
       animation: _recordingBlink,
       builder: (_, __) {
         return Icon(
-          Icons.mic,
+          widget.icon,
           color: _recordingBlink.value,
+          size: widget.size,
         );
       },
     );

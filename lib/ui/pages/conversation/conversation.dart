@@ -461,6 +461,52 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             ),
           ),
 
+          // Indicator for the swipe to lock gesture
+          Positioned(
+            right: 8,
+            bottom: 100,
+            child: IgnorePointer(
+              child: BlocBuilder<ConversationBloc, ConversationState>(
+                builder: (context, state) {
+                  return AnimatedScale(
+                    scale: state.isRecording && !state.isLocked ? 1 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: SizedBox(
+                      height: 24 * 3,
+                      width: 47,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: const [
+                          Positioned(
+                            bottom: 0,
+                            child: Icon(
+                              Icons.keyboard_arrow_up,
+                              size: 48,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 12,
+                            child: Icon(
+                              Icons.keyboard_arrow_up,
+                              size: 48,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 24,
+                            child: Icon(
+                              Icons.keyboard_arrow_up,
+                              size: 48,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
           Positioned(
             right: 8,
             bottom: 250,
@@ -493,7 +539,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                             Colors.red.shade600 :
                             Colors.grey,
                           child: state.isLocked ?
-                            const BlinkingMicrophoneIcon() :
+                            BlinkingIcon(
+                              icon: Icons.mic,
+                              duration: const Duration(milliseconds: 600),
+                              start: Colors.white,
+                              end: Colors.red.shade600,
+                            ) :
                             const Icon(Icons.lock, color: Colors.white),
                         ),
                       ),
