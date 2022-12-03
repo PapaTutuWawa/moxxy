@@ -3,6 +3,8 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -313,7 +315,14 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       heroTag: 'fabRest',
                       onPressed: () {
                         switch (state.sendButtonState) {
-                          case SendButtonState.audio: return;
+                          case SendButtonState.audio:
+                            Vibrate.feedback(FeedbackType.heavy);
+                            Fluttertoast.showToast(
+                              msg: t.warnings.conversation.holdForLonger,
+                              gravity: ToastGravity.SNACKBAR,
+                              toastLength: Toast.LENGTH_SHORT,
+                            );
+                            return;
                           case SendButtonState.cancelCorrection:
                             context.read<ConversationBloc>().add(
                               MessageEditCancelledEvent(),

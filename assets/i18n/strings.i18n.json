@@ -69,6 +69,9 @@
     "warnings": {
 	"message": {
 	    "integrityCheckFailed": "Could not verify file integrity"
+	},
+	"conversation": {
+	    "holdForLonger": "Hold button to record a voice message"
 	}
     },
     "pages": {

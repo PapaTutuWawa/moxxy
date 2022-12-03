@@ -69,6 +69,9 @@
     "warnings": {
 	"message": {
 	    "integrityCheckFailed": "Konnte Integrität der Datei nicht überprüfen"
+	},
+	"conversation": {
+	    "holdForLonger": "Button länger gedrückt halten, um eine Sprachnachricht aufzunehmen"
 	}
     },
     "pages": {
