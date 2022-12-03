@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart' as events;
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -17,6 +20,10 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 
 part 'conversation_bloc.freezed.dart';
 part 'conversation_event.dart';
@@ -54,6 +61,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<SendButtonLockedEvent>(_onSendButtonLocked);
     on<SendButtonLockPressedEvent>(_onSendButtonLockPressed);
     on<RecordingCanceledEvent>(_onRecordingCanceled);
+
+    _audioRecorder = Record();
   }
   /// The current chat state with the conversation partner
   ChatState _currentChatState;
@@ -61,6 +70,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   Timer? _composeTimer;
   /// The last time the text has been changed
   int _lastChangeTimestamp;
+
+  /// The audio recorder
+  late Record _audioRecorder;
+  DateTime? _recordingStart;
   
   void _setLastChangeTimestamp() {
     _lastChangeTimestamp = DateTime.now().millisecondsSinceEpoch;
@@ -416,16 +429,64 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onDragStarted(SendButtonDragStartedEvent event, Emitter<ConversationState> emit) async {
-    // TODO(PapaTutuWawa): Start recording after 500ms elapsed
+    final status = await Permission.speech.status;
+    if (status.isDenied) {
+      await Permission.speech.request();
+      return;
+    }
+
     emit(
       state.copyWith(
         isDragging: true,
         isRecording: true,
       ),
     );
+    
+    final now = DateTime.now();
+    _recordingStart = now;
+    final tempDir = await getTemporaryDirectory();
+    final timestamp = '${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}';
+    final tempFile = path.join(tempDir.path, 'audio_$timestamp.aac');
+    await _audioRecorder.start(
+      path: tempFile,
+    );
   }
 
+  Future<void> _handleRecordingEnd() async {
+    // Prevent messages of really short duration being sent
+    final now = DateTime.now();
+    if (now.difference(_recordingStart!).inSeconds < 1) {
+      await Fluttertoast.showToast(
+        msg: t.warnings.conversation.holdForLonger,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    // Warn if something unexpected happened
+    final recordingPath = await _audioRecorder.stop();
+    if (recordingPath == null) {
+      await Fluttertoast.showToast(
+        msg: t.errors.conversation.audioRecordingError,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    // Send the file
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      SendFilesCommand(
+        paths: [recordingPath],
+        recipients: [state.conversation!.jid],
+      ),
+      awaitable: false,
+    );
+  }
+  
   Future<void> _onDragEnded(SendButtonDragEndedEvent event, Emitter<ConversationState> emit) async {
+    final recording = state.isRecording;
     emit(
       state.copyWith(
         isDragging: false,
@@ -433,6 +494,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         isRecording: false,
       ),
     );
+
+    if (recording) {
+      await _handleRecordingEnd();
+    }
   }
 
   Future<void> _onSendButtonLocked(SendButtonLockedEvent event, Emitter<ConversationState> emit) async {
@@ -442,7 +507,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onSendButtonLockPressed(SendButtonLockPressedEvent event, Emitter<ConversationState> emit) async {
-    // TODO(PapaTutuWawa): Actually send the recording
+    final recording = state.isRecording;
     emit(
       state.copyWith(
         isLocked: false,
@@ -450,6 +515,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         isRecording: false,
       ),
     );
+
+    if (recording) {
+      await _handleRecordingEnd();
+    }
   }
 
   Future<void> _onRecordingCanceled(RecordingCanceledEvent event, Emitter<ConversationState> emit) async {
@@ -462,5 +531,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         isRecording: false,
       ),
     );
+
+    final file = await _audioRecorder.stop();
+    unawaited(File(file!).delete());
   }
 }

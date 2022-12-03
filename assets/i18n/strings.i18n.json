@@ -64,6 +64,9 @@
 	    "failedToEncryptFile": "The file could not be encrypted",
 	    "failedToDecryptFile": "The file could not be decrypted",
 	    "fileNotEncrypted": "The chat is encrypted but the file is not encrypted"
+	},
+	"conversation": {
+	    "audioRecordingError": "Failed to finalize audio recording"
 	}
     },
     "warnings": {
@@ -71,7 +74,7 @@
 	    "integrityCheckFailed": "Could not verify file integrity"
 	},
 	"conversation": {
-	    "holdForLonger": "Hold button to record a voice message"
+	    "holdForLonger": "Hold button longer to record a voice message"
 	}
     },
     "pages": {

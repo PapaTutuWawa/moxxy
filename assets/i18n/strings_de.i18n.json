@@ -64,6 +64,9 @@
 	    "failedToEncryptFile": "Die Datei konnte nicht verschlüsselt werden",
 	    "failedToDecryptFile": "Die Datei konnte nicht entschlüsselt werden",
 	    "fileNotEncrypted": "Der Chat ist verschlüsselt, aber die Datei wurde unverschlüsselt übertragen"
+	},
+	"conversation": {
+	    "audioRecordingError": "Fehler beim Fertigstellen der Audioaufnahme"
 	}
     },
     "warnings": {

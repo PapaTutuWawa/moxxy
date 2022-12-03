@@ -340,7 +340,10 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
         final bloc = GetIt.I.get<ConversationBloc>();
 
-        if (bloc.state.emojiPickerVisible) {
+        if (bloc.state.isRecording) {
+          // TODO(PapaTutuWawa): Show a dialog
+          return true;
+        } else if (bloc.state.emojiPickerVisible) {
           bloc.add(EmojiPickerToggledEvent(handleKeyboard: false));
           return false;
         } else {
@@ -464,7 +467,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
                 return DragTarget<int>(
-                  onWillAccept: (data) => true,
+                  onWillAccept: (data) => state.isDragging,
                   onAccept: (_) {
                     context.read<ConversationBloc>().add(
                       SendButtonLockedEvent(),
@@ -507,7 +510,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
                 return DragTarget<int>(
-                  onWillAccept: (_) => true,
+                  onWillAccept: (_) => state.isDragging,
                   onAccept: (_) {
                     context.read<ConversationBloc>().add(
                       RecordingCanceledEvent(),
