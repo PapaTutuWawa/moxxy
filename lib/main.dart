@@ -58,6 +58,7 @@ import 'package:moxxyv2/ui/pages/settings/settings.dart';
 import 'package:moxxyv2/ui/pages/share_selection.dart';
 import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
+import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/theme.dart';
@@ -299,6 +300,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case devicesRoute: return DevicesPage.route;
           case ownDevicesRoute: return OwnDevicesPage.route;
           case appearanceRoute: return AppearanceSettingsPage.route;
+          case qrCodeScannerRoute: return QrCodeScanningPage.route;
         }
 
         return null;

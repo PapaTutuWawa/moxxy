@@ -66,3 +66,4 @@ const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';
 const String devicesRoute = '$profileRoute/devices';
 const String ownDevicesRoute = '$profileRoute/own_devices';
+const String qrCodeScannerRoute = '/util/qr_code_scanner';

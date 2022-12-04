@@ -3,21 +3,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-class AddContactPage extends StatelessWidget {
+class AddContactPage extends StatefulWidget {
   const AddContactPage({ super.key });
-
+  
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
     builder: (_) => const AddContactPage(),
     settings: const RouteSettings(
       name: addContactRoute,
     ),
   );
-  
+
+  @override
+  AddContactPageState createState() => AddContactPageState();
+}
+
+class AddContactPageState extends State<AddContactPage> {
+  final TextEditingController _controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AddContactBloc, AddContactState>(
@@ -48,6 +54,7 @@ class AddContactPage extends StatelessWidget {
                   onChanged: (value) => context.read<AddContactBloc>().add(
                     JidChangedEvent(value),
                   ),
+                  controller: _controller,
                   enabled: !state.isWorking,
                   cornerRadius: textfieldRadiusRegular,
                   borderColor: primaryColor,
@@ -55,8 +62,17 @@ class AddContactPage extends StatelessWidget {
                   errorText: state.jidError,
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.qr_code),
-                    onPressed: () {
-                      showNotImplementedDialog('QR-code scanning', context);
+                    onPressed: () async {
+                      final jid = await Navigator.of(context).pushNamed<String>(
+                        qrCodeScannerRoute,
+                      );
+                      if (jid == null) return;
+
+                      _controller.text = jid;
+                      // ignore: use_build_context_synchronously
+                      context.read<AddContactBloc>().add(
+                        JidChangedEvent(jid),
+                      );
                     },
                   ),
                 ),
