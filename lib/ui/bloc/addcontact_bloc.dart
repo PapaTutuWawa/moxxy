@@ -16,12 +16,10 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
   AddContactBloc() : super(AddContactState()) {
     on<AddedContactEvent>(_onContactAdded);
     on<JidChangedEvent>(_onJidChanged);
+    on<PageResetEvent>(_onPageReset);
   }
 
   Future<void> _onContactAdded(AddedContactEvent event, Emitter<AddContactState> emit) async {
-    // TODO(Unknown): Remove once we can disable the custom buttom
-    if (state.working) return;
-
     final validation = validateJidString(state.jid);
     if (validation != null) {
       emit(state.copyWith(jidError: validation));
@@ -30,7 +28,7 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
 
     emit(
       state.copyWith(
-        working: true,
+        isWorking: true,
         jidError: null,
       ),
     );
@@ -42,11 +40,17 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
       ),
     ) as AddContactResultEvent;
 
+    await _onPageReset(PageResetEvent(), emit);
+    
     if (result.conversation != null) {
       if (result.added) {
-        GetIt.I.get<ConversationsBloc>().add(ConversationsAddedEvent(result.conversation!));
+        GetIt.I.get<ConversationsBloc>().add(
+          ConversationsAddedEvent(result.conversation!),
+        );
       } else {
-        GetIt.I.get<ConversationsBloc>().add(ConversationsUpdatedEvent(result.conversation!));
+        GetIt.I.get<ConversationsBloc>().add(
+          ConversationsUpdatedEvent(result.conversation!),
+        );
       }
     }
 
@@ -61,6 +65,20 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
   }
 
   Future<void> _onJidChanged(JidChangedEvent event, Emitter<AddContactState> emit) async {
-    emit(state.copyWith(jid: event.jid));
+    emit(
+      state.copyWith(
+        jid: event.jid,
+      ),
+    );
+  }
+
+  Future<void> _onPageReset(PageResetEvent event, Emitter<AddContactState> emit) async {
+    emit(
+      state.copyWith(
+        jidError: null,
+        jid: '',
+        isWorking: false,
+      ),
+    );
   }
 }

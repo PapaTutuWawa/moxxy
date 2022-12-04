@@ -7,7 +7,9 @@ class AddedContactEvent extends AddContactEvent {}
 
 /// Triggered by the UI when the JID input field is changed
 class JidChangedEvent extends AddContactEvent {
-
   JidChangedEvent(this.jid);
   final String jid;
 }
+
+/// Triggered when the UI wants to reset its state
+class PageResetEvent extends AddContactEvent {}

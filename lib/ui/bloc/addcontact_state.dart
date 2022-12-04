@@ -5,6 +5,6 @@ class AddContactState with _$AddContactState {
   factory AddContactState({
       @Default('') String jid,
       @Default(null) String? jidError,
-      @Default(false) bool working,
+      @Default(false) bool isWorking,
   }) = _AddContactState;
 }
