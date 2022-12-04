@@ -15,25 +15,28 @@ class RoundedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: Ink(
-        decoration: BoxDecoration(
-          color: Theme.of(context).elevatedButtonTheme.style!.backgroundColor!.resolve(
-            // ignore: prefer_collection_literals
-            Set.from([
-              // ignore: prefer_if_elements_to_conditional_expressions
-              enabled ? MaterialState.selected : MaterialState.disabled,
-            ]),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(cornerRadius),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Theme.of(context).elevatedButtonTheme.style!.backgroundColor!.resolve(
+              // ignore: prefer_collection_literals
+              Set.from([
+                  // ignore: prefer_if_elements_to_conditional_expressions
+                  enabled ? MaterialState.selected : MaterialState.disabled,
+              ]),
+            ),
+            borderRadius: BorderRadius.circular(cornerRadius),
           ),
-          borderRadius: BorderRadius.circular(cornerRadius),
-        ),
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: child,
+          child: InkWell(
+            onTap: enabled ? onTap : null,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: child,
+              ),
             ),
           ),
         ),
