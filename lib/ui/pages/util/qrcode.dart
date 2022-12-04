@@ -3,11 +3,19 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-class QrCodeScanningPage extends StatelessWidget {
-  const QrCodeScanningPage({ super.key });
+typedef QrCodeScanningValidatorCallback = bool Function(String? value);
 
-  static MaterialPageRoute<String> get route => MaterialPageRoute<String>(
-    builder: (_) => const QrCodeScanningPage(),
+class QrCodeScanningArguments {
+  const QrCodeScanningArguments(this.validator);
+  final QrCodeScanningValidatorCallback validator;
+}
+
+class QrCodeScanningPage extends StatelessWidget {
+  const QrCodeScanningPage(this.args, { super.key });
+  final QrCodeScanningArguments args;
+
+  static MaterialPageRoute<String> getRoute(QrCodeScanningArguments args) => MaterialPageRoute<String>(
+    builder: (_) => QrCodeScanningPage(args),
     settings: const RouteSettings(
       name: qrCodeScannerRoute,
     ),
@@ -19,14 +27,9 @@ class QrCodeScanningPage extends StatelessWidget {
       body: ReaderWidget(
         onScan: (value) {
           final content = value.textString;
-          if (content == null) return;
-
-          final uri = Uri.tryParse(content);
-          if (uri == null) return;
-
-          if (uri.scheme == 'xmpp') {
+          if (args.validator(content)) {
             Vibrate.feedback(FeedbackType.heavy);
-            Navigator.of(context).pop(uri.path);
+            Navigator.of(context).pop(content);
           }
         },
       ),

@@ -300,7 +300,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case devicesRoute: return DevicesPage.route;
           case ownDevicesRoute: return OwnDevicesPage.route;
           case appearanceRoute: return AppearanceSettingsPage.route;
-          case qrCodeScannerRoute: return QrCodeScanningPage.route;
+          case qrCodeScannerRoute: return QrCodeScanningPage.getRoute(
+            settings.arguments! as QrCodeScanningArguments,
+          );
         }
 
         return null;

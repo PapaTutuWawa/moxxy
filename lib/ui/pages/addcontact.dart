@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -63,15 +64,13 @@ class AddContactPageState extends State<AddContactPage> {
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.qr_code),
                     onPressed: () async {
-                      final jid = await Navigator.of(context).pushNamed<String>(
-                        qrCodeScannerRoute,
-                      );
+                      final jid = await scanXmppUriQrCode(context);
                       if (jid == null) return;
 
-                      _controller.text = jid;
+                      _controller.text = jid.path;
                       // ignore: use_build_context_synchronously
                       context.read<AddContactBloc>().add(
-                        JidChangedEvent(jid),
+                        JidChangedEvent(jid.path),
                       );
                     },
                   ),

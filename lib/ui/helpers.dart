@@ -10,6 +10,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action. Resolves to true if the user pressed the confirm button. Returns false if
@@ -178,4 +179,32 @@ String localeCodeToLanguageName(String localeCode) {
 
   assert(false, 'Language code $localeCode has no name');
   return '';
+}
+
+/// Scans QR Codes for an URI with a scheme of xmpp:. Returns the URI when found.
+/// Returns null if not.
+Future<Uri?> scanXmppUriQrCode(BuildContext context) async {
+  final value = await Navigator.of(context).pushNamed<String>(
+    qrCodeScannerRoute,
+    arguments: QrCodeScanningArguments(
+      (value) {
+        if (value == null) return false;
+
+        final uri = Uri.tryParse(value);
+        if (uri == null) return false;
+
+        if (uri.scheme == 'xmpp') {
+          return true;
+        }
+
+        return false;
+      },
+    ),
+  );
+
+  if (value != null) {
+    return Uri.parse(value);
+  }
+
+  return null;
 }
