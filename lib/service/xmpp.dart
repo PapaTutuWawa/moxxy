@@ -1147,13 +1147,15 @@ class XmppService {
       }
     }
 
-    // Notify the UI of the message
-    if (message.isDownloading != (event.fun != null)) {
+    // Mark the file as downlading when it includes a File Upload Notification
+    if (event.fun != null) {
       message = await ms.updateMessage(
         message.id,
-        isDownloading: event.fun != null,
+        isDownloading: true,
       );
     }
+
+    // Notify the UI of the message
     sendEvent(MessageAddedEvent(message: message));
   }
 
