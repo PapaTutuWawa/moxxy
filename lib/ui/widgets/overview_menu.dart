@@ -16,18 +16,18 @@ class OverviewMenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onPressed,
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 8,
-              right: 8,
-              bottom: 8,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(icon),
+
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Text(text),
             ),
-            child: Icon(icon),
-          ),
-          Text(text),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -78,14 +78,15 @@ class OverviewMenu extends StatelessWidget {
           left: rightBorder ? null : 8,
           child: Row(
             children: [
-              Material(
+              ClipRRect(
                 borderRadius: const BorderRadius.all(radiusLarge),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
+                child: Material(
                   child: IntrinsicHeight(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: children,
+                    child: IntrinsicWidth(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: children,
+                      ),
                     ),
                   ),
                 ),
