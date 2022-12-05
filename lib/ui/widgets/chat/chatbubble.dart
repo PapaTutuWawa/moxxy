@@ -7,6 +7,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
+import 'package:moxxyv2/ui/widgets/chat/reactionbubble.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
 class RawChatBubble extends StatelessWidget {
@@ -146,6 +147,28 @@ class ChatBubbleState extends State<ChatBubble>
     return widget.sentBySelf ? SwipeDirection.endToStart : SwipeDirection.startToEnd;
   }
 
+  Widget _buildReactions() {
+    if (widget.message.reactions.isEmpty) {
+      return const SizedBox();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 1),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: widget.message.reactions.map(
+          (reaction) => ReactionBubble(
+            emoji: reaction.emoji,
+            reactions: reaction.senders.length,
+            reactedTo: reaction.reactedBySelf,
+            firstReaction: false,
+            sentBySelf: widget.sentBySelf,
+          ),
+        ).toList(),
+      ),
+    );
+  }
+  
   Widget _buildBubble(BuildContext context) {
     return SwipeableTile.swipeToTrigger(
       direction: _getSwipeDirection(),
@@ -210,15 +233,25 @@ class ChatBubbleState extends State<ChatBubble>
           left: !widget.sentBySelf ? 8.0 : 0.0,
           right: widget.sentBySelf ? 8.0 : 0.0,
         ),
-        child: Row(
-          mainAxisAlignment: widget.sentBySelf ? MainAxisAlignment.end : MainAxisAlignment.start,
-          children: [
-            GestureDetector(
-              onLongPressStart: widget.onLongPressed,
-              child: widget.bubble,
+        child: Align(
+          alignment: widget.sentBySelf ?
+            Alignment.centerRight :
+            Alignment.centerLeft,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: widget.sentBySelf ?
+                CrossAxisAlignment.end :
+                CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onLongPressStart: widget.onLongPressed,
+                  child: widget.bubble,
+                ),
+
+                _buildReactions(),
+              ],
             ),
-          ],
-        ),
+          ),
       ),
     );
   }

@@ -76,10 +76,9 @@ class Conversation with _$Conversation {
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
-      'lastMessage': <String, dynamic>{
-        'message': lastMessage?.toJson(),
-      },
-    });
+    }).copyWith(
+      lastMessage: lastMessage,
+    );
   }
   
   Map<String, dynamic> toDatabaseJson() {

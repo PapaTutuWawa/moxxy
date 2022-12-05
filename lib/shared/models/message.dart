@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 
 part 'message.freezed.dart';
@@ -61,6 +62,7 @@ class Message with _$Message {
       Map<String, String>? plaintextHashes,
       Map<String, String>? ciphertextHashes,
       int? mediaSize,
+      @Default([]) List<Reaction> reactions,
     }
   ) = _Message;
 
@@ -84,13 +86,19 @@ class Message with _$Message {
       'isUploading': intToBool(json['isUploading']! as int),
       'isRetracted': intToBool(json['isRetracted']! as int),
       'isEdited': intToBool(json['isEdited']! as int),
+      // TODO(PapaTutuWawa): Remove
+      'reactions': [
+        Reaction(['a', 'b'], '🥺', true).toJson(),
+        Reaction(['b'], '🌯', false).toJson(),
+      ],
     }).copyWith(quotes: quotes);
   }
   
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
       ..remove('id')
-      ..remove('quotes');
+      ..remove('quotes')
+      ..remove('reactions');
 
     return {
       ...map,
