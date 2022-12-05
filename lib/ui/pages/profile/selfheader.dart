@@ -6,10 +6,8 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 class SelfProfileHeader extends StatelessWidget {
-  
   const SelfProfileHeader(
     this.jid,
     this.avatarUrl,
@@ -21,30 +19,6 @@ class SelfProfileHeader extends StatelessWidget {
   final String avatarUrl;
   final String displayName;
   final void Function(String, String) setAvatar;
-
-  Future<void> _showJidQRCode(BuildContext context) async {
-    await showDialog<dynamic>(
-      context: context,
-      builder: (BuildContext context) => Center(
-        child: ClipRRect(
-          borderRadius: const BorderRadius.all(radiusLarge),
-          child: SizedBox(
-            width: 220,
-            height: 220,
-            child: QrImage(
-              data: 'xmpp:$jid',
-              size: 220,
-              backgroundColor: Colors.white,
-              embeddedImage: const AssetImage('assets/images/logo.png'),
-              embeddedImageStyle: QrEmbeddedImageStyle(
-                size: const Size(50, 50),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Future<void> pickAndSetAvatar(BuildContext context) async {
     final avatar = await pickAvatar(context, jid, avatarUrl);
@@ -99,7 +73,7 @@ class SelfProfileHeader extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(start: 3),
                 child: IconButton(
                   icon: const Icon(Icons.qr_code),
-                  onPressed: () => _showJidQRCode(context),
+                  onPressed: () => showQrCode(context, 'xmpp:$jid'),
                 ),
               )
             ],

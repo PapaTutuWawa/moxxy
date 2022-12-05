@@ -11,6 +11,7 @@ import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action. Resolves to true if the user pressed the confirm button. Returns false if
@@ -207,4 +208,33 @@ Future<Uri?> scanXmppUriQrCode(BuildContext context) async {
   }
 
   return null;
+}
+
+/// Shows a dialog with the given data string encoded as a QR Code.
+void showQrCode(BuildContext context, String data, { bool embedLogo = true }) {
+  showDialog<void>(
+    context: context,
+    builder: (BuildContext context) => Center(
+      child: ClipRRect(
+        borderRadius: const BorderRadius.all(radiusLarge),
+        child: SizedBox(
+          width: 220,
+          height: 220,
+          child: QrImage(
+            data: data,
+            size: 220,
+            backgroundColor: Colors.white,
+            embeddedImage: embedLogo ?
+              const AssetImage('assets/images/logo.png') :
+              null,
+            embeddedImageStyle: embedLogo ?
+              QrEmbeddedImageStyle(
+                size: const Size(50, 50),
+              ) :
+              null,
+          ),
+        ),
+      ),
+    ),
+  );
 }

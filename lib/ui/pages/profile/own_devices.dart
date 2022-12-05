@@ -8,7 +8,6 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/widgets.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 enum OwnDevicesOptions {
   recreateSessions,
@@ -27,27 +26,10 @@ class OwnDevicesPage extends StatelessWidget {
 
   Future<void> _showDeviceQRCode(BuildContext context, int deviceId, String fingerprint) async {
     final jid = GetIt.I.get<UIDataService>().ownJid;
-    await showDialog<dynamic>(
-      context: context,
-      builder: (BuildContext context) => SimpleDialog(
-        children: [
-          Center(
-            child: SizedBox(
-              width: 220,
-              height: 220,
-              child: QrImage(
-                data: 'xmpp:$jid?omemo-sid-$deviceId=$fingerprint',
-                size: 220,
-                backgroundColor: Colors.white,
-                embeddedImage: const AssetImage('assets/images/logo.png'),
-                embeddedImageStyle: QrEmbeddedImageStyle(
-                  size: const Size(50, 50),
-                ),
-              ),
-            ),
-          ) 
-        ],
-      ),
+    showQrCode(
+      context,
+      'xmpp:$jid?omemo2-sid-$deviceId=$fingerprint',
+      embedLogo: false,
     );
   }
   
