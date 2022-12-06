@@ -419,6 +419,22 @@ files:
           conversationJid: String
           sid: String
           newUnreadCounter: int
+      - name: AddReactionToMessageCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          messageId: int
+          conversationJid: String
+          emoji: String
+      - name: RemoveReactionFromMessageCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          messageId: int
+          conversationJid: String
+          emoji: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

@@ -578,7 +578,14 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
-    // TODO(PapaTutuWawa): Send this to the backend
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      AddReactionToMessageCommand(
+        messageId: message.id,
+        emoji: event.emoji,
+        conversationJid: message.conversationJid,
+      ),
+      awaitable: false,
+    );
   }
 
   Future<void> _onReactionRemoved(ReactionRemovedEvent event, Emitter<ConversationState> emit) async {
@@ -605,6 +612,13 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
-    // TODO(PapaTutuWawa): Actually send the reaction retraction
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      RemoveReactionFromMessageCommand(
+        messageId: message.id,
+        emoji: event.emoji,
+        conversationJid: message.conversationJid,
+      ),
+      awaitable: false,
+    );
   }
 }
