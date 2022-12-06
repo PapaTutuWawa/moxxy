@@ -13,6 +13,7 @@ import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_lmc.dart';
+import 'package:moxxyv2/service/database/migrations/0000_reactions.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
@@ -25,6 +26,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
+import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as path;
@@ -62,7 +64,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 10,
+      version: 11,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -110,6 +112,10 @@ class DatabaseService {
         if (oldVersion < 10) {
           _log.finest('Running migration for database version 10');
           await upgradeFromV9ToV10(db);
+        }
+        if (oldVersion < 11) {
+          _log.finest('Running migration for database version 11');
+          await upgradeFromV10ToV11(db);
         }
       },
     );
@@ -457,6 +463,7 @@ class DatabaseService {
     bool? isRetracted,
     Object? thumbnailData = notSpecified,
     bool? isEdited,
+    Object? reactions = notSpecified,
   }) async {
     final md = (await _db.query(
       'Messages',
@@ -537,6 +544,14 @@ class DatabaseService {
     }
     if (isEdited != null) {
       m['isEdited'] = boolToInt(isEdited);
+    }
+    if (reactions != notSpecified) {
+      assert(reactions != null, 'Cannot set reactions to null');
+      m['reactions'] = jsonEncode(
+        (reactions! as List<Reaction>)
+          .map((r) => r.toJson())
+          .toList(),
+      );
     }
 
     await _db.update(

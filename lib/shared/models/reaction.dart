@@ -12,12 +12,12 @@ class Reaction with _$Reaction {
     //       list of reactions on every rebuild
     bool reactedBySelf,
   ) = _Reaction;
-
+ 
   const Reaction._();
   
   /// JSON
   factory Reaction.fromJson(Map<String, dynamic> json) => _$ReactionFromJson(json);
-
+  
   int get reactions {
     if (reactedBySelf) return senders.length + 1;
 

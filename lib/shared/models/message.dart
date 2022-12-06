@@ -86,12 +86,14 @@ class Message with _$Message {
       'isUploading': intToBool(json['isUploading']! as int),
       'isRetracted': intToBool(json['isRetracted']! as int),
       'isEdited': intToBool(json['isEdited']! as int),
-      // TODO(PapaTutuWawa): Remove
-      'reactions': [
-        Reaction(['a', 'b'], '🥺', true).toJson(),
-        Reaction(['b'], '🌯', false).toJson(),
-      ],
-    }).copyWith(quotes: quotes);
+      'reactions': <Map<String, dynamic>>[],
+    }).copyWith(
+      quotes: quotes,
+      reactions: (jsonDecode(json['reactions']! as String) as List<dynamic>)
+        .cast<Map<String, dynamic>>()
+        .map<Reaction>(Reaction.fromJson)
+        .toList(),
+    );
   }
   
   Map<String, dynamic> toDatabaseJson() {
@@ -116,6 +118,11 @@ class Message with _$Message {
       'isUploading': boolToInt(isUploading),
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
+      'reactions': jsonEncode(
+        reactions
+          .map((r) => r.toJson())
+          .toList(),
+      ),
     };
   }
 

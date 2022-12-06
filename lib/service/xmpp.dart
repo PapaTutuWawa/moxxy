@@ -33,6 +33,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -942,6 +943,75 @@ class XmppService {
       sendEvent(ConversationUpdatedEvent(conversation: newConv));
     }
   }
+
+  Future<void> _handleMessageReactions(MessageEvent event, String conversationJid) async {
+    final ms = GetIt.I.get<MessageService>();
+    final msg = await ms.getMessageByStanzaId(
+      conversationJid,
+      event.messageReactions!.messageId,
+    );
+    if (msg == null) {
+      _log.warning('Received reactions for ${event.messageReactions!.messageId} from ${event.fromJid} for $conversationJid, but could not find message.');
+      return;
+    }
+
+    final sender = event.fromJid.toBare().toString();
+    final reactions = List<Reaction>.from(msg.reactions);
+    final emojis = event.messageReactions!.emojis;
+
+    // Find out what emojis the sender has already sent
+    final sentEmojis = msg.reactions
+      .where((r) => r.senders.contains(sender))
+      .map((r) => r.emoji)
+      .toList();
+    // Find out what reactions were removed
+    final removedEmojis = sentEmojis
+      .where((e) => !emojis.contains(e));
+
+    for (final emoji in emojis) {
+      final i = reactions.indexWhere((r) => r.emoji == emoji);
+      if (i == -1) {
+        reactions.add(
+          Reaction(
+            [sender],
+            emoji,
+            // TODO(PapaTutuWawa): This is not true in the case of a carbon
+            false,
+          ),
+        );
+      } else {
+        reactions[i] = reactions[i].copyWith(
+          senders: [
+            ...reactions[i].senders,
+            sender,
+          ],
+        );
+      }
+    }
+
+    for (final emoji in removedEmojis) {
+      final i = reactions.indexWhere((r) => r.emoji == emoji);
+      assert(i >= -1, 'The reaction must exist');
+
+      if (reactions[i].senders.length == 1 && !reactions[i].reactedBySelf) {
+        reactions.removeAt(i);
+      } else {
+        reactions[i] = reactions[i].copyWith(
+          senders: reactions[i].senders
+            .where((s) => s != sender)
+            .toList(),
+        );
+      }
+    }
+
+    final newMessage = await ms.updateMessage(
+      msg.id,
+      reactions: reactions,
+    );
+    sendEvent(
+      MessageUpdatedEvent(message: newMessage),
+    );
+  }
   
   Future<void> _onMessage(MessageEvent event, { dynamic extra }) async {
     // The jid this message event is meant for
@@ -972,6 +1042,12 @@ class XmppService {
 
     if (event.messageRetraction != null) {
       await _handleMessageRetraction(event, conversationJid);
+      return;
+    }
+
+    // Handle message reactions
+    if (event.messageReactions != null) {
+      await _handleMessageReactions(event, conversationJid);
       return;
     }
     

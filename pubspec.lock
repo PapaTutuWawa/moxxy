@@ -778,9 +778,9 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      name: moxxmpp
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
+      path: "../moxxmpp/packages/moxxmpp"
+      relative: true
+    source: path
     version: "0.1.6+1"
   moxxmpp_socket_tcp:
     dependency: "direct main"
