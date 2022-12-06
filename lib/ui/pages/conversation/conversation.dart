@@ -195,7 +195,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               ...item.isReactable ? [
                 OverviewMenuItem(
                   icon: Icons.add_reaction,
-                  text: 'Add reaction',
+                  text: t.pages.conversation.addReaction,
                   onPressed: () async {
                     final emoji = await showModalBottomSheet<String>(
                       context: context,
