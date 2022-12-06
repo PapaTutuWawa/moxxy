@@ -688,6 +688,7 @@ Future<void> performAddMessageReaction(AddReactionToMessageCommand command, { dy
         msg.originId ?? msg.sid,
         ownReactions,
       ),
+      requestChatMarkers: false,
     ),
   );
 }
@@ -723,6 +724,7 @@ Future<void> performRemoveMessageReaction(RemoveReactionFromMessageCommand comma
         msg.originId ?? msg.sid,
         ownReactions,
       ),
+      requestChatMarkers: false,
     ),
   );
 }
