@@ -955,13 +955,19 @@ class XmppService {
       return;
     }
 
+    final state = await getXmppState();
     final sender = event.fromJid.toBare().toString();
+    final isCarbon = sender == state.jid;
     final reactions = List<Reaction>.from(msg.reactions);
     final emojis = event.messageReactions!.emojis;
 
     // Find out what emojis the sender has already sent
     final sentEmojis = msg.reactions
-      .where((r) => r.senders.contains(sender))
+      .where((r) {
+        return isCarbon ?
+          r.reactedBySelf :
+          r.senders.contains(sender);
+      })
       .map((r) => r.emoji)
       .toList();
     // Find out what reactions were removed
@@ -973,18 +979,24 @@ class XmppService {
       if (i == -1) {
         reactions.add(
           Reaction(
-            [sender],
+            isCarbon ?
+              [] :
+              [sender],
             emoji,
-            // TODO(PapaTutuWawa): This is not true in the case of a carbon
-            false,
+            isCarbon,
           ),
         );
       } else {
         reactions[i] = reactions[i].copyWith(
-          senders: [
+          senders: isCarbon ?
+            reactions[i].senders :
+            [
             ...reactions[i].senders,
             sender,
           ],
+          reactedBySelf: isCarbon ?
+            true :
+            reactions[i].reactedBySelf,
         );
       }
     }
@@ -993,13 +1005,19 @@ class XmppService {
       final i = reactions.indexWhere((r) => r.emoji == emoji);
       assert(i >= -1, 'The reaction must exist');
 
-      if (reactions[i].senders.length == 1 && !reactions[i].reactedBySelf) {
+      if (isCarbon && reactions[i].senders.isEmpty ||
+          !isCarbon && reactions[i].senders.length == 1 && !reactions[i].reactedBySelf) {
         reactions.removeAt(i);
       } else {
         reactions[i] = reactions[i].copyWith(
-          senders: reactions[i].senders
-            .where((s) => s != sender)
-            .toList(),
+          senders: isCarbon ?
+            reactions[i].senders :
+            reactions[i].senders
+              .where((s) => s != sender)
+              .toList(),
+          reactedBySelf: isCarbon ?
+            false :
+            reactions[i].reactedBySelf,
         );
       }
     }
