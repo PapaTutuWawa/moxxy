@@ -6,7 +6,6 @@ class ReactionBubble extends StatelessWidget {
     required this.emoji,
     required this.reactions,
     required this.reactedTo,
-    required this.firstReaction,
     required this.sentBySelf,
     this.onTap,
     super.key,
@@ -14,7 +13,6 @@ class ReactionBubble extends StatelessWidget {
   final String emoji;
   final int reactions;
   final bool reactedTo;
-  final bool firstReaction;
   final bool sentBySelf;
   final void Function()? onTap;
 
@@ -30,7 +28,7 @@ class ReactionBubble extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final widget = ClipRRect(
+    return ClipRRect(
       borderRadius: const BorderRadius.all(radiusLarge),
       child: Material(
         color: _getColor(),
@@ -47,15 +45,6 @@ class ReactionBubble extends StatelessWidget {
           ),
         ),
       ),
-    );
-
-    if (firstReaction) {
-      return widget;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(right: 2),
-      child: widget,
     );
   }
 }

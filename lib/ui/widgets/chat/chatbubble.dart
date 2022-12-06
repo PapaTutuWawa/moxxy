@@ -158,14 +158,14 @@ class ChatBubbleState extends State<ChatBubble>
 
     return Padding(
       padding: const EdgeInsets.only(top: 1),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: Wrap(
+        spacing: 1,
+        runSpacing: 2,
         children: widget.message.reactions.map(
           (reaction) => ReactionBubble(
             emoji: reaction.emoji,
             reactions: reaction.reactions,
             reactedTo: reaction.reactedBySelf,
-            firstReaction: false,
             sentBySelf: widget.sentBySelf,
             onTap: widget.onReactionTap != null ?
               () => widget.onReactionTap!(reaction) :
