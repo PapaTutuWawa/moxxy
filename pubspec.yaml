@@ -130,8 +130,14 @@ dependency_overrides:
     version: 3.3.8
 
   # NOTE: Leave here for development purposes
+  #moxxmpp:
+  #  path: ../moxxmpp/packages/moxxmpp
+
   moxxmpp:
-    path: ../moxxmpp/packages/moxxmpp
+    git:
+      url: https://git.polynom.me/Moxxy/moxxmpp.git
+      rev: d9e4a3c1d40a83cc5fde26764dbc0873e9794872
+      path: packages/moxxmpp
 
   omemo_dart:
     git:
