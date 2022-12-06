@@ -140,6 +140,9 @@ class Message with _$Message {
     return originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading;
   }
 
+  /// Returns true if we can send a reaction for this message.
+  bool get isReactable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading;
+
   /// Returns true if the message can be edited. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
   bool canEdit(bool sentBySelf) {

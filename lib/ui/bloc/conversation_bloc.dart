@@ -15,6 +15,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart' as events;
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -61,6 +62,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<SendButtonLockedEvent>(_onSendButtonLocked);
     on<SendButtonLockPressedEvent>(_onSendButtonLockPressed);
     on<RecordingCanceledEvent>(_onRecordingCanceled);
+    on<ReactionAddedEvent>(_onReactionAdded);
+    on<ReactionRemovedEvent>(_onReactionRemoved);
 
     _audioRecorder = Record();
   }
@@ -534,5 +537,74 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     final file = await _audioRecorder.stop();
     unawaited(File(file!).delete());
+  }
+
+  Future<void> _onReactionAdded(ReactionAddedEvent event, Emitter<ConversationState> emit) async {
+    // Check if such a reaction already exists
+    final message = state.messages[event.index];
+    final msgs = List<Message>.from(state.messages);
+    final reactionIndex = message.reactions.indexWhere(
+      (Reaction r) => r.emoji == event.emoji,
+    );
+    if (reactionIndex != -1) {
+      // Ignore the request when the reaction would be invalid
+      final reaction = message.reactions[reactionIndex];
+      if (reaction.reactedBySelf) return;
+
+      final reactions = List<Reaction>.from(message.reactions);
+      reactions[reactionIndex] = reaction.copyWith(
+        reactedBySelf: true,
+      );
+      msgs[event.index] = message.copyWith(
+        reactions: reactions,
+      );
+    } else {
+      // The reaction is new
+      msgs[event.index] = message.copyWith(
+        reactions: [
+          ...message.reactions,
+          Reaction(
+            [],
+            event.emoji,
+            true,
+          ),
+        ],
+      );
+    }
+    
+    emit(
+      state.copyWith(
+        messages: msgs, 
+      ),
+    );
+
+    // TODO(PapaTutuWawa): Send this to the backend
+  }
+
+  Future<void> _onReactionRemoved(ReactionRemovedEvent event, Emitter<ConversationState> emit) async {
+    final message = state.messages[event.index];
+    final msgs = List<Message>.from(state.messages);
+    final reactionIndex = message.reactions.indexWhere(
+      (Reaction r) => r.emoji == event.emoji,
+    );
+
+    // We assume that reactionIndex >= 0
+    assert(reactionIndex >= 0, 'The reaction must be found');
+    final reactions = List<Reaction>.from(message.reactions);
+    if (message.reactions[reactionIndex].senders.isEmpty) {
+      reactions.removeAt(reactionIndex);
+    } else {
+      reactions[reactionIndex] = reactions[reactionIndex].copyWith(
+        reactedBySelf: false,
+      );
+    }
+    msgs[event.index] = message.copyWith(reactions: reactions);
+    emit(
+      state.copyWith(
+        messages: msgs,
+      ),
+    );
+
+    // TODO(PapaTutuWawa): Actually send the reaction retraction
   }
 }

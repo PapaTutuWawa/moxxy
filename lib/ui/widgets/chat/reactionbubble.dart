@@ -8,6 +8,7 @@ class ReactionBubble extends StatelessWidget {
     required this.reactedTo,
     required this.firstReaction,
     required this.sentBySelf,
+    this.onTap,
     super.key,
   });
   final String emoji;
@@ -15,6 +16,7 @@ class ReactionBubble extends StatelessWidget {
   final bool reactedTo;
   final bool firstReaction;
   final bool sentBySelf;
+  final void Function()? onTap;
 
   Color _getColor() {
     if (reactedTo) {
@@ -33,9 +35,7 @@ class ReactionBubble extends StatelessWidget {
       child: Material(
         color: _getColor(),
         child: InkWell(
-          onTap: () {
-            //print('OWO');
-          },
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Text(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
@@ -114,6 +115,7 @@ class ChatBubble extends StatefulWidget {
     required this.onSwipedCallback,
     required this.bubble,
     this.onLongPressed,
+    this.onReactionTap,
     super.key,
   });
   final Message message;
@@ -126,8 +128,10 @@ class ChatBubble extends StatefulWidget {
   final void Function(Message) onSwipedCallback;
   // For acting on long-pressing the message
   final GestureLongPressStartCallback? onLongPressed;
-  // THe actual message bubble
+  // The actual message bubble
   final RawChatBubble bubble;
+  // For acting on reaction taps
+  final void Function(Reaction)? onReactionTap;
 
   @override
   ChatBubbleState createState() => ChatBubbleState();
@@ -159,10 +163,13 @@ class ChatBubbleState extends State<ChatBubble>
         children: widget.message.reactions.map(
           (reaction) => ReactionBubble(
             emoji: reaction.emoji,
-            reactions: reaction.senders.length,
+            reactions: reaction.reactions,
             reactedTo: reaction.reactedBySelf,
             firstReaction: false,
             sentBySelf: widget.sentBySelf,
+            onTap: widget.onReactionTap != null ?
+              () => widget.onReactionTap!(reaction) :
+              null,
           ),
         ).toList(),
       ),

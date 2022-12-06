@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -135,6 +136,24 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       maxWidth: maxWidth,
       lastMessageTimestamp: lastMessageTimestamp,
       onSwipedCallback: (_) => _quoteMessage(context, item),
+      onReactionTap: (reaction) {
+        final bloc = context.read<ConversationBloc>();
+        if (reaction.reactedBySelf) {
+          bloc.add(
+            ReactionRemovedEvent(
+              reaction.emoji,
+              index,
+            ),
+          );
+        } else {
+          bloc.add(
+            ReactionAddedEvent(
+              reaction.emoji,
+              index,
+            ),
+          );
+        }
+      },
       onLongPressed: (event) async {
         if (!item.isLongpressable) {
           return;
@@ -173,6 +192,46 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             ),
             highlight: bubble,
             children: [
+              ...item.isReactable ? [
+                OverviewMenuItem(
+                  icon: Icons.add_reaction,
+                  text: 'Add reaction',
+                  onPressed: () async {
+                    final emoji = await showModalBottomSheet<String>(
+                      context: context,
+                      // TODO(PapaTutuWawa): Move this to the theme
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: radiusLarge,
+                          topRight: radiusLarge,
+                        ),
+                      ),
+                      builder: (context) => Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: EmojiPicker(
+                          onEmojiSelected: (_, emoji) {
+                            // ignore: use_build_context_synchronously
+                            Navigator.of(context).pop(emoji.emoji);
+                          },
+                          //height: 250,
+                          config: Config(
+                            bgColor: Theme.of(context).scaffoldBackgroundColor,
+                          ),
+                        ),
+                      ),
+                    );
+                    if (emoji != null) {
+                      // ignore: use_build_context_synchronously
+                      context.read<ConversationBloc>().add(
+                        ReactionAddedEvent(emoji, index),
+                      );
+                    }
+
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ] : [],
               ...item.canRetract(sentBySelf) ? [
                 OverviewMenuItem(
                   icon: Icons.delete,
