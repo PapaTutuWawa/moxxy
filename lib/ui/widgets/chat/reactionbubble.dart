@@ -39,7 +39,7 @@ class ReactionBubble extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8),
             child: Text(
-              '$reactions $emoji',
+              '$emoji $reactions',
               style: const TextStyle(
                 fontSize: 18,
               ),  
