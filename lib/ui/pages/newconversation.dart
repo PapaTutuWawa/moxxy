@@ -110,6 +110,7 @@ class NewConversationPage extends StatelessWidget {
                           false,
                           false,
                           false,
+                          false,
                         ),
                         item.avatarUrl,
                         item.jid,

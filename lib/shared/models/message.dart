@@ -23,20 +23,20 @@ String? _optionalJsonEncode(Map<String, String>? data) {
 
 @freezed
 class Message with _$Message {
-  // NOTE: id is the database id of the message
-  // NOTE: isMedia is for telling the UI that this message contains the URL for media but the path is not yet available
-  // NOTE: srcUrl is the Url that a file has been or can be downloaded from
- 
   factory Message(
     String sender,
     String body,
     int timestamp,
     String sid,
+    // The database-internal identifier of the message
     int id,
     String conversationJid,
+    // True if the message contains some embedded media
     bool isMedia,
     bool isFileUploadNotification,
     bool encrypted,
+    // True if the message contains a <no-store> Message Processing Hint. False if not
+    bool containsNoStore,
     {
       int? errorType,
       int? warningType,
@@ -47,6 +47,7 @@ class Message with _$Message {
       String? thumbnailData,
       int? mediaWidth,
       int? mediaHeight,
+      // If non-null: Indicates where some media entry originated/originates from
       String? srcUrl,
       String? key,
       String? iv,
@@ -86,6 +87,7 @@ class Message with _$Message {
       'isUploading': intToBool(json['isUploading']! as int),
       'isRetracted': intToBool(json['isRetracted']! as int),
       'isEdited': intToBool(json['isEdited']! as int),
+      'containsNoStore': intToBool(json['containsNoStore']! as int),
       'reactions': <Map<String, dynamic>>[],
     }).copyWith(
       quotes: quotes,
@@ -118,6 +120,7 @@ class Message with _$Message {
       'isUploading': boolToInt(isUploading),
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
+      'containsNoStore': boolToInt(containsNoStore),
       'reactions': jsonEncode(
         reactions
           .map((r) => r.toJson())

@@ -689,6 +689,9 @@ Future<void> performAddMessageReaction(AddReactionToMessageCommand command, { dy
         ownReactions,
       ),
       requestChatMarkers: false,
+      messageProcessingHints: !msg.containsNoStore ?
+        [MessageProcessingHint.store] :
+        null,
     ),
   );
 }
@@ -725,6 +728,9 @@ Future<void> performRemoveMessageReaction(RemoveReactionFromMessageCommand comma
         ownReactions,
       ),
       requestChatMarkers: false,
+      messageProcessingHints: !msg.containsNoStore ?
+        [MessageProcessingHint.store] :
+        null,
     ),
   );
 }

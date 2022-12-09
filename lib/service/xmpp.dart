@@ -195,6 +195,8 @@ class XmppService {
         sid,
         false,
         conversation!.encrypted,
+        // TODO(Unknown): Maybe make this depend on some setting
+        false,
         originId: originId,
         quoteId: quotedMessage?.sid,
       );
@@ -437,6 +439,8 @@ class XmppService {
           conn.generateId(),
           false,
           encrypt[recipient]!,
+          // TODO(Unknown): Maybe make this depend on some setting
+          false,
           mediaUrl: path,
           mediaType: pathMime,
           originId: conn.generateId(),
@@ -1132,6 +1136,7 @@ class XmppService {
       event.sid,
       event.fun != null,
       event.encrypted,
+      event.messageProcessingHints?.contains(MessageProcessingHint.noStore) ?? false,
       srcUrl: embeddedFile?.url,
       filename: event.fun?.name ?? embeddedFile?.filename,
       key: embeddedFile?.keyBase64,

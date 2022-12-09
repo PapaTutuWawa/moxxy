@@ -43,6 +43,7 @@ class MessageService {
     String sid,
     bool isFileUploadNotification,
     bool encrypted,
+    bool containsNoStore,
     {
       String? srcUrl,
       String? key,
@@ -74,6 +75,7 @@ class MessageService {
       sid,
       isFileUploadNotification,
       encrypted,
+      containsNoStore,
       srcUrl: srcUrl,
       key: key,
       iv: iv,

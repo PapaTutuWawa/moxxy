@@ -14,6 +14,7 @@ import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_lmc.dart';
 import 'package:moxxyv2/service/database/migrations/0000_reactions.dart';
+import 'package:moxxyv2/service/database/migrations/0000_reactions_store_hint.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
@@ -64,7 +65,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 11,
+      version: 12,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -116,6 +117,10 @@ class DatabaseService {
         if (oldVersion < 11) {
           _log.finest('Running migration for database version 11');
           await upgradeFromV10ToV11(db);
+        }
+        if (oldVersion < 12) {
+          _log.finest('Running migration for database version 12');
+          await upgradeFromV11ToV12(db);
         }
       },
     );
@@ -323,6 +328,7 @@ class DatabaseService {
     String sid,
     bool isFileUploadNotification,
     bool encrypted,
+    bool containsNoStore,
     {
       String? srcUrl,
       String? key,
@@ -355,6 +361,7 @@ class DatabaseService {
       isMedia,
       isFileUploadNotification,
       encrypted,
+      containsNoStore,
       errorType: errorType,
       warningType: warningType,
       mediaUrl: mediaUrl,
