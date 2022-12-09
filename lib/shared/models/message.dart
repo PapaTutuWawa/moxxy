@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 
 part 'message.freezed.dart';
@@ -22,20 +23,20 @@ String? _optionalJsonEncode(Map<String, String>? data) {
 
 @freezed
 class Message with _$Message {
-  // NOTE: id is the database id of the message
-  // NOTE: isMedia is for telling the UI that this message contains the URL for media but the path is not yet available
-  // NOTE: srcUrl is the Url that a file has been or can be downloaded from
- 
   factory Message(
     String sender,
     String body,
     int timestamp,
     String sid,
+    // The database-internal identifier of the message
     int id,
     String conversationJid,
+    // True if the message contains some embedded media
     bool isMedia,
     bool isFileUploadNotification,
     bool encrypted,
+    // True if the message contains a <no-store> Message Processing Hint. False if not
+    bool containsNoStore,
     {
       int? errorType,
       int? warningType,
@@ -46,6 +47,7 @@ class Message with _$Message {
       String? thumbnailData,
       int? mediaWidth,
       int? mediaHeight,
+      // If non-null: Indicates where some media entry originated/originates from
       String? srcUrl,
       String? key,
       String? iv,
@@ -61,6 +63,7 @@ class Message with _$Message {
       Map<String, String>? plaintextHashes,
       Map<String, String>? ciphertextHashes,
       int? mediaSize,
+      @Default([]) List<Reaction> reactions,
     }
   ) = _Message;
 
@@ -84,13 +87,22 @@ class Message with _$Message {
       'isUploading': intToBool(json['isUploading']! as int),
       'isRetracted': intToBool(json['isRetracted']! as int),
       'isEdited': intToBool(json['isEdited']! as int),
-    }).copyWith(quotes: quotes);
+      'containsNoStore': intToBool(json['containsNoStore']! as int),
+      'reactions': <Map<String, dynamic>>[],
+    }).copyWith(
+      quotes: quotes,
+      reactions: (jsonDecode(json['reactions']! as String) as List<dynamic>)
+        .cast<Map<String, dynamic>>()
+        .map<Reaction>(Reaction.fromJson)
+        .toList(),
+    );
   }
   
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
       ..remove('id')
-      ..remove('quotes');
+      ..remove('quotes')
+      ..remove('reactions');
 
     return {
       ...map,
@@ -108,6 +120,12 @@ class Message with _$Message {
       'isUploading': boolToInt(isUploading),
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
+      'containsNoStore': boolToInt(containsNoStore),
+      'reactions': jsonEncode(
+        reactions
+          .map((r) => r.toJson())
+          .toList(),
+      ),
     };
   }
 
@@ -131,6 +149,9 @@ class Message with _$Message {
   bool canRetract(bool sentBySelf) {
     return originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading;
   }
+
+  /// Returns true if we can send a reaction for this message.
+  bool get isReactable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading;
 
   /// Returns true if the message can be edited. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).

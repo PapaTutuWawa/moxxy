@@ -43,6 +43,7 @@ class MessageService {
     String sid,
     bool isFileUploadNotification,
     bool encrypted,
+    bool containsNoStore,
     {
       String? srcUrl,
       String? key,
@@ -74,6 +75,7 @@ class MessageService {
       sid,
       isFileUploadNotification,
       encrypted,
+      containsNoStore,
       srcUrl: srcUrl,
       key: key,
       iv: iv,
@@ -115,6 +117,17 @@ class MessageService {
     );
   }
 
+  Future<Message?> getMessageByStanzaOrOriginId(String conversationJid, String id) async {
+    if (!_messageCache.containsKey(conversationJid)) {
+      await getMessagesForJid(conversationJid);
+    }
+    
+    return firstWhereOrNull(
+      _messageCache[conversationJid]!,
+      (message) => message.sid == id || message.originId == id,
+    );
+  }
+  
   Future<Message?> getMessageById(String conversationJid, int id) async {
     if (!_messageCache.containsKey(conversationJid)) {
       await getMessagesForJid(conversationJid);
@@ -152,6 +165,7 @@ class MessageService {
     Object? thumbnailData = notSpecified,
     bool? isRetracted,
     bool? isEdited,
+    Object? reactions = notSpecified,
   }) async {
     final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
@@ -179,6 +193,7 @@ class MessageService {
       isMedia: isMedia,
       thumbnailData: thumbnailData,
       isEdited: isEdited,
+      reactions: reactions,
     );
 
     if (_messageCache.containsKey(newMessage.conversationJid)) {
