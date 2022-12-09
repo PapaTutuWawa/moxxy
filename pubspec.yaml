@@ -144,7 +144,7 @@ dependency_overrides:
   omemo_dart:
     git:
       url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
-      rev: 797bf6985638f0fe5a6e12a7a8339cf7d9334f88
+      rev: fe1ba99b14b516ecf6d147c57bd986d8afe7f3fc
  
 extra_licenses:
   - name: undraw.co

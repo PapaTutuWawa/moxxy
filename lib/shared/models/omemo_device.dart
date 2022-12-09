@@ -16,7 +16,7 @@ class OmemoDevice with _$OmemoDevice {
       @Default(true) bool hasSessionWith, 
     }
   ) = _OmemoDevice;
-
+  
   /// JSON
   factory OmemoDevice.fromJson(Map<String, dynamic> json) => _$OmemoDeviceFromJson(json);
 }

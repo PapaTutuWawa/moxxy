@@ -13,6 +13,7 @@ import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_lmc.dart';
+import 'package:moxxyv2/service/database/migrations/0000_omemo_fingerprint_cache.dart';
 import 'package:moxxyv2/service/database/migrations/0000_reactions.dart';
 import 'package:moxxyv2/service/database/migrations/0000_reactions_store_hint.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
@@ -21,6 +22,7 @@ import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
+import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/state.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -65,7 +67,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 12,
+      version: 13,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -121,6 +123,10 @@ class DatabaseService {
         if (oldVersion < 12) {
           _log.finest('Running migration for database version 12');
           await upgradeFromV11ToV12(db);
+        }
+        if (oldVersion < 13) {
+          _log.finest('Running migration for database version 13');
+          await upgradeFromV12ToV13(db);
         }
       },
     );
@@ -1001,5 +1007,39 @@ class DatabaseService {
       ..delete(omemoTrustEnableListTable);
 
     await batch.commit();
+  }
+
+  Future<void> addFingerprintsToCache(List<OmemoCacheTriple> items) async {
+    final batch = _db.batch();
+    for (final item in items) {
+      batch.insert(
+        omemoFingerprintCache,
+        <String, dynamic>{
+          'jid': item.jid,
+          'id': item.deviceId,
+          'fingerprint': item.fingerprint,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit();
+  }
+  
+  Future<List<OmemoCacheTriple>> getFingerprintsFromCache(String jid) async {
+    final rawItems = await _db.query(
+      omemoFingerprintCache,
+      where: 'jid = ?',
+      whereArgs: [jid],
+    );
+
+    return rawItems
+      .map((item) {
+        return OmemoCacheTriple(
+          jid,
+          item['id']! as int,
+          item['fingerprint']! as String,
+        );
+      })
+      .toList();
   }
 }

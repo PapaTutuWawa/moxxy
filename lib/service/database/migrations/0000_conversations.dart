@@ -9,5 +9,4 @@ Future<void> upgradeFromV6ToV7(Database db) async {
   await db.execute(
     "ALTER TABLE $conversationsTable ADD COLUMN lastMessageSender TEXT NOT NULL DEFAULT '';"
   );
-
 }

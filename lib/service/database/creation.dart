@@ -160,11 +160,20 @@ Future<void> createDatabase(Database db, int version) async {
       PRIMARY KEY (jid, id)
     )''',
   );
-   await db.execute(
+  await db.execute(
     '''
     CREATE TABLE $omemoDeviceListTable (
       jid  TEXT NOT NULL,
       id   INTEGER NOT NULL,
+      PRIMARY KEY (jid, id)
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoFingerprintCache (
+      jid  TEXT NOT NULL,
+      id   INTEGER NOT NULL,
+      fingerprint TEXT NOT NULL,
       PRIMARY KEY (jid, id)
     )''',
   );

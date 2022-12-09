@@ -831,7 +831,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "797bf6985638f0fe5a6e12a7a8339cf7d9334f88"
+      resolved-ref: fe1ba99b14b516ecf6d147c57bd986d8afe7f3fc
       url: "https://codeberg.org/PapaTutuWawa/omemo_dart.git"
     source: git
     version: "0.3.2"
