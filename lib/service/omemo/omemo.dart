@@ -13,7 +13,6 @@ import 'package:omemo_dart/omemo_dart.dart';
 import 'package:synchronized/synchronized.dart';
 
 class OmemoDoubleRatchetWrapper {
-
   OmemoDoubleRatchetWrapper(this.ratchet, this.id, this.jid);
   final OmemoDoubleRatchet ratchet;
   final int id;
@@ -21,7 +20,6 @@ class OmemoDoubleRatchetWrapper {
 }
 
 class OmemoService {
-
   final Logger _log = Logger('OmemoService');
 
   bool _initialized = false;
@@ -208,14 +206,16 @@ class OmemoService {
     await ensureInitialized();
     final fingerprints = await omemoState.getHexFingerprintsForJid(jid);
     final keys = List<OmemoDevice>.empty(growable: true);
+    final tm = omemoState.trustManager as BlindTrustBeforeVerificationTrustManager;
+    // TODO(PapaTutuWawa): This feels hacky
+    final trustMap = await tm.getDevicesTrust(jid);
     for (final fp in fingerprints) {
       keys.add(
         OmemoDevice(
           fp.fingerprint,
-          await omemoState.trustManager.isTrusted(jid, fp.deviceId),
-          // TODO(Unknown): Allow verifying OMEMO keys
-          false,
-          await omemoState.trustManager.isEnabled(jid, fp.deviceId),
+          await tm.isTrusted(jid, fp.deviceId),
+          trustMap[fp.deviceId]! == BTBVTrustState.verified,
+          await tm.isEnabled(jid, fp.deviceId),
           fp.deviceId,
         ),
       );
@@ -225,7 +225,6 @@ class OmemoService {
   }
 
   Future<void> commitTrustManager(Map<String, dynamic> json) async {
-
     await GetIt.I.get<DatabaseService>().saveTrustCache(
       json['trust']! as Map<String, int>,
     );
@@ -301,5 +300,14 @@ class OmemoService {
     }
 
     return keys;
+  }
+
+  Future<void> verifyDevice(int deviceId, String jid) async {
+    final tm = omemoState.trustManager as BlindTrustBeforeVerificationTrustManager;
+    await tm.setDeviceTrust(
+      jid,
+      deviceId,
+      BTBVTrustState.verified,
+    );
   }
 }

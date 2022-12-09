@@ -19,3 +19,10 @@ class DeviceEnabledSetEvent extends DevicesEvent {
 
 /// Triggered by the UI when all OMEMO sessions should be recreated
 class SessionsRecreatedEvent extends DevicesEvent {}
+
+/// Triggered by the UI when a device has been verified using the QR code
+class DeviceVerifiedEvent extends DevicesEvent {
+  DeviceVerifiedEvent(this.uri, this.deviceId);
+  final Uri uri;
+  final int deviceId;
+}

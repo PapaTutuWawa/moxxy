@@ -435,6 +435,13 @@ files:
           messageId: int
           conversationJid: String
           emoji: String
+      - name: MarkOmemoDeviceAsVerifiedCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          deviceId: int
+          jid: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

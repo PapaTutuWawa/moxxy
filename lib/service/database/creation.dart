@@ -72,7 +72,7 @@ Future<void> createDatabase(Database db, int version) async {
       open INTEGER NOT NULL,
       muted INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
-      lastMessageId INTEGER NOT NULL,
+      lastMessageId INTEGER,
       CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id)
     )''',
   );

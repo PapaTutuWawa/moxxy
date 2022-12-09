@@ -18,6 +18,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     on<DevicesRequestedEvent>(_onRequested);
     on<DeviceEnabledSetEvent>(_onDeviceEnabledSet);
     on<SessionsRecreatedEvent>(_onSessionsRecreated);
+    on<DeviceVerifiedEvent>(_onDeviceVerified);
   }
 
   Future<void> _onRequested(DevicesRequestedEvent event, Emitter<DevicesState> emit) async {
@@ -65,5 +66,62 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     emit(state.copyWith(devices: <OmemoDevice>[]));
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
+  }
+
+  Future<void> _onDeviceVerified(DeviceVerifiedEvent event, Emitter<DevicesState> emit) async {
+    if (event.uri.queryParameters.isEmpty) {
+      // No query parameters
+      // TODO(PapaTutuWawa): Show a toast
+      return;
+    }
+
+    final jid = event.uri.path;
+    if (state.jid != jid) {
+      // The Jid is wrong
+      // TODO(PapaTutuWawa): Show a toast
+      return;
+    }
+
+    // TODO(PapaTutuWawa): Use an exception safe version of firstWhere
+    // TODO(PapaTutuWawa): Is omemo-sid-xxxxxx correct? Siacs OMEMO uses this
+    final sidParam = event.uri.queryParameters
+      .keys
+      .firstWhere((param) => param.startsWith('omemo-sid-'));
+    final deviceId = int.parse(sidParam.replaceFirst('omemo-sid-', ''));
+    final fp = event.uri.queryParameters[sidParam];
+
+    if (deviceId != event.deviceId) {
+      // The scanned device has the wrong Id
+      // TODO(PapaTutuWawa): Show a toast
+      return;
+    }
+
+    final index = state.devices.indexWhere((device) => device.deviceId == deviceId);
+    if (index == -1) {
+      // The device is not in the list
+      // TODO(PapaTutuWawa): Show a toast
+      return;
+    }
+
+    final device = state.devices[index];
+    if (device.fingerprint != fp) {
+      // The fingerprint is not what we expected
+      // TODO(PapaTutuWawa): Show a toast
+      return;
+    }
+
+    final devices = List<OmemoDevice>.from(state.devices);
+    devices[index] = devices[index].copyWith(
+      verified: true,
+    );
+    emit(state.copyWith(devices: devices));
+    
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      MarkOmemoDeviceAsVerifiedCommand(
+        jid: state.jid,
+        deviceId: event.deviceId,
+      ),
+      awaitable: false,
+    );
   }
 }

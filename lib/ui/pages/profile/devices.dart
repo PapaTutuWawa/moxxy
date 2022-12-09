@@ -40,11 +40,16 @@ class DevicesPage extends StatelessWidget {
           item.enabled,
           item.verified,
           hasVerifiedDevices,
-          onVerifiedPressed: () {
+          onVerifiedPressed: () async {
             if (item.verified) return;
 
-            // TODO(PapaTutuWawa): Implement
-            showNotImplementedDialog('verification feature', context);
+            final result = await scanXmppUriQrCode(context);
+            if (result == null) return;
+
+            // ignore: use_build_context_synchronously
+            context.read<DevicesBloc>().add(
+              DeviceVerifiedEvent(result, item.deviceId),
+            );
           },
           onEnableValueChanged: (value) {
             context.read<DevicesBloc>().add(

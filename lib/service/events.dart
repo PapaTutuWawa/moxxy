@@ -69,6 +69,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<MarkMessageAsReadCommand>(performMarkMessageAsRead),
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
       EventTypeMatcher<RemoveReactionFromMessageCommand>(performRemoveMessageReaction),
+      EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -732,5 +733,12 @@ Future<void> performRemoveMessageReaction(RemoveReactionFromMessageCommand comma
         [MessageProcessingHint.store] :
         null,
     ),
+  );
+}
+
+Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command, { dynamic extra }) async {
+  await GetIt.I.get<OmemoService>().verifyDevice(
+    command.deviceId,
+    command.jid,
   );
 }
