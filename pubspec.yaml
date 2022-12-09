@@ -132,6 +132,8 @@ dependency_overrides:
   # NOTE: Leave here for development purposes
   #moxxmpp:
   #  path: ../moxxmpp/packages/moxxmpp
+  #omemo_dart:
+  #  path: ../../Personal/omemo_dart
 
   moxxmpp:
     git:
@@ -142,7 +144,7 @@ dependency_overrides:
   omemo_dart:
     git:
       url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
-      rev: c68471349ab1b347ec9ad54651265710842c50b7
+      rev: 797bf6985638f0fe5a6e12a7a8339cf7d9334f88
  
 extra_licenses:
   - name: undraw.co
