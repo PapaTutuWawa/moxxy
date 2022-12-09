@@ -3,7 +3,8 @@ import 'dart:collection';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
-import 'package:logging/logging.dart'; import 'package:moxxmpp/moxxmpp.dart';
+import 'package:logging/logging.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
@@ -219,20 +220,70 @@ class OmemoService {
     return null;
   }
 
+  Future<void> _fetchFingerprintsAndCache(JID jid) async {
+    final bareJid = jid.toBare().toString();
+    final allDevicesRaw = await GetIt.I.get<XmppConnection>()
+      .getManagerById<OmemoManager>(omemoManager)!
+      .retrieveDeviceBundles(jid);
+    if (allDevicesRaw.isType<List<OmemoBundle>>()) {
+      final allDevices = allDevicesRaw.get<List<OmemoBundle>>();
+      final map = <int, String>{};
+      final items = List<OmemoCacheTriple>.empty(growable: true);
+      for (final device in allDevices) {
+        final curveIk = await device.ik.toCurve25519();
+        final fingerprint = HEX.encode(await curveIk.getBytes());
+        map[device.id] = fingerprint;
+        items.add(OmemoCacheTriple(bareJid, device.id, fingerprint));
+      }
+
+      // Cache them in memory
+      _fingerprintCache[bareJid] = map;
+
+      // Cache them in the database
+      await GetIt.I.get<DatabaseService>().addFingerprintsToCache(items);
+    }
+  }
+
+  Future<void> _loadOrFetchFingerprints(JID jid) async {
+    final bareJid = jid.toBare().toString();
+    if (!_fingerprintCache.containsKey(bareJid)) {
+      // First try to load it from the database
+      final triples = await GetIt.I.get<DatabaseService>()
+        .getFingerprintsFromCache(bareJid);
+      if (triples.isEmpty) {
+        // We found no fingerprints in the database, so try to fetch them
+        await _fetchFingerprintsAndCache(jid);
+      } else {
+        // We have fetched fingerprints from the database
+        _fingerprintCache[bareJid] = Map<int, String>.fromEntries(
+          triples.map((triple) {
+            return MapEntry<int, String>(
+              triple.deviceId,
+              triple.fingerprint,
+            );
+          }),
+        );
+      }
+    }
+  }
+  
   Future<List<OmemoDevice>> getOmemoKeysForJid(String jid) async {
     await ensureInitialized();
-    final fingerprints = await omemoState.getHexFingerprintsForJid(jid);
+
+    // Get finger prints if we have to
+    await _loadOrFetchFingerprints(JID.fromString(jid));
+    
     final keys = List<OmemoDevice>.empty(growable: true);
     final tm = omemoState.trustManager as BlindTrustBeforeVerificationTrustManager;
     final trustMap = await tm.getDevicesTrust(jid);
-    for (final fp in fingerprints) {
+    for (final deviceId in _fingerprintCache[jid]!.keys) {
       keys.add(
         OmemoDevice(
-          fp.fingerprint,
-          await tm.isTrusted(jid, fp.deviceId),
-          trustMap[fp.deviceId] == BTBVTrustState.verified,
-          await tm.isEnabled(jid, fp.deviceId),
-          fp.deviceId,
+          _fingerprintCache[jid]![deviceId]!,
+          await tm.isTrusted(jid, deviceId),
+          trustMap[deviceId] == BTBVTrustState.verified,
+          await tm.isEnabled(jid, deviceId),
+          deviceId,
         ),
       );
     }
@@ -284,52 +335,14 @@ class OmemoService {
   /// published on [ownJid]'s devices PubSub node.
   /// Note that the list is made so that the current device is excluded.
   Future<List<OmemoDevice>> getOwnFingerprints(JID ownJid) async {
-    final conn = GetIt.I.get<XmppConnection>();
-    final db = GetIt.I.get<DatabaseService>();
     final ownId = await getDeviceId();
     final keys = List<OmemoDevice>.from(
       await getOmemoKeysForJid(ownJid.toString()),
     );
     final bareJid = ownJid.toBare().toString();
-    
-    if (!_fingerprintCache.containsKey(bareJid)) {
-      // First try to load it from the database
-      final triples = await db.getFingerprintsFromCache(bareJid);
-      if (triples.isEmpty) {
-        // We found no fingerprints in the database, so try to fetch them
-        final allDevicesRaw = await conn.getManagerById<OmemoManager>(omemoManager)!
-        .retrieveDeviceBundles(ownJid);
-        if (allDevicesRaw.isType<List<OmemoBundle>>()) {
-          final allDevices = allDevicesRaw.get<List<OmemoBundle>>();
-          final map = <int, String>{};
-          final items = List<OmemoCacheTriple>.empty(growable: true);
-          for (final device in allDevices) {
-            final curveIk = await device.ik.toCurve25519();
-            final fingerprint = HEX.encode(await curveIk.getBytes());
-            map[device.id] = fingerprint;
-            items.add(OmemoCacheTriple(bareJid, device.id, fingerprint));
-          }
 
-          // Cache them in memory
-          _fingerprintCache[bareJid] = map;
-
-          // Cache them in the database
-          await GetIt.I.get<DatabaseService>().addFingerprintsToCache(items);
-        } else {
-          return keys;
-        }
-      } else {
-        // We have fetched fingerprints from the database
-        _fingerprintCache[bareJid] = Map<int, String>.fromEntries(
-          triples.map((triple) {
-            return MapEntry<int, String>(
-              triple.deviceId,
-              triple.fingerprint,
-            );
-          }),
-        );
-      }
-    }
+    // Get finger prints if we have to
+    await _loadOrFetchFingerprints(ownJid);
     
     _fingerprintCache[bareJid]!.forEach((deviceId, fingerprint) {
       if (deviceId == ownId) return;
