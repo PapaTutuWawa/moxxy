@@ -117,6 +117,17 @@ class MessageService {
     );
   }
 
+  Future<Message?> getMessageByStanzaOrOriginId(String conversationJid, String id) async {
+    if (!_messageCache.containsKey(conversationJid)) {
+      await getMessagesForJid(conversationJid);
+    }
+    
+    return firstWhereOrNull(
+      _messageCache[conversationJid]!,
+      (message) => message.sid == id || message.originId == id,
+    );
+  }
+  
   Future<Message?> getMessageById(String conversationJid, int id) async {
     if (!_messageCache.containsKey(conversationJid)) {
       await getMessagesForJid(conversationJid);

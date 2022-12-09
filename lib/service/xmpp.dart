@@ -950,7 +950,8 @@ class XmppService {
 
   Future<void> _handleMessageReactions(MessageEvent event, String conversationJid) async {
     final ms = GetIt.I.get<MessageService>();
-    final msg = await ms.getMessageByStanzaId(
+    // TODO(Unknown): Once we support groupchats, we need to instead query by the stanza-id
+    final msg = await ms.getMessageByStanzaOrOriginId(
       conversationJid,
       event.messageReactions!.messageId,
     );
@@ -991,13 +992,23 @@ class XmppService {
           ),
         );
       } else {
+        List<String> senders;
+        if (isCarbon) {
+          senders = reactions[i].senders;
+        } else {
+          // Ensure that we don't add a sender multiple times to the same reaction
+          if (reactions[i].senders.contains(sender)) {
+            senders = reactions[i].senders;
+          } else {
+            senders = [
+              ...reactions[i].senders,
+              sender,
+            ];
+          }
+        }
+        
         reactions[i] = reactions[i].copyWith(
-          senders: isCarbon ?
-            reactions[i].senders :
-            [
-            ...reactions[i].senders,
-            sender,
-          ],
+          senders: senders,
           reactedBySelf: isCarbon ?
             true :
             reactions[i].reactedBySelf,
