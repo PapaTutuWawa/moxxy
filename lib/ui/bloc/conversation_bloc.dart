@@ -271,7 +271,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onJidAdded(JidAddedEvent event, Emitter<ConversationState> emit) async {
-    // TODO(Unknown): Maybe have some state here
+    // Just update the state here. If it does not work, then the next conversation
+    // update will fix it.
+    emit(
+      state.copyWith(
+        conversation: state.conversation!.copyWith(
+          inRoster: true,
+        ),
+      ),
+    );
+
     await MoxplatformPlugin.handler.getDataSender().sendData(
       AddContactCommand(jid: state.conversation!.jid),
     );

@@ -191,6 +191,7 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       final updatedConversation = await cs.updateConversation(
         conversation.id,
         open: true,
+        lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
       );
 
       sendEvent(
@@ -208,17 +209,17 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
     );
     return;
   } else {
+    final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
     final conversation = await cs.addConversationFromData(
       command.title,
       null,
       command.avatarUrl,
       command.jid,
       0,
-      -1,
+      DateTime.now().millisecondsSinceEpoch,
       true,
-      // TODO(PapaTutuWawa): Take as an argument
-      false,
-      (await GetIt.I.get<PreferencesService>().getPreferences()).enableOmemoByDefault,
+      preferences.defaultMuteState,
+      preferences.enableOmemoByDefault,
     );
 
     sendEvent(
@@ -341,24 +342,25 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
     final c = await cs.updateConversation(
       conversation.id,
       open: true,
+      lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
     );
 
     sendEvent(
       AddContactResultEvent(conversation: c, added: false),
       id: id,
     );
-  } else {            
+  } else {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final c = await cs.addConversationFromData(
       jid.split('@')[0],
       null,
       '',
       jid,
       0,
-      -1,
+      DateTime.now().millisecondsSinceEpoch,
       true,
-      // TODO(PapaTutuWawa): Take as an argument
-      false,
-      (await GetIt.I.get<PreferencesService>().getPreferences()).enableOmemoByDefault,
+      prefs.defaultMuteState,
+      prefs.enableOmemoByDefault,
     );
     sendEvent(
       AddContactResultEvent(conversation: c, added: true),
