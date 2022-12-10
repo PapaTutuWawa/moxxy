@@ -320,8 +320,17 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
   }
 
   // Scan all contacts if the setting is enabled
+  final cs = GetIt.I.get<ContactsService>();
   if (command.preferences.enableContactIntegration) {
-    unawaited(GetIt.I.get<ContactsService>().scanContacts());
+    if (!cs.enabled) {
+      cs.enableDatabaseListener();
+    }
+
+    unawaited(cs.scanContacts());
+  } else {
+    if (cs.enabled) {
+      cs.disableDatabaseListener();
+    }
   }
   
   // Set the locale

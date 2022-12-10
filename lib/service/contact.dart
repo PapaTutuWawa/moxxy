@@ -21,14 +21,31 @@ class ContactsService {
     // NOTE: Apparently, this means that if false, contacts that are in 0 groups
     //       are not returned.
     FlutterContacts.config.includeNonVisibleOnAndroid = true;
-
-    // Allow us to react to database changes
-    FlutterContacts.addListener(_onContactsDatabaseUpdate);
   }
   final Logger _log;
 
+  bool enabled = false;
+  
   /// JID -> Id
   Map<String, String>? _contactIds;
+  /// Contact ID -> Display name from the contact or null if we cached that there is none
+  final Map<String, String?> _contactDisplayNames = {};
+
+  Future<void> init() async {
+    if (await _canUseContactIntegration()) {
+      enableDatabaseListener();
+    }
+  }
+
+  /// Enable listening to contact database events
+  void enableDatabaseListener() {
+    FlutterContacts.addListener(_onContactsDatabaseUpdate);
+  }
+
+  /// Disable listening to contact database events
+  void disableDatabaseListener() {
+    FlutterContacts.removeListener(_onContactsDatabaseUpdate);
+  }
   
   Future<List<ContactWrapper>> fetchContactsWithJabber() async {
     final contacts = await FlutterContacts.getContacts(withProperties: true);
@@ -54,6 +71,25 @@ class ContactsService {
     await scanContacts();
   }
 
+  /// Checks if we a) have the permission to access the contact list and b) if the
+  /// user wants to use this integration.
+  /// Returns true if we can proceed with accessing the contact list. False, if not.
+  Future<bool> _canUseContactIntegration() async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    if (!prefs.enableContactIntegration) {
+      _log.finest('_canUseContactIntegration: Returning false since enableContactIntegration is false');
+      return false;
+    }
+
+    final permission = await Permission.contacts.status;
+    if (permission == PermissionStatus.denied) {
+      _log.finest("_canUseContactIntegration: Returning false since we don't have the contacts permission");
+      return false;
+    }
+
+    return true;
+  }
+  
   Future<Map<String, String>> _getContactIds() async {
     if (_contactIds != null) return _contactIds!;
 
@@ -61,18 +97,26 @@ class ContactsService {
     return _contactIds!;
   }
 
-  Future<String?> getContactIdForJid(String jid) async {
-    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    if (!prefs.enableContactIntegration) {
-      _log.finest('getContactIdForJid: Returning null since enableContactIntegration is false');
-      return null;
-    }
+  /// Queries the contact list, if enabled and allowed, and returns the contact's
+  /// display name.
+  ///
+  /// [id] is the id of the contact. A null value indicates that there is no
+  /// contact and null will be returned immediately.
+  Future<String?> getContactDisplayName(String? id) async {
+    if (id == null ||
+        !(await _canUseContactIntegration())) return null;
+    if (_contactDisplayNames.containsKey(id)) return _contactDisplayNames[id];
 
-    final permission = await Permission.contacts.status;
-    if (permission == PermissionStatus.denied) {
-      _log.finest("getContactIdForJid: Returning null since we don't have the contacts permission");
-      return null;
-    }
+    final result = await FlutterContacts.getContact(
+      id,
+      withThumbnail: false,
+    );
+    _contactDisplayNames[id] = result?.displayName;
+    return result?.displayName;
+  }
+  
+  Future<String?> getContactIdForJid(String jid) async {
+    if (!(await _canUseContactIntegration())) return null;
 
     return (await _getContactIds())[jid];
   }

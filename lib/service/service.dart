@@ -159,6 +159,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
   await GetIt.I.get<NotificationsService>().init();
+  await GetIt.I.get<ContactsService>().init();
 
   if (!kDebugMode) {
     final enableDebug = (await GetIt.I.get<PreferencesService>().getPreferences()).debugEnabled;
