@@ -5,6 +5,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
@@ -17,6 +18,61 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum ConversationsOptions {
   settings
+}
+
+class ConversationsRowDismissible extends StatefulWidget {
+  const ConversationsRowDismissible({
+    required this.item,
+    required this.child,
+    super.key,
+  });
+  final Conversation item;
+  final Widget child;
+
+  @override
+  ConversationsRowDismissibleState createState() => ConversationsRowDismissibleState();
+}
+
+class ConversationsRowDismissibleState extends State<ConversationsRowDismissible> {
+  DismissDirection direction = DismissDirection.none;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: ValueKey('conversation;${widget.item}'),
+      // TODO(Unknown): Show a snackbar allowing the user to revert the action
+      onDismissed: (direction) => context.read<ConversationsBloc>().add(
+        ConversationClosedEvent(widget.item.jid),
+      ),
+      onUpdate: (details) {
+        if (details.direction != direction) {
+          setState(() {
+            direction = details.direction;
+          });
+        }
+      },
+      background: ColoredBox(
+        color: Colors.red,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Visibility(
+                visible: direction == DismissDirection.startToEnd,
+                child: const Icon(Icons.delete),
+              ),
+              const Spacer(),
+              Visibility(
+                visible: direction == DismissDirection.endToStart,
+                child: const Icon(Icons.delete),
+              ),
+            ],
+          ),
+        ),
+      ),
+      child: widget.child,
+    );
+  }
 }
 
 class ConversationsPage extends StatefulWidget {
@@ -80,26 +136,9 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
               null,
             key: ValueKey('conversationRow;${item.jid}'),
           );
-          
-          return Dismissible(
-            key: ValueKey('conversation;$item'),
-            // TODO(Unknown): Show a snackbar allowing the user to revert the action
-            onDismissed: (direction) => context.read<ConversationsBloc>().add(
-              ConversationClosedEvent(item.jid),
-            ),
-            background: ColoredBox(
-              color: Colors.red,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: const [
-                    Icon(Icons.delete),
-                    Spacer(),
-                    Icon(Icons.delete)
-                  ],
-                ),
-              ),
-            ),
+
+          return ConversationsRowDismissible(
+            item: item,
             child: GestureDetector(
               onLongPressStart: (event) async {
                 Vibrate.feedback(FeedbackType.medium);
