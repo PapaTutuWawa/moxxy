@@ -63,10 +63,16 @@ class ContactsService {
 
   Future<String?> getContactIdForJid(String jid) async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    if (!prefs.enableContactIntegration) return null;
+    if (!prefs.enableContactIntegration) {
+      _log.finest('getContactIdForJid: Returning null since enableContactIntegration is false');
+      return null;
+    }
 
     final permission = await Permission.contacts.status;
-    if (permission == PermissionStatus.denied) return null;
+    if (permission == PermissionStatus.denied) {
+      _log.finest("getContactIdForJid: Returning null since we don't have the contacts permission");
+      return null;
+    }
 
     return (await _getContactIds())[jid];
   }
@@ -104,6 +110,8 @@ class ContactsService {
             conversation: newConv,
           ),
         );
+      } else {
+        _log.finest('Found no conversation with jid ${contact.jid}');
       }
 
       final r = await rs.getRosterItemByJid(contact.jid);

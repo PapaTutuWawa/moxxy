@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,7 @@ class ConversationsListRow extends StatefulWidget {
       this.showTimestamp = true,
       this.showLock = false,
       this.extra,
-      this.avatarOnTap,
+      this.enableAvatarOnTap = false,
       this.avatarWidget,
       super.key,
     }
@@ -34,7 +35,7 @@ class ConversationsListRow extends StatefulWidget {
   final bool update; // Should a timer run to update the timestamp
   final bool showLock;
   final bool showTimestamp;
-  final void Function()? avatarOnTap;
+  final bool enableAvatarOnTap;
   final Widget? avatarWidget;
   final Widget? extra;
 
@@ -100,9 +101,19 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         altText: widget.conversation.title,
       );
 
-    if (widget.avatarOnTap != null) {
-      return InkWell(
-        onTap: widget.avatarOnTap,
+      if (widget.enableAvatarOnTap &&
+          (data != null || widget.conversation.avatarUrl.isNotEmpty)) {
+        return InkWell(
+          onTap: () => showDialog<void>(
+            context: context,
+            builder: (context) {
+              return IgnorePointer(
+                child: data != null ?
+                  Image.memory(data) :
+                  Image.file(File(widget.conversation.avatarUrl)),
+              );
+            },
+          ),
         child: avatar,
       );
     }
@@ -307,15 +318,21 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   
   @override
   Widget build(BuildContext context) {
-    if (widget.conversation.contactId != null && GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+    if (widget.conversation.contactId != null &&
+        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+      FlutterContacts.config.includeNonVisibleOnAndroid = true;
       return FutureBuilder<Contact?>(
-        future: FlutterContacts.getContact(widget.conversation.contactId!),
+        future: FlutterContacts.getContact(
+          widget.conversation.contactId!,
+          withPhoto: false,
+          withProperties: false,
+        ),
         builder: (_, snapshot) {
           final hasData = snapshot.hasData && snapshot.data != null;
 
           if (hasData) {
             return _build(
-              '${snapshot.data!.name.first} ${snapshot.data!.name.last}',
+              snapshot.data!.displayName,
               snapshot.data!.thumbnail,
             );
           }
