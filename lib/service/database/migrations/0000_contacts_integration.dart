@@ -1,4 +1,5 @@
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/shared/models/preference.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV13ToV14(Database db) async {
@@ -6,7 +7,8 @@ Future<void> upgradeFromV13ToV14(Database db) async {
   await db.execute(
     '''
     CREATE TABLE $contactsTable (
-      id TEXT PRIMARY KEY
+      id TEXT PRIMARY KEY,
+      jid TEXT NOT NULL
     )'''
   );
 
@@ -53,4 +55,14 @@ Future<void> upgradeFromV13ToV14(Database db) async {
   await db.execute('INSERT INTO ${rosterTable}_new SELECT *, NULL from $rosterTable');
   await db.execute('DROP TABLE $rosterTable;');
   await db.execute('ALTER TABLE ${rosterTable}_new RENAME TO $rosterTable;');
+
+  // Introduce the new preference key
+  await db.insert(
+    preferenceTable,
+    Preference(
+      'enableContactIntegration',
+      typeBool,
+      'false',
+    ).toDatabaseJson(),
+  );
 }

@@ -28,6 +28,7 @@ class PreferencesState with _$PreferencesState {
     // NOTE: A value of 'default' means that the system's configured language should
     //       be used
     @Default('default') String languageLocaleCode,
+    @Default(false) bool enableContactIntegration,
   }) = _PreferencesState;
   
   // JSON serialization

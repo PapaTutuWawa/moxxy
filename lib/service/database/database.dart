@@ -9,7 +9,6 @@ import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration.dart';
-import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_fixup.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
@@ -69,7 +68,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 15,
+      version: 14,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -133,10 +132,6 @@ class DatabaseService {
         if (oldVersion < 14) {
           _log.finest('Running migration for database version 14');
           await upgradeFromV13ToV14(db);
-        }
-        if (oldVersion < 15) {
-          _log.finest('Running migration for database version 15');
-          await upgradeFromV14ToV15(db);
         }
       },
     );
@@ -289,6 +284,7 @@ class DatabaseService {
     bool open,
     bool muted,
     bool encrypted,
+    String? contactId,
   ) async {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
@@ -306,6 +302,7 @@ class DatabaseService {
       muted,
       encrypted,
       ChatState.gone,
+      contactId: contactId,
     );
 
     return conversation.copyWith(
@@ -620,6 +617,7 @@ class DatabaseService {
     String title,
     String subscription,
     String ask,
+    String? contactId,
     {
       List<String> groups = const [],
     }
@@ -634,6 +632,7 @@ class DatabaseService {
       subscription,
       ask,
       <String>[],
+      contactId: contactId,
     );
 
     return i.copyWith(
@@ -1061,17 +1060,23 @@ class DatabaseService {
       .toList();
   }
 
-  Future<List<String>> getContactIds() async {
-    return (await _db.query(contactsTable))
-      .map((item) => item['id']! as String)
-      .toList();
+  Future<Map<String, String>> getContactIds() async {
+    return Map<String, String>.fromEntries(
+      (await _db.query(contactsTable))
+        .map((item) => MapEntry(
+          item['jid']! as String,
+          item['id']! as String,
+        ),
+      ),
+    );
   }
 
-  Future<void> addContactId(String id) async {
+  Future<void> addContactId(String id, String jid) async {
     await _db.insert(
       contactsTable,
       <String, String>{
         'id': id,
+        'jid': jid,
       },
     );
   }

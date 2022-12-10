@@ -101,6 +101,7 @@ class ConversationService {
     bool open,
     bool muted,
     bool encrypted,
+    String? contactId,
   ) async {
     final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
       title,
@@ -112,6 +113,7 @@ class ConversationService {
       open,
       muted,
       encrypted,
+      contactId,
     );
 
     _conversationCache.cache(newConversation.id, newConversation);

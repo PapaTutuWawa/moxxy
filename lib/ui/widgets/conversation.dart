@@ -8,6 +8,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -306,9 +307,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   
   @override
   Widget build(BuildContext context) {
-    if (widget.conversation.contactId != null) {
+    if (widget.conversation.contactId != null && GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
       return FutureBuilder<Contact?>(
-        future: FlutterContacts.getContact(widget.conversation.contactId!, withThumbnail: true),
+        future: FlutterContacts.getContact(widget.conversation.contactId!),
         builder: (_, snapshot) {
           final hasData = snapshot.hasData && snapshot.data != null;
 
@@ -320,7 +321,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           }
 
           return _build(widget.conversation.title, null);
-        }
+        },
       );
     }
 

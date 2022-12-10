@@ -3,14 +3,15 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ContactWrapper {
-  const ContactWrapper(this.title, this.id, this.jid);
-  final String title;
+  const ContactWrapper(this.id, this.jid);
   final String id;
   final String jid;
 }
@@ -26,7 +27,8 @@ class ContactsService {
   }
   final Logger _log;
 
-  List<String>? _contactIds;
+  /// JID -> Id
+  Map<String, String>? _contactIds;
   
   Future<List<ContactWrapper>> fetchContactsWithJabber() async {
     final contacts = await FlutterContacts.getContacts(withProperties: true);
@@ -39,11 +41,7 @@ class ContactsService {
       if (index == -1) continue;
 
       jabberContacts.add(
-        ContactWrapper(
-          '${c.name.first} ${c.name.last}',
-          c.id,
-          c.socialMedias[index].userName,
-        ),
+        ContactWrapper(c.id, c.socialMedias[index].userName),
       );
     }
     _log.finest('${jabberContacts.length} contacts have an XMPP address');
@@ -53,15 +51,24 @@ class ContactsService {
 
   Future<void> _onContactsDatabaseUpdate() async {
     _log.finest('Got contacts database update');
+    await scanContacts();
   }
 
-  Future<List<String>> _getContactIds() async {
+  Future<Map<String, String>> _getContactIds() async {
     if (_contactIds != null) return _contactIds!;
 
-    _contactIds = List<String>.from(
-      await GetIt.I.get<DatabaseService>().getContactIds(),
-    );
+    _contactIds = await GetIt.I.get<DatabaseService>().getContactIds();
     return _contactIds!;
+  }
+
+  Future<String?> getContactIdForJid(String jid) async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    if (!prefs.enableContactIntegration) return null;
+
+    final permission = await Permission.contacts.status;
+    if (permission == PermissionStatus.denied) return null;
+
+    return (await _getContactIds())[jid];
   }
   
   Future<void> scanContacts() async {
@@ -71,19 +78,19 @@ class ContactsService {
     final contacts = await fetchContactsWithJabber();
     final knownContactIds = await _getContactIds();
 
-    for (final id in knownContactIds) {
+    for (final id in knownContactIds.values) {
       final index = contacts.indexWhere((c) => c.id == id);
       if (index != -1) continue;
 
       await db.removeContactId(id);
-      _contactIds!.remove(id);
+      _contactIds!.remove(knownContactIds[id]);
     }
 
     final modifiedRosterItems = List<RosterItem>.empty(growable: true);
     for (final contact in contacts) {
-      if (!knownContactIds.contains(contact.id)) {
-        await db.addContactId(contact.id);
-        _contactIds!.add(contact.id);
+      if (!knownContactIds.containsKey(contact.jid)) {
+        await db.addContactId(contact.id, contact.jid);
+        _contactIds![contact.jid] = contact.id;
       }
 
       final c = await cs.getConversationByJid(contact.jid);

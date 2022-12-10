@@ -12,6 +12,7 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class ConversationSettingsPage extends StatelessWidget {
@@ -98,6 +99,31 @@ class ConversationSettingsPage extends StatelessWidget {
                       // ignore: use_build_context_synchronously
                       await _removeBackgroundImage(context, state);
                     }
+                  },
+                ),
+              ],
+            ),
+            SettingsSection(
+              title: Text(t.pages.settings.conversation.behaviourSection),
+              tiles: [
+                SettingsTile.switchTile(
+                  title: Text(t.pages.settings.conversation.contactsIntegration),
+                  description: Text(t.pages.settings.conversation.contactsIntegrationBody),
+                  initialValue: state.enableContactIntegration,
+                  onToggle: (value) async {
+                    // Ensure that we have the permission before changing the value
+                    if (value && await Permission.contacts.status == PermissionStatus.denied) {
+                      if (!(await Permission.contacts.request().isGranted)) {
+                        return;
+                      }
+                    }
+
+                    // ignore: use_build_context_synchronously
+                    context.read<PreferencesBloc>().add(
+                      PreferencesChangedEvent(
+                        state.copyWith(enableContactIntegration: value),
+                      ),
+                    );
                   },
                 ),
               ],

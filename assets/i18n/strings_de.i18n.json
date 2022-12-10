@@ -223,7 +223,10 @@
 		"removeBackgroundImageConfirmBody": "Bist Du dir sicher, dass Du das Hintergrundbild entfernen möchtest?",
 		"newChatsSection": "Neue Chats",
 		"newChatsMuteByDefault": "Neue Chats standardmäßig stummschalten",
-		"newChatsE2EE": "Ende-zu-Ende-Verschlüsselung standardmäßig aktivieren. WARNUNG: Experimentell"
+		"newChatsE2EE": "Ende-zu-Ende-Verschlüsselung standardmäßig aktivieren. WARNUNG: Experimentell",
+		"behaviourSection": "Verhalten",
+		"contactsIntegration": "Kontaktintegration",
+		"contactsIntegrationBody": "Wenn aktiviert, dann werden Kontakte aus dem Kontaktbuch verwendet, um Chatnamen und Profilbilder anzuzeigen. Dabei werden keine Daten an den Server gesendet."
 	    },
 	    "debugging": {
 		"title": "Debuggingoptionen",

@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/contact.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/not_specified.dart';
@@ -26,6 +27,7 @@ typedef AddRosterItemFunction = Future<RosterItem> Function(
   String title,
   String subscription,
   String ask,
+  String? contactId,
   {
     List<String> groups,
   }
@@ -106,6 +108,7 @@ Future<RosterDiffEvent> processRosterDiff(
             item.name ?? item.jid.split('@')[0],
             item.subscription,
             item.ask ?? '',
+            await GetIt.I.get<ContactsService>().getContactIdForJid(item.jid),
             groups: item.groups,
           );
 
@@ -144,6 +147,7 @@ Future<RosterDiffEvent> processRosterDiff(
             item.jid.split('@')[0],
             item.subscription,
             item.ask ?? '',
+            await GetIt.I.get<ContactsService>().getContactIdForJid(item.jid),
             groups: item.groups,
         ),);
       }
@@ -195,6 +199,7 @@ class RosterService {
     String title,
     String subscription,
     String ask,
+    String? contactId,
     {
       List<String> groups = const [],
     }
@@ -206,6 +211,7 @@ class RosterService {
       title,
       subscription,
       ask,
+      contactId,
       groups: groups,
     );
 
@@ -308,6 +314,7 @@ class RosterService {
       title,
       'none',
       '',
+      await GetIt.I.get<ContactsService>().getContactIdForJid(jid),
     );
     final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
     if (!result) {

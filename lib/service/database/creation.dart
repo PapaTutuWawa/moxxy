@@ -62,14 +62,30 @@ Future<void> createDatabase(Database db, int version) async {
   // Conversations
   await db.execute(
     '''
-''',
+    CREATE TABLE $conversationsTable (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      jid TEXT NOT NULL,
+      title TEXT NOT NULL,
+      avatarUrl TEXT NOT NULL,
+      lastChangeTimestamp INTEGER NOT NULL,
+      unreadCounter INTEGER NOT NULL,
+      open INTEGER NOT NULL,
+      muted INTEGER NOT NULL,
+      encrypted INTEGER NOT NULL,
+      lastMessageId INTEGER,
+      contactId TEXT,
+      CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id),
+      CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
+        ON DELETE SET NULL
+    )''',
   );
 
   // Contacts
   await db.execute(
     '''
     CREATE TABLE $contactsTable (
-      id TEXT PRIMARY KEY
+      id TEXT PRIMARY KEY,
+      jid TEXT NOT NULL
     )'''
   );
   
@@ -344,6 +360,14 @@ Future<void> createDatabase(Database db, int version) async {
       'languageLocaleCode',
       typeString,
       'default',
+    ).toDatabaseJson(),
+  );
+  await db.insert(
+    preferenceTable,
+    Preference(
+      'enableContactIntegration',
+      typeBool,
+      'false',
     ).toDatabaseJson(),
   );
 }

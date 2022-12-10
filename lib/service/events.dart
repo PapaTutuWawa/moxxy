@@ -7,8 +7,8 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
-import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/contact.dart';
+import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -222,6 +222,7 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       true,
       preferences.defaultMuteState,
       preferences.enableOmemoByDefault,
+      await GetIt.I.get<ContactsService>().getContactIdForJid(command.jid),
     );
 
     sendEvent(
@@ -318,6 +319,11 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
     Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
   }
 
+  // Scan all contacts if the setting is enabled
+  if (command.preferences.enableContactIntegration) {
+    unawaited(GetIt.I.get<ContactsService>().scanContacts());
+  }
+  
   // Set the locale
   final locale = command.preferences.languageLocaleCode == 'default' ?
     GetIt.I.get<LanguageService>().defaultLocale :
@@ -363,6 +369,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       true,
       prefs.defaultMuteState,
       prefs.enableOmemoByDefault,
+      await GetIt.I.get<ContactsService>().getContactIdForJid(jid),
     );
     sendEvent(
       AddContactResultEvent(conversation: c, added: true),

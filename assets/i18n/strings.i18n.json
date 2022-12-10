@@ -223,7 +223,10 @@
 		"removeBackgroundImageConfirmBody": "Are you sure you want to remove your conversation background image?",
 		"newChatsSection": "New Conversations",
 		"newChatsMuteByDefault": "Mute new chats by default",
-		"newChatsE2EE": "Enable end-to-end encryption by default. WARNING: Experimental"
+		"newChatsE2EE": "Enable end-to-end encryption by default. WARNING: Experimental",
+		"behaviourSection": "Behaviour",
+		"contactsIntegration": "Contacts integration",
+		"contactsIntegrationBody": "When enabled, data from the phonebook will be used to provide chat titles and profile pictures. No data will be sent to the server."
 	    },
 	    "debugging": {
 		"title": "Debugging options",
