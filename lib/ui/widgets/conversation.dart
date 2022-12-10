@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
@@ -22,6 +24,7 @@ class ConversationsListRow extends StatefulWidget {
       this.showLock = false,
       this.extra,
       this.avatarOnTap,
+      this.avatarWidget,
       super.key,
     }
   );
@@ -31,6 +34,7 @@ class ConversationsListRow extends StatefulWidget {
   final bool showLock;
   final bool showTimestamp;
   final void Function()? avatarOnTap;
+  final Widget? avatarWidget;
   final Widget? extra;
 
   @override
@@ -83,12 +87,17 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     super.dispose();
   }
 
-  Widget _buildAvatar() {
-    final avatar = AvatarWrapper(
-      radius: 35,
-      avatarUrl: widget.conversation.avatarUrl,
-      altText: widget.conversation.title,
-    );
+  Widget _buildAvatar(Uint8List? data) {
+    final avatar = data != null ?
+      CircleAvatar(
+        radius: 35,
+        backgroundImage: MemoryImage(data),
+      ) : 
+      AvatarWrapper(
+        radius: 35,
+        avatarUrl: widget.conversation.avatarUrl,
+        altText: widget.conversation.title,
+      );
 
     if (widget.avatarOnTap != null) {
       return InkWell(
@@ -191,9 +200,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
 
     return const SizedBox();
   }
-  
-  @override
-  Widget build(BuildContext context) {
+
+  Widget _build(String title, Uint8List? avatar) {
     final badgeText = widget.conversation.unreadCounter > 99 ?
       '99+' :
       widget.conversation.unreadCounter.toString();
@@ -205,11 +213,12 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final sentBySelf = widget.conversation.lastMessage?.sender == GetIt.I.get<UIDataService>().ownJid!;
 
     final showBadge = widget.conversation.unreadCounter > 0 && !sentBySelf;
+
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(
         children: [
-          _buildAvatar(),
+          _buildAvatar(avatar),
           Padding(
             padding: const EdgeInsets.only(left: 8),
             child: LimitedBox(
@@ -221,7 +230,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        widget.conversation.title,
+                        title,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
@@ -293,5 +302,28 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         ],
       ),
     );
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    if (widget.conversation.contactId != null) {
+      return FutureBuilder<Contact?>(
+        future: FlutterContacts.getContact(widget.conversation.contactId!, withThumbnail: true),
+        builder: (_, snapshot) {
+          final hasData = snapshot.hasData && snapshot.data != null;
+
+          if (hasData) {
+            return _build(
+              '${snapshot.data!.name.first} ${snapshot.data!.name.last}',
+              snapshot.data!.thumbnail,
+            );
+          }
+
+          return _build(widget.conversation.title, null);
+        }
+      );
+    }
+
+    return _build(widget.conversation.title, null);
   }
 }

@@ -124,6 +124,7 @@ class NewConversationPage extends StatelessWidget {
                         false,
                         false,
                         ChatState.gone,
+                        contactId: item.contactId,
                       ),
                       false,
                       showTimestamp: false,

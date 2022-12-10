@@ -8,6 +8,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -223,6 +224,7 @@ class RosterService {
       String? subscription,
       String? ask,
       List<String>? groups,
+      Object? contactId = notSpecified,
     }
   ) async {
     final newItem = await GetIt.I.get<DatabaseService>().updateRosterItem(
@@ -233,6 +235,7 @@ class RosterService {
       subscription: subscription,
       ask: ask,
       groups: groups,
+      contactId: contactId,
     );
 
     // Update cache

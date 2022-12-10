@@ -62,21 +62,17 @@ Future<void> createDatabase(Database db, int version) async {
   // Conversations
   await db.execute(
     '''
-    CREATE TABLE $conversationsTable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      jid TEXT NOT NULL,
-      title TEXT NOT NULL,
-      avatarUrl TEXT NOT NULL,
-      lastChangeTimestamp INTEGER NOT NULL,
-      unreadCounter INTEGER NOT NULL,
-      open INTEGER NOT NULL,
-      muted INTEGER NOT NULL,
-      encrypted INTEGER NOT NULL,
-      lastMessageId INTEGER,
-      CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id)
-    )''',
+''',
   );
 
+  // Contacts
+  await db.execute(
+    '''
+    CREATE TABLE $contactsTable (
+      id TEXT PRIMARY KEY
+    )'''
+  );
+  
   // Shared media
   await db.execute(
     '''
@@ -102,7 +98,10 @@ Future<void> createDatabase(Database db, int version) async {
       avatarUrl TEXT NOT NULL,
       avatarHash TEXT NOT NULL,
       subscription TEXT NOT NULL,
-      ask TEXT NOT NULL
+      ask TEXT NOT NULL,
+      contactId TEXT,
+      CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
+        ON DELETE SET NULL
     )''',
   );
 

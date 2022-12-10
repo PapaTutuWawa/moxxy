@@ -8,6 +8,8 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_contacts_integration.dart';
+import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_fixup.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
@@ -67,7 +69,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 13,
+      version: 15,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -127,6 +129,14 @@ class DatabaseService {
         if (oldVersion < 13) {
           _log.finest('Running migration for database version 13');
           await upgradeFromV12ToV13(db);
+        }
+        if (oldVersion < 14) {
+          _log.finest('Running migration for database version 14');
+          await upgradeFromV13ToV14(db);
+        }
+        if (oldVersion < 15) {
+          _log.finest('Running migration for database version 15');
+          await upgradeFromV14ToV15(db);
         }
       },
     );
@@ -209,6 +219,7 @@ class DatabaseService {
     ChatState? chatState,
     bool? muted,
     bool? encrypted,
+    Object? contactId = notSpecified,
   }) async {
     final cd = (await _db.query(
       'Conversations',
@@ -244,6 +255,9 @@ class DatabaseService {
     }
     if (encrypted != null) {
       c['encrypted'] = boolToInt(encrypted);
+    }
+    if (contactId != notSpecified) {
+      c['contactId'] = contactId as String?;
     }
 
     await _db.update(
@@ -636,10 +650,11 @@ class DatabaseService {
       String? subscription,
       String? ask,
       List<String>? groups,
+      Object? contactId = notSpecified,
     }
   ) async {
     final id_ = (await _db.query(
-      'RosterItems',
+      rosterTable,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -666,9 +681,12 @@ class DatabaseService {
     if (ask != null) {
       i['ask'] = ask;
     }
+    if (contactId != notSpecified) {
+      i['contactId'] = contactId as String?;
+    }
 
     await _db.update(
-      'RosterItems',
+      rosterTable,
       i,
       where: 'id = ?',
       whereArgs: [id],
@@ -1041,5 +1059,28 @@ class DatabaseService {
         );
       })
       .toList();
+  }
+
+  Future<List<String>> getContactIds() async {
+    return (await _db.query(contactsTable))
+      .map((item) => item['id']! as String)
+      .toList();
+  }
+
+  Future<void> addContactId(String id) async {
+    await _db.insert(
+      contactsTable,
+      <String, String>{
+        'id': id,
+      },
+    );
+  }
+
+  Future<void> removeContactId(String id) async {
+    await _db.delete(
+      contactsTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

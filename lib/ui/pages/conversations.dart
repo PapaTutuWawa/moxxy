@@ -15,6 +15,9 @@ import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 
 enum ConversationsOptions {
   settings
@@ -127,6 +130,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
         itemCount: state.conversations.length,
         itemBuilder: (_context, index) {
           final item = state.conversations[index];
+          print('${item.jid} -> ${item.contactId}');
           final row = ConversationsListRow(
             maxTextWidth,
             item,
@@ -295,7 +299,16 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
           children: [
             SpeedDialChild(
               child: const Icon(Icons.group),
-              onTap: () => showNotImplementedDialog('groupchat', context),
+              onTap: () async {
+                final r = await FlutterContacts.requestPermission(readonly: true);
+                print(r);
+                if (!r) return;
+
+                await MoxplatformPlugin.handler.getDataSender().sendData(
+                  GetContactsCommandDebug(),
+                  awaitable: false,
+                );
+              },
               backgroundColor: primaryColor,
               // TODO(Unknown): Theme dependent?
               foregroundColor: Colors.white,

@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -64,6 +65,7 @@ class ConversationService {
     ChatState? chatState,
     bool? muted,
     bool? encrypted,
+    Object? contactId = notSpecified,
   }) async {
     final conversation = (await _getConversationById(id))!;
     var newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
@@ -76,6 +78,7 @@ class ConversationService {
       chatState: conversation.chatState,
       muted: muted,
       encrypted: encrypted,
+      contactId: contactId,
     );
 
     // Copy over the old lastMessage if a new one was not set

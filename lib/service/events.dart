@@ -8,6 +8,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/contact.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -70,6 +71,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
       EventTypeMatcher<RemoveReactionFromMessageCommand>(performRemoveMessageReaction),
       EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
+      EventTypeMatcher<GetContactsCommandDebug>(performGetContacts),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -743,4 +745,8 @@ Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
     command.deviceId,
     command.jid,
   );
+}
+
+Future<void> performGetContacts(GetContactsCommandDebug command, { dynamic extra }) async {
+  await GetIt.I.get<ContactsService>().scanContacts();
 }

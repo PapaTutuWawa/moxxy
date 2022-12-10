@@ -14,6 +14,10 @@ class RosterItem with _$RosterItem {
     String subscription,
     String ask,
     List<String> groups,
+    {
+      // The id of the contact in the device's phonebook if it exists
+      String? contactId,
+    }
   ) = _RosterItem;
 
   const RosterItem._();
