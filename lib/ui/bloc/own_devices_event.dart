@@ -21,7 +21,13 @@ class OwnDeviceRegeneratedEvent extends OwnDevicesEvent {}
 
 /// Triggered by the UI when the device with id [deviceId] should be removed.
 class OwnDeviceRemovedEvent extends OwnDevicesEvent {
-
   OwnDeviceRemovedEvent(this.deviceId);
+  final int deviceId;
+}
+
+/// Triggered by the UI when a device has been verified using the QR code
+class DeviceVerifiedEvent extends OwnDevicesEvent {
+  DeviceVerifiedEvent(this.uri, this.deviceId);
+  final Uri uri;
   final int deviceId;
 }

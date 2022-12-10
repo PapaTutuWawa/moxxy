@@ -7,6 +7,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 
 part 'own_devices_bloc.freezed.dart';
@@ -14,13 +15,13 @@ part 'own_devices_event.dart';
 part 'own_devices_state.dart';
 
 class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
-
   OwnDevicesBloc() : super(OwnDevicesState()) {
     on<OwnDevicesRequestedEvent>(_onRequested);
     on<OwnDeviceEnabledSetEvent>(_onDeviceEnabledSet);
     on<OwnSessionsRecreatedEvent>(_onSessionsRecreated);
     on<OwnDeviceRemovedEvent>(_onDeviceRemoved);
     on<OwnDeviceRegeneratedEvent>(_onDeviceRegenerated);
+    on<DeviceVerifiedEvent>(_onDeviceVerified);
   }
 
   Future<void> _onRequested(OwnDevicesRequestedEvent event, Emitter<OwnDevicesState> emit) async {
@@ -122,6 +123,31 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
         deviceFingerprint: result.device.fingerprint,
         working: false,
       ),
+    );
+  }
+
+  Future<void> _onDeviceVerified(DeviceVerifiedEvent event, Emitter<OwnDevicesState> emit) async {
+    final ownJid = GetIt.I.get<UIDataService>().ownJid!;
+    final result = isVerificationUriValid(
+      state.keys,
+      event.uri,
+      ownJid,
+      event.deviceId,
+    );
+    if (result == -1) return;
+
+    final newDevices = List<OmemoDevice>.from(state.keys);
+    newDevices[result] = newDevices[result].copyWith(
+      verified: true,
+    );
+    emit(state.copyWith(keys: newDevices));
+
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      MarkOmemoDeviceAsVerifiedCommand(
+        jid: ownJid,
+        deviceId: event.deviceId,
+      ),
+      awaitable: false,
     );
   }
 }

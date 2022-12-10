@@ -8,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/avatar.dart';
+import 'package:moxxyv2/shared/models/omemo_device.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
@@ -237,4 +238,53 @@ void showQrCode(BuildContext context, String data, { bool embedLogo = true }) {
       ),
     ),
   );
+}
+
+/// Compares the scanned fingerprint (encoded by [scannedUri]) against the device list
+/// [devices] for the device with id [deviceId] with the JID [deviceJid].
+///
+/// Returns the index of the device in [devices] on success. On failure of any kind,
+/// returns -1.
+int isVerificationUriValid(List<OmemoDevice> devices, Uri scannedUri, String deviceJid, int deviceId) {
+  if (scannedUri.queryParameters.isEmpty) {
+    // No query parameters
+    // TODO(PapaTutuWawa): Show a toast
+    return -1;
+  }
+
+  final jid = scannedUri.path;
+  if (deviceJid != jid) {
+    // The Jid is wrong
+    // TODO(PapaTutuWawa): Show a toast
+    return -1;
+  }
+
+  // TODO(PapaTutuWawa): Use an exception safe version of firstWhere
+  final sidParam = scannedUri.queryParameters
+    .keys
+    .firstWhere((param) => param.startsWith('omemo2-sid-'));
+  final id = int.parse(sidParam.replaceFirst('omemo2-sid-', ''));
+  final fp = scannedUri.queryParameters[sidParam];
+
+  if (id != deviceId) {
+    // The scanned device has the wrong Id
+    // TODO(PapaTutuWawa): Show a toast
+    return -1;
+  }
+
+  final index = devices.indexWhere((device) => device.deviceId == deviceId);
+  if (index == -1) {
+    // The device is not in the list
+    // TODO(PapaTutuWawa): Show a toast
+    return -1;
+  }
+
+  final device = devices[index];
+  if (device.fingerprint != fp) {
+    // The fingerprint is not what we expected
+    // TODO(PapaTutuWawa): Show a toast
+    return -1;
+  }
+
+  return index;
 }
