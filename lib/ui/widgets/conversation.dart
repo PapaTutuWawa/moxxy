@@ -9,8 +9,8 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/service/contacts.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -318,30 +318,22 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   
   @override
   Widget build(BuildContext context) {
-    if (widget.conversation.contactId != null &&
-        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
-      FlutterContacts.config.includeNonVisibleOnAndroid = true;
-      return FutureBuilder<Contact?>(
-        future: FlutterContacts.getContact(
-          widget.conversation.contactId!,
-          withPhoto: false,
-          withProperties: false,
-        ),
-        builder: (_, snapshot) {
-          final hasData = snapshot.hasData && snapshot.data != null;
+    return FutureBuilder<Contact?>(
+      future: GetIt.I.get<ContactsUIService>().getContact(
+        widget.conversation.contactId,
+      ),
+      builder: (_, snapshot) {
+        final hasData = snapshot.hasData && snapshot.data != null;
 
-          if (hasData) {
-            return _build(
-              snapshot.data!.displayName,
-              snapshot.data!.thumbnail,
-            );
-          }
+        if (hasData) {
+          return _build(
+            snapshot.data!.displayName,
+            snapshot.data!.thumbnail,
+          );
+        }
 
-          return _build(widget.conversation.title, null);
-        },
-      );
-    }
-
-    return _build(widget.conversation.title, null);
+        return _build(widget.conversation.title, null);
+      },
+    );
   }
 }

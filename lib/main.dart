@@ -59,6 +59,7 @@ import 'package:moxxyv2/ui/pages/share_selection.dart';
 import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
+import 'package:moxxyv2/ui/service/contacts.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/theme.dart';
@@ -77,6 +78,7 @@ void setupLogging() {
 Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIProgressService>(UIProgressService());
   GetIt.I.registerSingleton<UIDataService>(UIDataService());
+  GetIt.I.registerSingleton<ContactsUIService>(ContactsUIService());
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {

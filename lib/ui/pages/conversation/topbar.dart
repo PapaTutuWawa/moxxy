@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
@@ -8,6 +9,7 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
+import 'package:moxxyv2/ui/service/contacts.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -99,10 +101,28 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                       tag: 'conversation_profile_picture',
                       child: Material(
                         color: const Color.fromRGBO(0, 0, 0, 0),
-                        child: AvatarWrapper(
-                          radius: 25,
-                          avatarUrl: state.conversation!.avatarUrl,
-                          altText: state.conversation!.title,
+                        child: FutureBuilder<Contact?>(
+                          future: GetIt.I.get<ContactsUIService>().getContact(
+                            state.conversation!.contactId,
+                          ),
+                          builder: (_, snapshot) {
+                            final hasData = snapshot.hasData && snapshot.data != null;
+
+                            if (hasData) {
+                              return CircleAvatar(
+                                radius: 25,
+                                backgroundImage: MemoryImage(
+                                  snapshot.data!.thumbnail!,
+                                ),
+                              );
+                            } else {
+                              return AvatarWrapper(
+                                radius: 25,
+                                avatarUrl: state.conversation!.avatarUrl,
+                                altText: state.conversation!.title,
+                              );
+                            }
+                          },
                         ),
                       ),
                     ),
@@ -127,7 +147,20 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  TopbarTitleText(state.conversation!.title),
+                                  FutureBuilder<Contact?>(
+                                    future: GetIt.I.get<ContactsUIService>().getContact(
+                                      state.conversation!.contactId,
+                                    ),
+                                    builder: (_, snapshot) {
+                                      final hasData = snapshot.hasData && snapshot.data != null;
+
+                                      return TopbarTitleText(
+                                        hasData ?
+                                          snapshot.data!.displayName :
+                                          state.conversation!.title,
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
                             ),

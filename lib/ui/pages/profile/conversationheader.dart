@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -7,6 +9,7 @@ import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/service/contacts.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -15,27 +18,34 @@ class ConversationProfileHeader extends StatelessWidget {
   const ConversationProfileHeader(this.conversation, { super.key });
   final Conversation conversation;
 
-  Future<void> _showAvatarFullsize(BuildContext context) async {
+  Future<void> _showAvatarFullsize(BuildContext context, Uint8List? data) async {
     await showDialog<void>(
       context: context,
       builder: (context) {
         return IgnorePointer(
-          child: Image.file(File(conversation.avatarUrl)),
+          child: data != null ?
+            Image.memory(data) :
+            Image.file(File(conversation.avatarUrl)),
         );
       },
     );
   }
   
-  Widget _buildAvatar(BuildContext context) {
-    final avatar = AvatarWrapper(
-      radius: 110,
-      avatarUrl: conversation.avatarUrl,
-      altText: conversation.title,
-    );
+  Widget _buildAvatar(BuildContext context, Uint8List? data) {
+    final avatar = data != null ?
+      CircleAvatar(
+        radius: 110,
+        backgroundImage: MemoryImage(data),
+      ) : 
+      AvatarWrapper(
+        radius: 110,
+        avatarUrl: conversation.avatarUrl,
+        altText: conversation.title,
+      );
 
-    if (conversation.avatarUrl.isNotEmpty) {
+    if (conversation.avatarUrl.isNotEmpty || data != null) {
       return InkWell(
-        onTap: () => _showAvatarFullsize(context),
+        onTap: () => _showAvatarFullsize(context, data),
         child: avatar,
       );
     }
@@ -52,16 +62,40 @@ class ConversationProfileHeader extends StatelessWidget {
         Hero(
           tag: 'conversation_profile_picture',
           child: Material(
-            child: _buildAvatar(context),
+            child: FutureBuilder<Contact?>(
+              future: GetIt.I.get<ContactsUIService>().getContact(
+                conversation.contactId,
+              ),
+              builder: (context, snapshot) {
+                final hasData = snapshot.hasData && snapshot.data != null;
+                
+                if (hasData) {
+                  return _buildAvatar(context, snapshot.data!.thumbnail);
+                }
+
+                return _buildAvatar(context, null);
+              },
+            ),
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            conversation.title,
-            style: const TextStyle(
-              fontSize: 30,
+          child: FutureBuilder<Contact?>(
+            future: GetIt.I.get<ContactsUIService>().getContact(
+              conversation.contactId,
             ),
+            builder: (_, snapshot) {
+              final hasData = snapshot.hasData && snapshot.data != null;
+
+              return Text(
+                hasData ?
+                  snapshot.data!.displayName :
+                  conversation.title,
+                style: const TextStyle(
+                  fontSize: 30,
+                ),
+              );
+            },
           ),
         ),
         Padding(
