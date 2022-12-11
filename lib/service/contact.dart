@@ -85,12 +85,16 @@ class ContactsService {
     await scanContacts();
   }
 
+  Future<bool> isContactIntegrationEnabled() async {
+    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+    return prefs.enableContactIntegration;
+  }
+  
   /// Checks if we a) have the permission to access the contact list and b) if the
   /// user wants to use this integration.
   /// Returns true if we can proceed with accessing the contact list. False, if not.
   Future<bool> _canUseContactIntegration() async {
-    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    if (!prefs.enableContactIntegration) {
+    if (!(await isContactIntegrationEnabled())) {
       _log.finest('_canUseContactIntegration: Returning false since enableContactIntegration is false');
       return false;
     }

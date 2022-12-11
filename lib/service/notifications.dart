@@ -91,10 +91,15 @@ class NotificationsService {
       mimeTypeToEmoji(m.mediaType) :
       m.body;
 
-    final title = await GetIt.I.get<ContactsService>().getContactDisplayName(
-      c.contactId,
-    ) ?? c.title;
-      
+    final css = GetIt.I.get<ContactsService>();
+    final contactIntegrationEnabled = await css.isContactIntegrationEnabled();
+    final title = contactIntegrationEnabled ?
+      c.contactDisplayName ?? c.title :
+      c.title;
+    final avatarPath = contactIntegrationEnabled ?
+      c.contactAvatarPath ?? c.avatarUrl :
+      c.avatarUrl;
+
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
         id: m.id,
@@ -103,7 +108,9 @@ class NotificationsService {
         summary: title,
         title: title,
         body: body,
-        largeIcon: c.avatarUrl.isNotEmpty ? 'file://${c.avatarUrl}' : null,
+        largeIcon: avatarPath.isNotEmpty ?
+          'file://$avatarPath' :
+          null,
         notificationLayout: m.isThumbnailable ?
           NotificationLayout.BigPicture :
           NotificationLayout.Messaging,
@@ -113,8 +120,7 @@ class NotificationsService {
           'conversationJid': c.jid,
           'sid': m.sid,
           'title': title,
-          // TODO(PapaTutuWawa): Somehow handle this
-          'avatarUrl': c.avatarUrl,
+          'avatarUrl': avatarPath,
         },
       ),
       actionButtons: [
