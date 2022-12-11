@@ -74,6 +74,8 @@ Future<void> createDatabase(Database db, int version) async {
       encrypted INTEGER NOT NULL,
       lastMessageId INTEGER,
       contactId TEXT,
+      contactAvatarPath TEXT,
+      contactDisplayName TEXT,
       CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id),
       CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
         ON DELETE SET NULL
@@ -116,6 +118,8 @@ Future<void> createDatabase(Database db, int version) async {
       subscription TEXT NOT NULL,
       ask TEXT NOT NULL,
       contactId TEXT,
+      contactAvatarPath TEXT,
+      contactDisplayName TEXT,
       CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
         ON DELETE SET NULL
     )''',

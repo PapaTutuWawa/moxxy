@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/service/contacts.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -89,31 +86,27 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     super.dispose();
   }
 
-  Widget _buildAvatar(Uint8List? data) {
-    final avatar = data != null ?
-      CircleAvatar(
-        radius: 35,
-        backgroundImage: MemoryImage(data),
-      ) : 
-      AvatarWrapper(
-        radius: 35,
-        avatarUrl: widget.conversation.avatarUrl,
-        altText: widget.conversation.title,
-      );
+  Widget _buildAvatar() {
+    final avatar = AvatarWrapper(
+      radius: 35,
+      avatarUrl: widget.conversation.avatarPathWithOptionalContact,
+      altText: widget.conversation.titleWithOptionalContact,
+    );
 
-      if (widget.enableAvatarOnTap &&
-          (data != null || widget.conversation.avatarUrl.isNotEmpty)) {
-        return InkWell(
-          onTap: () => showDialog<void>(
-            context: context,
-            builder: (context) {
-              return IgnorePointer(
-                child: data != null ?
-                  Image.memory(data) :
-                  Image.file(File(widget.conversation.avatarUrl)),
-              );
-            },
-          ),
+    if (widget.enableAvatarOnTap &&
+        widget.conversation.avatarPathWithOptionalContact != null &&
+        widget.conversation.avatarPathWithOptionalContact!.isNotEmpty) {
+      return InkWell(
+        onTap: () => showDialog<void>(
+          context: context,
+          builder: (context) {
+            return IgnorePointer(
+              child: Image.file(
+                File(widget.conversation.avatarPathWithOptionalContact!),
+              ),
+            );
+          },
+        ),
         child: avatar,
       );
     }
@@ -213,7 +206,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     return const SizedBox();
   }
 
-  Widget _build(String title, Uint8List? avatar) {
+  @override
+  Widget build(BuildContext context) {
     final badgeText = widget.conversation.unreadCounter > 99 ?
       '99+' :
       widget.conversation.unreadCounter.toString();
@@ -230,7 +224,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       padding: const EdgeInsets.all(8),
       child: Row(
         children: [
-          _buildAvatar(avatar),
+          _buildAvatar(),
           Padding(
             padding: const EdgeInsets.only(left: 8),
             child: LimitedBox(
@@ -242,7 +236,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        title,
+                        widget.conversation.titleWithOptionalContact,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
@@ -313,27 +307,6 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           ...widget.extra != null ? [widget.extra!] : [],
         ],
       ),
-    );
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<Contact?>(
-      future: GetIt.I.get<ContactsUIService>().getContact(
-        widget.conversation.contactId,
-      ),
-      builder: (_, snapshot) {
-        final hasData = snapshot.hasData && snapshot.data != null;
-
-        if (hasData) {
-          return _build(
-            snapshot.data!.displayName,
-            snapshot.data!.thumbnail,
-          );
-        }
-
-        return _build(widget.conversation.title, null);
-      },
     );
   }
 }

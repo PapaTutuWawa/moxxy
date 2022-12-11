@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -7,13 +10,16 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ContactWrapper {
-  const ContactWrapper(this.id, this.jid);
+  const ContactWrapper(this.id, this.jid, this.displayName, this.thumbnail);
   final String id;
   final String jid;
+  final String displayName;
+  final Uint8List? thumbnail;
 }
 
 class ContactsService {
@@ -48,7 +54,10 @@ class ContactsService {
   }
   
   Future<List<ContactWrapper>> fetchContactsWithJabber() async {
-    final contacts = await FlutterContacts.getContacts(withProperties: true);
+    final contacts = await FlutterContacts.getContacts(
+      withProperties: true,
+      withThumbnail: true,
+    );
     _log.finest('Got ${contacts.length} contacts');
 
     final jabberContacts = List<ContactWrapper>.empty(growable: true);
@@ -58,7 +67,12 @@ class ContactsService {
       if (index == -1) continue;
 
       jabberContacts.add(
-        ContactWrapper(c.id, c.socialMedias[index].userName),
+        ContactWrapper(
+          c.id,
+          c.socialMedias[index].userName,
+          c.displayName,
+          c.thumbnail,
+        ),
       );
     }
     _log.finest('${jabberContacts.length} contacts have an XMPP address');
@@ -120,7 +134,32 @@ class ContactsService {
 
     return (await _getContactIds())[jid];
   }
-  
+
+  Future<ContactWrapper?> getContactForJid(String jid) async {
+    final id = await getContactIdForJid(jid);
+    if (id == null) return null;
+
+    final contact = await FlutterContacts.getContact(id);
+    if (contact == null) return null;
+
+    return ContactWrapper(
+      id,
+      jid,
+      contact.displayName,
+      contact.thumbnail,
+    );
+  }
+
+  Future<String?> getProfilePicturePathForJid(String jid) async {
+    final id = await getContactIdForJid(jid);
+    if (id == null) return null;
+
+    final avatarPath = await getContactProfilePicturePath(id);
+    return File(avatarPath).existsSync() ?
+      avatarPath :
+      null;
+  }
+
   Future<void> scanContacts() async {
     final db = GetIt.I.get<DatabaseService>();
     final cs = GetIt.I.get<ConversationService>();
@@ -133,7 +172,28 @@ class ContactsService {
       if (index != -1) continue;
 
       await db.removeContactId(id);
-      _contactIds!.remove(knownContactIds[id]);
+      // TODO(PapaTutuWawa): This does not work
+      //_contactIds!.remove(knownContactIds[id]);
+
+      final avatarPath = await getContactProfilePicturePath(id);
+      final avatarFile = File(avatarPath);
+      if (avatarFile.existsSync()) {
+        unawaited(avatarFile.delete());
+
+        /*final c = await cs.getConversationByJid('');
+        if (c != null) {
+          final newConv = await cs.updateConversation(
+            c.id,
+            contactId: null,
+            contactAvatarPath: null,
+          );
+          sendEvent(
+            ConversationUpdatedEvent(
+              conversation: newConv,
+            ),
+          );
+        }*/
+      }
     }
 
     final modifiedRosterItems = List<RosterItem>.empty(growable: true);
@@ -143,11 +203,20 @@ class ContactsService {
         _contactIds![contact.jid] = contact.id;
       }
 
+      // Store the avatar image
+      final contactAvatarPath = await getContactProfilePicturePath(contact.id);
+      if (contact.thumbnail != null) {
+        final file = File(contactAvatarPath);
+        await file.writeAsBytes(contact.thumbnail!);
+      }
+
       final c = await cs.getConversationByJid(contact.jid);
       if (c != null) {
         final newConv = await cs.updateConversation(
           c.id,
           contactId: contact.id,
+          contactAvatarPath: contactAvatarPath,
+          contactDisplayName: contact.displayName,
         );
         sendEvent(
           ConversationUpdatedEvent(
@@ -163,6 +232,8 @@ class ContactsService {
         final newRosterItem = await rs.updateRosterItem(
           r.id,
           contactId: contact.id,
+          contactAvatarPath: contactAvatarPath,
+          contactDisplayName: contact.displayName,
         );
         modifiedRosterItems.add(newRosterItem);
       } else {

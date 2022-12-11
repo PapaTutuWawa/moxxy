@@ -9,6 +9,7 @@ import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration.dart';
+import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_avatar.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
@@ -68,7 +69,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 14,
+      version: 15,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -132,6 +133,10 @@ class DatabaseService {
         if (oldVersion < 14) {
           _log.finest('Running migration for database version 14');
           await upgradeFromV13ToV14(db);
+        }
+        if (oldVersion < 15) {
+          _log.finest('Running migration for database version 15');
+          await upgradeFromV14ToV15(db);
         }
       },
     );
@@ -215,6 +220,8 @@ class DatabaseService {
     bool? muted,
     bool? encrypted,
     Object? contactId = notSpecified,
+    Object? contactAvatarPath = notSpecified,
+    Object? contactDisplayName = notSpecified,
   }) async {
     final cd = (await _db.query(
       'Conversations',
@@ -254,6 +261,12 @@ class DatabaseService {
     if (contactId != notSpecified) {
       c['contactId'] = contactId as String?;
     }
+    if (contactAvatarPath != notSpecified) {
+      c['contactAvatarPath'] = contactAvatarPath as String?;
+    }
+    if (contactDisplayName != notSpecified) {
+      c['contactDisplayName'] = contactDisplayName as String?;
+    }
 
     await _db.update(
       'Conversations',
@@ -285,6 +298,8 @@ class DatabaseService {
     bool muted,
     bool encrypted,
     String? contactId,
+    String? contactAvatarPath,
+    String? contactDisplayName,
   ) async {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
@@ -303,6 +318,8 @@ class DatabaseService {
       encrypted,
       ChatState.gone,
       contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
     );
 
     return conversation.copyWith(
@@ -618,6 +635,8 @@ class DatabaseService {
     String subscription,
     String ask,
     String? contactId,
+    String? contactAvatarPath,
+    String? contactDisplayName,
     {
       List<String> groups = const [],
     }
@@ -633,6 +652,8 @@ class DatabaseService {
       ask,
       <String>[],
       contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
     );
 
     return i.copyWith(
@@ -650,6 +671,8 @@ class DatabaseService {
       String? ask,
       List<String>? groups,
       Object? contactId = notSpecified,
+      Object? contactAvatarPath = notSpecified,
+      Object? contactDisplayName = notSpecified,
     }
   ) async {
     final id_ = (await _db.query(
@@ -682,6 +705,12 @@ class DatabaseService {
     }
     if (contactId != notSpecified) {
       i['contactId'] = contactId as String?;
+    }
+    if (contactAvatarPath != notSpecified) {
+      i['contactAvatarPath'] = contactAvatarPath as String?;
+    }
+    if (contactDisplayName != notSpecified) {
+      i['contactDisplayName'] = contactDisplayName as String?;
     }
 
     await _db.update(

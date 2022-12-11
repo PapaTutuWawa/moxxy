@@ -211,7 +211,9 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
     );
     return;
   } else {
+    final css = GetIt.I.get<ContactsService>();
     final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+    final contactId = await css.getContactIdForJid(command.jid);
     final conversation = await cs.addConversationFromData(
       command.title,
       null,
@@ -222,7 +224,9 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       true,
       preferences.defaultMuteState,
       preferences.enableOmemoByDefault,
-      await GetIt.I.get<ContactsService>().getContactIdForJid(command.jid),
+      contactId,
+      await css.getProfilePicturePathForJid(command.jid),
+      await css.getContactDisplayName(contactId),
     );
 
     sendEvent(
@@ -367,6 +371,8 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       id: id,
     );
   } else {
+    final css = GetIt.I.get<ContactsService>();
+    final contactId = await css.getContactIdForJid(jid);
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final c = await cs.addConversationFromData(
       jid.split('@')[0],
@@ -378,7 +384,9 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       true,
       prefs.defaultMuteState,
       prefs.enableOmemoByDefault,
-      await GetIt.I.get<ContactsService>().getContactIdForJid(jid),
+      contactId,
+      await css.getProfilePicturePathForJid(jid),
+      await css.getContactDisplayName(contactId),
     );
     sendEvent(
       AddContactResultEvent(conversation: c, added: true),

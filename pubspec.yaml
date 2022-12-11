@@ -134,7 +134,7 @@ dependency_overrides:
   #moxxmpp:
   #  path: ../moxxmpp/packages/moxxmpp
   #omemo_dart:
-  #  path: ../../Personal/omemo_dart
+  #  path: ../../Personal/omemo_dart$
 
   moxxmpp:
     git:

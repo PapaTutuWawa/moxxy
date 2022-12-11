@@ -66,6 +66,8 @@ class ConversationService {
     bool? muted,
     bool? encrypted,
     Object? contactId = notSpecified,
+    Object? contactAvatarPath = notSpecified,
+    Object? contactDisplayName = notSpecified,
   }) async {
     final conversation = (await _getConversationById(id))!;
     var newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
@@ -79,6 +81,8 @@ class ConversationService {
       muted: muted,
       encrypted: encrypted,
       contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
     );
 
     // Copy over the old lastMessage if a new one was not set
@@ -102,6 +106,8 @@ class ConversationService {
     bool muted,
     bool encrypted,
     String? contactId,
+    String? contactAvatarPath,
+    String? contactDisplayName,
   ) async {
     final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
       title,
@@ -114,6 +120,8 @@ class ConversationService {
       muted,
       encrypted,
       contactId,
+      contactAvatarPath,
+      contactDisplayName,
     );
 
     _conversationCache.cache(newConversation.id, newConversation);

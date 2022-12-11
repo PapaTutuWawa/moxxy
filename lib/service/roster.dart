@@ -28,6 +28,8 @@ typedef AddRosterItemFunction = Future<RosterItem> Function(
   String subscription,
   String ask,
   String? contactId,
+  String? contactAvatarPath,
+  String? contactDisplayName,
   {
     List<String> groups,
   }
@@ -59,6 +61,7 @@ Future<RosterDiffEvent> processRosterDiff(
   GetConversationFunction getConversationByJid,
   SendEventFunction _sendEvent,
 ) async {
+  final css = GetIt.I.get<ContactsService>();
   final removed = List<String>.empty(growable: true);
   final modified = List<RosterItem>.empty(growable: true);
   final added = List<RosterItem>.empty(growable: true);
@@ -101,6 +104,7 @@ Future<RosterDiffEvent> processRosterDiff(
           removed.add(item.jid);
         } else {
           // Item has been added and we don't have it locally
+          final contactId = await css.getContactIdForJid(item.jid);
           final newItem = await addRosterItemFromData(
             '',
             '',
@@ -108,7 +112,9 @@ Future<RosterDiffEvent> processRosterDiff(
             item.name ?? item.jid.split('@')[0],
             item.subscription,
             item.ask ?? '',
-            await GetIt.I.get<ContactsService>().getContactIdForJid(item.jid),
+            contactId,
+            await css.getProfilePicturePathForJid(item.jid),
+            await css.getContactDisplayName(contactId),
             groups: item.groups,
           );
 
@@ -140,6 +146,7 @@ Future<RosterDiffEvent> processRosterDiff(
         }
       } else {
         // Item is new
+        final contactId = await css.getContactIdForJid(item.jid);
         added.add(await addRosterItemFromData(
             '',
             '',
@@ -147,7 +154,9 @@ Future<RosterDiffEvent> processRosterDiff(
             item.jid.split('@')[0],
             item.subscription,
             item.ask ?? '',
-            await GetIt.I.get<ContactsService>().getContactIdForJid(item.jid),
+            contactId,
+            await css.getProfilePicturePathForJid(item.jid),
+            await css.getContactDisplayName(contactId),
             groups: item.groups,
         ),);
       }
@@ -200,6 +209,8 @@ class RosterService {
     String subscription,
     String ask,
     String? contactId,
+    String? contactAvatarPath,
+    String? contactDisplayName,
     {
       List<String> groups = const [],
     }
@@ -212,6 +223,8 @@ class RosterService {
       subscription,
       ask,
       contactId,
+      contactAvatarPath,
+      contactDisplayName,
       groups: groups,
     );
 
@@ -231,6 +244,8 @@ class RosterService {
       String? ask,
       List<String>? groups,
       Object? contactId = notSpecified,
+      Object? contactAvatarPath = notSpecified,
+      Object? contactDisplayName = notSpecified,
     }
   ) async {
     final newItem = await GetIt.I.get<DatabaseService>().updateRosterItem(
@@ -242,6 +257,8 @@ class RosterService {
       ask: ask,
       groups: groups,
       contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
     );
 
     // Update cache
@@ -307,6 +324,8 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(String avatarUrl, String avatarHash, String jid, String title) async {
+    final css = GetIt.I.get<ContactsService>();
+    final contactId = await css.getContactIdForJid(jid);
     final item = await addRosterItemFromData(
       avatarUrl,
       avatarHash,
@@ -314,7 +333,9 @@ class RosterService {
       title,
       'none',
       '',
-      await GetIt.I.get<ContactsService>().getContactIdForJid(jid),
+      contactId,
+      await css.getProfilePicturePathForJid(jid),
+      await css.getContactDisplayName(contactId),
     );
     final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
     if (!result) {

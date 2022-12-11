@@ -15,8 +15,12 @@ class RosterItem with _$RosterItem {
     String ask,
     List<String> groups,
     {
-      // The id of the contact in the device's phonebook if it exists
+      // The id of the contact in the device's phonebook, if it exists
       String? contactId,
+      // The path to the profile picture of the contact, if it exists
+      String? contactAvatarPath,
+      // The contact's display name, if it exists
+      String? contactDisplayName,
     }
   ) = _RosterItem;
 
