@@ -23,18 +23,17 @@ class ContactWrapper {
 }
 
 class ContactsService {
-  ContactsService() : _log = Logger('ContactsService') {
+  ContactsService() {
     // NOTE: Apparently, this means that if false, contacts that are in 0 groups
     //       are not returned.
     FlutterContacts.config.includeNonVisibleOnAndroid = true;
   }
-  final Logger _log;
-
-  bool enabled = false;
+  final Logger _log = Logger('ContactsService');
   
   /// JID -> Id
   Map<String, String>? _contactIds;
-  /// Contact ID -> Display name from the contact or null if we cached that there is none
+  /// Contact ID -> Display name from the contact or null if we cached that there is
+  /// none
   final Map<String, String?> _contactDisplayNames = {};
 
   Future<void> init() async {
@@ -52,8 +51,14 @@ class ContactsService {
   void disableDatabaseListener() {
     FlutterContacts.removeListener(_onContactsDatabaseUpdate);
   }
-  
-  Future<List<ContactWrapper>> fetchContactsWithJabber() async {
+
+  Future<void> _onContactsDatabaseUpdate() async {
+    _log.finest('Got contacts database update');
+    await scanContacts();
+  }
+
+  /// Queries the contact list for contacts that include a XMPP URI.
+  Future<List<ContactWrapper>> _fetchContactsWithJabber() async {
     final contacts = await FlutterContacts.getContacts(
       withProperties: true,
       withThumbnail: true,
@@ -80,11 +85,8 @@ class ContactsService {
     return jabberContacts;
   }
 
-  Future<void> _onContactsDatabaseUpdate() async {
-    _log.finest('Got contacts database update');
-    await scanContacts();
-  }
-
+  /// Checks whether the contact integration is enabled by the user in the preferences.
+  /// Returns true if that is the case. If not, returns false.
   Future<bool> isContactIntegrationEnabled() async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     return prefs.enableContactIntegration;
@@ -107,7 +109,9 @@ class ContactsService {
 
     return true;
   }
-  
+
+  /// Queries the database for the mapping of JID -> Contact ID. The result is
+  /// cached after the first call.
   Future<Map<String, String>> _getContactIds() async {
     if (_contactIds != null) return _contactIds!;
 
@@ -132,28 +136,20 @@ class ContactsService {
     _contactDisplayNames[id] = result?.displayName;
     return result?.displayName;
   }
-  
+
+  /// Returns the contact Id for the JID [jid]. If either the contact integration is
+  /// disabled, not possible (due to missing permissions) or there is no contact with
+  /// [jid] as their Jabber attribute, returns null.
   Future<String?> getContactIdForJid(String jid) async {
     if (!(await _canUseContactIntegration())) return null;
 
     return (await _getContactIds())[jid];
   }
 
-  Future<ContactWrapper?> getContactForJid(String jid) async {
-    final id = await getContactIdForJid(jid);
-    if (id == null) return null;
-
-    final contact = await FlutterContacts.getContact(id);
-    if (contact == null) return null;
-
-    return ContactWrapper(
-      id,
-      jid,
-      contact.displayName,
-      contact.thumbnail,
-    );
-  }
-
+  /// Returns the path to the avatar file for the contact with JID [jid] as their
+  /// Jabber attribute. If either the contact integration is disabled, not possible
+  /// (due to missing permissions) or there is no contact with [jid] as their Jabber
+  /// attribute, returns null.
   Future<String?> getProfilePicturePathForJid(String jid) async {
     final id = await getContactIdForJid(jid);
     if (id == null) return null;
@@ -168,52 +164,77 @@ class ContactsService {
     final db = GetIt.I.get<DatabaseService>();
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
-    final contacts = await fetchContactsWithJabber();
+    final contacts = await _fetchContactsWithJabber();
+    // JID -> Id
     final knownContactIds = await _getContactIds();
+    // Id -> JID
+    final knownContactIdsReverse = knownContactIds
+      .map((key, value) => MapEntry(value, key));
+    final modifiedRosterItems = List<RosterItem>.empty(growable: true);
 
     for (final id in knownContactIds.values) {
       final index = contacts.indexWhere((c) => c.id == id);
       if (index != -1) continue;
 
+      final jid = knownContactIdsReverse[id]!;
       await db.removeContactId(id);
-      // TODO(PapaTutuWawa): This does not work
-      //_contactIds!.remove(knownContactIds[id]);
+      _contactIds!.remove(knownContactIdsReverse[id]);
 
+      // Remove the avatar file, if it existed
       final avatarPath = await getContactProfilePicturePath(id);
       final avatarFile = File(avatarPath);
       if (avatarFile.existsSync()) {
         unawaited(avatarFile.delete());
+      }
 
-        /*final c = await cs.getConversationByJid('');
-        if (c != null) {
-          final newConv = await cs.updateConversation(
-            c.id,
-            contactId: null,
-            contactAvatarPath: null,
-          );
-          sendEvent(
-            ConversationUpdatedEvent(
-              conversation: newConv,
-            ),
-          );
-        }*/
+      // Remove the contact attributes from the conversation, if it existed
+      final c = await cs.getConversationByJid(jid);
+      if (c != null) {
+        final newConv = await cs.updateConversation(
+          c.id,
+          contactId: null,
+          contactAvatarPath: null,
+          contactDisplayName: null,
+        );
+        sendEvent(
+          ConversationUpdatedEvent(
+            conversation: newConv,
+          ),
+        );
+      }
+
+      // Remove the contact attributes from the roster item, if it existed
+      final r = await rs.getRosterItemByJid(jid);
+      if (r != null) {
+        final newRosterItem = await rs.updateRosterItem(
+          r.id,
+          contactId: null,
+          contactAvatarPath: null,
+          contactDisplayName: null,
+        );
+        modifiedRosterItems.add(newRosterItem);
       }
     }
 
-    final modifiedRosterItems = List<RosterItem>.empty(growable: true);
     for (final contact in contacts) {
+      // Add the ID to the cache and the database if it does not already exist
       if (!knownContactIds.containsKey(contact.jid)) {
         await db.addContactId(contact.id, contact.jid);
         _contactIds![contact.jid] = contact.id;
       }
 
       // Store the avatar image
+      // NOTE: We do not check if the file already exists since this function may also
+      //       be triggered by the contact database listener. That listener fires when
+      //       a change happened, without telling us exactly what happened. So, we
+      //       just overwrite it.
       final contactAvatarPath = await getContactProfilePicturePath(contact.id);
       if (contact.thumbnail != null) {
         final file = File(contactAvatarPath);
         await file.writeAsBytes(contact.thumbnail!);
       }
 
+      // Update a possibly existing conversation
       final c = await cs.getConversationByJid(contact.jid);
       if (c != null) {
         final newConv = await cs.updateConversation(
@@ -227,10 +248,9 @@ class ContactsService {
             conversation: newConv,
           ),
         );
-      } else {
-        _log.finest('Found no conversation with jid ${contact.jid}');
       }
 
+      // Update a possibly existing roster item
       final r = await rs.getRosterItemByJid(contact.jid);
       if (r != null) {
         final newRosterItem = await rs.updateRosterItem(

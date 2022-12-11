@@ -314,7 +314,9 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
 }
 
 Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extra }) async {
-  await GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
+  final ps = GetIt.I.get<PreferencesService>();
+  final oldPrefs = await ps.getPreferences();
+  await ps.modifyPreferences((_) => command.preferences);
 
   // Set the logging mode
   if (!kDebugMode) {
@@ -322,17 +324,18 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
     Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
   }
 
-  // Scan all contacts if the setting is enabled
-  final cs = GetIt.I.get<ContactsService>();
+  // Scan all contacts if the setting is enabled or disable the database callback
+  // if it is disabled.
+  final css = GetIt.I.get<ContactsService>();
   if (command.preferences.enableContactIntegration) {
-    if (!cs.enabled) {
-      cs.enableDatabaseListener();
+    if (!oldPrefs.enableContactIntegration) {
+      css.enableDatabaseListener();
     }
 
-    unawaited(cs.scanContacts());
+    unawaited(css.scanContacts());
   } else {
-    if (cs.enabled) {
-      cs.disableDatabaseListener();
+    if (oldPrefs.enableContactIntegration) {
+      css.disableDatabaseListener();
     }
   }
   
