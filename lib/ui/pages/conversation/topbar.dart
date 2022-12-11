@@ -10,6 +10,7 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
+import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum ConversationOption {
@@ -99,10 +100,12 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                       tag: 'conversation_profile_picture',
                       child: Material(
                         color: const Color.fromRGBO(0, 0, 0, 0),
-                        child: AvatarWrapper(
-                          radius: 25,
-                          avatarUrl: state.conversation!.contactAvatarPath ?? state.conversation!.avatarUrl,
-                          altText: state.conversation!.contactDisplayName ?? state.conversation!.title,
+                        child: RebuildOnContactIntegrationChange(
+                          builder: () => AvatarWrapper(
+                            radius: 25,
+                            avatarUrl: state.conversation!.avatarPathWithOptionalContact,
+                            altText: state.conversation!.titleWithOptionalContact,
+                          ),
                         ),
                       ),
                     ),
@@ -127,8 +130,10 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  TopbarTitleText(
-                                    state.conversation!.contactDisplayName ?? state.conversation!.title,
+                                  RebuildOnContactIntegrationChange(
+                                    builder: () => TopbarTitleText(
+                                      state.conversation!.titleWithOptionalContact,
+                                    ),
                                   ),
                                 ],
                               ),

@@ -13,6 +13,7 @@ import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
+import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 
 class ConversationsListRow extends StatefulWidget {
   const ConversationsListRow(
@@ -87,31 +88,35 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   }
 
   Widget _buildAvatar() {
-    final avatar = AvatarWrapper(
-      radius: 35,
-      avatarUrl: widget.conversation.avatarPathWithOptionalContact,
-      altText: widget.conversation.titleWithOptionalContact,
+    return RebuildOnContactIntegrationChange(
+      builder: () {
+        final avatar = AvatarWrapper(
+          radius: 35,
+          avatarUrl: widget.conversation.avatarPathWithOptionalContact,
+          altText: widget.conversation.titleWithOptionalContact,
+        );
+
+        if (widget.enableAvatarOnTap &&
+          widget.conversation.avatarPathWithOptionalContact != null &&
+          widget.conversation.avatarPathWithOptionalContact!.isNotEmpty) {
+          return InkWell(
+            onTap: () => showDialog<void>(
+              context: context,
+              builder: (context) {
+                return IgnorePointer(
+                  child: Image.file(
+                    File(widget.conversation.avatarPathWithOptionalContact!),
+                  ),
+                );
+              },
+            ),
+            child: avatar,
+          );
+        }
+
+        return avatar;
+      },
     );
-
-    if (widget.enableAvatarOnTap &&
-        widget.conversation.avatarPathWithOptionalContact != null &&
-        widget.conversation.avatarPathWithOptionalContact!.isNotEmpty) {
-      return InkWell(
-        onTap: () => showDialog<void>(
-          context: context,
-          builder: (context) {
-            return IgnorePointer(
-              child: Image.file(
-                File(widget.conversation.avatarPathWithOptionalContact!),
-              ),
-            );
-          },
-        ),
-        child: avatar,
-      );
-    }
-
-    return avatar;
   }
 
   Widget _buildLastMessagePreview() {
@@ -235,14 +240,16 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        widget.conversation.titleWithOptionalContact,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
+                      RebuildOnContactIntegrationChange(
+                        builder: () => Text(
+                          widget.conversation.titleWithOptionalContact,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       Visibility(
                         visible: widget.showLock,

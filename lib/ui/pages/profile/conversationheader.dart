@@ -9,6 +9,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
+import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
@@ -27,21 +28,25 @@ class ConversationProfileHeader extends StatelessWidget {
   }
   
   Widget _buildAvatar(BuildContext context) {
-    final path = conversation.avatarPathWithOptionalContact;
-    final avatar = AvatarWrapper(
-      radius: 110,
-      avatarUrl: path,
-      altText: conversation.titleWithOptionalContact,
+    return RebuildOnContactIntegrationChange(
+      builder: () {
+        final path = conversation.avatarPathWithOptionalContact;
+        final avatar = AvatarWrapper(
+          radius: 110,
+          avatarUrl: path,
+          altText: conversation.titleWithOptionalContact,
+        );
+
+        if (path != null && path.isNotEmpty) {
+          return InkWell(
+            onTap: () => _showAvatarFullsize(context, path),
+            child: avatar,
+          );
+        }
+
+        return avatar;
+      },
     );
-
-    if (path != null && path.isNotEmpty) {
-      return InkWell(
-        onTap: () => _showAvatarFullsize(context, path),
-        child: avatar,
-      );
-    }
-
-    return avatar;
   }
   
   @override
@@ -58,10 +63,12 @@ class ConversationProfileHeader extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            conversation.titleWithOptionalContact,
-            style: const TextStyle(
-              fontSize: 30,
+          child: RebuildOnContactIntegrationChange(
+            builder: () => Text(
+              conversation.titleWithOptionalContact,
+              style: const TextStyle(
+                fontSize: 30,
+              ),
             ),
           ),
         ),
