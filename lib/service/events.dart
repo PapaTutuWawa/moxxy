@@ -71,7 +71,6 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
       EventTypeMatcher<RemoveReactionFromMessageCommand>(performRemoveMessageReaction),
       EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
-      EventTypeMatcher<GetContactsCommandDebug>(performGetContacts),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -769,8 +768,4 @@ Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
     command.deviceId,
     command.jid,
   );
-}
-
-Future<void> performGetContacts(GetContactsCommandDebug command, { dynamic extra }) async {
-  await GetIt.I.get<ContactsService>().scanContacts();
 }

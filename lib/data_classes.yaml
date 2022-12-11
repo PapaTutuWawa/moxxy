@@ -442,11 +442,6 @@ files:
         attributes:
           deviceId: int
           jid: String
-      - name: GetContactsCommandDebug
-        extends: BackgroundCommand
-        implements:
-          - JsonImplementation
-        attributes:
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
