@@ -176,7 +176,7 @@ class DatabaseService {
       tmp.add(
         Conversation.fromDatabaseJson(
           c,
-          rosterItem != null,
+          rosterItem != null && !rosterItem.pseudoRosterItem,
           rosterItem?.subscription ?? 'none',
           sharedMediaRaw,
           lastMessage,
@@ -317,7 +317,7 @@ class DatabaseService {
       <SharedMedium>[],
       -1,
       open,
-      rosterItem != null,
+      rosterItem != null && !rosterItem.pseudoRosterItem,
       rosterItem?.subscription ?? 'none',
       muted,
       encrypted,
