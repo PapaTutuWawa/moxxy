@@ -74,8 +74,21 @@ Future<RosterDiffEvent> processRosterDiff(
       if (litem != null) {
         if (item.subscription == 'remove') {
           // We have the item locally but it has been removed
-          await removeRosterItemByJid(item.jid);
-          removed.add(item.jid);
+
+          if (litem.contactId != null) {
+            // We have the contact associated with a contact
+            final newItem = await updateRosterItem(
+              litem.id,
+              ask: 'none',
+              subscription: 'none',
+              pseudoRosterItem: true,
+            );
+            modified.add(newItem);
+          } else {
+            await removeRosterItemByJid(item.jid);
+            removed.add(item.jid);
+          }
+
           continue;
         }
 
