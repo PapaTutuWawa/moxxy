@@ -174,7 +174,7 @@ class ContactsService {
     final addedRosterItems = List<RosterItem>.empty(growable: true);
     final removedRosterItems = List<String>.empty(growable: true);
 
-    for (final id in knownContactIds.values) {
+    for (final id in List<String>.from(knownContactIds.values)) {
       final index = contacts.indexWhere((c) => c.id == id);
       if (index != -1) continue;
 
@@ -209,6 +209,7 @@ class ContactsService {
       final r = await rs.getRosterItemByJid(jid);
       if (r != null) {
         if (r.pseudoRosterItem) {
+          _log.finest('Removing pseudo roster item $jid');
           await rs.removeRosterItem(r.id);
           removedRosterItems.add(jid);
         } else {

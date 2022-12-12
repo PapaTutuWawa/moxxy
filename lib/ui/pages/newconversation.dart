@@ -125,9 +125,14 @@ class NewConversationPage extends StatelessWidget {
                         false,
                         ChatState.gone,
                         contactId: item.contactId,
+                        contactAvatarPath: item.contactAvatarPath,
+                        contactDisplayName: item.contactDisplayName,
                       ),
                       false,
                       showTimestamp: false,
+                      titleSuffixIcon: item.pseudoRosterItem ?
+                        Icons.smartphone :
+                        null,
                     ),
                   ),
                 );

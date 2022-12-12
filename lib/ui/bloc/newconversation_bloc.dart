@@ -89,6 +89,10 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
     final roster = List<RosterItem>.from(event.added);
 
     for (final item in state.roster) {
+      // Handle removed items
+      if (event.removed.contains(item.jid)) continue;
+
+      // Handle modified items
       final modified = firstWhereOrNull(
         event.modified,
         (RosterItem i) => i.id == item.id,

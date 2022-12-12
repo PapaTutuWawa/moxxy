@@ -21,7 +21,7 @@ class ConversationsListRow extends StatefulWidget {
     this.conversation,
     this.update, {
       this.showTimestamp = true,
-      this.showLock = false,
+      this.titleSuffixIcon,
       this.extra,
       this.enableAvatarOnTap = false,
       this.avatarWidget,
@@ -31,7 +31,7 @@ class ConversationsListRow extends StatefulWidget {
   final Conversation conversation;
   final double maxTextWidth;
   final bool update; // Should a timer run to update the timestamp
-  final bool showLock;
+  final IconData? titleSuffixIcon;
   final bool showTimestamp;
   final bool enableAvatarOnTap;
   final Widget? avatarWidget;
@@ -251,16 +251,17 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Visibility(
-                        visible: widget.showLock,
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            Icons.lock,
-                            size: 17,
+                      ...widget.titleSuffixIcon != null ?
+                        [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Icon(
+                              widget.titleSuffixIcon,
+                              size: 17,
+                            ),
                           ),
-                        ),
-                      ),
+                        ] :
+                        [],
                       Visibility(
                         visible: showTimestamp,
                         child: const Spacer(),

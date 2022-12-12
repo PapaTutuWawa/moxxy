@@ -87,7 +87,9 @@ class ShareSelectionPage extends StatelessWidget {
                     ChatState.gone,
                   ),
                   false,
-                  showLock: item.isEncrypted,
+                  titleSuffixIcon: item.isEncrypted ?
+                    Icons.lock :
+                    null,
                   showTimestamp: false,
                   extra: Checkbox(
                     value: isSelected,
