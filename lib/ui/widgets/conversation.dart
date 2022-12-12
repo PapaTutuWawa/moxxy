@@ -25,11 +25,13 @@ class ConversationsListRow extends StatefulWidget {
       this.extra,
       this.enableAvatarOnTap = false,
       this.avatarWidget,
+      this.extraWidgetWidth = 0,
       super.key,
     }
   );
   final Conversation conversation;
   final double maxTextWidth;
+  final double extraWidgetWidth;
   final bool update; // Should a timer run to update the timestamp
   final IconData? titleSuffixIcon;
   final bool showTimestamp;
@@ -217,7 +219,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       '99+' :
       widget.conversation.unreadCounter.toString();
     final screenWidth = MediaQuery.of(context).size.width;
-    final width = screenWidth - 24 - 70;
+    final width = screenWidth - 24 - 70 - widget.extraWidgetWidth;
     final textWidth = screenWidth * 0.6;
 
     final showTimestamp = widget.conversation.lastChangeTimestamp != timestampNever && widget.showTimestamp;
@@ -308,11 +310,11 @@ class ConversationsListRowState extends State<ConversationsListRow> {
               ),
             ),
           ),
-          Visibility(
-            visible: widget.extra != null,
-            child: const Spacer(),
-          ),
-          ...widget.extra != null ? [widget.extra!] : [],
+          ...widget.extra != null ? [
+            const Spacer(),
+              widget.extra!
+            ] :
+            [],
         ],
       ),
     );
