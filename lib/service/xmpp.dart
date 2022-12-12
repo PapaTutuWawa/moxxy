@@ -696,14 +696,7 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final conversation = await cs.getConversationByJid(event.from.toBare().toString());
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    if (conversation != null) { 
-      final newConversation = await cs.updateConversation(
-        conversation.id,
-        open: true,
-        lastChangeTimestamp: timestamp,
-      );
-      sendEvent(ConversationUpdatedEvent(conversation: newConversation));
-    } else {
+    if (conversation != null && !conversation.open) {
       // TODO(Unknown): Make it configurable if this should happen
       final bare = event.from.toBare().toString();
       final contactId = await css.getContactIdForJid(bare);
