@@ -171,6 +171,8 @@ class ContactsService {
     final knownContactIdsReverse = knownContactIds
       .map((key, value) => MapEntry(value, key));
     final modifiedRosterItems = List<RosterItem>.empty(growable: true);
+    final addedRosterItems = List<RosterItem>.empty(growable: true);
+    final removedRosterItems = List<String>.empty(growable: true);
 
     for (final id in knownContactIds.values) {
       final index = contacts.indexWhere((c) => c.id == id);
@@ -206,13 +208,18 @@ class ContactsService {
       // Remove the contact attributes from the roster item, if it existed
       final r = await rs.getRosterItemByJid(jid);
       if (r != null) {
-        final newRosterItem = await rs.updateRosterItem(
-          r.id,
-          contactId: null,
-          contactAvatarPath: null,
-          contactDisplayName: null,
-        );
-        modifiedRosterItems.add(newRosterItem);
+        if (r.pseudoRosterItem) {
+          await rs.removeRosterItem(r.id);
+          removedRosterItems.add(jid);
+        } else {
+          final newRosterItem = await rs.updateRosterItem(
+            r.id,
+            contactId: null,
+            contactAvatarPath: null,
+            contactDisplayName: null,
+          );
+          modifiedRosterItems.add(newRosterItem);
+        }
       }
     }
 
@@ -261,14 +268,30 @@ class ContactsService {
         );
         modifiedRosterItems.add(newRosterItem);
       } else {
-        // TODO(PapaTutuWawa): Create it
+        final newRosterItem = await rs.addRosterItemFromData(
+          '',
+          '',
+          contact.jid,
+          contact.jid.split('@').first,
+          'none',
+          'none',
+          true,
+          contact.id,
+          contactAvatarPath,
+          contact.displayName,
+        );
+        addedRosterItems.add(newRosterItem);
       }
     }
 
-    if (modifiedRosterItems.isNotEmpty) {
+    if (addedRosterItems.isNotEmpty ||
+        modifiedRosterItems.isNotEmpty ||
+        removedRosterItems.isNotEmpty) {
       sendEvent(
         RosterDiffEvent(
+          added: addedRosterItems,
           modified: modifiedRosterItems,
+          removed: removedRosterItems,
         ),
       );
     }

@@ -27,6 +27,7 @@ typedef AddRosterItemFunction = Future<RosterItem> Function(
   String title,
   String subscription,
   String ask,
+  bool pseudoRosterItem,
   String? contactId,
   String? contactAvatarPath,
   String? contactDisplayName,
@@ -41,6 +42,7 @@ typedef UpdateRosterItemFunction = Future<RosterItem> Function(
     String? title,
     String? subscription,
     String? ask,
+    Object pseudoRosterItem,
     List<String>? groups,
   }
 );
@@ -83,6 +85,7 @@ Future<RosterDiffEvent> processRosterDiff(
           subscription: item.subscription,
           title: item.name,
           ask: item.ask,
+          pseudoRosterItem: false,
           groups: item.groups,
         );
 
@@ -112,6 +115,7 @@ Future<RosterDiffEvent> processRosterDiff(
             item.name ?? item.jid.split('@')[0],
             item.subscription,
             item.ask ?? '',
+            false,
             contactId,
             await css.getProfilePicturePathForJid(item.jid),
             await css.getContactDisplayName(contactId),
@@ -130,6 +134,7 @@ Future<RosterDiffEvent> processRosterDiff(
             litem.id,
             title: item.name,
             subscription: item.subscription,
+            pseudoRosterItem: false,
             groups: item.groups,
           );
           modified.add(modifiedItem);
@@ -154,6 +159,7 @@ Future<RosterDiffEvent> processRosterDiff(
             item.jid.split('@')[0],
             item.subscription,
             item.ask ?? '',
+            false,
             contactId,
             await css.getProfilePicturePathForJid(item.jid),
             await css.getContactDisplayName(contactId),
@@ -208,6 +214,7 @@ class RosterService {
     String title,
     String subscription,
     String ask,
+    bool pseudoRosterItem,
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
@@ -222,6 +229,7 @@ class RosterService {
       title,
       subscription,
       ask,
+      pseudoRosterItem,
       contactId,
       contactAvatarPath,
       contactDisplayName,
@@ -242,6 +250,7 @@ class RosterService {
       String? title,
       String? subscription,
       String? ask,
+      Object pseudoRosterItem = notSpecified,
       List<String>? groups,
       Object? contactId = notSpecified,
       Object? contactAvatarPath = notSpecified,
@@ -255,6 +264,7 @@ class RosterService {
       title: title,
       subscription: subscription,
       ask: ask,
+      pseudoRosterItem: pseudoRosterItem,
       groups: groups,
       contactId: contactId,
       contactAvatarPath: contactAvatarPath,
@@ -333,6 +343,7 @@ class RosterService {
       title,
       'none',
       '',
+      false,
       contactId,
       await css.getProfilePicturePathForJid(jid),
       await css.getContactDisplayName(contactId),

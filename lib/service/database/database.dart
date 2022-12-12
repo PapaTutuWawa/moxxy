@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_avatar.dart';
+import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_pseudo.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
@@ -69,7 +70,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 15,
+      version: 16,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -137,6 +138,10 @@ class DatabaseService {
         if (oldVersion < 15) {
           _log.finest('Running migration for database version 15');
           await upgradeFromV14ToV15(db);
+        }
+        if (oldVersion < 16) {
+          _log.finest('Running migration for database version 16');
+          await upgradeFromV15ToV16(db);
         }
       },
     );
@@ -634,6 +639,7 @@ class DatabaseService {
     String title,
     String subscription,
     String ask,
+    bool pseudoRosterItem,
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
@@ -650,6 +656,7 @@ class DatabaseService {
       title,
       subscription,
       ask,
+      pseudoRosterItem,
       <String>[],
       contactId: contactId,
       contactAvatarPath: contactAvatarPath,
@@ -669,6 +676,7 @@ class DatabaseService {
       String? title,
       String? subscription,
       String? ask,
+      Object pseudoRosterItem = notSpecified,
       List<String>? groups,
       Object? contactId = notSpecified,
       Object? contactAvatarPath = notSpecified,
@@ -711,6 +719,9 @@ class DatabaseService {
     }
     if (contactDisplayName != notSpecified) {
       i['contactDisplayName'] = contactDisplayName as String?;
+    }
+    if (pseudoRosterItem != notSpecified) {
+      i['pseudoRosterItem'] = boolToInt(pseudoRosterItem as bool);
     }
 
     await _db.update(
