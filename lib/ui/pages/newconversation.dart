@@ -72,6 +72,9 @@ class NewConversationPage extends StatelessWidget {
                 final item = state.roster[index - 2];
                 return Dismissible(
                   key: ValueKey('roster;${item.jid}'),
+                  direction: item.pseudoRosterItem ?
+                    DismissDirection.none :
+                    DismissDirection.horizontal,
                   onDismissed: (_) => context.read<NewConversationBloc>().add(
                     NewConversationRosterItemRemovedEvent(item.jid),
                   ),
@@ -124,9 +127,15 @@ class NewConversationPage extends StatelessWidget {
                         false,
                         false,
                         ChatState.gone,
+                        contactId: item.contactId,
+                        contactAvatarPath: item.contactAvatarPath,
+                        contactDisplayName: item.contactDisplayName,
                       ),
                       false,
                       showTimestamp: false,
+                      titleSuffixIcon: item.pseudoRosterItem ?
+                        Icons.smartphone :
+                        null,
                     ),
                   ),
                 );

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -12,6 +13,7 @@ import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
+import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 
 class ConversationsListRow extends StatefulWidget {
   const ConversationsListRow(
@@ -19,18 +21,22 @@ class ConversationsListRow extends StatefulWidget {
     this.conversation,
     this.update, {
       this.showTimestamp = true,
-      this.showLock = false,
+      this.titleSuffixIcon,
       this.extra,
-      this.avatarOnTap,
+      this.enableAvatarOnTap = false,
+      this.avatarWidget,
+      this.extraWidgetWidth = 0,
       super.key,
     }
   );
   final Conversation conversation;
   final double maxTextWidth;
+  final double extraWidgetWidth;
   final bool update; // Should a timer run to update the timestamp
-  final bool showLock;
+  final IconData? titleSuffixIcon;
   final bool showTimestamp;
-  final void Function()? avatarOnTap;
+  final bool enableAvatarOnTap;
+  final Widget? avatarWidget;
   final Widget? extra;
 
   @override
@@ -84,20 +90,35 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   }
 
   Widget _buildAvatar() {
-    final avatar = AvatarWrapper(
-      radius: 35,
-      avatarUrl: widget.conversation.avatarUrl,
-      altText: widget.conversation.title,
+    return RebuildOnContactIntegrationChange(
+      builder: () {
+        final avatar = AvatarWrapper(
+          radius: 35,
+          avatarUrl: widget.conversation.avatarPathWithOptionalContact,
+          altText: widget.conversation.titleWithOptionalContact,
+        );
+
+        if (widget.enableAvatarOnTap &&
+          widget.conversation.avatarPathWithOptionalContact != null &&
+          widget.conversation.avatarPathWithOptionalContact!.isNotEmpty) {
+          return InkWell(
+            onTap: () => showDialog<void>(
+              context: context,
+              builder: (context) {
+                return IgnorePointer(
+                  child: Image.file(
+                    File(widget.conversation.avatarPathWithOptionalContact!),
+                  ),
+                );
+              },
+            ),
+            child: avatar,
+          );
+        }
+
+        return avatar;
+      },
     );
-
-    if (widget.avatarOnTap != null) {
-      return InkWell(
-        onTap: widget.avatarOnTap,
-        child: avatar,
-      );
-    }
-
-    return avatar;
   }
 
   Widget _buildLastMessagePreview() {
@@ -191,20 +212,21 @@ class ConversationsListRowState extends State<ConversationsListRow> {
 
     return const SizedBox();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final badgeText = widget.conversation.unreadCounter > 99 ?
       '99+' :
       widget.conversation.unreadCounter.toString();
     final screenWidth = MediaQuery.of(context).size.width;
-    final width = screenWidth - 24 - 70;
+    final width = screenWidth - 24 - 70 - widget.extraWidgetWidth;
     final textWidth = screenWidth * 0.6;
 
     final showTimestamp = widget.conversation.lastChangeTimestamp != timestampNever && widget.showTimestamp;
     final sentBySelf = widget.conversation.lastMessage?.sender == GetIt.I.get<UIDataService>().ownJid!;
 
     final showBadge = widget.conversation.unreadCounter > 0 && !sentBySelf;
+
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Row(
@@ -220,25 +242,28 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        widget.conversation.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Visibility(
-                        visible: widget.showLock,
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            Icons.lock,
-                            size: 17,
+                      RebuildOnContactIntegrationChange(
+                        builder: () => Text(
+                          widget.conversation.titleWithOptionalContact,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      ...widget.titleSuffixIcon != null ?
+                        [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Icon(
+                              widget.titleSuffixIcon,
+                              size: 17,
+                            ),
+                          ),
+                        ] :
+                        [],
                       Visibility(
                         visible: showTimestamp,
                         child: const Spacer(),
@@ -285,11 +310,11 @@ class ConversationsListRowState extends State<ConversationsListRow> {
               ),
             ),
           ),
-          Visibility(
-            visible: widget.extra != null,
-            child: const Spacer(),
-          ),
-          ...widget.extra != null ? [widget.extra!] : [],
+          ...widget.extra != null ? [
+            const Spacer(),
+              widget.extra!
+            ] :
+            [],
         ],
       ),
     );

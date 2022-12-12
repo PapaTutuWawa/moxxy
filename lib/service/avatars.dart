@@ -27,7 +27,6 @@ String _cleanBase64String(String original) {
 }
 
 class AvatarService {
-  
   AvatarService() : _log = Logger('AvatarService');
   final Logger _log;
 

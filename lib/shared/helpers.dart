@@ -389,3 +389,16 @@ Future<String?> getVideoThumbnailPath(String path, String conversationJid, Strin
   
   return thumbnailPath;
 }
+
+Future<String> getContactProfilePicturePath(String id) async {
+  final tempDir = await getTemporaryDirectory();
+  final avatarDir = p.join(
+    tempDir.path,
+    'contacts',
+    'avatars',
+  );
+  final dir = Directory(avatarDir);
+  if (!dir.existsSync()) await dir.create(recursive: true);
+
+  return p.join(avatarDir, id);
+}

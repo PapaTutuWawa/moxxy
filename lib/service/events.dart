@@ -7,6 +7,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
+import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
@@ -209,7 +210,9 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
     );
     return;
   } else {
+    final css = GetIt.I.get<ContactsService>();
     final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+    final contactId = await css.getContactIdForJid(command.jid);
     final conversation = await cs.addConversationFromData(
       command.title,
       null,
@@ -220,6 +223,9 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       true,
       preferences.defaultMuteState,
       preferences.enableOmemoByDefault,
+      contactId,
+      await css.getProfilePicturePathForJid(command.jid),
+      await css.getContactDisplayName(contactId),
     );
 
     sendEvent(
@@ -308,7 +314,9 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
 }
 
 Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extra }) async {
-  await GetIt.I.get<PreferencesService>().modifyPreferences((_) => command.preferences);
+  final ps = GetIt.I.get<PreferencesService>();
+  final oldPrefs = await ps.getPreferences();
+  await ps.modifyPreferences((_) => command.preferences);
 
   // Set the logging mode
   if (!kDebugMode) {
@@ -316,6 +324,21 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
     Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
   }
 
+  // Scan all contacts if the setting is enabled or disable the database callback
+  // if it is disabled.
+  final css = GetIt.I.get<ContactsService>();
+  if (command.preferences.enableContactIntegration) {
+    if (!oldPrefs.enableContactIntegration) {
+      css.enableDatabaseListener();
+    }
+
+    unawaited(css.scanContacts());
+  } else {
+    if (oldPrefs.enableContactIntegration) {
+      css.disableDatabaseListener();
+    }
+  }
+  
   // Set the locale
   final locale = command.preferences.languageLocaleCode == 'default' ?
     GetIt.I.get<LanguageService>().defaultLocale :
@@ -350,6 +373,8 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       id: id,
     );
   } else {
+    final css = GetIt.I.get<ContactsService>();
+    final contactId = await css.getContactIdForJid(jid);
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final c = await cs.addConversationFromData(
       jid.split('@')[0],
@@ -361,6 +386,9 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       true,
       prefs.defaultMuteState,
       prefs.enableOmemoByDefault,
+      contactId,
+      await css.getProfilePicturePathForJid(jid),
+      await css.getContactDisplayName(contactId),
     );
     sendEvent(
       AddContactResultEvent(conversation: c, added: true),

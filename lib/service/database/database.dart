@@ -8,6 +8,9 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_contacts_integration.dart';
+import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_avatar.dart';
+import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_pseudo.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
@@ -67,7 +70,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 13,
+      version: 16,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -128,6 +131,18 @@ class DatabaseService {
           _log.finest('Running migration for database version 13');
           await upgradeFromV12ToV13(db);
         }
+        if (oldVersion < 14) {
+          _log.finest('Running migration for database version 14');
+          await upgradeFromV13ToV14(db);
+        }
+        if (oldVersion < 15) {
+          _log.finest('Running migration for database version 15');
+          await upgradeFromV14ToV15(db);
+        }
+        if (oldVersion < 16) {
+          _log.finest('Running migration for database version 16');
+          await upgradeFromV15ToV16(db);
+        }
       },
     );
 
@@ -161,7 +176,7 @@ class DatabaseService {
       tmp.add(
         Conversation.fromDatabaseJson(
           c,
-          rosterItem != null,
+          rosterItem != null && !rosterItem.pseudoRosterItem,
           rosterItem?.subscription ?? 'none',
           sharedMediaRaw,
           lastMessage,
@@ -209,6 +224,9 @@ class DatabaseService {
     ChatState? chatState,
     bool? muted,
     bool? encrypted,
+    Object? contactId = notSpecified,
+    Object? contactAvatarPath = notSpecified,
+    Object? contactDisplayName = notSpecified,
   }) async {
     final cd = (await _db.query(
       'Conversations',
@@ -245,6 +263,15 @@ class DatabaseService {
     if (encrypted != null) {
       c['encrypted'] = boolToInt(encrypted);
     }
+    if (contactId != notSpecified) {
+      c['contactId'] = contactId as String?;
+    }
+    if (contactAvatarPath != notSpecified) {
+      c['contactAvatarPath'] = contactAvatarPath as String?;
+    }
+    if (contactDisplayName != notSpecified) {
+      c['contactDisplayName'] = contactDisplayName as String?;
+    }
 
     await _db.update(
       'Conversations',
@@ -275,6 +302,9 @@ class DatabaseService {
     bool open,
     bool muted,
     bool encrypted,
+    String? contactId,
+    String? contactAvatarPath,
+    String? contactDisplayName,
   ) async {
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
@@ -287,11 +317,14 @@ class DatabaseService {
       <SharedMedium>[],
       -1,
       open,
-      rosterItem != null,
+      rosterItem != null && !rosterItem.pseudoRosterItem,
       rosterItem?.subscription ?? 'none',
       muted,
       encrypted,
       ChatState.gone,
+      contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
     );
 
     return conversation.copyWith(
@@ -606,6 +639,10 @@ class DatabaseService {
     String title,
     String subscription,
     String ask,
+    bool pseudoRosterItem,
+    String? contactId,
+    String? contactAvatarPath,
+    String? contactDisplayName,
     {
       List<String> groups = const [],
     }
@@ -619,7 +656,11 @@ class DatabaseService {
       title,
       subscription,
       ask,
+      pseudoRosterItem,
       <String>[],
+      contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
     );
 
     return i.copyWith(
@@ -635,11 +676,15 @@ class DatabaseService {
       String? title,
       String? subscription,
       String? ask,
+      Object pseudoRosterItem = notSpecified,
       List<String>? groups,
+      Object? contactId = notSpecified,
+      Object? contactAvatarPath = notSpecified,
+      Object? contactDisplayName = notSpecified,
     }
   ) async {
     final id_ = (await _db.query(
-      'RosterItems',
+      rosterTable,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -666,9 +711,21 @@ class DatabaseService {
     if (ask != null) {
       i['ask'] = ask;
     }
+    if (contactId != notSpecified) {
+      i['contactId'] = contactId as String?;
+    }
+    if (contactAvatarPath != notSpecified) {
+      i['contactAvatarPath'] = contactAvatarPath as String?;
+    }
+    if (contactDisplayName != notSpecified) {
+      i['contactDisplayName'] = contactDisplayName as String?;
+    }
+    if (pseudoRosterItem != notSpecified) {
+      i['pseudoRosterItem'] = boolToInt(pseudoRosterItem as bool);
+    }
 
     await _db.update(
-      'RosterItems',
+      rosterTable,
       i,
       where: 'id = ?',
       whereArgs: [id],
@@ -1041,5 +1098,34 @@ class DatabaseService {
         );
       })
       .toList();
+  }
+
+  Future<Map<String, String>> getContactIds() async {
+    return Map<String, String>.fromEntries(
+      (await _db.query(contactsTable))
+        .map((item) => MapEntry(
+          item['jid']! as String,
+          item['id']! as String,
+        ),
+      ),
+    );
+  }
+
+  Future<void> addContactId(String id, String jid) async {
+    await _db.insert(
+      contactsTable,
+      <String, String>{
+        'id': id,
+        'jid': jid,
+      },
+    );
+  }
+
+  Future<void> removeContactId(String id) async {
+    await _db.delete(
+      contactsTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

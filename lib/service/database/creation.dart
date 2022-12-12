@@ -73,10 +73,24 @@ Future<void> createDatabase(Database db, int version) async {
       muted INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       lastMessageId INTEGER,
-      CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id)
+      contactId TEXT,
+      contactAvatarPath TEXT,
+      contactDisplayName TEXT,
+      CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id),
+      CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
+        ON DELETE SET NULL
     )''',
   );
 
+  // Contacts
+  await db.execute(
+    '''
+    CREATE TABLE $contactsTable (
+      id TEXT PRIMARY KEY,
+      jid TEXT NOT NULL
+    )'''
+  );
+  
   // Shared media
   await db.execute(
     '''
@@ -102,7 +116,13 @@ Future<void> createDatabase(Database db, int version) async {
       avatarUrl TEXT NOT NULL,
       avatarHash TEXT NOT NULL,
       subscription TEXT NOT NULL,
-      ask TEXT NOT NULL
+      ask TEXT NOT NULL,
+      contactId TEXT,
+      contactAvatarPath TEXT,
+      contactDisplayName TEXT,
+      pseudoRosterItem INTEGER NOT NULL,
+      CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
+        ON DELETE SET NULL
     )''',
   );
 
@@ -345,6 +365,14 @@ Future<void> createDatabase(Database db, int version) async {
       'languageLocaleCode',
       typeString,
       'default',
+    ).toDatabaseJson(),
+  );
+  await db.insert(
+    preferenceTable,
+    Preference(
+      'enableContactIntegration',
+      typeBool,
+      'false',
     ).toDatabaseJson(),
   );
 }

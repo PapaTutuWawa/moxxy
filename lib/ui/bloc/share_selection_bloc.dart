@@ -26,12 +26,26 @@ enum ShareSelectionType {
 
 /// Create a common ground between Conversations and RosterItems
 class ShareListItem {
-  const ShareListItem(this.avatarPath, this.jid, this.title, this.isConversation, this.isEncrypted);
+  const ShareListItem(
+    this.avatarPath,
+    this.jid,
+    this.title,
+    this.isConversation,
+    this.isEncrypted,
+    this.pseudoRosterItem,
+    this.contactId,
+    this.contactAvatarPath,
+    this.contactDisplayName,
+  );
   final String avatarPath;
   final String jid;
   final String title;
   final bool isConversation;
   final bool isEncrypted;
+  final bool pseudoRosterItem;
+  final String? contactId;
+  final String? contactAvatarPath;
+  final String? contactDisplayName;
 }
 
 class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> {
@@ -67,6 +81,10 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
           c.title,
           true,
           c.encrypted,
+          false,
+          c.contactId,
+          c.contactAvatarPath,
+          c.contactDisplayName,
         );
       }),
     );
@@ -83,6 +101,10 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
             rosterItem.title,
             false,
             GetIt.I.get<PreferencesBloc>().state.enableOmemoByDefault,
+            rosterItem.pseudoRosterItem,
+            rosterItem.contactId,
+            rosterItem.contactAvatarPath,
+            rosterItem.contactDisplayName,
           ),
         );
       } else {
@@ -92,6 +114,10 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
           rosterItem.title,
           false,
           items[index].isEncrypted,
+          items[index].pseudoRosterItem,
+          items[index].contactId,
+          items[index].contactAvatarPath,
+          items[index].contactDisplayName,
         );
       }
     }

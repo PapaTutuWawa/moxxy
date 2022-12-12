@@ -13,6 +13,7 @@ import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
+import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
@@ -395,6 +396,7 @@ class XmppService {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
+    final css = GetIt.I.get<ContactsService>();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
     // Path -> Recipient -> Message
@@ -491,6 +493,7 @@ class XmppService {
       } else {
         // Create conversation
         final rosterItem = await rs.getRosterItemByJid(recipient);
+        final contactId = await css.getContactIdForJid(recipient);
         var newConversation = await cs.addConversationFromData(
           // TODO(Unknown): Should we use the JID parser?
           rosterItem?.title ?? recipient.split('@').first,
@@ -502,6 +505,9 @@ class XmppService {
           true,
           prefs.defaultMuteState,
           prefs.enableOmemoByDefault,
+          contactId,
+          await css.getProfilePicturePathForJid(recipient),
+          await css.getContactDisplayName(contactId),
         );
 
         sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, newConversation.id);
@@ -686,6 +692,7 @@ class XmppService {
 
     if (!prefs.showSubscriptionRequests) return;
     
+    final css = GetIt.I.get<ContactsService>();
     final cs = GetIt.I.get<ConversationService>();
     final conversation = await cs.getConversationByJid(event.from.toBare().toString());
     final timestamp = DateTime.now().millisecondsSinceEpoch;
@@ -698,17 +705,21 @@ class XmppService {
       sendEvent(ConversationUpdatedEvent(conversation: newConversation));
     } else {
       // TODO(Unknown): Make it configurable if this should happen
-      final bare = event.from.toBare();
+      final bare = event.from.toBare().toString();
+      final contactId = await css.getContactIdForJid(bare);
       final conv = await cs.addConversationFromData(
-        bare.toString().split('@')[0],
+        bare.split('@')[0],
         null,
         '', // TODO(Unknown): avatarUrl
-        bare.toString(),
+        bare,
         0,
         timestamp,
         true,
         prefs.defaultMuteState,
         prefs.enableOmemoByDefault,
+        contactId,
+        await css.getProfilePicturePathForJid(bare),
+        await css.getContactDisplayName(contactId),
       );
 
       sendEvent(ConversationAddedEvent(conversation: conv));
@@ -1192,6 +1203,7 @@ class XmppService {
     }
 
     final cs = GetIt.I.get<ConversationService>();
+    final css = GetIt.I.get<ContactsService>();
     final ns = GetIt.I.get<NotificationsService>();
     // The body to be displayed in the conversations list
     final conversationBody = isFileEmbedded || message.isFileUploadNotification ? mimeTypeToEmoji(mimeGuess) : messageBody;
@@ -1231,6 +1243,7 @@ class XmppService {
       }
     } else {
       // The conversation does not exist, so we must create it
+      final contactId = await css.getContactIdForJid(conversationJid);
       final newConversation = await cs.addConversationFromData(
         rosterItem?.title ?? conversationJid.split('@')[0],
         message,
@@ -1241,6 +1254,9 @@ class XmppService {
         true,
         prefs.defaultMuteState,
         message.encrypted,
+        contactId,
+        await css.getProfilePicturePathForJid(conversationJid),
+        await css.getContactDisplayName(contactId),
       );
 
       // Notify the UI

@@ -121,7 +121,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         state: s.toString().split('.').last,
         jid: state.conversation!.jid,
       ),
-      awaitable: false,);
+      awaitable: false,
+    );
   }
   
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {

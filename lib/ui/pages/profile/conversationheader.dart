@@ -9,38 +9,44 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
+import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
   const ConversationProfileHeader(this.conversation, { super.key });
   final Conversation conversation;
 
-  Future<void> _showAvatarFullsize(BuildContext context) async {
+  Future<void> _showAvatarFullsize(BuildContext context, String path) async {
     await showDialog<void>(
       context: context,
       builder: (context) {
         return IgnorePointer(
-          child: Image.file(File(conversation.avatarUrl)),
+          child: Image.file(File(path)),
         );
       },
     );
   }
   
   Widget _buildAvatar(BuildContext context) {
-    final avatar = AvatarWrapper(
-      radius: 110,
-      avatarUrl: conversation.avatarUrl,
-      altText: conversation.title,
+    return RebuildOnContactIntegrationChange(
+      builder: () {
+        final path = conversation.avatarPathWithOptionalContact;
+        final avatar = AvatarWrapper(
+          radius: 110,
+          avatarUrl: path,
+          altText: conversation.titleWithOptionalContact,
+        );
+
+        if (path != null && path.isNotEmpty) {
+          return InkWell(
+            onTap: () => _showAvatarFullsize(context, path),
+            child: avatar,
+          );
+        }
+
+        return avatar;
+      },
     );
-
-    if (conversation.avatarUrl.isNotEmpty) {
-      return InkWell(
-        onTap: () => _showAvatarFullsize(context),
-        child: avatar,
-      );
-    }
-
-    return avatar;
   }
   
   @override
@@ -52,15 +58,17 @@ class ConversationProfileHeader extends StatelessWidget {
         Hero(
           tag: 'conversation_profile_picture',
           child: Material(
-            child: _buildAvatar(context),
+            child: _buildAvatar(context,),
           ),
         ),
         Padding(
           padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            conversation.title,
-            style: const TextStyle(
-              fontSize: 30,
+          child: RebuildOnContactIntegrationChange(
+            builder: () => Text(
+              conversation.titleWithOptionalContact,
+              style: const TextStyle(
+                fontSize: 30,
+              ),
             ),
           ),
         ),

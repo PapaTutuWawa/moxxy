@@ -1,8 +1,10 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';
@@ -59,6 +61,14 @@ class Conversation with _$Conversation {
     bool encrypted,
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState,
+    {
+      // The id of the contact in the device's phonebook if it exists
+      String? contactId,
+      // The path to the contact avatar, if available
+      String? contactAvatarPath,
+      // The contact's display name, if it exists
+      String? contactDisplayName,
+    }
   ) = _Conversation;
 
   const Conversation._();
@@ -101,6 +111,28 @@ class Conversation with _$Conversation {
 
   /// True, when the chat state of the conversation indicates typing. False, if not.
   bool get isTyping => chatState == ChatState.composing;
+
+  /// The path to the avatar. This returns, if enabled, first the contact's avatar
+  /// path, then the XMPP avatar's path. If not enabled, just returns the regular
+  /// XMPP avatar's path.
+  String? get avatarPathWithOptionalContact {
+    if (GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+      return contactAvatarPath ?? avatarUrl;
+    }
+
+    return avatarUrl;
+  }
+
+  /// The title of the chat. This returns, if enabled, first the contact's display
+  /// name, then the XMPP chat title. If not enabled, just returns the XMPP chat
+  /// title.
+  String get titleWithOptionalContact {
+    if (GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+      return contactDisplayName ?? title;
+    }
+
+    return title;
+  }
 }
 
 /// Sorts conversations in descending order by their last change timestamp.

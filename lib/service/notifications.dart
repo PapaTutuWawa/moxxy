@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
@@ -85,21 +86,31 @@ class NotificationsService {
   /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
   /// then Android's BigPicture will be used.
   Future<void> showNotification(modelc.Conversation c, modelm.Message m, String title, { String? body }) async {
-    // TODO(Unknown): Keep track of notifications to create a summary notification
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
     final body = m.isMedia ?
       mimeTypeToEmoji(m.mediaType) :
       m.body;
+
+    final css = GetIt.I.get<ContactsService>();
+    final contactIntegrationEnabled = await css.isContactIntegrationEnabled();
+    final title = contactIntegrationEnabled ?
+      c.contactDisplayName ?? c.title :
+      c.title;
+    final avatarPath = contactIntegrationEnabled ?
+      c.contactAvatarPath ?? c.avatarUrl :
+      c.avatarUrl;
 
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
         id: m.id,
         groupKey: c.jid,
         channelKey: _messageChannelKey,
-        summary: c.title,
-        title: c.title,
+        summary: title,
+        title: title,
         body: body,
-        largeIcon: c.avatarUrl.isNotEmpty ? 'file://${c.avatarUrl}' : null,
+        largeIcon: avatarPath.isNotEmpty ?
+          'file://$avatarPath' :
+          null,
         notificationLayout: m.isThumbnailable ?
           NotificationLayout.BigPicture :
           NotificationLayout.Messaging,
@@ -108,8 +119,8 @@ class NotificationsService {
         payload: <String, String>{
           'conversationJid': c.jid,
           'sid': m.sid,
-          'title': c.title,
-          'avatarUrl': c.avatarUrl,
+          'title': title,
+          'avatarUrl': avatarPath,
         },
       ),
       actionButtons: [

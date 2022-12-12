@@ -31,6 +31,18 @@ class ShareSelectionPage extends StatelessWidget {
       prev.text != next.text ||
       prev.type != next.type;
   }
+
+  IconData? _getSuffixIcon(ShareListItem item) {
+    if (item.pseudoRosterItem) {
+      return Icons.smartphone;
+    }
+
+    if (item.isEncrypted) {
+      return Icons.lock;
+    }
+
+    return null;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -85,10 +97,14 @@ class ShareSelectionPage extends StatelessWidget {
                     false,
                     false,
                     ChatState.gone,
+                    contactId: item.contactId,
+                    contactAvatarPath: item.contactAvatarPath,
+                    contactDisplayName: item.contactDisplayName,
                   ),
                   false,
-                  showLock: item.isEncrypted,
+                  titleSuffixIcon: _getSuffixIcon(item),
                   showTimestamp: false,
+                  extraWidgetWidth: 48,
                   extra: Checkbox(
                     value: isSelected,
                     onChanged: (_) {
