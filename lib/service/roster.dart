@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
-import 'package:moxxyv2/service/contact.dart';
+import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/not_specified.dart';

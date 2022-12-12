@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/service/contact.dart';
+import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';

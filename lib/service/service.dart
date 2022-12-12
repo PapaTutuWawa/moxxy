@@ -13,7 +13,7 @@ import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
-import 'package:moxxyv2/service/contact.dart';
+import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';

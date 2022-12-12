@@ -7,7 +7,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
-import 'package:moxxyv2/service/contact.dart';
+import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
