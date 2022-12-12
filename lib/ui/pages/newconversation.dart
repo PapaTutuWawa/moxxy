@@ -72,6 +72,9 @@ class NewConversationPage extends StatelessWidget {
                 final item = state.roster[index - 2];
                 return Dismissible(
                   key: ValueKey('roster;${item.jid}'),
+                  direction: item.pseudoRosterItem ?
+                    DismissDirection.none :
+                    DismissDirection.horizontal,
                   onDismissed: (_) => context.read<NewConversationBloc>().add(
                     NewConversationRosterItemRemovedEvent(item.jid),
                   ),
