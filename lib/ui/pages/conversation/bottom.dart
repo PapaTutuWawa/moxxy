@@ -6,12 +6,15 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/sticker.dart';
+import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/timer.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
+import 'package:moxxyv2/ui/widgets/sticker_picker.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -138,7 +141,9 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                         ),
                                       ),
                                       onTap: () {
-                                        showNotImplementedDialog('stickers', context);
+                                        context.read<ConversationBloc>().add(
+                                          StickerPickerToggledEvent(),
+                                        );
                                       },
                                     ),
                                   ),
@@ -199,6 +204,16 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     ),
                   ),
                 ),
+                BlocBuilder<ConversationBloc, ConversationState>(
+                  buildWhen: (prev, next) => prev.stickerPickerVisible != next.stickerPickerVisible,
+                  builder: (context, state) => Offstage(
+                    offstage: !state.stickerPickerVisible,
+                    child: StickerPicker(
+                      width: MediaQuery.of(context).size.width,
+                    ),
+                  ),
+                ),
+
                 BlocBuilder<ConversationBloc, ConversationState>(
                   buildWhen: (prev, next) => prev.emojiPickerVisible != next.emojiPickerVisible,
                   builder: (context, state) => Offstage(

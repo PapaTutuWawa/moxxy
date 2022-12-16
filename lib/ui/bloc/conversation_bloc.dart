@@ -64,6 +64,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<RecordingCanceledEvent>(_onRecordingCanceled);
     on<ReactionAddedEvent>(_onReactionAdded);
     on<ReactionRemovedEvent>(_onReactionRemoved);
+    on<StickerPickerToggledEvent>(_onStickerPickerToggled);
 
     _audioRecorder = Record();
   }
@@ -237,6 +238,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         quotedMessage: null,
         sendButtonState: defaultSendButtonState,
         emojiPickerVisible: false,
+        stickerPickerVisible: false,
         messageEditing: false,
         messageEditingOriginalBody: '',
         messageEditingId: null,
@@ -373,7 +375,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onEmojiPickerToggled(EmojiPickerToggledEvent event, Emitter<ConversationState> emit) async {
     final newState = !state.emojiPickerVisible;
-    emit(state.copyWith(emojiPickerVisible: newState));
+    emit(
+      state.copyWith(
+        emojiPickerVisible: newState,
+        stickerPickerVisible: false,
+      ),
+    );
 
     if (event.handleKeyboard) {
       if (newState) {
@@ -629,6 +636,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         conversationJid: message.conversationJid,
       ),
       awaitable: false,
+    );
+  }
+
+  Future<void> _onStickerPickerToggled(StickerPickerToggledEvent event, Emitter<ConversationState> emit) async {
+    await SystemChannels.textInput.invokeMethod('TextInput.hide');
+    emit(
+      state.copyWith(
+        stickerPickerVisible: !state.stickerPickerVisible,
+        emojiPickerVisible: false,
+      ),
     );
   }
 }

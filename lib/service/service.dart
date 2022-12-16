@@ -31,6 +31,7 @@ import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -155,6 +156,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<OmemoService>(OmemoService());
   GetIt.I.registerSingleton<CryptographyService>(CryptographyService());
   GetIt.I.registerSingleton<ContactsService>(ContactsService());
+  GetIt.I.registerSingleton<StickersService>(StickersService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 

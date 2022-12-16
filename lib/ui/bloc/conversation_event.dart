@@ -103,6 +103,12 @@ class EmojiPickerToggledEvent extends ConversationEvent {
   final bool handleKeyboard;
 }
 
+/// Triggered when the sticker button is pressed
+class StickerPickerToggledEvent extends ConversationEvent {
+  StickerPickerToggledEvent({this.handleKeyboard = true});
+  final bool handleKeyboard;
+}
+
 /// Triggered when we received our own JID
 class OwnJidReceivedEvent extends ConversationEvent {
   OwnJidReceivedEvent(this.jid);

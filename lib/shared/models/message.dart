@@ -64,6 +64,8 @@ class Message with _$Message {
       Map<String, String>? ciphertextHashes,
       int? mediaSize,
       @Default([]) List<Reaction> reactions,
+      String? stickerPackId,
+      int? stickerId,
     }
   ) = _Message;
 

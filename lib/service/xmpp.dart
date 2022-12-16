@@ -28,6 +28,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
+import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -846,7 +847,8 @@ class XmppService {
     // that the message body and the OOB url are the same if the OOB url is not null.
     return embeddedFile != null
       && Uri.parse(embeddedFile.url).scheme == 'https'
-      && implies(event.oob != null, event.body == event.oob?.url);
+      && implies(event.oob != null, event.body == event.oob?.url)
+      && event.stickerPackId == null;
   }
 
   /// Handle a message retraction given the MessageEvent [event].
@@ -1164,6 +1166,12 @@ class XmppService {
       quoteId: replyId,
       originId: event.stanzaId.originId,
       errorType: errorTypeFromException(event.other['encryption_error']),
+      plaintextHashes: event.sfs?.metadata.hashes,
+      stickerPackId: event.stickerPackId,
+      stickerId: (await GetIt.I.get<StickersService>().getStickerBySFS(
+        event.stickerPackId,
+        event.sfs,
+      ))?.id,
     );
     
     // Attempt to auto-download the embedded file

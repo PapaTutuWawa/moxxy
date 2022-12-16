@@ -22,6 +22,7 @@ import 'package:moxxyv2/service/database/migrations/0000_reactions_store_hint.da
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -34,6 +35,8 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
+import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as path;
 import 'package:random_string/random_string.dart';
@@ -70,7 +73,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 16,
+      version: 17,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -142,6 +145,10 @@ class DatabaseService {
         if (oldVersion < 16) {
           _log.finest('Running migration for database version 16');
           await upgradeFromV15ToV16(db);
+        }
+        if (oldVersion < 17) {
+          _log.finest('Running migration for database version 17');
+          await upgradeFromV16ToV17(db);
         }
       },
     );
@@ -388,6 +395,8 @@ class DatabaseService {
       bool isDownloading = false,
       bool isUploading = false,
       int? mediaSize,
+      String? stickerPackId,
+      int? stickerId,
     }
   ) async {
     var m = Message(
@@ -422,6 +431,8 @@ class DatabaseService {
       isUploading: isUploading,
       isDownloading: isDownloading,
       mediaSize: mediaSize,
+      stickerPackId: stickerPackId,
+      stickerId: stickerId,
     );
 
     if (quoteId != null) {
@@ -1126,6 +1137,30 @@ class DatabaseService {
       contactsTable,
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<sticker_pack.StickerPack?> getStickerPackById(String id) async {
+    final rawPack = await _db.query(
+      stickerPacksTable,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (rawPack.isEmpty) return null;
+
+    final rawStickers = await _db.query(
+      stickersTable,
+      where: 'stickerPackId = ?',
+      whereArgs: [id],
+    );
+
+    return sticker_pack.StickerPack.fromDatabaseJson(
+      rawPack.first,
+      rawStickers
+        .map((s) => sticker.Sticker.fromDatabaseJson(s))
+        .toList(),
     );
   }
 }

@@ -29,6 +29,8 @@ class PreferencesState with _$PreferencesState {
     //       be used
     @Default('default') String languageLocaleCode,
     @Default(false) bool enableContactIntegration,
+    @Default(true) bool enableStickers,
+    @Default(true) bool autoDownloadStickersFromContacts,
   }) = _PreferencesState;
   
   // JSON serialization

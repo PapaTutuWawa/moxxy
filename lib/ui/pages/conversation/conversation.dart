@@ -405,6 +405,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
         } else if (bloc.state.emojiPickerVisible) {
           bloc.add(EmojiPickerToggledEvent(handleKeyboard: false));
           return false;
+        } else if (bloc.state.stickerPickerVisible) {
+          bloc.add(StickerPickerToggledEvent());
+          return false;
         } else {
           bloc.add(CurrentConversationResetEvent());
           return true;

@@ -9,6 +9,8 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/models/sticker.dart';
+import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
@@ -27,6 +29,7 @@ import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
+import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
 /*
@@ -95,6 +98,38 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ServerInfoBloc>(ServerInfoBloc());
   GetIt.I.registerSingleton<DevicesBloc>(DevicesBloc());
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
+  GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
+
+  GetIt.I.get<StickersBloc>().add(
+    StickersSetEvent(
+      [
+        StickerPack(
+          'me.polynom.ayame',
+          'Just ayame',
+          'Just ayame',
+          List<Sticker>.generate(
+            19,
+            (i) => Sticker(
+              i,
+              'image/png',
+              ':ayamer:',
+              99999,
+              null,
+              null,
+              {},
+              [
+                'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Femoji.gg%2Fassets%2Femoji%2F9141_yo_dayo.png&f=1&nofb=1&ipt=94363fe3473e9f77326bee3f809732d5901d607462196a43cb942e7404e4534e&ipo=images',
+              ],
+              null,
+              '',
+            ),
+          ),
+          '',
+          '',
+        ),
+      ],
+    ),
+  );
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -164,6 +199,9 @@ void main() async {
         ),
         BlocProvider<OwnDevicesBloc>(
           create: (_) => GetIt.I.get<OwnDevicesBloc>(),
+        ),
+        BlocProvider<StickersBloc>(
+          create: (_) => GetIt.I.get<StickersBloc>(),
         ),
       ],
       child: TranslationProvider(

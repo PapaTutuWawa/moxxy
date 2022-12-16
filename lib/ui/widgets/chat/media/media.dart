@@ -23,13 +23,16 @@ enum MessageType {
   image,
   video,
   audio,
-  file
+  file,
+  sticker
 }
 
 /// Deduce the type of message we are dealing with to pick the correct
 /// widget.
 MessageType getMessageType(Message message) {
-  if (message.isMedia) {
+  if (message.stickerPackId != null) {
+    return MessageType.sticker;
+  } else if (message.isMedia) {
     final mime = message.mediaType;
     if (mime == null) return MessageType.file;
 
@@ -61,6 +64,7 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
   }
 
   switch (getMessageType(message)) {
+    case MessageType.sticker:
     case MessageType.text: {
       return TextChatWidget(
         message,
@@ -85,6 +89,7 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
 /// Build a widget that represents a quoted message within another bubble.
 Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? resetQuote}) {
   switch (getMessageType(message)) {
+    case MessageType.sticker:
     case MessageType.text:
       return QuoteBaseWidget(
         message,

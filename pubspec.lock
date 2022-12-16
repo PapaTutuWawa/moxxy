@@ -785,11 +785,9 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      path: "packages/moxxmpp"
-      ref: HEAD
-      resolved-ref: "88efdc361c04711cb528bdc8b3a4022335fe4488"
-      url: "https://git.polynom.me/Moxxy/moxxmpp.git"
-    source: git
+      path: "../moxxmpp/packages/moxxmpp"
+      relative: true
+    source: path
     version: "0.1.6+1"
   moxxmpp_socket_tcp:
     dependency: "direct main"

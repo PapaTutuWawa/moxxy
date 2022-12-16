@@ -55,7 +55,9 @@ Future<void> createDatabase(Database db, int version) async {
       isEdited INTEGER NOT NULL,
       reactions TEXT NOT NULL,
       containsNoStore INTEGER NOT NULL,
-      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
+      stickerPackId   TEXT,
+      stickerId       INTEGER,
+      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id),
     )''',
   );
 
@@ -126,6 +128,35 @@ Future<void> createDatabase(Database db, int version) async {
     )''',
   );
 
+  // Stickers
+  await db.execute(
+    '''
+    CREATE TABLE $stickersTable (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      mediaType     TEXT NOT NULL,
+      desc          TEXT NOT NULL,
+      size          INTEGER NOT NULL,
+      width         INTEGER,
+      height        INTEGER,
+      hashes        TEXT NOT NULL,
+      urlSources    TEXT NOT NULL,
+      path          TEXT,
+      stickerPackId TEXT NOT NULL,
+      CONSTRAINT fk_sticker_pack FOREIGN KEY (stickerPackId) REFERENCES $stickerPacksTable (id)
+        ON DELETE CASCADE
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $stickerPacksTable (
+      id            TEXT PRIMARY KEY,
+      name          TEXT NOT NULL,
+      description   TEXT NOT NULL,
+      hashAlgorithm TEXT NOT NULL,
+      hashValue     TEXT NOT NULL
+    )''',
+  );
+  
   // OMEMO
   await db.execute(
     '''
