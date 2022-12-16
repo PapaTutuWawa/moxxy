@@ -1,11 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/shared/models/sticker.dart';
+import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 
 class StickerPicker extends StatelessWidget {
   StickerPicker({
     required this.width,
+    required this.onStickerTapped,
     super.key,
   }) {
     _itemSize = (width - 2 * 15 - 3 * 30) / 4;
@@ -13,6 +16,7 @@ class StickerPicker extends StatelessWidget {
 
   final double width;
   late final double _itemSize;
+  final void Function(Sticker, StickerPack) onStickerTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +59,12 @@ class StickerPicker extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.all(15),
                             child: InkWell(
-                              onTap: () => print(index),
+                              onTap: () {
+                                onStickerTapped(
+                                  state.stickerPacks[sindex].stickers[index * 4 + rowIndex],
+                                  state.stickerPacks[sindex],
+                                );
+                              },
                               child: Image.file(
                                 File(
                                   state.stickerPacks[sindex].stickers[index * 4 + rowIndex].path,

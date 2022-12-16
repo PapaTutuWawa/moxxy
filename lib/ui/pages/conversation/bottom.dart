@@ -210,6 +210,9 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     offstage: !state.stickerPickerVisible,
                     child: StickerPicker(
                       width: MediaQuery.of(context).size.width,
+                      onStickerTapped: (sticker, pack) {
+                        print('${sticker.desc} (${pack.name})');
+                      },
                     ),
                   ),
                 ),
