@@ -24,6 +24,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
+import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -71,6 +72,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
       EventTypeMatcher<RemoveReactionFromMessageCommand>(performRemoveMessageReaction),
       EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
+      EventTypeMatcher<ImportStickerPackCommand>(performImportStickerPack),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -771,4 +773,8 @@ Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
     command.deviceId,
     command.jid,
   );
+}
+
+Future<void> performImportStickerPack(ImportStickerPackCommand command, { dynamic extra }) async {
+  await GetIt.I.get<StickersService>().importFromFile(command.path);
 }

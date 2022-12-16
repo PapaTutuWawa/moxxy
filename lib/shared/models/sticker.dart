@@ -35,6 +35,7 @@ class Sticker with _$Sticker {
   
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
+      ..remove('id')
       ..remove('hashes')
       ..remove('urlSources');
 

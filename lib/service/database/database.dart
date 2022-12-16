@@ -1140,6 +1140,42 @@ class DatabaseService {
     );
   }
 
+  Future<void> addStickerPackFromData(sticker_pack.StickerPack pack) async {
+    await _db.insert(
+      stickerPacksTable,
+      pack.toDatabaseJson(),
+    );
+  }
+
+  Future<sticker.Sticker> addStickerFromData(
+    String mediaType,
+    String desc,
+    int size,
+    int? width,
+    int? height,
+    Map<String, String> hashes,
+    List<String> urlSources,
+    String path,
+    String stickerPackId,
+  ) async {
+    final s = sticker.Sticker(
+      -1,
+      mediaType,
+      desc,
+      size,
+      width,
+      height,
+      hashes,
+      urlSources,
+      path,
+      stickerPackId,
+    );
+
+    return s.copyWith(
+      id: await _db.insert(stickersTable, s.toDatabaseJson()),
+    );
+  }
+  
   Future<sticker_pack.StickerPack?> getStickerPackById(String id) async {
     final rawPack = await _db.query(
       stickerPacksTable,

@@ -442,6 +442,12 @@ files:
         attributes:
           deviceId: int
           jid: String
+      - name: ImportStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          path: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"
