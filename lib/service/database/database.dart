@@ -1175,6 +1175,31 @@ class DatabaseService {
       id: await _db.insert(stickersTable, s.toDatabaseJson()),
     );
   }
+
+  Future<List<sticker_pack.StickerPack>> loadStickerPacks() async {
+    final rawPacks = await _db.query(stickerPacksTable);
+    if (rawPacks == null) return [];
+
+    final stickerPacks = List<sticker_pack.StickerPack>.empty(growable: true);
+    for (final pack in rawPacks) {
+      final rawStickers = await _db.query(
+        stickersTable,
+        where: 'stickerPackId = ?',
+        whereArgs: [pack['id']! as String],
+      );
+
+      stickerPacks.add(
+        sticker_pack.StickerPack.fromDatabaseJson(
+          pack,
+          rawStickers
+            .map((s) => sticker.Sticker.fromDatabaseJson(s))
+            .toList(),
+        ),
+      );
+    }
+
+    return stickerPacks;
+  }
   
   Future<sticker_pack.StickerPack?> getStickerPackById(String id) async {
     final rawPack = await _db.query(

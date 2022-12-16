@@ -99,37 +99,6 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<DevicesBloc>(DevicesBloc());
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
   GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
-
-  GetIt.I.get<StickersBloc>().add(
-    StickersSetEvent(
-      [
-        StickerPack(
-          'me.polynom.ayame',
-          'Just ayame',
-          'Just ayame',
-          List<Sticker>.generate(
-            19,
-            (i) => Sticker(
-              i,
-              'image/png',
-              ':ayamer:',
-              99999,
-              null,
-              null,
-              {},
-              [
-                'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Femoji.gg%2Fassets%2Femoji%2F9141_yo_dayo.png&f=1&nofb=1&ipt=94363fe3473e9f77326bee3f809732d5901d607462196a43cb942e7404e4534e&ipo=images',
-              ],
-              null,
-              '',
-            ),
-          ),
-          '',
-          '',
-        ),
-      ],
-    ),
-  );
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a

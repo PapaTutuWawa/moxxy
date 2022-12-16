@@ -36,6 +36,9 @@ files:
           roster:
             type: List<RosterItem>?
             deserialise: true
+          stickers:
+            type: List<StickerPack>?
+            deserialise: true
       # Returned by [GetMessagesForJidCommand]
       - name: MessagesResultEvent
         extends: BackgroundEvent

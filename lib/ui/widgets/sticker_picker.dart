@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
@@ -55,9 +56,11 @@ class StickerPicker extends StatelessWidget {
                             padding: const EdgeInsets.all(15),
                             child: InkWell(
                               onTap: () => print(index),
-                              child: Image.network(
-                                state.stickerPacks[sindex].stickers[index * 4 + rowIndex].urlSources.first,
-                                key: ValueKey('image${index * 4 + rowIndex}'),
+                              child: Image.file(
+                                File(
+                                  state.stickerPacks[sindex].stickers[index * 4 + rowIndex].path,
+                                ),
+                                key: ValueKey('${state.stickerPacks[sindex].id}_${index * 4 + rowIndex}'),
                                 fit: BoxFit.contain,
                                 width: _itemSize,
                                 height: _itemSize,

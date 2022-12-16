@@ -16,7 +16,7 @@ class Sticker with _$Sticker {
     /// Hash algorithm (algo attribute) -> Base64 encoded hash
     Map<String, String> hashes,
     List<String> urlSources,
-    String? path,
+    String path,
     String stickerPackId,
   ) = _Sticker;
 
@@ -28,8 +28,8 @@ class Sticker with _$Sticker {
   factory Sticker.fromDatabaseJson(Map<String, dynamic> json) {
     return Sticker.fromJson({
       ...json,
-      'hashes': jsonDecode(json['hashes']! as String) as Map<String, String>,
-      'urlSources': jsonDecode(json['urlSources']! as String) as List<String>,
+      'hashes': jsonDecode(json['hashes']! as String).cast<String, String>(),
+      'urlSources': jsonDecode(json['urlSources']! as String).cast<String>(),
     });
   }
   

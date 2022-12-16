@@ -24,6 +24,17 @@ class StickersService {
     return _stickerPacks[id];
   }
 
+  Future<List<StickerPack>> getStickerPacks() async {
+    if (_stickerPacks.isEmpty) {
+      final packs = await GetIt.I.get<DatabaseService>().loadStickerPacks();
+      for (final pack in packs) {
+        _stickerPacks[pack.id] = pack;
+      }
+    }
+
+    return _stickerPacks.values.toList();
+  }
+  
   Future<Sticker?> getStickerBySFS(String? packId, moxxmpp.StatelessFileSharingData? sfs) async {
     if (packId == null || sfs == null) return null;
 
@@ -51,13 +62,13 @@ class StickersService {
   /// - A file 'urn.xmpp.stickers.0.xml' must exist and must contain only the <pack /> element
   /// - The File Metadata Elements must also contain a <name /> element
   ///   - The file referenced by the <name/> element must also exist on the archive's top level
-  Future<void> importFromFile(String path) async {
+  Future<StickerPack?> importFromFile(String path) async {
     final archiveBytes = await File(path).readAsBytes();
     final archive = TarDecoder().decodeBytes(archiveBytes);
     final metadata = archive.findFile('urn.xmpp.stickers.0.xml');
     if (metadata == null) {
       print('Invalid sticker pack: NO metadata file');
-      return;
+      return null;
     }
 
     final content = utf8.decode(metadata.content as List<int>);
@@ -71,13 +82,13 @@ class StickersService {
       final filename = sticker.metadata.name;
       if (filename == null) {
         print('Invalid sticker pack: One sticker has no <name/>');
-        return;
+        return null;
       }
 
       final stickerFile = archive.findFile(filename);
       if (stickerFile == null) {
         print('Invalid sticker pack: $filename does not exist in archive');
-        return;
+        return null;
       }
     }
     
@@ -135,5 +146,6 @@ class StickersService {
     print('Successfully added to the database');
 
     // TODO(PapaTutuWawa): Publish on PubSub
+    return stickerPack;
   }
 }

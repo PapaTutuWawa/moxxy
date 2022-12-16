@@ -14,7 +14,7 @@ Future<void> upgradeFromV16ToV17(Database db) async {
       height        INTEGER,
       hashes        TEXT NOT NULL,
       urlSources    TEXT NOT NULL,
-      path          TEXT,
+      path          TEXT NOT NULL,
       stickerPackId TEXT NOT NULL,
       CONSTRAINT fk_sticker_pack FOREIGN KEY (stickerPackId) REFERENCES $stickerPacksTable (id)
         ON DELETE CASCADE

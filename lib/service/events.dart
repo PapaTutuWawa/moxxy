@@ -133,7 +133,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
     permissions.add(Permission.storage.value);
 
     await xmpp.modifyXmppState((state) => state.copyWith(
-        askedStoragePermission: true,
+      askedStoragePermission: true,
     ),);
   }
 
@@ -147,6 +147,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
     preferences: preferences,
     conversations: (await GetIt.I.get<DatabaseService>().loadConversations()).where((c) => c.open).toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
+    stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
 }
 
