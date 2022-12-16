@@ -28,8 +28,8 @@ class Sticker with _$Sticker {
   factory Sticker.fromDatabaseJson(Map<String, dynamic> json) {
     return Sticker.fromJson({
       ...json,
-      'hashes': jsonDecode(json['hashes']! as String).cast<String, String>(),
-      'urlSources': jsonDecode(json['urlSources']! as String).cast<String>(),
+      'hashes': (jsonDecode(json['hashes']! as String) as Map<dynamic, dynamic>).cast<String, String>(),
+      'urlSources': (jsonDecode(json['urlSources']! as String) as List<dynamic>).cast<String>(),
     });
   }
   

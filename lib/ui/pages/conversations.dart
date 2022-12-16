@@ -286,6 +286,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
               child: const Icon(Icons.group),
               //onTap: () => showNotImplementedDialog('groupchat', context),
               onTap: () async {
+                // TODO(PapaTutuWawa): Remove
                 final result = await FilePicker.platform.pickFiles();
                 if (result == null) return;
 

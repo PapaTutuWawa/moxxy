@@ -1,18 +1,19 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
+import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
-import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:path/path.dart' as p;
-import 'package:xml/xml.dart';
 
 class StickersService {
-  Map<String, StickerPack> _stickerPacks = {};
+  final Map<String, StickerPack> _stickerPacks = {};
+  final Logger _log = Logger('StickersService');
 
   Future<StickerPack?> getStickerPackById(String id) async {
     if (_stickerPacks.containsKey(id)) return _stickerPacks[id];
@@ -67,13 +68,14 @@ class StickersService {
     final archive = TarDecoder().decodeBytes(archiveBytes);
     final metadata = archive.findFile('urn.xmpp.stickers.0.xml');
     if (metadata == null) {
-      print('Invalid sticker pack: NO metadata file');
+      _log.severe('Invalid sticker pack: No metadata file');
       return null;
     }
 
     final content = utf8.decode(metadata.content as List<int>);
     final node = moxxmpp.XMLNode.fromString(content);
     final pack = moxxmpp.StickerPack.fromXML(
+      // TODO(PapaTutuWawa): fix
       'EpRv28DHHzFrE4zd+xaNpVb4jbu4s74XtioExNjQzZ0=',
       node,
     );
@@ -81,13 +83,13 @@ class StickersService {
     for (final sticker in pack.stickers) {
       final filename = sticker.metadata.name;
       if (filename == null) {
-        print('Invalid sticker pack: One sticker has no <name/>');
+        _log.severe('Invalid sticker pack: One sticker has no <name/>');
         return null;
       }
 
       final stickerFile = archive.findFile(filename);
       if (stickerFile == null) {
-        print('Invalid sticker pack: $filename does not exist in archive');
+        _log.severe('Invalid sticker pack: $filename does not exist in archive');
         return null;
       }
     }
@@ -143,7 +145,7 @@ class StickersService {
     // Add it to the cache
     _stickerPacks[pack.hashValue] = stickerPack;
 
-    print('Successfully added to the database');
+    _log.info('Successfully added to the database');
 
     // TODO(PapaTutuWawa): Publish on PubSub
     return stickerPack;

@@ -9,8 +9,6 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/models/sticker.dart';
-import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';

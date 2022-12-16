@@ -1178,8 +1178,6 @@ class DatabaseService {
 
   Future<List<sticker_pack.StickerPack>> loadStickerPacks() async {
     final rawPacks = await _db.query(stickerPacksTable);
-    if (rawPacks == null) return [];
-
     final stickerPacks = List<sticker_pack.StickerPack>.empty(growable: true);
     for (final pack in rawPacks) {
       final rawStickers = await _db.query(
@@ -1192,7 +1190,7 @@ class DatabaseService {
         sticker_pack.StickerPack.fromDatabaseJson(
           pack,
           rawStickers
-            .map((s) => sticker.Sticker.fromDatabaseJson(s))
+            .map(sticker.Sticker.fromDatabaseJson)
             .toList(),
         ),
       );
@@ -1220,7 +1218,7 @@ class DatabaseService {
     return sticker_pack.StickerPack.fromDatabaseJson(
       rawPack.first,
       rawStickers
-        .map((s) => sticker.Sticker.fromDatabaseJson(s))
+        .map(sticker.Sticker.fromDatabaseJson)
         .toList(),
     );
   }

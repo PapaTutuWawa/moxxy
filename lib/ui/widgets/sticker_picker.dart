@@ -33,7 +33,7 @@ class StickerPicker extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 15),
                   child: Text(
                     state.stickerPacks[si ~/ 2].name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 20,
                     ),
                   ),
@@ -43,7 +43,7 @@ class StickerPicker extends StatelessWidget {
               final sindex = (si - 1) ~/ 2;
               return ListView.builder(
                 shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: (state.stickerPacks[sindex].stickers.length / 4).ceil(),
                 itemBuilder: (_, index) {
                   final stickersLength = state.stickerPacks[sindex].stickers.length - index * 4;
