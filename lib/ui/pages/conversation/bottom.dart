@@ -273,15 +273,19 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
           ),
         ),
 
-        Positioned(
-          right: 8,
-          bottom: 8,
-          child: BlocBuilder<ConversationBloc, ConversationState>(
-            buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState ||
-              prev.isDragging != next.isDragging ||
-              prev.isLocked != next.isLocked,
-            builder: (context, state) {
-              return Visibility(
+        BlocBuilder<ConversationBloc, ConversationState>(
+          buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState ||
+            prev.isDragging != next.isDragging ||
+            prev.isLocked != next.isLocked ||
+            prev.emojiPickerVisible != next.emojiPickerVisible ||
+            prev.stickerPickerVisible != next.stickerPickerVisible,
+          builder: (context, state) {
+            return Positioned(
+              right: 8,
+              bottom: state.emojiPickerVisible || state.stickerPickerVisible ?
+                258 /* 8 (Regular padding) + 250 (Height of the pickers) */ :
+                8,
+              child: Visibility(
                 visible: !state.isDragging && !state.isLocked,
                 child: LongPressDraggable<int>(
                   data: 1,
@@ -331,25 +335,25 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       onPressed: () {
                         switch (state.sendButtonState) {
                           case SendButtonState.audio:
-                            Vibrate.feedback(FeedbackType.heavy);
-                            Fluttertoast.showToast(
-                              msg: t.warnings.conversation.holdForLonger,
-                              gravity: ToastGravity.SNACKBAR,
-                              toastLength: Toast.LENGTH_SHORT,
-                            );
-                            return;
+                          Vibrate.feedback(FeedbackType.heavy);
+                          Fluttertoast.showToast(
+                            msg: t.warnings.conversation.holdForLonger,
+                            gravity: ToastGravity.SNACKBAR,
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                          return;
                           case SendButtonState.cancelCorrection:
-                            context.read<ConversationBloc>().add(
-                              MessageEditCancelledEvent(),
-                            );
-                            widget.controller.text = '';
-                            return;
+                          context.read<ConversationBloc>().add(
+                            MessageEditCancelledEvent(),
+                          );
+                          widget.controller.text = '';
+                          return;
                           case SendButtonState.send:
-                            context.read<ConversationBloc>().add(
-                              MessageSentEvent(),
-                            );
-                            widget.controller.text = '';
-                            return;
+                          context.read<ConversationBloc>().add(
+                            MessageSentEvent(),
+                          );
+                          widget.controller.text = '';
+                          return;
                         }
                       },
                       child: Icon(
@@ -359,9 +363,9 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
 
         Positioned(
