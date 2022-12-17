@@ -84,11 +84,16 @@ class StickersService {
 
     final content = utf8.decode(metadata.content as List<int>);
     final node = moxxmpp.XMLNode.fromString(content);
-    final pack = moxxmpp.StickerPack.fromXML(
-      // TODO(PapaTutuWawa): fix
-      'EpRv28DHHzFrE4zd+xaNpVb4jbu4s74XtioExNjQzZ0=',
+    final packRaw = moxxmpp.StickerPack.fromXML(
+      '',
       node,
+      hashAvailable: false,
     );
+    final pack = packRaw.copyWithId(
+      moxxmpp.HashFunction.sha256,
+      await packRaw.getHash(moxxmpp.HashFunction.sha256),
+    );
+    _log.finest('New sticker pack identifier: sha256:${pack.id}');
 
     for (final sticker in pack.stickers) {
       final filename = sticker.metadata.name;
