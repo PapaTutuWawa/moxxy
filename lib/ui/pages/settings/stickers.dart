@@ -56,7 +56,7 @@ class StickersSettingsPage extends StatelessWidget {
                     },
                   ),
                   SettingsTile(
-                    title: Text('Import sticker pack'),
+                    title: Text(t.pages.settings.stickers.importStickerPack),
                     onPressed: (context) {
                       GetIt.I.get<StickersBloc>().add(
                         StickerPackImportedEvent(),

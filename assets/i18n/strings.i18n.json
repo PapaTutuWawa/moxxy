@@ -283,7 +283,8 @@
 		"displayStickers": "Display stickers in chat",
 		"autoDownload": "Automatically download stickers",
 		"autoDownloadBody": "If enabled, stickers are automatically downloaded when the sender is in your contact list.",
-		"stickerPacksSection": "Sticker packs"
+		"stickerPacksSection": "Sticker packs",
+		"importStickerPack": "Import sticker pack"
 	    }
 	}
     }

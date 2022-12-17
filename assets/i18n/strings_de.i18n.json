@@ -283,7 +283,8 @@
 		"displayStickers": "Sticker im Chat anzeigen",
 		"autoDownload": "Sticker automatisch herunterladen",
 		"autoDownloadBody": "Wenn aktiviert, dann werden Sticker automatisch heruntergeladen, wenn der Sender in der Kontaktliste ist.",
-		"stickerPacksSection": "Stickerpacks"
+		"stickerPacksSection": "Stickerpacks",
+		"importStickerPack": "Stickerpack importieren"
 	    }
 	}
     }
