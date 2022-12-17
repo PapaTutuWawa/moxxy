@@ -211,6 +211,19 @@ files:
           conversationJid: String
           title: String
           avatarUrl: String
+      - name: StickerPackImportSuccessEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
+      - name: StickerPackImportFailureEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -451,6 +464,12 @@ files:
           - JsonImplementation
         attributes:
           path: String
+      - name: RemoveStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPackId: String
       - name: SendStickerCommand
         extends: BackgroundCommand
         implements:

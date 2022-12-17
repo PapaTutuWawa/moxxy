@@ -1198,6 +1198,14 @@ class DatabaseService {
 
     return stickerPacks;
   }
+
+  Future<void> removeStickerPackById(String id) async {
+    await _db.delete(
+      stickerPacksTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
   
   Future<sticker_pack.StickerPack?> getStickerPackById(String id) async {
     final rawPack = await _db.query(

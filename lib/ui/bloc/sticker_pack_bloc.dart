@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
+import 'package:moxxyv2/ui/bloc/stickers_bloc.dart' as stickers;
 import 'package:moxxyv2/ui/constants.dart';
 
 part 'sticker_pack_bloc.freezed.dart';
@@ -14,6 +14,7 @@ part 'sticker_pack_state.dart';
 class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
   StickerPackBloc() : super(StickerPackState()) {
     on<LocallyAvailableStickerPackRequested>(_onLocalStickerPackRequested);
+    on<StickerPackRemovedEvent>(_onStickerPackRemoved);
   }
 
   Future<void> _onLocalStickerPackRequested(LocallyAvailableStickerPackRequested event, Emitter<StickerPackState> emit) async {
@@ -36,7 +37,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     if (mustDoWork) {
       // Apply
       final stickerPack = firstWhereOrNull(
-        GetIt.I.get<StickersBloc>().state.stickerPacks,
+        GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,
         (StickerPack pack) => pack.id == event.stickerPackId,
       );
       assert(stickerPack != null, 'The sticker pack must be found');
@@ -47,5 +48,25 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         ),
       );
     }
+  }
+
+  Future<void> _onStickerPackRemoved(StickerPackRemovedEvent event, Emitter<StickerPackState> emit) async {
+    // Reset internal state
+    emit(
+      state.copyWith(
+        stickerPack: null,
+        isWorking: true,
+      ),
+    );
+
+    // Leave the page
+    GetIt.I.get<NavigationBloc>().add(
+      PoppedRouteEvent(),
+    );   
+    
+    // Remove the sticker pack
+    GetIt.I.get<stickers.StickersBloc>().add(
+      stickers.StickerPackRemovedEvent(event.stickerPackId),
+    );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
@@ -52,7 +53,19 @@ class StickerPackPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                onTap: () {},
+                onTap: () async {
+                  final result = await showConfirmationDialog(
+                    'Remove sticker pack',
+                    'Are you sure you want to remove this sticker pack?',
+                    context,
+                  );
+                  if (result) {
+                    // ignore: use_build_context_synchronously
+                    context.read<StickerPackBloc>().add(
+                      StickerPackRemovedEvent(state.stickerPack!.id),
+                    );
+                  }
+                },
               ),
             ),
           ],

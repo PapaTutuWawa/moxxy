@@ -74,6 +74,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
       EventTypeMatcher<ImportStickerPackCommand>(performImportStickerPack),
       EventTypeMatcher<SendStickerCommand>(performSendSticker),
+      EventTypeMatcher<RemoveStickerPackCommand>(performRemoveStickerPack),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -778,7 +779,21 @@ Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
 }
 
 Future<void> performImportStickerPack(ImportStickerPackCommand command, { dynamic extra }) async {
-  await GetIt.I.get<StickersService>().importFromFile(command.path);
+  final id = extra as String;
+  final result = await GetIt.I.get<StickersService>().importFromFile(command.path);
+  if (result != null) {
+    sendEvent(
+      StickerPackImportSuccessEvent(
+        stickerPack: result,
+      ),
+      id: id,
+    );
+  } else {
+    sendEvent(
+      StickerPackImportFailureEvent(),
+      id: id,
+    );
+  }
 }
 
 Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) async {
@@ -792,5 +807,11 @@ Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) a
     body: sticker!.desc,
     recipients: [command.recipient],
     sticker: sticker,
+  );
+}
+
+Future<void> performRemoveStickerPack(RemoveStickerPackCommand command, { dynamic extra }) async {
+  await GetIt.I.get<StickersService>().removeStickerPack(
+    command.stickerPackId,
   );
 }

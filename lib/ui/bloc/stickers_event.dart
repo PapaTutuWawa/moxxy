@@ -8,3 +8,12 @@ class StickersSetEvent extends StickersEvent {
   );
   final List<StickerPack> stickerPacks;
 }
+
+/// Triggered by the UI when a sticker pack has been removed
+class StickerPackRemovedEvent extends StickersEvent {
+  StickerPackRemovedEvent(this.stickerPackId);
+  final String stickerPackId;
+}
+
+/// Triggered by the UI when a sticker pack has been imported
+class StickerPackImportedEvent extends StickersEvent {}

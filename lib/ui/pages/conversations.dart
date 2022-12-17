@@ -3,10 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -284,19 +281,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
           children: [
             SpeedDialChild(
               child: const Icon(Icons.group),
-              //onTap: () => showNotImplementedDialog('groupchat', context),
-              onTap: () async {
-                // TODO(PapaTutuWawa): Remove
-                final result = await FilePicker.platform.pickFiles();
-                if (result == null) return;
-
-                await MoxplatformPlugin.handler.getDataSender().sendData(
-                  ImportStickerPackCommand(
-                    path: result.files.single.path!,
-                  ),
-                  awaitable: false,
-                );
-              },
+              onTap: () => showNotImplementedDialog('groupchat', context),
               backgroundColor: primaryColor,
               // TODO(Unknown): Theme dependent?
               foregroundColor: Colors.white,

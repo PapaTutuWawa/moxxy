@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive.dart';
@@ -6,6 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
@@ -66,6 +68,35 @@ class StickersService {
     );
   }
 
+  Future<void> removeStickerPack(String id) async {
+    // Remove from the database
+    await GetIt.I.get<DatabaseService>().removeStickerPackById(id);
+
+    // Remove from the cache
+    _stickerPacks.remove(id);
+
+    // Retract from PubSub
+    final state = await GetIt.I.get<XmppService>().getXmppState();
+    final result = await GetIt.I.get<moxxmpp.XmppConnection>()
+      .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
+      .retractStickerPack(moxxmpp.JID.fromString(state.jid!), id);
+
+    if (result.isType<moxxmpp.PubSubError>()) {
+      _log.severe('Failed to retract sticker pack');
+    }
+  }
+  
+  Future<void> _publishStickerPack(moxxmpp.StickerPack pack) async {
+    final state = await GetIt.I.get<XmppService>().getXmppState();
+    final result = await GetIt.I.get<moxxmpp.XmppConnection>()
+      .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
+      .publishStickerPack(moxxmpp.JID.fromString(state.jid!), pack);
+
+    if (result.isType<moxxmpp.PubSubError>()) {
+      _log.severe('Failed to publish sticker pack');
+    }
+  }
+  
   /// Imports a sticker pack from [path].
   /// The format is as follows:
   /// - The file MUST be an uncompressed tar archive
@@ -164,12 +195,17 @@ class StickersService {
       );
     }
 
+    final stickerPackWithStickers = stickerPack.copyWith(
+      stickers: stickers,
+    );
+
     // Add it to the cache
-    _stickerPacks[pack.hashValue] = stickerPack;
+    _stickerPacks[pack.hashValue] = stickerPackWithStickers;
 
-    _log.info('Successfully added to the database');
+    _log.info('Sticker pack ${stickerPack.id} successfully added to the database');
 
-    // TODO(PapaTutuWawa): Publish on PubSub
-    return stickerPack;
+    // Publish but don't block
+    unawaited(_publishStickerPack(pack));
+    return stickerPackWithStickers;
   }
 }
