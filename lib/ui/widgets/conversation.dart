@@ -128,7 +128,6 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   Widget _buildLastMessagePreview() {
     Widget? preview;
     if (widget.conversation.lastMessage!.stickerPackId != null) {
-
       Sticker? sticker;
       if (widget.conversation.lastMessage!.stickerPackId != null &&
           widget.conversation.lastMessage!.stickerId != null &&

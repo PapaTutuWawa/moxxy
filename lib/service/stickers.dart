@@ -69,12 +69,29 @@ class StickersService {
   }
 
   Future<void> removeStickerPack(String id) async {
+    final pack = await getStickerPackById(id);
+    assert(pack != null, 'The sticker pack must exist');
+
+    // Delete the files
+    final stickerPackPath = await getStickerPackPath(
+      pack!.hashAlgorithm,
+      pack!.hashValue,
+    );
+    final stickerPackDir = Directory(stickerPackPath);
+    if (stickerPackDir.existsSync()) {
+      unawaited(
+        stickerPackDir.delete(
+          recursive: true,
+        ),
+      );
+    }
+    
     // Remove from the database
     await GetIt.I.get<DatabaseService>().removeStickerPackById(id);
 
     // Remove from the cache
     _stickerPacks.remove(id);
-
+    
     // Retract from PubSub
     final state = await GetIt.I.get<XmppService>().getXmppState();
     final result = await GetIt.I.get<moxxmpp.XmppConnection>()
