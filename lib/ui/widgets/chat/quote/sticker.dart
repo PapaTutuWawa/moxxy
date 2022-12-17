@@ -25,9 +25,9 @@ class QuotedStickerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     Sticker? sticker;
     if (message.stickerPackId != null &&
-        message.stickerId != null &&
+        message.stickerHashKey != null &&
         GetIt.I.get<PreferencesBloc>().state.enableStickers) {
-      final stickerKey = StickerKey(message.stickerPackId!, message.stickerId!);
+      final stickerKey = StickerKey(message.stickerPackId!, message.stickerHashKey!);
       sticker = GetIt.I.get<StickersBloc>().state.stickerMap[stickerKey];
     }
 

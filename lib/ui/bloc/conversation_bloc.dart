@@ -654,7 +654,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SendStickerCommand(
         stickerPackId: event.stickerPackId,
-        stickerId: event.stickerId,
+        stickerHashKey: event.stickerHashKey,
         recipient: state.conversation!.jid,
       ),
       awaitable: false,

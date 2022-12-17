@@ -27,13 +27,13 @@ class StickersService {
     return _stickerPacks[id];
   }
 
-  Future<Sticker?> getStickerById(String packId, int id) async {
+  Future<Sticker?> getStickerByHashKey(String packId, String hashKey) async {
     final pack = await getStickerPackById(packId);
     if (pack == null) return null;
 
     return firstWhereOrNull<Sticker>(
       pack.stickers,
-      (sticker) => sticker.id == id,
+      (sticker) => sticker.hashKey == hashKey,
     );
   }
   
@@ -75,7 +75,7 @@ class StickersService {
     // Delete the files
     final stickerPackPath = await getStickerPackPath(
       pack!.hashAlgorithm,
-      pack!.hashValue,
+      pack.hashValue,
     );
     final stickerPackDir = Directory(stickerPackPath);
     if (stickerPackDir.existsSync()) {
@@ -172,7 +172,7 @@ class StickersService {
     if (!stickerDir.existsSync()) await stickerDir.create(recursive: true);
 
     final db = GetIt.I.get<DatabaseService>();
-
+    
     // Create the sticker pack first
     final stickerPack = StickerPack(
       pack.hashValue,

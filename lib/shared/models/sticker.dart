@@ -7,7 +7,7 @@ part 'sticker.g.dart';
 @freezed
 class Sticker with _$Sticker {
   factory Sticker(
-    int id,
+    String hashKey,
     String mediaType,
     String desc,
     int size,
@@ -35,7 +35,6 @@ class Sticker with _$Sticker {
   
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
-      ..remove('id')
       ..remove('hashes')
       ..remove('urlSources');
 

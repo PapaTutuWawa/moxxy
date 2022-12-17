@@ -800,7 +800,10 @@ Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) a
   final xs = GetIt.I.get<XmppService>();
   final ss = GetIt.I.get<StickersService>();
 
-  final sticker = await ss.getStickerById(command.stickerPackId, command.stickerId);
+  final sticker = await ss.getStickerByHashKey(
+    command.stickerPackId,
+    command.stickerHashKey,
+  );
   assert(sticker != null, 'Sticker not found');
 
   await xs.sendMessage(

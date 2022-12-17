@@ -130,12 +130,13 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     if (widget.conversation.lastMessage!.stickerPackId != null) {
       Sticker? sticker;
       if (widget.conversation.lastMessage!.stickerPackId != null &&
-          widget.conversation.lastMessage!.stickerId != null &&
+          widget.conversation.lastMessage!.stickerHashKey != null &&
           GetIt.I.get<PreferencesBloc>().state.enableStickers) {
         final stickerKey = StickerKey(
           widget.conversation.lastMessage!.stickerPackId!,
-          widget.conversation.lastMessage!.stickerId!,
+          widget.conversation.lastMessage!.stickerHashKey!,
         );
+
         sticker = GetIt.I.get<StickersBloc>().state.stickerMap[stickerKey];
       }
 

@@ -476,7 +476,7 @@ files:
           - JsonImplementation
         attributes:
           stickerPackId: String
-          stickerId: int
+          stickerHashKey: String
           recipient: String
     generate_builder: true
     # get${builder_Name}FromJson

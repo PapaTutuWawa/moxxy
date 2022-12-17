@@ -56,7 +56,7 @@ Future<void> createDatabase(Database db, int version) async {
       reactions TEXT NOT NULL,
       containsNoStore INTEGER NOT NULL,
       stickerPackId   TEXT,
-      stickerId       INTEGER,
+      stickerHashKey  TEXT,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id),
     )''',
   );
@@ -132,7 +132,7 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $stickersTable (
-      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      hashKey       TEXT PRIMARY KEY,
       mediaType     TEXT NOT NULL,
       desc          TEXT NOT NULL,
       size          INTEGER NOT NULL,
@@ -149,11 +149,11 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $stickerPacksTable (
-      id            TEXT PRIMARY KEY,
-      name          TEXT NOT NULL,
-      description   TEXT NOT NULL,
-      hashAlgorithm TEXT NOT NULL,
-      hashValue     TEXT NOT NULL
+      id             TEXT PRIMARY KEY,
+      name           TEXT NOT NULL,
+      description    TEXT NOT NULL,
+      hashAlgorithm  TEXT NOT NULL,
+      hashValue      TEXT NOT NULL
     )''',
   );
   

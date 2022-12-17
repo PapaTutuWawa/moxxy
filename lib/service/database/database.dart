@@ -23,7 +23,10 @@ import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_hash_key.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_hash_key2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
+import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
@@ -73,7 +76,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 17,
+      version: 19,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -149,6 +152,14 @@ class DatabaseService {
         if (oldVersion < 17) {
           _log.finest('Running migration for database version 17');
           await upgradeFromV16ToV17(db);
+        }
+        if (oldVersion < 18) {
+          _log.finest('Running migration for database version 18');
+          await upgradeFromV17ToV18(db);
+        }
+        if (oldVersion < 19) {
+          _log.finest('Running migration for database version 19');
+          await upgradeFromV18ToV19(db);
         }
       },
     );
@@ -396,7 +407,7 @@ class DatabaseService {
       bool isUploading = false,
       int? mediaSize,
       String? stickerPackId,
-      int? stickerId,
+      String? stickerHashKey,
     }
   ) async {
     var m = Message(
@@ -432,7 +443,7 @@ class DatabaseService {
       isDownloading: isDownloading,
       mediaSize: mediaSize,
       stickerPackId: stickerPackId,
-      stickerId: stickerId,
+      stickerHashKey: stickerHashKey,
     );
 
     if (quoteId != null) {
@@ -1159,7 +1170,7 @@ class DatabaseService {
     String stickerPackId,
   ) async {
     final s = sticker.Sticker(
-      -1,
+      getStickerHashKey(hashes),
       mediaType,
       desc,
       size,
@@ -1171,9 +1182,8 @@ class DatabaseService {
       stickerPackId,
     );
 
-    return s.copyWith(
-      id: await _db.insert(stickersTable, s.toDatabaseJson()),
-    );
+    await _db.insert(stickersTable, s.toDatabaseJson());
+    return s;
   }
 
   Future<List<sticker_pack.StickerPack>> loadStickerPacks() async {

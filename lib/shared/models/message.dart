@@ -65,7 +65,7 @@ class Message with _$Message {
       int? mediaSize,
       @Default([]) List<Reaction> reactions,
       String? stickerPackId,
-      int? stickerId,
+      String? stickerHashKey,
     }
   ) = _Message;
 

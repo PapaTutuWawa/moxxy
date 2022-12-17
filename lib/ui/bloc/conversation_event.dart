@@ -169,7 +169,7 @@ class ReactionRemovedEvent extends ConversationEvent {
 
 /// Triggered when a sticker has been sent
 class StickerSentEvent extends ConversationEvent {
-  StickerSentEvent(this.stickerPackId, this.stickerId);
+  StickerSentEvent(this.stickerPackId, this.stickerHashKey);
   final String stickerPackId;
-  final int stickerId;
+  final String stickerHashKey;
 }

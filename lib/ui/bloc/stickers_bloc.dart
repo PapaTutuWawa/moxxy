@@ -25,7 +25,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     final map = <StickerKey, Sticker>{};
     for (final pack in event.stickerPacks) {
       for (final sticker in pack.stickers) {
-        map[StickerKey(pack.id, sticker.id)] = sticker;
+        map[StickerKey(pack.id, sticker.hashKey)] = sticker;
       }
     }
     
@@ -44,7 +44,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     )!;
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
     for (final sticker in stickerPack.stickers) {
-      sm.remove(StickerKey(stickerPack.id, sticker.id));
+      sm.remove(StickerKey(stickerPack.id, sticker.hashKey));
     }
 
     emit(
@@ -77,7 +77,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     if (result is StickerPackImportSuccessEvent) {
       final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
       for (final sticker in result.stickerPack.stickers) {
-        sm[StickerKey(result.stickerPack.id, sticker.id)] = sticker;
+        sm[StickerKey(result.stickerPack.id, sticker.hashKey)] = sticker;
       }
       emit(
         state.copyWith(

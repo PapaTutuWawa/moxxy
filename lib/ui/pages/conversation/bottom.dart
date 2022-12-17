@@ -212,7 +212,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         context.read<ConversationBloc>().add(
                           StickerSentEvent(
                             pack.id,
-                            sticker.id,
+                            sticker.hashKey,
                           ),
                         );
                       },

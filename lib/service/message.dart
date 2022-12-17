@@ -65,7 +65,7 @@ class MessageService {
       bool isUploading = false,
       int? mediaSize,
       String? stickerPackId,
-      int? stickerId,
+      String? stickerHashKey,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -98,7 +98,7 @@ class MessageService {
       isDownloading: isDownloading,
       mediaSize: mediaSize,
       stickerPackId: stickerPackId,
-      stickerId: stickerId,
+      stickerHashKey: stickerHashKey,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents

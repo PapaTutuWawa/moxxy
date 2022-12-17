@@ -204,7 +204,7 @@ class XmppService {
         originId: originId,
         quoteId: quotedMessage?.sid,
         stickerPackId: sticker?.stickerPackId,
-        stickerId: sticker?.id,
+        stickerHashKey: sticker?.hashKey,
       );
       final newConversation = await cs.updateConversation(
         conversation.id,
@@ -1163,10 +1163,10 @@ class XmppService {
     var mimeGuess = _getMimeGuess(event);
 
     // Find a potential sticker
-    final stickerId = (await GetIt.I.get<StickersService>().getStickerBySFS(
+    final stickerHashKey = (await GetIt.I.get<StickersService>().getStickerBySFS(
         event.stickerPackId,
         event.sfs,
-      ))?.id;
+      ))?.hashKey;
     
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
@@ -1176,7 +1176,7 @@ class XmppService {
       messageTimestamp,
       event.fromJid.toString(),
       conversationJid,
-      isFileEmbedded || event.fun != null || stickerId != null,
+      isFileEmbedded || event.fun != null || stickerHashKey != null,
       event.sid,
       event.fun != null,
       event.encrypted,
@@ -1195,7 +1195,7 @@ class XmppService {
       errorType: errorTypeFromException(event.other['encryption_error']),
       plaintextHashes: event.sfs?.metadata.hashes,
       stickerPackId: event.stickerPackId,
-      stickerId: stickerId,
+      stickerHashKey: stickerHashKey,
     );
     
     // Attempt to auto-download the embedded file

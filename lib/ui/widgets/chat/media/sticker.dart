@@ -66,8 +66,8 @@ class StickerChatWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Sticker? sticker;
-    if (message.stickerPackId != null && message.stickerId != null) {
-      final stickerKey = StickerKey(message.stickerPackId!, message.stickerId!);
+    if (message.stickerPackId != null && message.stickerHashKey != null) {
+      final stickerKey = StickerKey(message.stickerPackId!, message.stickerHashKey!);
       sticker = GetIt.I.get<StickersBloc>().state.stickerMap[stickerKey];
     }
 
