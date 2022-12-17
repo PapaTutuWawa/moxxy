@@ -188,7 +188,9 @@
 	},
 	"stickerPack": {
 	    "removeConfirmTitle": "Stickerpack entfernen",
-	    "removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?"
+	    "removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?",
+	    "installConfirmTitle": "Stickerpack installieren",
+	    "installConfirmBody": "Bist Du Dir sicher, dass Du das Stickerpack installieren möchtest?"
 	},
 	"settings": {
 	    "settings": {

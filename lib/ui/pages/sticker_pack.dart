@@ -58,6 +58,31 @@ class StickerPackPage extends StatelessWidget {
     ),
   );
 
+  Future<void> _onDeletePressed(BuildContext context, StickerPackState state) async {
+    final result = await showConfirmationDialog(
+      t.pages.stickerPack.removeConfirmTitle,
+      t.pages.stickerPack.removeConfirmBody,
+      context,
+    );
+    if (result) {
+      // ignore: use_build_context_synchronously
+      context.read<StickerPackBloc>().add(
+        StickerPackRemovedEvent(state.stickerPack!.id),
+      );
+    }
+  }
+
+  Future<void> _onInstallPressed(BuildContext context, StickerPackState state) async {
+    final result = await showConfirmationDialog(
+      t.pages.stickerPack.installConfirmTitle,
+      t.pages.stickerPack.installConfirmBody,
+      context,
+    );
+    if (result) {
+      // TODO(PapaTutuWawa): TODO
+    }
+  }
+  
   Widget _buildBody(BuildContext context, StickerPackState state) {
     final width = MediaQuery.of(context).size.width;
     final itemSize = (width - 2 * 15 - 3 * 30) / 4;
@@ -86,25 +111,23 @@ class StickerPackPage extends StatelessWidget {
               child: SharedMediaContainer(
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: const ColoredBox(
-                    color: Colors.red,
+                  child: ColoredBox(
+                    color: state.stickerPack!.local ?
+                      Colors.red :
+                      Colors.green,
                     child: Icon(
-                      Icons.delete,
+                      state.stickerPack!.local ?
+                        Icons.delete :
+                        Icons.download,
                       size: 32,
                     ),
                   ),
                 ),
-                onTap: () async {
-                  final result = await showConfirmationDialog(
-                    t.pages.stickerPack.removeConfirmTitle,
-                    t.pages.stickerPack.removeConfirmBody,
-                    context,
-                  );
-                  if (result) {
-                    // ignore: use_build_context_synchronously
-                    context.read<StickerPackBloc>().add(
-                      StickerPackRemovedEvent(state.stickerPack!.id),
-                    );
+                onTap: () {
+                  if (state.stickerPack!.local) {
+                    _onDeletePressed(context, state);
+                  } else {
+                    _onInstallPressed(context, state);
                   }
                 },
               ),

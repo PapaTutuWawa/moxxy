@@ -13,6 +13,7 @@ class StickerPack with _$StickerPack {
     List<Sticker> stickers,
     String hashAlgorithm,
     String hashValue,
+    bool local,
   ) = _StickerPack;
 
   const StickerPack._();
@@ -23,6 +24,7 @@ class StickerPack with _$StickerPack {
   factory StickerPack.fromDatabaseJson(Map<String, dynamic> json, List<Sticker> stickers) {
     final pack = StickerPack.fromJson({
       ...json,
+      'local': true,
       'stickers': <Sticker>[],
     });
 
@@ -31,6 +33,7 @@ class StickerPack with _$StickerPack {
   
   Map<String, dynamic> toDatabaseJson() {
     return toJson()
+      ..remove('local')
       ..remove('stickers');
   }  
 }

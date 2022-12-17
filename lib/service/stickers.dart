@@ -175,6 +175,7 @@ class StickersService {
       [],
       pack.hashAlgorithm.toName(),
       pack.hashValue,
+      true,
     );
     await db.addStickerPackFromData(stickerPack);
 
