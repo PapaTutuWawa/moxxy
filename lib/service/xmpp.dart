@@ -1162,6 +1162,12 @@ class XmppService {
     // A guess for the Mime type of the embedded file.
     var mimeGuess = _getMimeGuess(event);
 
+    // Find a potential sticker
+    final stickerId = (await GetIt.I.get<StickersService>().getStickerBySFS(
+        event.stickerPackId,
+        event.sfs,
+      ))?.id;
+    
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
     final dimensions = _getDimensions(event);
@@ -1170,7 +1176,7 @@ class XmppService {
       messageTimestamp,
       event.fromJid.toString(),
       conversationJid,
-      isFileEmbedded || event.fun != null,
+      isFileEmbedded || event.fun != null || stickerId != null,
       event.sid,
       event.fun != null,
       event.encrypted,
@@ -1189,10 +1195,7 @@ class XmppService {
       errorType: errorTypeFromException(event.other['encryption_error']),
       plaintextHashes: event.sfs?.metadata.hashes,
       stickerPackId: event.stickerPackId,
-      stickerId: (await GetIt.I.get<StickersService>().getStickerBySFS(
-        event.stickerPackId,
-        event.sfs,
-      ))?.id,
+      stickerId: stickerId,
     );
     
     // Attempt to auto-download the embedded file
