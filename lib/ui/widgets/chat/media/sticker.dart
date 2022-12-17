@@ -38,7 +38,7 @@ class StickerChatWidget extends StatelessWidget {
               color: sent ?
                 bubbleColorSent :
                 bubbleColorReceived,
-              borderRadius: BorderRadius.all(radiusLarge),
+              borderRadius: const BorderRadius.all(radiusLarge),
             ),
             child: Padding(
               padding: const EdgeInsets.all(8),
@@ -73,6 +73,7 @@ class StickerChatWidget extends StatelessWidget {
     return IntrinsicHeight(
       child: Column(
         children: [
+          // ignore: prefer_if_elements_to_conditional_expressions
           sticker != null && GetIt.I.get<PreferencesBloc>().state.enableStickers ?
             Image.file(File(sticker.path)) :
             _buildNotAvailable(),

@@ -272,6 +272,14 @@
 		"urlEmpty": "URL cannot be empty",
 		"urlInvalid": "Invalid URL",
 		"redirectDialogTitle": "$serviceName Redirect"
+	    },
+	    "stickers": {
+		"title": "Stickers",
+		"stickerSection": "Sticker",
+		"displayStickers": "Display stickers in chat",
+		"autoDownload": "Automatically download stickers",
+		"autoDownloadBody": "If enabled, stickers are automatically downloaded when the sender is in your contact list.",
+		"stickerPacksSection": "Sticker packs"
 	    }
 	}
     }

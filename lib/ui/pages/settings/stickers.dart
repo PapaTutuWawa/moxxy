@@ -1,18 +1,10 @@
-import 'dart:async';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class StickersSettingsPage extends StatelessWidget {
@@ -29,15 +21,15 @@ class StickersSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO(PapaTutuWawa): Allow managing sticker packs
     return Scaffold(
-      appBar: BorderlessTopbar.simple(t.pages.settings.conversation.title),
+      appBar: BorderlessTopbar.simple(t.pages.settings.stickers.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => SettingsList(
           sections: [
             SettingsSection(
-              title: Text('Stickers'),
+              title: Text(t.pages.settings.stickers.stickerSection),
               tiles: [
                 SettingsTile.switchTile(
-                  title: Text('Display stickers in chats'),
+                  title: Text(t.pages.settings.stickers.displayStickers),
                   initialValue: state.enableStickers,
                   onToggle: (value) async {
                     context.read<PreferencesBloc>().add(
@@ -48,8 +40,8 @@ class StickersSettingsPage extends StatelessWidget {
                   },
                 ),
                 SettingsTile.switchTile(
-                  title: Text('Automatically download stickers'),
-                  description: Text('If enabled, stickers are automatically downloaded when the sender is in your contact list.'),
+                  title: Text(t.pages.settings.stickers.autoDownload),
+                  description: Text(t.pages.settings.stickers.autoDownloadBody),
                   initialValue: state.autoDownloadStickersFromContacts,
                   onToggle: (value) async {
                     context.read<PreferencesBloc>().add(
@@ -62,8 +54,8 @@ class StickersSettingsPage extends StatelessWidget {
               ],
             ),
             SettingsSection(
-              title: Text('Sticker packs'),
-              tiles: [],
+              title: Text(t.pages.settings.stickers.stickerPacksSection),
+              tiles: const [],
             ),
           ],
         ),
