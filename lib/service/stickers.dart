@@ -89,13 +89,13 @@ class StickersService {
       node,
       hashAvailable: false,
     );
-    final pack = packRaw.copyWithId(
-      moxxmpp.HashFunction.sha256,
-      await packRaw.getHash(moxxmpp.HashFunction.sha256),
-    );
-    _log.finest('New sticker pack identifier: sha256:${pack.id}');
 
-    for (final sticker in pack.stickers) {
+    if (packRaw.restricted) {
+      _log.severe('Invalid sticker pack: Restricted');
+      return null;
+    }
+    
+    for (final sticker in packRaw.stickers) {
       final filename = sticker.metadata.name;
       if (filename == null) {
         _log.severe('Invalid sticker pack: One sticker has no <name/>');
@@ -108,6 +108,13 @@ class StickersService {
         return null;
       }
     }
+
+    final pack = packRaw.copyWithId(
+      moxxmpp.HashFunction.sha256,
+      await packRaw.getHash(moxxmpp.HashFunction.sha256),
+    );
+    _log.finest('New sticker pack identifier: sha256:${pack.id}');
+
     
     final stickerDirPath = await getStickerPackPath(
       pack.hashAlgorithm.toName(),
