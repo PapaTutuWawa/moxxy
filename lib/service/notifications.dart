@@ -87,9 +87,14 @@ class NotificationsService {
   /// then Android's BigPicture will be used.
   Future<void> showNotification(modelc.Conversation c, modelm.Message m, String title, { String? body }) async {
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
-    final body = m.isMedia ?
-      mimeTypeToEmoji(m.mediaType) :
-      m.body;
+    String body;
+    if (m.stickerPackId != null) {
+      body = t.messages.sticker;
+    } else if (m.isMedia) {
+      body = mimeTypeToEmoji(m.mediaType);
+    } else {
+      body = m.body;
+    }
 
     final css = GetIt.I.get<ContactsService>();
     final contactIntegrationEnabled = await css.isContactIntegrationEnabled();
