@@ -250,6 +250,9 @@ class XmppService {
                 .map((s) => StatelessFileSharingUrlSource(s))
                 .toList(),
             ),
+          setOOBFallbackBody: sticker != null ?
+            false :
+            true,
         ),
       );
 
