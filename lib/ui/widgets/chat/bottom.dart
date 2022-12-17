@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 const _bubbleBottomIconSize = fontsizeSubbody * 1.5;
 
@@ -109,6 +112,15 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             padding: EdgeInsets.only(left: 3),
             child: Icon(
               Icons.edit,
+              size: _bubbleBottomIconSize,
+            ),
+          ),
+        ] : [],
+        ...widget.message.stickerPackId != null && !GetIt.I.get<PreferencesBloc>().state.enableStickers ? [
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              PhosphorIcons.stickerBold,
               size: _bubbleBottomIconSize,
             ),
           ),

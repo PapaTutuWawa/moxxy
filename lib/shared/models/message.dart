@@ -12,7 +12,7 @@ part 'message.g.dart';
 Map<String, String>? _optionalJsonDecode(String? data) {
   if (data == null) return null;
 
-  return jsonDecode(data) as Map<String, String>;
+  return (jsonDecode(data) as Map<dynamic, dynamic>).cast<String, String>();
 }
 
 String? _optionalJsonEncode(Map<String, String>? data) {

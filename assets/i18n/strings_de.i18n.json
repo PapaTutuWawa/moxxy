@@ -32,6 +32,7 @@
 	"video": "Video",
 	"audio": "Audio",
 	"file": "Datei",
+	"sticker": "Sticker",
 	"retracted": "Die Nachricht wurde zurückgezogen",
 	"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht"
     },

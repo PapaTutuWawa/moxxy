@@ -14,6 +14,7 @@ import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationsListRow extends StatefulWidget {
   const ConversationsListRow(
@@ -123,7 +124,12 @@ class ConversationsListRowState extends State<ConversationsListRow> {
 
   Widget _buildLastMessagePreview() {
     Widget? preview;
-    if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
+    if (widget.conversation.lastMessage!.stickerPackId != null) {
+      preview = const Icon(
+        PhosphorIcons.stickerBold,
+        size: 30,
+      );
+    } else if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
       preview = SharedImageWidget(
         widget.conversation.lastMessage!.mediaUrl!,
         borderRadius: 5,
@@ -160,7 +166,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       } else if (lastMessage.isMedia) {
         // If the file is thumbnailable, we display a small preview on the left of the
         // body, so we don't need the emoji then.
-        if (lastMessage.isThumbnailable) {
+        if (lastMessage.stickerPackId != null) {
+          body = t.messages.sticker;
+        } else if (lastMessage.isThumbnailable) {
           body = mimeTypeToName(lastMessage.mediaType);
         } else {
           body = mimeTypeToEmoji(lastMessage.mediaType);
