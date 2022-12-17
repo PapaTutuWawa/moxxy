@@ -451,6 +451,14 @@ files:
           - JsonImplementation
         attributes:
           path: String
+      - name: SendStickerCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPackId: String
+          stickerId: int
+          recipient: String
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

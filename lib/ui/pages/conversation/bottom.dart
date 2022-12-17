@@ -209,7 +209,12 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     child: StickerPicker(
                       width: MediaQuery.of(context).size.width,
                       onStickerTapped: (sticker, pack) {
-                        print('${sticker.desc} (${pack.name})');
+                        context.read<ConversationBloc>().add(
+                          StickerSentEvent(
+                            pack.id,
+                            sticker.id,
+                          ),
+                        );
                       },
                     ),
                   ),

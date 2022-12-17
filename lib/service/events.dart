@@ -73,6 +73,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RemoveReactionFromMessageCommand>(performRemoveMessageReaction),
       EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
       EventTypeMatcher<ImportStickerPackCommand>(performImportStickerPack),
+      EventTypeMatcher<SendStickerCommand>(performSendSticker),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -778,4 +779,18 @@ Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
 
 Future<void> performImportStickerPack(ImportStickerPackCommand command, { dynamic extra }) async {
   await GetIt.I.get<StickersService>().importFromFile(command.path);
+}
+
+Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) async {
+  final xs = GetIt.I.get<XmppService>();
+  final ss = GetIt.I.get<StickersService>();
+
+  final sticker = await ss.getStickerById(command.stickerPackId, command.stickerId);
+  assert(sticker != null, 'Sticker not found');
+
+  await xs.sendMessage(
+    body: sticker!.desc,
+    recipients: [command.recipient],
+    sticker: sticker,
+  );
 }

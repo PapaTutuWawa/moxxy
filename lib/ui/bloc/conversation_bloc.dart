@@ -65,6 +65,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ReactionAddedEvent>(_onReactionAdded);
     on<ReactionRemovedEvent>(_onReactionRemoved);
     on<StickerPickerToggledEvent>(_onStickerPickerToggled);
+    on<StickerSentEvent>(_onStickerSent);
 
     _audioRecorder = Record();
   }
@@ -645,6 +646,24 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         stickerPickerVisible: !state.stickerPickerVisible,
         emojiPickerVisible: false,
+      ),
+    );
+  }
+
+  Future<void> _onStickerSent(StickerSentEvent event, Emitter<ConversationState> emit) async {
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      SendStickerCommand(
+        stickerPackId: event.stickerPackId,
+        stickerId: event.stickerId,
+        recipient: state.conversation!.jid,
+      ),
+      awaitable: false,
+    );
+    
+    // Close the picker
+    emit(
+      state.copyWith(
+        stickerPickerVisible: false,
       ),
     );
   }

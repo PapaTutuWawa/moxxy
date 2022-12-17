@@ -6,10 +6,24 @@ import 'package:moxxyv2/ui/constants.dart';
 
 const _bubbleBottomIconSize = fontsizeSubbody * 1.5;
 
+/// A row containing all the neccessary message metadata, like edit state, received
+/// time and so on.
+///
+/// [message] refers to the message whose metadata we should display.
+///
+/// [sent] is true if the current user sent the message. If it was received (and is not
+/// a carbon from a message we sent on another device), this should be false.
+///
+/// [shrink] indiactes whether the internal Row element should have a mainAxisSize of
+/// min (true) or max (false). Defaults to false.
 class MessageBubbleBottom extends StatefulWidget {
-  const MessageBubbleBottom(this.message, this.sent, { super.key });
+  const MessageBubbleBottom(this.message, this.sent, {
+    this.shrink = false,
+    super.key,
+  });
   final Message message;
   final bool sent;
+  final bool shrink;
 
   @override
   MessageBubbleBottomState createState() => MessageBubbleBottomState();
@@ -74,6 +88,9 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: widget.shrink ?
+        MainAxisSize.min :
+        MainAxisSize.max,
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 3),

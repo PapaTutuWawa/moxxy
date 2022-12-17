@@ -166,3 +166,10 @@ class ReactionRemovedEvent extends ConversationEvent {
   final String emoji;
   final int index;
 }
+
+/// Triggered when a sticker has been sent
+class StickerSentEvent extends ConversationEvent {
+  StickerSentEvent(this.stickerPackId, this.stickerId);
+  final String stickerPackId;
+  final int stickerId;
+}

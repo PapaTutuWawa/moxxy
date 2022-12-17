@@ -25,6 +25,16 @@ class StickersService {
     return _stickerPacks[id];
   }
 
+  Future<Sticker?> getStickerById(String packId, int id) async {
+    final pack = await getStickerPackById(packId);
+    if (pack == null) return null;
+
+    return firstWhereOrNull<Sticker>(
+      pack.stickers,
+      (sticker) => sticker.id == id,
+    );
+  }
+  
   Future<List<StickerPack>> getStickerPacks() async {
     if (_stickerPacks.isEmpty) {
       final packs = await GetIt.I.get<DatabaseService>().loadStickerPacks();

@@ -5,6 +5,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/sticker.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/audio.dart';
@@ -30,9 +31,11 @@ enum MessageType {
 /// Deduce the type of message we are dealing with to pick the correct
 /// widget.
 MessageType getMessageType(Message message) {
-  if (message.stickerPackId != null) {
-    return MessageType.sticker;
-  } else if (message.isMedia) {
+  if (message.isMedia) {
+    if (message.stickerPackId != null) {
+      return MessageType.sticker;
+    }
+
     final mime = message.mediaType;
     if (mime == null) return MessageType.file;
 
@@ -64,7 +67,6 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
   }
 
   switch (getMessageType(message)) {
-    case MessageType.sticker:
     case MessageType.text: {
       return TextChatWidget(
         message,
@@ -72,12 +74,12 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
         topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!, sent) : null,
       );
     }
-    case MessageType.image: {
+    case MessageType.image:
       return ImageChatWidget(message, radius, maxWidth, sent);
-    }
-    case MessageType.video: {
+    case MessageType.video:
       return VideoChatWidget(message, radius, maxWidth, sent);
-    }
+    case MessageType.sticker:
+      return StickerChatWidget(message, radius, maxWidth, sent);
     case MessageType.audio:
       return AudioChatWidget(message, radius, maxWidth, sent);
     case MessageType.file: {

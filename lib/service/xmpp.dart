@@ -36,6 +36,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -178,6 +179,7 @@ class XmppService {
       Message? quotedMessage,
       String? commandId,
       ChatState? chatState,
+      sticker.Sticker? sticker,
   }) async {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
@@ -193,7 +195,7 @@ class XmppService {
         timestamp,
         conn.getConnectionSettings().jid.toString(),
         recipient,
-        false,
+        sticker != null,
         sid,
         false,
         conversation!.encrypted,
@@ -201,6 +203,8 @@ class XmppService {
         false,
         originId: originId,
         quoteId: quotedMessage?.sid,
+        stickerPackId: sticker?.stickerPackId,
+        stickerId: sticker?.id,
       );
       final newConversation = await cs.updateConversation(
         conversation.id,
@@ -226,6 +230,23 @@ class XmppService {
           quoteId: quotedMessage?.sid,
           chatState: chatState,
           shouldEncrypt: newConversation.encrypted,
+          stickerPackId: sticker?.stickerPackId,
+          sfs: sticker == null ?
+            null :
+            StatelessFileSharingData(
+              FileMetadataData(
+                mediaType: sticker.mediaType,
+                width: sticker.width,
+                height: sticker.height,
+                desc: sticker.desc,
+                size: sticker.size,
+                thumbnails: [],
+                hashes: sticker.hashes,
+              ),
+              sticker.urlSources
+                .map((s) => StatelessFileSharingUrlSource(s))
+                .toList(),
+            ),
         ),
       );
 
