@@ -12,6 +12,7 @@ import 'package:moxxyv2/ui/widgets/chat/quote/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/sticker.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
@@ -92,6 +93,7 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
 Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? resetQuote}) {
   switch (getMessageType(message)) {
     case MessageType.sticker:
+      return QuotedStickerWidget(message, sent, resetQuote: resetQuote);
     case MessageType.text:
       return QuoteBaseWidget(
         message,
