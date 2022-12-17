@@ -68,3 +68,4 @@ const String serverInfoRoute = '$profileRoute/server_info';
 const String devicesRoute = '$profileRoute/devices';
 const String ownDevicesRoute = '$profileRoute/own_devices';
 const String qrCodeScannerRoute = '/util/qr_code_scanner';
+const String stickerPackRoute = '/stickers/sticker_pack';

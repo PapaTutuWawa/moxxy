@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
@@ -75,7 +76,16 @@ class StickerChatWidget extends StatelessWidget {
         children: [
           // ignore: prefer_if_elements_to_conditional_expressions
           sticker != null && GetIt.I.get<PreferencesBloc>().state.enableStickers ?
-            Image.file(File(sticker.path)) :
+            InkWell(
+              onTap: () {
+                GetIt.I.get<StickerPackBloc>().add(
+                  LocallyAvailableStickerPackRequested(
+                    sticker!.stickerPackId,
+                  ),
+                );
+              },
+              child: Image.file(File(sticker.path)),
+            ) :
             _buildNotAvailable(),
 
           Align(
