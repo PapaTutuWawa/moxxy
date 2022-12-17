@@ -205,6 +205,8 @@ class XmppService {
         quoteId: quotedMessage?.sid,
         stickerPackId: sticker?.stickerPackId,
         stickerHashKey: sticker?.hashKey,
+        srcUrl: sticker?.urlSources.first,
+        mediaType: sticker?.mediaType,
       );
       final newConversation = await cs.updateConversation(
         conversation.id,
@@ -1164,9 +1166,9 @@ class XmppService {
 
     // Find a potential sticker
     final stickerHashKey = (await GetIt.I.get<StickersService>().getStickerBySFS(
-        event.stickerPackId,
-        event.sfs,
-      ))?.hashKey;
+      event.stickerPackId,
+      event.sfs,
+    ))?.hashKey;
     
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();

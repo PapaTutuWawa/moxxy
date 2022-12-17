@@ -7,6 +7,7 @@ import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
@@ -54,17 +55,10 @@ class StickersService {
     final pack = await getStickerPackById(packId);
     if (pack == null) return null;
 
+    final hashKey = getStickerHashKey(sfs.metadata.hashes);
     return firstWhereOrNull<Sticker>(
       pack.stickers,
-      (sticker) {
-        for (final algo in sfs.metadata.hashes.keys) {
-          if (sticker.hashes[algo] == sfs.metadata.hashes[algo]) {
-            return true;
-          }
-        }
-
-        return false;
-      },
+      (sticker) => sticker.hashKey == hashKey,
     );
   }
 
