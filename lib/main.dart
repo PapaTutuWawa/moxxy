@@ -56,6 +56,7 @@ import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/privacy.dart';
 import 'package:moxxyv2/ui/pages/settings/settings.dart';
+import 'package:moxxyv2/ui/pages/settings/stickers.dart';
 import 'package:moxxyv2/ui/pages/share_selection.dart';
 import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
@@ -308,6 +309,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case qrCodeScannerRoute: return QrCodeScanningPage.getRoute(
             settings.arguments! as QrCodeScanningArguments,
           );
+          case stickersRoute: return StickersSettingsPage.route;
         }
 
         return null;

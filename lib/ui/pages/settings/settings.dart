@@ -7,6 +7,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:settings_ui/settings_ui.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({ super.key });
@@ -31,6 +32,11 @@ class SettingsPage extends StatelessWidget {
                 title: Text(t.pages.settings.conversation.title),
                 leading: const Icon(Icons.chat_bubble),
                 onPressed: (context) => Navigator.pushNamed(context, conversationSettingsRoute),
+              ),
+              SettingsTile(
+                title: Text('Stickers'),
+                leading: const Icon(PhosphorIcons.stickerBold),
+                onPressed: (context) => Navigator.pushNamed(context, stickersRoute),
               ),
               SettingsTile(
                 title: Text(t.pages.settings.network.title),
