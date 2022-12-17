@@ -7,6 +7,9 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/sticker.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -125,10 +128,30 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   Widget _buildLastMessagePreview() {
     Widget? preview;
     if (widget.conversation.lastMessage!.stickerPackId != null) {
-      preview = const Icon(
-        PhosphorIcons.stickerBold,
-        size: 30,
-      );
+
+      Sticker? sticker;
+      if (widget.conversation.lastMessage!.stickerPackId != null &&
+          widget.conversation.lastMessage!.stickerId != null &&
+          GetIt.I.get<PreferencesBloc>().state.enableStickers) {
+        final stickerKey = StickerKey(
+          widget.conversation.lastMessage!.stickerPackId!,
+          widget.conversation.lastMessage!.stickerId!,
+        );
+        sticker = GetIt.I.get<StickersBloc>().state.stickerMap[stickerKey];
+      }
+
+      if (sticker != null) {
+        preview = SharedImageWidget(
+          sticker.path,
+          borderRadius: 5,
+          size: 30,
+        );
+      } else {
+        preview = const Icon(
+          PhosphorIcons.stickerBold,
+          size: 30,
+        );
+      }
     } else if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
       preview = SharedImageWidget(
         widget.conversation.lastMessage!.mediaUrl!,
