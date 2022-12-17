@@ -186,6 +186,10 @@
 	    "blur": "Hintergrund weichzeichnen",
 	    "setAsBackground": "Als Hintergrundbild festlegen"
 	},
+	"stickerPack": {
+	    "removeConfirmTitle": "Stickerpack entfernen",
+	    "removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?"
+	},
 	"settings": {
 	    "settings": {
 		"title": "Einstellungen",

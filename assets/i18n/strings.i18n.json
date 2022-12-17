@@ -186,6 +186,10 @@
 	    "blur": "Blur background",
 	    "setAsBackground": "Set as background image"
 	},
+	"stickerPack": {
+	    "removeConfirmTitle": "Remove sticker pack",
+	    "removeConfirmBody": "Are you sure you want to remove this sticker pack?"
+	},
 	"settings": {
 	    "settings": {
 		"title": "Settings",
