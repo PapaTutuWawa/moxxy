@@ -246,6 +246,7 @@ class XmppService {
                 hashes: sticker.hashes,
               ),
               sticker.urlSources
+                // ignore: unnecessary_lambdas
                 .map((s) => StatelessFileSharingUrlSource(s))
                 .toList(),
             ),
