@@ -2,11 +2,51 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+
+/// Wrapper around displaying stickers that may or may not be installed on the system.
+class StickerWrapper extends StatelessWidget {
+  const StickerWrapper(
+    this.sticker, {
+      this.width,
+      this.height,
+      this.cover = true,
+      super.key,
+    }
+  );
+  final Sticker sticker;
+  final double? width;
+  final double? height;
+  final bool cover;
+
+  @override
+  Widget build(BuildContext context) {
+    if (sticker.path.isNotEmpty) {
+      return Image.file(
+        File(sticker.path),
+        fit: cover ?
+          BoxFit.contain :
+          null,
+        width: width,
+        height: height,
+      );
+    } else {
+      return Image.network(
+        sticker.urlSources.first,
+         fit: cover ?
+          BoxFit.contain :
+          null,
+        width: width,
+        height: height,       
+      );
+    }
+  }
+}
 
 class StickerPackPage extends StatelessWidget {
   const StickerPackPage({ super.key });
@@ -89,7 +129,7 @@ class StickerPackPage extends StatelessWidget {
                     length,
                     (i) => i,
                   ).map((rowIndex) {
-                      final file = File(state.stickerPack!.stickers[index * 4 + rowIndex].path);
+                      final sticker = state.stickerPack!.stickers[index * 4 + rowIndex];
                       return Padding(
                         padding: const EdgeInsets.all(15),
                         child: InkWell(
@@ -98,17 +138,17 @@ class StickerPackPage extends StatelessWidget {
                               context: context,
                               builder: (context) {
                                 return IgnorePointer(
-                                  child: Image.file(
-                                    file,
+                                  child: StickerWrapper(
+                                    sticker,
                                     width: width - 80 * 2,
+                                    cover: false,
                                   ),
                                 );
                               },
                             );
                           },
-                          child: Image.file(
-                            file,
-                            fit: BoxFit.contain,
+                          child: StickerWrapper(
+                            sticker,
                             width: itemSize,
                             height: itemSize,
                           ),
