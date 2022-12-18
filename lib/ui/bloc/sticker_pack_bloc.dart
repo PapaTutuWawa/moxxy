@@ -10,7 +10,6 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart' as stickers;
 import 'package:moxxyv2/ui/constants.dart';
 
-
 part 'sticker_pack_bloc.freezed.dart';
 part 'sticker_pack_event.dart';
 part 'sticker_pack_state.dart';
@@ -21,6 +20,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     on<StickerPackRemovedEvent>(_onStickerPackRemoved);
     on<RemoteStickerPackRequested>(_onRemoteStickerPackRequested);
     on<StickerPackInstalledEvent>(_onStickerPackInstalled);
+    on<StickerPackRequested>(_onStickerPackRequested);
   }
 
   Future<void> _onLocalStickerPackRequested(LocallyAvailableStickerPackRequested event, Emitter<StickerPackState> emit) async {
@@ -149,6 +149,29 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       // Leave the page
       GetIt.I.get<NavigationBloc>().add(
         PoppedRouteEvent(),
+      );
+    }
+  }
+
+  Future<void> _onStickerPackRequested(StickerPackRequested event, Emitter<StickerPackState> emit) async {
+    // Find out if the sticker pack is locally available or not
+    final stickerPack = firstWhereOrNull(
+      GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,
+      (StickerPack pack) => pack.id == event.stickerPackId,
+    );
+
+    if (stickerPack == null) {
+      await _onRemoteStickerPackRequested(
+        RemoteStickerPackRequested(
+          event.stickerPackId,
+          event.jid,
+        ),
+        emit,
+      );
+    } else {
+      await _onLocalStickerPackRequested(
+        LocallyAvailableStickerPackRequested(event.stickerPackId),
+        emit,
       );
     }
   }

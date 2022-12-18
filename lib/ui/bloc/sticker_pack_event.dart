@@ -23,3 +23,11 @@ class StickerPackRemovedEvent extends StickerPackEvent {
 
 /// Triggered by the UI when the sticker pack currently displayed is to be installed
 class StickerPackInstalledEvent extends StickerPackEvent {}
+
+/// Triggered by the UI when a URL has been tapped that contains a sticker pack that
+/// or may not be locally available.
+class StickerPackRequested extends StickerPackEvent {
+  StickerPackRequested(this.jid, this.stickerPackId);
+  final String jid;
+  final String stickerPackId;
+}

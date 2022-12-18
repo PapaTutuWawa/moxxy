@@ -5,9 +5,8 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/redirects.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// Used whenever the mime type either doesn't match any specific chat widget or we just
 /// cannot determine the mime type.
@@ -62,16 +61,13 @@ class TextChatWidget extends StatelessWidget {
               ),
               parse: [
                 MatchText(
-                  type: ParsedType.URL,
+                  // Taken from flutter_parsed_text's source code. Added ";" and "%" to
+                  // valid URLs
+                  pattern: r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+-~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&\/\/=\;\%]*)',
                   style: const TextStyle(
                     decoration: TextDecoration.underline,
                   ),
-                  onTap: (url) async {
-                    await launchUrl(
-                      redirectUrl(Uri.parse(url)),
-                      mode: LaunchMode.externalNonBrowserApplication,
-                    );
-                  },
+                  onTap: handleUri,
                 )
               ],
             ),
