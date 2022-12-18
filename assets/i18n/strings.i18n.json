@@ -190,7 +190,8 @@
 	    "removeConfirmTitle": "Remove sticker pack",
 	    "removeConfirmBody": "Are you sure you want to remove this sticker pack?",
 	    "installConfirmTitle": "Install sticker pack",
-	    "installConfirmBody": "Are you sure you want to install this sticker pack?"
+	    "installConfirmBody": "Are you sure you want to install this sticker pack?",
+	    "restricted": "This sticker pack is restricted. That means that the stickers will be displayed but cannot be sent."
 	},
 	"settings": {
 	    "settings": {

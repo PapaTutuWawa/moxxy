@@ -22,17 +22,21 @@ class StickerPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
       builder: (context, state) {
+        final stickerPacks = state.stickerPacks
+          .where((pack) => !pack.restricted)
+          .toList();
+
         return SizedBox(
           height: 250,
           width: MediaQuery.of(context).size.width,
           child: ListView.builder(
-            itemCount: state.stickerPacks.length * 2,
+            itemCount: stickerPacks.length * 2,
             itemBuilder: (_, si) {
               if (si.isEven) {
                 return Padding(
                   padding: const EdgeInsets.only(left: 15),
                   child: Text(
-                    state.stickerPacks[si ~/ 2].name,
+                    stickerPacks[si ~/ 2].name,
                     style: const TextStyle(
                       fontSize: 20,
                     ),
@@ -44,9 +48,9 @@ class StickerPicker extends StatelessWidget {
               return ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: (state.stickerPacks[sindex].stickers.length / 4).ceil(),
+                itemCount: (stickerPacks[sindex].stickers.length / 4).ceil(),
                 itemBuilder: (_, index) {
-                  final stickersLength = state.stickerPacks[sindex].stickers.length - index * 4;
+                  final stickersLength = stickerPacks[sindex].stickers.length - index * 4;
                   return SizedBox(
                     width: width,
                     child: Row(
@@ -61,13 +65,13 @@ class StickerPicker extends StatelessWidget {
                             child: InkWell(
                               onTap: () {
                                 onStickerTapped(
-                                  state.stickerPacks[sindex].stickers[index * 4 + rowIndex],
-                                  state.stickerPacks[sindex],
+                                  stickerPacks[sindex].stickers[index * 4 + rowIndex],
+                                  stickerPacks[sindex],
                                 );
                               },
                               child: Image.file(
                                 File(
-                                  state.stickerPacks[sindex].stickers[index * 4 + rowIndex].path,
+                                  stickerPacks[sindex].stickers[index * 4 + rowIndex].path,
                                 ),
                                 key: ValueKey('${state.stickerPacks[sindex].id}_${index * 4 + rowIndex}'),
                                 fit: BoxFit.contain,

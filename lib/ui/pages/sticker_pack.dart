@@ -158,8 +158,26 @@ class StickerPackPage extends StatelessWidget {
                   horizontal: 16,
                   vertical: 8,
                 ),
-                child: Text(
-                  state.stickerPack?.description ?? '',
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      state.stickerPack?.description ?? '',
+                    ),
+
+                    ...state.stickerPack?.restricted == true ?
+                      [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Text(
+                            t.pages.stickerPack.restricted,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ] : [],
+                  ],
                 ),
               ),
             ),
