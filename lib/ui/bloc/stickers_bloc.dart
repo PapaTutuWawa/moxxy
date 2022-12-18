@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/painting.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -46,6 +49,9 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
     for (final sticker in stickerPack.stickers) {
       sm.remove(StickerKey(stickerPack.id, sticker.hashKey));
+
+      // Evict stickers from the cache
+      unawaited(FileImage(File(sticker.path)).evict());
     }
 
     emit(

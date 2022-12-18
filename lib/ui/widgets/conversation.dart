@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
@@ -125,7 +126,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     );
   }
 
-  Widget _buildLastMessagePreview() {
+  Widget _buildLastMessagePreview(StickersState state) {
     Widget? preview;
     if (widget.conversation.lastMessage!.stickerPackId != null) {
       Sticker? sticker;
@@ -137,7 +138,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           widget.conversation.lastMessage!.stickerHashKey!,
         );
 
-        sticker = GetIt.I.get<StickersBloc>().state.stickerMap[stickerKey];
+        sticker = state.stickerMap[stickerKey];
       }
 
       if (sticker != null) {
@@ -314,7 +315,11 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                         ...widget.conversation.lastMessage?.isThumbnailable == true && !widget.conversation.isTyping ? [
                           Padding(
                             padding: const EdgeInsets.only(right: 5),
-                            child: _buildLastMessagePreview(),
+                            child: BlocBuilder<StickersBloc, StickersState>(
+                              buildWhen: (prev, next) => prev.stickerPacks.length != next.stickerPacks.length &&
+                                widget.conversation.lastMessage?.stickerPackId != null,
+                              builder: (_, state) => _buildLastMessagePreview(state),
+                            ),
                           ),
                         ] : [
                           const SizedBox(height: 30),
