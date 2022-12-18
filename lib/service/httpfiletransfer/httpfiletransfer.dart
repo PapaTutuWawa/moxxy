@@ -363,7 +363,8 @@ class HttpFileTransferService {
     final fileSink = file.openWrite(mode: FileMode.writeOnlyAppend);
     final downloadCompleter = Completer();
 
-    final dio.Response<dio.ResponseBody>? response;
+    dio.Response<dio.ResponseBody>? response;
+
     try {
       response = await dio.Dio().get<dio.ResponseBody>(
         job.location.url,
@@ -398,24 +399,21 @@ class HttpFileTransferService {
             }
           }
         });
-        downloadStream
-            .listen(fileSink.add); // .onDone would cause memory spikes
+        downloadStream.listen(fileSink.add);
+
+        await downloadCompleter.future;
+        await fileSink.flush();
+        await fileSink.close();
       }
     } on dio.DioError catch (err) {
-      // TODO(PapaTutuWawa): React if we received an error that is not related to the
-      //                     connection.
-      downloadCompleter.completeError('Failed to download: $err');
       _log.finest('Failed to download: $err');
-      await _fileDownloadFailed(job, fileDownloadFailedError);
-      return;
+      if (response.runtimeType != dio.Response<dio.ResponseBody>) {
+        response = null;
+      }
     }
 
-    await downloadCompleter.future;
-    await fileSink.flush();
-    await fileSink.close();
-
-    if (!isRequestOkay(response.statusCode)) {
-      _log.warning('HTTP GET of ${job.location.url} returned ${response.statusCode}');
+    if (!isRequestOkay(response?.statusCode)) {
+      _log.warning('HTTP GET of ${job.location.url} returned ${response?.statusCode}');
       await _fileDownloadFailed(job, fileDownloadFailedError);
       return;
     } else {
