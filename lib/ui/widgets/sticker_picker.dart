@@ -29,63 +29,71 @@ class StickerPicker extends StatelessWidget {
         return SizedBox(
           height: 250,
           width: MediaQuery.of(context).size.width,
-          child: ListView.builder(
-            itemCount: stickerPacks.length * 2,
-            itemBuilder: (_, si) {
-              if (si.isEven) {
-                return Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: Text(
-                    stickerPacks[si ~/ 2].name,
-                    style: const TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                );
-              }
-              
-              final sindex = (si - 1) ~/ 2;
-              return ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: (stickerPacks[sindex].stickers.length / 4).ceil(),
-                itemBuilder: (_, index) {
-                  final stickersLength = stickerPacks[sindex].stickers.length - index * 4;
-                  return SizedBox(
-                    width: width,
-                    child: Row(
-                      children: List<int>.generate(
-                        stickersLength >= 4 ?
-                          4 :
-                          stickersLength,
-                        (i) => i,
-                      ).map((rowIndex) {
-                          return Padding(
-                            padding: const EdgeInsets.all(15),
-                            child: InkWell(
-                              onTap: () {
-                                onStickerTapped(
-                                  stickerPacks[sindex].stickers[index * 4 + rowIndex],
-                                  stickerPacks[sindex],
-                                );
-                              },
-                              child: Image.file(
-                                File(
-                                  stickerPacks[sindex].stickers[index * 4 + rowIndex].path,
+          child: ColoredBox(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: ListView.builder(
+                itemCount: stickerPacks.length * 2,
+                itemBuilder: (_, si) {
+                  if (si.isEven) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 15),
+                      child: Text(
+                        stickerPacks[si ~/ 2].name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 20,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final sindex = (si - 1) ~/ 2;
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: (stickerPacks[sindex].stickers.length / 4).ceil(),
+                    itemBuilder: (_, index) {
+                      final stickersLength = stickerPacks[sindex].stickers.length - index * 4;
+                      return SizedBox(
+                        width: width,
+                        child: Row(
+                          children: List<int>.generate(
+                            stickersLength >= 4 ?
+                              4 :
+                              stickersLength,
+                            (i) => i,
+                          ).map((rowIndex) {
+                              return Padding(
+                                padding: const EdgeInsets.all(15),
+                                child: InkWell(
+                                  onTap: () {
+                                    onStickerTapped(
+                                      stickerPacks[sindex].stickers[index * 4 + rowIndex],
+                                      stickerPacks[sindex],
+                                    );
+                                  },
+                                  child: Image.file(
+                                    File(
+                                      stickerPacks[sindex].stickers[index * 4 + rowIndex].path,
+                                    ),
+                                    key: ValueKey('${state.stickerPacks[sindex].id}_${index * 4 + rowIndex}'),
+                                    fit: BoxFit.contain,
+                                    width: _itemSize,
+                                    height: _itemSize,
+                                  ),
                                 ),
-                                key: ValueKey('${state.stickerPacks[sindex].id}_${index * 4 + rowIndex}'),
-                                fit: BoxFit.contain,
-                                width: _itemSize,
-                                height: _itemSize,
-                              ),
-                            ),
-                          );
-                      }).toList(),
-                    ),
+                              );
+                          }).toList(),
+                        ),
+                      );
+                    },
                   );
                 },
-              );
-            },
+              ),
+            ),
           ),
         );
       },
