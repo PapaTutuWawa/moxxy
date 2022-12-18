@@ -233,7 +233,7 @@ class StickersService {
       node,
       hashAvailable: false,
     );
-
+ 
     if (packRaw.restricted) {
       _log.severe('Invalid sticker pack: Restricted');
       return null;
@@ -259,6 +259,10 @@ class StickersService {
     );
     _log.finest('New sticker pack identifier: sha256:${pack.id}');
 
+    if (await getStickerPackById(pack.id) != null) {
+      _log.severe('Invalid sticker pack: Already exists');
+      return null;
+    }
     
     final stickerDirPath = await getStickerPackPath(
       pack.hashAlgorithm.toName(),
