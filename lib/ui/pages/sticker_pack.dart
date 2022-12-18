@@ -7,6 +7,7 @@ import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
+import 'package:moxxyv2/ui/widgets/shimmer.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 /// Wrapper around displaying stickers that may or may not be installed on the system.
@@ -42,7 +43,19 @@ class StickerWrapper extends StatelessWidget {
           BoxFit.contain :
           null,
         width: width,
-        height: height,       
+        height: height,
+        loadingBuilder: (_, child, event) {
+          if (event == null) return child;
+
+          return ClipRRect(
+            borderRadius: const BorderRadius.all(radiusLarge),
+            child: SizedBox(
+              width: width,
+              height: height,
+              child: const ShimmerWidget(),
+            ),
+          );
+        },
       );
     }
   }
