@@ -173,8 +173,37 @@ class StickersService {
     }
 
     // Publish but don't block
-    // TODO(PapaTutuWawa): Convert
-    //unawaited(_publishStickerPack(remotePack));
+    unawaited(
+      _publishStickerPack(
+        moxxmpp.StickerPack(
+          remotePack.id,
+          remotePack.name,
+          remotePack.description,
+          moxxmpp.hashFunctionFromName(remotePack.hashAlgorithm),
+          remotePack.hashValue,
+          remotePack.stickers
+            .map((sticker) => moxxmpp.Sticker(
+              moxxmpp.FileMetadataData(
+                mediaType: sticker.mediaType,
+                desc: sticker.desc,
+                size: sticker.size,
+                width: sticker.width,
+                height: sticker.height,
+                thumbnails: [],
+                hashes: sticker.hashes,
+              ),
+              sticker.urlSources
+                // ignore: unnecessary_lambdas
+                .map((src) => moxxmpp.StatelessFileSharingUrlSource(src))
+                .toList(),
+              // TODO(PapaTutuWawa): Store the suggests
+              <String, String>{},
+            ),).toList(),
+          // TODO(PapaTutuWawa): Store this value
+          false,
+        ),
+      ),
+    );
     
     return remotePack.copyWith(
       stickers: stickersDb,
