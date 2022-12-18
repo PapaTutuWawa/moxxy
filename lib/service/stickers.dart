@@ -207,6 +207,7 @@ class StickersService {
     
     return remotePack.copyWith(
       stickers: stickersDb,
+      local: true,
     );
   }
   
