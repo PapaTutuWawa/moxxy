@@ -87,6 +87,8 @@ class StickerChatWidget extends StatelessWidget {
                 ) :
                 InkWell(
                   onTap: () {
+                    if (sent) return;
+
                     context.read<StickerPackBloc>().add(
                       RemoteStickerPackRequested(
                         message.stickerPackId!,
