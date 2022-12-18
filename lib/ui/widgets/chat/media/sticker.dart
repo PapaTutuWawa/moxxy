@@ -61,63 +61,68 @@ class StickerChatWidget extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    Sticker? sticker;
-    if (message.stickerPackId != null && message.stickerHashKey != null) {
-      final stickerKey = StickerKey(message.stickerPackId!, message.stickerHashKey!);
-      sticker = GetIt.I.get<StickersBloc>().state.stickerMap[stickerKey];
-    }
+    return BlocBuilder<StickersBloc, StickersState>(
+      buildWhen: (prev, next) => prev.stickerPacks.length != next.stickerPacks.length,
+      builder: (context, state) {
+        Sticker? sticker;
+        if (message.stickerPackId != null && message.stickerHashKey != null) {
+          final stickerKey = StickerKey(message.stickerPackId!, message.stickerHashKey!);
+          sticker = state.stickerMap[stickerKey];
+        }
 
-    return IntrinsicHeight(
-      child: Column(
-        children: [
-          // ignore: prefer_if_elements_to_conditional_expressions
-          sticker != null && GetIt.I.get<PreferencesBloc>().state.enableStickers ?
-            InkWell(
-              onTap: () {
-                GetIt.I.get<StickerPackBloc>().add(
-                  LocallyAvailableStickerPackRequested(
-                    sticker!.stickerPackId,
-                  ),
-                );
-              },
-              child: Image.file(File(sticker.path)),
-            ) :
-            InkWell(
-              onTap: () {
-                context.read<StickerPackBloc>().add(
-                  RemoteStickerPackRequested(
-                    message.stickerPackId!,
-                    // TODO(PapaTutuWawa): This does not feel clean
-                    message.sender.split('/').first,
-                  ),
-                );
-              },
-              child: _buildNotAvailable(context),
-            ),
-
-          Align(
-            alignment: sent ?
-              Alignment.centerRight :
-              Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 1),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: sent ?
-                    bubbleColorSent :
-                    bubbleColorReceived,
-                  borderRadius: const BorderRadius.all(radiusLarge),
+        return IntrinsicHeight(
+          child: Column(
+            children: [
+              // ignore: prefer_if_elements_to_conditional_expressions
+              sticker != null && GetIt.I.get<PreferencesBloc>().state.enableStickers ?
+                InkWell(
+                  onTap: () {
+                    GetIt.I.get<StickerPackBloc>().add(
+                      LocallyAvailableStickerPackRequested(
+                        sticker!.stickerPackId,
+                      ),
+                    );
+                  },
+                  child: Image.file(File(sticker.path)),
+                ) :
+                InkWell(
+                  onTap: () {
+                    context.read<StickerPackBloc>().add(
+                      RemoteStickerPackRequested(
+                        message.stickerPackId!,
+                        // TODO(PapaTutuWawa): This does not feel clean
+                        message.sender.split('/').first,
+                      ),
+                    );
+                  },
+                  child: _buildNotAvailable(context),
                 ),
 
+              Align(
+                alignment: sent ?
+                  Alignment.centerRight :
+                  Alignment.centerLeft,
                 child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: MessageBubbleBottom(message, sent, shrink: true), 
+                  padding: const EdgeInsets.only(top: 1),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: sent ?
+                        bubbleColorSent :
+                        bubbleColorReceived,
+                      borderRadius: const BorderRadius.all(radiusLarge),
+                    ),
+
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: MessageBubbleBottom(message, sent, shrink: true), 
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -24,15 +24,12 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
   }
 
   Future<void> _onLocalStickerPackRequested(LocallyAvailableStickerPackRequested event, Emitter<StickerPackState> emit) async {
-    final mustDoWork = state.stickerPack == null || state.stickerPack?.id != event.stickerPackId;
-    if (mustDoWork) {
-      emit(
-        state.copyWith(
-          isWorking: true,
-          isInstalling: false,
-        ),
-      );
-    }
+    emit(
+      state.copyWith(
+        isWorking: true,
+        isInstalling: false,
+      ),
+    );
 
     // Navigate
     GetIt.I.get<NavigationBloc>().add(
@@ -41,20 +38,18 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       ),
     );
 
-    if (mustDoWork) {
-      // Apply
-      final stickerPack = firstWhereOrNull(
-        GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,
-        (StickerPack pack) => pack.id == event.stickerPackId,
-      );
-      assert(stickerPack != null, 'The sticker pack must be found');
-      emit(
-        state.copyWith(
-          isWorking: false,
-          stickerPack: stickerPack,
-        ),
-      );
-    }
+    // Apply
+    final stickerPack = firstWhereOrNull(
+      GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,
+      (StickerPack pack) => pack.id == event.stickerPackId,
+    );
+    assert(stickerPack != null, 'The sticker pack must be found');
+    emit(
+      state.copyWith(
+        isWorking: false,
+        stickerPack: stickerPack,
+      ),
+    );
   }
 
   Future<void> _onStickerPackRemoved(StickerPackRemovedEvent event, Emitter<StickerPackState> emit) async {
