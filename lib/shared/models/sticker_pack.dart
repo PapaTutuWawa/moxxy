@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 
 part 'sticker_pack.freezed.dart';
@@ -13,6 +14,7 @@ class StickerPack with _$StickerPack {
     List<Sticker> stickers,
     String hashAlgorithm,
     String hashValue,
+    bool restricted,
     bool local,
   ) = _StickerPack;
 
@@ -25,6 +27,7 @@ class StickerPack with _$StickerPack {
     final pack = StickerPack.fromJson({
       ...json,
       'local': true,
+      'restricted': intToBool(json['restricted']! as int),
       'stickers': <Sticker>[],
     });
 
@@ -32,8 +35,13 @@ class StickerPack with _$StickerPack {
   }
   
   Map<String, dynamic> toDatabaseJson() {
-    return toJson()
+    final json = toJson()
       ..remove('local')
       ..remove('stickers');
+
+    return {
+      ...json,
+      'restricted': boolToInt(restricted),
+    };
   }  
 }

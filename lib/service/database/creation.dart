@@ -142,6 +142,7 @@ Future<void> createDatabase(Database db, int version) async {
       urlSources    TEXT NOT NULL,
       path          TEXT NOT NULL,
       stickerPackId TEXT NOT NULL,
+      suggests      TEXT NOT NULL,
       CONSTRAINT fk_sticker_pack FOREIGN KEY (stickerPackId) REFERENCES $stickerPacksTable (id)
         ON DELETE CASCADE
     )''',
@@ -153,7 +154,8 @@ Future<void> createDatabase(Database db, int version) async {
       name           TEXT NOT NULL,
       description    TEXT NOT NULL,
       hashAlgorithm  TEXT NOT NULL,
-      hashValue      TEXT NOT NULL
+      hashValue      TEXT NOT NULL,
+      restricted     INTEGER NOT NULL
     )''',
   );
   

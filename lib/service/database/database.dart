@@ -25,6 +25,9 @@ import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers_hash_key.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers_hash_key2.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes2.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
@@ -76,7 +79,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 19,
+      version: 22,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -160,6 +163,18 @@ class DatabaseService {
         if (oldVersion < 19) {
           _log.finest('Running migration for database version 19');
           await upgradeFromV18ToV19(db);
+        }
+        if (oldVersion < 20) {
+          _log.finest('Running migration for database version 20');
+          await upgradeFromV19ToV20(db);
+        }
+        if (oldVersion < 21) {
+          _log.finest('Running migration for database version 21');
+          await upgradeFromV20ToV21(db);
+        }
+        if (oldVersion < 22) {
+          _log.finest('Running migration for database version 22');
+          await upgradeFromV21ToV22(db);
         }
       },
     );
@@ -1168,6 +1183,7 @@ class DatabaseService {
     List<String> urlSources,
     String path,
     String stickerPackId,
+    Map<String, String> suggests,
   ) async {
     final s = sticker.Sticker(
       getStickerHashKey(hashes),
@@ -1180,6 +1196,7 @@ class DatabaseService {
       urlSources,
       path,
       stickerPackId,
+      suggests,
     );
 
     await _db.insert(stickersTable, s.toDatabaseJson());

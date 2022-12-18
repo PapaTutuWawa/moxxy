@@ -168,6 +168,7 @@ class StickersService {
           sticker.urlSources,
           sticker.path,
           remotePack.hashValue,
+          sticker.suggests,
         ),
       );
     }
@@ -196,11 +197,9 @@ class StickersService {
                 // ignore: unnecessary_lambdas
                 .map((src) => moxxmpp.StatelessFileSharingUrlSource(src))
                 .toList(),
-              // TODO(PapaTutuWawa): Store the suggests
-              <String, String>{},
+              sticker.suggests,
             ),).toList(),
-          // TODO(PapaTutuWawa): Store this value
-          false,
+          remotePack.restricted,
         ),
       ),
     );
@@ -278,6 +277,7 @@ class StickersService {
       [],
       pack.hashAlgorithm.toName(),
       pack.hashValue,
+      pack.restricted,
       true,
     );
     await db.addStickerPackFromData(stickerPack);
@@ -306,6 +306,7 @@ class StickersService {
             .toList(),
           stickerPath,
           pack.hashValue,
+          sticker.suggests,
         ),
       );
     }

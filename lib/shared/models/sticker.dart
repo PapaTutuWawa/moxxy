@@ -18,6 +18,7 @@ class Sticker with _$Sticker {
     List<String> urlSources,
     String path,
     String stickerPackId,
+    Map<String, String> suggests,
   ) = _Sticker;
 
   const Sticker._();
@@ -30,18 +31,21 @@ class Sticker with _$Sticker {
       ...json,
       'hashes': (jsonDecode(json['hashes']! as String) as Map<dynamic, dynamic>).cast<String, String>(),
       'urlSources': (jsonDecode(json['urlSources']! as String) as List<dynamic>).cast<String>(),
+      'suggests': (jsonDecode(json['suggests']! as String) as Map<dynamic, dynamic>).cast<String, String>(),
     });
   }
   
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
       ..remove('hashes')
-      ..remove('urlSources');
+      ..remove('urlSources')
+      ..remove('suggests');
 
     return {
       ...map,
       'hashes': jsonEncode(hashes),
       'urlSources': jsonEncode(urlSources),
+      'suggests': jsonEncode(suggests),
     };
   }
 }
