@@ -237,6 +237,19 @@ files:
         implements:
           - JsonImplementation
         attributes:
+      - name: StickerPackInstallSuccessEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
+      - name: StickerPackInstallFailureEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -498,6 +511,14 @@ files:
         attributes:
           stickerPackId: String
           jid: String
+      - name: InstallStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

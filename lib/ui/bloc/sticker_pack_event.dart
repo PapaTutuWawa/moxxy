@@ -20,3 +20,6 @@ class StickerPackRemovedEvent extends StickerPackEvent {
   StickerPackRemovedEvent(this.stickerPackId);
   final String stickerPackId;
 }
+
+/// Triggered by the UI when the sticker pack currently displayed is to be installed
+class StickerPackInstalledEvent extends StickerPackEvent {}

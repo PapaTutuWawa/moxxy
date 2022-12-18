@@ -79,8 +79,55 @@ class StickerPackPage extends StatelessWidget {
       context,
     );
     if (result) {
-      // TODO(PapaTutuWawa): TODO
+      // ignore: use_build_context_synchronously
+      context.read<StickerPackBloc>().add(
+        StickerPackInstalledEvent(),
+      );
     }
+  }
+
+  Widget _buildButton(BuildContext context, StickerPackState state) {
+    Widget child;
+    Color color;
+    if (state.stickerPack!.local) {
+      color = Colors.red;
+      child = const Icon(
+        Icons.delete,
+        size: 32,
+      );
+    } else {
+      color = Colors.green;
+      if (state.isInstalling) {
+        child = const Padding(
+          padding: EdgeInsets.all(16),
+          child: CircularProgressIndicator(),
+        );
+      } else {
+        child = const Icon(
+          Icons.download,
+          size: 32,
+        );
+      }
+    }
+
+    return SharedMediaContainer(
+      ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: ColoredBox(
+          color: color,
+          child: child,
+        ),
+      ),
+      onTap: () {
+        if (state.stickerPack!.local) {
+          _onDeletePressed(context, state);
+        } else {
+          if (state.isInstalling) return;
+
+          _onInstallPressed(context, state);
+        }
+      },
+    );
   }
   
   Widget _buildBody(BuildContext context, StickerPackState state) {
@@ -108,29 +155,7 @@ class StickerPackPage extends StatelessWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SharedMediaContainer(
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: ColoredBox(
-                    color: state.stickerPack!.local ?
-                      Colors.red :
-                      Colors.green,
-                    child: Icon(
-                      state.stickerPack!.local ?
-                        Icons.delete :
-                        Icons.download,
-                      size: 32,
-                    ),
-                  ),
-                ),
-                onTap: () {
-                  if (state.stickerPack!.local) {
-                    _onDeletePressed(context, state);
-                  } else {
-                    _onInstallPressed(context, state);
-                  }
-                },
-              ),
+              child: _buildButton(context, state),
             ),
           ],
         ),

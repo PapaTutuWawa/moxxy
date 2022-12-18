@@ -17,3 +17,9 @@ class StickerPackRemovedEvent extends StickersEvent {
 
 /// Triggered by the UI when a sticker pack has been imported
 class StickerPackImportedEvent extends StickersEvent {}
+
+/// Triggered by the UI when a sticker pack has been imported
+class StickerPackAddedEvent extends StickersEvent {
+  StickerPackAddedEvent(this.stickerPack);
+  final StickerPack stickerPack;
+}

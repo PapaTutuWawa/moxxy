@@ -17,6 +17,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     on<StickersSetEvent>(_onStickersSet);
     on<StickerPackRemovedEvent>(_onStickerPackRemoved);
     on<StickerPackImportedEvent>(_onStickerPackImported);
+    on<StickerPackAddedEvent>(_onStickerPackAdded);
   }
 
   Future<void> _onStickersSet(StickersSetEvent event, Emitter<StickersState> emit) async {
@@ -89,5 +90,22 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         ),
       );
     }
+  }
+
+  Future<void> _onStickerPackAdded(StickerPackAddedEvent event, Emitter<StickersState> emit) async {
+    final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
+    for (final sticker in event.stickerPack.stickers) {
+      sm[StickerKey(event.stickerPack.id, sticker.hashKey)] = sticker;
+    }
+
+    emit(
+      state.copyWith(
+        stickerPacks: List<StickerPack>.from([
+          ...state.stickerPacks,
+          event.stickerPack,
+        ]),
+        stickerMap: sm,
+      ),
+    );
   }
 }

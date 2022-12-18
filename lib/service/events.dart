@@ -78,6 +78,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SendStickerCommand>(performSendSticker),
       EventTypeMatcher<RemoveStickerPackCommand>(performRemoveStickerPack),
       EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
+      EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -863,6 +864,26 @@ Future<void> performFetchStickerPack(FetchStickerPackCommand command, { dynamic 
           false,
         ),
       ),
+      id: id,
+    );
+  }
+}
+
+Future<void> performStickerPackInstall(InstallStickerPackCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final ss = GetIt.I.get<StickersService>();
+  final pack = await ss.installFromPubSub(command.stickerPack);
+  if (pack != null) {
+    sendEvent(
+      StickerPackInstallSuccessEvent(
+        stickerPack: pack,
+      ),
+      id: id,
+    );
+  } else {
+    sendEvent(
+      StickerPackInstallFailureEvent(),
       id: id,
     );
   }

@@ -20,6 +20,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     on<LocallyAvailableStickerPackRequested>(_onLocalStickerPackRequested);
     on<StickerPackRemovedEvent>(_onStickerPackRemoved);
     on<RemoteStickerPackRequested>(_onRemoteStickerPackRequested);
+    on<StickerPackInstalledEvent>(_onStickerPackInstalled);
   }
 
   Future<void> _onLocalStickerPackRequested(LocallyAvailableStickerPackRequested event, Emitter<StickerPackState> emit) async {
@@ -28,6 +29,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       emit(
         state.copyWith(
           isWorking: true,
+          isInstalling: false,
         ),
       );
     }
@@ -81,6 +83,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       emit(
         state.copyWith(
           isWorking: true,
+          isInstalling: false,
         ),
       );
     }
@@ -114,6 +117,44 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
           PoppedRouteEvent(),
         );
       }
+    }
+  }
+
+  Future<void> _onStickerPackInstalled(StickerPackInstalledEvent event, Emitter<StickerPackState> emit) async {
+    assert(!state.stickerPack!.local, 'Sticker pack must be remote');
+    emit(
+      state.copyWith(
+        isInstalling: true,
+      ),
+    );
+
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+      InstallStickerPackCommand(
+        stickerPack: state.stickerPack!,
+      ),
+    );
+
+    emit(
+      state.copyWith(
+        isInstalling: false,
+      ),
+    );
+    
+    if (result is StickerPackInstallSuccessEvent) {
+      GetIt.I.get<stickers.StickersBloc>().add(
+        stickers.StickerPackAddedEvent(result.stickerPack),
+      );
+
+      // Leave the page
+      GetIt.I.get<NavigationBloc>().add(
+        PoppedRouteEvent(),
+      );
+    } else {
+      // TODO(PapaTutuWawa): Show a toast (and maybe don't leave the page)
+      // Leave the page
+      GetIt.I.get<NavigationBloc>().add(
+        PoppedRouteEvent(),
+      );
     }
   }
 }

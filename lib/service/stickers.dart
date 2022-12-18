@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
+import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
@@ -49,19 +51,6 @@ class StickersService {
     return _stickerPacks.values.toList();
   }
   
-  Future<Sticker?> getStickerBySFS(String? packId, moxxmpp.StatelessFileSharingData? sfs) async {
-    if (packId == null || sfs == null) return null;
-
-    final pack = await getStickerPackById(packId);
-    if (pack == null) return null;
-
-    final hashKey = getStickerHashKey(sfs.metadata.hashes);
-    return firstWhereOrNull<Sticker>(
-      pack.stickers,
-      (sticker) => sticker.hashKey == hashKey,
-    );
-  }
-
   Future<void> removeStickerPack(String id) async {
     final pack = await getStickerPackById(id);
     assert(pack != null, 'The sticker pack must exist');
@@ -106,6 +95,90 @@ class StickersService {
     if (result.isType<moxxmpp.PubSubError>()) {
       _log.severe('Failed to publish sticker pack');
     }
+  }
+
+  /// Returns the path to the sticker pack with hash algorithm [algo] and hash [hash].
+  /// Ensures that the directory exists before returning.
+  Future<String> _getStickerPackPath(String algo, String hash) async {
+    final stickerDirPath = await getStickerPackPath(algo, hash);
+    final stickerDir = Directory(stickerDirPath);
+    if (!stickerDir.existsSync()) await stickerDir.create(recursive: true);
+
+    return stickerDirPath;
+  }
+  
+  Future<StickerPack?> installFromPubSub(StickerPack remotePack) async {
+    assert(!remotePack.local, 'Sticker pack must be remote');
+
+    final stickerPackPath = await _getStickerPackPath(
+      remotePack.hashAlgorithm,
+      remotePack.hashValue,
+    );
+
+    var success = true;
+    final stickers = List<Sticker>.from(remotePack.stickers);
+    for (var i = 0; i < stickers.length; i++) {
+      final sticker = stickers[i];
+      final stickerPath = p.join(
+        stickerPackPath,
+        sticker.hashes.values.first,
+      );
+      dio.Response<dynamic>? response;
+      try {
+        response = await dio.Dio().downloadUri(
+          Uri.parse(sticker.urlSources.first),
+          stickerPath,
+        );
+      } on dio.DioError catch(err) {
+        _log.severe('Error downloading ${sticker.urlSources.first}: $err');
+        success = false;
+        break;
+      }
+
+      if (!isRequestOkay(response.statusCode)) {
+        _log.severe('Request not okay: $response');
+        break;
+      }
+      stickers[i] = sticker.copyWith(
+        path: stickerPath,
+        hashKey: getStickerHashKey(sticker.hashes),
+      );
+    } 
+
+    if (!success) {
+      _log.severe('Import failed');
+      return null;
+    }
+
+    // Add the sticker pack to the database
+    final db = GetIt.I.get<DatabaseService>();
+    await db.addStickerPackFromData(remotePack);
+
+    // Add the stickers to the database
+    final stickersDb = List<Sticker>.empty(growable: true);
+    for (final sticker in stickers) {
+      stickersDb.add(
+        await db.addStickerFromData(
+          sticker.mediaType,
+          sticker.desc,
+          sticker.size,
+          sticker.width,
+          sticker.height,
+          sticker.hashes,
+          sticker.urlSources,
+          sticker.path,
+          remotePack.hashValue,
+        ),
+      );
+    }
+
+    // Publish but don't block
+    // TODO(PapaTutuWawa): Convert
+    //unawaited(_publishStickerPack(remotePack));
+    
+    return remotePack.copyWith(
+      stickers: stickersDb,
+    );
   }
   
   /// Imports a sticker pack from [path].
