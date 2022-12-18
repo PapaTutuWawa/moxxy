@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
@@ -25,41 +26,36 @@ class StickerChatWidget extends StatelessWidget {
   final BorderRadius radius;
   final bool sent;
   
-  Widget _buildNotAvailable() {
+  Widget _buildNotAvailable(BuildContext context) {
     return Align(
       alignment: sent ?
         Alignment.centerRight :
         Alignment.centerLeft,
-        child: InkWell(
-          onTap: () {
-            // TODO(PapaTutuWawa): If not locally available, show the download dialog
-          },
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: sent ?
-                bubbleColorSent :
-                bubbleColorReceived,
-              borderRadius: const BorderRadius.all(radiusLarge),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: Icon(
-                      PhosphorIcons.stickerBold,
-                    ),
-                  ),
-                  Text(
-                    message.body,
-                  ),
-                ],
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: sent ?
+            bubbleColorSent :
+            bubbleColorReceived,
+          borderRadius: const BorderRadius.all(radiusLarge),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Icon(
+                  PhosphorIcons.stickerBold,
+                ),
               ),
-            ),
+              Text(
+                message.body,
+              ),
+            ],
           ),
         ),
+      ),
     );
   }
   
@@ -86,7 +82,18 @@ class StickerChatWidget extends StatelessWidget {
               },
               child: Image.file(File(sticker.path)),
             ) :
-            _buildNotAvailable(),
+            InkWell(
+              onTap: () {
+                context.read<StickerPackBloc>().add(
+                  RemoteStickerPackRequested(
+                    message.stickerPackId!,
+                    // TODO(PapaTutuWawa): This does not feel clean
+                    message.sender.split('/').first,
+                  ),
+                );
+              },
+              child: _buildNotAvailable(context),
+            ),
 
           Align(
             alignment: sent ?

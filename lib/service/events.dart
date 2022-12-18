@@ -32,6 +32,8 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
+import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -75,6 +77,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<ImportStickerPackCommand>(performImportStickerPack),
       EventTypeMatcher<SendStickerCommand>(performSendSticker),
       EventTypeMatcher<RemoveStickerPackCommand>(performRemoveStickerPack),
+      EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -817,4 +820,50 @@ Future<void> performRemoveStickerPack(RemoveStickerPackCommand command, { dynami
   await GetIt.I.get<StickersService>().removeStickerPack(
     command.stickerPackId,
   );
+}
+
+Future<void> performFetchStickerPack(FetchStickerPackCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final result = await GetIt.I.get<XmppConnection>()
+    .getManagerById<StickersManager>(stickersManager)!
+    .fetchStickerPack(JID.fromString(command.jid), command.stickerPackId);
+
+  if (result.isType<PubSubError>()) {
+    sendEvent(
+      FetchStickerPackFailureResult(),
+      id: id,
+    );
+  } else {
+    final stickerPack = result.get<StickerPack>();
+    sendEvent(
+      FetchStickerPackSuccessResult(
+        stickerPack: sticker_pack.StickerPack(
+          command.stickerPackId,
+          stickerPack.name,
+          stickerPack.summary,
+          stickerPack.stickers
+            .map((s) => sticker.Sticker(
+              '',
+              s.metadata.mediaType!,
+              s.metadata.desc!,
+              s.metadata.size!,
+              s.metadata.width,
+              s.metadata.height,
+              s.metadata.hashes,
+              s.sources
+                .whereType<StatelessFileSharingUrlSource>()
+                .map((src) => src.url)
+                .toList(),
+              '',
+              command.stickerPackId,
+            ),).toList(),
+          stickerPack.hashAlgorithm.toName(),
+          stickerPack.hashValue,
+          false,
+        ),
+      ),
+      id: id,
+    );
+  }
 }

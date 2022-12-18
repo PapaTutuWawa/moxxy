@@ -28,7 +28,6 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
-import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -1167,12 +1166,10 @@ class XmppService {
     var shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
     var mimeGuess = _getMimeGuess(event);
-
-    // Find a potential sticker
-    final stickerHashKey = (await GetIt.I.get<StickersService>().getStickerBySFS(
-      event.stickerPackId,
-      event.sfs,
-    ))?.hashKey;
+    // Guess a sticker hash key, if the message is a sticker
+    final stickerHashKey = event.stickerPackId != null ?
+      getStickerHashKey(event.sfs!.metadata.hashes) :
+      null;
     
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
@@ -1182,7 +1179,7 @@ class XmppService {
       messageTimestamp,
       event.fromJid.toString(),
       conversationJid,
-      isFileEmbedded || event.fun != null || stickerHashKey != null,
+      isFileEmbedded || event.fun != null || event.stickerPackId != null,
       event.sid,
       event.fun != null,
       event.encrypted,

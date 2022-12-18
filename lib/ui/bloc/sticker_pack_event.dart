@@ -8,6 +8,13 @@ class LocallyAvailableStickerPackRequested extends StickerPackEvent {
   final String stickerPackId;
 }
 
+/// Triggered by the UI when the user navigates to a remote sticker pack
+class RemoteStickerPackRequested extends StickerPackEvent {
+  RemoteStickerPackRequested(this.stickerPackId, this.jid);
+  final String stickerPackId;
+  final String jid;
+}
+
 /// Triggered by the UI when the sticker pack is removed
 class StickerPackRemovedEvent extends StickerPackEvent {
   StickerPackRemovedEvent(this.stickerPackId);
