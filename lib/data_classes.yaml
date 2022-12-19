@@ -250,6 +250,14 @@ files:
         implements:
           - JsonImplementation
         attributes:
+      - name: StickerPackAddedEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
+import 'package:moxxyv2/service/helpers.dart';
 
 part 'sticker.freezed.dart';
 part 'sticker.g.dart';
@@ -22,6 +24,24 @@ class Sticker with _$Sticker {
   ) = _Sticker;
 
   const Sticker._();
+
+  /// Moxxmpp
+  factory Sticker.fromMoxxmpp(moxxmpp.Sticker sticker, String stickerPackId) => Sticker(
+    getStickerHashKey(sticker.metadata.hashes),
+    sticker.metadata.mediaType!,
+    sticker.metadata.desc!,
+    sticker.metadata.size!,
+    sticker.metadata.width,
+    sticker.metadata.height,
+    sticker.metadata.hashes,
+    sticker.sources
+      .whereType<moxxmpp.StatelessFileSharingUrlSource>()
+      .map((src) => src.url)
+      .toList(),
+    '',
+    stickerPackId,
+    sticker.suggests,
+  );
   
   /// JSON
   factory Sticker.fromJson(Map<String, dynamic> json) => _$StickerFromJson(json);
@@ -48,4 +68,21 @@ class Sticker with _$Sticker {
       'suggests': jsonEncode(suggests),
     };
   }
+
+  moxxmpp.Sticker toMoxxmpp() => moxxmpp.Sticker(
+    moxxmpp.FileMetadataData(
+      mediaType: mediaType,
+      desc: desc,
+      size: size,
+      width: width,
+      height: height,
+      thumbnails: [],
+      hashes: hashes,
+    ),
+    urlSources
+      // ignore: unnecessary_lambdas
+      .map((src) => moxxmpp.StatelessFileSharingUrlSource(src))
+      .toList(),
+    suggests,
+  );
 }

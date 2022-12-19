@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 
@@ -19,6 +20,20 @@ class StickerPack with _$StickerPack {
   ) = _StickerPack;
 
   const StickerPack._();
+
+  /// Moxxmpp
+  factory StickerPack.fromMoxxmpp(moxxmpp.StickerPack pack, bool local) => StickerPack(
+    pack.id,
+    pack.name,
+    pack.summary,
+    pack.stickers
+      .map((sticker) => Sticker.fromMoxxmpp(sticker, pack.id))
+      .toList(),
+    pack.hashAlgorithm.toName(),
+    pack.hashValue,
+    pack.restricted,
+    local,
+  );
   
   /// JSON
   factory StickerPack.fromJson(Map<String, dynamic> json) => _$StickerPackFromJson(json);
@@ -43,5 +58,17 @@ class StickerPack with _$StickerPack {
       ...json,
       'restricted': boolToInt(restricted),
     };
-  }  
+  }
+
+  moxxmpp.StickerPack toMoxxmpp() => moxxmpp.StickerPack(
+    id,
+    name,
+    description,
+    moxxmpp.hashFunctionFromName(hashAlgorithm),
+    hashValue,
+    stickers
+      .map((sticker) => sticker.toMoxxmpp())
+      .toList(),
+    restricted,
+  );
 }

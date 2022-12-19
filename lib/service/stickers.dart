@@ -10,7 +10,9 @@ import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
+import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
@@ -106,6 +108,40 @@ class StickersService {
 
     return stickerDirPath;
   }
+
+  Future<void> importFromPubSubWithEvent(moxxmpp.JID jid, String stickerPackId) async {
+    final stickerPack = await importFromPubSub(jid, stickerPackId);
+    if (stickerPack == null) return;
+
+    sendEvent(
+      StickerPackAddedEvent(
+        stickerPack: stickerPack,
+      ),
+    );
+  }
+  
+  /// Takes the jid of the host [jid] and the id [stickerPackId] of the sticker pack
+  /// and tries to fetch and install it, including publishing on our own PubSub node.
+  ///
+  /// On success, returns the installed StickerPack. On failure, returns null.
+  Future<StickerPack?> importFromPubSub(moxxmpp.JID jid, String stickerPackId) async {
+    final result = await GetIt.I.get<moxxmpp.XmppConnection>()
+      .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
+      .fetchStickerPack(jid.toBare(), stickerPackId);
+
+    if (result.isType<moxxmpp.PubSubError>()) {
+      _log.warning('Failed to fetch sticker pack $jid:$stickerPackId');
+      return null;
+    }
+
+    final stickerPackRaw = StickerPack.fromMoxxmpp(
+      result.get<moxxmpp.StickerPack>(),
+      false,
+    );
+
+    // Install the sticker pack
+    return installFromPubSub(stickerPackRaw);
+  }
   
   Future<StickerPack?> installFromPubSub(StickerPack remotePack) async {
     assert(!remotePack.local, 'Sticker pack must be remote');
@@ -175,33 +211,7 @@ class StickersService {
 
     // Publish but don't block
     unawaited(
-      _publishStickerPack(
-        moxxmpp.StickerPack(
-          remotePack.id,
-          remotePack.name,
-          remotePack.description,
-          moxxmpp.hashFunctionFromName(remotePack.hashAlgorithm),
-          remotePack.hashValue,
-          remotePack.stickers
-            .map((sticker) => moxxmpp.Sticker(
-              moxxmpp.FileMetadataData(
-                mediaType: sticker.mediaType,
-                desc: sticker.desc,
-                size: sticker.size,
-                width: sticker.width,
-                height: sticker.height,
-                thumbnails: [],
-                hashes: sticker.hashes,
-              ),
-              sticker.urlSources
-                // ignore: unnecessary_lambdas
-                .map((src) => moxxmpp.StatelessFileSharingUrlSource(src))
-                .toList(),
-              sticker.suggests,
-            ),).toList(),
-          remotePack.restricted,
-        ),
-      ),
+      _publishStickerPack(remotePack.toMoxxmpp()),
     );
     
     return remotePack.copyWith(

@@ -15,6 +15,7 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart' as conversations;
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart' as sharedmedia;
+import 'package:moxxyv2/ui/bloc/stickers_bloc.dart' as stickers;
 import 'package:moxxyv2/ui/prestart.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 
@@ -32,6 +33,7 @@ void setupEventHandler() {
       EventTypeMatcher<PreStartDoneEvent>(preStartDone),
       EventTypeMatcher<ServiceReadyEvent>(onServiceReady),
       EventTypeMatcher<MessageNotificationTappedEvent>(onNotificationTappend),
+      EventTypeMatcher<StickerPackAddedEvent>(onStickerPackAdded),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -157,5 +159,11 @@ Future<void> onNotificationTappend(MessageNotificationTappedEvent event, { dynam
       event.title,
       event.avatarUrl,
     ),
+  );
+}
+
+Future<void> onStickerPackAdded(StickerPackAddedEvent event, { dynamic extra }) async {
+  GetIt.I.get<stickers.StickersBloc>().add(
+    stickers.StickerPackAddedEvent(event.stickerPack),
   );
 }

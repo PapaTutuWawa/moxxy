@@ -28,6 +28,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
+import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -1170,7 +1171,30 @@ class XmppService {
     final stickerHashKey = event.stickerPackId != null ?
       getStickerHashKey(event.sfs!.metadata.hashes) :
       null;
-    
+    // The potential sticker pack
+    final stickerPack = event.stickerPackId != null ?
+      await GetIt.I.get<StickersService>().getStickerPackById(
+        event.stickerPackId!,
+      ) :
+      null;
+
+    // Automatically download the sticker pack, if
+    // - a sticker was received,
+    // - the sender is in the roster,
+    // - we don't have the sticker pack locally,
+    // - and it is enabled in the settings
+    if (event.stickerPackId != null &&
+        stickerPack == null &&
+        prefs.autoDownloadStickersFromContacts &&
+        isInRoster) {
+      unawaited(
+        GetIt.I.get<StickersService>().importFromPubSubWithEvent(
+          event.fromJid,
+          event.stickerPackId!,
+        ),
+      );
+    }
+      
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
     final dimensions = _getDimensions(event);
