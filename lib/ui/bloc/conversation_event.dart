@@ -173,3 +173,9 @@ class StickerSentEvent extends ConversationEvent {
   final String stickerPackId;
   final String stickerHashKey;
 }
+
+/// Triggered when the softkeyboard's visibility changed
+class SoftKeyboardVisibilityChanged extends ConversationEvent {
+  SoftKeyboardVisibilityChanged(this.visible);
+  final bool visible;
+}

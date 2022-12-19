@@ -66,6 +66,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ReactionRemovedEvent>(_onReactionRemoved);
     on<StickerPickerToggledEvent>(_onStickerPickerToggled);
     on<StickerSentEvent>(_onStickerSent);
+    on<SoftKeyboardVisibilityChanged>(_onSoftKeyboardVisibilityChanged);
 
     _audioRecorder = Record();
   }
@@ -666,5 +667,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         stickerPickerVisible: false,
       ),
     );
+  }
+
+  Future<void> _onSoftKeyboardVisibilityChanged(SoftKeyboardVisibilityChanged event, Emitter<ConversationState> emit) async {
+    if (event.visible && (state.emojiPickerVisible || state.stickerPickerVisible)) {
+      emit(
+        state.copyWith(
+          emojiPickerVisible: false,
+          stickerPickerVisible: false,
+        ),
+      );
+    }
   }
 }

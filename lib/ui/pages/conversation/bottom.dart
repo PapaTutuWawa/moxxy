@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -52,6 +55,29 @@ class ConversationBottomRow extends StatefulWidget {
 }
 
 class ConversationBottomRowState extends State<ConversationBottomRow> {
+  late StreamSubscription<bool> _keyboardVisibilitySubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(
+      _onKeyboardVisibilityChanged,
+    );
+  }
+
+  @override
+  void dispose() {
+    _keyboardVisibilitySubscription.cancel();
+    super.dispose();
+  }
+
+  void _onKeyboardVisibilityChanged(bool visible) {
+    GetIt.I.get<ConversationBloc>().add(
+      SoftKeyboardVisibilityChanged(visible),
+    );
+  }
+  
   Color _getTextColor(BuildContext context) {
     // TODO(Unknown): Work on the colors
     if (MediaQuery.of(context).platformBrightness == Brightness.dark) {

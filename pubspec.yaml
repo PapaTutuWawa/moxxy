@@ -33,6 +33,7 @@ dependencies:
   flutter_contacts: 1.1.5+1
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
+  flutter_keyboard_visibility: 5.4.0
   flutter_localizations:
     sdk: flutter
   flutter_parsed_text: 2.2.1
