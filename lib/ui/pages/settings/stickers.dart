@@ -7,8 +7,10 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/settings/row.dart';
+import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:settings_ui/settings_ui.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StickersSettingsPage extends StatelessWidget {
   const StickersSettingsPage({ super.key });
@@ -22,64 +24,98 @@ class StickersSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO(PapaTutuWawa): Allow managing sticker packs
     return Scaffold(
       appBar: BorderlessTopbar.simple(t.pages.settings.stickers.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
-        builder: (_, state) => BlocBuilder<StickersBloc, StickersState>(
-          builder: (__, stickers) => SettingsList(
-            sections: [
-              SettingsSection(
-                title: Text(t.pages.settings.stickers.stickerSection),
-                tiles: [
-                  SettingsTile.switchTile(
-                    title: Text(t.pages.settings.stickers.displayStickers),
-                    initialValue: state.enableStickers,
-                    onToggle: (value) async {
-                      context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(enableStickers: value),
+        builder: (_, prefs) => BlocBuilder<StickersBloc, StickersState>(
+          builder: (__, stickers) => Padding(
+            padding: EdgeInsets.zero,
+            child: ListView.builder(
+              itemCount: stickers.stickerPacks.length + 1,
+              itemBuilder: (___, index) {
+                if (index == 0) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SectionTitle(t.pages.settings.stickers.displayStickers),
+                      
+                      SettingsRow(
+                        title: t.pages.settings.stickers.displayStickers,
+                        suffix: Switch(
+                          value: prefs.enableStickers,
+                          onChanged: (value) {
+                            context.read<PreferencesBloc>().add(
+                              PreferencesChangedEvent(
+                                prefs.copyWith(enableStickers: value),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-                  SettingsTile.switchTile(
-                    title: Text(t.pages.settings.stickers.autoDownload),
-                    description: Text(t.pages.settings.stickers.autoDownloadBody),
-                    initialValue: state.autoDownloadStickersFromContacts,
-                    onToggle: (value) async {
-                      context.read<PreferencesBloc>().add(
-                        PreferencesChangedEvent(
-                          state.copyWith(autoDownloadStickersFromContacts: value),
+                      ),
+
+                      SettingsRow(
+                        title: t.pages.settings.stickers.autoDownload,
+                        description: t.pages.settings.stickers.autoDownloadBody,
+                        suffix: Switch(
+                          value: prefs.autoDownloadStickersFromContacts,
+                          onChanged: (value) {
+                            context.read<PreferencesBloc>().add(
+                              PreferencesChangedEvent(
+                                prefs.copyWith(autoDownloadStickersFromContacts: value),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-                  SettingsTile(
-                    title: Text(t.pages.settings.stickers.importStickerPack),
-                    onPressed: (context) {
-                      GetIt.I.get<StickersBloc>().add(
-                        StickerPackImportedEvent(),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              SettingsSection(
-                title: Text(t.pages.settings.stickers.stickerPacksSection),
-                tiles: stickers.stickerPacks
-                  .map((sp) => SettingsTile(
-                    title: Text(sp.name),
-                    onPressed: (context) {
-                      GetIt.I.get<StickerPackBloc>().add(
-                        LocallyAvailableStickerPackRequested(
-                          sp.id,
+                      ),
+
+                      SettingsRow(
+                        onTap: () {
+                          GetIt.I.get<StickersBloc>().add(
+                            StickerPackImportedEvent(),
+                          );
+                        },
+
+                        title: t.pages.settings.stickers.importStickerPack,
+                      ),
+
+                      SectionTitle(t.pages.settings.stickers.stickerPacksSection),
+                    ],
+                  );
+                }
+
+                return SettingsRow(
+                  title: stickers.stickerPacks[index - 1].name,
+                  description: stickers.stickerPacks[index - 1].description,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  prefix: const Padding(
+                    padding: EdgeInsets.only(right: 16),
+                    child: SizedBox(
+                      width: 48,
+                      height: 48,
+                      // TODO(PapaTutuWawa): Sticker pack thumbnails would be nice
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.all(radiusLarge),
+                        child: ColoredBox(
+                          color: Colors.white60,
+                          child: Icon(
+                            PhosphorIcons.stickerBold,
+                            size: 32,
+                          ),
                         ),
-                      );
-                    },
-                  ),).toList(),
-              ),
-            ],
+                      ),
+                    ),
+                  ),
+                  onTap: () {
+                    GetIt.I.get<StickerPackBloc>().add(
+                      LocallyAvailableStickerPackRequested(
+                        stickers.stickerPacks[index - 1].id,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
       ),

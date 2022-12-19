@@ -23,6 +23,8 @@ const Color bubbleColorReceived = Color(0xff222222);
 const Color bubbleColorReceivedQuoted = bubbleColorReceived;
 const Color bubbleColorUnencrypted = Color(0xffd40000);
 
+const Color settingsSectionTitleColor = Color(0xffb72fe7);
+
 const double paddingVeryLarge = 64;
 
 const Color tileColorDark = Color(0xff5c5c5c);
