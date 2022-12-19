@@ -160,6 +160,7 @@ class StickerPackPage extends StatelessWidget {
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       state.stickerPack?.description ?? '',
