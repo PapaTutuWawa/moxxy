@@ -461,6 +461,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         isDragging: true,
         isRecording: true,
+        emojiPickerVisible: false,
+        stickerPickerVisible: false,
       ),
     );
     
