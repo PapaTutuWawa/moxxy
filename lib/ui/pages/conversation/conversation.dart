@@ -191,6 +191,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               end,
             ),
             highlight: bubble,
+            materialColor: item.isSticker ?
+              Colors.transparent :
+              null,
             children: [
               ...item.isReactable ? [
                 OverviewMenuItem(

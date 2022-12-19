@@ -183,4 +183,7 @@ class Message with _$Message {
 
   /// Returns true if the message can be copied to the clipboard.
   bool get isCopyable => !isMedia && body.isNotEmpty;
+
+  /// Returns true if the message is a sticker
+  bool get isSticker => isMedia && stickerPackId != null && stickerHashKey != null;
 }
