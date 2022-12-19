@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/painting.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
@@ -102,11 +104,23 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
           isImportRunning: false,
         ),
       );
+
+      await Fluttertoast.showToast(
+        msg: t.pages.settings.stickers.importSuccess,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
+      );
     } else {
       emit(
         state.copyWith(
           isImportRunning: false,
         ),
+      );
+
+      await Fluttertoast.showToast(
+        msg: t.pages.settings.stickers.importFailure,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
       );
     }
   }

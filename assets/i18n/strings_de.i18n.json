@@ -191,7 +191,8 @@
 	    "removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?",
 	    "installConfirmTitle": "Stickerpack installieren",
 	    "installConfirmBody": "Bist Du Dir sicher, dass Du das Stickerpack installieren möchtest?",
-	    "restricted": "Dieses Stickerpack ist eingeschränkt. Das bedeutet, dass es im Chat angezeigt wird, jedoch nicht versendet werden kann."
+	    "restricted": "Dieses Stickerpack ist eingeschränkt. Das bedeutet, dass es im Chat angezeigt wird, jedoch nicht versendet werden kann.",
+	    "fetchingFailure": "Konnte das Stickerpack nicht finden"
 	},
 	"settings": {
 	    "settings": {
@@ -287,7 +288,9 @@
 		"autoDownload": "Sticker automatisch herunterladen",
 		"autoDownloadBody": "Wenn aktiviert, dann werden Sticker automatisch heruntergeladen, wenn der Sender in der Kontaktliste ist.",
 		"stickerPacksSection": "Stickerpacks",
-		"importStickerPack": "Stickerpack importieren"
+		"importStickerPack": "Stickerpack importieren",
+		"importSuccess": "Stickerpack erfolgreich importiert",
+		"importFailure": "Beim Import des Stickerpacks ist ein Fehler aufgetreten"
 	    }
 	}
     }

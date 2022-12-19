@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
@@ -106,7 +108,6 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
           ),
         );
       } else {
-        // TODO(PapaTutuWawa): Show a toast
         // Leave the page
         GetIt.I.get<NavigationBloc>().add(
           PoppedRouteEvent(),
@@ -145,10 +146,15 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         PoppedRouteEvent(),
       );
     } else {
-      // TODO(PapaTutuWawa): Show a toast (and maybe don't leave the page)
       // Leave the page
       GetIt.I.get<NavigationBloc>().add(
         PoppedRouteEvent(),
+      );
+
+      await Fluttertoast.showToast(
+        msg: t.pages.stickerPack.fetchingFailure,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
       );
     }
   }
