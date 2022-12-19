@@ -32,6 +32,7 @@
 	"video": "Video",
 	"audio": "Audio",
 	"file": "File",
+	"sticker": "Sticker",
 	"retracted": "The message has been retracted",
 	"retractedFallback": "A previous message has been retracted but your client does not support it"
     },
@@ -185,6 +186,14 @@
 	    "blur": "Blur background",
 	    "setAsBackground": "Set as background image"
 	},
+	"stickerPack": {
+	    "removeConfirmTitle": "Remove sticker pack",
+	    "removeConfirmBody": "Are you sure you want to remove this sticker pack?",
+	    "installConfirmTitle": "Install sticker pack",
+	    "installConfirmBody": "Are you sure you want to install this sticker pack?",
+	    "restricted": "This sticker pack is restricted. That means that the stickers will be displayed but cannot be sent.",
+	    "fetchingFailure": "Could not find the sticker pack"
+	},
 	"settings": {
 	    "settings": {
 		"title": "Settings",
@@ -271,6 +280,17 @@
 		"urlEmpty": "URL cannot be empty",
 		"urlInvalid": "Invalid URL",
 		"redirectDialogTitle": "$serviceName Redirect"
+	    },
+	    "stickers": {
+		"title": "Stickers",
+		"stickerSection": "Sticker",
+		"displayStickers": "Display stickers in chat",
+		"autoDownload": "Automatically download stickers",
+		"autoDownloadBody": "If enabled, stickers are automatically downloaded when the sender is in your contact list.",
+		"stickerPacksSection": "Sticker packs",
+		"importStickerPack": "Import sticker pack",
+		"importSuccess": "Sticker pack successfully imported",
+		"importFailure": "Failed to import sticker pack"
 	    }
 	}
     }

@@ -36,6 +36,9 @@ files:
           roster:
             type: List<RosterItem>?
             deserialise: true
+          stickers:
+            type: List<StickerPack>?
+            deserialise: true
       # Returned by [GetMessagesForJidCommand]
       - name: MessagesResultEvent
         extends: BackgroundEvent
@@ -208,6 +211,53 @@ files:
           conversationJid: String
           title: String
           avatarUrl: String
+      - name: StickerPackImportSuccessEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
+      - name: StickerPackImportFailureEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+      - name: FetchStickerPackSuccessResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
+      - name: FetchStickerPackFailureResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+      - name: StickerPackInstallSuccessEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
+      - name: StickerPackInstallFailureEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+      - name: StickerPackAddedEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -442,6 +492,41 @@ files:
         attributes:
           deviceId: int
           jid: String
+      - name: ImportStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          path: String
+      - name: RemoveStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPackId: String
+      - name: SendStickerCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPackId: String
+          stickerHashKey: String
+          recipient: String
+      - name: FetchStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPackId: String
+          jid: String
+      - name: InstallStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack
+            deserialise: true
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

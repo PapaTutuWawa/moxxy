@@ -22,7 +22,14 @@ import 'package:moxxyv2/service/database/migrations/0000_reactions_store_hint.da
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction_conversation.dart';
 import 'package:moxxyv2/service/database/migrations/0000_shared_media.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_hash_key.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_hash_key2.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes2.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
+import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
@@ -34,6 +41,8 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
+import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
+import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as path;
 import 'package:random_string/random_string.dart';
@@ -70,7 +79,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 16,
+      version: 22,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -142,6 +151,30 @@ class DatabaseService {
         if (oldVersion < 16) {
           _log.finest('Running migration for database version 16');
           await upgradeFromV15ToV16(db);
+        }
+        if (oldVersion < 17) {
+          _log.finest('Running migration for database version 17');
+          await upgradeFromV16ToV17(db);
+        }
+        if (oldVersion < 18) {
+          _log.finest('Running migration for database version 18');
+          await upgradeFromV17ToV18(db);
+        }
+        if (oldVersion < 19) {
+          _log.finest('Running migration for database version 19');
+          await upgradeFromV18ToV19(db);
+        }
+        if (oldVersion < 20) {
+          _log.finest('Running migration for database version 20');
+          await upgradeFromV19ToV20(db);
+        }
+        if (oldVersion < 21) {
+          _log.finest('Running migration for database version 21');
+          await upgradeFromV20ToV21(db);
+        }
+        if (oldVersion < 22) {
+          _log.finest('Running migration for database version 22');
+          await upgradeFromV21ToV22(db);
         }
       },
     );
@@ -388,6 +421,8 @@ class DatabaseService {
       bool isDownloading = false,
       bool isUploading = false,
       int? mediaSize,
+      String? stickerPackId,
+      String? stickerHashKey,
     }
   ) async {
     var m = Message(
@@ -422,6 +457,8 @@ class DatabaseService {
       isUploading: isUploading,
       isDownloading: isDownloading,
       mediaSize: mediaSize,
+      stickerPackId: stickerPackId,
+      stickerHashKey: stickerHashKey,
     );
 
     if (quoteId != null) {
@@ -1126,6 +1163,98 @@ class DatabaseService {
       contactsTable,
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<void> addStickerPackFromData(sticker_pack.StickerPack pack) async {
+    await _db.insert(
+      stickerPacksTable,
+      pack.toDatabaseJson(),
+    );
+  }
+
+  Future<sticker.Sticker> addStickerFromData(
+    String mediaType,
+    String desc,
+    int size,
+    int? width,
+    int? height,
+    Map<String, String> hashes,
+    List<String> urlSources,
+    String path,
+    String stickerPackId,
+    Map<String, String> suggests,
+  ) async {
+    final s = sticker.Sticker(
+      getStickerHashKey(hashes),
+      mediaType,
+      desc,
+      size,
+      width,
+      height,
+      hashes,
+      urlSources,
+      path,
+      stickerPackId,
+      suggests,
+    );
+
+    await _db.insert(stickersTable, s.toDatabaseJson());
+    return s;
+  }
+
+  Future<List<sticker_pack.StickerPack>> loadStickerPacks() async {
+    final rawPacks = await _db.query(stickerPacksTable);
+    final stickerPacks = List<sticker_pack.StickerPack>.empty(growable: true);
+    for (final pack in rawPacks) {
+      final rawStickers = await _db.query(
+        stickersTable,
+        where: 'stickerPackId = ?',
+        whereArgs: [pack['id']! as String],
+      );
+
+      stickerPacks.add(
+        sticker_pack.StickerPack.fromDatabaseJson(
+          pack,
+          rawStickers
+            .map(sticker.Sticker.fromDatabaseJson)
+            .toList(),
+        ),
+      );
+    }
+
+    return stickerPacks;
+  }
+
+  Future<void> removeStickerPackById(String id) async {
+    await _db.delete(
+      stickerPacksTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+  
+  Future<sticker_pack.StickerPack?> getStickerPackById(String id) async {
+    final rawPack = await _db.query(
+      stickerPacksTable,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (rawPack.isEmpty) return null;
+
+    final rawStickers = await _db.query(
+      stickersTable,
+      where: 'stickerPackId = ?',
+      whereArgs: [id],
+    );
+
+    return sticker_pack.StickerPack.fromDatabaseJson(
+      rawPack.first,
+      rawStickers
+        .map(sticker.Sticker.fromDatabaseJson)
+        .toList(),
     );
   }
 }

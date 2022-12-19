@@ -42,6 +42,7 @@ class OverviewMenu extends StatelessWidget {
       this.rightBorder = true,
       this.left,
       this.right,
+      this.materialColor,
       super.key,
     }
   );
@@ -52,6 +53,7 @@ class OverviewMenu extends StatelessWidget {
   final double? left;
   final double? right;
   final BorderRadius? highlightMaterialBorder;
+  final Color? materialColor;
   
   @override
   Widget build(BuildContext context) {
@@ -66,6 +68,7 @@ class OverviewMenu extends StatelessWidget {
               top: _animation.value,
               child: Material(
                 borderRadius: highlightMaterialBorder,
+                color: materialColor,
                 child: highlight,
               ),
             );

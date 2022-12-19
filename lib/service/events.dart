@@ -24,6 +24,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/state.dart';
+import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -31,6 +32,8 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
+import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -71,6 +74,11 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
       EventTypeMatcher<RemoveReactionFromMessageCommand>(performRemoveMessageReaction),
       EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
+      EventTypeMatcher<ImportStickerPackCommand>(performImportStickerPack),
+      EventTypeMatcher<SendStickerCommand>(performSendSticker),
+      EventTypeMatcher<RemoveStickerPackCommand>(performRemoveStickerPack),
+      EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
+      EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -131,7 +139,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
     permissions.add(Permission.storage.value);
 
     await xmpp.modifyXmppState((state) => state.copyWith(
-        askedStoragePermission: true,
+      askedStoragePermission: true,
     ),);
   }
 
@@ -145,6 +153,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
     preferences: preferences,
     conversations: (await GetIt.I.get<DatabaseService>().loadConversations()).where((c) => c.open).toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
+    stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
 }
 
@@ -771,4 +780,113 @@ Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
     command.deviceId,
     command.jid,
   );
+}
+
+Future<void> performImportStickerPack(ImportStickerPackCommand command, { dynamic extra }) async {
+  final id = extra as String;
+  final result = await GetIt.I.get<StickersService>().importFromFile(command.path);
+  if (result != null) {
+    sendEvent(
+      StickerPackImportSuccessEvent(
+        stickerPack: result,
+      ),
+      id: id,
+    );
+  } else {
+    sendEvent(
+      StickerPackImportFailureEvent(),
+      id: id,
+    );
+  }
+}
+
+Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) async {
+  final xs = GetIt.I.get<XmppService>();
+  final ss = GetIt.I.get<StickersService>();
+
+  final sticker = await ss.getStickerByHashKey(
+    command.stickerPackId,
+    command.stickerHashKey,
+  );
+  assert(sticker != null, 'Sticker not found');
+
+  await xs.sendMessage(
+    body: sticker!.desc,
+    recipients: [command.recipient],
+    sticker: sticker,
+  );
+}
+
+Future<void> performRemoveStickerPack(RemoveStickerPackCommand command, { dynamic extra }) async {
+  await GetIt.I.get<StickersService>().removeStickerPack(
+    command.stickerPackId,
+  );
+}
+
+Future<void> performFetchStickerPack(FetchStickerPackCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final result = await GetIt.I.get<XmppConnection>()
+    .getManagerById<StickersManager>(stickersManager)!
+    .fetchStickerPack(JID.fromString(command.jid), command.stickerPackId);
+
+  if (result.isType<PubSubError>()) {
+    sendEvent(
+      FetchStickerPackFailureResult(),
+      id: id,
+    );
+  } else {
+    final stickerPack = result.get<StickerPack>();
+    sendEvent(
+      FetchStickerPackSuccessResult(
+        stickerPack: sticker_pack.StickerPack(
+          command.stickerPackId,
+          stickerPack.name,
+          stickerPack.summary,
+          stickerPack.stickers
+            .map((s) => sticker.Sticker(
+              '',
+              s.metadata.mediaType!,
+              s.metadata.desc!,
+              s.metadata.size!,
+              s.metadata.width,
+              s.metadata.height,
+              s.metadata.hashes,
+              s.sources
+                .whereType<StatelessFileSharingUrlSource>()
+                .map((src) => src.url)
+                .toList(),
+              '',
+              command.stickerPackId,
+              s.suggests,
+            ),).toList(),
+          stickerPack.hashAlgorithm.toName(),
+          stickerPack.hashValue,
+          stickerPack.restricted,
+          false,
+        ),
+      ),
+      id: id,
+    );
+  }
+}
+
+Future<void> performStickerPackInstall(InstallStickerPackCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final ss = GetIt.I.get<StickersService>();
+  final pack = await ss.installFromPubSub(command.stickerPack);
+  if (pack != null) {
+    sendEvent(
+      StickerPackInstallSuccessEvent(
+        stickerPack: pack,
+      ),
+      id: id,
+    );
+  } else {
+    sendEvent(
+      StickerPackInstallFailureEvent(),
+      id: id,
+    );
+  }
 }

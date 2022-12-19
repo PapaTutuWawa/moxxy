@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -12,6 +15,7 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/timer.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
+import 'package:moxxyv2/ui/widgets/sticker_picker.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -51,6 +55,29 @@ class ConversationBottomRow extends StatefulWidget {
 }
 
 class ConversationBottomRowState extends State<ConversationBottomRow> {
+  late StreamSubscription<bool> _keyboardVisibilitySubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(
+      _onKeyboardVisibilityChanged,
+    );
+  }
+
+  @override
+  void dispose() {
+    _keyboardVisibilitySubscription.cancel();
+    super.dispose();
+  }
+
+  void _onKeyboardVisibilityChanged(bool visible) {
+    GetIt.I.get<ConversationBloc>().add(
+      SoftKeyboardVisibilityChanged(visible),
+    );
+  }
+  
   Color _getTextColor(BuildContext context) {
     // TODO(Unknown): Work on the colors
     if (MediaQuery.of(context).platformBrightness == Brightness.dark) {
@@ -138,7 +165,9 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                         ),
                                       ),
                                       onTap: () {
-                                        showNotImplementedDialog('stickers', context);
+                                        context.read<ConversationBloc>().add(
+                                          StickerPickerToggledEvent(),
+                                        );
                                       },
                                     ),
                                   ),
@@ -200,6 +229,24 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                   ),
                 ),
                 BlocBuilder<ConversationBloc, ConversationState>(
+                  buildWhen: (prev, next) => prev.stickerPickerVisible != next.stickerPickerVisible,
+                  builder: (context, state) => Offstage(
+                    offstage: !state.stickerPickerVisible,
+                    child: StickerPicker(
+                      width: MediaQuery.of(context).size.width,
+                      onStickerTapped: (sticker, pack) {
+                        context.read<ConversationBloc>().add(
+                          StickerSentEvent(
+                            pack.id,
+                            sticker.hashKey,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                BlocBuilder<ConversationBloc, ConversationState>(
                   buildWhen: (prev, next) => prev.emojiPickerVisible != next.emojiPickerVisible,
                   builder: (context, state) => Offstage(
                     offstage: !state.emojiPickerVisible,
@@ -258,15 +305,19 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
           ),
         ),
 
-        Positioned(
-          right: 8,
-          bottom: 8,
-          child: BlocBuilder<ConversationBloc, ConversationState>(
-            buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState ||
-              prev.isDragging != next.isDragging ||
-              prev.isLocked != next.isLocked,
-            builder: (context, state) {
-              return Visibility(
+        BlocBuilder<ConversationBloc, ConversationState>(
+          buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState ||
+            prev.isDragging != next.isDragging ||
+            prev.isLocked != next.isLocked ||
+            prev.emojiPickerVisible != next.emojiPickerVisible ||
+            prev.stickerPickerVisible != next.stickerPickerVisible,
+          builder: (context, state) {
+            return Positioned(
+              right: 8,
+              bottom: state.emojiPickerVisible || state.stickerPickerVisible ?
+                258 /* 8 (Regular padding) + 250 (Height of the pickers) */ :
+                8,
+              child: Visibility(
                 visible: !state.isDragging && !state.isLocked,
                 child: LongPressDraggable<int>(
                   data: 1,
@@ -316,25 +367,25 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       onPressed: () {
                         switch (state.sendButtonState) {
                           case SendButtonState.audio:
-                            Vibrate.feedback(FeedbackType.heavy);
-                            Fluttertoast.showToast(
-                              msg: t.warnings.conversation.holdForLonger,
-                              gravity: ToastGravity.SNACKBAR,
-                              toastLength: Toast.LENGTH_SHORT,
-                            );
-                            return;
+                          Vibrate.feedback(FeedbackType.heavy);
+                          Fluttertoast.showToast(
+                            msg: t.warnings.conversation.holdForLonger,
+                            gravity: ToastGravity.SNACKBAR,
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
+                          return;
                           case SendButtonState.cancelCorrection:
-                            context.read<ConversationBloc>().add(
-                              MessageEditCancelledEvent(),
-                            );
-                            widget.controller.text = '';
-                            return;
+                          context.read<ConversationBloc>().add(
+                            MessageEditCancelledEvent(),
+                          );
+                          widget.controller.text = '';
+                          return;
                           case SendButtonState.send:
-                            context.read<ConversationBloc>().add(
-                              MessageSentEvent(),
-                            );
-                            widget.controller.text = '';
-                            return;
+                          context.read<ConversationBloc>().add(
+                            MessageSentEvent(),
+                          );
+                          widget.controller.text = '';
+                          return;
                         }
                       },
                       child: Icon(
@@ -344,9 +395,9 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
 
         Positioned(

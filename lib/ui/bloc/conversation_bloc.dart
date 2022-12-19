@@ -64,6 +64,9 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<RecordingCanceledEvent>(_onRecordingCanceled);
     on<ReactionAddedEvent>(_onReactionAdded);
     on<ReactionRemovedEvent>(_onReactionRemoved);
+    on<StickerPickerToggledEvent>(_onStickerPickerToggled);
+    on<StickerSentEvent>(_onStickerSent);
+    on<SoftKeyboardVisibilityChanged>(_onSoftKeyboardVisibilityChanged);
 
     _audioRecorder = Record();
   }
@@ -237,6 +240,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         quotedMessage: null,
         sendButtonState: defaultSendButtonState,
         emojiPickerVisible: false,
+        stickerPickerVisible: false,
         messageEditing: false,
         messageEditingOriginalBody: '',
         messageEditingId: null,
@@ -373,7 +377,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onEmojiPickerToggled(EmojiPickerToggledEvent event, Emitter<ConversationState> emit) async {
     final newState = !state.emojiPickerVisible;
-    emit(state.copyWith(emojiPickerVisible: newState));
+    emit(
+      state.copyWith(
+        emojiPickerVisible: newState,
+        stickerPickerVisible: false,
+      ),
+    );
 
     if (event.handleKeyboard) {
       if (newState) {
@@ -452,6 +461,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         isDragging: true,
         isRecording: true,
+        emojiPickerVisible: false,
+        stickerPickerVisible: false,
       ),
     );
     
@@ -630,5 +641,44 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
       awaitable: false,
     );
+  }
+
+  Future<void> _onStickerPickerToggled(StickerPickerToggledEvent event, Emitter<ConversationState> emit) async {
+    await SystemChannels.textInput.invokeMethod('TextInput.hide');
+    emit(
+      state.copyWith(
+        stickerPickerVisible: !state.stickerPickerVisible,
+        emojiPickerVisible: false,
+      ),
+    );
+  }
+
+  Future<void> _onStickerSent(StickerSentEvent event, Emitter<ConversationState> emit) async {
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      SendStickerCommand(
+        stickerPackId: event.stickerPackId,
+        stickerHashKey: event.stickerHashKey,
+        recipient: state.conversation!.jid,
+      ),
+      awaitable: false,
+    );
+    
+    // Close the picker
+    emit(
+      state.copyWith(
+        stickerPickerVisible: false,
+      ),
+    );
+  }
+
+  Future<void> _onSoftKeyboardVisibilityChanged(SoftKeyboardVisibilityChanged event, Emitter<ConversationState> emit) async {
+    if (event.visible && (state.emojiPickerVisible || state.stickerPickerVisible)) {
+      emit(
+        state.copyWith(
+          emojiPickerVisible: false,
+          stickerPickerVisible: false,
+        ),
+      );
+    }
   }
 }

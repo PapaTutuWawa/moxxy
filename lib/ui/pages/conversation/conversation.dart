@@ -191,6 +191,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               end,
             ),
             highlight: bubble,
+            materialColor: item.isSticker ?
+              Colors.transparent :
+              null,
             children: [
               ...item.isReactable ? [
                 OverviewMenuItem(
@@ -392,21 +395,24 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       onWillPop: () async {
         // TODO(PapaTutuWawa): Check if we are recording an audio message and handle
         //                     that accordingly
-        if (_textfieldFocus.hasFocus) {
-          _textfieldFocus.unfocus();
-          return false;
-        }
-
         final bloc = GetIt.I.get<ConversationBloc>();
-
         if (bloc.state.isRecording) {
           // TODO(PapaTutuWawa): Show a dialog
           return true;
         } else if (bloc.state.emojiPickerVisible) {
           bloc.add(EmojiPickerToggledEvent(handleKeyboard: false));
+
+          return false;
+        } else if (bloc.state.stickerPickerVisible) {
+          bloc.add(StickerPickerToggledEvent());
+          if (_textfieldFocus.hasFocus) {
+            _textfieldFocus.unfocus();
+          }
+
           return false;
         } else {
           bloc.add(CurrentConversationResetEvent());
+
           return true;
         }
       },

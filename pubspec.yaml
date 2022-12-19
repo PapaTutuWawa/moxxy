@@ -33,6 +33,7 @@ dependencies:
   flutter_contacts: 1.1.5+1
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
+  flutter_keyboard_visibility: 5.4.0
   flutter_localizations:
     sdk: flutter
   flutter_parsed_text: 2.2.1
@@ -139,7 +140,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: 88efdc361c04711cb528bdc8b3a4022335fe4488
+      rev: d64220426bb70adf28628b9670330630914ddd47
       path: packages/moxxmpp
 
   omemo_dart:

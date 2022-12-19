@@ -5,12 +5,14 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/sticker.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/sticker.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
@@ -23,13 +25,18 @@ enum MessageType {
   image,
   video,
   audio,
-  file
+  file,
+  sticker
 }
 
 /// Deduce the type of message we are dealing with to pick the correct
 /// widget.
 MessageType getMessageType(Message message) {
   if (message.isMedia) {
+    if (message.stickerPackId != null) {
+      return MessageType.sticker;
+    }
+
     final mime = message.mediaType;
     if (mime == null) return MessageType.file;
 
@@ -68,12 +75,12 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
         topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!, sent) : null,
       );
     }
-    case MessageType.image: {
+    case MessageType.image:
       return ImageChatWidget(message, radius, maxWidth, sent);
-    }
-    case MessageType.video: {
+    case MessageType.video:
       return VideoChatWidget(message, radius, maxWidth, sent);
-    }
+    case MessageType.sticker:
+      return StickerChatWidget(message, radius, maxWidth, sent);
     case MessageType.audio:
       return AudioChatWidget(message, radius, maxWidth, sent);
     case MessageType.file: {
@@ -85,6 +92,8 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
 /// Build a widget that represents a quoted message within another bubble.
 Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? resetQuote}) {
   switch (getMessageType(message)) {
+    case MessageType.sticker:
+      return QuotedStickerWidget(message, sent, resetQuote: resetQuote);
     case MessageType.text:
       return QuoteBaseWidget(
         message,

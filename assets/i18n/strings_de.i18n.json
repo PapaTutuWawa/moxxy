@@ -32,6 +32,7 @@
 	"video": "Video",
 	"audio": "Audio",
 	"file": "Datei",
+	"sticker": "Sticker",
 	"retracted": "Die Nachricht wurde zurückgezogen",
 	"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht"
     },
@@ -166,10 +167,10 @@
 		"recreateOwnDeviceConfirmBody": "Das wird die kryptographische Identität dieses Geräts neu erstellen. Wenn Kontakte die kryptographische Indentität verifiziert haben, dann müssen diese es erneut tun. Fortfahren?"
 	    },
 	    "devices": {
-		"title": "Devices",
-		"recreateSessions": "Rebuild sessions",
-		"recreateSessionsConfirmTitle": "Rebuild sessions?",
-		"recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors."
+		"title": "Geräte",
+		"recreateSessions": "Sessions zurücksetzen",
+		"recreateSessionsConfirmTitle": "Sessions zurücksetzen?",
+		"recreateSessionsConfirmBody": "Dies wird alle Sessions mit Deinen Geräten neu erstellen. Tue dies nur, wenn deine Geräte Fehler beim Entschlüsseln erzeugen."
 	    }
 	},
 	"blocklist": {
@@ -184,6 +185,14 @@
 	"cropbackground": {
 	    "blur": "Hintergrund weichzeichnen",
 	    "setAsBackground": "Als Hintergrundbild festlegen"
+	},
+	"stickerPack": {
+	    "removeConfirmTitle": "Stickerpack entfernen",
+	    "removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?",
+	    "installConfirmTitle": "Stickerpack installieren",
+	    "installConfirmBody": "Bist Du Dir sicher, dass Du das Stickerpack installieren möchtest?",
+	    "restricted": "Dieses Stickerpack ist eingeschränkt. Das bedeutet, dass es im Chat angezeigt wird, jedoch nicht versendet werden kann.",
+	    "fetchingFailure": "Konnte das Stickerpack nicht finden"
 	},
 	"settings": {
 	    "settings": {
@@ -271,6 +280,17 @@
 		"urlEmpty": "URL kann nicht leer sein",
 		"urlInvalid": "Ungültige URL",
 		"redirectDialogTitle": "${serviceName}weiterleitung"
+	    },
+	    "stickers": {
+		"title": "Stickers",
+		"stickerSection": "Sticker",
+		"displayStickers": "Sticker im Chat anzeigen",
+		"autoDownload": "Sticker automatisch herunterladen",
+		"autoDownloadBody": "Wenn aktiviert, dann werden Sticker automatisch heruntergeladen, wenn der Sender in der Kontaktliste ist.",
+		"stickerPacksSection": "Stickerpacks",
+		"importStickerPack": "Stickerpack importieren",
+		"importSuccess": "Stickerpack erfolgreich importiert",
+		"importFailure": "Beim Import des Stickerpacks ist ein Fehler aufgetreten"
 	    }
 	}
     }

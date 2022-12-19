@@ -27,6 +27,8 @@ import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
+import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/events.dart';
 /*
@@ -55,9 +57,11 @@ import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/privacy.dart';
 import 'package:moxxyv2/ui/pages/settings/settings.dart';
+import 'package:moxxyv2/ui/pages/settings/stickers.dart';
 import 'package:moxxyv2/ui/pages/share_selection.dart';
 import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
+import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
@@ -95,6 +99,8 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ServerInfoBloc>(ServerInfoBloc());
   GetIt.I.registerSingleton<DevicesBloc>(DevicesBloc());
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
+  GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
+  GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
 }
 
 // TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
@@ -164,6 +170,12 @@ void main() async {
         ),
         BlocProvider<OwnDevicesBloc>(
           create: (_) => GetIt.I.get<OwnDevicesBloc>(),
+        ),
+        BlocProvider<StickersBloc>(
+          create: (_) => GetIt.I.get<StickersBloc>(),
+        ),
+        BlocProvider<StickerPackBloc>(
+          create: (_) => GetIt.I.get<StickerPackBloc>(),
         ),
       ],
       child: TranslationProvider(
@@ -303,6 +315,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case qrCodeScannerRoute: return QrCodeScanningPage.getRoute(
             settings.arguments! as QrCodeScanningArguments,
           );
+          case stickersRoute: return StickersSettingsPage.route;
+          case stickerPackRoute: return StickerPackPage.route;
         }
 
         return null;

@@ -103,6 +103,12 @@ class EmojiPickerToggledEvent extends ConversationEvent {
   final bool handleKeyboard;
 }
 
+/// Triggered when the sticker button is pressed
+class StickerPickerToggledEvent extends ConversationEvent {
+  StickerPickerToggledEvent({this.handleKeyboard = true});
+  final bool handleKeyboard;
+}
+
 /// Triggered when we received our own JID
 class OwnJidReceivedEvent extends ConversationEvent {
   OwnJidReceivedEvent(this.jid);
@@ -159,4 +165,17 @@ class ReactionRemovedEvent extends ConversationEvent {
   ReactionRemovedEvent(this.emoji, this.index);
   final String emoji;
   final int index;
+}
+
+/// Triggered when a sticker has been sent
+class StickerSentEvent extends ConversationEvent {
+  StickerSentEvent(this.stickerPackId, this.stickerHashKey);
+  final String stickerPackId;
+  final String stickerHashKey;
+}
+
+/// Triggered when the softkeyboard's visibility changed
+class SoftKeyboardVisibilityChanged extends ConversationEvent {
+  SoftKeyboardVisibilityChanged(this.visible);
+  final bool visible;
 }

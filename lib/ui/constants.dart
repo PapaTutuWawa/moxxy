@@ -23,6 +23,8 @@ const Color bubbleColorReceived = Color(0xff222222);
 const Color bubbleColorReceivedQuoted = bubbleColorReceived;
 const Color bubbleColorUnencrypted = Color(0xffd40000);
 
+const Color settingsSectionTitleColor = Color(0xffb72fe7);
+
 const double paddingVeryLarge = 64;
 
 const Color tileColorDark = Color(0xff5c5c5c);
@@ -61,9 +63,11 @@ const String networkRoute = '$settingsRoute/network';
 const String backgroundCroppingRoute = '$settingsRoute/appearance/background';
 const String conversationSettingsRoute = '$settingsRoute/conversation';
 const String appearanceRoute = '$settingsRoute/appearance';
+const String stickersRoute = '$settingsRoute/stickers';
 const String blocklistRoute = '/blocklist';
 const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';
 const String devicesRoute = '$profileRoute/devices';
 const String ownDevicesRoute = '$profileRoute/own_devices';
 const String qrCodeScannerRoute = '/util/qr_code_scanner';
+const String stickerPackRoute = '/stickers/sticker_pack';

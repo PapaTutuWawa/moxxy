@@ -2,11 +2,15 @@ import 'dart:async';
 import 'dart:io';
 import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/sticker.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -14,6 +18,7 @@ import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationsListRow extends StatefulWidget {
   const ConversationsListRow(
@@ -121,9 +126,34 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     );
   }
 
-  Widget _buildLastMessagePreview() {
+  Widget _buildLastMessagePreview(StickersState state) {
     Widget? preview;
-    if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
+    if (widget.conversation.lastMessage!.stickerPackId != null) {
+      Sticker? sticker;
+      if (widget.conversation.lastMessage!.stickerPackId != null &&
+          widget.conversation.lastMessage!.stickerHashKey != null &&
+          GetIt.I.get<PreferencesBloc>().state.enableStickers) {
+        final stickerKey = StickerKey(
+          widget.conversation.lastMessage!.stickerPackId!,
+          widget.conversation.lastMessage!.stickerHashKey!,
+        );
+
+        sticker = state.stickerMap[stickerKey];
+      }
+
+      if (sticker != null) {
+        preview = SharedImageWidget(
+          sticker.path,
+          borderRadius: 5,
+          size: 30,
+        );
+      } else {
+        preview = const Icon(
+          PhosphorIcons.stickerBold,
+          size: 30,
+        );
+      }
+    } else if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
       preview = SharedImageWidget(
         widget.conversation.lastMessage!.mediaUrl!,
         borderRadius: 5,
@@ -160,7 +190,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       } else if (lastMessage.isMedia) {
         // If the file is thumbnailable, we display a small preview on the left of the
         // body, so we don't need the emoji then.
-        if (lastMessage.isThumbnailable) {
+        if (lastMessage.stickerPackId != null) {
+          body = t.messages.sticker;
+        } else if (lastMessage.isThumbnailable) {
           body = mimeTypeToName(lastMessage.mediaType);
         } else {
           body = mimeTypeToEmoji(lastMessage.mediaType);
@@ -283,7 +315,11 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                         ...widget.conversation.lastMessage?.isThumbnailable == true && !widget.conversation.isTyping ? [
                           Padding(
                             padding: const EdgeInsets.only(right: 5),
-                            child: _buildLastMessagePreview(),
+                            child: BlocBuilder<StickersBloc, StickersState>(
+                              buildWhen: (prev, next) => prev.stickerPacks.length != next.stickerPacks.length &&
+                                widget.conversation.lastMessage?.stickerPackId != null,
+                              builder: (_, state) => _buildLastMessagePreview(state),
+                            ),
                           ),
                         ] : [
                           const SizedBox(height: 30),

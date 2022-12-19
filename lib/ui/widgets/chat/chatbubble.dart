@@ -40,20 +40,21 @@ class RawChatBubble extends StatelessWidget {
       bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
     );
   }
-
-  /// Returns true if the mime type has a special widget which replaces the bubble.
-  /// False otherwise.
-  bool _isInlinedWidget() {
-    if (message.mediaType != null) {
-      return message.mediaType!.startsWith('image/');
-    }
-
-    return false;
-  }
   
   /// Specified when the message bubble should not have color
   bool _shouldNotColorBubble() {
-    return message.isMedia && message.mediaUrl != null && _isInlinedWidget();
+    var isInlinedWidget = false;
+    if (message.mediaType != null) {
+      isInlinedWidget = message.mediaType!.startsWith('image/');
+    }
+
+    // Check if it is an embedded file
+    if (message.isMedia && message.mediaUrl != null && isInlinedWidget) {
+      return true;
+    }
+
+    // Stickers are also not colored
+    return message.stickerPackId != null && message.stickerHashKey != null;
   }
 
   Color? _getBubbleColor(BuildContext context) {

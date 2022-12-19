@@ -12,6 +12,8 @@ const omemoTrustEnableListTable = 'OmemoTrustEnableList';
 const omemoFingerprintCache = 'OmemoFingerprintCache';
 const xmppStateTable = 'XmppState';
 const contactsTable = 'Contacts';
+const stickersTable = 'Stickers';
+const stickerPacksTable = 'StickerPacks';
 
 const typeString = 0;
 const typeInt = 1;

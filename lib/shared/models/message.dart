@@ -12,7 +12,7 @@ part 'message.g.dart';
 Map<String, String>? _optionalJsonDecode(String? data) {
   if (data == null) return null;
 
-  return jsonDecode(data) as Map<String, String>;
+  return (jsonDecode(data) as Map<dynamic, dynamic>).cast<String, String>();
 }
 
 String? _optionalJsonEncode(Map<String, String>? data) {
@@ -64,6 +64,8 @@ class Message with _$Message {
       Map<String, String>? ciphertextHashes,
       int? mediaSize,
       @Default([]) List<Reaction> reactions,
+      String? stickerPackId,
+      String? stickerHashKey,
     }
   ) = _Message;
 
@@ -181,4 +183,7 @@ class Message with _$Message {
 
   /// Returns true if the message can be copied to the clipboard.
   bool get isCopyable => !isMedia && body.isNotEmpty;
+
+  /// Returns true if the message is a sticker
+  bool get isSticker => isMedia && stickerPackId != null && stickerHashKey != null;
 }
