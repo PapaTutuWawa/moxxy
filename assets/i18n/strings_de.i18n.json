@@ -167,10 +167,10 @@
 		"recreateOwnDeviceConfirmBody": "Das wird die kryptographische Identität dieses Geräts neu erstellen. Wenn Kontakte die kryptographische Indentität verifiziert haben, dann müssen diese es erneut tun. Fortfahren?"
 	    },
 	    "devices": {
-		"title": "Devices",
-		"recreateSessions": "Rebuild sessions",
-		"recreateSessionsConfirmTitle": "Rebuild sessions?",
-		"recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors."
+		"title": "Geräte",
+		"recreateSessions": "Sessions zurücksetzen",
+		"recreateSessionsConfirmTitle": "Sessions zurücksetzen?",
+		"recreateSessionsConfirmBody": "Dies wird alle Sessions mit Deinen Geräten neu erstellen. Tue dies nur, wenn deine Geräte Fehler beim Entschlüsseln erzeugen."
 	    }
 	},
 	"blocklist": {
@@ -191,7 +191,7 @@
 	    "removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?",
 	    "installConfirmTitle": "Stickerpack installieren",
 	    "installConfirmBody": "Bist Du Dir sicher, dass Du das Stickerpack installieren möchtest?",
-	    "restricted": "Dieses Stickerpack is eingeschränkt. Das bedeutet, dass es im Chat angezeigt wird, jedoch nicht versendet werden kann."
+	    "restricted": "Dieses Stickerpack ist eingeschränkt. Das bedeutet, dass es im Chat angezeigt wird, jedoch nicht versendet werden kann."
 	},
 	"settings": {
 	    "settings": {
