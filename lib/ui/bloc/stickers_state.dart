@@ -20,5 +20,6 @@ class StickersState with _$StickersState {
   factory StickersState({
     @Default([]) List<StickerPack> stickerPacks,
     @Default({}) Map<StickerKey, Sticker> stickerMap,
+    @Default(false) bool isImportRunning,
   }) = _StickersState;
 }

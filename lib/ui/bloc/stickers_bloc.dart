@@ -75,6 +75,12 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     final file = await FilePicker.platform.pickFiles();
     if (file == null) return;
 
+    emit(
+      state.copyWith(
+        isImportRunning: true,
+      ),
+    );
+    
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       ImportStickerPackCommand(
         path: file.files.single.path!,
@@ -93,6 +99,13 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
             result.stickerPack,
           ]),
           stickerMap: sm,
+          isImportRunning: false,
+        ),
+      );
+    } else {
+      emit(
+        state.copyWith(
+          isImportRunning: false,
         ),
       );
     }
