@@ -4,6 +4,7 @@ import 'package:cryptography/cryptography.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
@@ -252,14 +253,22 @@ void showQrCode(BuildContext context, String data, { bool embedLogo = true }) {
 int isVerificationUriValid(List<OmemoDevice> devices, Uri scannedUri, String deviceJid, int deviceId) {
   if (scannedUri.queryParameters.isEmpty) {
     // No query parameters
-    // TODO(PapaTutuWawa): Show a toast
+    Fluttertoast.showToast(
+      msg: t.errors.omemo.verificationInvalidOmemoUrl,
+      gravity: ToastGravity.SNACKBAR,
+      toastLength: Toast.LENGTH_SHORT,
+    );
     return -1;
   }
 
   final jid = scannedUri.path;
   if (deviceJid != jid) {
     // The Jid is wrong
-    // TODO(PapaTutuWawa): Show a toast
+    Fluttertoast.showToast(
+      msg: t.errors.omemo.verificationWrongJid,
+      gravity: ToastGravity.SNACKBAR,
+      toastLength: Toast.LENGTH_SHORT,
+    );
     return -1;
   }
 
@@ -272,21 +281,33 @@ int isVerificationUriValid(List<OmemoDevice> devices, Uri scannedUri, String dev
 
   if (id != deviceId) {
     // The scanned device has the wrong Id
-    // TODO(PapaTutuWawa): Show a toast
+    Fluttertoast.showToast(
+      msg: t.errors.omemo.verificationWrongDevice,
+      gravity: ToastGravity.SNACKBAR,
+      toastLength: Toast.LENGTH_SHORT,
+    );
     return -1;
   }
 
   final index = devices.indexWhere((device) => device.deviceId == deviceId);
   if (index == -1) {
     // The device is not in the list
-    // TODO(PapaTutuWawa): Show a toast
+    Fluttertoast.showToast(
+      msg: t.errors.omemo.verificationNotInList,
+      gravity: ToastGravity.SNACKBAR,
+      toastLength: Toast.LENGTH_SHORT,
+    );
     return -1;
   }
 
   final device = devices[index];
   if (device.fingerprint != fp) {
     // The fingerprint is not what we expected
-    // TODO(PapaTutuWawa): Show a toast
+    Fluttertoast.showToast(
+      msg: t.errors.omemo.verificationWrongFingerprint,
+      gravity: ToastGravity.SNACKBAR,
+      toastLength: Toast.LENGTH_SHORT,
+    );
     return -1;
   }
 

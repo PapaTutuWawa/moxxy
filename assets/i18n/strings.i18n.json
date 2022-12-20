@@ -42,7 +42,13 @@
 	    "notEncryptedForDevice": "This message was not encrypted for this device",
 	    "invalidHmac": "Could not decrypt message",
 	    "noDecryptionKey": "No decryption key available",
-	    "messageInvalidAfixElement": "Invalid encrypted message"
+	    "messageInvalidAfixElement": "Invalid encrypted message",
+
+	    "verificationInvalidOmemoUrl": "Invalid OMEMO:2 fingerprint",
+	    "verificationWrongJid": "Wrong XMPP-address",
+	    "verificationWrongDevice": "Wrong OMEMO:2 device",
+	    "verificationNotInList": "Wrong OMEMO:2 device",
+	    "verificationWrongFingerprint": "Wrong OMEMO:2 fingerprint"
 	},
 	"connection": {
 	    "connectionTimeout": "Could not connect to server"

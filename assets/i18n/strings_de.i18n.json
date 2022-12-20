@@ -42,7 +42,13 @@
 	    "notEncryptedForDevice": "Die Nachricht wurde nicht für dieses Gerät verschlüsselt",
 	    "invalidHmac": "Die Nachricht konnte nicht entschlüsselt werden",
 	    "noDecryptionKey": "Kein Schlüssel zum Entschlüsseln vorhanden",
-	    "messageInvalidAfixElement": "Ungültige verschlüsselte Nachricht"
+	    "messageInvalidAfixElement": "Ungültige verschlüsselte Nachricht",
+
+	    "verificationInvalidOmemoUrl": "Ungültiger OMEMO:2 Fingerabdruck",
+	    "verificationWrongJid": "Falsche XMPP-Addresse",
+	    "verificationWrongDevice": "Falsches OMEMO:2 Gerät",
+	    "verificationNotInList": "OMEMO:2 Gerät unbekannt",
+	    "verificationWrongFingerprint": "Falscher OMEMO:2 Fingerabdruck"
 	},
 	"connection": {
 	    "connectionTimeout": "Verbindung zum Server nicht möglich"
