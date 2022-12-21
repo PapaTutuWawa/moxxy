@@ -341,7 +341,7 @@ class OmemoService {
     );
     final bareJid = ownJid.toBare().toString();
 
-    // Get finger prints if we have to
+    // Get fingerprints if we have to
     await _loadOrFetchFingerprints(ownJid);
     
     _fingerprintCache[bareJid]!.forEach((deviceId, fingerprint) {

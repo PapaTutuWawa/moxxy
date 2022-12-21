@@ -5,9 +5,10 @@ import 'package:moxxyv2/ui/constants.dart';
 String _formatHalfFingerprint(String half) {
   final p1 = half.substring(0, 8);
   final p2 = half.substring(8, 16);
-  final p3 = half.substring(16, 32);
+  final p3 = half.substring(16, 24);
+  final p4 = half.substring(24, 32);
 
-  return '$p1 $p2 $p3';
+  return '$p1 $p2 $p3 $p4';
 }
 
 class FingerprintListItem extends StatelessWidget {
@@ -56,6 +57,7 @@ class FingerprintListItem extends StatelessWidget {
                   fontFamily: 'RobotoMono',
                   fontSize: fontSize,
                 ),
+                textAlign: TextAlign.center,
                 maxLines: 1,
               ),
               AutoSizeText(
@@ -64,6 +66,7 @@ class FingerprintListItem extends StatelessWidget {
                   fontFamily: 'RobotoMono',
                   fontSize: fontSize,
                 ),
+                textAlign: TextAlign.center,
                 maxLines: 1,
               ),
 
