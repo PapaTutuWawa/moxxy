@@ -264,6 +264,7 @@
 		"automaticDownloadsText": "Moxxy läd Dateien automatisch herunter, wenn verbunden mit...",
 		"automaticDownloadsMaximumSize": "Maximale Downloadgröße",
 		"automaticDownloadsMaximumSizeSubtext": "Die maximale Dateigröße, die automatisch heruntergeladen werden soll",
+		"automaticDownloadAlways": "Immer",
 		"wifi": "Wifi",
 		"mobileData": "Mobile Daten"
 	    },

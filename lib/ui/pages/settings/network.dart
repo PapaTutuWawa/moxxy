@@ -8,7 +8,6 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:settings_ui/settings_ui.dart';
 
 class _AutoDownloadSizes {
-
   const _AutoDownloadSizes(this.text, this.value);
   final int value;
   final String text;
@@ -19,8 +18,73 @@ const _autoDownloadSizes = <_AutoDownloadSizes>[
   _AutoDownloadSizes('5MB', 5),
   _AutoDownloadSizes('15MB', 15),
   _AutoDownloadSizes('100MB', 100),
-  _AutoDownloadSizes('Always', -1),
+  _AutoDownloadSizes('', -1),
 ];
+
+class AutoDownloadSizeDialog extends StatefulWidget {
+  const AutoDownloadSizeDialog({
+    required this.selectedValueInitial,
+    super.key,
+  });
+  final int selectedValueInitial;
+
+  @override
+  AutoDownloadSizeDialogState createState() => AutoDownloadSizeDialogState();
+}
+
+class AutoDownloadSizeDialogState extends State<AutoDownloadSizeDialog> {
+  int selection = -1;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selection = widget.selectedValueInitial;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 32,
+        vertical: 12,
+      ),
+      content: SingleChildScrollView(
+        child: Table(
+          defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+          children: _autoDownloadSizes
+            .map((size) => TableRow(
+              children: [
+                Text(
+                  size.value == -1 ?
+                    t.pages.settings.network.automaticDownloadAlways :
+                    size.text,
+                ),
+                Checkbox(
+                  value: size.value == selection,
+                  onChanged: (value) {
+                    if (size.value == selection) return;
+
+                    setState(() => selection = size.value);
+                  },
+                ),
+              ],
+            ),).toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(selection),
+          child: Text(t.global.dialogAccept),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(t.global.dialogCancel),
+        ),
+      ],
+    );
+  }
+}
 
 class NetworkPage extends StatelessWidget {
   const NetworkPage({ super.key });
@@ -31,38 +95,6 @@ class NetworkPage extends StatelessWidget {
       name: networkRoute,
     ),
   );
-  
-  Widget _buildFileSizeListItem(BuildContext context, String text, int value, bool selected) {
-    final textTheme = Theme.of(context).textTheme.subtitle2;
-    return TextButton(
-      onPressed: () {
-        Navigator.of(context).pop();
-
-        final bloc = context.read<PreferencesBloc>();
-        bloc.add(
-          PreferencesChangedEvent(
-            bloc.state.copyWith(maximumAutoDownloadSize: value),
-          ),
-        );
-      },
-      child: selected
-        ? IntrinsicWidth(
-            child: Row(
-              children: [
-                Text(text, style: textTheme),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.check,
-                    color: textTheme!.color,
-                  ),
-                ) 
-              ],
-            ),
-          )
-        : Text(text, style: textTheme),
-    );
-  }
   
   @override
   Widget build(BuildContext context) {
@@ -98,24 +130,22 @@ class NetworkPage extends StatelessWidget {
                 SettingsTile(
                   title: Text(t.pages.settings.network.automaticDownloadsMaximumSize),
                   description: Text(t.pages.settings.network.automaticDownloadsMaximumSizeSubtext),
-                  onPressed: (context) {
-                    showModalBottomSheet<dynamic>(
+                  onPressed: (context) async {
+                    final result = await showDialog<int>(
                       context: context,
-                      builder: (BuildContext context) {
-                        return Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: _autoDownloadSizes.length,
-                            itemBuilder: (BuildContext context, int index) => _buildFileSizeListItem(
-                              context,
-                              _autoDownloadSizes[index].text,
-                              _autoDownloadSizes[index].value,
-                              _autoDownloadSizes[index].value == state.maximumAutoDownloadSize,
-                            ),
-                          ),
-                        );
-                      },
+                      barrierDismissible: false,
+                      builder: (context) => AutoDownloadSizeDialog(
+                        selectedValueInitial: state.maximumAutoDownloadSize,
+                      ),
+                    );
+                    if (result == null) return;
+                    if (state.maximumAutoDownloadSize == result) return;
+
+                    // ignore: use_build_context_synchronously
+                    context.read<PreferencesBloc>().add(
+                      PreferencesChangedEvent(
+                        state.copyWith(maximumAutoDownloadSize: result),
+                      ),
                     );
                   },
                 ),
