@@ -93,8 +93,8 @@ class RawChatBubble extends StatelessWidget {
         child: Padding(
           // NOTE: Images don't work well with padding here
           padding: message.isMedia || message.quotes != null ?
-          EdgeInsets.zero :
-          const EdgeInsets.all(8),
+            EdgeInsets.zero :
+            const EdgeInsets.all(8),
           child: buildMessageWidget(
             message,
             maxWidth,

@@ -41,7 +41,7 @@ class FileChatBaseWidget extends StatelessWidget {
       width: maxWidth,
       child: MediaBaseChatWidget(
         Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(16),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -135,20 +135,11 @@ class FileChatWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildWrapper() {
+  @override
+  Widget build(BuildContext context) {
     if (!message.isDownloading && message.mediaUrl != null) return _buildInner();
     if (message.isFileUploadNotification || message.isDownloading) return _buildDownloading();
 
     return _buildNonDownloaded();
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: _buildWrapper(),
-      ),
-    );
   }
 }

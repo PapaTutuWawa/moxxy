@@ -33,8 +33,13 @@ class MediaBaseChatWidget extends StatelessWidget {
           borderRadius: radius,
           child: background,
         ),
-        ...gradient ? [BottomGradient(radius)] : [],
-        ...extra != null ? [ extra! ] : [],
+
+        if (gradient)
+          BottomGradient(radius),
+
+        if (extra != null)
+          extra!,
+
         Positioned(
           bottom: 0,
           left: 0,
@@ -47,17 +52,13 @@ class MediaBaseChatWidget extends StatelessWidget {
       ],
     );
 
-    if (onTap != null) {
-      return IntrinsicWidth(
-        child: InkWell(
+    return IntrinsicWidth(
+      child: onTap != null ?
+        InkWell(
           onTap: onTap,
           child: content,
-        ),
-      );
-    } else {
-      return IntrinsicWidth(
-        child: content,
-      );
-    }
+        ) :
+        content,
+    );
   }
 }
