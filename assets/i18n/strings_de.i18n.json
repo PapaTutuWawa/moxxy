@@ -160,7 +160,8 @@
 	    "conversation": {
 		"notifications": "Benachrichtigungen",
 		"notificationsMuted": "Stumm",
-		"notificationsEnabled": "Eingeschaltet"
+		"notificationsEnabled": "Eingeschaltet",
+		"sharedMedia": "Medien"
 	    },
 	    "owndevices": {
 		"title": "Eigene Geräte",

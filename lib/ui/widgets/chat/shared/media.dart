@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/summary.dart';
@@ -36,14 +37,17 @@ class SharedMediaDisplay extends StatelessWidget {
     final padding = 0.5 * (width - 15 - 300);
     
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 25),
+        Padding(
+          padding: EdgeInsets.only(
+            top: 25,
+            left: padding,
+            right: padding,
+          ),
           child: Text(
-            'Shared Media',
-            style: TextStyle(
-              fontSize: 25,
-            ),
+            t.pages.profile.conversation.sharedMedia,
+            style: Theme.of(context).textTheme.headline5,
           ),
         ),
         Padding(

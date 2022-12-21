@@ -48,14 +48,11 @@ class ProfilePage extends StatelessWidget {
                     child: _buildHeader(context, state),
                   ),
 
-                  // TODO(Unknown): Maybe don't show this conditionally but always
-                  Visibility(
-                    visible: !state.isSelfProfile && state.conversation!.sharedMedia.isNotEmpty,
-                    child: state.isSelfProfile ? const SizedBox() : SharedMediaDisplay(
+                  if (!state.isSelfProfile && state.conversation!.sharedMedia.isNotEmpty)
+                    SharedMediaDisplay(
                       state.conversation!.sharedMedia,
                       state.conversation!.jid,
                     ),
-                  )
                 ],
               ),
               Positioned(
