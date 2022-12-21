@@ -276,6 +276,8 @@ class OmemoService {
     final keys = List<OmemoDevice>.empty(growable: true);
     final tm = omemoState.trustManager as BlindTrustBeforeVerificationTrustManager;
     final trustMap = await tm.getDevicesTrust(jid);
+
+    if (!_fingerprintCache.containsKey(jid)) return [];
     for (final deviceId in _fingerprintCache[jid]!.keys) {
       keys.add(
         OmemoDevice(
@@ -343,20 +345,25 @@ class OmemoService {
 
     // Get fingerprints if we have to
     await _loadOrFetchFingerprints(ownJid);
+
+    final tm = omemoState.trustManager as BlindTrustBeforeVerificationTrustManager;
+    final trustMap = await tm.getDevicesTrust(bareJid);
     
-    _fingerprintCache[bareJid]!.forEach((deviceId, fingerprint) {
-      if (deviceId == ownId) return;
+    for (final deviceId in _fingerprintCache[bareJid]!.keys) {
+      if (deviceId == ownId) continue;
+
+      final fingerprint = _fingerprintCache[bareJid]![deviceId]!;
       keys.add(
         OmemoDevice(
           fingerprint,
-          false,
-          false,
-          false,
+          await tm.isTrusted(bareJid, deviceId),
+          trustMap[deviceId] == BTBVTrustState.verified,
+          await tm.isEnabled(bareJid, deviceId),
           deviceId,
           hasSessionWith: false,
         ),
       );
-    });
+    }
 
     return keys;
   }
