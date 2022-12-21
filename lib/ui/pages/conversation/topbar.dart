@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -79,6 +78,16 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
   bool _isChatStateVisible(ChatState state) {
     return state != ChatState.inactive && state != ChatState.gone;
   }
+
+  /// Summon the profile page of the currently open conversation
+  void _openProfile(BuildContext context, ConversationState state) {
+    context.read<profile.ProfileBloc>().add(
+      profile.ProfilePageRequestedEvent(
+        false,
+        conversation: state.conversation,
+      ),
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -96,27 +105,25 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                   direction: Axis.horizontal,
                   children: [
                     const BackButton(),
-                    Hero(
-                      tag: 'conversation_profile_picture',
-                      child: Material(
-                        color: const Color.fromRGBO(0, 0, 0, 0),
-                        child: RebuildOnContactIntegrationChange(
-                          builder: () => AvatarWrapper(
-                            radius: 25,
-                            avatarUrl: state.conversation!.avatarPathWithOptionalContact,
-                            altText: state.conversation!.titleWithOptionalContact,
+                    InkWell(
+                      onTap: () => _openProfile(context, state),
+                      child: Hero(
+                        tag: 'conversation_profile_picture',
+                        child: Material(
+                          color: Colors.transparent,
+                          child: RebuildOnContactIntegrationChange(
+                            builder: () => AvatarWrapper(
+                              radius: 25,
+                              avatarUrl: state.conversation!.avatarPathWithOptionalContact,
+                              altText: state.conversation!.titleWithOptionalContact,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () => GetIt.I.get<profile.ProfileBloc>().add(
-                          profile.ProfilePageRequestedEvent(
-                            false,
-                            conversation: context.read<ConversationBloc>().state.conversation,
-                          ),
-                        ),
+                        onTap: () => _openProfile(context, state),
                         child: Stack(
                           children: [
                             AnimatedPositioned(
