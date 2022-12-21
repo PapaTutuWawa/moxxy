@@ -1,5 +1,14 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
+
+String _formatHalfFingerprint(String half) {
+  final p1 = half.substring(0, 8);
+  final p2 = half.substring(8, 16);
+  final p3 = half.substring(16, 32);
+
+  return '$p1 $p2 $p3';
+}
 
 class FingerprintListItem extends StatelessWidget {
   const FingerprintListItem(
@@ -26,14 +35,8 @@ class FingerprintListItem extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    final parts = List<String>.empty(growable: true);
-    for (var i = 0; i < 8; i++) {
-      final part = fingerprint.substring(i*8, (i+1)*8);
-      parts.add(part);
-    }
-
     final width = MediaQuery.of(context).size.width;
-    final fontSize = width * 0.04;
+    final fontSize = width * 0.1;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Card(
@@ -47,17 +50,23 @@ class FingerprintListItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Wrap(
-                spacing: 6,
-                children: parts
-                .map((part_) => Text(
-                  part_,
-                  style: TextStyle(
-                    fontFamily: 'RobotoMono',
-                    fontSize: fontSize,
-                  ),
-                ),).toList(),
+              AutoSizeText(
+                _formatHalfFingerprint(fingerprint.substring(0, 32)),
+                style: TextStyle(
+                  fontFamily: 'RobotoMono',
+                  fontSize: fontSize,
+                ),
+                maxLines: 1,
               ),
+              AutoSizeText(
+                _formatHalfFingerprint(fingerprint.substring(32)),
+                style: TextStyle(
+                  fontFamily: 'RobotoMono',
+                  fontSize: fontSize,
+                ),
+                maxLines: 1,
+              ),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
