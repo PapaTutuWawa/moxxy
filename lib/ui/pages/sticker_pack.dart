@@ -124,13 +124,8 @@ class StickerPackPage extends StatelessWidget {
     }
 
     return SharedMediaContainer(
-      ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: ColoredBox(
-          color: color,
-          child: child,
-        ),
-      ),
+      child,
+      color: color,
       onTap: () {
         if (state.stickerPack!.local) {
           _onDeletePressed(context, state);

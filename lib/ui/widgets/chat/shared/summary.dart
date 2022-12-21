@@ -11,20 +11,15 @@ class SharedSummaryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final number = min(notShown, 99);
     return SharedMediaContainer(
-      ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: ColoredBox(
-          color: Colors.black38,
-          child: Center(
-            child: Text(
-              '+$number',
-              style: const TextStyle(
-                fontSize: 30,
-              ),
-            ),
+      Center(
+        child: Text(
+          '+$number',
+          style: const TextStyle(
+            fontSize: 30,
           ),
         ),
       ),
+      color: sharedMediaSummaryBackgroundColor,
       onTap: () => Navigator.of(context).pushNamed(sharedMediaRoute),
     );
   }

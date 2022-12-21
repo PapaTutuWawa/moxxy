@@ -95,18 +95,13 @@ class ConversationProfileHeader extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SharedMediaContainer(
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: ColoredBox(
-                          color: getTileColor(context),
-                          child: Icon(
-                            conversation.muted ?
-                            Icons.do_not_disturb_on :
-                            Icons.do_not_disturb_off,
-                            size: 32,
-                          ),
-                        ),
+                      Icon(
+                        conversation.muted ?
+                          Icons.do_not_disturb_on :
+                          Icons.do_not_disturb_off,
+                        size: 32,
                       ),
+                      color: getTileColor(context),
                       onTap: () {
                         GetIt.I.get<ProfileBloc>().add(
                           MuteStateSetEvent(
@@ -134,16 +129,11 @@ class ConversationProfileHeader extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     SharedMediaContainer(
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: ColoredBox(
-                          color: getTileColor(context),
-                          child: const Icon(
-                            Icons.security_outlined,
-                            size: 32,
-                          ),
-                        ),
+                      const Icon(
+                        Icons.security_outlined,
+                        size: 32,
                       ),
+                      color: getTileColor(context),
                       onTap: () {
                         GetIt.I.get<DevicesBloc>().add(DevicesRequestedEvent(conversation.jid));
                       },

@@ -90,16 +90,11 @@ class SelfProfileHeader extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     SharedMediaContainer(
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: ColoredBox(
-                          color: getTileColor(context),
-                          child: const Icon(
-                            Icons.security_outlined,
-                            size: 32,
-                          ),
-                        ),
+                      const Icon(
+                        Icons.security_outlined,
+                        size: 32,
                       ),
+                      color: getTileColor(context),
                       onTap: () {
                         GetIt.I.get<OwnDevicesBloc>().add(OwnDevicesRequestedEvent());
                       },

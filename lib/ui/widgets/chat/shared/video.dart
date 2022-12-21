@@ -37,6 +37,8 @@ class SharedVideoWidget extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(borderRadius), 
       ),
+      borderRadius: borderRadius,
+      color: Colors.transparent,
       size: size,
       onTap: onTap,
     );

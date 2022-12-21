@@ -38,6 +38,8 @@ class SharedImageWidget extends StatelessWidget {
         clipBehavior: Clip.hardEdge,
         child: child,
       ),
+      borderRadius: borderRadius,
+      color: Colors.transparent,
       size: size,
       onTap: onTap,
     );

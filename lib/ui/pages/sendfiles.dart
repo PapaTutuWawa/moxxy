@@ -101,6 +101,7 @@ class SendFilesPage extends StatelessWidget {
               ? const Icon(Icons.delete, size: 32)
               : const Icon(Icons.file_present),
           ),
+          color: sharedMediaItemBackgroundColor,
           onTap: () {
             if (selected) {
               // The trash can icon has been tapped
@@ -199,14 +200,11 @@ class SendFilesPage extends StatelessWidget {
                             return _renderPreview(context, item, index == state.index, index);
                           } else {
                             return SharedMediaContainer(
-                              DecoratedBox(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Colors.grey,
-                                ),
-                                child: const Icon(Icons.attach_file),
+                              const Icon(Icons.attach_file),
+                              color: sharedMediaItemBackgroundColor,
+                              onTap: () => context.read<SendFilesBloc>().add(
+                                AddFilesRequestedEvent(),
                               ),
-                              onTap: () => context.read<SendFilesBloc>().add(AddFilesRequestedEvent()),
                             );
                           }
                         },

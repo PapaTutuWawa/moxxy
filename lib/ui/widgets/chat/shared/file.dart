@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class SharedFileWidget extends StatelessWidget {
@@ -18,16 +19,12 @@ class SharedFileWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SharedMediaContainer(
-      DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          color: Colors.white60,
-        ),
-        child: Icon(
-          Icons.file_present,
-          size: size * 2/3,
-        ),
+      Icon(
+        Icons.file_present,
+        size: size * 2/3,
       ),
+      color: sharedMediaItemBackgroundColor,
+      borderRadius: borderRadius,
       size: size,
       onTap: onTap,
     );

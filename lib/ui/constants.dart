@@ -37,6 +37,11 @@ const double fontsizeBody = 15;
 const double fontsizeBodyOnlyEmojis = 30;
 const double fontsizeSubbody = 10;
 
+// The color for a shared media item
+final Color sharedMediaItemBackgroundColor = Colors.grey.shade500;
+// The color for a shared media summary
+final Color sharedMediaSummaryBackgroundColor = Colors.grey.shade500;
+
 // The translucent black we use when we need to ensure good contrast, for example when
 // displaying the download progress indicator.
 final backdropBlack = Colors.black.withAlpha(150);
