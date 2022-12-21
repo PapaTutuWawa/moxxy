@@ -72,6 +72,7 @@ class VideoChatWidget extends StatelessWidget {
         Icons.video_file_outlined,
         message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
+        maxWidth,
         sent,
         extra: ProgressWidget(id: message.id),
       );
@@ -126,6 +127,7 @@ class VideoChatWidget extends StatelessWidget {
         Icons.video_file_outlined,
         message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
+        maxWidth,
         sent,
         extra: DownloadButton(
           onPressed: () {

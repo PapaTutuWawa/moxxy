@@ -61,6 +61,7 @@ class ImageChatWidget extends StatelessWidget {
         Icons.image,
         message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
+        maxWidth,
         sent,
         extra: ProgressWidget(id: message.id),
       );
@@ -118,6 +119,7 @@ class ImageChatWidget extends StatelessWidget {
         Icons.image,
         message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
         radius,
+        maxWidth,
         sent,
         extra: DownloadButton(
           onPressed: () {

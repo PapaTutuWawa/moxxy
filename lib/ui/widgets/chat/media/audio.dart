@@ -262,6 +262,7 @@ class AudioChatState extends State<AudioChatWidget> {
         (widget.message.filename ?? '') :
         filenameFromUrl(widget.message.srcUrl!),
       widget.radius,
+      widget.maxWidth,
       widget.sent,
       extra: DownloadButton(
         onPressed: () {

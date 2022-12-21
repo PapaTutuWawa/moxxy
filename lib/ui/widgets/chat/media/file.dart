@@ -1,5 +1,5 @@
 import 'dart:core';
-
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -18,6 +18,7 @@ class FileChatBaseWidget extends StatelessWidget {
     this.icon,
     this.filename,
     this.radius,
+    this.maxWidth,
     this.sent,
     {
       this.extra,
@@ -29,35 +30,43 @@ class FileChatBaseWidget extends StatelessWidget {
   final IconData icon;
   final String filename;
   final BorderRadius radius;
+  final double maxWidth;
   final Widget? extra;
   final bool sent;
   final void Function()? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return MediaBaseChatWidget(
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 128,
-            ),
+    return SizedBox(
+      width: maxWidth,
+      child: MediaBaseChatWidget(
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 48,
+              ),
 
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(filename),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: AutoSizeText(
+                  filename,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
+        MessageBubbleBottom(message, sent),
+        radius,
+        gradient: false,
+        extra: extra,
+        onTap: onTap,
       ),
-      MessageBubbleBottom(message, sent),
-      radius,
-      gradient: false,
-      extra: extra,
-      onTap: onTap,
     );
   }
 }
@@ -68,6 +77,7 @@ class FileChatWidget extends StatelessWidget {
   const FileChatWidget(
     this.message,
     this.radius,
+    this.maxWidth,
     this.sent,
     {
       this.extra,
@@ -77,6 +87,7 @@ class FileChatWidget extends StatelessWidget {
   final Message message;
   final BorderRadius radius;
   final bool sent;
+  final double maxWidth;
   final Widget? extra;
 
   Widget _buildNonDownloaded() {
@@ -85,6 +96,7 @@ class FileChatWidget extends StatelessWidget {
       Icons.file_present,
       message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
+      maxWidth,
       sent,
       extra: DownloadButton(
         onPressed: () {
@@ -103,6 +115,7 @@ class FileChatWidget extends StatelessWidget {
       Icons.file_present,
       message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
+      maxWidth,
       sent,
       extra: ProgressWidget(id: message.id),
     );
@@ -114,6 +127,7 @@ class FileChatWidget extends StatelessWidget {
       Icons.file_present,
       message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
       radius,
+      maxWidth,
       sent,
       onTap: () {
         OpenFile.open(message.mediaUrl);
