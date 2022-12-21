@@ -502,27 +502,33 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             ),
           ),
 
-          Positioned(
-            right: 8,
-            bottom: 80,
-            child: Material(
-              color: const Color.fromRGBO(0, 0, 0, 0),
-              child: ScaleTransition(
-                scale: _scrollToBottom,
-                alignment: FractionalOffset.center,
-                child: SizedBox(
-                  width: 45,
-                  height: 45,
-                  child: FloatingActionButton(
-                    heroTag: 'fabScrollDown',
-                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                    onPressed: () {
-                      _scrollController.jumpTo(0);
-                    },
-                    child: const Icon(
-                      Icons.arrow_downward,
-                      // TODO(Unknown): Theme dependent
-                      color: Colors.white,
+          BlocBuilder<ConversationBloc, ConversationState>(
+            buildWhen: (prev, next) => prev.emojiPickerVisible != next.emojiPickerVisible ||
+              prev.stickerPickerVisible != next.stickerPickerVisible,
+            builder: (context, state) => Positioned(
+              right: 8,
+              bottom: state.emojiPickerVisible || state.stickerPickerVisible ?
+                330 /* 80 + 250 */ :
+                80,
+              child: Material(
+                color: const Color.fromRGBO(0, 0, 0, 0),
+                child: ScaleTransition(
+                  scale: _scrollToBottom,
+                  alignment: FractionalOffset.center,
+                  child: SizedBox(
+                    width: 45,
+                    height: 45,
+                    child: FloatingActionButton(
+                      heroTag: 'fabScrollDown',
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                      onPressed: () {
+                        _scrollController.jumpTo(0);
+                      },
+                      child: const Icon(
+                        Icons.arrow_downward,
+                        // TODO(Unknown): Theme dependent
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
