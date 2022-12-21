@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
-import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
+import 'package:moxxyv2/ui/widgets/profile/options.dart';
 
 class SelfProfileHeader extends StatelessWidget {
   const SelfProfileHeader(
@@ -79,36 +78,27 @@ class SelfProfileHeader extends StatelessWidget {
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Tooltip(
-                message: t.pages.profile.self.devices,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SharedMediaContainer(
-                      const Icon(
-                        Icons.security_outlined,
-                        size: 32,
-                      ),
-                      color: getTileColor(context),
-                      onTap: () {
-                        GetIt.I.get<OwnDevicesBloc>().add(OwnDevicesRequestedEvent());
-                      },
-                    ),
-                    Text(
-                      t.pages.profile.self.devices,
-                      style: const TextStyle(
-                        fontSize: fontsizeAppbar,
-                      ),
-                    ),
-                  ],
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 64,
+              right: 64,
+            ),
+            child: ProfileOptions(
+              options: [
+                ProfileOption(
+                  icon: Icons.security_outlined,
+                  title: t.pages.profile.general.omemo,
+                  onTap: () {
+                    context.read<OwnDevicesBloc>().add(
+                      OwnDevicesRequestedEvent(),
+                    );
+                  },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

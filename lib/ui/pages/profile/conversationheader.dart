@@ -1,15 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
+import 'package:moxxyv2/ui/widgets/profile/options.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
@@ -81,124 +79,97 @@ class ConversationProfileHeader extends StatelessWidget {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: Row(
-            //mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Tooltip(
-                message: conversation.muted ?
-                  t.pages.profile.conversation.unmuteChatTooltip :
-                  t.pages.profile.conversation.muteChatTooltip,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SharedMediaContainer(
-                      Icon(
-                        conversation.muted ?
-                          Icons.do_not_disturb_on :
-                          Icons.do_not_disturb_off,
-                        size: 32,
-                      ),
-                      color: getTileColor(context),
-                      onTap: () {
-                        GetIt.I.get<ProfileBloc>().add(
-                          MuteStateSetEvent(
-                            conversation.jid,
-                            !conversation.muted,
-                          ),
-                        );
-                      },
-                    ),
-                    Text(
-                      conversation.muted ?
-                        t.pages.profile.conversation.unmuteChat :
-                        t.pages.profile.conversation.muteChat,
-                      style: const TextStyle(
-                        fontSize: fontsizeAppbar,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // TODO(PapaTutuWawa): Only show when the chat partner has OMEMO keys
-              Tooltip(
-                message: t.pages.profile.conversation.devices,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    SharedMediaContainer(
-                      const Icon(
-                        Icons.security_outlined,
-                        size: 32,
-                      ),
-                      color: getTileColor(context),
-                      onTap: () {
-                        GetIt.I.get<DevicesBloc>().add(DevicesRequestedEvent(conversation.jid));
-                      },
-                    ),
-                    Text(
-                      t.pages.profile.conversation.devices,
-                      style: const TextStyle(
-                        fontSize: fontsizeAppbar,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // TODO(Unknown): How to integrate this into the UI?
-              /* 
-              Tooltip(
-                message: subscribed ?
-                  'Unsubscribe' :
-                  'Subscribe',
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SharedMediaContainer(
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: ColoredBox(
-                          color: getTileColor(context),
-                          child: Icon(
-                            subscribed ?
-                              PhosphorIcons.link :
-                              PhosphorIcons.linkBreak,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        GetIt.I.get<ProfileBloc>().add(
-                          SetSubscriptionStateEvent(
-                            conversation.jid,
-                            !subscribed,
-                          ),
-                        );
-                      },
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          subscribed ?
-                          'Unsubscribe' :
-                          'Subscribe',
-                          style: TextStyle(
-                            fontSize: fontsizeAppbar,
-                          ),
-                        ),
 
-                        Icon(Icons.info),
-                      ],
-                    ),
-                  ],
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 64,
+              right: 64,
+            ),
+            child: ProfileOptions(
+              options: [
+                ProfileOption(
+                  icon: Icons.security_outlined,
+                  title: t.pages.profile.general.omemo,
+                  onTap: () {
+                    context.read<DevicesBloc>().add(
+                      DevicesRequestedEvent(conversation.jid),
+                    );
+                  },
                 ),
-              ),*/
-            ],
+                ProfileOption(
+                  icon: conversation.muted ?
+                    Icons.notifications_off :
+                    Icons.notifications,
+                  title: t.pages.profile.conversation.notifications,
+                  description: conversation.muted ?
+                    t.pages.profile.conversation.notificationsMuted :
+                    t.pages.profile.conversation.notificationsEnabled,
+                  onTap: () {
+                    context.read<ProfileBloc>().add(
+                      MuteStateSetEvent(
+                        conversation.jid,
+                        !conversation.muted,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
+
+        /*
+        // TODO(Unknown): How to integrate this into the UI?
+        Tooltip(
+          message: subscribed ?
+            'Unsubscribe' :
+            'Subscribe',
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SharedMediaContainer(
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: ColoredBox(
+                    color: getTileColor(context),
+                    child: Icon(
+                      subscribed ?
+                        PhosphorIcons.link :
+                        PhosphorIcons.linkBreak,
+                      size: 32,
+                    ),
+                  ),
+                ),
+                onTap: () {
+                  GetIt.I.get<ProfileBloc>().add(
+                    SetSubscriptionStateEvent(
+                      conversation.jid,
+                      !subscribed,
+                    ),
+                  );
+                },
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    subscribed ?
+                    'Unsubscribe' :
+                    'Subscribe',
+                    style: TextStyle(
+                      fontSize: fontsizeAppbar,
+                    ),
+                  ),
+
+                  Icon(Icons.info),
+                ],
+              ),
+            ],
+          ),
+        ),*/
       ],
     );
   }

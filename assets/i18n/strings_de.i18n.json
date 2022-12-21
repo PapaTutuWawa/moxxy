@@ -154,15 +154,13 @@
 	    "confirmBody": "Einer oder mehr Chats sind unverschlüsselt. Das bedeutet, dass die Dateien dem Server unverschlüsselt vorliegen. Dateien trotzdem senden?"
 	},
 	"profile": {
-	    "self": {
-		"devices": "Geräte"
+	    "general": {
+		"omemo": "Sicherheit"
 	    },
 	    "conversation": {
-		"muteChatTooltip": "Chat stummschalten",
-		"unmuteChatTooltip": "Chat lautstellen",
-		"muteChat": "Stummschalten",
-		"unmuteChat": "Lautstellen",
-		"devices": "Geräte"
+		"notifications": "Benachrichtigungen",
+		"notificationsMuted": "Stumm",
+		"notificationsEnabled": "Eingeschaltet"
 	    },
 	    "owndevices": {
 		"title": "Eigene Geräte",

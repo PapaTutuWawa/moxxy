@@ -154,15 +154,13 @@
 	    "confirmBody": "One or more chats are unencrypted. This means that the file will be leaked to the server. Do you still want to continue?"
 	},
 	"profile": {
-	    "self": {
-		"devices": "Devices"
+	    "general": {
+		"omemo": "Security"
 	    },
 	    "conversation": {
-		"muteChatTooltip": "Mute chat",
-		"unmuteChatTooltip": "Unmute chat",
-		"muteChat": "Mute",
-		"unmuteChat": "Unmute",
-		"devices": "Devices"
+		"notifications": "Notifications",
+		"notificationsMuted": "Muted",
+		"notificationsEnabled": "Enabled"
 	    },
 	    "owndevices": {
 		"title": "Own Devices",
