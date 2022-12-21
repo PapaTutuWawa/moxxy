@@ -127,7 +127,10 @@
 	    "showWarning": "Warnung anzeigen",
 	    "addToContacts": "Zu Kontaken hinzufügen",
 	    "addToContactsTitle": "${jid} zu Kontakten hinzufügen",
-	    "addToContactsBody": "Bist du dir sicher, dass du ${jid} zu deinen Kontakten hinzufügen möchtest?"
+	    "addToContactsBody": "Bist du dir sicher, dass du ${jid} zu deinen Kontakten hinzufügen möchtest?",
+	    "stickerPickerNoStickersLine1": "Du hast keine Stickerpacks installiert.",
+	    "stickerPickerNoStickersLine2": "Diese können in den Stickereinstellungen installiert werden.",
+	    "stickerSettings": "Stickereinstellungen"
 	},
 	"addcontact": {
 	    "title": "Neuen Kontakt hinzufügen",
