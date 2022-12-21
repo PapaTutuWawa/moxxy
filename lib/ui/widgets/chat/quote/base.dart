@@ -45,11 +45,9 @@ class QuoteBaseWidget extends StatelessWidget {
     
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: _getColor(),
-          borderRadius: const BorderRadius.all(radiusLarge),
-        ),
+      child: Material(
+        color: _getColor(),
+        borderRadius: const BorderRadius.all(radiusLarge),
         clipBehavior: Clip.antiAlias,
         child: Stack(
           children: [
@@ -62,19 +60,19 @@ class QuoteBaseWidget extends StatelessWidget {
                 width: quoteLeftBorderWidth,
               ),
             ),
-            ...resetQuotedMessage != null ? [
+
+            if (resetQuotedMessage != null)
               Positioned(
                 right: 3,
                 top: 3,
-                child: InkWell(
-                  onTap: resetQuotedMessage,
-                  child: const Icon(
+                child: IconButton(
+                  onPressed: resetQuotedMessage,
+                  icon: const Icon(
                     Icons.close,
                     size: 24,
                   ),
                 ),
-              )
-            ] : [],
+              ),
             Padding(
               padding: padding,
               child: child,
