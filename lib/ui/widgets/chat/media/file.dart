@@ -1,11 +1,11 @@
 import 'dart:core';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
@@ -130,7 +130,7 @@ class FileChatWidget extends StatelessWidget {
       maxWidth,
       sent,
       onTap: () {
-        OpenFile.open(message.mediaUrl);
+        openFile(message.mediaUrl!);
       },
     );
   }

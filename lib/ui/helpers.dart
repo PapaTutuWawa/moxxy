@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:typed_data';
+import 'package:better_open_file/better_open_file.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -352,4 +353,25 @@ Future<void> handleUri(String uriString) async {
     redirectUrl(uri),
     mode: LaunchMode.externalNonBrowserApplication,
   );
+}
+
+/// Open the file [path] using the system native means. Shows a toast if the
+/// file cannot be opened.
+Future<void> openFile(String path) async {
+  final result = await OpenFile.open(path);
+
+  if (result.type != ResultType.done) {
+    String message;
+    if (result.type == ResultType.noAppToOpen) {
+      message = t.errors.conversation.openFileNoAppError;
+    } else {
+      message = t.errors.conversation.openFileGenericError;
+    }
+
+    await Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.SNACKBAR,
+    );
+  }
 }

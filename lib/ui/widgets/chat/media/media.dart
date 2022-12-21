@@ -1,7 +1,7 @@
-import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
@@ -116,25 +116,25 @@ Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
   if (medium.mime!.startsWith('image/')) {
     return SharedImageWidget(
       medium.path,
-      onTap: () => OpenFile.open(medium.path),
+      onTap: () => openFile(medium.path),
     );
   } else if (medium.mime!.startsWith('video/')) {
     return SharedVideoWidget(
       medium.path,
       conversationJid,
       medium.mime!,
-      onTap: () => OpenFile.open(medium.path),
+      onTap: () => openFile(medium.path),
       child: const PlayButton(size: 32),
     );
   } else if (medium.mime!.startsWith('audio/')) {
     return SharedAudioWidget(
       medium.path,
-      onTap: () => OpenFile.open(medium.path),
+      onTap: () => openFile(medium.path),
     );
   }
 
   return SharedFileWidget(
     medium.path,
-    onTap: () => OpenFile.open(medium.path),
+    onTap: () => openFile(medium.path),
   );
 }

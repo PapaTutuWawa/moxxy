@@ -57,8 +57,8 @@ class RawChatBubble extends StatelessWidget {
     return message.stickerPackId != null && message.stickerHashKey != null;
   }
 
-  Color? _getBubbleColor(BuildContext context) {
-    if (_shouldNotColorBubble()) return null;
+  Color _getBubbleColor(BuildContext context) {
+    if (_shouldNotColorBubble()) return Colors.transparent;
 
     // Color the bubble red if it should be encrypted but is not.
     if (chatEncrypted && !message.encrypted) {
@@ -83,24 +83,24 @@ class RawChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderRadius = getBorderRadius(sentBySelf, start, between, end);
-    return Container(
+    return ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: maxWidth,
       ),
-      decoration: BoxDecoration(
+      child: Material(
         color: _getBubbleColor(context),
         borderRadius: borderRadius,
-      ),
-      child: Padding(
-        // NOTE: Images don't work well with padding here
-        padding: message.isMedia || message.quotes != null ?
-        EdgeInsets.zero :
-        const EdgeInsets.all(8),
-        child: buildMessageWidget(
-          message,
-          maxWidth,
-          borderRadius,
-          sentBySelf,
+        child: Padding(
+          // NOTE: Images don't work well with padding here
+          padding: message.isMedia || message.quotes != null ?
+          EdgeInsets.zero :
+          const EdgeInsets.all(8),
+          child: buildMessageWidget(
+            message,
+            maxWidth,
+            borderRadius,
+            sentBySelf,
+          ),
         ),
       ),
     );

@@ -73,7 +73,9 @@
 	    "fileNotEncrypted": "Der Chat ist verschlüsselt, aber die Datei wurde unverschlüsselt übertragen"
 	},
 	"conversation": {
-	    "audioRecordingError": "Fehler beim Fertigstellen der Audioaufnahme"
+	    "audioRecordingError": "Fehler beim Fertigstellen der Audioaufnahme",
+	    "openFileNoAppError": "Keine App vorhanden, um die Datei zu öffnen",
+	    "openFileGenericError": "Fehler beim Öffnen der Datei"
 	}
     },
     "warnings": {

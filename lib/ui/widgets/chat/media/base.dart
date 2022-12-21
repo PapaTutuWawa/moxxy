@@ -49,7 +49,7 @@ class MediaBaseChatWidget extends StatelessWidget {
 
     if (onTap != null) {
       return IntrinsicWidth(
-        child: InkResponse(
+        child: InkWell(
           onTap: onTap,
           child: content,
         ),

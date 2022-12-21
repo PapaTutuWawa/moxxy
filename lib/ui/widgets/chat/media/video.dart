@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:better_open_file/better_open_file.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
@@ -94,9 +94,7 @@ class VideoChatWidget extends StatelessWidget {
       ),
       MessageBubbleBottom(message, sent),
       radius,
-      onTap: () {
-        OpenFile.open(message.mediaUrl);
-      },
+      onTap: () => openFile(message.mediaUrl!),
       extra: const PlayButton(),
     );
   }
