@@ -45,6 +45,9 @@ class AutoDownloadSizeDialogState extends State<AutoDownloadSizeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
+      ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 32,
         vertical: 12,
@@ -133,7 +136,6 @@ class NetworkPage extends StatelessWidget {
                   onPressed: (context) async {
                     final result = await showDialog<int>(
                       context: context,
-                      barrierDismissible: false,
                       builder: (context) => AutoDownloadSizeDialog(
                         selectedValueInitial: state.maximumAutoDownloadSize,
                       ),
