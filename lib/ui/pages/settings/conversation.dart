@@ -9,11 +9,12 @@ import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/widgets/settings/row.dart';
+import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:settings_ui/settings_ui.dart';
 
 class ConversationSettingsPage extends StatelessWidget {
   const ConversationSettingsPage({ super.key });
@@ -67,89 +68,94 @@ class ConversationSettingsPage extends StatelessWidget {
     return Scaffold(
       appBar: BorderlessTopbar.simple(t.pages.settings.conversation.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
-        builder: (context, state) => SettingsList(
-          sections: [
-            SettingsSection(
-              title: Text(t.pages.settings.conversation.appearance),
-              tiles: [
-                SettingsTile(
-                  title: Text(t.pages.settings.conversation.selectBackgroundImage),
-                  description: Text(t.pages.settings.conversation.selectBackgroundImageDescription),
-                  onPressed: (context) async {
-                    final backgroundPath = await _pickBackgroundImage();
+        builder: (context, state) => ListView(
+          children: [
+            SectionTitle(t.pages.settings.conversation.appearance),
 
-                    if (backgroundPath != null) {
-                      // ignore: use_build_context_synchronously
-                      context.read<CropBackgroundBloc>().add(
-                        CropBackgroundRequestedEvent(backgroundPath),
-                      );
-                    }
-                  },
-                ),
-                SettingsTile(
-                  title: Text(t.pages.settings.conversation.removeBackgroundImage),
-                  onPressed: (context) async {
-                    final result = await showConfirmationDialog(
-                      t.pages.settings.conversation.removeBackgroundImageConfirmTitle,
-                      t.pages.settings.conversation.removeBackgroundImageConfirmBody,
-                      context,
-                    );
+            SettingsRow(
+              title: t.pages.settings.conversation.selectBackgroundImage,
+              description: t.pages.settings.conversation.selectBackgroundImageDescription,
+              onTap: () async {
+                final backgroundPath = await _pickBackgroundImage();
 
-                    if (result) {
-                      // ignore: use_build_context_synchronously
-                      await _removeBackgroundImage(context, state);
-                    }
-                  },
-                ),
-              ],
+                if (backgroundPath != null) {
+                  // ignore: use_build_context_synchronously
+                  context.read<CropBackgroundBloc>().add(
+                    CropBackgroundRequestedEvent(backgroundPath),
+                  );
+                }
+              },
             ),
-            SettingsSection(
-              title: Text(t.pages.settings.conversation.behaviourSection),
-              tiles: [
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.conversation.contactsIntegration),
-                  description: Text(t.pages.settings.conversation.contactsIntegrationBody),
-                  initialValue: state.enableContactIntegration,
-                  onToggle: (value) async {
-                    // Ensure that we have the permission before changing the value
-                    if (value && await Permission.contacts.status == PermissionStatus.denied) {
-                      if (!(await Permission.contacts.request().isGranted)) {
-                        return;
-                      }
-                    }
 
-                    // ignore: use_build_context_synchronously
-                    context.read<PreferencesBloc>().add(
-                      PreferencesChangedEvent(
-                        state.copyWith(enableContactIntegration: value),
-                      ),
-                    );
-                  },
-                ),
-              ],
+            SettingsRow(
+              title: t.pages.settings.conversation.removeBackgroundImage,
+              onTap: () async {
+                final result = await showConfirmationDialog(
+                  t.pages.settings.conversation.removeBackgroundImageConfirmTitle,
+                  t.pages.settings.conversation.removeBackgroundImageConfirmBody,
+                  context,
+                );
+
+                if (result) {
+                  // ignore: use_build_context_synchronously
+                  await _removeBackgroundImage(context, state);
+                }
+              },
             ),
-            SettingsSection(
-              title: Text(t.pages.settings.conversation.newChatsSection),
-              tiles: [
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.conversation.newChatsMuteByDefault),
-                  initialValue: state.defaultMuteState,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+
+            SectionTitle(t.pages.settings.conversation.behaviourSection),
+
+            SettingsRow(
+              title: t.pages.settings.conversation.contactsIntegration,
+              description: t.pages.settings.conversation.contactsIntegrationBody,
+              suffix: Switch(
+                value: state.enableContactIntegration,
+                onChanged: (value) async {
+                  // Ensure that we have the permission before changing the value
+                  if (value && await Permission.contacts.status == PermissionStatus.denied) {
+                    if (!(await Permission.contacts.request().isGranted)) {
+                      return;
+                    }
+                  }
+
+                  // ignore: use_build_context_synchronously
+                  context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(enableContactIntegration: value),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            SectionTitle(t.pages.settings.conversation.newChatsSection),
+
+            SettingsRow(
+              title: t.pages.settings.conversation.newChatsMuteByDefault,
+              suffix: Switch(
+                value: state.defaultMuteState,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(defaultMuteState: value),
                     ),
-                  ),
-                ),
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.conversation.newChatsE2EE),
-                  initialValue: state.enableOmemoByDefault,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                  );
+                },
+              ),
+            ),
+
+            SettingsRow(
+              title: t.pages.settings.conversation.newChatsE2EE,
+              suffix: Switch(
+                value: state.enableOmemoByDefault,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(enableOmemoByDefault: value),
                     ),
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
           ],
         ),

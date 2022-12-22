@@ -5,9 +5,9 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/redirect_dialog.dart';
-import 'package:settings_ui/settings_ui.dart';
+import 'package:moxxyv2/ui/widgets/settings/row.dart';
 
-class RedirectSettingsTile extends AbstractSettingsTile {
+class RedirectSettingsTile extends StatelessWidget {
   const RedirectSettingsTile(
     this.serviceName,
     this.exampleProxy,
@@ -27,28 +27,13 @@ class RedirectSettingsTile extends AbstractSettingsTile {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PreferencesBloc, PreferencesState>(
-      builder: (context, state) => SettingsTile(
-        title: Text(t.pages.settings.privacy.redirectsTitle(serviceName: serviceName)),
-        description: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                t.pages.settings.privacy.redirectText(
-                  serviceName: serviceName,
-                  exampleProxy: exampleProxy,
-                ),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                t.pages.settings.privacy.currentlySelected(proxy: getProxy(state)),
-              ),
-            ),
-          ],
+      builder: (context, state) => SettingsRow(
+        title: t.pages.settings.privacy.redirectsTitle(serviceName: serviceName),
+        description: t.pages.settings.privacy.redirectText(
+          serviceName: serviceName,
+          exampleProxy: exampleProxy,
         ),
-        onPressed: (context) {
+        onTap: () {
           showDialog<void>(
             context: context,
             builder: (BuildContext context) => RedirectDialog(
@@ -60,7 +45,7 @@ class RedirectSettingsTile extends AbstractSettingsTile {
             ),
           );
         },
-        trailing: Switch(
+        suffix: Switch(
           value: getEnabled(state),
           onChanged: (value) {
             if (getProxy(state).isEmpty) {

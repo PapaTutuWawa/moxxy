@@ -84,7 +84,6 @@ dependencies:
   qr_flutter: 4.0.0
   random_string: 2.3.1
   record: 4.4.3
-  settings_ui: 2.0.2
   share_handler: 0.0.16
   slang: 3.4.0
   slang_flutter: 3.4.0

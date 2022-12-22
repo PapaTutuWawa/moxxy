@@ -4,8 +4,9 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/settings/row.dart';
+import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:settings_ui/settings_ui.dart';
 
 class _AutoDownloadSizes {
   const _AutoDownloadSizes(this.text, this.value);
@@ -104,55 +105,66 @@ class NetworkPage extends StatelessWidget {
     return Scaffold(
       appBar: BorderlessTopbar.simple(t.pages.settings.network.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
-        builder: (context, state) => SettingsList(
-          sections: [
-            SettingsSection(
-              title: Text(t.pages.settings.network.automaticDownloadsSection),
-              tiles: [
-                SettingsTile(
-                  title: Text(t.pages.settings.network.automaticDownloadsText),
-                ),
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.network.wifi),
-                  initialValue: state.autoDownloadWifi,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(autoDownloadWifi: value),
-                    ),
-                  ),
-                ),
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.network.mobileData),
-                  initialValue: state.autoDownloadMobile,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(autoDownloadMobile: value),
-                    ),
-                  ),
-                ),
-                SettingsTile(
-                  title: Text(t.pages.settings.network.automaticDownloadsMaximumSize),
-                  description: Text(t.pages.settings.network.automaticDownloadsMaximumSizeSubtext),
-                  onPressed: (context) async {
-                    final result = await showDialog<int>(
-                      context: context,
-                      builder: (context) => AutoDownloadSizeDialog(
-                        selectedValueInitial: state.maximumAutoDownloadSize,
-                      ),
-                    );
-                    if (result == null) return;
-                    if (state.maximumAutoDownloadSize == result) return;
+        builder: (context, state) => ListView(
+          children: [
+            SectionTitle(t.pages.settings.network.automaticDownloadsSection),
+            
+            SettingsRow(
+              title: t.pages.settings.network.automaticDownloadsText,
+            ),
 
-                    // ignore: use_build_context_synchronously
-                    context.read<PreferencesBloc>().add(
-                      PreferencesChangedEvent(
-                        state.copyWith(maximumAutoDownloadSize: result),
-                      ),
-                    );
-                  },
+            SettingsRow(
+              title: t.pages.settings.network.wifi,
+              padding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 16,
+              ),
+              suffix: Switch(
+                value: state.autoDownloadWifi,
+                onChanged: (value) => context.read<PreferencesBloc>().add(
+                  PreferencesChangedEvent(
+                    state.copyWith(autoDownloadWifi: value),
+                  ),
                 ),
-              ],
-            )
+              ),
+            ),
+            SettingsRow(
+              title: t.pages.settings.network.mobileData,
+              padding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 16,
+              ),
+              suffix: Switch(
+                value: state.autoDownloadMobile,
+                onChanged: (value) => context.read<PreferencesBloc>().add(
+                  PreferencesChangedEvent(
+                    state.copyWith(autoDownloadMobile: value),
+                  ),
+                ),
+              ),
+            ),
+
+            SettingsRow(
+              title: t.pages.settings.network.automaticDownloadsMaximumSize,
+              description: t.pages.settings.network.automaticDownloadsMaximumSizeSubtext,
+              onTap: () async {
+                final result = await showDialog<int>(
+                  context: context,
+                  builder: (context) => AutoDownloadSizeDialog(
+                    selectedValueInitial: state.maximumAutoDownloadSize,
+                  ),
+                );
+                if (result == null) return;
+                if (state.maximumAutoDownloadSize == result) return;
+
+                // ignore: use_build_context_synchronously
+                context.read<PreferencesBloc>().add(
+                  PreferencesChangedEvent(
+                    state.copyWith(maximumAutoDownloadSize: result),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

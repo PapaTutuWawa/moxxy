@@ -5,8 +5,9 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/tile.dart';
+import 'package:moxxyv2/ui/widgets/settings/row.dart';
+import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:settings_ui/settings_ui.dart';
 
 class PrivacyPage extends StatelessWidget {
   const PrivacyPage({ super.key });
@@ -23,88 +24,99 @@ class PrivacyPage extends StatelessWidget {
     return Scaffold(
       appBar: BorderlessTopbar.simple(t.pages.settings.privacy.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
-        builder: (context, state) => SettingsList(
-          sections: [
-            SettingsSection(
-              title: Text(t.pages.settings.privacy.generalSection),
-              tiles: [
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.privacy.showContactRequests),
-                  description: Text(t.pages.settings.privacy.showContactRequestsSubtext),
-                  initialValue: state.showSubscriptionRequests,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+        builder: (context, state) => ListView(
+          children: [
+            SectionTitle(t.pages.settings.privacy.generalSection),
+
+            SettingsRow(
+              title: t.pages.settings.privacy.showContactRequests,
+              description: t.pages.settings.privacy.showContactRequestsSubtext,
+              suffix: Switch(
+                value: state.showSubscriptionRequests,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(showSubscriptionRequests: value),
                     ),
-                  ),
-                ),
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.privacy.profilePictureVisibility),
-                  description: Text(t.pages.settings.privacy.profilePictureVisibilitSubtext),
-                  initialValue: state.isAvatarPublic,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                  );
+                },
+              ),
+            ),
+            SettingsRow(
+              title: t.pages.settings.privacy.profilePictureVisibility,
+              description: t.pages.settings.privacy.profilePictureVisibilitSubtext,
+              suffix: Switch(
+                value: state.isAvatarPublic,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(isAvatarPublic: value),
                     ),
-                  ),
-                ),
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.privacy.autoAcceptSubscriptionRequests),
-                  description: Text(t.pages.settings.privacy.autoAcceptSubscriptionRequestsSubtext),
-                  initialValue: state.autoAcceptSubscriptionRequests,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                  );
+                },
+              ),
+            ),
+            SettingsRow(
+              title: t.pages.settings.privacy.autoAcceptSubscriptionRequests,
+              description: t.pages.settings.privacy.autoAcceptSubscriptionRequestsSubtext,
+              suffix: Switch(
+                value: state.autoAcceptSubscriptionRequests,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(autoAcceptSubscriptionRequests: value),
                     ),
-                  ),
-                )
-              ],
+                  );
+                },
+              ),
             ),
-            SettingsSection(
-              title: Text(t.pages.settings.privacy.conversationsSection),
-              tiles: [
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.privacy.sendChatMarkers),
-                  description: Text(t.pages.settings.privacy.sendChatMarkersSubtext),
-                  initialValue: state.sendChatMarkers,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+
+            SectionTitle(t.pages.settings.privacy.conversationsSection),
+            SettingsRow(
+              title: t.pages.settings.privacy.sendChatMarkers,
+              description: t.pages.settings.privacy.sendChatMarkersSubtext,
+              suffix: Switch(
+                value: state.sendChatMarkers,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(sendChatMarkers: value),
                     ),
-                  ),
-                ),
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.privacy.sendChatStates),
-                  description: Text(t.pages.settings.privacy.sendChatStatesSubtext),
-                  initialValue: state.sendChatStates,
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+                  );
+                },
+              ),
+            ),
+            SettingsRow(
+              title: t.pages.settings.privacy.sendChatStates,
+              description: t.pages.settings.privacy.sendChatStatesSubtext,
+              suffix: Switch(
+                value: state.sendChatStates,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(sendChatStates: value),
                     ),
-                  ),
-                )
-              ],
+                  );
+                },
+              ),
             ),
-            SettingsSection(
-              title: Text(t.pages.settings.privacy.redirectsSection),
-              tiles: [
-                RedirectSettingsTile(
-                  'Youtube',
-                  'Invidious',
-                  (state) => state.youtubeRedirect,
-                  (state, value) => state.copyWith(youtubeRedirect: value),
-                  (state) => state.enableYoutubeRedirect,
-                  (state, value) => state.copyWith(enableYoutubeRedirect: value), 
-                ),
-                RedirectSettingsTile(
-                  'Twitter',
-                  'Nitter',
-                  (state) => state.twitterRedirect,
-                  (state, value) => state.copyWith(twitterRedirect: value),
-                  (state) => state.enableTwitterRedirect,
-                  (state, value) => state.copyWith(enableTwitterRedirect: value), 
-                ),
-              ],
+
+            SectionTitle(t.pages.settings.privacy.redirectsSection),
+            RedirectSettingsTile(
+              'Youtube',
+              'Invidious',
+              (state) => state.youtubeRedirect,
+              (state, value) => state.copyWith(youtubeRedirect: value),
+              (state) => state.enableYoutubeRedirect,
+              (state, value) => state.copyWith(enableYoutubeRedirect: value), 
+            ),
+            RedirectSettingsTile(
+              'Twitter',
+              'Nitter',
+              (state) => state.twitterRedirect,
+              (state, value) => state.copyWith(twitterRedirect: value),
+              (state) => state.enableTwitterRedirect,
+              (state, value) => state.copyWith(enableTwitterRedirect: value), 
             ),
           ],
         ),

@@ -4,8 +4,9 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/settings/row.dart';
+import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
-import 'package:settings_ui/settings_ui.dart';
 
 class DebuggingPage extends StatelessWidget {
   DebuggingPage({ super.key })
@@ -28,111 +29,112 @@ class DebuggingPage extends StatelessWidget {
     return Scaffold(
       appBar: BorderlessTopbar.simple(t.pages.settings.debugging.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
-        builder: (context, state) => SettingsList(
-          sections: [
-            SettingsSection(
-              title: Text(t.pages.settings.debugging.generalSection),
-              tiles: [
-                SettingsTile.switchTile(
-                  title: Text(t.pages.settings.debugging.generalEnableDebugging),
-                  onToggle: (value) => context.read<PreferencesBloc>().add(
+        builder: (context, state) => ListView(
+          children: [
+            SectionTitle(t.pages.settings.debugging.generalSection),
+            SettingsRow(
+              title: t.pages.settings.debugging.generalEnableDebugging,
+              suffix: Switch(
+                value: state.debugEnabled,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
                     PreferencesChangedEvent(
                       state.copyWith(debugEnabled: value),
                     ),
+                  );
+                },
+              ),
+            ),
+            SettingsRow(
+              title: t.pages.settings.debugging.generalEncryptionPassword,
+              description: t.pages.settings.debugging.generalEncryptionPasswordSubtext,
+              onTap: () {
+                showDialog<void>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: Text(t.pages.settings.debugging.generalEncryptionPassword),
+                    content: TextField(
+                      minLines: 1,
+                      obscureText: true,
+                      controller: _passphraseController,
+                    ),
+                    actions: [
+                      TextButton(
+                        child: Text(t.global.dialogAccept),
+                        onPressed: () {
+                          context.read<PreferencesBloc>().add(
+                            PreferencesChangedEvent(
+                              state.copyWith(debugPassphrase: _passphraseController.text),
+                            ),
+                          );
+                          Navigator.of(context).pop();
+                        },
+                      )
+                    ],
                   ),
-                  initialValue: state.debugEnabled,
-                ),
-                SettingsTile(
-                  title: Text(t.pages.settings.debugging.generalEncryptionPassword),
-                  description: Text(t.pages.settings.debugging.generalEncryptionPasswordSubtext),
-                  onPressed: (context) {
-                    showDialog<void>(
-                      context: context,
-                      builder: (BuildContext context) => AlertDialog(
-                        title: Text(t.pages.settings.debugging.generalEncryptionPassword),
-                        content: TextField(
-                          minLines: 1,
-                          obscureText: true,
-                          controller: _passphraseController,
-                        ),
-                        actions: [
-                          TextButton(
-                            child: Text(t.global.dialogAccept),
-                            onPressed: () {
-                              context.read<PreferencesBloc>().add(
-                                PreferencesChangedEvent(
-                                  state.copyWith(debugPassphrase: _passphraseController.text),
-                                ),
-                              );
-                              Navigator.of(context).pop();
-                            },
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                SettingsTile(
-                  title: Text(t.pages.settings.debugging.generalLoggingIp),
-                  description: Text(t.pages.settings.debugging.generalLoggingIpSubtext),
-                  onPressed: (context) {
-                    showDialog<void>(
-                      context: context,
-                      builder: (BuildContext context) => AlertDialog(
-                        title: Text(t.pages.settings.debugging.generalLoggingIp),
-                        content: TextField(
-                          minLines: 1,
-                          controller: _ipController,
-                        ),
-                        actions: [
-                          TextButton(
-                            child: Text(t.global.dialogAccept),
-                            onPressed: () {
-                              context.read<PreferencesBloc>().add(
-                                PreferencesChangedEvent(
-                                  state.copyWith(debugIp: _ipController.text),
-                                ),
-                              );
-                              Navigator.of(context).pop();
-                            },
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                SettingsTile(
-                  title: Text(t.pages.settings.debugging.generalLoggingPort),
-                  description: Text(t.pages.settings.debugging.generalLoggingPortSubtext),
-                  onPressed: (context) {
-                    showDialog<void>(
-                      context: context,
-                      builder: (BuildContext context) => AlertDialog(
-                        title: Text(t.pages.settings.debugging.generalLoggingPort),
-                        content: TextField(
-                          minLines: 1,
-                          controller: _portController,
-                          keyboardType: TextInputType.number,
-                        ),
-                        actions: [
-                          TextButton(
-                            child: Text(t.global.dialogAccept),
-                            onPressed: () {
-                              context.read<PreferencesBloc>().add(
-                                PreferencesChangedEvent(
-                                  state.copyWith(debugPort: int.parse(_portController.text)),
-                                ),
-                              );
-                              Navigator.of(context).pop();
-                            },
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                )
-              ],
-            )
+                );
+              },
+            ),
+            SettingsRow(
+              title: t.pages.settings.debugging.generalLoggingIp,
+              description: t.pages.settings.debugging.generalLoggingIpSubtext,
+              onTap: () {
+                showDialog<void>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: Text(t.pages.settings.debugging.generalLoggingIp),
+                    content: TextField(
+                      minLines: 1,
+                      obscureText: true,
+                      controller: _ipController,
+                    ),
+                    actions: [
+                      TextButton(
+                        child: Text(t.global.dialogAccept),
+                        onPressed: () {
+                          context.read<PreferencesBloc>().add(
+                            PreferencesChangedEvent(
+                              state.copyWith(debugIp: _ipController.text),
+                            ),
+                          );
+                          Navigator.of(context).pop();
+                        },
+                      )
+                    ],
+                  ),
+                );
+              },
+            ),
+            SettingsRow(
+              title: t.pages.settings.debugging.generalLoggingPort,
+              description: t.pages.settings.debugging.generalLoggingPortSubtext,
+              onTap: () {
+                showDialog<void>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: Text(t.pages.settings.debugging.generalLoggingPort),
+                    content: TextField(
+                      minLines: 1,
+                      controller: _portController,
+                      keyboardType: TextInputType.number,
+                    ),
+                    actions: [
+                      TextButton(
+                        child: Text(t.global.dialogAccept),
+                        onPressed: () {
+                          context.read<PreferencesBloc>().add(
+                            PreferencesChangedEvent(
+                              state.copyWith(debugPort: int.parse(_portController.text)),
+                            ),
+                          );
+                          Navigator.of(context).pop();
+                        },
+                      )
+                    ],
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

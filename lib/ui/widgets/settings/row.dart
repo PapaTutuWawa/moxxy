@@ -12,6 +12,10 @@ class SettingsRow extends StatelessWidget {
     this.prefix,
     this.onTap,
     this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.padding = const EdgeInsets.symmetric(
+      vertical: 16,
+      horizontal: 16,
+    ),
     super.key,
   });
   final String title;
@@ -21,16 +25,14 @@ class SettingsRow extends StatelessWidget {
   final Widget? prefix;
   final void Function()? onTap;
   final CrossAxisAlignment crossAxisAlignment;
+  final EdgeInsets padding;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: 16,
-          horizontal: 16,
-        ),
+        padding: padding,
         child: Row(
           crossAxisAlignment: crossAxisAlignment,
           children: [
