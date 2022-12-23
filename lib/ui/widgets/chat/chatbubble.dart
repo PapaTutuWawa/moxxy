@@ -2,11 +2,9 @@
 // TODO(Unknown): The timestamp is too small
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactionbubble.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
@@ -112,7 +110,6 @@ class ChatBubble extends StatefulWidget {
     required this.message,
     required this.sentBySelf,
     required this.maxWidth,
-    required this.lastMessageTimestamp,
     required this.onSwipedCallback,
     required this.bubble,
     this.onLongPressed,
@@ -123,8 +120,6 @@ class ChatBubble extends StatefulWidget {
   final bool sentBySelf;
   // For rendering the corners
   final double maxWidth;
-  // For rendering the date bubble
-  final int? lastMessageTimestamp;
   // For acting on swiping
   final void Function(Message) onSwipedCallback;
   // For acting on long-pressing the message
@@ -177,7 +172,10 @@ class ChatBubbleState extends State<ChatBubble>
     );
   }
   
-  Widget _buildBubble(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
     return SwipeableTile.swipeToTrigger(
       direction: _getSwipeDirection(),
       swipeThreshold: 0.2,
@@ -262,42 +260,5 @@ class ChatBubbleState extends State<ChatBubble>
           ),
       ),
     );
-  }
-
-  Widget _buildWithDateBubble(Widget widget, String dateString) {
-    return IntrinsicHeight(
-      child: Column(
-        children: [
-          DateBubble(dateString),
-          widget,
-        ],
-      ),
-    );
-  }
-  
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    // lastMessageTimestamp == null means that there is no previous message
-    final thisMessageDateTime = DateTime.fromMillisecondsSinceEpoch(widget.message.timestamp);
-    if (widget.lastMessageTimestamp == null) {
-      return _buildWithDateBubble(
-        _buildBubble(context),
-        formatDateBubble(thisMessageDateTime, DateTime.now()),
-      );
-    }
-
-    final lastMessageDateTime = DateTime.fromMillisecondsSinceEpoch(widget.lastMessageTimestamp!);
-
-    if (lastMessageDateTime.day != thisMessageDateTime.day ||
-        lastMessageDateTime.month != thisMessageDateTime.month ||
-        lastMessageDateTime.year != thisMessageDateTime.year) {
-      return _buildWithDateBubble(
-        _buildBubble(context),
-        formatDateBubble(thisMessageDateTime, DateTime.now()),
-      );
-    }
-
-    return _buildBubble(context);
   }
 }

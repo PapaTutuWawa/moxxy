@@ -85,6 +85,10 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
       return AudioChatWidget(message, radius, maxWidth, sent);
     case MessageType.file: {
       return FileChatWidget(message, radius, maxWidth, sent);
+      /*return TextChatWidget(
+        message,
+        sent,
+      );*/
     }
   }
 }

@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -43,7 +42,6 @@ class FileChatBaseWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
@@ -52,7 +50,7 @@ class FileChatBaseWidget extends StatelessWidget {
 
               Padding(
                 padding: const EdgeInsets.only(left: 6),
-                child: AutoSizeText(
+                child: Text(
                   filename,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -94,7 +92,9 @@ class FileChatWidget extends StatelessWidget {
     return FileChatBaseWidget(
       message,
       Icons.file_present,
-      message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification ?
+        (message.filename ?? '') :
+        filenameFromUrl(message.srcUrl!),
       radius,
       maxWidth,
       sent,
@@ -113,7 +113,9 @@ class FileChatWidget extends StatelessWidget {
     return FileChatBaseWidget(
       message,
       Icons.file_present,
-      message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification ?
+        (message.filename ?? '') :
+        filenameFromUrl(message.srcUrl ?? ''),
       radius,
       maxWidth,
       sent,

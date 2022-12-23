@@ -18,6 +18,7 @@ import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
+import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 class ConversationPage extends StatefulWidget {
@@ -104,11 +105,42 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       Navigator.of(context).pop();
     }
   }
-  
+
   Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth, String jid) {
+    if (_index.isEven) {
+      // Check if we have to render a date bubble
+      final nextMessageDateTime = DateTime.fromMillisecondsSinceEpoch(
+        state.messages[state.messages.length - 1 - _index ~/ 2].timestamp,
+      );
+      final nextIndex = state.messages.length - 2 - _index ~/ 2;
+      final lastMessageDateTime = nextIndex > 0 ?
+        DateTime.fromMillisecondsSinceEpoch(state.messages[nextIndex].timestamp) :
+        null;
+        
+      if (lastMessageDateTime == null) {
+        return const SizedBox();
+      }
+
+      if (lastMessageDateTime.day != nextMessageDateTime.day ||
+          lastMessageDateTime.month != nextMessageDateTime.month ||
+          lastMessageDateTime.year != nextMessageDateTime.year) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DateBubble(
+              formatDateBubble(nextMessageDateTime, DateTime.now()),
+            ),
+          ],
+        );
+      }
+
+      return const SizedBox();
+    }
+
     // TODO(Unknown): Since we reverse the list: Fix start, end and between
-    final index = state.messages.length - 1 - _index;
+    final index = state.messages.length - 1 - (_index - 1) ~/ 2;
     final item = state.messages[index];
+
     final start = index - 1 < 0 ?
       true :
       isSent(state.messages[index - 1], jid) != isSent(item, jid);
@@ -116,7 +148,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       true :
       isSent(state.messages[index + 1], jid) != isSent(item, jid);
     final between = !start && !end;
-    final lastMessageTimestamp = index > 0 ? state.messages[index - 1].timestamp : null;
     final sentBySelf = isSent(item, jid);
     
     final bubble = RawChatBubble(
@@ -134,7 +165,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       message: item,
       sentBySelf: sentBySelf,
       maxWidth: maxWidth,
-      lastMessageTimestamp: lastMessageTimestamp,
       onSwipedCallback: (_) => _quoteMessage(context, item),
       onReactionTap: (reaction) {
         final bloc = context.read<ConversationBloc>();
@@ -390,7 +420,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
-    
     return WillPopScope(
       onWillPop: () async {
         // TODO(PapaTutuWawa): Check if we are recording an audio message and handle
@@ -478,8 +507,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation!.encrypted != next.conversation!.encrypted,
                     builder: (context, state) => Expanded(
                       child: ListView.builder(
-                        reverse: true,
-                        itemCount: state.messages.length,
+                        itemCount: state.messages.length * 2,
                         itemBuilder: (context, index) => _renderBubble(
                           state,
                           context,
@@ -488,6 +516,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                           state.jid,
                         ),
                         shrinkWrap: true,
+                        reverse: true,
                         controller: _scrollController,
                       ),
                     ),
