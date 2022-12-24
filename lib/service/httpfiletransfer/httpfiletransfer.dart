@@ -361,7 +361,7 @@ class HttpFileTransferService {
     // Prepare file and completer.
     final file = await File(downloadedPath).create();
     final fileSink = file.openWrite(mode: FileMode.writeOnlyAppend);
-    final downloadCompleter = Completer();
+    final downloadCompleter = Completer<void>();
 
     dio.Response<dio.ResponseBody>? response;
 
