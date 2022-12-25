@@ -26,14 +26,15 @@ String _cleanBase64String(String original) {
   return ret;
 }
 
+class _AvatarData {
+  const _AvatarData(this.data, this.id);
+  final String data;
+  final String id;
+}
+
 class AvatarService {
-  AvatarService() : _log = Logger('AvatarService');
-  final Logger _log;
+  final Logger _log = Logger('AvatarService');
 
-  UserAvatarManager _getUserAvatarManager() => GetIt.I.get<XmppConnection>().getManagerById<UserAvatarManager>(userAvatarManager)!;
-
-  DiscoManager _getDiscoManager() => GetIt.I.get<XmppConnection>().getManagerById<DiscoManager>(discoManager)!;
-  
   Future<void> updateAvatarForJid(String jid, String hash, String base64) async {
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
@@ -84,66 +85,72 @@ class AvatarService {
       sendEvent(RosterDiffEvent(modified: [roster]));
     }
   }
+
+  Future<_AvatarData?> _handleUserAvatar(String jid, String oldHash) async {
+    final am = GetIt.I.get<XmppConnection>()
+      .getManagerById<UserAvatarManager>(userAvatarManager)!;
+    final idResult = await am.getAvatarId(jid);
+    if (idResult.isType<AvatarError>()) {
+      _log.warning('Failed to get avatar id via XEP-0084 for $jid');
+      return null;
+    }
+    final id = idResult.get<String>();
+    if (id == oldHash) return null;
+
+    final avatarResult = await am.getUserAvatar(jid);
+    if (avatarResult.isType<AvatarError>()) {
+      _log.warning('Failed to get avatar data via XEP-0084 for $jid');
+      return null;
+    }
+    final avatar = avatarResult.get<UserAvatar>();
+
+    return _AvatarData(
+      avatar.base64,
+      avatar.hash,
+    );
+  }
+
+  Future<_AvatarData?> _handleVcardAvatar(String jid, String oldHash) async {
+    // Query the vCard
+    final vm = GetIt.I.get<XmppConnection>()
+      .getManagerById<VCardManager>(vcardManager)!;
+    final vcardResult = await vm.requestVCard(jid);
+    if (vcardResult.isType<VCardError>()) return null;
+
+    final binval = vcardResult.get<VCard>().photo?.binval;
+    if (binval == null) return null;
+    
+    final rawHash = await Sha1().hash(base64Decode(binval));
+    final hash = HEX.encode(rawHash.bytes);
+
+    vm.setLastHash(jid, hash);
+
+    return _AvatarData(
+      binval,
+      hash,
+    );
+  }
   
   Future<void> fetchAndUpdateAvatarForJid(String jid, String oldHash) async {
-    final response = await _getDiscoManager().discoItemsQuery(jid);
-    final items = response.isType<DiscoError>() ?
-      <DiscoItem>[] :
-      response.get<List<DiscoItem>>();
-    final itemNodes = items.map((i) => i.node);
+    _AvatarData? data;
+    data ??= await _handleUserAvatar(jid, oldHash);
+    data ??= await _handleVcardAvatar(jid, oldHash);
 
-    _log.finest('Disco items for $jid:');
-    for (final item in itemNodes) {
-      _log.finest('- $item');
+    if (data != null) {
+      await updateAvatarForJid(jid, data.id, data.data);
     }
-    
-    var base64 = '';
-    var hash = '';
-    if (listContains<DiscoItem>(items, (item) => item.node == userAvatarDataXmlns)) {
-      final avatar = _getUserAvatarManager();
-      final pubsubHash = await avatar.getAvatarId(jid);
-
-      // Don't request if we already have the newest avatar
-      if (pubsubHash == oldHash) return;
-      
-      // Query via PubSub
-      final data = await avatar.getUserAvatar(jid);
-      if (data == null) return;
-      
-      base64 = data.base64;
-      hash = data.hash;
-    } else {
-      // Query the vCard
-      final vm = GetIt.I.get<XmppConnection>().getManagerById<VCardManager>(vcardManager)!;
-      final vcard = await vm.requestVCard(jid);
-      if (vcard != null) {
-        final binval = vcard.photo?.binval;
-        if (binval != null) {
-          // Clean the raw data. Since this may arrive by chunks, those chunks may contain
-          // weird data pieces.
-          base64 = _cleanBase64String(binval);
-
-          final rawHash = await Sha1().hash(base64Decode(base64));
-          hash = HEX.encode(rawHash.bytes);
-
-          vm.setLastHash(jid, hash);
-        } else {
-          return;
-        }
-      } else {
-        return;
-      }
-    }
-
-    await updateAvatarForJid(jid, hash, base64);
   }
   
   Future<bool> subscribeJid(String jid) async {
-    return _getUserAvatarManager().subscribe(jid);
+    return (await GetIt.I.get<XmppConnection>()
+      .getManagerById<UserAvatarManager>(userAvatarManager)!
+      .subscribe(jid)).isType<bool>();
   }
 
   Future<bool> unsubscribeJid(String jid) async {
-    return _getUserAvatarManager().unsubscribe(jid);
+    return (await GetIt.I.get<XmppConnection>()
+      .getManagerById<UserAvatarManager>(userAvatarManager)!
+      .unsubscribe(jid)).isType<bool>();
   }
 
   /// Publishes the data at [path] as an avatar with PubSub ID
@@ -160,13 +167,14 @@ class AvatarService {
     final imageSize = (await getImageSizeFromData(bytes))!;
     
     // Publish data and metadata
-    final manager = _getUserAvatarManager();
-    await manager.publishUserAvatar(
+    final am = GetIt.I.get<XmppConnection>()
+      .getManagerById<UserAvatarManager>(userAvatarManager)!;
+    await am.publishUserAvatar(
       base64,
       hash,
       public,
     );
-    await manager.publishUserAvatarMetadata(
+    await am.publishUserAvatarMetadata(
       UserAvatarMetadata(
         hash,
         bytes.length,
@@ -182,34 +190,41 @@ class AvatarService {
   }
 
   Future<void> requestOwnAvatar() async {
-    final avatar = _getUserAvatarManager();
+    final am = GetIt.I.get<XmppConnection>()
+      .getManagerById<UserAvatarManager>(userAvatarManager)!;
     final xmpp = GetIt.I.get<XmppService>();
     final state = await xmpp.getXmppState();
     final jid = state.jid!;
-    final id = await avatar.getAvatarId(jid);
-
+    final idResult = await am.getAvatarId(jid);
+    if (idResult.isType<AvatarError>()) {
+      _log.info('Error while getting latest avatar id for own avatar');
+      return;
+    }
+    final id = idResult.get<String>();
+    
     if (id == state.avatarHash) return;
 
     _log.info('Mismatch between saved avatar data and server-side avatar data about ourself');
-    final data = await avatar.getUserAvatar(jid);
-    if (data == null) {
+    final avatarDataResult = await am.getUserAvatar(jid);
+    if (avatarDataResult.isType<AvatarError>()) {
       _log.severe('Failed to fetch our avatar');
       return;
     }
+    final avatarData = avatarDataResult.get<UserAvatar>();
 
     _log.info('Received data for our own avatar');
     
     final avatarPath = await saveAvatarInCache(
-      base64Decode(_cleanBase64String(data.base64)),
-      data.hash,
+      base64Decode(_cleanBase64String(avatarData.base64)),
+      avatarData.hash,
       jid,
       state.avatarUrl,
     );
     await xmpp.modifyXmppState((state) => state.copyWith(
       avatarUrl: avatarPath,
-      avatarHash: data.hash,
+      avatarHash: avatarData.hash,
     ),);
 
-    sendEvent(SelfAvatarChangedEvent(path: avatarPath, hash: data.hash));
+    sendEvent(SelfAvatarChangedEvent(path: avatarPath, hash: avatarData.hash));
   }
 }
