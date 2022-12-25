@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -76,7 +77,9 @@ class SettingsPage extends StatelessWidget {
               child: Icon(Icons.block),
             ),
             onTap: () {
-              Navigator.pushNamed(context, blocklistRoute);
+              GetIt.I.get<BlocklistBloc>().add(
+                BlocklistRequestedEvent(),
+              );
             },
           ),
           SettingsRow(

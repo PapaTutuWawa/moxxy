@@ -8,6 +8,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/creation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/database/migrations/0000_blocklist.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_avatar.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_pseudo.dart';
@@ -79,7 +80,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 22,
+      version: 23,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -175,6 +176,10 @@ class DatabaseService {
         if (oldVersion < 22) {
           _log.finest('Running migration for database version 22');
           await upgradeFromV21ToV22(db);
+        }
+        if (oldVersion < 23) {
+          _log.finest('Running migration for database version 23');
+          await upgradeFromV22ToV23(db);
         }
       },
     );
@@ -1256,5 +1261,36 @@ class DatabaseService {
         .map(sticker.Sticker.fromDatabaseJson)
         .toList(),
     );
+  }
+
+  Future<void> addBlocklistEntry(String jid) async {
+    await _db.insert(
+      blocklistTable,
+      {
+        'jid': jid,
+      },
+    );
+  }
+
+  Future<void> removeBlocklistEntry(String jid) async {
+    await _db.delete(
+      blocklistTable,
+      where: 'jid = ?',
+      whereArgs: [jid],
+    );
+  }
+
+  Future<void> removeAllBlocklistEntries() async {
+    await _db.delete(
+      blocklistTable,
+    );
+  }
+
+  Future<List<String>> getBlocklistEntries() async {
+    final result = await _db.query(blocklistTable);
+
+    return result
+      .map((m) => m['jid']! as String)
+      .toList();
   }
 }

@@ -158,6 +158,15 @@ Future<void> createDatabase(Database db, int version) async {
       restricted     INTEGER NOT NULL
     )''',
   );
+
+  // Blocklist
+  await db.execute(
+    '''
+    CREATE TABLE $blocklistTable (
+      jid TEXT PRIMARY KEY
+    );
+    ''',
+  );
   
   // OMEMO
   await db.execute(

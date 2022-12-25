@@ -79,6 +79,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RemoveStickerPackCommand>(performRemoveStickerPack),
       EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
       EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
+      EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -889,4 +890,16 @@ Future<void> performStickerPackInstall(InstallStickerPackCommand command, { dyna
       id: id,
     );
   }
+}
+
+Future<void> performGetBlocklist(GetBlocklistCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final result = await GetIt.I.get<BlocklistService>().getBlocklist();
+  sendEvent(
+    GetBlocklistResultEvent(
+      entries: result,
+    ),
+    id: id,
+  );
 }

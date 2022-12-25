@@ -23,59 +23,74 @@ class BlocklistPage extends StatelessWidget {
   Widget _buildListView(BlocklistState state) {
     // ignore: non_bool_condition,avoid_dynamic_calls
     if (state.blocklist.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Image.asset('assets/images/happy_news.png'),
+      return Column(
+        children: [
+          if (state.isWorking)
+            const LinearProgressIndicator(),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Image.asset('assets/images/happy_news.png'),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(t.pages.blocklist.noUsersBlocked),
+                )
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(t.pages.blocklist.noUsersBlocked),
-            )
-          ],
-        ),
+          ),
+        ],
       );
     }
 
-    return ListView.builder(
-      itemCount: state.blocklist.length,
-      itemBuilder: (BuildContext context, int index) {
-        // ignore: avoid_dynamic_calls
-        final jid = state.blocklist[index];
+    return Column(
+      children: [
+        if (state.isWorking)
+          const LinearProgressIndicator(),
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 32,
-            vertical: 16,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(jid),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete),
-                color: Colors.red,
-                onPressed: () async {
-                  final result = await showConfirmationDialog(
-                    t.pages.blocklist.unblockJidConfirmTitle(jid: jid),
-                    t.pages.blocklist.unblockJidConfirmBody(jid: jid),
-                    context,
-                  );
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: state.blocklist.length,
+          itemBuilder: (BuildContext context, int index) {
+            // ignore: avoid_dynamic_calls
+            final jid = state.blocklist[index];
 
-                  if (result) {
-                    // ignore: use_build_context_synchronously
-                    context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
-                  }
-                },
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 32,
+                vertical: 16,
               ),
-            ],
-          ),
-        );
-      },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(jid),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    color: Colors.red,
+                    onPressed: () async {
+                      final result = await showConfirmationDialog(
+                        t.pages.blocklist.unblockJidConfirmTitle(jid: jid),
+                        t.pages.blocklist.unblockJidConfirmBody(jid: jid),
+                        context,
+                      );
+
+                      if (result) {
+                        // ignore: use_build_context_synchronously
+                        context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
+                      }
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
@@ -108,6 +123,7 @@ class BlocklistPage extends StatelessWidget {
               icon: const Icon(Icons.more_vert),
               itemBuilder: (BuildContext context) => [
                 PopupMenuItem(
+                  enabled: state.blocklist.isNotEmpty,
                   value: BlocklistOptions.unblockAll,
                   child: Text(t.pages.blocklist.unblockAll),
                 ),

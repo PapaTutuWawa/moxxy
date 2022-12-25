@@ -106,6 +106,13 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
+      # Triggered in response to a [GetBlocklistCommand]
+      - name: GetBlocklistResultEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          entries: List<String>
       # Triggered by DownloadService or UploadService.
       - name: ProgressEvent
         extends: BackgroundEvent
@@ -527,6 +534,11 @@ files:
           stickerPack:
             type: StickerPack
             deserialise: true
+      - name: GetBlocklistCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

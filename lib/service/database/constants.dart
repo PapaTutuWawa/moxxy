@@ -14,6 +14,7 @@ const xmppStateTable = 'XmppState';
 const contactsTable = 'Contacts';
 const stickersTable = 'Stickers';
 const stickerPacksTable = 'StickerPacks';
+const blocklistTable = 'Blocklist';
 
 const typeString = 0;
 const typeInt = 1;

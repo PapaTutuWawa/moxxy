@@ -665,6 +665,9 @@ class XmppService {
       unawaited(_initializeOmemoService(settings.jid.toString()));
 
       if (!event.resumed) {
+        // Reset the blocking service's cache
+        GetIt.I.get<BlocklistService>().onNewConnection();
+
         // Enable carbons
         final carbonsResult = await connection
           .getManagerById<CarbonsManager>(carbonsManager)!
