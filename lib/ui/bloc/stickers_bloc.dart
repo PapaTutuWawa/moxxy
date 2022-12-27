@@ -31,6 +31,8 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     final map = <StickerKey, Sticker>{};
     for (final pack in event.stickerPacks) {
       for (final sticker in pack.stickers) {
+        if (!sticker.isImage) continue;
+
         map[StickerKey(pack.id, sticker.hashKey)] = sticker;
       }
     }
@@ -92,6 +94,8 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     if (result is StickerPackImportSuccessEvent) {
       final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
       for (final sticker in result.stickerPack.stickers) {
+        if (!sticker.isImage) continue;
+
         sm[StickerKey(result.stickerPack.id, sticker.hashKey)] = sticker;
       }
       emit(
@@ -128,6 +132,8 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
   Future<void> _onStickerPackAdded(StickerPackAddedEvent event, Emitter<StickersState> emit) async {
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
     for (final sticker in event.stickerPack.stickers) {
+      if (!sticker.isImage) continue;
+
       sm[StickerKey(event.stickerPack.id, sticker.hashKey)] = sticker;
     }
 

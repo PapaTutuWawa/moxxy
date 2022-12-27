@@ -85,4 +85,7 @@ class Sticker with _$Sticker {
       .toList(),
     suggests,
   );
+
+  /// True, if the sticker is backed by an image with MIME type image/*.
+  bool get isImage => mediaType.startsWith('image/');
 }
