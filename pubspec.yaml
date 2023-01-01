@@ -142,11 +142,6 @@ dependency_overrides:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
       rev: 62001c1e29b644fcf7fe12618d77571853fd073e
       path: packages/moxxmpp
-
-  # omemo_dart:
-  #   git:
-  #     url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
-  #     rev: fe1ba99b14b516ecf6d147c57bd986d8afe7f3fc
  
 extra_licenses:
   - name: undraw.co
