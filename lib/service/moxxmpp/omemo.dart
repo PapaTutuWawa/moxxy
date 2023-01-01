@@ -4,15 +4,14 @@ import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 
-class MoxxyOmemoManager extends OmemoManager {
-
+class MoxxyOmemoManager extends BaseOmemoManager {
   MoxxyOmemoManager() : super();
 
   @override
-  Future<OmemoSessionManager> getSessionManager() async {
+  Future<OmemoManager> getOmemoManager() async {
     final os = GetIt.I.get<OmemoService>();
     await os.ensureInitialized();
-    return os.omemoState;
+    return os.omemoManager;
   }
 
   @override

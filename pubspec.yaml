@@ -132,21 +132,21 @@ dependency_overrides:
     version: 3.3.8
 
   # NOTE: Leave here for development purposes
-  # moxxmpp:
-  #   path: ../moxxmpp/packages/moxxmpp
-  #omemo_dart:
-  #  path: ../../Personal/omemo_dart$
-
   moxxmpp:
-    git:
-      url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: 09696c1c4d746b2dddba0fb79d47310db708aa24
-      path: packages/moxxmpp
-
+    path: ../moxxmpp/packages/moxxmpp
   omemo_dart:
-    git:
-      url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
-      rev: fe1ba99b14b516ecf6d147c57bd986d8afe7f3fc
+    path: ../../Personal/omemo_dart
+
+  # moxxmpp:
+  #   git:
+  #     url: https://git.polynom.me/Moxxy/moxxmpp.git
+  #     rev: 09696c1c4d746b2dddba0fb79d47310db708aa24
+  #     path: packages/moxxmpp
+
+  # omemo_dart:
+  #   git:
+  #     url: https://codeberg.org/PapaTutuWawa/omemo_dart.git
+  #     rev: fe1ba99b14b516ecf6d147c57bd986d8afe7f3fc
  
 extra_licenses:
   - name: undraw.co

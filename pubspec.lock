@@ -834,11 +834,9 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      path: "packages/moxxmpp"
-      ref: HEAD
-      resolved-ref: "09696c1c4d746b2dddba0fb79d47310db708aa24"
-      url: "https://git.polynom.me/Moxxy/moxxmpp.git"
-    source: git
+      path: "../moxxmpp/packages/moxxmpp"
+      relative: true
+    source: path
     version: "0.1.6+1"
   moxxmpp_socket_tcp:
     dependency: "direct main"
@@ -885,12 +883,10 @@ packages:
   omemo_dart:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: fe1ba99b14b516ecf6d147c57bd986d8afe7f3fc
-      url: "https://codeberg.org/PapaTutuWawa/omemo_dart.git"
-    source: git
-    version: "0.3.2"
+      path: "../../Personal/omemo_dart"
+      relative: true
+    source: path
+    version: "0.4.0"
   package_config:
     dependency: transitive
     description:

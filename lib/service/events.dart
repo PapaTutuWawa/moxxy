@@ -589,9 +589,8 @@ Future<void> performRecreateSessions(RecreateSessionsCommand command, { dynamic 
   await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
 
   final conn = GetIt.I.get<XmppConnection>();
-  await conn.getManagerById<OmemoManager>(omemoManager)!.sendEmptyMessage(
-    JID.fromString(command.jid),
-    findNewSessions: true,
+  await conn.getManagerById<BaseOmemoManager>(omemoManager)!.sendOmemoHeartbeat(
+    command.jid,
   );
 }
 
@@ -623,7 +622,7 @@ Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand comma
 
 Future<void> performRemoveOwnDevice(RemoveOwnDeviceCommand command, { dynamic extra }) async {
   await GetIt.I.get<XmppConnection>()
-    .getManagerById<OmemoManager>(omemoManager)!
+    .getManagerById<BaseOmemoManager>(omemoManager)!
     .deleteDevice(command.deviceId);
 }
 
