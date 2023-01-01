@@ -61,6 +61,7 @@ class OmemoService {
         om.sendEmptyMessageImpl,
         om.fetchDeviceList,
         om.fetchDeviceBundle,
+        om.subscribeToDeviceListImpl,
       );
 
       omemoManager.initialize(
