@@ -1020,7 +1020,7 @@ class DatabaseService {
     await batch.commit();
   }
 
-  Future<void> saveOmemoDevice(Device device) async {
+  Future<void> saveOmemoDevice(OmemoDevice device) async {
     await _db.insert(
       omemoDeviceTable,
       {
@@ -1032,7 +1032,7 @@ class DatabaseService {
     );
   }
 
-  Future<Device?> loadOmemoDevice(String jid) async {
+  Future<OmemoDevice?> loadOmemoDevice(String jid) async {
     final data = await _db.query(
       omemoDeviceTable,
       where: 'jid = ?',
@@ -1055,7 +1055,7 @@ class DatabaseService {
       });
     }
     deviceJson['opks'] = opks;
-    return Device.fromJson(deviceJson);
+    return OmemoDevice.fromJson(deviceJson);
   }
 
   Future<Map<String, List<int>>> loadOmemoDeviceList() async {
