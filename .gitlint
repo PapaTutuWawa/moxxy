@@ -7,7 +7,7 @@ line-length=72
 [title-trailing-punctuation]
 [title-hard-tab]
 [title-match-regex]
-regex=^(feat|fix|chore|refactor|docs|release|test)\((xmpp|service|ui|shared|meta|tests|i18n)+(,(xmpp|service|ui|shared|meta|tests|i18n))*\): .*$
+regex=^((feat|fix|chore|refactor|docs|release|test)\((xmpp|service|ui|shared|meta|tests|i18n)+(,(xmpp|service|ui|shared|meta|tests|i18n))*\)|release): .*$
 
 
 [body-trailing-whitespace]
