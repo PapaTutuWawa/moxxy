@@ -4,7 +4,6 @@ import 'package:cryptography/cryptography.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -28,14 +27,22 @@ String _cleanBase64String(String original) {
 
 class _AvatarData {
   const _AvatarData(this.data, this.id);
-  final String data;
+  final List<int> data;
   final String id;
 }
 
 class AvatarService {
   final Logger _log = Logger('AvatarService');
 
-  Future<void> updateAvatarForJid(String jid, String hash, String base64) async {
+  Future<void> handleAvatarUpdate(AvatarUpdatedEvent event) async {
+    await updateAvatarForJid(
+      event.jid,
+      event.hash,
+      base64Decode(_cleanBase64String(event.base64)),
+    );
+  }
+  
+  Future<void> updateAvatarForJid(String jid, String hash, List<int> data) async {
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
     final originalConversation = await cs.getConversationByJid(jid);
@@ -43,10 +50,9 @@ class AvatarService {
 
     // Clean the raw data. Since this may arrive by chunks, those chunks may contain
     // weird data pieces.
-    final base64Data = base64Decode(_cleanBase64String(base64));
     if (originalConversation != null) {
       final avatarPath = await saveAvatarInCache(
-        base64Data,
+        data,
         hash,
         jid,
         originalConversation.avatarUrl,
@@ -69,7 +75,7 @@ class AvatarService {
         avatarPath = await getAvatarPath(jid, hash);
       } else {
         avatarPath = await saveAvatarInCache(
-          base64Data,
+          data,
           hash,
           jid,
           originalRoster.avatarUrl,
@@ -105,7 +111,7 @@ class AvatarService {
     final avatar = avatarResult.get<UserAvatar>();
 
     return _AvatarData(
-      avatar.base64,
+      base64Decode(_cleanBase64String(avatar.base64)),
       avatar.hash,
     );
   }
@@ -119,14 +125,15 @@ class AvatarService {
 
     final binval = vcardResult.get<VCard>().photo?.binval;
     if (binval == null) return null;
-    
-    final rawHash = await Sha1().hash(base64Decode(binval));
+
+    final data = base64Decode(_cleanBase64String(binval));
+    final rawHash = await Sha1().hash(data);
     final hash = HEX.encode(rawHash.bytes);
 
     vm.setLastHash(jid, hash);
 
     return _AvatarData(
-      binval,
+      data,
       hash,
     );
   }

@@ -1405,11 +1405,7 @@ class XmppService {
   }
 
   Future<void> _onAvatarUpdated(AvatarUpdatedEvent event, { dynamic extra }) async {
-    await GetIt.I.get<AvatarService>().updateAvatarForJid(
-      event.jid,
-      event.hash,
-      event.base64,
-    );
+    await GetIt.I.get<AvatarService>().handleAvatarUpdate(event);
   }
   
   Future<void> _onStanzaAcked(StanzaAckedEvent event, { dynamic extra }) async {
