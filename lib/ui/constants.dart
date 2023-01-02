@@ -22,6 +22,7 @@ const Color bubbleColorSentQuoted = bubbleColorSent;
 const Color bubbleColorReceived = Color(0xff222222);
 const Color bubbleColorReceivedQuoted = bubbleColorReceived;
 const Color bubbleColorUnencrypted = Color(0xffd40000);
+const Color bubbleColorNewDevice = Color(0xffeee8d5);
 
 const Color settingsSectionTitleColor = Color(0xffb72fe7);
 
