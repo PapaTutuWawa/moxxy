@@ -109,22 +109,31 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
   Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth, String jid) {
     if (_index.isEven) {
-      // Check if we have to render a date bubble
-      final nextMessageDateTime = DateTime.fromMillisecondsSinceEpoch(
-        state.messages[state.messages.length - 1 - _index ~/ 2].timestamp,
-      );
-      final nextIndex = state.messages.length - 2 - _index ~/ 2;
-      final lastMessageDateTime = nextIndex > 0 ?
-        DateTime.fromMillisecondsSinceEpoch(state.messages[nextIndex].timestamp) :
-        null;
-        
-      if (lastMessageDateTime == null) {
-        return const SizedBox();
-      }
+      if (_index == 0) return const SizedBox();
 
-      if (lastMessageDateTime.day != nextMessageDateTime.day ||
-          lastMessageDateTime.month != nextMessageDateTime.month ||
-          lastMessageDateTime.year != nextMessageDateTime.year) {
+      final prevIndexRaw = (_index + 2) ~/ 2;
+      final prevIndex = state.messages.length - prevIndexRaw;
+      final prevMessageDateTime = prevIndex < 0 || prevIndexRaw == 0 ?
+        null :
+        DateTime.fromMillisecondsSinceEpoch(
+          state.messages[prevIndex].timestamp,
+        );
+
+      if (prevMessageDateTime == null) return const SizedBox();
+
+      final nextIndexRaw = _index ~/ 2;
+      final nextIndex = state.messages.length - nextIndexRaw;
+      final nextMessageDateTime = nextIndex < 0 || nextIndexRaw == 0 ?
+        null :
+        DateTime.fromMillisecondsSinceEpoch(
+          state.messages[nextIndex].timestamp,
+        );
+      if (nextMessageDateTime == null) return const SizedBox();
+      
+      // Check if we have to render a date bubble
+      if (prevMessageDateTime.day != nextMessageDateTime.day ||
+          prevMessageDateTime.month != nextMessageDateTime.month ||
+          prevMessageDateTime.year != nextMessageDateTime.year) {
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
