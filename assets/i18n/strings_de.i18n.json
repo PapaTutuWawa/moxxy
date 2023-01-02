@@ -27,6 +27,31 @@
 	    "warningChannelDescription": "Warnungen im Bezug auf Moxxy"
 	}
     },
+    "dateTime": {
+	"justNow": "Gerade",
+	"nMinutesAgo": "vor ${min}min",
+	"mondayAbbrev": "Mon",
+	"tuesdayAbbrev": "Die",
+	"wednessdayAbbrev": "Mit",
+	"thursdayAbbrev": "Don",
+	"fridayAbbrev": "Fre",
+	"saturdayAbbrev": "Sam",
+	"sundayAbbrev": "Son",
+	"january": "Januar",
+	"february": "Februar",
+	"march": "März",
+	"april": "April",
+	"may": "Mai",
+	"june": "Juni",
+	"july": "Juli",
+	"august": "August",
+	"september": "September",
+	"october": "Oktober",
+	"november": "November",
+	"december": "Dezember",
+	"today": "Heute",
+	"yesterday": "Gestern"
+    },
     "messages": {
 	"image": "Bild",
 	"video": "Video",

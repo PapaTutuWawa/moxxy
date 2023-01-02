@@ -40,7 +40,7 @@ String formatConversationTimestamp(int timestamp, int now) {
       return '${hourDifference}h';
     }
   } else if (difference <= Duration.millisecondsPerMinute) {
-    return 'Just now';
+    return t.dateTime.justNow;
   }
 
   return '${(difference / Duration.millisecondsPerMinute).floor()}min';
@@ -58,9 +58,10 @@ String formatMessageTimestamp(int timestamp, int now) {
     return '${dt.hour}:${padInt(dt.minute)}';
   } else {
     if (difference < Duration.millisecondsPerMinute) {
-      return 'Just now';
+      return t.dateTime.justNow;
     } else {
-      return '${(difference / Duration.millisecondsPerMinute).floor()}min ago';
+      final diff = (difference / Duration.millisecondsPerMinute).floor();
+      return t.dateTime.nMinutesAgo(min: diff);
     }
   }
 }
@@ -69,19 +70,19 @@ String formatMessageTimestamp(int timestamp, int now) {
 String weekdayToStringAbbrev(int day) {
   switch (day) {
     case DateTime.monday:
-      return 'Mon';
+      return t.dateTime.mondayAbbrev;
     case DateTime.tuesday:
-      return 'Tue';
+      return t.dateTime.tuesdayAbbrev;
     case DateTime.wednesday:
-      return 'Wed';
+      return t.dateTime.wednessdayAbbrev;
     case DateTime.thursday:
-      return 'Thu';
+      return t.dateTime.thursdayAbbrev;
     case DateTime.friday:
-      return 'Fri';
+      return t.dateTime.fridayAbbrev;
     case DateTime.saturday:
-      return 'Sat';
+      return t.dateTime.saturdayAbbrev;
     case DateTime.sunday:
-      return 'Sun';
+      return t.dateTime.sundayAbbrev;
   }
 
   // Should not happen
@@ -92,29 +93,29 @@ String weekdayToStringAbbrev(int day) {
 String monthToString(int month) {
   switch (month) {
     case DateTime.january:
-      return 'January';
+      return t.dateTime.january;
     case DateTime.february:
-      return 'February';
+      return t.dateTime.february;
     case DateTime.march:
-      return 'March';
+      return t.dateTime.march;
     case DateTime.april:
-      return 'April';
+      return t.dateTime.april;
     case DateTime.may:
-      return 'May';
+      return t.dateTime.may;
     case DateTime.june:
-      return 'June';
+      return t.dateTime.june;
     case DateTime.july:
-      return 'July';
+      return t.dateTime.july;
     case DateTime.august:
-      return 'August';
+      return t.dateTime.august;
     case DateTime.september:
-      return 'September';
+      return t.dateTime.september;
     case DateTime.october:
-      return 'October';
+      return t.dateTime.october;
     case DateTime.november:
-      return 'November';
+      return t.dateTime.november;
     case DateTime.december:
-      return 'December';
+      return t.dateTime.december;
   }
 
   // Should not happen
@@ -125,9 +126,9 @@ String monthToString(int month) {
 /// like 'Today', 'Yesterday', 'Fri, 7. August' or '6. August 2022'.
 String formatDateBubble(DateTime dt, DateTime now) {
   if (dt.day == now.day && dt.month == now.month && dt.year == now.year) {
-    return 'Today';
+    return t.dateTime.today;
   } else if (now.subtract(const Duration(days: 1)).day == dt.day) {
-    return 'Yesterday';
+    return t.dateTime.yesterday;
   } else if (dt.year == now.year) {
     return '${weekdayToStringAbbrev(dt.weekday)}, ${dt.day}. ${monthToString(dt.month)}';
   } else {
