@@ -397,6 +397,7 @@ class OmemoService {
     
     for (final deviceId in _fingerprintCache[bareJid]!.keys) {
       if (deviceId == ownId) continue;
+      if (keys.indexWhere((key) => key.deviceId == deviceId) != -1) continue;
 
       final fingerprint = _fingerprintCache[bareJid]![deviceId]!;
       keys.add(
