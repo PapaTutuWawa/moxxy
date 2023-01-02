@@ -17,7 +17,10 @@ import 'package:share_handler/share_handler.dart';
 /// Handler for when we received a [PreStartDoneEvent].
 Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
   GetIt.I.get<PreferencesBloc>().add(
-    PreferencesChangedEvent(result.preferences),
+    PreferencesChangedEvent(
+      result.preferences,
+      notify: false,
+    ),
   );
 
   WidgetsFlutterBinding.ensureInitialized();

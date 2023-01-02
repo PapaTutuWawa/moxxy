@@ -252,6 +252,7 @@ Future<void> entrypoint() async {
   sendEvent(ServiceReadyEvent());
 }
 
+@pragma('vm:entry-point')
 Future<void> receiveUIEvent(Map<String, dynamic>? data) async {
   await GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().add(data);
 }
