@@ -17,9 +17,9 @@ import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
+import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
+import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
-import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/new_device.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 class ConversationPage extends StatefulWidget {
