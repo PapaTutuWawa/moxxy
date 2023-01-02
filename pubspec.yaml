@@ -140,7 +140,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: 2a3449d0f2f222cdb615239d56af7a1dd8840189
+      rev: 55d2ef9c25d383806bc780597a96d3c2887a4aa1
       path: packages/moxxmpp
  
 extra_licenses:

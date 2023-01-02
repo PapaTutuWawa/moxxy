@@ -291,7 +291,9 @@
 		"cannotEnableRedirectSubtext": "Du must zuerst einen Proxydienst auswählen. Dazu berühre das Feld neben dem Schalter.",
 		"urlEmpty": "URL kann nicht leer sein",
 		"urlInvalid": "Ungültige URL",
-		"redirectDialogTitle": "${serviceName}weiterleitung"
+		"redirectDialogTitle": "${serviceName}weiterleitung",
+		"stickersPrivacy": "Stickerliste öffentlich halten",
+		"stickersPrivacySubtext": "Wenn eingeschaltet, dann kann jeder die Liste Deiner installierten Stickerpacks sehen."
 	    },
 	    "stickers": {
 		"title": "Stickers",

@@ -70,6 +70,20 @@ class PrivacyPage extends StatelessWidget {
                 },
               ),
             ),
+            SettingsRow(
+              title: t.pages.settings.privacy.stickersPrivacy,
+              description: t.pages.settings.privacy.stickersPrivacySubtext,
+              suffix: Switch(
+                value: state.isStickersNodePublic,
+                onChanged: (value) {
+                  context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(isStickersNodePublic: value),
+                    ),
+                  );
+                },
+              ),
+            ),
 
             SectionTitle(t.pages.settings.privacy.conversationsSection),
             SettingsRow(

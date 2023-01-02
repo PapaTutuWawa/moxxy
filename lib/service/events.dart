@@ -348,6 +348,37 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
       css.disableDatabaseListener();
     }
   }
+
+  // TODO(Unknown): Maybe handle this in StickersService
+  // If sticker visibility was changed, apply the settings to the PubSub node
+  final pm = GetIt.I.get<XmppConnection>()
+    .getManagerById<PubSubManager>(pubsubManager)!;
+  final ownJid = (await GetIt.I.get<XmppService>().getXmppState()).jid!;
+  if (command.preferences.isStickersNodePublic && !oldPrefs.isStickersNodePublic) {
+    // Set to open
+    unawaited(
+      pm.configure(
+        ownJid,
+        stickersXmlns,
+        const PubSubPublishOptions(
+          accessModel: 'open',
+          maxItems: 'max',
+        ),
+      ),
+    );
+  } else if (!command.preferences.isStickersNodePublic && oldPrefs.isStickersNodePublic) {
+    // Set to presence
+    unawaited(
+      pm.configure(
+        ownJid,
+        stickersXmlns,
+        const PubSubPublishOptions(
+          accessModel: 'presence',
+          maxItems: 'max',
+        ),
+      ),
+    );
+  }
   
   // Set the locale
   final locale = command.preferences.languageLocaleCode == 'default' ?

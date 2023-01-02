@@ -291,7 +291,9 @@
 		"cannotEnableRedirectSubtext": "You must first set a proxy service to redirect to. To do so, tap the field next to the switch.",
 		"urlEmpty": "URL cannot be empty",
 		"urlInvalid": "Invalid URL",
-		"redirectDialogTitle": "$serviceName Redirect"
+		"redirectDialogTitle": "$serviceName Redirect",
+		"stickersPrivacy": "Keep sticker list public",
+		"stickersPrivacySubtext": "If enabled, everyone will be able to see your list of installed sticker packs."
 	    },
 	    "stickers": {
 		"title": "Stickers",

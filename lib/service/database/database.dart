@@ -30,6 +30,7 @@ import 'package:moxxyv2/service/database/migrations/0000_stickers_hash_key2.dart
 import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes2.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes3.dart';
+import 'package:moxxyv2/service/database/migrations/0000_stickers_privacy.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
@@ -81,7 +82,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 24,
+      version: 25,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -185,6 +186,10 @@ class DatabaseService {
         if (oldVersion < 24) {
           _log.finest('Running migration for database version 24');
           await upgradeFromV23ToV24(db);
+        }
+        if (oldVersion < 25) {
+          _log.finest('Running migration for database version 25');
+          await upgradeFromV24ToV25(db);
         }
       },
     );
