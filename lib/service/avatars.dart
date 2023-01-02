@@ -46,42 +46,27 @@ class AvatarService {
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
     final originalConversation = await cs.getConversationByJid(jid);
-    var saved = false;
+    final originalRoster = await rs.getRosterItemByJid(jid);
 
-    // Clean the raw data. Since this may arrive by chunks, those chunks may contain
-    // weird data pieces.
+    if (originalConversation == null && originalRoster == null) return;
+    
+    final avatarPath = await saveAvatarInCache(
+      data,
+      hash,
+      jid,
+      (originalConversation?.avatarUrl ?? originalRoster?.avatarUrl)!,
+    );
+    
     if (originalConversation != null) {
-      final avatarPath = await saveAvatarInCache(
-        data,
-        hash,
-        jid,
-        originalConversation.avatarUrl,
-      );
-      saved = true;
       final conv = await cs.updateConversation(
         originalConversation.id,
         avatarUrl: avatarPath,
       );
 
       sendEvent(ConversationUpdatedEvent(conversation: conv));
-    } else {
-      _log.warning('Failed to get conversation');
     }
-
-    final originalRoster = await rs.getRosterItemByJid(jid);
+ 
     if (originalRoster != null) {
-      var avatarPath = '';
-      if (saved) {
-        avatarPath = await getAvatarPath(jid, hash);
-      } else {
-        avatarPath = await saveAvatarInCache(
-          data,
-          hash,
-          jid,
-          originalRoster.avatarUrl,
-        ); 
-      }
-
       final roster = await rs.updateRosterItem(
         originalRoster.id,
         avatarUrl: avatarPath,
