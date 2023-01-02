@@ -14,7 +14,6 @@ part 'devices_event.dart';
 part 'devices_state.dart';
 
 class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
-
   DevicesBloc() : super(DevicesState()) {
     on<DevicesRequestedEvent>(_onRequested);
     on<DeviceEnabledSetEvent>(_onDeviceEnabledSet);

@@ -9,14 +9,29 @@ import 'package:moxxyv2/shared/warning_types.dart';
 part 'message.freezed.dart';
 part 'message.g.dart';
 
+const pseudoMessageTypeNewDevice = 1;
+
 Map<String, String>? _optionalJsonDecode(String? data) {
   if (data == null) return null;
 
   return (jsonDecode(data) as Map<dynamic, dynamic>).cast<String, String>();
 }
 
-String? _optionalJsonEncode(Map<String, String>? data) {
+Map<String, dynamic> _optionalJsonDecodeWithFallback(String? data) {
+  if (data == null) return <String, dynamic>{};
+
+  return (jsonDecode(data) as Map<dynamic, dynamic>).cast<String, dynamic>();
+}
+
+String? _optionalJsonEncode(Map<String, dynamic>? data) {
   if (data == null) return null;
+
+  return jsonEncode(data);
+}
+
+String? _optionalJsonEncodeWithFallback(Map<String, dynamic>? data) {
+  if (data == null) return null;
+  if (data.isEmpty) return null;
 
   return jsonEncode(data);
 }
@@ -66,6 +81,8 @@ class Message with _$Message {
       @Default([]) List<Reaction> reactions,
       String? stickerPackId,
       String? stickerHashKey,
+      int? pseudoMessageType,
+      Map<String, dynamic>? pseudoMessageData,
     }
   ) = _Message;
 
@@ -91,6 +108,7 @@ class Message with _$Message {
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
       'reactions': <Map<String, dynamic>>[],
+      'pseudoMessageData': _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
     }).copyWith(
       quotes: quotes,
       reactions: (jsonDecode(json['reactions']! as String) as List<dynamic>)
@@ -104,7 +122,8 @@ class Message with _$Message {
     final map = toJson()
       ..remove('id')
       ..remove('quotes')
-      ..remove('reactions');
+      ..remove('reactions')
+      ..remove('pseudoMessageData');
 
     return {
       ...map,
@@ -128,6 +147,7 @@ class Message with _$Message {
           .map((r) => r.toJson())
           .toList(),
       ),
+      'pseudoMessageData': _optionalJsonEncodeWithFallback(pseudoMessageData),
     };
   }
 
@@ -143,27 +163,30 @@ class Message with _$Message {
     return mimeTypeToEmoji(mediaType, addTypeName: false);
   }
 
+  /// True if the message is a pseudo message.
+  bool get isPseudoMessage => pseudoMessageType != null && pseudoMessageData != null;
+  
   /// Returns true if the message can be quoted. False if not.
-  bool get isQuotable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading;
+  bool get isQuotable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
 
   /// Returns true if the message can be retracted. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
   bool canRetract(bool sentBySelf) {
-    return originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading;
+    return originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
   }
 
   /// Returns true if we can send a reaction for this message.
-  bool get isReactable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading;
+  bool get isReactable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
 
   /// Returns true if the message can be edited. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
   bool canEdit(bool sentBySelf) {
-    return sentBySelf && !isMedia && !isFileUploadNotification && !isUploading && !isDownloading;
+    return sentBySelf && !isMedia && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
   }
 
   /// Returns true if the message can open the selection menu by longpressing. False if
   /// not.
-  bool get isLongpressable => !isRetracted;
+  bool get isLongpressable => !isRetracted && !isPseudoMessage;
 
   /// Returns true if the menu item to show the error should be shown in the
   /// longpress menu.
@@ -176,14 +199,14 @@ class Message with _$Message {
 
   /// Returns true if the message contains media that can be thumbnailed, i.e. videos or
   /// images.
-  bool get isThumbnailable => isMedia && mediaType != null && (
+  bool get isThumbnailable => !isPseudoMessage && isMedia && mediaType != null && (
     mediaType!.startsWith('image/') ||
     mediaType!.startsWith('video/')
   );
 
   /// Returns true if the message can be copied to the clipboard.
-  bool get isCopyable => !isMedia && body.isNotEmpty;
+  bool get isCopyable => !isMedia && body.isNotEmpty && !isPseudoMessage;
 
   /// Returns true if the message is a sticker
-  bool get isSticker => isMedia && stickerPackId != null && stickerHashKey != null;
+  bool get isSticker => isMedia && stickerPackId != null && stickerHashKey != null && !isPseudoMessage;
 }

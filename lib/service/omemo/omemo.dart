@@ -6,9 +6,14 @@ import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
+import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart' as model;
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:synchronized/synchronized.dart';
@@ -90,6 +95,8 @@ class OmemoService {
           if (_fingerprintCache.containsKey(event.jid)) {
             _fingerprintCache[event.jid]![event.deviceId] = fingerprint;
           }
+
+          await addNewDeviceMessage(event.jid, event.deviceId);
         }
       } else if (event is DeviceListModifiedEvent) {
         await commitDeviceMap(event.list);
@@ -113,6 +120,37 @@ class OmemoService {
     });
   }
 
+  /// Adds a pseudo message saying that [jid] added a new device with id [deviceId].
+  /// If, however, [jid] is our own JID, then nothing is done.
+  Future<void> addNewDeviceMessage(String jid, int deviceId) async {
+    // Add a pseudo message if it is not about our own devices
+    final xmppState = await GetIt.I.get<XmppService>().getXmppState();
+    if (jid == xmppState.jid) return;
+    
+    final ms = GetIt.I.get<MessageService>();
+    final message = await ms.addMessageFromData(
+      '',
+      DateTime.now().millisecondsSinceEpoch,
+      '',
+      jid,
+      false,
+      '',
+      false,
+      false,
+      false,
+      pseudoMessageType: pseudoMessageTypeNewDevice,
+      pseudoMessageData: <String, dynamic>{
+        'deviceId': deviceId,
+        'jid': jid,
+      },
+    );
+    sendEvent(
+      MessageAddedEvent(
+        message: message,
+      ),
+    );
+  }
+  
   Future<model.OmemoDevice> regenerateDevice(String jid) async {
     // Prevent access to the session manager as it is (mostly) guarded ensureInitialized
     await _lock.synchronized(() {

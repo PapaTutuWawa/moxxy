@@ -132,7 +132,8 @@
 	    "addToContactsBody": "Are you sure you want to add ${jid} to your contacts?",
 	    "stickerPickerNoStickersLine1": "You have no sticker packs installed.",
 	    "stickerPickerNoStickersLine2": "They can be installed in the sticker settings.",
-	    "stickerSettings": "Sticker settings"
+	    "stickerSettings": "Sticker settings",
+	    "newDeviceMessage": "${title} added a new encryption device"
 	},
 	"addcontact": {
 	    "title": "Add new contact",

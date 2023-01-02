@@ -18,6 +18,7 @@ import 'package:moxxyv2/service/database/migrations/0000_conversations3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_language.dart';
 import 'package:moxxyv2/service/database/migrations/0000_lmc.dart';
 import 'package:moxxyv2/service/database/migrations/0000_omemo_fingerprint_cache.dart';
+import 'package:moxxyv2/service/database/migrations/0000_pseudo_messages.dart';
 import 'package:moxxyv2/service/database/migrations/0000_reactions.dart';
 import 'package:moxxyv2/service/database/migrations/0000_reactions_store_hint.dart';
 import 'package:moxxyv2/service/database/migrations/0000_retraction.dart';
@@ -80,7 +81,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 23,
+      version: 24,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -180,6 +181,10 @@ class DatabaseService {
         if (oldVersion < 23) {
           _log.finest('Running migration for database version 23');
           await upgradeFromV22ToV23(db);
+        }
+        if (oldVersion < 24) {
+          _log.finest('Running migration for database version 24');
+          await upgradeFromV23ToV24(db);
         }
       },
     );
@@ -428,6 +433,8 @@ class DatabaseService {
       int? mediaSize,
       String? stickerPackId,
       String? stickerHashKey,
+      int? pseudoMessageType,
+      Map<String, dynamic>? pseudoMessageData,
     }
   ) async {
     var m = Message(
@@ -464,6 +471,8 @@ class DatabaseService {
       mediaSize: mediaSize,
       stickerPackId: stickerPackId,
       stickerHashKey: stickerHashKey,
+      pseudoMessageType: pseudoMessageType,
+      pseudoMessageData: pseudoMessageData,
     );
 
     if (quoteId != null) {

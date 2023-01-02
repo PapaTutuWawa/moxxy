@@ -26,7 +26,7 @@ enum MessageType {
   video,
   audio,
   file,
-  sticker
+  sticker,
 }
 
 /// Deduce the type of message we are dealing with to pick the correct
@@ -72,7 +72,9 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
       return TextChatWidget(
         message,
         sent,
-        topWidget: message.quotes != null ? buildQuoteMessageWidget(message.quotes!, sent) : null,
+        topWidget: message.quotes != null ?
+          buildQuoteMessageWidget(message.quotes!, sent) :
+          null,
       );
     }
     case MessageType.image:
@@ -83,13 +85,8 @@ Widget buildMessageWidget(Message message, double maxWidth, BorderRadius radius,
       return StickerChatWidget(message, radius, maxWidth, sent);
     case MessageType.audio:
       return AudioChatWidget(message, radius, maxWidth, sent);
-    case MessageType.file: {
+    case MessageType.file:
       return FileChatWidget(message, radius, maxWidth, sent);
-      /*return TextChatWidget(
-        message,
-        sent,
-      );*/
-    }
   }
 }
 

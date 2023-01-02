@@ -19,6 +19,7 @@ import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/datebubble.dart';
+import 'package:moxxyv2/ui/widgets/chat/media/new_device.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 class ConversationPage extends StatefulWidget {
@@ -136,11 +137,28 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
       return const SizedBox();
     }
-
+    
     // TODO(Unknown): Since we reverse the list: Fix start, end and between
     final index = state.messages.length - 1 - (_index - 1) ~/ 2;
     final item = state.messages[index];
 
+    if (item.isPseudoMessage) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: maxWidth,
+            ),
+            child: NewDeviceBubble(
+              data: item.pseudoMessageData!,
+              title: state.conversation!.title,
+            ),
+          ),
+        ],
+      );
+    }
+    
     final start = index - 1 < 0 ?
       true :
       isSent(state.messages[index - 1], jid) != isSent(item, jid);

@@ -46,6 +46,11 @@ class RawChatBubble extends StatelessWidget {
       isInlinedWidget = message.mediaType!.startsWith('image/');
     }
 
+    // Check if it is a pseudo message
+    if (message.isPseudoMessage) {
+      return true;
+    }
+    
     // Check if it is an embedded file
     if (message.isMedia && message.mediaUrl != null && isInlinedWidget) {
       return true;

@@ -66,6 +66,8 @@ class MessageService {
       int? mediaSize,
       String? stickerPackId,
       String? stickerHashKey,
+      int? pseudoMessageType,
+      Map<String, dynamic>? pseudoMessageData,
     }
   ) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
@@ -99,6 +101,8 @@ class MessageService {
       mediaSize: mediaSize,
       stickerPackId: stickerPackId,
       stickerHashKey: stickerHashKey,
+      pseudoMessageType: pseudoMessageType,
+      pseudoMessageData: pseudoMessageData,
     );
 
     // Only update the cache if the conversation already has been loaded. This prevents

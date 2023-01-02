@@ -57,6 +57,8 @@ Future<void> createDatabase(Database db, int version) async {
       containsNoStore INTEGER NOT NULL,
       stickerPackId   TEXT,
       stickerHashKey  TEXT,
+      pseudoMessageType INTEGER,
+      pseudoMessageData TEXT,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id),
     )''',
   );
