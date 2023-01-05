@@ -41,6 +41,7 @@ class OmemoService {
 
     final db = GetIt.I.get<DatabaseService>();
     var device = await db.loadOmemoDevice(jid);
+    var commitTrustManager = false;
     if (device == null) {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
       // Generate the identity in the background
@@ -48,7 +49,8 @@ class OmemoService {
 
       await commitDevice(device!);
       await commitDeviceMap(<String, List<int>>{});
-      await commitTrustManager(await omemoManager.trustManager.toJson());
+
+      commitTrustManager = true;
     } else {
       _log.info('OMEMO marker found. Restoring OMEMO state...');
       final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
@@ -73,6 +75,10 @@ class OmemoService {
         ratchetMap,
         await db.loadOmemoDeviceList(),
       );
+
+      if (commitTrustManager) {
+        await commitTrustManager(await omemoManager.trustManager.toJson());
+      }
     }
 
     omemoManager.eventStream.listen((event) async {
