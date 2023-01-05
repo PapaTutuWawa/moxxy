@@ -40,46 +40,42 @@ class OmemoService {
     if (done) return;
 
     final db = GetIt.I.get<DatabaseService>();
-    var device = await db.loadOmemoDevice(jid);
-    var commitTrustManager = false;
+    final device = await db.loadOmemoDevice(jid);
+    final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
+    final deviceList = <String, List<int>>{};
     if (device == null) {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
-      // Generate the identity in the background
-      device = await compute(generateNewIdentityImpl, jid);
-
-      await commitDevice(device!);
-      await commitDeviceMap(<String, List<int>>{});
-
-      commitTrustManager = true;
     } else {
       _log.info('OMEMO marker found. Restoring OMEMO state...');
-      final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
       for (final ratchet in await GetIt.I.get<DatabaseService>().loadRatchets()) {
         final key = RatchetMapKey(ratchet.jid, ratchet.id);
         ratchetMap[key] = ratchet.ratchet;
       }
 
-      final db = GetIt.I.get<DatabaseService>();
-      final om = GetIt.I.get<moxxmpp.XmppConnection>().
-        getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
-      omemoManager = OmemoManager(
-        device,
-        await loadTrustManager(),
-        om.sendEmptyMessageImpl,
-        om.fetchDeviceList,
-        om.fetchDeviceBundle,
-        om.subscribeToDeviceListImpl,
-      );
-
-      omemoManager.initialize(
-        ratchetMap,
-        await db.loadOmemoDeviceList(),
-      );
-
-      if (commitTrustManager) {
-        await commitTrustManager(await omemoManager.trustManager.toJson());
-      }
+      deviceList.addAll(await db.loadOmemoDeviceList());
     }
+
+    final om = GetIt.I.get<moxxmpp.XmppConnection>().
+      getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
+    omemoManager = OmemoManager(
+      device ?? await compute(generateNewIdentityImpl, jid),
+      await loadTrustManager(),
+      om.sendEmptyMessageImpl,
+      om.fetchDeviceList,
+      om.fetchDeviceBundle,
+      om.subscribeToDeviceListImpl,
+    );
+
+    if (device == null) {
+      await commitDevice(device!);
+      await commitDeviceMap(<String, List<int>>{});
+      await commitTrustManager(await omemoManager.trustManager.toJson());
+    }
+
+    omemoManager.initialize(
+      ratchetMap,
+      deviceList,
+    );
 
     omemoManager.eventStream.listen((event) async {
       if (event is RatchetModifiedEvent) {
@@ -428,5 +424,12 @@ class OmemoService {
       deviceId,
       BTBVTrustState.verified,
     );
+  }
+
+  /// Tells omemo_dart, that certain caches are to be seen as invalidated.
+  void onNewConnection() {
+    if (_initialized) {
+      omemoManager.onNewConnection();
+    }
   }
 }
