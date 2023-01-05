@@ -24,6 +24,8 @@ const Color bubbleColorReceivedQuoted = bubbleColorReceived;
 const Color bubbleColorUnencrypted = Color(0xffd40000);
 const Color bubbleColorNewDevice = Color(0xffeee8d5);
 
+const Color bubbleTextColor = Color(0xffffffff);
+
 const Color settingsSectionTitleColor = Color(0xffb72fe7);
 
 const double paddingVeryLarge = 64;

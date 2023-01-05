@@ -9,10 +9,10 @@ import 'package:moxxyv2/ui/widgets/chat/media/sticker.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/audio.dart';
-import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/sticker.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/text.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
@@ -96,12 +96,7 @@ Widget buildQuoteMessageWidget(Message message, bool sent, { void Function()? re
     case MessageType.sticker:
       return QuotedStickerWidget(message, sent, resetQuote: resetQuote);
     case MessageType.text:
-      return QuoteBaseWidget(
-        message,
-        Text(message.body),
-        sent,
-        resetQuotedMessage: resetQuote,
-      );
+      return QuotedTextWidget(message, sent, resetQuote: resetQuote);
     case MessageType.image:
       return QuotedImageWidget(message, sent, resetQuote: resetQuote);
     case MessageType.video:

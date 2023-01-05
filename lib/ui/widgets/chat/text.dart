@@ -56,7 +56,7 @@ class TextChatWidget extends StatelessWidget {
             child: ParsedText(
               text: getMessageText(),
               style: TextStyle(
-                color: const Color(0xffffffff),
+                color: bubbleTextColor,
                 fontSize: fontsize,
               ),
               parse: [
