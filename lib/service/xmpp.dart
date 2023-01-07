@@ -55,7 +55,6 @@ class XmppService {
         EventTypeMatcher<SubscriptionRequestReceivedEvent>(_onSubscriptionRequestReceived),
         EventTypeMatcher<DeliveryReceiptReceivedEvent>(_onDeliveryReceiptReceived),
         EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
-        EventTypeMatcher<RosterPushEvent>(_onRosterPush),
         EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
         EventTypeMatcher<StanzaAckedEvent>(_onStanzaAcked),
         EventTypeMatcher<MessageEvent>(_onMessage),
@@ -663,7 +662,7 @@ class XmppService {
 
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
       unawaited(_initializeOmemoService(settings.jid.toString()));
-
+      
       if (!event.resumed) {
         // Reset the blocking service's cache
         GetIt.I.get<BlocklistService>().onNewConnection();
@@ -681,8 +680,10 @@ class XmppService {
 
         // In section 5 of XEP-0198 it says that a client should not request the roster
         // in case of a stream resumption.
-        await GetIt.I.get<RosterService>().requestRoster();
-
+        await connection
+          .getManagerById<RosterManager>(rosterManager)!
+          .requestRoster();
+        
         // TODO(Unknown): Once groupchats come into the equation, this gets trickier
         final roster = await GetIt.I.get<RosterService>().getRoster();
         for (final item in roster) {
@@ -1402,11 +1403,6 @@ class XmppService {
     }
   }
   
-  Future<void> _onRosterPush(RosterPushEvent event, { dynamic extra }) async {
-    _log.fine("Roster push version: ${event.ver ?? "(null)"}");
-    await GetIt.I.get<RosterService>().handleRosterPushEvent(event);
-  }
-
   Future<void> _onAvatarUpdated(AvatarUpdatedEvent event, { dynamic extra }) async {
     await GetIt.I.get<AvatarService>().handleAvatarUpdate(event);
   }

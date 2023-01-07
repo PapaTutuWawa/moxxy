@@ -370,7 +370,6 @@ class OmemoService {
 
   Future<void> removeAllSessions(String jid) async {
     await ensureInitialized();
-    // TODO(PapaTutuWawa): Reset trust decisions in the TrustManager
     await omemoManager.removeAllRatchets(jid);
   }
 

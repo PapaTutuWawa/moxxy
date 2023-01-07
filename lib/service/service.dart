@@ -178,7 +178,7 @@ Future<void> entrypoint() async {
   )..registerManagers([
       MoxxyStreamManagementManager(),
       MoxxyDiscoManager(),
-      MoxxyRosterManager(),
+      RosterManager(MoxxyRosterStateManager()),
       MoxxyOmemoManager(),
       PingManager(),
       MessageManager(),
