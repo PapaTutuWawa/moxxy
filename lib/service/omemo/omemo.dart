@@ -67,7 +67,7 @@ class OmemoService {
     );
 
     if (device == null) {
-      await commitDevice(device!);
+      await commitDevice(await omemoManager.getDevice());
       await commitDeviceMap(<String, List<int>>{});
       await commitTrustManager(await omemoManager.trustManager.toJson());
     }
