@@ -836,7 +836,7 @@ packages:
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: d8c2ef6f3b3c7aa7147f0d0a4713793d1bc51743
+      resolved-ref: "7ce6703c5bebdfe101e7c1c23aec39fefdbc4645"
       url: "https://git.polynom.me/Moxxy/moxxmpp.git"
     source: git
     version: "0.1.6+1"
