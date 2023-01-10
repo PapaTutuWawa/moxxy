@@ -22,7 +22,7 @@ class QuotedTextWidget extends StatelessWidget {
       Text(
         message.body,
         style: const TextStyle(
-          color: bubbleTextColor,
+          color: bubbleTextQuote,
         ),
       ),
       sent,

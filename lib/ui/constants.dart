@@ -17,14 +17,32 @@ const Color primaryColorAlt = Color(primaryColorAltHexRGB);
 const Color primaryColorDisabled = Color(primaryColorDisabledHexRGB);
 const Color textColorDisabled = Color(textColorDisabledHexRGB);
 
+/// The color of a bubble that was sent
 const Color bubbleColorSent = Color(0xff7e0bce);
-const Color bubbleColorSentQuoted = bubbleColorSent;
+
+/// The color of the quote widget for a sent quote
+const Color bubbleColorSentQuoted = Color(0xff6e0ab4);
+
+/// The color of a bubble that was received
 const Color bubbleColorReceived = Color(0xff222222);
-const Color bubbleColorReceivedQuoted = bubbleColorReceived;
+
+/// The color of the quote widget for a received quote
+const Color bubbleColorReceivedQuoted = Color(0xff2f2f2f);
+
+/// The color of a bubble when the message is unencrypted while the chat is encrypted
 const Color bubbleColorUnencrypted = Color(0xffd40000);
+
+/// The color of a bubble for a pseudo message of type new device
 const Color bubbleColorNewDevice = Color(0xffeee8d5);
 
+/// The color of text within a regular bubble
 const Color bubbleTextColor = Color(0xffffffff);
+
+/// The color of text within a quote widget
+const Color bubbleTextQuote = Color(0xffdadada);
+
+/// The width of the white left border of quote widgets
+const double quoteLeftBorderWidth = 4;
 
 const Color settingsSectionTitleColor = Color(0xffb72fe7);
 
@@ -40,16 +58,17 @@ const double fontsizeBody = 15;
 const double fontsizeBodyOnlyEmojis = 30;
 const double fontsizeSubbody = 10;
 
-// The color for a shared media item
+/// The color for a shared media item
 final Color sharedMediaItemBackgroundColor = Colors.grey.shade500;
-// The color for a shared media summary
+
+/// The color for a shared media summary
 final Color sharedMediaSummaryBackgroundColor = Colors.grey.shade500;
 
-// The translucent black we use when we need to ensure good contrast, for example when
-// displaying the download progress indicator.
+/// The translucent black we use when we need to ensure good contrast, for example when
+/// displaying the download progress indicator.
 final backdropBlack = Colors.black.withAlpha(150);
 
-// Navigation constants
+/// Navigation constants
 const String cropRoute = '/crop';
 const String introRoute = '/intro';
 const String loginRoute = '/route';
