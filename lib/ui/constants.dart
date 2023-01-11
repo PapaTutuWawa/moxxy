@@ -47,6 +47,14 @@ const Color conversationTextFieldColorDark = Color(0xff414141);
 /// The width of the white left border of quote widgets
 const double quoteLeftBorderWidth = 4;
 
+/// The background color of the avatar when no actual avatar is available
+const Color profileFallbackBackgroundColorLight = Color(0xffc3c3c3);
+const Color profileFallbackBackgroundColorDark = Color(0xff424242);
+
+/// The text color of the avatar fallback text
+const Color profileFallbackTextColorLight = Color(0xff343434);
+const Color profileFallbackTextColorDark = Colors.white;
+
 const Color settingsSectionTitleColor = Color(0xffb72fe7);
 
 const double paddingVeryLarge = 64;

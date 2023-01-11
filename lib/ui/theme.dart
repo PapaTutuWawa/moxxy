@@ -6,15 +6,25 @@ import 'package:moxxyv2/ui/constants.dart';
 class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
   const MoxxyThemeData({
     required this.conversationTextFieldColor,
+    required this.profileFallbackBackgroundColor,
+    required this.profileFallbackTextColor,
   });
 
   /// The color of the conversation TextField
   final Color conversationTextFieldColor;
 
+  /// The color of the background of a user with no avatar
+  final Color profileFallbackBackgroundColor;
+
+  /// The text color of a user with no avatar
+  final Color profileFallbackTextColor;
+
   @override
-  MoxxyThemeData copyWith({Color? conversationTextFieldColor}) {
+  MoxxyThemeData copyWith({Color? conversationTextFieldColor, Color? profileFallbackBackgroundColor, Color? profileFallbackTextColor}) {
     return MoxxyThemeData(
       conversationTextFieldColor: conversationTextFieldColor ?? this.conversationTextFieldColor,
+      profileFallbackBackgroundColor: profileFallbackBackgroundColor ?? this.profileFallbackBackgroundColor,
+      profileFallbackTextColor: profileFallbackTextColor ?? this.profileFallbackTextColor,
     );
   }
 
@@ -77,11 +87,18 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
     ),
 
     extensions: [
-      MoxxyThemeData(
-        conversationTextFieldColor: brightness == Brightness.dark ?
-          conversationTextFieldColorDark :
-          conversationTextFieldColorLight,
-      ),
+      if (brightness == Brightness.dark)
+        const MoxxyThemeData(
+          conversationTextFieldColor: conversationTextFieldColorDark,
+          profileFallbackBackgroundColor: profileFallbackBackgroundColorDark,
+          profileFallbackTextColor: profileFallbackTextColorDark,
+        )
+      else
+        const MoxxyThemeData(
+          conversationTextFieldColor: conversationTextFieldColorLight,
+          profileFallbackBackgroundColor: profileFallbackBackgroundColorLight,
+          profileFallbackTextColor: profileFallbackTextColorLight,
+        ),
     ],
   );
 }

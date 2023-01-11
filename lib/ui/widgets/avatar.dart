@@ -1,7 +1,7 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/theme.dart';
 
 class AvatarWrapper extends StatelessWidget {
   const AvatarWrapper({ required this.radius, this.avatarUrl, this.altText, this.altIcon, this.onTapFunction, this.showEditButton = false, super.key })
@@ -14,12 +14,13 @@ class AvatarWrapper extends StatelessWidget {
   final bool showEditButton;
   final void Function()? onTapFunction;
   
-  Widget _constructAlt() {
+  Widget _constructAlt(BuildContext context) {
     if (altText != null) {
       return Text(
         avatarAltText(altText!),
         style: TextStyle(
           fontSize: radius * 0.8,
+          color: Theme.of(context).extension<MoxxyThemeData>()!.profileFallbackTextColor,
         ),
       );
     }
@@ -27,25 +28,26 @@ class AvatarWrapper extends StatelessWidget {
     return Icon(
       altIcon,
       size: radius,
+      color: Theme.of(context).extension<MoxxyThemeData>()!.profileFallbackTextColor,
     );
   }
 
   /// Either display the alt or the actual image
-  Widget _avatarWrapper() {
+  Widget _avatarWrapper(BuildContext context) {
     final useAlt = avatarUrl == null || avatarUrl == '';
     
     return CircleAvatar(
-      backgroundColor: Colors.grey[800],
+      backgroundColor: Theme.of(context).extension<MoxxyThemeData>()!.profileFallbackBackgroundColor,
       backgroundImage: !useAlt ? FileImage(File(avatarUrl!)) : null,
       radius: radius,
-      child: useAlt ? _constructAlt() : null,
+      child: useAlt ? _constructAlt(context) : null,
     );
   }
 
-  Widget _withEditButton() {
+  Widget _withEditButton(BuildContext context) {
     return Stack(
       children: [
-        _avatarWrapper(),
+        _avatarWrapper(context),
         Positioned(
           bottom: 0,
           right: 0,
@@ -71,7 +73,9 @@ class AvatarWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTapFunction,
-      child: showEditButton ? _withEditButton() : _avatarWrapper(),
+      child: showEditButton ?
+        _withEditButton(context) :
+        _avatarWrapper(context),
     );
   }
 }
