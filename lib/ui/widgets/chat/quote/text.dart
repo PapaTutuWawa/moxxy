@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/helpers.dart';
 

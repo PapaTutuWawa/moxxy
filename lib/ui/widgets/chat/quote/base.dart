@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/theme.dart';
 
 /// This Widget is used to show that a message has been quoted.
