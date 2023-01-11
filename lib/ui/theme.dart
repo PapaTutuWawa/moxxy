@@ -8,6 +8,8 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
     required this.conversationTextFieldColor,
     required this.profileFallbackBackgroundColor,
     required this.profileFallbackTextColor,
+    required this.bubbleQuoteInTextFieldColor,
+    required this.bubbleQuoteInTextFieldTextColor,
   });
 
   /// The color of the conversation TextField
@@ -19,12 +21,20 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
   /// The text color of a user with no avatar
   final Color profileFallbackTextColor;
 
+  /// The color of a quote bubble displayed inside the TextField
+  final Color bubbleQuoteInTextFieldColor;
+
+  /// The color of text inside a quote bubble inside the TextField
+  final Color bubbleQuoteInTextFieldTextColor;
+
   @override
-  MoxxyThemeData copyWith({Color? conversationTextFieldColor, Color? profileFallbackBackgroundColor, Color? profileFallbackTextColor}) {
+  MoxxyThemeData copyWith({Color? conversationTextFieldColor, Color? profileFallbackBackgroundColor, Color? profileFallbackTextColor, Color? bubbleQuoteInTextFieldColor, Color? bubbleQuoteInTextFieldTextColor}) {
     return MoxxyThemeData(
       conversationTextFieldColor: conversationTextFieldColor ?? this.conversationTextFieldColor,
       profileFallbackBackgroundColor: profileFallbackBackgroundColor ?? this.profileFallbackBackgroundColor,
       profileFallbackTextColor: profileFallbackTextColor ?? this.profileFallbackTextColor,
+      bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColor ?? this.bubbleQuoteInTextFieldColor,
+      bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColor ?? this.bubbleQuoteInTextFieldTextColor,
     );
   }
 
@@ -92,12 +102,16 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
           conversationTextFieldColor: conversationTextFieldColorDark,
           profileFallbackBackgroundColor: profileFallbackBackgroundColorDark,
           profileFallbackTextColor: profileFallbackTextColorDark,
+          bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorDark,
+          bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorDark,
         )
       else
         const MoxxyThemeData(
           conversationTextFieldColor: conversationTextFieldColorLight,
           profileFallbackBackgroundColor: profileFallbackBackgroundColorLight,
           profileFallbackTextColor: profileFallbackTextColorLight,
+          bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorLight,
+          bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorLight,
         ),
     ],
   );

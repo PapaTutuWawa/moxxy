@@ -17,6 +17,14 @@ const Color primaryColorAlt = Color(primaryColorAltHexRGB);
 const Color primaryColorDisabled = Color(primaryColorDisabledHexRGB);
 const Color textColorDisabled = Color(textColorDisabledHexRGB);
 
+/// The color of a quote bubble displayed inside the TextField
+const Color bubbleQuoteInTextFieldColorLight = Color(0xffc7c7c7);
+const Color bubbleQuoteInTextFieldColorDark = Color(0xff2f2f2f);
+
+/// The color of text inside a quote bubble inside the TextField
+const Color bubbleQuoteInTextFieldTextColorLight = Color(0xff373737);
+const Color bubbleQuoteInTextFieldTextColorDark = Color(0xffdadada);
+
 /// The color of a bubble that was sent
 const Color bubbleColorSent = Color(0xff7e0bce);
 
@@ -39,7 +47,7 @@ const Color bubbleColorNewDevice = Color(0xffeee8d5);
 const Color bubbleTextColor = Color(0xffffffff);
 
 /// The color of text within a quote widget
-const Color bubbleTextQuote = Color(0xffdadada);
+const Color bubbleTextQuoteColor = Color(0xffdadada);
 
 const Color conversationTextFieldColorLight = Color(0xffe6e6e6);
 const Color conversationTextFieldColorDark = Color(0xff414141);

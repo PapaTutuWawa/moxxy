@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/helpers.dart';
 
 class QuotedMediaBaseWidget extends StatelessWidget {
   const QuotedMediaBaseWidget(
@@ -28,7 +29,12 @@ class QuotedMediaBaseWidget extends StatelessWidget {
 
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: Text(text),
+            child: Text(
+              text,
+              style: TextStyle(
+                color: getQuoteTextColor(context, resetQuote != null),
+              ),
+            ),
           ),
         ],
       ),

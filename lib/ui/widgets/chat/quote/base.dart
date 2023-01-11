@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/theme.dart';
 
 /// This Widget is used to show that a message has been quoted.
 class QuoteBaseWidget extends StatelessWidget {
@@ -20,7 +20,11 @@ class QuoteBaseWidget extends StatelessWidget {
   final bool sent;
   final void Function()? resetQuotedMessage;
 
-  Color _getColor() {
+  Color _getColor(BuildContext context) {
+    if (resetQuotedMessage != null) {
+      return Theme.of(context).extension<MoxxyThemeData>()!.bubbleQuoteInTextFieldColor;
+    }
+
     if (sent) {
       return bubbleColorSentQuoted;
     } else {
@@ -47,7 +51,7 @@ class QuoteBaseWidget extends StatelessWidget {
       child: ClipRRect(
         borderRadius: const BorderRadius.all(radiusLarge),
         child: Material(
-          color: _getColor(),
+          color: _getColor(context),
           child: DecoratedBox(
             decoration: const BoxDecoration(
               border: Border(
