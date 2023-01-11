@@ -507,6 +507,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               },
             ),
           ),
+
           Positioned(
             left: 0,
             right: 0,
@@ -549,9 +550,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     ),
                   ),
 
-                  ConversationBottomRow(
-                    _controller,
-                    _textfieldFocus,
+                  ColoredBox(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: ConversationBottomRow(
+                      _controller,
+                      _textfieldFocus,
+                    ),
                   ),
                 ],
               ),

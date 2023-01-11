@@ -41,6 +41,9 @@ const Color bubbleTextColor = Color(0xffffffff);
 /// The color of text within a quote widget
 const Color bubbleTextQuote = Color(0xffdadada);
 
+const Color conversationTextFieldColorLight = Color(0xffe6e6e6);
+const Color conversationTextFieldColorDark = Color(0xff414141);
+
 /// The width of the white left border of quote widgets
 const double quoteLeftBorderWidth = 4;
 

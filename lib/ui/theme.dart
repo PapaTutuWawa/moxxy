@@ -1,6 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
+/// A theme extension for Moxxy specific colors.
+@immutable
+class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
+  const MoxxyThemeData({
+    required this.conversationTextFieldColor,
+  });
+
+  /// The color of the conversation TextField
+  final Color conversationTextFieldColor;
+
+  @override
+  MoxxyThemeData copyWith({Color? conversationTextFieldColor}) {
+    return MoxxyThemeData(
+      conversationTextFieldColor: conversationTextFieldColor ?? this.conversationTextFieldColor,
+    );
+  }
+
+  @override
+  MoxxyThemeData lerp(ThemeExtension<MoxxyThemeData>? other, double t) {
+    return this;
+  }
+}
+
 /// Helper function for quickly generating MaterialStateProperty instances that
 /// only differentiate between a color for the element's disabled state and for all
 /// other states.
@@ -52,5 +75,13 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
         return primaryColor;
       }),
     ),
+
+    extensions: [
+      MoxxyThemeData(
+        conversationTextFieldColor: brightness == Brightness.dark ?
+          conversationTextFieldColorDark :
+          conversationTextFieldColorLight,
+      ),
+    ],
   );
 }

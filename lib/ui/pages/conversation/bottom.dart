@@ -14,6 +14,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/timer.dart';
+import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/sticker_picker.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
@@ -114,9 +115,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         Expanded(
                           child: CustomTextField(
                             // TODO(Unknown): Work on the colors
-                            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                            backgroundColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldColor,
                             textColor: _getTextColor(context),
-                            enableBoxShadow: true,
                             maxLines: 5,
                             hintText: 'Send a message...',
                             isDense: true,
