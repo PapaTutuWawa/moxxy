@@ -154,19 +154,27 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         );
       }
     } else if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
-      preview = SharedImageWidget(
-        widget.conversation.lastMessage!.mediaUrl!,
-        borderRadius: 5,
-        size: 30,
-      );
+      if (widget.conversation.lastMessage!.mediaUrl == null) {
+        preview = const SizedBox();
+      } else {
+        preview = SharedImageWidget(
+          widget.conversation.lastMessage!.mediaUrl!,
+          borderRadius: 5,
+          size: 30,
+        );
+      }
     } else if (widget.conversation.lastMessage!.mediaType!.startsWith('video/')) {
-      preview = SharedVideoWidget(
-        widget.conversation.lastMessage!.mediaUrl!,
-        widget.conversation.jid,
-        widget.conversation.lastMessage!.mediaType!,
-        borderRadius: 5,
-        size: 30,
-      );
+      if (widget.conversation.lastMessage!.mediaUrl == null) {
+        preview = const SizedBox();
+      } else {
+        preview = SharedVideoWidget(
+          widget.conversation.lastMessage!.mediaUrl!,
+          widget.conversation.jid,
+          widget.conversation.lastMessage!.mediaType!,
+          borderRadius: 5,
+          size: 30,
+        );
+      }
     }
 
     return Padding(
