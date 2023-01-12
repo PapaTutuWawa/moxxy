@@ -59,7 +59,8 @@
 	"file": "File",
 	"sticker": "Sticker",
 	"retracted": "The message has been retracted",
-	"retractedFallback": "A previous message has been retracted but your client does not support it"
+	"retractedFallback": "A previous message has been retracted but your client does not support it",
+	"you": "You"
     },
     "errors": {
 	"omemo": {

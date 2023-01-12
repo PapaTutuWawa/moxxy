@@ -49,6 +49,10 @@ const Color bubbleTextColor = Color(0xffffffff);
 /// The color of text within a quote widget
 const Color bubbleTextQuoteColor = Color(0xffdadada);
 
+/// The color of the sender name in a quote
+const Color bubbleTextQuoteSenderColor = Color(0xffff90ff);
+
+/// The color of the input text field of the conversation page
 const Color conversationTextFieldColorLight = Color(0xffe6e6e6);
 const Color conversationTextFieldColorDark = Color(0xff414141);
 

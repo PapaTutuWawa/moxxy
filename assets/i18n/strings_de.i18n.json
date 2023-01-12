@@ -59,7 +59,8 @@
 	"file": "Datei",
 	"sticker": "Sticker",
 	"retracted": "Die Nachricht wurde zurückgezogen",
-	"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht"
+	"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht",
+	"you": "Du"
     },
     "errors": {
 	"omemo": {

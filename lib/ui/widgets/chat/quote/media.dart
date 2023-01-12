@@ -29,11 +29,23 @@ class QuotedMediaBaseWidget extends StatelessWidget {
 
           Padding(
             padding: const EdgeInsets.only(left: 8),
-            child: Text(
-              text,
-              style: TextStyle(
-                color: getQuoteTextColor(context, resetQuote != null),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                QuoteSenderText(
+                  sender: message.sender,
+                  resetQuoteNotNull: resetQuote != null,
+                  sent: sent,
+                ),
+
+                Text(
+                  text,
+                  style: TextStyle(
+                    color: getQuoteTextColor(context, resetQuote != null),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
