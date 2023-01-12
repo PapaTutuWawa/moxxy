@@ -37,23 +37,23 @@ class ConversationPage extends StatefulWidget {
 }
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
-  ConversationPageState() :
-    _controller = TextEditingController(),
-    _scrollController = ScrollController(),
-    _scrolledToBottomState = true,
-    super();
-  final TextEditingController _controller;
-  final ScrollController _scrollController;
+  final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   late final AnimationController _animationController; 
   late final AnimationController _overviewAnimationController;
+  late final TabController _tabController;
   late Animation<double> _overviewMsgAnimation;
   late final Animation<double> _scrollToBottom;
-  bool _scrolledToBottomState;
+  bool _scrolledToBottomState = true;
   late FocusNode _textfieldFocus;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+    );
     _textfieldFocus = FocusNode();
     _scrollController.addListener(_onScroll);
 
@@ -75,6 +75,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   
   @override
   void dispose() {
+    _tabController.dispose();
     _controller.dispose();
     _scrollController
       ..removeListener(_onScroll)
@@ -455,15 +456,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
         if (bloc.state.isRecording) {
           // TODO(PapaTutuWawa): Show a dialog
           return true;
-        } else if (bloc.state.emojiPickerVisible) {
-          bloc.add(EmojiPickerToggledEvent(handleKeyboard: false));
-
-          return false;
-        } else if (bloc.state.stickerPickerVisible) {
-          bloc.add(StickerPickerToggledEvent());
-          if (_textfieldFocus.hasFocus) {
-            _textfieldFocus.unfocus();
-          }
+        } else if (bloc.state.pickerVisible) {
+          bloc.add(PickerToggledEvent(handleKeyboard: false));
 
           return false;
         } else {
@@ -556,6 +550,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       .withOpacity(0.4),
                     child: ConversationBottomRow(
                       _controller,
+                      _tabController,
                       _textfieldFocus,
                     ),
                   ),
@@ -565,12 +560,11 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           ),
 
           BlocBuilder<ConversationBloc, ConversationState>(
-            buildWhen: (prev, next) => prev.emojiPickerVisible != next.emojiPickerVisible ||
-              prev.stickerPickerVisible != next.stickerPickerVisible,
+            buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible,
             builder: (context, state) => Positioned(
               right: 8,
-              bottom: state.emojiPickerVisible || state.stickerPickerVisible ?
-                330 /* 80 + 250 */ :
+              bottom: state.pickerVisible ?
+                pickerHeight + 80 :
                 80,
               child: Material(
                 color: const Color.fromRGBO(0, 0, 0, 0),

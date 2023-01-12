@@ -51,7 +51,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<BackgroundChangedEvent>(_onBackgroundChanged);
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
-    on<EmojiPickerToggledEvent>(_onEmojiPickerToggled);
+    on<PickerToggledEvent>(_onPickerToggled);
     on<OwnJidReceivedEvent>(_onOwnJidReceived);
     on<OmemoSetEvent>(_onOmemoSet);
     on<MessageRetractedEvent>(_onMessageRetracted);
@@ -64,7 +64,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<RecordingCanceledEvent>(_onRecordingCanceled);
     on<ReactionAddedEvent>(_onReactionAdded);
     on<ReactionRemovedEvent>(_onReactionRemoved);
-    on<StickerPickerToggledEvent>(_onStickerPickerToggled);
     on<StickerSentEvent>(_onStickerSent);
     on<SoftKeyboardVisibilityChanged>(_onSoftKeyboardVisibilityChanged);
 
@@ -239,8 +238,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         messageText: '',
         quotedMessage: null,
         sendButtonState: defaultSendButtonState,
-        emojiPickerVisible: false,
-        stickerPickerVisible: false,
+        pickerVisible: false,
         messageEditing: false,
         messageEditingOriginalBody: '',
         messageEditingId: null,
@@ -375,12 +373,11 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onEmojiPickerToggled(EmojiPickerToggledEvent event, Emitter<ConversationState> emit) async {
-    final newState = !state.emojiPickerVisible;
+  Future<void> _onPickerToggled(PickerToggledEvent event, Emitter<ConversationState> emit) async {
+    final newState = !state.pickerVisible;
     emit(
       state.copyWith(
-        emojiPickerVisible: newState,
-        stickerPickerVisible: false,
+        pickerVisible: newState,
       ),
     );
 
@@ -461,8 +458,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         isDragging: true,
         isRecording: true,
-        emojiPickerVisible: false,
-        stickerPickerVisible: false,
+        pickerVisible: false,
       ),
     );
     
@@ -643,16 +639,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onStickerPickerToggled(StickerPickerToggledEvent event, Emitter<ConversationState> emit) async {
-    await SystemChannels.textInput.invokeMethod('TextInput.hide');
-    emit(
-      state.copyWith(
-        stickerPickerVisible: !state.stickerPickerVisible,
-        emojiPickerVisible: false,
-      ),
-    );
-  }
-
   Future<void> _onStickerSent(StickerSentEvent event, Emitter<ConversationState> emit) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SendStickerCommand(
@@ -666,17 +652,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     // Close the picker
     emit(
       state.copyWith(
-        stickerPickerVisible: false,
+        pickerVisible: false,
       ),
     );
   }
 
   Future<void> _onSoftKeyboardVisibilityChanged(SoftKeyboardVisibilityChanged event, Emitter<ConversationState> emit) async {
-    if (event.visible && (state.emojiPickerVisible || state.stickerPickerVisible)) {
+    if (event.visible && (state.pickerVisible)) {
       emit(
         state.copyWith(
-          emojiPickerVisible: false,
-          stickerPickerVisible: false,
+          pickerVisible: false,
         ),
       );
     }

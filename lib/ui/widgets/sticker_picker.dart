@@ -131,17 +131,9 @@ class StickerPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
       builder: (context, state) {
-
-        return SizedBox(
-          height: 250,
-          width: MediaQuery.of(context).size.width,
-          child: ColoredBox(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: _buildList(context, state),
-            ),
-          ),
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: _buildList(context, state),
         );
       },
     );

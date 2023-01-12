@@ -98,14 +98,8 @@ class ImagePickerRequestedEvent extends ConversationEvent {}
 class FilePickerRequestedEvent extends ConversationEvent {}
 
 /// Triggered when the emoji button is pressed
-class EmojiPickerToggledEvent extends ConversationEvent {
-  EmojiPickerToggledEvent({this.handleKeyboard = true});
-  final bool handleKeyboard;
-}
-
-/// Triggered when the sticker button is pressed
-class StickerPickerToggledEvent extends ConversationEvent {
-  StickerPickerToggledEvent({this.handleKeyboard = true});
+class PickerToggledEvent extends ConversationEvent {
+  PickerToggledEvent({this.handleKeyboard = true});
   final bool handleKeyboard;
 }
 

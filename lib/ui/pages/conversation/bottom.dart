@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
@@ -16,7 +15,7 @@ import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/timer.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
-import 'package:moxxyv2/ui/widgets/sticker_picker.dart';
+import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -44,11 +43,13 @@ class _TextFieldIconButton extends StatelessWidget {
 class ConversationBottomRow extends StatefulWidget {
   const ConversationBottomRow(
     this.controller,
+    this.tabController,
     this.focusNode, {
       super.key,
     }
   );
   final TextEditingController controller;
+  final TabController tabController;
   final FocusNode focusNode;
 
   @override
@@ -95,6 +96,14 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
       case SendButtonState.cancelCorrection: return Icons.clear;
     }
   }
+
+  IconData _getPickerIcon() {
+    if (widget.tabController.index == 0) {
+      return Icons.insert_emoticon;
+    }
+
+    return PhosphorIcons.stickerBold;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -109,7 +118,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState || prev.quotedMessage != next.quotedMessage || prev.emojiPickerVisible != next.emojiPickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody,
+                    buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState || prev.quotedMessage != next.quotedMessage || prev.pickerVisible != next.pickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody,
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
@@ -134,7 +143,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                               resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
                             ) : null,
                             focusNode: widget.focusNode,
-                            shouldSummonKeyboard: () => !state.emojiPickerVisible,
+                            shouldSummonKeyboard: () => !state.pickerVisible,
                             prefixIcon: IntrinsicWidth(
                               child: Row(
                                 children: [
@@ -142,34 +151,18 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 8),
                                       child: Icon(
-                                        state.emojiPickerVisible ? 
+                                        state.pickerVisible ? 
                                           Icons.keyboard :
-                                          Icons.insert_emoticon,
+                                          _getPickerIcon(),
                                         color: primaryColor,
                                         size: 24,
                                       ),
                                     ),
                                     onTap: () {
-                                      context.read<ConversationBloc>().add(EmojiPickerToggledEvent());
+                                      context.read<ConversationBloc>().add(
+                                        PickerToggledEvent(),
+                                      );
                                     },
-                                  ),
-                                  Visibility(
-                                    visible: state.messageText.isEmpty && state.quotedMessage == null,
-                                    child: InkWell(
-                                      child: const Padding(
-                                        padding: EdgeInsets.only(right: 8),
-                                        child: Icon(
-                                          PhosphorIcons.stickerBold,
-                                          size: 24,
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                      onTap: () {
-                                        context.read<ConversationBloc>().add(
-                                          StickerPickerToggledEvent(),
-                                        );
-                                      },
-                                    ),
                                   ),
                                 ],
                               ),
@@ -228,12 +221,53 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     ),
                   ),
                 ),
+
                 BlocBuilder<ConversationBloc, ConversationState>(
-                  buildWhen: (prev, next) => prev.stickerPickerVisible != next.stickerPickerVisible,
+                  buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible,
                   builder: (context, state) => Offstage(
-                    offstage: !state.stickerPickerVisible,
-                    child: StickerPicker(
-                      width: MediaQuery.of(context).size.width,
+                    offstage: !state.pickerVisible,
+                    child: CombinedPicker(
+                      tabController: widget.tabController,
+                      onEmojiTapped: (emoji) {
+                        final bloc = context.read<ConversationBloc>();
+                        final selection = widget.controller.selection;
+                        final baseOffset = max(selection.baseOffset, 0);
+                        final extentOffset = max(selection.extentOffset, 0);
+                        final prefix = bloc.state.messageText.substring(0, baseOffset);
+                        final suffix = bloc.state.messageText.substring(extentOffset);
+                        final newText = '$prefix${emoji.emoji}$suffix';
+                        final newValue = baseOffset + emoji.emoji.codeUnits.length;
+                        bloc.add(MessageTextChangedEvent(newText));
+                        widget.controller
+                          ..text = newText
+                          ..selection = TextSelection(
+                            baseOffset: newValue,
+                            extentOffset: newValue,
+                          );
+                      },
+                      onBackspaceTapped: () {
+                        // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
+                        final bloc = context.read<ConversationBloc>();
+                        final text = bloc.state.messageText;
+                        final selection = widget.controller.selection;
+                        final cursorPosition = widget.controller.selection.base.offset;
+ 
+                        if (cursorPosition < 0) {
+                          return;
+                        }
+ 
+                        final newTextBeforeCursor = selection
+                        .textBefore(text).characters
+                        .skipLast(1)
+                        .toString();
+ 
+                        bloc.add(MessageTextChangedEvent(newTextBeforeCursor));
+                        widget.controller
+                          ..text = newTextBeforeCursor
+                          ..selection = TextSelection.fromPosition(
+                            TextPosition(offset: newTextBeforeCursor.length),
+                          );
+                      },
                       onStickerTapped: (sticker, pack) {
                         context.read<ConversationBloc>().add(
                           StickerSentEvent(
@@ -242,61 +276,6 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                           ),
                         );
                       },
-                    ),
-                  ),
-                ),
-
-                BlocBuilder<ConversationBloc, ConversationState>(
-                  buildWhen: (prev, next) => prev.emojiPickerVisible != next.emojiPickerVisible,
-                  builder: (context, state) => Offstage(
-                    offstage: !state.emojiPickerVisible,
-                    child: SizedBox(
-                      height: 250,
-                      child: EmojiPicker(
-                        onEmojiSelected: (_, emoji) {
-                          final bloc = context.read<ConversationBloc>();
-                          final selection = widget.controller.selection;
-                          final baseOffset = max(selection.baseOffset, 0);
-                          final extentOffset = max(selection.extentOffset, 0);
-                          final prefix = bloc.state.messageText.substring(0, baseOffset);
-                          final suffix = bloc.state.messageText.substring(extentOffset);
-                          final newText = '$prefix${emoji.emoji}$suffix';
-                          final newValue = baseOffset + emoji.emoji.codeUnits.length;
-                          bloc.add(MessageTextChangedEvent(newText));
-                          widget.controller
-                            ..text = newText
-                            ..selection = TextSelection(
-                              baseOffset: newValue,
-                              extentOffset: newValue,
-                            );
-                        },
-                        onBackspacePressed: () {
-                          // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
-                          final bloc = context.read<ConversationBloc>();
-                          final text = bloc.state.messageText;
-                          final selection = widget.controller.selection;
-                          final cursorPosition = widget.controller.selection.base.offset;
-
-                          if (cursorPosition < 0) {
-                            return;
-                          }
-
-                          final newTextBeforeCursor = selection
-                          .textBefore(text).characters
-                          .skipLast(1)
-                          .toString();
-
-                          bloc.add(MessageTextChangedEvent(newTextBeforeCursor));
-                          widget.controller
-                            ..text = newTextBeforeCursor
-                            ..selection = TextSelection.fromPosition(
-                              TextPosition(offset: newTextBeforeCursor.length),
-                            );
-                        },
-                        config: Config(
-                          bgColor: Theme.of(context).scaffoldBackgroundColor,
-                        ),
-                      ),
                     ),
                   ),
                 ),
@@ -309,13 +288,12 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
           buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState ||
             prev.isDragging != next.isDragging ||
             prev.isLocked != next.isLocked ||
-            prev.emojiPickerVisible != next.emojiPickerVisible ||
-            prev.stickerPickerVisible != next.stickerPickerVisible,
+            prev.pickerVisible != next.pickerVisible,
           builder: (context, state) {
             return Positioned(
               right: 8,
-              bottom: state.emojiPickerVisible || state.stickerPickerVisible ?
-                258 /* 8 (Regular padding) + 250 (Height of the pickers) */ :
+              bottom: state.pickerVisible ?
+                pickerHeight + 8 :
                 8,
               child: Visibility(
                 visible: !state.isDragging && !state.isLocked,
