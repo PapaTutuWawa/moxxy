@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive.dart';
-import 'package:dio/dio.dart' as dio;
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/helpers.dart';
+import 'package:moxxyv2/service/httpfiletransfer/client.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/service.dart';
@@ -167,20 +167,15 @@ class StickersService {
         stickerPackPath,
         sticker.hashes.values.first,
       );
-      dio.Response<dynamic>? response;
-      try {
-        response = await dio.Dio().downloadUri(
-          Uri.parse(sticker.urlSources.first),
-          stickerPath,
-        );
-      } on dio.DioError catch(err) {
-        _log.severe('Error downloading ${sticker.urlSources.first}: $err');
-        success = false;
-        break;
-      }
+      final downloadStatusCode = await downloadFile(
+        Uri.parse(sticker.urlSources.first),
+        stickerPath,
+        (_, __) {},
+      );
 
-      if (!isRequestOkay(response.statusCode)) {
-        _log.severe('Request not okay: $response');
+      if (!isRequestOkay(downloadStatusCode)) {
+        _log.severe('Request not okay: $downloadStatusCode');
+        success = false;
         break;
       }
       stickers[i] = sticker.copyWith(

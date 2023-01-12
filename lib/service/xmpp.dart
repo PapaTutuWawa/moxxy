@@ -1237,6 +1237,7 @@ class XmppService {
       final fts = GetIt.I.get<HttpFileTransferService>();
       final metadata = await peekFile(embeddedFile!.url);
 
+      _log.finest('Advertised file MIME: ${metadata.mime}');
       if (metadata.mime != null) mimeGuess = metadata.mime;
 
       // Auto-download only if the file is below the set limit, if the limit is not set to
@@ -1388,12 +1389,13 @@ class XmppService {
       sendEvent(MessageUpdatedEvent(message: message));
 
       if (shouldDownload) {
+        _log.finest('Advertised file MIME: ${_getMimeGuess(event)}');
         await GetIt.I.get<HttpFileTransferService>().downloadFile(
           FileDownloadJob(
             embeddedFile,
             message.id,
             conversationJid,
-            null,
+            _getMimeGuess(event),
             shouldShowNotification: false,
           ),
         );

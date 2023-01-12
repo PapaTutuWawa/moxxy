@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:dio/dio.dart';
 import 'package:external_path/external_path.dart';
+import 'package:moxxyv2/service/httpfiletransfer/client.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:path/path.dart' as path;
 
@@ -43,7 +43,6 @@ bool isRequestOkay(int? statusCode) {
 }
 
 class FileMetadata {
-
   const FileMetadata({ this.mime, this.size });
   final String? mime;
   final int? size;
@@ -53,15 +52,10 @@ class FileMetadata {
 /// does not specify the Content-Length header, null is returned.
 /// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Length
 Future<FileMetadata> peekFile(String url) async {
-  final response = await Dio().headUri<dynamic>(Uri.parse(url));
-
-  if (!isRequestOkay(response.statusCode)) return const FileMetadata();
-
-  final contentLengthHeaders = response.headers['Content-Length'];
-  final contentTypeHeaders = response.headers['Content-Type'];
+  final result = await peekUrl(Uri.parse(url));
   
   return FileMetadata(
-    mime: contentTypeHeaders?.first,
-    size: contentLengthHeaders != null && contentLengthHeaders.isNotEmpty ? int.parse(contentLengthHeaders.first) : null,
+    mime: result?.contentType,
+    size: result?.contentLength,
   );
 }
