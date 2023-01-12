@@ -551,7 +551,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   ),
 
                   ColoredBox(
-                    color: Theme.of(context).scaffoldBackgroundColor,
+                    color: Theme.of(context)
+                      .scaffoldBackgroundColor
+                      .withOpacity(0.4),
                     child: ConversationBottomRow(
                       _controller,
                       _textfieldFocus,
