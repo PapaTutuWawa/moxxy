@@ -274,7 +274,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                             // ignore: use_build_context_synchronously
                             Navigator.of(context).pop(emoji.emoji);
                           },
-                          //height: 250,
+                          //height: pickerHeight,
                           config: Config(
                             bgColor: Theme.of(context).scaffoldBackgroundColor,
                           ),
@@ -640,7 +640,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
           Positioned(
             right: 8,
-            bottom: 250,
+            bottom: pickerHeight,
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
                 return DragTarget<int>(
