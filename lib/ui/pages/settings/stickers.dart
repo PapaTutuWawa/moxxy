@@ -91,6 +91,11 @@ class StickersSettingsPage extends StatelessWidget {
                               ),
 
                               SectionTitle(t.pages.settings.stickers.stickerPacksSection),
+
+                              if (stickers.stickerPacks.isEmpty)
+                                SettingsRow(
+                                  title: t.pages.conversation.stickerPickerNoStickersLine1,
+                                ),
                             ],
                           );
                         }
