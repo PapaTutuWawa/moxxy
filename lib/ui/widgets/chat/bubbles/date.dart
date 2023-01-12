@@ -18,7 +18,12 @@ class DateBubble extends StatelessWidget {
             horizontal: 8,
             vertical: 6,
           ),
-          child: Text(value),
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+            ),
+          ),
         ),
       ),
     );
