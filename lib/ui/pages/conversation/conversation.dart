@@ -642,7 +642,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           ),
 
           Positioned(
-            right: 53,
+            right: 61,
             bottom: pickerHeight,
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
@@ -699,7 +699,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           ),
 
           Positioned(
-            right: 53,
+            right: 61,
             bottom: 380,
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
