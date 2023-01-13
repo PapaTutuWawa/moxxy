@@ -46,7 +46,7 @@ class MoxxyReconnectionPolicy extends ReconnectionPolicy {
       // Cancel the timer if it was running
       await _stopTimer();
       await setIsReconnecting(false);
-      triggerConnectionLost!();
+      await triggerConnectionLost!();
     } else if (regained && shouldReconnect) {
       // We should reconnect
       _log.finest('Network regained. Attempting reconnection...');
