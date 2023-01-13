@@ -80,15 +80,6 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
     );
   }
   
-  Color _getTextColor(BuildContext context) {
-    // TODO(Unknown): Work on the colors
-    if (MediaQuery.of(context).platformBrightness == Brightness.dark) {
-      return Colors.white;
-    }
-
-    return Colors.black;
-  }
-
   IconData _getSendButtonIcon(ConversationState state) {
     switch (state.sendButtonState) {
       case SendButtonState.audio: return Icons.mic;
@@ -123,11 +114,11 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       children: [
                         Expanded(
                           child: CustomTextField(
-                            // TODO(Unknown): Work on the colors
                             backgroundColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldColor,
-                            textColor: _getTextColor(context),
+                            textColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldTextColor,
                             maxLines: 5,
                             hintText: 'Send a message...',
+                            hintTextColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldHintTextColor,
                             isDense: true,
                             onChanged: (value) {
                               context.read<ConversationBloc>().add(
@@ -135,6 +126,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                               );
                             },
                             contentPadding: textfieldPaddingConversation,
+                            fontSize: textFieldFontSizeConversation,
                             cornerRadius: textfieldRadiusConversation,
                             controller: widget.controller,
                             topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(

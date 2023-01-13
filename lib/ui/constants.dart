@@ -4,9 +4,24 @@ const Radius radiusLarge = Radius.circular(10);
 const Radius radiusSmall = Radius.circular(4);
 
 const double textfieldRadiusRegular = 15;
-const double textfieldRadiusConversation = 20;
-const EdgeInsetsGeometry textfieldPaddingRegular = EdgeInsets.only(top: 4, bottom: 4, left: 8, right: 8);
-const EdgeInsetsGeometry textfieldPaddingConversation = EdgeInsets.all(10);
+const double textfieldRadiusConversation = 25;
+const EdgeInsetsGeometry textfieldPaddingRegular = EdgeInsets.only(
+  top: 4,
+  bottom: 4,
+  left: 8,
+  right: 8,
+);
+
+/// The inner TextField padding for the TextField on the ConversationPage.
+const EdgeInsetsGeometry textfieldPaddingConversation = EdgeInsets.only(
+  top: 12,
+  bottom: 12,
+  left: 8,
+  right: 8,
+);
+
+/// The font size for the TextField on the ConversationPage
+const double textFieldFontSizeConversation = 18;
 
 const int primaryColorHexRGBO = 0xffcf4aff;
 const int primaryColorAltHexRGB = 0xff9c18cd;
@@ -24,6 +39,14 @@ const Color bubbleQuoteInTextFieldColorDark = Color(0xff2f2f2f);
 /// The color of text inside a quote bubble inside the TextField
 const Color bubbleQuoteInTextFieldTextColorLight = Color(0xff373737);
 const Color bubbleQuoteInTextFieldTextColorDark = Color(0xffdadada);
+
+/// The text color of the hint text on the ConversationPage
+const Color textFieldHintTextColorLight = Color(0xff4a4a4a);
+const Color textFieldHintTextColorDark = Color(0xffd6d6d6);
+
+/// The regular text color of the TextField on the ConversationPage
+const Color textFieldTextColorLight = Colors.black;
+const Color textFieldTextColorDark = Colors.white;
 
 /// The color of a bubble that was sent
 const Color bubbleColorSent = Color(0xff7e0bce);

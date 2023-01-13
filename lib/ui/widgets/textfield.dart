@@ -7,6 +7,7 @@ class CustomTextField extends StatelessWidget {
     this.errorText,
     this.labelText,
     this.hintText,
+    this.hintTextColor,
     this.suffix,
     this.suffixText,
     this.topWidget,
@@ -31,6 +32,7 @@ class CustomTextField extends StatelessWidget {
     this.onTap,
     this.shouldSummonKeyboard,
     this.focusNode,
+    this.fontSize,
     super.key,
   });
   final double cornerRadius;
@@ -54,8 +56,10 @@ class CustomTextField extends StatelessWidget {
   final int minLines;
   final Color? backgroundColor;
   final Color? textColor;
+  final Color? hintTextColor;
   final double? borderWidth;
   final Color? borderColor;
+  final double? fontSize;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
   final void Function()? onTap;
@@ -64,7 +68,12 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = textColor != null ? TextStyle(color: textColor) : null;
+    final style = textColor != null ?
+      TextStyle(
+        color: textColor,
+        fontSize: fontSize,
+      ) :
+      null;
     return Column(
       children: [
         DecoratedBox(
@@ -105,7 +114,10 @@ class CustomTextField extends StatelessWidget {
                   isDense: isDense,
                   labelStyle: style,
                   suffixStyle: style,
-                  hintStyle: style,
+                  hintStyle: TextStyle(
+                    color: hintTextColor,
+                    fontSize: fontSize,
+                  ),
                   prefixIcon: prefixIcon,
                   prefixIconConstraints: prefixIconConstraints,
                   suffixIconConstraints: suffixIconConstraints,

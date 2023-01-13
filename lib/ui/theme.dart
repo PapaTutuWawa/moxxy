@@ -10,6 +10,8 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
     required this.profileFallbackTextColor,
     required this.bubbleQuoteInTextFieldColor,
     required this.bubbleQuoteInTextFieldTextColor,
+    required this.conversationTextFieldHintTextColor,
+    required this.conversationTextFieldTextColor,
   });
 
   /// The color of the conversation TextField
@@ -27,14 +29,22 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
   /// The color of text inside a quote bubble inside the TextField
   final Color bubbleQuoteInTextFieldTextColor;
 
+  /// The color of the hint text inside the TextField of the ConversationPage
+  final Color conversationTextFieldHintTextColor;
+
+  /// The regular text color of the message TextField on the ConversationPage
+  final Color conversationTextFieldTextColor;
+
   @override
-  MoxxyThemeData copyWith({Color? conversationTextFieldColor, Color? profileFallbackBackgroundColor, Color? profileFallbackTextColor, Color? bubbleQuoteInTextFieldColor, Color? bubbleQuoteInTextFieldTextColor}) {
+  MoxxyThemeData copyWith({Color? conversationTextFieldColor, Color? profileFallbackBackgroundColor, Color? profileFallbackTextColor, Color? bubbleQuoteInTextFieldColor, Color? bubbleQuoteInTextFieldTextColor, Color? conversationTextFieldHintTextColor, Color? conversationTextFieldTextColor,}) {
     return MoxxyThemeData(
       conversationTextFieldColor: conversationTextFieldColor ?? this.conversationTextFieldColor,
       profileFallbackBackgroundColor: profileFallbackBackgroundColor ?? this.profileFallbackBackgroundColor,
       profileFallbackTextColor: profileFallbackTextColor ?? this.profileFallbackTextColor,
       bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColor ?? this.bubbleQuoteInTextFieldColor,
       bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColor ?? this.bubbleQuoteInTextFieldTextColor,
+      conversationTextFieldHintTextColor: conversationTextFieldHintTextColor ?? this.conversationTextFieldHintTextColor,
+      conversationTextFieldTextColor: conversationTextFieldTextColor ?? this.conversationTextFieldTextColor,
     );
   }
 
@@ -104,6 +114,8 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
           profileFallbackTextColor: profileFallbackTextColorDark,
           bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorDark,
           bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorDark,
+          conversationTextFieldHintTextColor: textFieldHintTextColorDark,
+          conversationTextFieldTextColor: textFieldTextColorDark,
         )
       else
         const MoxxyThemeData(
@@ -112,6 +124,8 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
           profileFallbackTextColor: profileFallbackTextColorLight,
           bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColorLight,
           bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColorLight,
+          conversationTextFieldHintTextColor: textFieldHintTextColorLight,
+          conversationTextFieldTextColor: textFieldTextColorLight,
         ),
     ],
   );
