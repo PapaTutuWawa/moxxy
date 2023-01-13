@@ -1147,15 +1147,12 @@ class XmppService {
     // Pre-process the message in case it is a reply to another message
     String? replyId;
     var messageBody = event.body;
-    // TODO(Unknown): Implement
-    if (event.reply != null /* && check if event.reply.to is okay */) {
+    if (event.reply != null) {
       replyId = event.reply!.id;
 
       // Strip the compatibility fallback, if specified
-      if (event.reply!.start != null && event.reply!.end != null) {
-        messageBody = messageBody.replaceRange(event.reply!.start!, event.reply!.end, '');
-        _log.finest('Removed message reply compatibility fallback from message');
-      }
+      messageBody = event.reply!.removeFallback(messageBody);
+      _log.finest('Removed message reply compatibility fallback from message');
     }
 
     // The Url of the file embedded in the message, if there is one.
