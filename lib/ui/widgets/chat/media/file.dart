@@ -48,12 +48,15 @@ class FileChatBaseWidget extends StatelessWidget {
                 size: 48,
               ),
 
-              Padding(
-                padding: const EdgeInsets.only(left: 6),
-                child: Text(
-                  filename,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              Expanded(
+                //width: maxWidth - 64,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 6),
+                  child: Text(
+                    filename,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ],
