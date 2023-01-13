@@ -160,7 +160,10 @@
 	    "stickerPickerNoStickersLine2": "They can be installed in the sticker settings.",
 	    "stickerSettings": "Sticker settings",
 	    "newDeviceMessage": "${title} added a new encryption device",
-	    "messageHint": "Send a message..."
+	    "messageHint": "Send a message...",
+	    "sendImages": "Send images",
+	    "sendFiles": "Send files",
+	    "takePhotos": "Take photos"
 	},
 	"addcontact": {
 	    "title": "Add new contact",

@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -32,7 +32,55 @@ class _TextFieldIconButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Icon(
           icon,
-          size: 20,
+          size: 24,
+          color: primaryColor,
+        ),
+      ),
+    );
+  }
+}
+
+class _TextFieldRecordButton extends StatelessWidget {
+  const _TextFieldRecordButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return LongPressDraggable<int>(
+      data: 1,
+      axis: Axis.vertical,
+      onDragStarted: () {
+        Vibrate.feedback(FeedbackType.heavy);
+        context.read<ConversationBloc>().add(
+          SendButtonDragStartedEvent(),
+        );
+      },
+      onDraggableCanceled: (_, __) {
+        Vibrate.feedback(FeedbackType.heavy);
+        context.read<ConversationBloc>().add(
+          SendButtonDragEndedEvent(),
+        );
+      },
+      childWhenDragging: const SizedBox(),
+      feedback: SizedBox(
+        width: 45,
+        height: 45,
+        child: FloatingActionButton(
+          onPressed: null,
+          heroTag: 'fabDragged',
+          backgroundColor: Colors.red.shade600,
+          child: BlinkingIcon(
+            icon: Icons.mic,
+            duration: const Duration(milliseconds: 600),
+            start: Colors.white,
+            end: Colors.red.shade600,
+          ),
+        ),
+      ),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        child: Icon(
+          Icons.mic,
+          size: 24,
           color: primaryColor,
         ),
       ),
@@ -44,13 +92,15 @@ class ConversationBottomRow extends StatefulWidget {
   const ConversationBottomRow(
     this.controller,
     this.tabController,
-    this.focusNode, {
+    this.focusNode,
+    this.speedDialValueNotifier, {
       super.key,
     }
   );
   final TextEditingController controller;
   final TabController tabController;
   final FocusNode focusNode;
+  final ValueNotifier<bool> speedDialValueNotifier;
 
   @override
   ConversationBottomRowState createState() => ConversationBottomRowState();
@@ -58,7 +108,7 @@ class ConversationBottomRow extends StatefulWidget {
 
 class ConversationBottomRowState extends State<ConversationBottomRow> {
   late StreamSubscription<bool> _keyboardVisibilitySubscription;
-
+  
   @override
   void initState() {
     super.initState();
@@ -82,7 +132,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
   
   IconData _getSendButtonIcon(ConversationState state) {
     switch (state.sendButtonState) {
-      case SendButtonState.audio: return Icons.mic;
+      case SendButtonState.multi: return Icons.add;
       case SendButtonState.send: return Icons.send;
       case SendButtonState.cancelCorrection: return Icons.clear;
     }
@@ -114,11 +164,20 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       children: [
                         Expanded(
                           child: CustomTextField(
-                            backgroundColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldColor,
-                            textColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldTextColor,
+                            backgroundColor: Theme
+                              .of(context)
+                              .extension<MoxxyThemeData>()!
+                              .conversationTextFieldColor,
+                            textColor: Theme
+                              .of(context)
+                              .extension<MoxxyThemeData>()!
+                              .conversationTextFieldTextColor,
                             maxLines: 5,
                             hintText: t.pages.conversation.messageHint,
-                            hintTextColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldHintTextColor,
+                            hintTextColor: Theme
+                              .of(context)
+                              .extension<MoxxyThemeData>()!
+                              .conversationTextFieldHintTextColor,
                             isDense: true,
                             onChanged: (value) {
                               context.read<ConversationBloc>().add(
@@ -129,33 +188,31 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                             fontSize: textFieldFontSizeConversation,
                             cornerRadius: textfieldRadiusConversation,
                             controller: widget.controller,
-                            topWidget: state.quotedMessage != null ? buildQuoteMessageWidget(
-                              state.quotedMessage!,
-                              isSent(state.quotedMessage!, state.jid),
-                              resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
-                            ) : null,
+                            topWidget: state.quotedMessage != null ?
+                              buildQuoteMessageWidget(
+                                state.quotedMessage!,
+                                isSent(state.quotedMessage!, state.jid),
+                                resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
+                              ) :
+                              null,
                             focusNode: widget.focusNode,
                             shouldSummonKeyboard: () => !state.pickerVisible,
                             prefixIcon: IntrinsicWidth(
                               child: Row(
                                 children: [
-                                  InkWell(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                                      child: Icon(
-                                        state.pickerVisible ? 
-                                          Icons.keyboard :
-                                          _getPickerIcon(),
-                                        color: primaryColor,
-                                        size: 24,
-                                      ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8),
+                                    child: _TextFieldIconButton(
+                                      state.pickerVisible ? 
+                                      Icons.keyboard :
+                                      _getPickerIcon(),
+                                      () {
+                                        context.read<ConversationBloc>().add(
+                                          PickerToggledEvent(),
+                                        );
+                                      },
                                     ),
-                                    onTap: () {
-                                      context.read<ConversationBloc>().add(
-                                        PickerToggledEvent(),
-                                      );
-                                    },
-                                  ),
+                                  ), 
                                 ],
                               ),
                             ),
@@ -166,31 +223,10 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                             suffixIcon: state.messageText.isEmpty && state.quotedMessage == null ?
                               IntrinsicWidth(
                                 child: Row(
-                                  children: [
-                                    _TextFieldIconButton(
-                                      Icons.attach_file,
-                                      () {
-                                        context.read<ConversationBloc>().add(
-                                          FilePickerRequestedEvent(),
-                                        );
-                                      },
-                                    ),
-                                    _TextFieldIconButton(
-                                      Icons.photo_camera,
-                                      () {
-                                        showNotImplementedDialog(
-                                          'taking photos',
-                                          context,
-                                        );
-                                      },
-                                    ),
-                                    _TextFieldIconButton(
-                                      Icons.image,
-                                      () {
-                                        context.read<ConversationBloc>().add(
-                                          ImagePickerRequestedEvent(),
-                                        );
-                                      },
+                                  children: const [
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 8),
+                                      child: _TextFieldRecordButton(),
                                     ),
                                   ],
                                 ),
@@ -202,11 +238,69 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                             ),
                           ),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.only(left: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
                           child: SizedBox(
                             height: 45,
                             width: 45,
+                            child: SpeedDial(
+                              icon: _getSendButtonIcon(state),
+                              backgroundColor: primaryColor,
+                              foregroundColor: Colors.white,
+                              children: [
+                                SpeedDialChild(
+                                  child: const Icon(Icons.image),
+                                  onTap: () {
+                                    context.read<ConversationBloc>().add(
+                                      ImagePickerRequestedEvent(),
+                                    );
+                                  },
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: Colors.white,
+                                  label: t.pages.conversation.sendImages,
+                                ),
+                                SpeedDialChild(
+                                  child: const Icon(Icons.file_present),
+                                  onTap: () {
+                                    context.read<ConversationBloc>().add(
+                                      FilePickerRequestedEvent(),
+                                    );
+                                  },
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: Colors.white,
+                                  label: t.pages.conversation.sendFiles,
+                                ),
+                                SpeedDialChild(
+                                  child: const Icon(Icons.photo_camera),
+                                  onTap: () {
+                                    showNotImplementedDialog('taking photos', context);
+                                  },
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: Colors.white,
+                                  label: t.pages.conversation.takePhotos,
+                                ),
+                              ],
+                              openCloseDial: widget.speedDialValueNotifier,
+                              onPress: () {
+                                switch (state.sendButtonState) {
+                                  case SendButtonState.cancelCorrection:
+                                    context.read<ConversationBloc>().add(
+                                      MessageEditCancelledEvent(),
+                                    );
+                                    widget.controller.text = '';
+                                    return;
+                                  case SendButtonState.send:
+                                    context.read<ConversationBloc>().add(
+                                      MessageSentEvent(),
+                                    );
+                                    widget.controller.text = '';
+                                    return;
+                                  case SendButtonState.multi:
+                                    widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
+                                    return;
+                                }
+                              },
+                            ),
                           ),
                         ),
                       ],
@@ -275,104 +369,10 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
             ),
           ),
         ),
-
-        BlocBuilder<ConversationBloc, ConversationState>(
-          buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState ||
-            prev.isDragging != next.isDragging ||
-            prev.isLocked != next.isLocked ||
-            prev.pickerVisible != next.pickerVisible,
-          builder: (context, state) {
-            return Positioned(
-              right: 8,
-              bottom: state.pickerVisible ?
-                pickerHeight + 8 :
-                8,
-              child: Visibility(
-                visible: !state.isDragging && !state.isLocked,
-                child: LongPressDraggable<int>(
-                  data: 1,
-                  axis: Axis.vertical,
-                  onDragStarted: () {
-                    Vibrate.feedback(FeedbackType.heavy);
-                    context.read<ConversationBloc>().add(
-                      SendButtonDragStartedEvent(),
-                    );
-                  },
-                  onDraggableCanceled: (_, __) {
-                    Vibrate.feedback(FeedbackType.heavy);
-                    context.read<ConversationBloc>().add(
-                      SendButtonDragEndedEvent(),
-                    );
-                  },
-                  feedback: SizedBox(
-                    height: 45,
-                    width: 45,
-                    child: FloatingActionButton(
-                      onPressed: null,
-                      heroTag: 'fabDragged',
-                      backgroundColor: Colors.red.shade600,
-                      child: BlinkingIcon(
-                        icon: Icons.mic,
-                        duration: const Duration(milliseconds: 600),
-                        start: Colors.white,
-                        end: Colors.red.shade600,
-                      ),
-                    ),
-                  ),
-                  childWhenDragging: SizedBox(
-                    height: 45,
-                    width: 45,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(45),
-                      ),
-                    ),
-                  ),
-                  child: SizedBox(
-                    height: 45,
-                    width: 45,
-                    child: FloatingActionButton(
-                      heroTag: 'fabRest',
-                      onPressed: () {
-                        switch (state.sendButtonState) {
-                          case SendButtonState.audio:
-                          Vibrate.feedback(FeedbackType.heavy);
-                          Fluttertoast.showToast(
-                            msg: t.warnings.conversation.holdForLonger,
-                            gravity: ToastGravity.SNACKBAR,
-                            toastLength: Toast.LENGTH_SHORT,
-                          );
-                          return;
-                          case SendButtonState.cancelCorrection:
-                          context.read<ConversationBloc>().add(
-                            MessageEditCancelledEvent(),
-                          );
-                          widget.controller.text = '';
-                          return;
-                          case SendButtonState.send:
-                          context.read<ConversationBloc>().add(
-                            MessageSentEvent(),
-                          );
-                          widget.controller.text = '';
-                          return;
-                        }
-                      },
-                      child: Icon(
-                        _getSendButtonIcon(state),
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-
+        
         Positioned(
           left: 8,
-          bottom: 11,
+          bottom: 8,
           right: 61,
           child: BlocBuilder<ConversationBloc, ConversationState>(
             buildWhen: (prev, next) => prev.isRecording != next.isRecording,
@@ -383,7 +383,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 child: IgnorePointer(
                   ignoring: !state.isRecording,
                   child: SizedBox(
-                    height: 38,
+                    height: textFieldFontSizeConversation + 2 * 12 + 2,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(textfieldRadiusConversation),
@@ -393,14 +393,14 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       //       created and destroyed to prevent the timer from running
                       //       until the user closes the page.
                       child: state.isRecording ?
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 16),
-                          child: TimerWidget(),
-                        ),
-                      ) :
-                      null,
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 16),
+                            child: TimerWidget(),
+                          ),
+                        ) :
+                        null,
                     ),
                   ),
                 ),

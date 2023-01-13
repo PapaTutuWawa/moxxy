@@ -17,6 +17,7 @@ import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
+import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
@@ -46,6 +47,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   late final Animation<double> _scrollToBottom;
   bool _scrolledToBottomState = true;
   late FocusNode _textfieldFocus;
+  final ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
 
   @override
   void initState() {
@@ -552,6 +554,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       _controller,
                       _tabController,
                       _textfieldFocus,
+                      _isSpeedDialOpen,
                     ),
                   ),
                 ],
@@ -594,7 +597,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
           // Indicator for the swipe to lock gesture
           Positioned(
-            right: 8,
+            right: 53,
             bottom: 100,
             child: IgnorePointer(
               child: BlocBuilder<ConversationBloc, ConversationState>(
@@ -639,7 +642,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           ),
 
           Positioned(
-            right: 8,
+            right: 53,
             bottom: pickerHeight,
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
@@ -668,7 +671,10 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                           null,
                           backgroundColor: state.isLocked ?
                             Colors.red.shade600 :
-                            Colors.grey,
+                            Theme
+                              .of(context)
+                              .extension<MoxxyThemeData>()!
+                              .conversationTextFieldColor,
                           child: state.isLocked ?
                             BlinkingIcon(
                               icon: Icons.mic,
@@ -676,7 +682,13 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                               start: Colors.white,
                               end: Colors.red.shade600,
                             ) :
-                            const Icon(Icons.lock, color: Colors.white),
+                            Icon(
+                              Icons.lock,
+                              color: Theme
+                                .of(context)
+                                .extension<MoxxyThemeData>()!
+                                .conversationTextFieldTextColor,
+                            ),
                         ),
                       ),
                     );
@@ -687,7 +699,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           ),
 
           Positioned(
-            right: 8,
+            right: 53,
             bottom: 380,
             child: BlocBuilder<ConversationBloc, ConversationState>(
               builder: (context, state) {
@@ -714,8 +726,17 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                             );
                           } :
                           null,
-                          backgroundColor: Colors.grey,
-                          child: const Icon(Icons.delete, color: Colors.white),
+                          backgroundColor: Theme
+                              .of(context)
+                              .extension<MoxxyThemeData>()!
+                              .conversationTextFieldColor,
+                          child: Icon(
+                            Icons.delete,
+                            color: Theme
+                              .of(context)
+                              .extension<MoxxyThemeData>()!
+                              .conversationTextFieldTextColor,
+                          ),
                         ),
                       ),
                     );

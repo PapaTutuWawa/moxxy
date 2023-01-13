@@ -276,7 +276,6 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
           icon: Icons.chat,
           curve: Curves.bounceInOut,
           backgroundColor: primaryColor,
-          // TODO(Unknown): Theme dependent?
           foregroundColor: Colors.white,
           children: [
             SpeedDialChild(

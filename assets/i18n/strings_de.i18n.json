@@ -160,7 +160,10 @@
 	    "stickerPickerNoStickersLine2": "Diese können in den Stickereinstellungen installiert werden.",
 	    "stickerSettings": "Stickereinstellungen",
 	    "newDeviceMessage": "${title} hat ein neues Verschlüsselungsgerät hinzugefügt",
-	    "messageHint": "Nachricht senden..."
+	    "messageHint": "Nachricht senden...",
+	    "sendImages": "Bilder senden",
+	    "sendFiles": "Dateien senden",
+	    "takePhotos": "Bilder aufnehmen"
 	},
 	"addcontact": {
 	    "title": "Neuen Kontakt hinzufügen",

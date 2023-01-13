@@ -1,11 +1,11 @@
 part of 'conversation_bloc.dart';
 
 enum SendButtonState {
-  audio,
+  multi,
   send,
   cancelCorrection,
 }
-const defaultSendButtonState = SendButtonState.audio;
+const defaultSendButtonState = SendButtonState.multi;
 
 @freezed
 class ConversationState with _$ConversationState {
