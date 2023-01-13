@@ -159,7 +159,8 @@
 	    "stickerPickerNoStickersLine1": "Du hast keine Stickerpacks installiert.",
 	    "stickerPickerNoStickersLine2": "Diese können in den Stickereinstellungen installiert werden.",
 	    "stickerSettings": "Stickereinstellungen",
-	    "newDeviceMessage": "${title} hat ein neues Verschlüsselungsgerät hinzugefügt"
+	    "newDeviceMessage": "${title} hat ein neues Verschlüsselungsgerät hinzugefügt",
+	    "messageHint": "Nachricht senden..."
 	},
 	"addcontact": {
 	    "title": "Neuen Kontakt hinzufügen",

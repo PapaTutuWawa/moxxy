@@ -117,7 +117,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                             backgroundColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldColor,
                             textColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldTextColor,
                             maxLines: 5,
-                            hintText: 'Send a message...',
+                            hintText: t.pages.conversation.messageHint,
                             hintTextColor: Theme.of(context).extension<MoxxyThemeData>()!.conversationTextFieldHintTextColor,
                             isDense: true,
                             onChanged: (value) {
