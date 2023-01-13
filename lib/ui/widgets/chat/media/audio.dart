@@ -254,17 +254,16 @@ class AudioChatState extends State<AudioChatWidget> {
   }
 
   Widget _buildDownloadable() {
-    // TODO(Unknown): Implement
     return FileChatBaseWidget(
       widget.message,
-      Icons.image,
       widget.message.isFileUploadNotification ?
         (widget.message.filename ?? '') :
         filenameFromUrl(widget.message.srcUrl!),
       widget.radius,
       widget.maxWidth,
       widget.sent,
-      extra: DownloadButton(
+      mimeType: widget.message.mediaType,
+      downloadButton: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
             RequestDownloadCommand(message: widget.message),

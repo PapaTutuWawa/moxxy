@@ -14,25 +14,39 @@ import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 class FileChatBaseWidget extends StatelessWidget {
   const FileChatBaseWidget(
     this.message,
-    this.icon,
     this.filename,
     this.radius,
     this.maxWidth,
     this.sent,
     {
-      this.extra,
+      this.downloadButton,
       this.onTap,
+      this.mimeType,
       super.key,
     }
   );
   final Message message;
-  final IconData icon;
   final String filename;
   final BorderRadius radius;
   final double maxWidth;
-  final Widget? extra;
+  final Widget? downloadButton;
   final bool sent;
   final void Function()? onTap;
+  final String? mimeType;
+
+  IconData _mimeTypeToIcon() {
+    if (mimeType == null) return Icons.file_present;
+
+    if (mimeType!.startsWith('image/')) {
+      return Icons.image;
+    } else if (mimeType!.startsWith('video/')) {
+      return Icons.video_file_outlined;
+    } else if (mimeType!.startsWith('audio/')) {
+      return Icons.music_note;
+    }
+
+    return Icons.file_present;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,23 +54,43 @@ class FileChatBaseWidget extends StatelessWidget {
       width: maxWidth,
       child: MediaBaseChatWidget(
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(8),
           child: Row(
             children: [
-              Icon(
-                icon,
-                size: 48,
-              ),
+              if (downloadButton != null)
+                downloadButton!,
 
               Expanded(
-                //width: maxWidth - 64,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 6),
-                  child: Text(
-                    filename,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      filename,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _mimeTypeToIcon(),
+                            size: 48,
+                          ),
+
+                          Text(
+                            mimeTypeToName(mimeType),
+                            style: const TextStyle(
+                              fontSize: 24,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -65,7 +99,7 @@ class FileChatBaseWidget extends StatelessWidget {
         MessageBubbleBottom(message, sent),
         radius,
         gradient: false,
-        extra: extra,
+        //extra: extra,
         onTap: onTap,
       ),
     );
@@ -94,14 +128,14 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildNonDownloaded() {
     return FileChatBaseWidget(
       message,
-      Icons.file_present,
       message.isFileUploadNotification ?
         (message.filename ?? '') :
         filenameFromUrl(message.srcUrl!),
       radius,
       maxWidth,
       sent,
-      extra: DownloadButton(
+      mimeType: message.mediaType,
+      downloadButton: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
             RequestDownloadCommand(message: message),
@@ -115,25 +149,27 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildDownloading() {
     return FileChatBaseWidget(
       message,
-      Icons.file_present,
       message.isFileUploadNotification ?
         (message.filename ?? '') :
         filenameFromUrl(message.srcUrl ?? ''),
       radius,
       maxWidth,
       sent,
-      extra: ProgressWidget(id: message.id),
+      mimeType: message.mediaType,
+      downloadButton: ProgressWidget(id: message.id),
     );
   }
 
   Widget _buildInner() {
     return FileChatBaseWidget(
       message,
-      Icons.file_present,
-      message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification ?
+        (message.filename ?? '') :
+        filenameFromUrl(message.srcUrl!),
       radius,
       maxWidth,
       sent,
+      mimeType: message.mediaType,
       onTap: () {
         openFile(message.mediaUrl!);
       },

@@ -58,12 +58,14 @@ class ImageChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        Icons.image,
-        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ?
+          (message.filename ?? '') :
+          filenameFromUrl(message.srcUrl!),
         radius,
         maxWidth,
         sent,
-        extra: ProgressWidget(id: message.id),
+        mimeType: message.mediaType,
+        downloadButton: ProgressWidget(id: message.id),
       );
     }
   }
@@ -114,12 +116,14 @@ class ImageChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        Icons.image,
-        message.isFileUploadNotification ? (message.filename ?? '') : filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification ?
+          (message.filename ?? '') :
+          filenameFromUrl(message.srcUrl!),
         radius,
         maxWidth,
         sent,
-        extra: DownloadButton(
+        mimeType: message.mediaType,
+        downloadButton: DownloadButton(
           onPressed: () {
             MoxplatformPlugin.handler.getDataSender().sendData(
               RequestDownloadCommand(message: message),
