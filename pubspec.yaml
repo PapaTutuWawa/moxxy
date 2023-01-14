@@ -133,14 +133,21 @@ dependency_overrides:
   # NOTE: Leave here for development purposes
   # moxxmpp:
   #   path: ../moxxmpp/packages/moxxmpp
+  # moxxmpp_socket_tcp:
+  #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
 
   moxxmpp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: ed49212f5a527b2b0084faf97cb5c383221772e2
+      rev: a8d80eaddf8784532d88442d74202a47af7de047
       path: packages/moxxmpp
+  moxxmpp_socket_tcp:
+    git:
+      url: https://git.polynom.me/Moxxy/moxxmpp.git
+      rev: a8d80eaddf8784532d88442d74202a47af7de047
+      path: packages/moxxmpp_socket_tcp
  
 extra_licenses:
   - name: undraw.co
