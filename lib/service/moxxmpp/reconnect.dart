@@ -12,7 +12,6 @@ import 'package:synchronized/synchronized.dart';
 /// backoff. This means that we perform the random backoff only as long as we are
 /// connected. Otherwise, we idle until we have a connection again.
 class MoxxyReconnectionPolicy extends ReconnectionPolicy {
-
   MoxxyReconnectionPolicy({ bool isTesting = false, this.maxBackoffTime })
   : _isTesting = isTesting,
     _timerLock = Lock(),
