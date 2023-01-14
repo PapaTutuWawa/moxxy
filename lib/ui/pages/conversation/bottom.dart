@@ -159,7 +159,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState || prev.quotedMessage != next.quotedMessage || prev.pickerVisible != next.pickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody,
+                    buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState || prev.quotedMessage != next.quotedMessage || prev.pickerVisible != next.pickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody || prev.isRecording != next.isRecording,
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
@@ -240,66 +240,73 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(left: 8),
-                          child: SizedBox(
-                            height: 45,
-                            width: 45,
-                            child: SpeedDial(
-                              icon: _getSendButtonIcon(state),
-                              backgroundColor: primaryColor,
-                              foregroundColor: Colors.white,
-                              children: [
-                                SpeedDialChild(
-                                  child: const Icon(Icons.image),
-                                  onTap: () {
-                                    context.read<ConversationBloc>().add(
-                                      ImagePickerRequestedEvent(),
-                                    );
-                                  },
+                          child: AnimatedOpacity(
+                            opacity: state.isRecording ? 0 : 1,
+                            duration: const Duration(milliseconds: 150),
+                            child: IgnorePointer(
+                              ignoring: state.isRecording,
+                              child: SizedBox(
+                                height: 45,
+                                width: 45,
+                                child: SpeedDial(
+                                  icon: _getSendButtonIcon(state),
                                   backgroundColor: primaryColor,
                                   foregroundColor: Colors.white,
-                                  label: t.pages.conversation.sendImages,
-                                ),
-                                SpeedDialChild(
-                                  child: const Icon(Icons.file_present),
-                                  onTap: () {
-                                    context.read<ConversationBloc>().add(
-                                      FilePickerRequestedEvent(),
-                                    );
+                                  children: [
+                                    SpeedDialChild(
+                                      child: const Icon(Icons.image),
+                                      onTap: () {
+                                        context.read<ConversationBloc>().add(
+                                          ImagePickerRequestedEvent(),
+                                        );
+                                      },
+                                      backgroundColor: primaryColor,
+                                      foregroundColor: Colors.white,
+                                      label: t.pages.conversation.sendImages,
+                                    ),
+                                    SpeedDialChild(
+                                      child: const Icon(Icons.file_present),
+                                      onTap: () {
+                                        context.read<ConversationBloc>().add(
+                                          FilePickerRequestedEvent(),
+                                        );
+                                      },
+                                      backgroundColor: primaryColor,
+                                      foregroundColor: Colors.white,
+                                      label: t.pages.conversation.sendFiles,
+                                    ),
+                                    SpeedDialChild(
+                                      child: const Icon(Icons.photo_camera),
+                                      onTap: () {
+                                        showNotImplementedDialog('taking photos', context);
+                                      },
+                                      backgroundColor: primaryColor,
+                                      foregroundColor: Colors.white,
+                                      label: t.pages.conversation.takePhotos,
+                                    ),
+                                  ],
+                                  openCloseDial: widget.speedDialValueNotifier,
+                                  onPress: () {
+                                    switch (state.sendButtonState) {
+                                      case SendButtonState.cancelCorrection:
+                                      context.read<ConversationBloc>().add(
+                                        MessageEditCancelledEvent(),
+                                      );
+                                      widget.controller.text = '';
+                                      return;
+                                      case SendButtonState.send:
+                                      context.read<ConversationBloc>().add(
+                                        MessageSentEvent(),
+                                      );
+                                      widget.controller.text = '';
+                                      return;
+                                      case SendButtonState.multi:
+                                      widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
+                                      return;
+                                    }
                                   },
-                                  backgroundColor: primaryColor,
-                                  foregroundColor: Colors.white,
-                                  label: t.pages.conversation.sendFiles,
                                 ),
-                                SpeedDialChild(
-                                  child: const Icon(Icons.photo_camera),
-                                  onTap: () {
-                                    showNotImplementedDialog('taking photos', context);
-                                  },
-                                  backgroundColor: primaryColor,
-                                  foregroundColor: Colors.white,
-                                  label: t.pages.conversation.takePhotos,
-                                ),
-                              ],
-                              openCloseDial: widget.speedDialValueNotifier,
-                              onPress: () {
-                                switch (state.sendButtonState) {
-                                  case SendButtonState.cancelCorrection:
-                                    context.read<ConversationBloc>().add(
-                                      MessageEditCancelledEvent(),
-                                    );
-                                    widget.controller.text = '';
-                                    return;
-                                  case SendButtonState.send:
-                                    context.read<ConversationBloc>().add(
-                                      MessageSentEvent(),
-                                    );
-                                    widget.controller.text = '';
-                                    return;
-                                  case SendButtonState.multi:
-                                    widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
-                                    return;
-                                }
-                              },
+                              ),
                             ),
                           ),
                         ),
