@@ -141,12 +141,12 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: a8d80eaddf8784532d88442d74202a47af7de047
+      rev: 1aa50699adfa975831a52c737a7c63c54083bd9c
       path: packages/moxxmpp
   moxxmpp_socket_tcp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: a8d80eaddf8784532d88442d74202a47af7de047
+      rev: 1aa50699adfa975831a52c737a7c63c54083bd9c
       path: packages/moxxmpp_socket_tcp
  
 extra_licenses:

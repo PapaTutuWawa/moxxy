@@ -161,12 +161,20 @@ class AvatarService {
     // Publish data and metadata
     final am = GetIt.I.get<XmppConnection>()
       .getManagerById<UserAvatarManager>(userAvatarManager)!;
-    await am.publishUserAvatar(
+
+    _log.finest('Publishing avatar...');
+    final dataResult = await am.publishUserAvatar(
       base64,
       hash,
       public,
     );
-    await am.publishUserAvatarMetadata(
+    if (dataResult.isType<AvatarError>()) {
+      _log.finest('Avatar data publishing failed');
+      return false;
+    }
+
+    // TODO(Unknown): Make sure that the image is not too large.
+    final metadataResult = await am.publishUserAvatarMetadata(
       UserAvatarMetadata(
         hash,
         bytes.length,
@@ -177,7 +185,12 @@ class AvatarService {
       ),
       public,
     );
+    if (metadataResult.isType<AvatarError>()) {
+      _log.finest('Avatar metadata publishing failed');
+      return false;
+    }
     
+    _log.finest('Avatar publishing done');
     return true;
   }
 
