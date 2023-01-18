@@ -31,6 +31,18 @@ class SettingsPage extends StatelessWidget {
         buildWhen: (prev, next) => prev.showDebugMenu != next.showDebugMenu,
         builder: (context, state) => ListView(
           children: [
+            SectionTitle(t.pages.settings.settings.general),
+            SettingsRow(
+              title: t.pages.settings.appearance.title,
+              prefix: const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: Icon(Icons.brush),
+              ),
+              onTap: () {
+                Navigator.pushNamed(context, appearanceRoute);
+              },
+            ),
+
             SectionTitle(t.pages.settings.settings.conversationsSection),
             SettingsRow(
               title: t.pages.settings.settings.conversationsSection,
@@ -72,8 +84,6 @@ class SettingsPage extends StatelessWidget {
                 Navigator.pushNamed(context, privacyRoute);
               },
             ),
-
-            SectionTitle(t.pages.settings.settings.accountSection),
             SettingsRow(
               title: t.pages.blocklist.title,
               prefix: const Padding(
@@ -86,6 +96,8 @@ class SettingsPage extends StatelessWidget {
                 );
               },
             ),
+
+            SectionTitle(t.pages.settings.settings.accountSection),
             SettingsRow(
               title: t.pages.settings.settings.signOut,
               prefix: const Padding(
@@ -106,16 +118,6 @@ class SettingsPage extends StatelessWidget {
             ),
 
             SectionTitle(t.pages.settings.settings.miscellaneousSection),
-            SettingsRow(
-              title: t.pages.settings.appearance.title,
-              prefix: const Padding(
-                padding: EdgeInsets.only(right: 16),
-                child: Icon(Icons.logout),
-              ),
-              onTap: () {
-                Navigator.pushNamed(context, appearanceRoute);
-              },
-            ),
             SettingsRow(
               title: t.pages.settings.about.title,
               prefix: const Padding(

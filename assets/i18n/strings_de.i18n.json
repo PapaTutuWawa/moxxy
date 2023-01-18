@@ -244,7 +244,8 @@
 		"signOutConfirmTitle": "Abmelden",
 		"signOutConfirmBody": "Du bist dabei dich abzumelden. Fortfahren?",
 		"miscellaneousSection": "Unterschiedlich",
-		"debuggingSection": "Debugging"
+		"debuggingSection": "Debugging",
+		"general": "Generell"
 	    },
 	    "about": {
 		"title": "Über",

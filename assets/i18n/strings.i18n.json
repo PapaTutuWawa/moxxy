@@ -244,7 +244,8 @@
 		"signOutConfirmTitle": "Sign Out",
 		"signOutConfirmBody": "You are about to sign out. Proceed?",
 		"miscellaneousSection": "Miscellaneous",
-		"debuggingSection": "Debugging"
+		"debuggingSection": "Debugging",
+		"general": "General"
 	    },
 	    "about": {
 		"title": "About",
