@@ -65,9 +65,9 @@ import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
+import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:share_handler/share_handler.dart';
 
 void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
@@ -81,6 +81,7 @@ void setupLogging() {
 Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIProgressService>(UIProgressService());
   GetIt.I.registerSingleton<UIDataService>(UIDataService());
+  GetIt.I.registerSingleton<UISharingService>(UISharingService());
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
@@ -88,7 +89,8 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
   GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
-  GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc()); GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
+  GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
+  GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
   GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
   GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
   GetIt.I.registerSingleton<SharedMediaBloc>(SharedMediaBloc());
@@ -103,9 +105,6 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
 }
 
-// TODO(Unknown): Replace all Column(children: [ Padding(), Padding, ...]) with a
-//                Padding(padding: ..., child: Column(children: [ ... ]))
-// TODO(Unknown): Theme the switches
 void main() async {
   setupLogging();
   await setupUIServices();
@@ -186,7 +185,6 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-
   const MyApp(this.navigationKey, { super.key });
   final GlobalKey<NavigatorState> navigationKey;
 
@@ -200,46 +198,18 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    _initState();
+  }
+
+  /// Async "version" of initState() 
+  Future<void> _initState() async {
     WidgetsBinding.instance.addObserver(this);
 
-    _setupSharingHandler();
+    // Set up receiving share intents
+    await GetIt.I.get<UISharingService>().initialize();
     
     // Lift the UI block
-    GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().removeQueueLock();
-  }
-
-  Future<void> _handleSharedMedia(SharedMedia media) async {
-    final attachments = media.attachments ?? [];
-    GetIt.I.get<ShareSelectionBloc>().add(
-      ShareSelectionRequestedEvent(
-        attachments.map((a) => a!.path).toList(),
-        media.content,
-        media.content != null ? ShareSelectionType.text : ShareSelectionType.media,
-      ),
-    );
-  }
-  
-  Future<void> _setupSharingHandler() async {
-    final handler = ShareHandlerPlatform.instance;
-    final media = await handler.getInitialSharedMedia();
-
-    // Shared while the app was closed
-    if (media != null) {
-      if (GetIt.I.get<UIDataService>().isLoggedIn) {
-        await _handleSharedMedia(media);
-      }
-
-      await handler.resetInitialSharedMedia();
-    }
-
-    // Shared while the app is stil running
-    handler.sharedMediaStream.listen((SharedMedia media) async {
-      if (GetIt.I.get<UIDataService>().isLoggedIn) {
-        await _handleSharedMedia(media);
-      }
-
-      await handler.resetInitialSharedMedia();
-    });
+    await GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().removeQueueLock();
   }
   
   @override

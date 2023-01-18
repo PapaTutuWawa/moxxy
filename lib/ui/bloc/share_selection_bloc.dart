@@ -130,7 +130,13 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
   }
   
   Future<void> _onRequested(ShareSelectionRequestedEvent event, Emitter<ShareSelectionState> emit) async {
-    emit(state.copyWith(paths: event.paths, text: event.text, type: event.type));
+    emit(
+      state.copyWith(
+        paths: event.paths,
+        text: event.text,
+        type: event.type,
+      ),
+    );
 
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedAndRemoveUntilEvent(
