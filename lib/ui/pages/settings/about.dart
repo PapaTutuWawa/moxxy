@@ -106,7 +106,7 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
               child: Text(
                 // TODO(Unknown): Generate this at build time
                 t.pages.settings.about.version(
-                  version: '0.4.0',
+                  version: '0.4.1',
                 ),
                 textAlign: TextAlign.center,
                 style: const TextStyle(

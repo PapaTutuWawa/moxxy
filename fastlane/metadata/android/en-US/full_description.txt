@@ -10,12 +10,14 @@ Currently supported features include:
   <li>Typing indicators and message markers</li>
   <li>Chat backgrounds</li>
   <li>Runs in the background without Push Notifications</li>
+  <li>OMEMO (Currently not compatible with most apps)</li>
+  <li>Stickers</li>
 </ul>
 
 For the best experience, I recommend a server that:
 <ul>
   <li>Supports direct TLS/StartTLS on the same domain as in the Jid</li>
-  <li>Supports SCRAM-SHA-1 or SCRAM-SHA-256</li>
+  <li>Supports SCRAM-SHA-1, SCRAM-SHA-256 or SCRAM-SHA-512</li>
   <li>Supports HTTP File Upload</li>
   <li>Supports Stream Management</li>
   <li>Supports Client State Indication</li>
