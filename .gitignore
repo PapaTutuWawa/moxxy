@@ -60,3 +60,6 @@ lib/i18n/*.dart
 
 # Android artifacts
 .android
+
+# Build scripts
+release/
