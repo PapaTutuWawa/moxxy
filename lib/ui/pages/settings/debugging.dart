@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
@@ -136,19 +137,22 @@ class DebuggingPage extends StatelessWidget {
               },
             ),
 
-            const SectionTitle('Testing'),
-            SettingsRow(
-              title: 'Reset showDebugMenu state',
-              onTap: () {
-                context.read<PreferencesBloc>().add(
-                  PreferencesChangedEvent(
-                    state.copyWith(
-                      showDebugMenu: false,
+            // Hide the testing commands outside of debug mode
+            ...kDebugMode ? [
+              const SectionTitle('Testing'),
+              SettingsRow(
+                title: 'Reset showDebugMenu state',
+                onTap: () {
+                  context.read<PreferencesBloc>().add(
+                    PreferencesChangedEvent(
+                      state.copyWith(
+                        showDebugMenu: false,
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
+            ] : [],
           ],
         ),
       ),
