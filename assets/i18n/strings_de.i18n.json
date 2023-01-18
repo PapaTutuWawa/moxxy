@@ -250,7 +250,10 @@
 		"title": "Über",
 		"licensed": "Lizensiert unter GPL3",
 		"version": "Version ${version}",
-		"viewSourceCode": "Quellcode anschauen"
+		"viewSourceCode": "Quellcode anschauen",
+		"nMoreToGo": "Noch ${n}...",
+		"debugMenuShown": "Du bist jetzt ein Entwickler!",
+		"debugMenuAlreadyShown": "Du bist bereits ein Entwickler!"
 	    },
 	    "appearance": {
 		"title": "Aussehen",

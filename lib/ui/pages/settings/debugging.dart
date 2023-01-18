@@ -135,6 +135,20 @@ class DebuggingPage extends StatelessWidget {
                 );
               },
             ),
+
+            const SectionTitle('Testing'),
+            SettingsRow(
+              title: 'Reset showDebugMenu state',
+              onTap: () {
+                context.read<PreferencesBloc>().add(
+                  PreferencesChangedEvent(
+                    state.copyWith(
+                      showDebugMenu: false,
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

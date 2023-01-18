@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/models/preferences.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // TODO(PapaTutuWawa): Include license text
-class SettingsAboutPage extends StatelessWidget {
+class SettingsAboutPage extends StatefulWidget {
   const SettingsAboutPage({ super.key });
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
@@ -14,7 +18,18 @@ class SettingsAboutPage extends StatelessWidget {
       name: aboutRoute,
     ),
   );
-  
+
+  @override
+  SettingsAboutPageState createState() => SettingsAboutPageState();
+}
+
+class SettingsAboutPageState extends State<SettingsAboutPage> {
+  /// The amount of taps on the Moxxy logo, if showDebugMenu is false
+  int _counter = 0;
+
+  /// True, if the toast ("You're already a developer") has already been shown once.
+  bool _alreadyShownNotificationShown = false;
+
   Future<void> _openUrl(String url) async {
     if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
       // TODO(Unknown): Show a popup to copy the url
@@ -29,9 +44,45 @@ class SettingsAboutPage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(
           children: [
-            Image.asset(
-              'assets/images/logo.png',
-              width: 200, height: 200,
+            BlocBuilder<PreferencesBloc, PreferencesState>(
+              buildWhen: (prev, next) => prev.showDebugMenu != next.showDebugMenu,
+              builder: (context, state) => InkWell(
+                onTap: () async {
+                  if (state.showDebugMenu) {
+                    if (_counter == 0 && !_alreadyShownNotificationShown) {
+                      _alreadyShownNotificationShown = true;
+                      await Fluttertoast.showToast(
+                        msg: t.pages.settings.about.debugMenuAlreadyShown,
+                        gravity: ToastGravity.SNACKBAR,
+                        toastLength: Toast.LENGTH_SHORT,
+                      );
+                    }
+
+                    return;
+                  }
+
+                  _counter++;
+                  if (_counter == 10) {
+                    context.read<PreferencesBloc>().add(
+                      PreferencesChangedEvent(
+                        state.copyWith(
+                          showDebugMenu: true,
+                        ),
+                      ),
+                    );
+
+                    await Fluttertoast.showToast(
+                      msg: t.pages.settings.about.debugMenuShown,
+                      gravity: ToastGravity.SNACKBAR,
+                      toastLength: Toast.LENGTH_SHORT,
+                    );
+                  }
+                },
+                child:Image.asset(
+                  'assets/images/logo.png',
+                  width: 200, height: 200,
+                ),
+              ),
             ),
             Text(
               t.global.title,

@@ -32,6 +32,7 @@ class PreferencesState with _$PreferencesState {
     @Default(true) bool enableStickers,
     @Default(true) bool autoDownloadStickersFromContacts,
     @Default(true) bool isStickersNodePublic,
+    @Default(false) bool showDebugMenu,
   }) = _PreferencesState;
   
   // JSON serialization
