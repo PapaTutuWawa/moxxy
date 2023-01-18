@@ -4,6 +4,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
@@ -199,6 +200,12 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                               // ignore: use_build_context_synchronously
                               context.read<ConversationsBloc>().add(
                                 ConversationClosedEvent(state.conversation!.jid),
+                              );
+
+                              // Navigate back
+                              // ignore: use_build_context_synchronously
+                              context.read<NavigationBloc>().add(
+                                PoppedRouteEvent(),
                               );
                             }
                           }
