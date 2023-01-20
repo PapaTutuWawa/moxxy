@@ -70,7 +70,7 @@ dependencies:
     version: 0.1.2+9
   moxxyv2_builders:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.0
+    version: 0.2.0
   native_imaging: 0.1.0
   omemo_dart:
     hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub

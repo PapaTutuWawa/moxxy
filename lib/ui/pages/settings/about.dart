@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
+import 'package:moxxyv2/shared/version.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -104,9 +105,8 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
-                // TODO(Unknown): Generate this at build time
                 t.pages.settings.about.version(
-                  version: '0.4.1',
+                  version: pubspecVersionString,
                 ),
                 textAlign: TextAlign.center,
                 style: const TextStyle(

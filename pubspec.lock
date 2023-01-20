@@ -848,7 +848,7 @@ packages:
       name: moxxyv2_builders
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.0"
+    version: "0.2.0"
   native_imaging:
     dependency: "direct main"
     description:
