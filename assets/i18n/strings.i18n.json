@@ -101,7 +101,8 @@
 	"conversation": {
 	    "audioRecordingError": "Failed to finalize audio recording",
 	    "openFileNoAppError": "No app found to open this file",
-	    "openFileGenericError": "Failed to open file"
+	    "openFileGenericError": "Failed to open file",
+	    "messageErrorDialogTitle": "Error"
 	}
     },
     "warnings": {

@@ -319,7 +319,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   text: t.pages.conversation.showError,
                   onPressed: () {
                     showInfoDialog(
-                      'Error',
+                      t.errors.conversation.messageErrorDialogTitle,
                       errorToTranslatableString(item.errorType!),
                       context,
                     );

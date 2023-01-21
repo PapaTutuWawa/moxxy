@@ -101,7 +101,8 @@
 	"conversation": {
 	    "audioRecordingError": "Fehler beim Fertigstellen der Audioaufnahme",
 	    "openFileNoAppError": "Keine App vorhanden, um die Datei zu öffnen",
-	    "openFileGenericError": "Fehler beim Öffnen der Datei"
+	    "openFileGenericError": "Fehler beim Öffnen der Datei",
+	    "messageErrorDialogTitle": "Fehler"
 	}
     },
     "warnings": {
