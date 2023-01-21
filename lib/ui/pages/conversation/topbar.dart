@@ -95,6 +95,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
     return BlocBuilder<ConversationBloc, ConversationState>(
       buildWhen: _shouldRebuild,
       builder: (context, state) {
+        final chatState = state.conversation?.chatState ?? ChatState.gone;
         return SizedBox(
           width: MediaQuery.of(context).size.width,
           child: SafeArea(
@@ -115,8 +116,8 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                           child: RebuildOnContactIntegrationChange(
                             builder: () => AvatarWrapper(
                               radius: 25,
-                              avatarUrl: state.conversation!.avatarPathWithOptionalContact,
-                              altText: state.conversation!.titleWithOptionalContact,
+                              avatarUrl: state.conversation?.avatarPathWithOptionalContact ?? '',
+                              altText: state.conversation?.titleWithOptionalContact ?? 'A',
                             ),
                           ),
                         ),
@@ -129,7 +130,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                           children: [
                             AnimatedPositioned(
                               duration: const Duration(milliseconds: 200),
-                              top: _isChatStateVisible(state.conversation!.chatState) ?
+                              top: _isChatStateVisible(chatState) ?
                                 0 :
                                 10,
                               left: 0,
@@ -140,7 +141,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                                 children: [
                                   RebuildOnContactIntegrationChange(
                                     builder: () => TopbarTitleText(
-                                      state.conversation!.titleWithOptionalContact,
+                                      state.conversation?.titleWithOptionalContact ?? '',
                                     ),
                                   ),
                                 ],
@@ -151,7 +152,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                               right: 0,
                               bottom: 0,
                               child: AnimatedOpacity(
-                                opacity: _isChatStateVisible(state.conversation!.chatState) ?
+                                opacity: _isChatStateVisible(chatState) ?
                                   1.0 :
                                   0.0,
                                 curve: Curves.easeInOutCubic,
@@ -159,7 +160,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    _buildChatState(state.conversation!.chatState),
+                                    _buildChatState(chatState),
                                   ],
                                 ),
                               ),
@@ -177,9 +178,9 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                           context.read<ConversationBloc>().add(OmemoSetEvent(false));
                         }
                       },
-                      icon: state.conversation!.encrypted ?
-                      const Icon(Icons.lock) :
-                      const Icon(Icons.lock_open),
+                      icon: state.conversation?.encrypted == true ?
+                        const Icon(Icons.lock) :
+                        const Icon(Icons.lock_open),
                       itemBuilder: (BuildContext c) => [
                         popupItemWithIcon(EncryptionOption.none, t.pages.conversation.unencrypted, Icons.lock_open),
                         popupItemWithIcon(EncryptionOption.omemo, t.pages.conversation.encrypted, Icons.lock),
