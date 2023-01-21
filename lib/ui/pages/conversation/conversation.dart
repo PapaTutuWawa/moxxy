@@ -515,7 +515,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   BlocBuilder<ConversationBloc, ConversationState>(
                     buildWhen: (prev, next) => prev.conversation?.inRoster != next.conversation?.inRoster,
                     builder: (context, state) {
-                      if (state.conversation!.inRoster) return Container();
+                      if (state.conversation?.inRoster == true) return Container();
 
                       return _renderNotInRosterWidget(state, context);
                     },
@@ -524,7 +524,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   BlocBuilder<ConversationBloc, ConversationState>(
                     // NOTE: We don't need to update when the jid changes as it should
                     //       be static over the entire lifetime of the BLoC.
-                    buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation!.encrypted != next.conversation!.encrypted,
+                    buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation?.encrypted != next.conversation?.encrypted,
                     builder: (context, state) => Expanded(
                       child: ListView.builder(
                         itemCount: state.messages.length * 2,

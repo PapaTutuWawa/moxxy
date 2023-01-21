@@ -293,6 +293,17 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     GetIt.I.get<SharedMediaBloc>().add(JidRemovedEvent());
     _updateChatState(ChatState.gone);
 
+    // Reset conversation so that we don't accidentally send chat states to chats
+    // that are not currently focused.
+    emit(
+      state.copyWith(
+        conversation: null,
+        messageText: '',
+        quotedMessage: null,
+        messages: [],
+      ),
+    );
+
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SetOpenConversationCommand(),
       awaitable: false,
