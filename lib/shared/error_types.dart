@@ -21,6 +21,10 @@ const messageRemoteServerTimeout = 14;
 const messageRemoteServerNotFound = 15;
 
 int errorTypeFromException(dynamic exception) {
+  if (exception == null) {
+    return noError;
+  }
+
   if (exception is NoDecryptionKeyException) {
     return messageNoDecryptionKey;
   } else if (exception is InvalidMessageHMACException) {

@@ -141,7 +141,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: e031e6d7603ffc86dd017570ad7a761baee19854
+      rev: c3459e6820c52f397365ae325c3028984016101a
       path: packages/moxxmpp
   moxxmpp_socket_tcp:
     git:
