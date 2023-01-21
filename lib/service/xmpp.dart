@@ -784,7 +784,6 @@ class XmppService {
 
   Future<void> _onChatMarker(ChatMarkerEvent event, { dynamic extra }) async {
     _log.finest('Chat marker from ${event.from.toString()}');
-    if (event.type == 'acknowledged') return;
 
     final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
@@ -798,8 +797,8 @@ class XmppService {
     
     final msg = await ms.updateMessage(
       dbMsg.id,
-      received: dbMsg.received || event.type == 'received' || event.type == 'displayed',
-      displayed: dbMsg.displayed || event.type == 'displayed',
+      received: dbMsg.received || event.type == 'received' || event.type == 'displayed' || event.type == 'acknowledged',
+      displayed: dbMsg.displayed || event.type == 'displayed' || event.type == 'acknowledged',
     );
     sendEvent(MessageUpdatedEvent(message: msg));
 
@@ -1455,6 +1454,7 @@ class XmppService {
       return;
     }
 
+    _log.finest('Cancel reason: ${event.data.cancelReason}');
     final newMessage = await ms.updateMessage(
       message.id,
       errorType: errorTypeFromException(event.data.cancelReason),
