@@ -255,7 +255,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               Colors.transparent :
               null,
             children: [
-              ...item.isReactable ? [
+              if (item.isReactable)
                 OverviewMenuItem(
                   icon: Icons.add_reaction,
                   text: t.pages.conversation.addReaction,
@@ -294,16 +294,14 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     Navigator.of(context).pop();
                   },
                 ),
-              ] : [],
-              ...item.canRetract(sentBySelf) ? [
+              if (item.canRetract(sentBySelf))
                 OverviewMenuItem(
                   icon: Icons.delete,
                   text: t.pages.conversation.retract,
                   onPressed: () => _retractMessage(context, item.originId!),
                 ),
-              ] : [],
               // TODO(Unknown): Also allow correcting older messages
-              ...item.canEdit(sentBySelf) && state.conversation!.lastMessage?.id == item.id ? [
+              if (item.canEdit(sentBySelf) && state.conversation!.lastMessage?.id == item.id)
                 OverviewMenuItem(
                   icon: Icons.edit,
                   text: t.pages.conversation.edit,
@@ -315,8 +313,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     Navigator.of(context).pop();
                   },
                 ),
-              ] : [],
-              ...item.errorMenuVisible ? [
+              if (item.errorMenuVisible)
                 OverviewMenuItem(
                   icon: Icons.info_outline,
                   text: t.pages.conversation.showError,
@@ -328,8 +325,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     );
                   },
                 ),
-              ] : [],
-              ...item.hasWarning ? [
+              if (item.hasWarning)
                 OverviewMenuItem(
                   icon: Icons.warning,
                   text: t.pages.conversation.showWarning,
@@ -341,8 +337,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     );
                   },
                 ),
-              ] : [],
-              ...item.isCopyable ? [
+              if (item.isCopyable)
                 OverviewMenuItem(
                   icon: Icons.content_copy,
                   text: t.pages.conversation.copy,
@@ -352,8 +347,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     Navigator.of(context).pop();
                   },
                 ),
-              ] : [],
-              ...item.isQuotable ? [
+
+              if (item.isQuotable)
                 OverviewMenuItem(
                   icon: Icons.forward,
                   text: t.pages.conversation.forward,
@@ -364,15 +359,16 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     );
                   },
                 ),
-              ] : [],
-              OverviewMenuItem(
-                icon: Icons.reply,
-                text: t.pages.conversation.quote,
-                onPressed: () {
-                  _quoteMessage(context, item);
-                  Navigator.of(context).pop();
-                },
-              ),
+
+              if (item.isQuotable)
+                OverviewMenuItem(
+                  icon: Icons.reply,
+                  text: t.pages.conversation.quote,
+                  onPressed: () {
+                    _quoteMessage(context, item);
+                    Navigator.of(context).pop();
+                  },
+                ),
             ],
           ),
         );
