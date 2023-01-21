@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
@@ -5,6 +6,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:synchronized/synchronized.dart';
 
 part 'conversations_bloc.freezed.dart';
 part 'conversations_event.dart';
@@ -20,8 +22,30 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     on<ConversationMarkedAsReadEvent>(_onConversationMarkedAsRead);
   }
 
+  // TODO(Unknown): This pattern is used so often that it should become its own thing in moxlib
+  bool _initialized = false;
+  final Lock _lock = Lock();
+  final List<Completer<void>> _completers = List.empty(growable: true);
+
+  /// Asynchronously blocks until a ConversationsInitEvent has been triggered and
+  /// processed. Useful to ensure that accessing the BLoC's state outside of
+  /// a BlocBuilder causes a NPE.
+  Future<void> waitUntilInitialized() async {
+    final comp = await _lock.synchronized(() {
+      if (!_initialized) {
+        final _completer = Completer<void>();
+        _completers.add(_completer);
+        return _completer;
+      }
+
+      return null;
+    });
+
+    if (comp != null) await comp.future;
+  }
+  
   Future<void> _onInit(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
-    return emit(
+    emit(
       state.copyWith(
         displayName: event.displayName,
         jid: event.jid,
@@ -29,6 +53,16 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
         conversations: event.conversations..sort(compareConversation),
       ),
     );
+
+    await _lock.synchronized(() {
+      _initialized = true;
+
+      for (final completer in _completers) {
+        completer.complete();
+      }
+
+      _completers.clear();
+    });
   }
 
   Future<void> _onConversationsAdded(ConversationsAddedEvent event, Emitter<ConversationsState> emit) async {

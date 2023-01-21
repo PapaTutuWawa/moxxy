@@ -134,8 +134,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
   
   Future<void> _onRequestedConversation(RequestedConversationEvent event, Emitter<ConversationState> emit) async {
+    final cb = GetIt.I.get<ConversationsBloc>();
+    await cb.waitUntilInitialized();
     final conversation = firstWhereOrNull(
-      GetIt.I.get<ConversationsBloc>().state.conversations,
+      cb.state.conversations,
       (Conversation c) => c.jid == event.jid,
     )!;
     emit(
