@@ -35,7 +35,7 @@ int errorTypeFromException(dynamic exception) {
     return messageContactDoesNotSupportOmemo;
   }
 
-  return noError;
+  return unspecifiedError;
 }
 
 String errorToTranslatableString(int error) {

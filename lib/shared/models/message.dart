@@ -172,7 +172,7 @@ class Message with _$Message {
   /// Returns true if the message can be retracted. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
   bool canRetract(bool sentBySelf) {
-    return originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
+    return !hasError && originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
   }
 
   /// Returns true if we can send a reaction for this message.
@@ -181,7 +181,7 @@ class Message with _$Message {
   /// Returns true if the message can be edited. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
   bool canEdit(bool sentBySelf) {
-    return sentBySelf && !isMedia && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
+    return !hasError && sentBySelf && !isMedia && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
   }
 
   /// Returns true if the message can open the selection menu by longpressing. False if
