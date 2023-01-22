@@ -829,7 +829,7 @@ packages:
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: c3459e6820c52f397365ae325c3028984016101a
+      resolved-ref: a01022c21730df4e22b30ca9341b43a2c87e6a25
       url: "https://git.polynom.me/Moxxy/moxxmpp.git"
     source: git
     version: "0.1.6+1"
@@ -883,7 +883,7 @@ packages:
       name: omemo_dart
       url: "https://git.polynom.me/api/packages/PapaTutuWawa/pub/"
     source: hosted
-    version: "0.4.2"
+    version: "0.4.3"
   package_config:
     dependency: transitive
     description:

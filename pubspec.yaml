@@ -74,7 +74,7 @@ dependencies:
   native_imaging: 0.1.0
   omemo_dart:
     hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
-    version: 0.4.2
+    version: 0.4.3
   page_transition: 2.0.9
   path: 1.8.2
   path_provider: 2.0.11
@@ -141,7 +141,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: c3459e6820c52f397365ae325c3028984016101a
+      rev: a01022c21730df4e22b30ca9341b43a2c87e6a25
       path: packages/moxxmpp
   moxxmpp_socket_tcp:
     git:
