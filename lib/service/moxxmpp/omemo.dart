@@ -18,7 +18,9 @@ class MoxxyOmemoManager extends BaseOmemoManager {
   Future<bool> shouldEncryptStanza(JID toJid, Stanza stanza) async {
     // Never encrypt stanzas that contain PubSub elements
     if (stanza.firstTag('pubsub', xmlns: pubsubXmlns) != null ||
-        stanza.firstTag('pubsub', xmlns: pubsubOwnerXmlns) != null) {
+        stanza.firstTag('pubsub', xmlns: pubsubOwnerXmlns) != null ||
+        stanza.firstTagByXmlns(carbonsXmlns) != null ||
+        stanza.firstTagByXmlns(rosterXmlns) != null) {
       return false;
     }
 
