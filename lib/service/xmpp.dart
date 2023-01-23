@@ -37,6 +37,7 @@ import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
+import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
@@ -1125,6 +1126,7 @@ class XmppService {
     
     // Stop the processing here if the event does not describe a displayable message
     if (!_isMessageEventMessage(event) && event.other['encryption_error'] == null) return;
+    if (event.other['encryption_error'] is InvalidKeyExchangeException) return;
 
     final state = await getXmppState();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
