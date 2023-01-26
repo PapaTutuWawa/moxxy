@@ -1,19 +1,27 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
-import 'package:moxxmpp/moxxmpp.dart';
-import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
-import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
+
+class ConnectivityEvent {
+  const ConnectivityEvent(this.regained, this.lost);
+  final bool regained;
+  final bool lost;
+}
 
 class ConnectivityService {
-  ConnectivityService() : _log = Logger('ConnectivityService');
-  final Logger _log;
+  /// The internal stream controller
+  final StreamController<ConnectivityEvent> _controller = StreamController<ConnectivityEvent>.broadcast();
+
+  /// The logger
+  final Logger _log = Logger('ConnectivityService');
 
   /// Caches the current connectivity state
   late ConnectivityResult _connectivity;
 
+  Stream<ConnectivityEvent> get stream => _controller.stream;
+  
   @visibleForTesting
   void setConnectivity(ConnectivityResult result) {
     _log.warning('Internal connectivity state changed by request originating from outside ConnectivityService');
@@ -27,20 +35,25 @@ class ConnectivityService {
     // TODO(Unknown): At least on Android, the stream fires directly after listening although the
     //                network does not change. So just skip it.
     // See https://github.com/fluttercommunity/plus_plugins/issues/567
-    final skipAmount = Platform.isAndroid ? 1 : 0;
+    //final skipAmount = Platform.isAndroid ? 1 : 0;
+    final skipAmount = 0;
     conn.onConnectivityChanged.skip(skipAmount).listen((ConnectivityResult result) {
       final regained = _connectivity == ConnectivityResult.none && result != ConnectivityResult.none;
       final lost = result == ConnectivityResult.none;
       _connectivity = result;
 
-      // TODO(PapaTutuWawa): Should we use Streams?
-      // Notify other services
-      (GetIt.I.get<XmppConnection>().reconnectionPolicy as MoxxyReconnectionPolicy)
-        .onConnectivityChanged(regained, lost);
-
-      GetIt.I.get<HttpFileTransferService>().onConnectivityChanged(regained);
+      _controller.add(
+        ConnectivityEvent(
+          regained,
+          lost,
+        ),
+      );
     });
   }
 
   ConnectivityResult get currentState => _connectivity;
+
+  Future<bool> hasConnection() async {
+    return _connectivity != ConnectivityResult.none;
+  }
 }

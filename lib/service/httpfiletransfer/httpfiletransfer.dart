@@ -32,29 +32,26 @@ import 'package:uuid/uuid.dart';
 
 /// This service is responsible for managing the up- and download of files using Http.
 class HttpFileTransferService {
-  HttpFileTransferService()
-    : _uploadQueue = Queue<FileUploadJob>(),
-      _downloadQueue = Queue<FileDownloadJob>(),
-      _uploadLock = Lock(),
-      _downloadLock = Lock(),
-      _log = Logger('HttpFileTransferService');
+  HttpFileTransferService() {
+    GetIt.I.get<ConnectivityService>().stream.listen(_onConnectivityChanged);
+  }
 
-  final Logger _log;
+  final Logger _log = Logger('HttpFileTransferService');
 
   /// Queues for tracking up- and download tasks
-  final Queue<FileDownloadJob> _downloadQueue;
-  final Queue<FileUploadJob> _uploadQueue;
+  final Queue<FileDownloadJob> _downloadQueue = Queue<FileDownloadJob>();
+  final Queue<FileUploadJob> _uploadQueue = Queue<FileUploadJob>();
   /// The currently running job and their lock
   FileUploadJob? _currentUploadJob;
   FileDownloadJob? _currentDownloadJob;
 
   /// Locks for upload and download state
-  final Lock _uploadLock;
-  final Lock _downloadLock;
+  final Lock _uploadLock = Lock();
+  final Lock _downloadLock = Lock();
   
   /// Called by the ConnectivityService if the connection got lost but then was regained.
-  Future<void> onConnectivityChanged(bool regained) async {
-    if (!regained) return;
+  Future<void> _onConnectivityChanged(ConnectivityEvent event) async {
+    if (!event.regained) return;
     
     await _uploadLock.synchronized(() async {
       if (_currentUploadJob != null) {

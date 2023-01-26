@@ -131,18 +131,18 @@ dependency_overrides:
     version: 3.3.8
 
   # NOTE: Leave here for development purposes
-  # moxxmpp:
-  #   path: ../moxxmpp/packages/moxxmpp
+  moxxmpp:
+    path: ../moxxmpp/packages/moxxmpp
   # moxxmpp_socket_tcp:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
 
-  moxxmpp:
-    git:
-      url: https://git.polynom.me/Moxxy/moxxmpp.git
-      rev: a01022c21730df4e22b30ca9341b43a2c87e6a25
-      path: packages/moxxmpp
+  # moxxmpp:
+  #   git:
+  #     url: https://git.polynom.me/Moxxy/moxxmpp.git
+  #     rev: a01022c21730df4e22b30ca9341b43a2c87e6a25
+  #     path: packages/moxxmpp
   moxxmpp_socket_tcp:
     git:
       url: https://git.polynom.me/Moxxy/moxxmpp.git

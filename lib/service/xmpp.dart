@@ -384,7 +384,11 @@ class XmppService {
 
     _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
-    unawaited(GetIt.I.get<XmppConnection>().connect(lastResource: lastResource));
+    unawaited(GetIt.I.get<XmppConnection>().connect(
+        lastResource: lastResource,
+        waitForConnection: true,
+      ),
+    );
     installEventHandlers();
   }
 
@@ -394,7 +398,10 @@ class XmppService {
     _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
     installEventHandlers();
-    return GetIt.I.get<XmppConnection>().connectAwaitable(lastResource: lastResource);
+    return GetIt.I.get<XmppConnection>().connectAwaitable(
+      lastResource: lastResource,
+      waitForConnection: true,
+    );
   }
 
   /// Wrapper function for creating shared media entries for the given paths.

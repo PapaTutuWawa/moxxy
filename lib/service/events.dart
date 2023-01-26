@@ -17,7 +17,6 @@ import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
-import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -92,7 +91,6 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   GetIt.I.get<Logger>().fine('Performing login...');
-  GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
   final result = await GetIt.I.get<XmppService>().connectAwaitable(
     ConnectionSettings(
       jid: JID.fromString(command.jid),
@@ -105,10 +103,11 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
   GetIt.I.get<Logger>().fine('Login done');
 
   // ignore: avoid_dynamic_calls
+  final xc = GetIt.I.get<XmppConnection>();
   if (result.success) {
+    await xc.reconnectionPolicy.setShouldReconnect(true);
     final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
-    GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(true);
-    final settings = GetIt.I.get<XmppConnection>().getConnectionSettings();
+    final settings = xc.getConnectionSettings();
     sendEvent(
       LoginSuccessfulEvent(
         jid: settings.jid.toString(),
@@ -117,7 +116,7 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
       id:id,
     );
   } else {
-    GetIt.I.get<MoxxyReconnectionPolicy>().setShouldReconnect(false);
+    await xc.reconnectionPolicy.setShouldReconnect(false);
     sendEvent(
       LoginFailureEvent(
         reason: xmppErrorToTranslatableString(result.error!),

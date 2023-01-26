@@ -21,9 +21,9 @@ import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/moxxmpp/connectivity.dart';
 import 'package:moxxyv2/service/moxxmpp/disco.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
-import 'package:moxxyv2/service/moxxmpp/reconnect.dart';
 import 'package:moxxyv2/service/moxxmpp/roster.dart';
 import 'package:moxxyv2/service/moxxmpp/socket.dart';
 import 'package:moxxyv2/service/moxxmpp/stream.dart';
@@ -145,6 +145,9 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
   await GetIt.I.get<DatabaseService>().initialize();
 
+  // Initialize services
+  GetIt.I.registerSingleton<ConnectivityWatcherService>(ConnectivityWatcherService());
+  GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
   GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
   GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
   GetIt.I.registerSingleton<NotificationsService>(NotificationsService());
@@ -162,6 +165,7 @@ Future<void> entrypoint() async {
 
   await GetIt.I.get<NotificationsService>().init();
   await GetIt.I.get<ContactsService>().init();
+  await GetIt.I.get<ConnectivityService>().initialize();
 
   if (!kDebugMode) {
     final enableDebug = (await GetIt.I.get<PreferencesService>().getPreferences()).debugEnabled;
@@ -170,10 +174,12 @@ Future<void> entrypoint() async {
   
   // Init the UDPLogger
   await initUDPLogger();
-  
-  GetIt.I.registerSingleton<MoxxyReconnectionPolicy>(MoxxyReconnectionPolicy());
+
+  final connectivityManager = MoxxyConnectivityManager();
+  await connectivityManager.initialize();
   final connection = XmppConnection(
-    GetIt.I.get<MoxxyReconnectionPolicy>(),
+    RandomBackoffReconnectionPolicy(1, 6),
+    connectivityManager,
     MoxxyTCPSocketWrapper(),
   )..registerManagers([
       MoxxyStreamManagementManager(),
@@ -219,9 +225,6 @@ Future<void> entrypoint() async {
     ]);
     
   GetIt.I.registerSingleton<XmppConnection>(connection);
-  GetIt.I.registerSingleton<ConnectivityWatcherService>(ConnectivityWatcherService());
-  GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
-  await GetIt.I.get<ConnectivityService>().initialize();
 
   GetIt.I.get<Logger>().finest('Done with xmpp');
   

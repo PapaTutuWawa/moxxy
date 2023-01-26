@@ -8,7 +8,6 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/notifications.dart';
 
 class ConnectivityWatcherService {
-
   ConnectivityWatcherService() : _log = Logger('ConnectivityWatcherService');
   final Logger _log;
 
