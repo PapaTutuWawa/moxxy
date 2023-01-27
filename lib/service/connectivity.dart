@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
@@ -32,12 +31,7 @@ class ConnectivityService {
     final conn = Connectivity();
     _connectivity = await conn.checkConnectivity();
 
-    // TODO(Unknown): At least on Android, the stream fires directly after listening although the
-    //                network does not change. So just skip it.
-    // See https://github.com/fluttercommunity/plus_plugins/issues/567
-    //final skipAmount = Platform.isAndroid ? 1 : 0;
-    final skipAmount = 0;
-    conn.onConnectivityChanged.skip(skipAmount).listen((ConnectivityResult result) {
+    conn.onConnectivityChanged.listen((ConnectivityResult result) {
       final regained = _connectivity == ConnectivityResult.none && result != ConnectivityResult.none;
       final lost = result == ConnectivityResult.none;
       _connectivity = result;
