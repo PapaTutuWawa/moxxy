@@ -22,7 +22,6 @@ import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/connectivity.dart';
-import 'package:moxxyv2/service/moxxmpp/disco.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/moxxmpp/roster.dart';
 import 'package:moxxyv2/service/moxxmpp/socket.dart';
@@ -181,48 +180,51 @@ Future<void> entrypoint() async {
     RandomBackoffReconnectionPolicy(1, 6),
     connectivityManager,
     MoxxyTCPSocketWrapper(),
-  )..registerManagers([
-      MoxxyStreamManagementManager(),
-      MoxxyDiscoManager(),
-      RosterManager(MoxxyRosterStateManager()),
-      MoxxyOmemoManager(),
-      PingManager(),
-      MessageManager(),
-      PresenceManager('http://moxxy.im'),
-      CSIManager(),
-      CarbonsManager(),
-      PubSubManager(),
-      VCardManager(),
-      UserAvatarManager(),
-      StableIdManager(),
-      MessageDeliveryReceiptManager(),
-      ChatMarkerManager(),
-      OOBManager(),
-      SFSManager(),
-      MessageRepliesManager(),
-      BlockingManager(),
-      ChatStateManager(),
-      HttpFileUploadManager(),
-      FileUploadNotificationManager(),
-      EmeManager(),
-      CryptographicHashManager(),
-      DelayedDeliveryManager(),
-      MessageRetractionManager(),
-      LastMessageCorrectionManager(),
-      MessageReactionsManager(),
-      StickersManager(),
-    ])
-    ..registerFeatureNegotiators([
-      ResourceBindingNegotiator(),
-      StartTlsNegotiator(),
-      StreamManagementNegotiator(),
-      CSINegotiator(),
-      RosterFeatureNegotiator(),
-      SaslScramNegotiator(10, '', '', ScramHashType.sha512),
-      SaslScramNegotiator(9, '', '', ScramHashType.sha256),
-      SaslScramNegotiator(8, '', '', ScramHashType.sha1),
-      SaslPlainNegotiator(),
-    ]);
+  )..registerFeatureNegotiators([
+    ResourceBindingNegotiator(),
+    StartTlsNegotiator(),
+    StreamManagementNegotiator(),
+    CSINegotiator(),
+    RosterFeatureNegotiator(),
+    SaslScramNegotiator(10, '', '', ScramHashType.sha512),
+    SaslScramNegotiator(9, '', '', ScramHashType.sha256),
+    SaslScramNegotiator(8, '', '', ScramHashType.sha1),
+    SaslPlainNegotiator(),
+  ]);
+  await connection.registerManagers([
+    MoxxyStreamManagementManager(),
+    DiscoManager([
+      const Identity(category: 'client', type: 'phone', name: 'Moxxy'),
+    ]),
+    RosterManager(MoxxyRosterStateManager()),
+    MoxxyOmemoManager(),
+    PingManager(),
+    MessageManager(),
+    PresenceManager(),
+    EntityCapabilitiesManager('http://moxxy.im'),
+    CSIManager(),
+    CarbonsManager(),
+    PubSubManager(),
+    VCardManager(),
+    UserAvatarManager(),
+    StableIdManager(),
+    MessageDeliveryReceiptManager(),
+    ChatMarkerManager(),
+    OOBManager(),
+    SFSManager(),
+    MessageRepliesManager(),
+    BlockingManager(),
+    ChatStateManager(),
+    HttpFileUploadManager(),
+    FileUploadNotificationManager(),
+    EmeManager(),
+    CryptographicHashManager(),
+    DelayedDeliveryManager(),
+    MessageRetractionManager(),
+    LastMessageCorrectionManager(),
+    MessageReactionsManager(),
+    StickersManager(),
+  ]); 
     
   GetIt.I.registerSingleton<XmppConnection>(connection);
 

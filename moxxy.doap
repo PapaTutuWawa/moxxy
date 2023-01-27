@@ -6,7 +6,7 @@
   <Project xml:lang='en'>
     <name>Moxxy</name>
     <created>2021-12-26</created>
-    <homepage rdf:resource='https://github.com/Polynomdivision/moxxyv2'/>
+    <homepage rdf:resource='https://moxxy.org'/>
     <os>Android</os>
 
     <programming-language>Dart</programming-language>
@@ -249,7 +249,7 @@
       <xmpp:SupportedXep>
 	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0461.html" />
 	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.1.0</xmpp:version>
+	<xmpp:version>0.2.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
