@@ -827,21 +827,17 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      path: "packages/moxxmpp"
-      ref: HEAD
-      resolved-ref: "7e588f01b0e226a0c6b03f66d5f2b1d055c8715f"
-      url: "https://git.polynom.me/Moxxy/moxxmpp.git"
-    source: git
-    version: "0.1.6+1"
+      name: moxxmpp
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
+    version: "0.2.0"
   moxxmpp_socket_tcp:
     dependency: "direct main"
     description:
-      path: "packages/moxxmpp_socket_tcp"
-      ref: HEAD
-      resolved-ref: a8d80eaddf8784532d88442d74202a47af7de047
-      url: "https://git.polynom.me/Moxxy/moxxmpp.git"
-    source: git
-    version: "0.1.2+9"
+      name: moxxmpp_socket_tcp
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
+    version: "0.2.1"
   moxxyv2_builders:
     dependency: "direct main"
     description:
@@ -1592,5 +1588,5 @@ packages:
     source: hosted
     version: "3.1.0"
 sdks:
-  dart: ">=2.17.0 <3.0.0"
+  dart: ">=2.17.5 <3.0.0"
   flutter: ">=3.3.8"
