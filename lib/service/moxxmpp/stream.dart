@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
-import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 
 class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
@@ -18,14 +18,14 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
   
   @override
   Future<void> commitState() async {
-    await GetIt.I.get<XmppService>().modifyXmppState((s) => s.copyWith(
+    await GetIt.I.get<XmppStateService>().modifyXmppState((s) => s.copyWith(
       smState: state,
     ),);
   }
 
   @override
   Future<void> loadState() async {
-    final state = await GetIt.I.get<XmppService>().getXmppState();
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
     if (state.smState != null) {
       await setState(state.smState!);
     }

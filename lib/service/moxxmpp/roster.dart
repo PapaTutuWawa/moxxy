@@ -3,7 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 
@@ -12,7 +12,7 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
   Future<RosterCacheLoadResult> loadRosterCache() async {
     final rs = GetIt.I.get<RosterService>();
     return RosterCacheLoadResult(
-      (await GetIt.I.get<XmppService>().getXmppState()).lastRosterVersion,
+      (await GetIt.I.get<XmppStateService>().getXmppState()).lastRosterVersion,
       (await rs.getRoster()).map((item) => XmppRosterItem(
         jid: item.jid,
         name: item.title,
@@ -26,8 +26,8 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
   @override
   Future<void> commitRoster(String? version, List<String> removed, List<XmppRosterItem> modified, List<XmppRosterItem> added) async {
     final rs = GetIt.I.get<RosterService>();
-    final xs = GetIt.I.get<XmppService>();
-    await xs.modifyXmppState((state) => state.copyWith(
+    final xss = GetIt.I.get<XmppStateService>();
+    await xss.modifyXmppState((state) => state.copyWith(
       lastRosterVersion: version,
     ),);
 

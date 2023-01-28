@@ -22,9 +22,9 @@ import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/state.dart';
 import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -33,6 +33,7 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
+import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -127,8 +128,8 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
 }
 
 Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) async {
-  final xmpp = GetIt.I.get<XmppService>();
-  final state = await xmpp.getXmppState();
+  final xss = GetIt.I.get<XmppStateService>();
+  final state = await xss.getXmppState();
 
   await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
@@ -138,7 +139,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
   if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
     permissions.add(Permission.storage.value);
 
-    await xmpp.modifyXmppState((state) => state.copyWith(
+    await xss.modifyXmppState((state) => state.copyWith(
       askedStoragePermission: true,
     ),);
   }
@@ -352,7 +353,7 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
   // If sticker visibility was changed, apply the settings to the PubSub node
   final pm = GetIt.I.get<XmppConnection>()
     .getManagerById<PubSubManager>(pubsubManager)!;
-  final ownJid = (await GetIt.I.get<XmppService>().getXmppState()).jid!;
+  final ownJid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
   if (command.preferences.isStickersNodePublic && !oldPrefs.isStickersNodePublic) {
     // Set to open
     unawaited(
@@ -480,9 +481,9 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
 }
 
 Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async {
-  await GetIt.I.get<XmppService>().modifyXmppState((state) => state.copyWith(
-      avatarUrl: command.path,
-      avatarHash: command.hash,
+  await GetIt.I.get<XmppStateService>().modifyXmppState((state) => state.copyWith(
+    avatarUrl: command.path,
+    avatarHash: command.hash,
   ),);
   await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
@@ -566,9 +567,9 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
-  final xmpp = GetIt.I.get<XmppService>();
+  final xss = GetIt.I.get<XmppStateService>();
   await conn.disconnect();
-  await xmpp.modifyXmppState((state) => XmppState());
+  await xss.modifyXmppState((state) => XmppState());
 
   sendEvent(
     SignedOutEvent(),

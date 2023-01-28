@@ -11,7 +11,7 @@ import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart' as model;
@@ -126,7 +126,7 @@ class OmemoService {
   /// If, however, [jid] is our own JID, then nothing is done.
   Future<void> addNewDeviceMessage(String jid, int deviceId) async {
     // Add a pseudo message if it is not about our own devices
-    final xmppState = await GetIt.I.get<XmppService>().getXmppState();
+    final xmppState = await GetIt.I.get<XmppStateService>().getXmppState();
     if (jid == xmppState.jid) return;
     
     final ms = GetIt.I.get<MessageService>();

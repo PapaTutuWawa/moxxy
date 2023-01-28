@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 
-part 'state.freezed.dart';
-part 'state.g.dart';
+part 'xmpp_state.freezed.dart';
+part 'xmpp_state.g.dart';
 
 class StreamManagementStateConverter implements JsonConverter<StreamManagementState, Map<String, dynamic>> {
   const StreamManagementStateConverter();

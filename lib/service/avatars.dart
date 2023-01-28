@@ -9,7 +9,7 @@ import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/avatar.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -197,8 +197,8 @@ class AvatarService {
   Future<void> requestOwnAvatar() async {
     final am = GetIt.I.get<XmppConnection>()
       .getManagerById<UserAvatarManager>(userAvatarManager)!;
-    final xmpp = GetIt.I.get<XmppService>();
-    final state = await xmpp.getXmppState();
+    final xss = GetIt.I.get<XmppStateService>();
+    final state = await xss.getXmppState();
     final jid = state.jid!;
     final idResult = await am.getAvatarId(jid);
     if (idResult.isType<AvatarError>()) {
@@ -225,7 +225,7 @@ class AvatarService {
       jid,
       state.avatarUrl,
     );
-    await xmpp.modifyXmppState((state) => state.copyWith(
+    await xss.modifyXmppState((state) => state.copyWith(
       avatarUrl: avatarPath,
       avatarHash: avatarData.hash,
     ),);

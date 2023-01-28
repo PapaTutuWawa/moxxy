@@ -27,8 +27,8 @@ import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/state.dart';
 import 'package:moxxyv2/service/stickers.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -78,30 +78,13 @@ class XmppService {
   /// Subscription to events by the XmppConnection
   StreamSubscription<dynamic>? _xmppConnectionSubscription;
 
-  /// Persistent state around the connection, like the SM token, ...
-  // TODO(Unknown): Move somewhere else
-  XmppState? _state;
-
-  Future<XmppState> getXmppState() async {
-    if (_state != null) return _state!;
-
-    _state = await GetIt.I.get<DatabaseService>().getXmppState();
-    return _state!;
-  }
-
-  /// A wrapper to modify the [XmppState] and commit it.
-  Future<void> modifyXmppState(XmppState Function(XmppState) func) async {
-    _state = func(_state!);
-    await GetIt.I.get<DatabaseService>().saveXmppState(_state!);
-  }
-
   /// Stores whether the app is open or not. Useful for notifications.
   void setAppState(bool open) {
     _appOpen = open;
   }
   
   Future<ConnectionSettings?> getConnectionSettings() async {
-    final state = await getXmppState();
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
 
     if (state.jid == null || state.password == null) {
       return null;
@@ -389,11 +372,13 @@ class XmppService {
   }
 
   Future<void> connect(ConnectionSettings settings, bool triggeredFromUI) async {
-    final lastResource = (await getXmppState()).resource;
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final lastResource = state.resource;
 
     _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
-    unawaited(GetIt.I.get<XmppConnection>().connect(
+    unawaited(
+      GetIt.I.get<XmppConnection>().connect(
         lastResource: lastResource,
         waitForConnection: true,
       ),
@@ -402,7 +387,8 @@ class XmppService {
   }
 
   Future<XmppConnectionResult> connectAwaitable(ConnectionSettings settings, bool triggeredFromUI) async {
-    final lastResource = (await getXmppState()).resource;
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final lastResource = state.resource;
 
     _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
@@ -672,9 +658,9 @@ class XmppService {
 
       // TODO(Unknown): Maybe have something better
       final settings = connection.getConnectionSettings();
-      await modifyXmppState((state) => state.copyWith(
-          jid: settings.jid.toString(),
-          password: settings.password,
+      await GetIt.I.get<XmppStateService>().modifyXmppState((state) => state.copyWith(
+        jid: settings.jid.toString(),
+        password: settings.password,
       ),);
 
       _log.finest('Connection connected. Is resumed? ${event.resumed}');
@@ -717,7 +703,7 @@ class XmppService {
       
       if (_loginTriggeredFromUI) {
         // TODO(Unknown): Trigger another event so the UI can see this aswell
-        await modifyXmppState((state) => state.copyWith(
+        await GetIt.I.get<XmppStateService>().modifyXmppState((state) => state.copyWith(
           jid: connection.getConnectionSettings().jid.toString(),
           displayName: connection.getConnectionSettings().jid.local,
           avatarUrl: '',
@@ -728,7 +714,7 @@ class XmppService {
   }
 
   Future<void> _onResourceBindingSuccess(ResourceBindingSuccessEvent event, { dynamic extra }) async {
-    await modifyXmppState((state) => state.copyWith(
+    await GetIt.I.get<XmppStateService>().modifyXmppState((state) => state.copyWith(
         resource: event.resource,
     ),);
   }
@@ -1016,7 +1002,7 @@ class XmppService {
       return;
     }
 
-    final state = await getXmppState();
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
     final sender = event.fromJid.toBare().toString();
     final isCarbon = sender == state.jid;
     final reactions = List<Reaction>.from(msg.reactions);
@@ -1144,7 +1130,7 @@ class XmppService {
     if (!_isMessageEventMessage(event) && event.other['encryption_error'] == null) return;
     if (event.other['encryption_error'] is InvalidKeyExchangeException) return;
 
-    final state = await getXmppState();
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     // The (portential) roster item of the chat partner
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(conversationJid);

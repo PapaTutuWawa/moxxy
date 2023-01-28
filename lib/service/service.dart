@@ -32,6 +32,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -159,6 +160,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<CryptographyService>(CryptographyService());
   GetIt.I.registerSingleton<ContactsService>(ContactsService());
   GetIt.I.registerSingleton<StickersService>(StickersService());
+  GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 

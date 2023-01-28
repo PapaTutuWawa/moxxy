@@ -12,7 +12,7 @@ import 'package:moxxyv2/service/httpfiletransfer/client.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
@@ -79,7 +79,7 @@ class StickersService {
     _stickerPacks.remove(id);
     
     // Retract from PubSub
-    final state = await GetIt.I.get<XmppService>().getXmppState();
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
     final result = await GetIt.I.get<moxxmpp.XmppConnection>()
       .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
       .retractStickerPack(moxxmpp.JID.fromString(state.jid!), id);
@@ -91,7 +91,7 @@ class StickersService {
   
   Future<void> _publishStickerPack(moxxmpp.StickerPack pack) async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    final state = await GetIt.I.get<XmppService>().getXmppState();
+    final state = await GetIt.I.get<XmppStateService>().getXmppState();
     final result = await GetIt.I.get<moxxmpp.XmppConnection>()
       .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
       .publishStickerPack(
