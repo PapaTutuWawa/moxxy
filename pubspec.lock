@@ -827,9 +827,11 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      name: moxxmpp
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
+      path: "packages/moxxmpp"
+      ref: HEAD
+      resolved-ref: "902b49752655bec83305612504e812c299191947"
+      url: "https://codeberg.org/moxxy/moxxmpp.git"
+    source: git
     version: "0.2.0"
   moxxmpp_socket_tcp:
     dependency: "direct main"

@@ -25,6 +25,9 @@
 	    "messagesChannelDescription": "The notification channel for received messages",
 	    "warningChannelName": "Warnings",
 	    "warningChannelDescription": "Warnings related to Moxxy"
+	},
+	"titles": {
+	    "error": "Error"
 	}
     },
     "dateTime": {
@@ -77,7 +80,10 @@
 	    "verificationWrongFingerprint": "Wrong OMEMO:2 fingerprint"
 	},
 	"connection": {
-	    "connectionTimeout": "Could not connect to server"
+	    "connectionTimeout": "Could not connect to server",
+	    "saslAccountDisabled": "Your account is disabled",
+	    "saslInvalidCredentials": "Your account credentials are invalid",
+	    "unrecoverable": "Connection lost due to unrecoverable error"
 	},
 	"login": {
 	    "saslFailed": "Invalid login credentials",

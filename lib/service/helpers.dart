@@ -65,7 +65,7 @@ Future<String?> generateBlurhashThumbnail(String path) async {
 String xmppErrorToTranslatableString(XmppError error) {
   if (error is StartTLSFailedError) {
     return t.errors.login.startTlsFailed;
-  } else if (error is SaslFailedError) {
+  } else if (error is SaslError) {
     return t.errors.login.saslFailed;
   } else if (error is NoConnectionError) {
     return t.errors.login.noConnection;
@@ -97,4 +97,16 @@ String getStickerHashKeyType(Map<String, String> hashes) {
 String getStickerHashKey(Map<String, String> hashes) {
   final key = getStickerHashKeyType(hashes);
   return '$key:${hashes[key]}';
+}
+
+/// Return a human readable string describing an unrecoverable error event [event].
+String getUnrecoverableErrorString(NonRecoverableErrorEvent event) {
+  final error = event.error;
+  if (error is SaslAccountDisabledError) {
+    return t.errors.connection.saslAccountDisabled;
+  } else if (error is SaslCredentialsExpiredError || error is SaslNotAuthorizedError) {
+    return t.errors.connection.saslInvalidCredentials;
+  }
+
+  return t.errors.connection.unrecoverable;
 }

@@ -25,6 +25,9 @@
 	    "messagesChannelDescription": "Empfangene Nachrichten",
 	    "warningChannelName": "Warnungen",
 	    "warningChannelDescription": "Warnungen im Bezug auf Moxxy"
+	},
+	"titles": {
+	    "error": "Fehler"
 	}
     },
     "dateTime": {
@@ -77,7 +80,10 @@
 	    "verificationWrongFingerprint": "Falscher OMEMO:2 Fingerabdruck"
 	},
 	"connection": {
-	    "connectionTimeout": "Verbindung zum Server nicht möglich"
+	    "connectionTimeout": "Verbindung zum Server nicht möglich",
+	    "saslAccountDisabled": "Dein Account ist deaktiviert",
+	    "saslInvalidCredentials": "Deine Anmeldedaten sind ungültig",
+	    "unrecoverable": "Verbindung zum Server durch nicht behebbaren Fehler verloren"
 	},
 	"login": {
 	    "saslFailed": "Ungültige Logindaten",

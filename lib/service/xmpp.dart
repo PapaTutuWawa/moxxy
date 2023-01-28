@@ -63,6 +63,7 @@ class XmppService {
         EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
         EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
         EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
+        EventTypeMatcher<NonRecoverableErrorEvent>(_onUnrecoverableError),
       ]);
     }
   final Logger _log;
@@ -614,7 +615,7 @@ class XmppService {
     if (result != null) {
       // Notify the user that we could not publish the Omemo ~identity~ titty
       await GetIt.I.get<NotificationsService>().showWarningNotification(
-        'Encryption',
+        t.notifications.titles.error,
         t.errors.omemo.couldNotPublish,
       );
     }
@@ -1513,5 +1514,12 @@ class XmppService {
     } else {
       return quotedMessage.body;
     }
+  }
+
+  Future<void> _onUnrecoverableError(NonRecoverableErrorEvent event, { dynamic extra }) async {
+    await GetIt.I.get<NotificationsService>().showWarningNotification(
+      t.notifications.titles.error,
+      getUnrecoverableErrorString(event),
+    );
   }
 }
