@@ -42,36 +42,44 @@ import 'package:path/path.dart' as pathlib;
 import 'package:permission_handler/permission_handler.dart';
 
 class XmppService {
-  XmppService() :
-    _currentlyOpenedChatJid = '',
-    _xmppConnectionSubscription = null,
-    _state = null,
-    _eventHandler = EventHandler(),
-    _appOpen = true,
-    _loginTriggeredFromUI = false,
-    _log = Logger('XmppService') {
-      _eventHandler.addMatchers([
-        EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
-        EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
-        EventTypeMatcher<SubscriptionRequestReceivedEvent>(_onSubscriptionRequestReceived),
-        EventTypeMatcher<DeliveryReceiptReceivedEvent>(_onDeliveryReceiptReceived),
-        EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
-        EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
-        EventTypeMatcher<StanzaAckedEvent>(_onStanzaAcked),
-        EventTypeMatcher<MessageEvent>(_onMessage),
-        EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
-        EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
-        EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
-        EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
-        EventTypeMatcher<NonRecoverableErrorEvent>(_onUnrecoverableError),
-      ]);
-    }
-  final Logger _log;
-  final EventHandler _eventHandler;
-  bool _loginTriggeredFromUI;
-  bool _appOpen;
-  String _currentlyOpenedChatJid;
+  XmppService() {
+    _eventHandler.addMatchers([
+      EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
+      EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
+      EventTypeMatcher<SubscriptionRequestReceivedEvent>(_onSubscriptionRequestReceived),
+      EventTypeMatcher<DeliveryReceiptReceivedEvent>(_onDeliveryReceiptReceived),
+      EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
+      EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
+      EventTypeMatcher<StanzaAckedEvent>(_onStanzaAcked),
+      EventTypeMatcher<MessageEvent>(_onMessage),
+      EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
+      EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
+      EventTypeMatcher<BlocklistUnblockAllPushEvent>(_onBlocklistUnblockAllPush),
+      EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
+      EventTypeMatcher<NonRecoverableErrorEvent>(_onUnrecoverableError),
+    ]);
+  }
+
+  /// Logger.
+  final Logger _log = Logger('XmppService');
+
+  /// EventHandler for XmppEvents
+  final EventHandler _eventHandler = EventHandler();
+
+  /// Flag indicating whether a login was triggered from the UI or not.
+  bool _loginTriggeredFromUI = false;
+
+  /// Flag indicating whether the app is currently open or not.
+  bool _appOpen = true;
+
+  /// The JID of the currently opened chat. Empty, if no chat is opened.
+  String _currentlyOpenedChatJid = '';
+
+  /// Subscription to events by the XmppConnection
   StreamSubscription<dynamic>? _xmppConnectionSubscription;
+
+  /// Persistent state around the connection, like the SM token, ...
+  // TODO(Unknown): Move somewhere else
   XmppState? _state;
 
   Future<XmppState> getXmppState() async {
