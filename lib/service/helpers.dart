@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:native_imaging/native_imaging.dart' as native;
 
 Future<String?> _generateBlurhashThumbnailImpl(String path) async {
@@ -109,4 +111,45 @@ String getUnrecoverableErrorString(NonRecoverableErrorEvent event) {
   }
 
   return t.errors.connection.unrecoverable;
+}
+
+/// Creates the fallback body for quoted messages.
+/// If the quoted message contains text, it simply quotes the text.
+/// If it contains a media file, the messageEmoji (usually an emoji
+/// representing the mime type) is shown together with the file size
+/// (from experience this information is sufficient, as most clients show
+/// the file size, and including time information might be confusing and a
+/// potential privacy issue).
+/// This information is complemented either the srcUrl or – if unavailable –
+/// by the body of the quoted message. For non-media messages, we always use
+/// the body as fallback.
+String? createFallbackBodyForQuotedMessage(Message? quotedMessage) {
+  if (quotedMessage == null) {
+    return null;
+  }
+
+  if (quotedMessage.isMedia) {
+    // Create formatted size string, if size is stored
+    String quoteMessageSize;
+    if (quotedMessage.mediaSize != null && quotedMessage.mediaSize! > 0) {
+      quoteMessageSize = '(${fileSizeToString(quotedMessage.mediaSize!)}) ';
+    } else {
+      quoteMessageSize = '';
+    }
+
+    // Create media url string, or use body if no srcUrl is stored
+    String quotedMediaUrl;
+    if (quotedMessage.srcUrl != null && quotedMessage.srcUrl!.isNotEmpty) {
+      quotedMediaUrl = '• ${quotedMessage.srcUrl!}';
+    } else if (quotedMessage.body.isNotEmpty){
+      quotedMediaUrl = '• ${quotedMessage.body}';
+    } else {
+      quotedMediaUrl = '';
+    }
+
+    // Concatenate emoji, size string, and media url and return
+    return '${quotedMessage.messageEmoji} $quoteMessageSize$quotedMediaUrl';
+  } else {
+    return quotedMessage.body;
+  }
 }
