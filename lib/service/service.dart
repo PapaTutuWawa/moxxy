@@ -167,6 +167,7 @@ Future<void> entrypoint() async {
   await GetIt.I.get<NotificationsService>().init();
   await GetIt.I.get<ContactsService>().init();
   await GetIt.I.get<ConnectivityService>().initialize();
+  await GetIt.I.get<ConnectivityWatcherService>().initialize();
 
   if (!kDebugMode) {
     final enableDebug = (await GetIt.I.get<PreferencesService>().getPreferences()).debugEnabled;
