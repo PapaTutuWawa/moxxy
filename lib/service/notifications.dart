@@ -54,7 +54,7 @@ class NotificationsService {
     }
   }
   
-  Future<void> init() async {
+  Future<void> initialize() async {
     final an = AwesomeNotifications();
     await an.initialize(
       'resource://drawable/ic_service_icon',

@@ -28,15 +28,18 @@ class ContactsService {
     //       are not returned.
     FlutterContacts.config.includeNonVisibleOnAndroid = true;
   }
+
+  /// Logger.
   final Logger _log = Logger('ContactsService');
   
-  /// JID -> Id
+  /// JID -> Id.
   Map<String, String>? _contactIds;
+
   /// Contact ID -> Display name from the contact or null if we cached that there is
   /// none
   final Map<String, String?> _contactDisplayNames = {};
 
-  Future<void> init() async {
+  Future<void> initialize() async {
     if (await _canUseContactIntegration()) {
       enableDatabaseListener();
     }

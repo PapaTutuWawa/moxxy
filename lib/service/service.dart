@@ -164,8 +164,8 @@ Future<void> entrypoint() async {
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
-  await GetIt.I.get<NotificationsService>().init();
-  await GetIt.I.get<ContactsService>().init();
+  await GetIt.I.get<NotificationsService>().initialize();
+  await GetIt.I.get<ContactsService>().initialize();
   await GetIt.I.get<ConnectivityService>().initialize();
   await GetIt.I.get<ConnectivityWatcherService>().initialize();
 
