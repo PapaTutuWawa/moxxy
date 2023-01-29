@@ -3,6 +3,7 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
@@ -39,7 +40,7 @@ class ConversationPage extends StatefulWidget {
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final FlutterListViewController _scrollController = FlutterListViewController();
   late final AnimationController _animationController; 
   late final AnimationController _overviewAnimationController;
   late final TabController _tabController;
@@ -112,7 +113,22 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
   Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth, String jid) {
     if (_index.isEven) {
-      if (_index == 0) return const SizedBox();
+      // Render a date bubble at the top of the list
+      if (_index == 2 * state.messages.length - 1) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DateBubble(
+              formatDateBubble(
+                DateTime.fromMillisecondsSinceEpoch(
+                  state.messages.last.timestamp,
+                ),
+                DateTime.now(),
+              ),
+            ),
+          ],
+        );
+      }
 
       final prevIndexRaw = (_index + 2) ~/ 2;
       final prevIndex = state.messages.length - prevIndexRaw;
@@ -150,7 +166,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       return const SizedBox();
     }
     
-    // TODO(Unknown): Since we reverse the list: Fix start, end and between
     final index = state.messages.length - 1 - (_index - 1) ~/ 2;
     final item = state.messages[index];
 
@@ -170,7 +185,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
         ],
       );
     }
-    
+
     final start = index - 1 < 0 ?
       true :
       isSent(state.messages[index - 1], jid) != isSent(item, jid);
@@ -526,18 +541,22 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     //       be static over the entire lifetime of the BLoC.
                     buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation?.encrypted != next.conversation?.encrypted,
                     builder: (context, state) => Expanded(
-                      child: ListView.builder(
-                        itemCount: state.messages.length * 2,
-                        itemBuilder: (context, index) => _renderBubble(
-                          state,
-                          context,
-                          index,
-                          maxWidth,
-                          state.jid,
-                        ),
+                      child: FlutterListView(
                         shrinkWrap: true,
-                        reverse: true,
                         controller: _scrollController,
+                        reverse: true,
+                        delegate: FlutterListViewDelegate(
+                          (BuildContext context, int index) => _renderBubble(
+                            state,
+                            context,
+                            index,
+                            maxWidth,
+                            state.jid,                           
+                          ),
+                          childCount: state.messages.length * 2,
+                          keepPosition: true,
+                          keepPositionOffset: 40,
+                        ),
                       ),
                     ),
                   ),

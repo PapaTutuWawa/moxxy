@@ -130,7 +130,7 @@ String formatDateBubble(DateTime dt, DateTime now) {
   } else if (now.subtract(const Duration(days: 1)).day == dt.day) {
     return t.dateTime.yesterday;
   } else if (dt.year == now.year) {
-    return '${weekdayToStringAbbrev(dt.weekday)}, ${dt.day}. ${monthToString(dt.month)}';
+    return '${weekdayToStringAbbrev(dt.weekday)}., ${dt.day}. ${monthToString(dt.month)}';
   } else {
     return '${dt.day}. ${monthToString(dt.month)} ${dt.year}';
   }
