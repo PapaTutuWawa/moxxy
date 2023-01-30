@@ -28,6 +28,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
+import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -724,6 +725,25 @@ class XmppService {
   Future<void> _onSubscriptionRequestReceived(SubscriptionRequestReceivedEvent event, { dynamic extra }) async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
+    await GetIt.I.get<SubscriptionRequestService>().addSubscriptionRequest(
+      event.from.toBare().toString(),
+    );
+
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = await cs.getConversationByJid(event.from.toBare().toString());
+    if (conversation != null) {
+      // Update the conversation, if it exists
+      final newConversation = conversation.copyWith(
+        hasSubscriptionRequest: true,
+      );
+
+      sendEvent(
+        ConversationUpdatedEvent(
+          conversation: newConversation,
+        ),
+      );
+    }
+    
     if (prefs.autoAcceptSubscriptionRequests) {
       GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(
         event.from.toBare().toString(),
@@ -733,11 +753,8 @@ class XmppService {
     if (!prefs.showSubscriptionRequests) return;
     
     final css = GetIt.I.get<ContactsService>();
-    final cs = GetIt.I.get<ConversationService>();
-    final conversation = await cs.getConversationByJid(event.from.toBare().toString());
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    if (conversation != null && !conversation.open) {
-      // TODO(Unknown): Make it configurable if this should happen
+    if (conversation == null) {
       final bare = event.from.toBare().toString();
       final contactId = await css.getContactIdForJid(bare);
       final conv = await cs.addConversationFromData(
@@ -755,7 +772,24 @@ class XmppService {
         await css.getContactDisplayName(contactId),
       );
 
-      sendEvent(ConversationAddedEvent(conversation: conv));
+      sendEvent(
+        ConversationAddedEvent(
+          conversation: conv.copyWith(
+            hasSubscriptionRequest: true,
+          ),
+        ),
+      );
+    } else {
+      final newConversation = await cs.updateConversation(
+        conversation.id,
+        open: true,
+      );
+
+      sendEvent(
+        ConversationUpdatedEvent(
+          conversation: newConversation,
+        ),
+      );
     }
   }
 

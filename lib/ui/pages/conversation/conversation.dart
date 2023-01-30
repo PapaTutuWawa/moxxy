@@ -405,7 +405,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
           children: [
             Expanded(
               child: TextButton(
-                child: Text(t.pages.conversation.addToContacts),
+                child: Text(
+                  t.pages.conversation.addToContacts,
+                  style: TextStyle(
+                    color: Theme
+                      .of(context)
+                      .extension<MoxxyThemeData>()!
+                      .conversationTextFieldColor,
+                  ),
+                ),
                 onPressed: () async {
                   final jid = state.conversation!.jid;
                   final result = await showConfirmationDialog(
@@ -415,22 +423,25 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   );
 
                   if (result) {
-                    // TODO(Unknown): Maybe show a progress indicator
-                    // TODO(Unknown): Have the page update its state once the addition is done
                     // ignore: use_build_context_synchronously
                     context.read<ConversationBloc>().add(
                       JidAddedEvent(jid),
                     );
-
-                    // ignore: use_build_context_synchronously
-                    Navigator.of(context).pop();
                   }
                 },
               ),
             ),
             Expanded(
               child: TextButton(
-                child: Text(t.pages.conversation.blockShort),
+                child: Text(
+                  t.pages.conversation.blockShort,
+                  style: TextStyle(
+                    color: Theme
+                      .of(context)
+                      .extension<MoxxyThemeData>()!
+                      .conversationTextFieldColor,
+                  ),
+                ),
                 onPressed: () => blockJid(state.conversation!.jid, context),
               ),
             )

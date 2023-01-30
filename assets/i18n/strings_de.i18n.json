@@ -199,7 +199,10 @@
 		"notifications": "Benachrichtigungen",
 		"notificationsMuted": "Stumm",
 		"notificationsEnabled": "Eingeschaltet",
-		"sharedMedia": "Medien"
+		"sharedMedia": "Medien",
+		"subscription": "Subscription",
+		"subscriptionDialogTitle": "Subscriptionanfrage akzeptieren?",
+		"subscriptionDialogBody": "Möchtest Du die Subscriptionanfrage annehmen? Annehmen bedeutet, dass ${jid} Dinge wie Statusupdates sehen kann."
 	    },
 	    "owndevices": {
 		"title": "Eigene Geräte",

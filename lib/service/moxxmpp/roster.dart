@@ -39,6 +39,10 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
     // Create new roster items
     final rosterAdded = List<RosterItem>.empty(growable: true);
     for (final item in added) {
+      final exists = await rs.getRosterItemByJid(item.jid) != null;
+      // Skip adding items twice
+      if (exists) continue;
+
       rosterAdded.add(
         await rs.addRosterItemFromData(
           '',
@@ -54,8 +58,6 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
           groups: item.groups,
         ),
       );
-
-      // TODO(PapaTutuWawa): Fetch the avatar
     }
 
     // Update modified items

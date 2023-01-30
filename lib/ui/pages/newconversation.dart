@@ -6,7 +6,6 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -55,18 +54,13 @@ class NewConversationPage extends StatelessWidget {
       appBar: BorderlessTopbar.simple(t.pages.newconversation.title),
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
         builder: (BuildContext context, NewConversationState state) => ListView.builder(
-          itemCount: state.roster.length + 2,
+          itemCount: state.roster.length + 1,
           itemBuilder: (context, index) {
             switch(index) {
               case 0: return _renderIconEntry(
                 Icons.person_add,
                 t.pages.newconversation.addContact,
                 () => Navigator.pushNamed(context, addContactRoute),
-              );
-              case 1: return _renderIconEntry(
-                Icons.group_add,
-                t.pages.newconversation.createGroupchat,
-                () => showNotImplementedDialog('groupchat', context),
               );
               default:
                 final item = state.roster[index - 2];
@@ -124,6 +118,7 @@ class NewConversationPage extends StatelessWidget {
                         true,
                         true,
                         '',
+                        false,
                         false,
                         false,
                         ChatState.gone,

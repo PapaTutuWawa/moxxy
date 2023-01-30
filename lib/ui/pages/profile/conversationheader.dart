@@ -5,6 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/profile/options.dart';
@@ -49,8 +50,6 @@ class ConversationProfileHeader extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    //final subscribed = conversation.subscription == 'both' || conversation.subscription == 'to';
-    
     return Column(
       children: [
         Hero(
@@ -116,60 +115,34 @@ class ConversationProfileHeader extends StatelessWidget {
                     );
                   },
                 ),
+
+                if (conversation.hasSubscriptionRequest)
+                  ProfileOption(
+                    icon: Icons.account_circle,
+                    title: t.pages.profile.conversation.subscription,
+                    description: conversation.subscription,
+                    onTap: () async {
+                      // ignore: use_build_context_synchronously
+                      final result = await showConfirmationDialog(
+                        t.pages.profile.conversation.subscriptionDialogTitle,
+                        t.pages.profile.conversation.subscriptionDialogBody(
+                          jid: conversation.jid,
+                        ),
+                        context,
+                      );
+
+                      if (result) {
+                        // ignore: use_build_context_synchronously
+                        context.read<ProfileBloc>().add(
+                          SubscriptionRequestAcceptedEvent(),
+                        );
+                      }
+                    },
+                  ),
               ],
             ),
           ),
         ),
-
-        /*
-        // TODO(Unknown): How to integrate this into the UI?
-        Tooltip(
-          message: subscribed ?
-            'Unsubscribe' :
-            'Subscribe',
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SharedMediaContainer(
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: ColoredBox(
-                    color: getTileColor(context),
-                    child: Icon(
-                      subscribed ?
-                        PhosphorIcons.link :
-                        PhosphorIcons.linkBreak,
-                      size: 32,
-                    ),
-                  ),
-                ),
-                onTap: () {
-                  GetIt.I.get<ProfileBloc>().add(
-                    SetSubscriptionStateEvent(
-                      conversation.jid,
-                      !subscribed,
-                    ),
-                  );
-                },
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    subscribed ?
-                    'Unsubscribe' :
-                    'Subscribe',
-                    style: TextStyle(
-                      fontSize: fontsizeAppbar,
-                    ),
-                  ),
-
-                  Icon(Icons.info),
-                ],
-              ),
-            ],
-          ),
-        ),*/
       ],
     );
   }

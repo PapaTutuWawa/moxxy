@@ -23,6 +23,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
+import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -44,6 +45,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<PerformPreStartCommand>(performPreStart),
       EventTypeMatcher<AddConversationCommand>(performAddConversation),
       EventTypeMatcher<AddContactCommand>(performAddContact),
+      EventTypeMatcher<RemoveContactCommand>(performRemoveContact),
       EventTypeMatcher<GetMessagesForJidCommand>(performGetMessagesForJid),
       EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation),
       EventTypeMatcher<SendMessageCommand>(performSendMessage),
@@ -80,6 +82,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
       EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
+      EventTypeMatcher<AcceptSubscriptionRequestCommand>(performAcceptSubscriptionRequest),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -395,10 +398,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
 
   final jid = command.jid;
   final roster = GetIt.I.get<RosterService>();
-  if (await roster.isInRoster(jid)) {
-    sendEvent(AddContactResultEvent(added: false), id: id);
-    return;
-  }
+  final inRoster = await roster.isInRoster(jid);
 
   final cs = GetIt.I.get<ConversationService>();
   final conversation = await cs.getConversationByJid(jid);
@@ -410,7 +410,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
     );
 
     sendEvent(
-      AddContactResultEvent(conversation: c, added: false),
+      AddContactResultEvent(conversation: c, added: !inRoster),
       id: id,
     );
   } else {
@@ -432,16 +432,52 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       await css.getContactDisplayName(contactId),
     );
     sendEvent(
-      AddContactResultEvent(conversation: c, added: true),
+      AddContactResultEvent(conversation: c, added: !inRoster),
       id: id,
     );
   }
 
-  await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
+  // Manage subscription requests
+  final srs = GetIt.I.get<SubscriptionRequestService>();
+  if (await srs.hasPendingSubscriptionRequest(jid)) {
+    await srs.acceptSubscriptionRequest(jid);
+  }
+
+  // Add to roster, if needed
+  final item = await roster.getRosterItemByJid(jid);
+  if (item != null) {
+    if (item.subscription != 'from' && item.subscription != 'both') {
+      GetIt.I.get<Logger>().finest('Roster item already exists with no presence subscription from them. Sending subscription request');
+      srs.sendSubscriptionRequest(jid);
+    }
+  } else {
+    await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
+  }
   
   // Try to figure out an avatar
+  // TODO(Unknown): Don't do that here. Do it more intelligently.
   await GetIt.I.get<AvatarService>().subscribeJid(jid);
   await GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid, '');
+}
+
+Future<void> performRemoveContact(RemoveContactCommand command, { dynamic extra }) async {
+  final rs = GetIt.I.get<RosterService>();
+  final cs = GetIt.I.get<ConversationService>();
+
+  // Remove from roster
+  await rs.removeFromRosterWrapper(command.jid);
+
+  // Update the conversation
+  final conversation = await cs.getConversationByJid(command.jid);
+  if (conversation != null) {
+    sendEvent(
+      ConversationUpdatedEvent(
+        conversation: conversation.copyWith(
+          inRoster: false,
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic extra }) async {
@@ -489,8 +525,8 @@ Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async
 }
 
 Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { dynamic extra }) async {
-  final roster = GetIt.I.get<RosterService>();
   final rs = GetIt.I.get<RosterService>();
+  final srs = GetIt.I.get<SubscriptionRequestService>();
   final item = await rs.getRosterItemByJid(command.jid);
 
   // TODO(Unknown): Maybe log
@@ -498,15 +534,15 @@ Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { 
 
   if (command.share) {
     if (item.ask == 'subscribe') {
-      await roster.acceptSubscriptionRequest(command.jid);
+      await srs.acceptSubscriptionRequest(command.jid);
     } else {
-      roster.sendSubscriptionRequest(command.jid);
+      srs.sendSubscriptionRequest(command.jid);
     }
   } else {
     if (item.ask == 'subscribe') {
-      await roster.rejectSubscriptionRequest(command.jid);
+      await srs.rejectSubscriptionRequest(command.jid);
     } else {
-      roster.sendUnsubscriptionRequest(command.jid);
+      srs.sendUnsubscriptionRequest(command.jid);
     }
   }
 }
@@ -931,5 +967,20 @@ Future<void> performGetBlocklist(GetBlocklistCommand command, { dynamic extra })
       entries: result,
     ),
     id: id,
+  );
+}
+
+Future<void> performAcceptSubscriptionRequest(AcceptSubscriptionRequestCommand command, { dynamic extra }) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final srs = GetIt.I.get<SubscriptionRequestService>();
+  await srs.acceptSubscriptionRequest(command.jid);
+
+  final conversation = await cs.getConversationByJid(command.jid);
+  sendEvent(
+    ConversationUpdatedEvent(
+      conversation: conversation!.copyWith(
+        hasSubscriptionRequest: false,
+      ),
+    ),
   );
 }

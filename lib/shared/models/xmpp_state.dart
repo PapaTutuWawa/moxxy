@@ -18,16 +18,16 @@ class StreamManagementStateConverter implements JsonConverter<StreamManagementSt
 @freezed
 class XmppState with _$XmppState {
   factory XmppState({
-      @StreamManagementStateConverter() StreamManagementState? smState,
-      String? srid,
-      String? resource,
-      String? jid,
-      String? displayName,
-      String? password,
-      String? lastRosterVersion,
-      @Default('') String avatarUrl,
-      @Default('') String avatarHash,
-      @Default(false) bool askedStoragePermission,
+    @StreamManagementStateConverter() StreamManagementState? smState,
+    String? srid,
+    String? resource,
+    String? jid,
+    String? displayName,
+    String? password,
+    String? lastRosterVersion,
+    @Default('') String avatarUrl,
+    @Default('') String avatarHash,
+    @Default(false) bool askedStoragePermission,
   }) = _XmppState;
 
   const XmppState._();

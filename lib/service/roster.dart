@@ -6,13 +6,16 @@ import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 
 class RosterService {
-  RosterService() : _log = Logger('RosterService');
+  /// The cached list of JID -> RosterItem. Null if not yet loaded
   Map<String, RosterItem>? _rosterCache;
-  final Logger _log;
+
+  /// Logger.
+  final Logger _log = Logger('RosterService');
 
   Future<void> _loadRosterIfNeeded() async {
     if (_rosterCache == null) {
@@ -168,8 +171,8 @@ class RosterService {
     if (!result) {
       // TODO(Unknown): Signal error?
     }
-    
-    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequest(jid);
+
+    GetIt.I.get<SubscriptionRequestService>().sendSubscriptionRequest(jid);
 
     sendEvent(RosterDiffEvent(added: [ item ]));
     return item;
@@ -180,11 +183,10 @@ class RosterService {
   /// our presence anymore.
   Future<bool> removeFromRosterWrapper(String jid, { bool unsubscribe = true }) async {
     final roster = GetIt.I.get<XmppConnection>().getRosterManager();
-    final presence = GetIt.I.get<XmppConnection>().getPresenceManager();
     final result = await roster.removeFromRoster(jid);
     if (result == RosterRemovalResult.okay || result == RosterRemovalResult.itemNotFound) {
       if (unsubscribe) {
-        presence.sendUnsubscriptionRequest(jid);
+        GetIt.I.get<SubscriptionRequestService>().sendUnsubscriptionRequest(jid);
       }
 
       _log.finest('Removing from roster maybe worked. Removing from database');
@@ -193,21 +195,5 @@ class RosterService {
     }
 
     return false;
-  }
-
-  Future<void> acceptSubscriptionRequest(String jid) async {
-    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(jid);
-  }
-
-  Future<void> rejectSubscriptionRequest(String jid) async {
-    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestRejection(jid);
-  }
-
-  void sendSubscriptionRequest(String jid) {
-    GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequest(jid);
-  }
-  
-  void sendUnsubscriptionRequest(String jid) {
-    GetIt.I.get<XmppConnection>().getPresenceManager().sendUnsubscriptionRequest(jid);
   }
 }

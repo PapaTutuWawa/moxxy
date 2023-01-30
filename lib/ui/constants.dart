@@ -90,6 +90,9 @@ const Color profileFallbackBackgroundColorDark = Color(0xff424242);
 const Color profileFallbackTextColorLight = Color(0xff343434);
 const Color profileFallbackTextColorDark = Colors.white;
 
+/// The text color of the buttons in the overlay of the ConversationPage
+const Color conversationOverlayButtonTextColor = Color(0xffcf4aff);
+
 const Color settingsSectionTitleColor = Color(0xffb72fe7);
 
 const double paddingVeryLarge = 64;

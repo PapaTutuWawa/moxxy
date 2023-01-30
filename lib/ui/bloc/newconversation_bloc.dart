@@ -75,12 +75,19 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
   }
 
   Future<void> _onRosterItemRemoved(NewConversationRosterItemRemovedEvent event, Emitter<NewConversationState> emit) async {
-    return emit(
+    emit(
       state.copyWith(
         roster: state.roster.where(
           (item) => item.jid != event.jid,
         ).toList(),
       ),
+    );
+
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+      RemoveContactCommand(
+        jid: event.jid,
+      ),
+      awaitable: false,
     );
   }
 

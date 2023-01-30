@@ -15,6 +15,7 @@ const contactsTable = 'Contacts';
 const stickersTable = 'Stickers';
 const stickerPacksTable = 'StickerPacks';
 const blocklistTable = 'Blocklist';
+const subscriptionsTable = 'SubscriptionRequests';
 
 const typeString = 0;
 const typeInt = 1;

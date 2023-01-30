@@ -33,11 +33,13 @@ import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attrib
 import 'package:moxxyv2/service/database/migrations/0000_stickers_privacy.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
+import 'package:moxxyv2/service/database/migrations/0001_subscriptions.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -55,14 +57,18 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 const databasePasswordKey = 'database_encryption_password';
 
 class DatabaseService {
-  DatabaseService() : _log = Logger('DatabaseService');
-  late Database _db;
+  /// Secure storage for accesing the database encryption key.
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
     // TODO(Unknown): Set other options
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  ); 
-  final Logger _log;
+  );
 
+  /// Logger.
+  final Logger _log = Logger('DatabaseService');
+
+  /// The database.
+  late Database _db;
+  
   Future<void> initialize() async {
     final dbPath = path.join(
       await getDatabasesPath(),
@@ -83,7 +89,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 26,
+      version: 27,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -196,6 +202,10 @@ class DatabaseService {
           _log.finest('Running migration for database version 26');
           await upgradeFromV25ToV26(db);
         }
+        if (oldVersion < 27) {
+          _log.finest('Running migration for database version 27');
+          await upgradeFromV26ToV27(db);
+        }
       },
     );
 
@@ -233,6 +243,9 @@ class DatabaseService {
           rosterItem?.subscription ?? 'none',
           sharedMediaRaw,
           lastMessage,
+          await GetIt.I.get<SubscriptionRequestService>().hasPendingSubscriptionRequest(
+            c['jid']! as String,
+          ),
         ),
       );
     }
@@ -340,6 +353,9 @@ class DatabaseService {
       rosterItem?.subscription ?? 'none',
       sharedMedia.map((m) => m.toJson()).toList(),
       lastMessage,
+      await GetIt.I.get<SubscriptionRequestService>().hasPendingSubscriptionRequest(
+        c['jid']! as String,
+      ),
     );
   }
 
@@ -373,6 +389,9 @@ class DatabaseService {
       rosterItem != null && !rosterItem.pseudoRosterItem,
       rosterItem?.subscription ?? 'none',
       muted,
+      await GetIt.I.get<SubscriptionRequestService>().hasPendingSubscriptionRequest(
+        jid,
+      ),
       encrypted,
       ChatState.gone,
       contactId: contactId,
@@ -1311,5 +1330,29 @@ class DatabaseService {
     return result
       .map((m) => m['jid']! as String)
       .toList();
+  }
+
+  Future<List<String>> getSubscriptionRequests() async {
+    return (await _db.query(subscriptionsTable))
+      .map((m) => m['jid']! as String)
+      .toList();
+  }
+
+  Future<void> addSubscriptionRequest(String jid) async {
+    await _db.insert(
+      subscriptionsTable,
+      {
+        'jid': jid,
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
+  Future<void> removeSubscriptionRequest(String jid) async {
+    await _db.delete(
+      subscriptionsTable,
+      where: 'jid = ?',
+      whereArgs: [jid],
+    );
   }
 }

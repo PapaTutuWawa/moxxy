@@ -199,7 +199,10 @@
 		"notifications": "Notifications",
 		"notificationsMuted": "Muted",
 		"notificationsEnabled": "Enabled",
-		"sharedMedia": "Media"
+		"sharedMedia": "Media",
+		"subscription": "Subscription",
+		"subscriptionDialogTitle": "Accept subscription request?",
+		"subscriptionDialogBody": "Do you want to accept the subscription request? Accepting it means that ${jid} can see things like status updates."
 	    },
 	    "owndevices": {
 		"title": "Own Devices",
