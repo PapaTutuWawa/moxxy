@@ -607,6 +607,8 @@ class XmppService {
     await GetIt.I.get<OmemoService>().initializeIfNeeded(jid);
     final result = await GetIt.I.get<OmemoService>().publishDeviceIfNeeded();
     if (result != null) {
+      _log.warning('Failed to publish OMEMO device because of $result');
+
       // Notify the user that we could not publish the Omemo ~identity~ titty
       await GetIt.I.get<NotificationsService>().showWarningNotification(
         t.notifications.titles.error,
