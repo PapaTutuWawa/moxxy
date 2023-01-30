@@ -81,7 +81,10 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           Visibility(
             visible: showBackButton,
-            child: const BackButton(),
+            child: const Material(
+              color: Colors.transparent,
+              child: BackButton(),
+            ),
           ),
           Text(
             title,
