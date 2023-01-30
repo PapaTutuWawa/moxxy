@@ -556,6 +556,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                           childCount: state.messages.length * 2,
                           keepPosition: true,
                           keepPositionOffset: 40,
+                          firstItemAlign: FirstItemAlign.end,
                         ),
                       ),
                     ),
