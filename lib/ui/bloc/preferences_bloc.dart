@@ -56,10 +56,16 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
       SignOutCommand(),
     );
 
+    // Navigate to the login page but keep the intro page behind it
     GetIt.I.get<NavigationBloc>().add(
       PushedNamedAndRemoveUntilEvent(
-        const NavigationDestination(loginRoute),
+        const NavigationDestination(introRoute),
         (_) => false,
+      ),
+    );
+    GetIt.I.get<NavigationBloc>().add(
+      PushedNamedEvent(
+        const NavigationDestination(loginRoute),
       ),
     );
   }
