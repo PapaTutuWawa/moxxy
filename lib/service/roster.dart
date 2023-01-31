@@ -172,8 +172,6 @@ class RosterService {
       // TODO(Unknown): Signal error?
     }
 
-    GetIt.I.get<SubscriptionRequestService>().sendSubscriptionRequest(jid);
-
     sendEvent(RosterDiffEvent(added: [ item ]));
     return item;
   }

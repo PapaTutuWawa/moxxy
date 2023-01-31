@@ -399,7 +399,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
   final jid = command.jid;
   final roster = GetIt.I.get<RosterService>();
   final inRoster = await roster.isInRoster(jid);
-
+  
   final cs = GetIt.I.get<ConversationService>();
   final conversation = await cs.getConversationByJid(jid);
   if (conversation != null) {
@@ -439,7 +439,8 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
 
   // Manage subscription requests
   final srs = GetIt.I.get<SubscriptionRequestService>();
-  if (await srs.hasPendingSubscriptionRequest(jid)) {
+  final hasSubscriptionRequest = await srs.hasPendingSubscriptionRequest(jid);
+  if (hasSubscriptionRequest) {
     await srs.acceptSubscriptionRequest(jid);
   }
 

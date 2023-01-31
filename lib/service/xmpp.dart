@@ -724,7 +724,17 @@ class XmppService {
 
   Future<void> _onSubscriptionRequestReceived(SubscriptionRequestReceivedEvent event, { dynamic extra }) async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-
+    final jid = event.from.toBare().toString();
+    
+    // Auto-accept if the JID is in the roster
+    final rs = GetIt.I.get<RosterService>();
+    final srs = GetIt.I.get<SubscriptionRequestService>();
+    final rosterItem = await rs.getRosterItemByJid(jid);
+    if (rosterItem != null) {
+      await srs.acceptSubscriptionRequest(jid);
+      return;
+    }
+    
     await GetIt.I.get<SubscriptionRequestService>().addSubscriptionRequest(
       event.from.toBare().toString(),
     );
@@ -743,11 +753,10 @@ class XmppService {
         ),
       );
     }
-    
+
+    // TODO(Unknown): Maybe remove this option
     if (prefs.autoAcceptSubscriptionRequests) {
-      GetIt.I.get<XmppConnection>().getPresenceManager().sendSubscriptionRequestApproval(
-        event.from.toBare().toString(),
-      );
+      await srs.acceptSubscriptionRequest(jid);
     }
 
     if (!prefs.showSubscriptionRequests) return;
