@@ -57,8 +57,6 @@ class Conversation with _$Conversation {
     String subscription,
     // Whether the chat is muted (true = muted, false = not muted)
     bool muted,
-    // Whether we have a pending subscription request with the JID
-    bool hasSubscriptionRequest,
     // Whether the conversation is encrypted or not (true = encrypted, false = unencrypted)
     bool encrypted,
     // The current chat state
@@ -78,14 +76,13 @@ class Conversation with _$Conversation {
   /// JSON
   factory Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
 
-  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<Map<String, dynamic>> sharedMedia, Message? lastMessage, bool hasPendingSubscriptionRequest) {
+  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<Map<String, dynamic>> sharedMedia, Message? lastMessage) {
     return Conversation.fromJson({
       ...json,
       'muted': intToBool(json['muted']! as int),
       'open': intToBool(json['open']! as int),
       'sharedMedia': sharedMedia,
       'inRoster': inRoster,
-      'hasSubscriptionRequest': hasPendingSubscriptionRequest,
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
@@ -101,8 +98,7 @@ class Conversation with _$Conversation {
       ..remove('sharedMedia')
       ..remove('inRoster')
       ..remove('subscription')
-      ..remove('lastMessage')
-      ..remove('hasSubscriptionRequest');
+      ..remove('lastMessage');
 
     return {
       ...map,

@@ -368,12 +368,6 @@ files:
           - JsonImplementation
         attributes:
           jid: String
-      - name: AcceptSubscriptionRequestCommand
-        extends: BackgroundCommand
-        implements:
-          - JsonImplementation
-        attributes:
-          jid: String
       - name: RequestDownloadCommand
         extends: BackgroundCommand
         implements:

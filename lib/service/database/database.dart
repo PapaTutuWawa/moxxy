@@ -39,7 +39,6 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/roster.dart';
-import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -243,9 +242,6 @@ class DatabaseService {
           rosterItem?.subscription ?? 'none',
           sharedMediaRaw,
           lastMessage,
-          await GetIt.I.get<SubscriptionRequestService>().hasPendingSubscriptionRequest(
-            c['jid']! as String,
-          ),
         ),
       );
     }
@@ -353,9 +349,6 @@ class DatabaseService {
       rosterItem?.subscription ?? 'none',
       sharedMedia.map((m) => m.toJson()).toList(),
       lastMessage,
-      await GetIt.I.get<SubscriptionRequestService>().hasPendingSubscriptionRequest(
-        c['jid']! as String,
-      ),
     );
   }
 
@@ -389,9 +382,6 @@ class DatabaseService {
       rosterItem != null && !rosterItem.pseudoRosterItem,
       rosterItem?.subscription ?? 'none',
       muted,
-      await GetIt.I.get<SubscriptionRequestService>().hasPendingSubscriptionRequest(
-        jid,
-      ),
       encrypted,
       ChatState.gone,
       contactId: contactId,

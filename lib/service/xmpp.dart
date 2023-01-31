@@ -739,21 +739,6 @@ class XmppService {
       event.from.toBare().toString(),
     );
 
-    final cs = GetIt.I.get<ConversationService>();
-    final conversation = await cs.getConversationByJid(event.from.toBare().toString());
-    if (conversation != null) {
-      // Update the conversation, if it exists
-      final newConversation = conversation.copyWith(
-        hasSubscriptionRequest: true,
-      );
-
-      sendEvent(
-        ConversationUpdatedEvent(
-          conversation: newConversation,
-        ),
-      );
-    }
-
     // TODO(Unknown): Maybe remove this option
     if (prefs.autoAcceptSubscriptionRequests) {
       await srs.acceptSubscriptionRequest(jid);
@@ -762,6 +747,8 @@ class XmppService {
     if (!prefs.showSubscriptionRequests) return;
     
     final css = GetIt.I.get<ContactsService>();
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = await cs.getConversationByJid(event.from.toBare().toString());
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     if (conversation == null) {
       final bare = event.from.toBare().toString();
@@ -783,9 +770,7 @@ class XmppService {
 
       sendEvent(
         ConversationAddedEvent(
-          conversation: conv.copyWith(
-            hasSubscriptionRequest: true,
-          ),
+          conversation: conv,
         ),
       );
     } else {

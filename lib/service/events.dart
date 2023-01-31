@@ -82,7 +82,6 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
       EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
-      EventTypeMatcher<AcceptSubscriptionRequestCommand>(performAcceptSubscriptionRequest),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -968,20 +967,5 @@ Future<void> performGetBlocklist(GetBlocklistCommand command, { dynamic extra })
       entries: result,
     ),
     id: id,
-  );
-}
-
-Future<void> performAcceptSubscriptionRequest(AcceptSubscriptionRequestCommand command, { dynamic extra }) async {
-  final cs = GetIt.I.get<ConversationService>();
-  final srs = GetIt.I.get<SubscriptionRequestService>();
-  await srs.acceptSubscriptionRequest(command.jid);
-
-  final conversation = await cs.getConversationByJid(command.jid);
-  sendEvent(
-    ConversationUpdatedEvent(
-      conversation: conversation!.copyWith(
-        hasSubscriptionRequest: false,
-      ),
-    ),
   );
 }

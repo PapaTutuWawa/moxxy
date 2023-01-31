@@ -96,7 +96,6 @@ class ShareSelectionPage extends StatelessWidget {
                     '',
                     false,
                     false,
-                    false,
                     ChatState.gone,
                     contactId: item.contactId,
                     contactAvatarPath: item.contactAvatarPath,

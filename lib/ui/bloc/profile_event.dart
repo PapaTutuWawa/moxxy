@@ -50,6 +50,3 @@ class MuteStateSetEvent extends ProfileEvent {
   final String jid;
   final bool muted;
 }
-
-/// Triggered by the UI when a subscription request has been accepted
-class SubscriptionRequestAcceptedEvent extends ProfileEvent {}

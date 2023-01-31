@@ -5,7 +5,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/profile/options.dart';
@@ -115,30 +114,6 @@ class ConversationProfileHeader extends StatelessWidget {
                     );
                   },
                 ),
-
-                if (conversation.hasSubscriptionRequest)
-                  ProfileOption(
-                    icon: Icons.account_circle,
-                    title: t.pages.profile.conversation.subscription,
-                    description: conversation.subscription,
-                    onTap: () async {
-                      // ignore: use_build_context_synchronously
-                      final result = await showConfirmationDialog(
-                        t.pages.profile.conversation.subscriptionDialogTitle,
-                        t.pages.profile.conversation.subscriptionDialogBody(
-                          jid: conversation.jid,
-                        ),
-                        context,
-                      );
-
-                      if (result) {
-                        // ignore: use_build_context_synchronously
-                        context.read<ProfileBloc>().add(
-                          SubscriptionRequestAcceptedEvent(),
-                        );
-                      }
-                    },
-                  ),
               ],
             ),
           ),
