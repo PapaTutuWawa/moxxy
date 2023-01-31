@@ -63,7 +63,7 @@ class NewConversationPage extends StatelessWidget {
                 () => Navigator.pushNamed(context, addContactRoute),
               );
               default:
-                final item = state.roster[index - 2];
+                final item = state.roster[index - 1];
                 return Dismissible(
                   key: ValueKey('roster;${item.jid}'),
                   direction: item.pseudoRosterItem ?
