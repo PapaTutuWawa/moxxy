@@ -215,7 +215,7 @@
 		"recreateOwnDeviceConfirmBody": "This will recreate this device's cryptographic identity. It will take some time. If contacts verified your device, they will have to do it again. Continue?"
 	    },
 	    "devices": {
-		"title": "Devices",
+		"title": "Security",
 		"recreateSessions": "Rebuild sessions",
 		"recreateSessionsConfirmTitle": "Rebuild sessions?",
 		"recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",

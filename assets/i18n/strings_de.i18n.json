@@ -215,7 +215,7 @@
 		"recreateOwnDeviceConfirmBody": "Das wird die kryptographische Identität dieses Geräts neu erstellen. Wenn Kontakte die kryptographische Indentität verifiziert haben, dann müssen diese es erneut tun. Fortfahren?"
 	    },
 	    "devices": {
-		"title": "Geräte",
+		"title": "Sicherheit",
 		"recreateSessions": "Sessions zurücksetzen",
 		"recreateSessionsConfirmTitle": "Sessions zurücksetzen?",
 		"recreateSessionsConfirmBody": "Dies wird alle Sessions mit Deinen Geräten neu erstellen. Tue dies nur, wenn deine Geräte Fehler beim Entschlüsseln erzeugen.",
