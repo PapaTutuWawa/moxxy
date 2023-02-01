@@ -218,7 +218,8 @@
 		"title": "Geräte",
 		"recreateSessions": "Sessions zurücksetzen",
 		"recreateSessionsConfirmTitle": "Sessions zurücksetzen?",
-		"recreateSessionsConfirmBody": "Dies wird alle Sessions mit Deinen Geräten neu erstellen. Tue dies nur, wenn deine Geräte Fehler beim Entschlüsseln erzeugen."
+		"recreateSessionsConfirmBody": "Dies wird alle Sessions mit Deinen Geräten neu erstellen. Tue dies nur, wenn deine Geräte Fehler beim Entschlüsseln erzeugen.",
+		"noSessions": "Es sind keine kryptographischen Sessions vorhanden, die für Ende-zu-Ende-Verschlüsselung verwendet werden."
 	    }
 	},
 	"blocklist": {

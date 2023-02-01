@@ -28,6 +28,26 @@ class DevicesPage extends StatelessWidget {
       );
     }
 
+    if (state.devices.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset('assets/images/empty.png'),
+
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                t.pages.profile.devices.noSessions,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
     final hasVerifiedDevices = state.devices.any((item) => item.verified);
     return ListView.builder(
       itemCount: state.devices.length,

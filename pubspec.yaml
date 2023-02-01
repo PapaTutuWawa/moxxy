@@ -164,6 +164,7 @@ flutter:
     - assets/images/logo.png
     - assets/images/begin_chat.png
     - assets/images/happy_news.png
+    - assets/images/empty.png
 
 flutter_icons:
   android: true
