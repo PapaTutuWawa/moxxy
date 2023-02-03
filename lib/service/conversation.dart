@@ -7,21 +7,51 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:synchronized/synchronized.dart';
 
+typedef CreateConversationCallback = Future<Conversation> Function();
+
+typedef UpdateConversationCallback = Future<Conversation> Function(Conversation);
+
+typedef PreRunConversationCallback = Future<void> Function(Conversation?);
+
 class ConversationService {
   /// The list of known conversations.
   Map<String, Conversation>? _conversationCache;
 
+  /// The lock for accessing _conversationCache
   final Lock _lock = Lock();
 
-  Future<void> voidSynchronized(Future<void> Function() cs) async {
+  /// When called with a JID [jid], then first, if non-null, [preRun] is
+  /// executed.
+  /// Next, if a conversation with JID [jid] exists, [update] is called with
+  /// the conversation as its argument. If not, then [create] is executed.
+  /// Returns either the result of [create], [update] or null.
+  Future<Conversation?> createOrUpdateConversation(
+    String jid, {
+      CreateConversationCallback? create,
+      UpdateConversationCallback? update,
+      PreRunConversationCallback? preRun,
+  }) async {
     return _lock.synchronized(() async {
-      await cs();
-    });
-  }
+      final conversation = await _getConversationByJid(jid);
 
-  Future<Conversation> conversationSynchronized(Future<Conversation> Function() cs) async {
-    return _lock.synchronized(() async {
-      return cs();
+      // Pre run
+      if (preRun != null) {
+        await preRun(conversation);
+      }
+
+      if (conversation != null) {
+        // Conversation exists
+        if (update != null) {
+          return update(conversation);
+        }
+      } else {
+        // Conversation does not exist
+        if (create != null) {
+          return create();
+        }
+      }
+
+      return null;
     });
   }
   
@@ -37,11 +67,17 @@ class ConversationService {
   }
       
   /// Returns the conversation with jid [jid] or null if not found.
-  Future<Conversation?> getConversationByJid(String jid) async {
+  Future<Conversation?> _getConversationByJid(String jid) async {
     await _loadConversationsIfNeeded();
     return _conversationCache![jid];
   }
 
+  /// Wrapper around [ConversationService._getConversationByJid] that aquires
+  /// the lock for the cache.
+  Future<Conversation?> getConversationByJid(String jid) async {
+    return _lock.synchronized(() async => _getConversationByJid(jid));
+  }
+  
   /// For modifying the cache without writing it to disk. Useful, for example, when
   /// changing the chat state.
   void setConversation(Conversation conversation) {
@@ -49,6 +85,8 @@ class ConversationService {
   }
   
   /// Wrapper around [DatabaseService]'s [updateConversation] that modifies the cache.
+  /// To prevent issues with the cache, only call from within
+  /// [ConversationService.createOrUpdateConversation].
   Future<Conversation> updateConversation(String jid, {
     int? lastChangeTimestamp,
     Message? lastMessage,
@@ -62,7 +100,7 @@ class ConversationService {
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
   }) async {
-    final conversation = (await getConversationByJid(jid))!;
+    final conversation = (await _getConversationByJid(jid))!;
     var newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
       jid,
       lastMessage: lastMessage,
@@ -87,7 +125,10 @@ class ConversationService {
     return newConversation;
   }
 
-  /// Wrapper around [DatabaseService]'s [addConversationFromData] that updates the cache.
+  /// Wrapper around [DatabaseService]'s [addConversationFromData] that updates the
+  /// cache.
+  /// To prevent issues with the cache, only call from within
+  /// [ConversationService.createOrUpdateConversation].
   Future<Conversation> addConversationFromData(
     String title,
     Message? lastMessage,

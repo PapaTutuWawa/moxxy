@@ -58,12 +58,20 @@ class AvatarService {
     );
     
     if (originalConversation != null) {
-      final conv = await cs.updateConversation(
-        originalConversation.jid,
-        avatarUrl: avatarPath,
+      final conversation = await cs.createOrUpdateConversation(
+        jid,
+        update: (c) async {
+          return cs.updateConversation(
+            jid,
+            avatarUrl: avatarPath,
+          );
+        },
       );
-
-      sendEvent(ConversationUpdatedEvent(conversation: conv));
+      if (conversation != null) {
+        sendEvent(
+          ConversationUpdatedEvent(conversation: conversation),
+        );
+      }
     }
  
     if (originalRoster != null) {

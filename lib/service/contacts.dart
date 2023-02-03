@@ -193,17 +193,21 @@ class ContactsService {
       }
 
       // Remove the contact attributes from the conversation, if it existed
-      final c = await cs.getConversationByJid(jid);
-      if (c != null) {
-        final newConv = await cs.updateConversation(
-          c.jid,
-          contactId: null,
-          contactAvatarPath: null,
-          contactDisplayName: null,
-        );
+      final conversation = await cs.createOrUpdateConversation(
+        jid,
+        update: (c) async {
+          return cs.updateConversation(
+            jid,
+            contactId: null,
+            contactAvatarPath: null,
+            contactDisplayName: null,
+          );
+        },
+      );
+      if (conversation != null) {
         sendEvent(
           ConversationUpdatedEvent(
-            conversation: newConv,
+            conversation: conversation,
           ),
         );
       }
@@ -246,17 +250,21 @@ class ContactsService {
       }
 
       // Update a possibly existing conversation
-      final c = await cs.getConversationByJid(contact.jid);
-      if (c != null) {
-        final newConv = await cs.updateConversation(
-          c.jid,
-          contactId: contact.id,
-          contactAvatarPath: contactAvatarPath,
-          contactDisplayName: contact.displayName,
-        );
+      final conversation = await cs.createOrUpdateConversation(
+        contact.jid,
+        update: (c) async {
+          return cs.updateConversation(
+            contact.jid,
+            contactId: contact.id,
+            contactAvatarPath: contactAvatarPath,
+            contactDisplayName: contact.displayName,           
+          );
+        },
+      );
+      if (conversation != null) {
         sendEvent(
           ConversationUpdatedEvent(
-            conversation: newConv,
+            conversation: conversation,
           ),
         );
       }

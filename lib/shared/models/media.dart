@@ -25,6 +25,7 @@ class SharedMedium with _$SharedMedium {
     return SharedMedium.fromJson({
       ...json,
       'messageId': json['message_id'] as int?,
+      'conversationJid': json['conversation_jid']! as String,
     });
   }
 
@@ -32,8 +33,10 @@ class SharedMedium with _$SharedMedium {
     return {
       ...toJson()
         ..remove('id')
-        ..remove('messageId'),
+        ..remove('messageId')
+        ..remove('conversationJid'),
       'message_id': messageId,
+      'conversation_jid': conversationJid,
     };
   }
 }
