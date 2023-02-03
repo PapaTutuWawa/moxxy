@@ -114,7 +114,6 @@ class NewConversationPage extends StatelessWidget {
                         0,
                         0,
                         [],
-                        0,
                         true,
                         true,
                         '',

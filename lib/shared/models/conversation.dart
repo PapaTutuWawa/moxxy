@@ -48,7 +48,6 @@ class Conversation with _$Conversation {
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
     int lastChangeTimestamp,
     List<SharedMedium> sharedMedia,
-    int id,
     // Indicates if the conversation should be shown on the homescreen
     bool open,
     // Indicates, if [jid] is a regular user, if the user is in the roster.

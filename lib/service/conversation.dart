@@ -1,62 +1,55 @@
 import 'package:get_it/get_it.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/preferences.dart';
-import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:synchronized/synchronized.dart';
 
 class ConversationService {
-  ConversationService()
-    : _conversationCache = LRUCache(100),
-      _loadedConversations = false;
+  /// The list of known conversations.
+  Map<String, Conversation>? _conversationCache;
 
-  final LRUCache<int, Conversation> _conversationCache;
-  bool _loadedConversations;
+  final Lock _lock = Lock();
 
+  Future<void> voidSynchronized(Future<void> Function() cs) async {
+    return _lock.synchronized(() async {
+      await cs();
+    });
+  }
+
+  Future<Conversation> conversationSynchronized(Future<Conversation> Function() cs) async {
+    return _lock.synchronized(() async {
+      return cs();
+    });
+  }
+  
   /// Wrapper around DatabaseService's loadConversations that adds the loaded
   /// to the cache.
-  Future<void> _loadConversations() async {
+  Future<void> _loadConversationsIfNeeded() async {
+    if (_conversationCache != null) return;
+
     final conversations = await GetIt.I.get<DatabaseService>().loadConversations();
-    for (final c in conversations) {
-      _conversationCache.cache(c.id, c);
-    }
+    _conversationCache = Map<String, Conversation>.fromEntries(
+      conversations.map((c) => MapEntry(c.jid, c)),
+    );
   }
       
   /// Returns the conversation with jid [jid] or null if not found.
   Future<Conversation?> getConversationByJid(String jid) async {
-    if (!_loadedConversations) {
-      await _loadConversations();
-      _loadedConversations = true;
-    }
-
-    return firstWhereOrNull(
-      // TODO(Unknown): Maybe have it accept an iterable
-      _conversationCache.getValues(),
-      (Conversation c) => c.jid == jid,
-    );
-  }
-
-  /// Returns the conversation by its database id or null if it does not exist.
-  Future<Conversation?> _getConversationById(int id) async {
-    if (!_loadedConversations) {
-      await _loadConversations();
-      _loadedConversations = true;
-    }
-
-    return _conversationCache.getValue(id);
+    await _loadConversationsIfNeeded();
+    return _conversationCache![jid];
   }
 
   /// For modifying the cache without writing it to disk. Useful, for example, when
   /// changing the chat state.
   void setConversation(Conversation conversation) {
-    _conversationCache.cache(conversation.id, conversation);
+    _conversationCache![conversation.jid] = conversation;
   }
   
   /// Wrapper around [DatabaseService]'s [updateConversation] that modifies the cache.
-  Future<Conversation> updateConversation(int id, {
+  Future<Conversation> updateConversation(String jid, {
     int? lastChangeTimestamp,
     Message? lastMessage,
     bool? open,
@@ -69,9 +62,9 @@ class ConversationService {
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
   }) async {
-    final conversation = (await _getConversationById(id))!;
+    final conversation = (await getConversationByJid(jid))!;
     var newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
-      id,
+      jid,
       lastMessage: lastMessage,
       lastChangeTimestamp: lastChangeTimestamp,
       open: open,
@@ -90,7 +83,7 @@ class ConversationService {
       newConversation = newConversation.copyWith(lastMessage: conversation.lastMessage);
     }
     
-    _conversationCache.cache(id, newConversation);
+    _conversationCache![jid] = newConversation;
     return newConversation;
   }
 
@@ -124,7 +117,10 @@ class ConversationService {
       contactDisplayName,
     );
 
-    _conversationCache.cache(newConversation.id, newConversation);
+    if (_conversationCache != null) {
+      _conversationCache![newConversation.jid] = newConversation;
+    }
+
     return newConversation;
   }
 

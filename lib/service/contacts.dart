@@ -196,7 +196,7 @@ class ContactsService {
       final c = await cs.getConversationByJid(jid);
       if (c != null) {
         final newConv = await cs.updateConversation(
-          c.id,
+          c.jid,
           contactId: null,
           contactAvatarPath: null,
           contactDisplayName: null,
@@ -249,7 +249,7 @@ class ContactsService {
       final c = await cs.getConversationByJid(contact.jid);
       if (c != null) {
         final newConv = await cs.updateConversation(
-          c.id,
+          c.jid,
           contactId: contact.id,
           contactAvatarPath: contactAvatarPath,
           contactDisplayName: contact.displayName,

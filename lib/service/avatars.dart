@@ -59,7 +59,7 @@ class AvatarService {
     
     if (originalConversation != null) {
       final conv = await cs.updateConversation(
-        originalConversation.id,
+        originalConversation.jid,
         avatarUrl: avatarPath,
       );
 

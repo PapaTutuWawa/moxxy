@@ -45,6 +45,6 @@ class ConversationClosedEvent extends ConversationsEvent {
 /// Triggered by the UI when a conversation has been marked as read, i.e.
 /// its unreadCounter should be set to zero
 class ConversationMarkedAsReadEvent extends ConversationsEvent {
-  ConversationMarkedAsReadEvent(this.id);
-  final int id;
+  ConversationMarkedAsReadEvent(this.jid);
+  final String jid;
 }

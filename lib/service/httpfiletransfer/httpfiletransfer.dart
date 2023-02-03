@@ -473,7 +473,7 @@ class HttpFileTransferService {
     final sharedMedium = await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
       downloadedPath,
       msg.timestamp,
-      conv.id,
+      conv.jid,
       job.mId,
       mime: mime,
     );

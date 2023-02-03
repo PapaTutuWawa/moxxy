@@ -9,6 +9,7 @@ class SharedMedium with _$SharedMedium {
     int id,
     String path,
     int timestamp,
+    String conversationJid,
     {
       String? mime,
       int? messageId,
@@ -27,12 +28,11 @@ class SharedMedium with _$SharedMedium {
     });
   }
 
-  Map<String, dynamic> toDatabaseJson(int conversationId) {
+  Map<String, dynamic> toDatabaseJson() {
     return {
       ...toJson()
         ..remove('id')
         ..remove('messageId'),
-      'conversation_id': conversationId,
       'message_id': messageId,
     };
   }

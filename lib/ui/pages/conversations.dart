@@ -154,7 +154,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
                           text: t.pages.conversations.markAsRead,
                           onPressed: () {
                             context.read<ConversationsBloc>().add(
-                              ConversationMarkedAsReadEvent(item.id),
+                              ConversationMarkedAsReadEvent(item.jid),
                             );
                             Navigator.of(context).pop();
                           },

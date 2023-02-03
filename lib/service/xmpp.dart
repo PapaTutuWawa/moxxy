@@ -109,7 +109,7 @@ class XmppService {
 
     if (conversation != null && conversation.unreadCounter > 0) {
       final newConversation = await cs.updateConversation(
-        conversation.id,
+        conversation.jid,
         unreadCounter: 0,
       );
 
@@ -146,7 +146,7 @@ class XmppService {
     final conv = await cs.getConversationByJid(msg.conversationJid);
     if (conv != null && conv.lastMessage?.id == id) {
       final newConv = await cs.updateConversation(
-        conv.id,
+        conv.jid,
         lastChangeTimestamp: timestamp,
         lastMessage: msg,
       );
@@ -202,7 +202,7 @@ class XmppService {
         mediaType: sticker?.mediaType,
       );
       final newConversation = await cs.updateConversation(
-        conversation.id,
+        conversation.jid,
         lastMessage: message,
         lastChangeTimestamp: timestamp,
       );
@@ -405,16 +405,16 @@ class XmppService {
   /// setting the single shared medium's message Id attribute.
   /// [paths] is the list of paths to create shared media entries for.
   /// [recipient] is the bare string JID that the messages will be sent to.
-  /// [conversationId] is the database id of the conversation these shared media entries
+  /// [conversationJid] is the JID of the conversation these shared media entries
   /// belong to.
-  Future<List<SharedMedium>> _createSharedMedia(Map<String, Map<String, Message>> messages, List<String> paths, String recipient, int conversationId) async {
+  Future<List<SharedMedium>> _createSharedMedia(Map<String, Map<String, Message>> messages, List<String> paths, String recipient, String conversationJid) async {
     final sharedMedia = List<SharedMedium>.empty(growable: true);
     for (final path in paths) {
       sharedMedia.add(
         await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
           path,
           DateTime.now().millisecondsSinceEpoch,
-          conversationId,
+          conversationJid,
           messages[path]![recipient]!.id,
           mime: lookupMimeType(path),
         ),
@@ -500,57 +500,65 @@ class XmppService {
     // Recipient -> [Shared Medium]
     final sharedMediaMap = <String, List<SharedMedium>>{};
     final rs = GetIt.I.get<RosterService>();
-    for (final recipient in recipients) {
-      final conversation = await cs.getConversationByJid(recipient);
-      if (conversation != null) {
-        // Update conversation
-        var updatedConversation = await cs.updateConversation(
-          conversation.id,
-          lastMessage: lastMessages[recipient],
-          lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
-          open: true,
-        );
 
-        sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, conversation.id);
+    await cs.voidSynchronized(() async {
+      for (final recipient in recipients) {
+        final conversation = await cs.getConversationByJid(recipient);
+        if (conversation != null) {
+          // Update conversation
+          var updatedConversation = await cs.updateConversation(
+            conversation.jid,
+            lastMessage: lastMessages[recipient],
+            lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+            open: true,
+          );
 
-        updatedConversation = updatedConversation.copyWith(
-          sharedMedia: [
-            ...sharedMediaMap[recipient]!,
-            ...conversation.sharedMedia,
-          ],
-        );
-        cs.setConversation(updatedConversation);
-        sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
-      } else {
-        // Create conversation
-        final rosterItem = await rs.getRosterItemByJid(recipient);
-        final contactId = await css.getContactIdForJid(recipient);
-        var newConversation = await cs.addConversationFromData(
-          // TODO(Unknown): Should we use the JID parser?
-          rosterItem?.title ?? recipient.split('@').first,
-          lastMessages[recipient],
-          rosterItem?.avatarUrl ?? '',
-          recipient,
-          0,
-          DateTime.now().millisecondsSinceEpoch,
-          true,
-          prefs.defaultMuteState,
-          prefs.enableOmemoByDefault,
-          contactId,
-          await css.getProfilePicturePathForJid(recipient),
-          await css.getContactDisplayName(contactId),
-        );
+          sharedMediaMap[recipient] = await _createSharedMedia(
+            messages,
+            paths,
+            recipient,
+            conversation.jid,
+          );
 
-        sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, newConversation.id);
-        newConversation = newConversation.copyWith(
-          sharedMedia: sharedMediaMap[recipient]!,
-        );
-        cs.setConversation(newConversation);
+          updatedConversation = updatedConversation.copyWith(
+            sharedMedia: [
+              ...sharedMediaMap[recipient]!,
+              ...conversation.sharedMedia,
+            ],
+          );
+          cs.setConversation(updatedConversation);
+          sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
+        } else {
+          // Create conversation
+          final rosterItem = await rs.getRosterItemByJid(recipient);
+          final contactId = await css.getContactIdForJid(recipient);
+          var newConversation = await cs.addConversationFromData(
+            // TODO(Unknown): Should we use the JID parser?
+            rosterItem?.title ?? recipient.split('@').first,
+            lastMessages[recipient],
+            rosterItem?.avatarUrl ?? '',
+            recipient,
+            0,
+            DateTime.now().millisecondsSinceEpoch,
+            true,
+            prefs.defaultMuteState,
+            prefs.enableOmemoByDefault,
+            contactId,
+            await css.getProfilePicturePathForJid(recipient),
+            await css.getContactDisplayName(contactId),
+          );
 
-        // Notify the UI
-        sendEvent(ConversationAddedEvent(conversation: newConversation));
+          sharedMediaMap[recipient] = await _createSharedMedia(messages, paths, recipient, newConversation.jid);
+          newConversation = newConversation.copyWith(
+            sharedMedia: sharedMediaMap[recipient]!,
+          );
+          cs.setConversation(newConversation);
+
+          // Notify the UI
+          sendEvent(ConversationAddedEvent(conversation: newConversation));
+        }
       }
-    }
+    }); 
 
     // Requesting Upload slots and uploading
     final hfts = GetIt.I.get<HttpFileTransferService>();
@@ -748,43 +756,46 @@ class XmppService {
     
     final css = GetIt.I.get<ContactsService>();
     final cs = GetIt.I.get<ConversationService>();
-    final conversation = await cs.getConversationByJid(event.from.toBare().toString());
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    if (conversation == null) {
-      final bare = event.from.toBare().toString();
-      final contactId = await css.getContactIdForJid(bare);
-      final conv = await cs.addConversationFromData(
-        bare.split('@')[0],
-        null,
-        '', // TODO(Unknown): avatarUrl
-        bare,
-        0,
-        timestamp,
-        true,
-        prefs.defaultMuteState,
-        prefs.enableOmemoByDefault,
-        contactId,
-        await css.getProfilePicturePathForJid(bare),
-        await css.getContactDisplayName(contactId),
-      );
 
-      sendEvent(
-        ConversationAddedEvent(
-          conversation: conv,
-        ),
-      );
-    } else {
-      final newConversation = await cs.updateConversation(
-        conversation.id,
-        open: true,
-      );
+    await cs.voidSynchronized(() async {
+      final conversation = await cs.getConversationByJid(event.from.toBare().toString());
+      if (conversation == null) {
+        final bare = event.from.toBare().toString();
+        final contactId = await css.getContactIdForJid(bare);
+        final conv = await cs.addConversationFromData(
+          bare.split('@')[0],
+          null,
+          '', // TODO(Unknown): avatarUrl
+          bare,
+          0,
+          timestamp,
+          true,
+          prefs.defaultMuteState,
+          prefs.enableOmemoByDefault,
+          contactId,
+          await css.getProfilePicturePathForJid(bare),
+          await css.getContactDisplayName(contactId),
+        );
 
-      sendEvent(
-        ConversationUpdatedEvent(
-          conversation: newConversation,
-        ),
-      );
-    }
+        sendEvent(
+          ConversationAddedEvent(
+            conversation: conv,
+          ),
+        );
+      } else {
+        final newConversation = await cs.updateConversation(
+          conversation.jid,
+          open: true,
+        );
+
+        sendEvent(
+          ConversationUpdatedEvent(
+            conversation: newConversation,
+          ),
+        );
+      }
+    }); 
   }
 
   Future<void> _onDeliveryReceiptReceived(DeliveryReceiptReceivedEvent event, { dynamic extra }) async {
@@ -1299,69 +1310,73 @@ class XmppService {
     final conversationBody = isFileEmbedded || message.isFileUploadNotification ? mimeTypeToEmoji(mimeGuess) : messageBody;
     // Specifies if we have the conversation this message goes to opened
     final isConversationOpened = _currentlyOpenedChatJid == conversationJid;
-    // The conversation we're about to modify, if it exists
-    final conversation = await cs.getConversationByJid(conversationJid);
-    // If the conversation is muted
-    final isMuted = conversation != null ? conversation.muted : prefs.defaultMuteState;
-    // Whether to send the notification
-    final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen) && !isMuted;
-    if (conversation != null) {
-      // The conversation exists, so we can just update it
-      final newConversation = await cs.updateConversation(
-        conversation.id,
-        lastMessage: message,
-        lastChangeTimestamp: messageTimestamp,
-        // Do not increment the counter for messages we sent ourselves (via Carbons)
-        // or if we have the chat currently opened
-        unreadCounter: isConversationOpened || sent
-          ? conversation.unreadCounter
-          : conversation.unreadCounter + 1,
-        open: true, 
-      );
 
-      // Notify the UI of the update
-      sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+    await cs.voidSynchronized(() async {
+      // The conversation we're about to modify, if it exists
+      final conversation = await cs.getConversationByJid(conversationJid);
+      // If the conversation is muted
+      final isMuted = conversation != null ? conversation.muted : prefs.defaultMuteState;
+      // Whether to send the notification
+      final sendNotification = !sent && shouldNotify && (!isConversationOpened || !_appOpen) && !isMuted;
 
-      // Create the notification if we the user does not already know about the message
-      if (sendNotification) {
-        await ns.showNotification(
-          newConversation,
-          message,
-          isInRoster ? newConversation.title : conversationJid,
-          body: conversationBody,
+      if (conversation != null) {
+        // The conversation exists, so we can just update it
+        final newConversation = await cs.updateConversation(
+          conversation.jid,
+          lastMessage: message,
+          lastChangeTimestamp: messageTimestamp,
+          // Do not increment the counter for messages we sent ourselves (via Carbons)
+          // or if we have the chat currently opened
+          unreadCounter: isConversationOpened || sent
+            ? conversation.unreadCounter
+            : conversation.unreadCounter + 1,
+          open: true, 
         );
-      }
-    } else {
-      // The conversation does not exist, so we must create it
-      final contactId = await css.getContactIdForJid(conversationJid);
-      final newConversation = await cs.addConversationFromData(
-        rosterItem?.title ?? conversationJid.split('@')[0],
-        message,
-        rosterItem?.avatarUrl ?? '',
-        conversationJid,
-        sent ? 0 : 1,
-        messageTimestamp,
-        true,
-        prefs.defaultMuteState,
-        message.encrypted,
-        contactId,
-        await css.getProfilePicturePathForJid(conversationJid),
-        await css.getContactDisplayName(contactId),
-      );
 
-      // Notify the UI
-      sendEvent(ConversationAddedEvent(conversation: newConversation));
+        // Notify the UI of the update
+        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
 
-      // Creat the notification
-      if (sendNotification) {
-        await ns.showNotification(
-          newConversation,
+        // Create the notification if we the user does not already know about the message
+        if (sendNotification) {
+          await ns.showNotification(
+            newConversation,
+            message,
+            isInRoster ? newConversation.title : conversationJid,
+            body: conversationBody,
+          );
+        }
+      } else {
+        // The conversation does not exist, so we must create it
+        final contactId = await css.getContactIdForJid(conversationJid);
+        final newConversation = await cs.addConversationFromData(
+          rosterItem?.title ?? conversationJid.split('@')[0],
           message,
-          isInRoster ? newConversation.title : conversationJid,
-          body: messageBody,
+          rosterItem?.avatarUrl ?? '',
+          conversationJid,
+          sent ? 0 : 1,
+          messageTimestamp,
+          true,
+          prefs.defaultMuteState,
+          message.encrypted,
+          contactId,
+          await css.getProfilePicturePathForJid(conversationJid),
+          await css.getContactDisplayName(contactId),
         );
+
+        // Notify the UI
+        sendEvent(ConversationAddedEvent(conversation: newConversation));
+
+        // Creat the notification
+        if (sendNotification) {
+          await ns.showNotification(
+            newConversation,
+            message,
+            isInRoster ? newConversation.title : conversationJid,
+            body: messageBody,
+          );
+        }
       }
-    }
+    }); 
 
     // Mark the file as downlading when it includes a File Upload Notification
     if (event.fun != null) {

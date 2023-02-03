@@ -119,7 +119,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
 
   Future<void> _onConversationMarkedAsRead(ConversationMarkedAsReadEvent event, Emitter<ConversationsState> emit) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      MarkConversationAsReadCommand(conversationId: event.id),
+      MarkConversationAsReadCommand(conversationJid: event.jid),
       awaitable: false,
     );   
   }

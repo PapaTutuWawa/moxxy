@@ -68,8 +68,7 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $conversationsTable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      jid TEXT NOT NULL,
+      jid TEXT NOT NULL PRIMARY KEY,
       title TEXT NOT NULL,
       avatarUrl TEXT NOT NULL,
       lastChangeTimestamp INTEGER NOT NULL,
@@ -104,9 +103,9 @@ Future<void> createDatabase(Database db, int version) async {
       path TEXT NOT NULL,
       mime TEXT,
       timestamp INTEGER NOT NULL,
-      conversation_id INTEGER NOT NULL,
+      conversation_jid TEXT NOT NULL,
       message_id INTEGER,
-      FOREIGN KEY (conversation_id) REFERENCES $conversationsTable (id),
+      FOREIGN KEY (conversation_jid) REFERENCES $conversationsTable (jid),
       FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
     )''',
   );

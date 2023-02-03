@@ -32,6 +32,7 @@ import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attrib
 import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers_privacy.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
+import 'package:moxxyv2/service/database/migrations/0001_conversation_primary_key.dart';
 import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
 import 'package:moxxyv2/service/database/migrations/0001_subscriptions.dart';
 import 'package:moxxyv2/service/helpers.dart';
@@ -88,7 +89,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 27,
+      version: 28,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -205,6 +206,10 @@ class DatabaseService {
           _log.finest('Running migration for database version 27');
           await upgradeFromV26ToV27(db);
         }
+        if (oldVersion < 28) {
+          _log.finest('Running migration for database version 28');
+          await upgradeFromV27ToV28(db);
+        }
       },
     );
 
@@ -219,16 +224,15 @@ class DatabaseService {
     
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
-      final id = c['id']! as int;
-
+      final jid = c['jid']! as String;
       final sharedMediaRaw = await _db.query(
         'SharedMedia',
-        where: 'conversation_id = ?',
-        whereArgs: [id],
+        where: 'conversation_jid = ?',
+        whereArgs: [jid],
         orderBy: 'timestamp DESC',
       );
       final rosterItem = await GetIt.I.get<RosterService>()
-        .getRosterItemByJid(c['jid']! as String);
+        .getRosterItemByJid(jid);
 
       Message? lastMessage;
       if (c['lastMessageId'] != null) {
@@ -276,8 +280,8 @@ class DatabaseService {
     return messages;
   }
   
-  /// Updates the conversation with id [id] inside the database.
-  Future<Conversation> updateConversation(int id, {
+  /// Updates the conversation with JID [jid] inside the database.
+  Future<Conversation> updateConversation(String jid, {
     int? lastChangeTimestamp,
     Message? lastMessage,
     bool? open,
@@ -292,15 +296,15 @@ class DatabaseService {
   }) async {
     final cd = (await _db.query(
       'Conversations',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'jid = ?',
+      whereArgs: [jid],
     )).first;
     final c = Map<String, dynamic>.from(cd);
 
     final sharedMedia = (await _db.query(
       'SharedMedia',
-      where: 'conversation_id = ?',
-      whereArgs: [id],
+      where: 'conversation_jid = ?',
+      whereArgs: [jid],
       orderBy: 'timestamp DESC',
     )).map(SharedMedium.fromDatabaseJson);
     
@@ -338,11 +342,11 @@ class DatabaseService {
     await _db.update(
       'Conversations',
       c,
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'jid = ?',
+      whereArgs: [jid],
     );
 
-    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(c['jid']! as String);
+    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     return Conversation.fromDatabaseJson(
       c,
       rosterItem != null,
@@ -377,7 +381,6 @@ class DatabaseService {
       unreadCounter,
       lastChangeTimestamp,
       <SharedMedium>[],
-      -1,
       open,
       rosterItem != null && !rosterItem.pseudoRosterItem,
       rosterItem?.subscription ?? 'none',
@@ -389,23 +392,23 @@ class DatabaseService {
       contactDisplayName: contactDisplayName,
     );
 
-    return conversation.copyWith(
-      id: await _db.insert('Conversations', conversation.toDatabaseJson()),
-    );
+    await _db.insert('Conversations', conversation.toDatabaseJson());
+    return conversation;
   }
 
   /// Like [addConversationFromData] but for [SharedMedium].
-  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, int conversationId, int messageId, { String? mime }) async {
+  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, String conversationJid, int messageId, { String? mime }) async {
     final s = SharedMedium(
       -1,
       path,
       timestamp,
+      conversationJid,
       mime: mime,
       messageId: messageId,
     );
 
     return s.copyWith(
-      id: await _db.insert('SharedMedia', s.toDatabaseJson(conversationId)),
+      id: await _db.insert('SharedMedia', s.toDatabaseJson()),
     );
   }
 

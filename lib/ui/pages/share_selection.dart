@@ -90,7 +90,6 @@ class ShareSelectionPage extends StatelessWidget {
                     0,
                     0,
                     [],
-                    0,
                     true,
                     true,
                     '',

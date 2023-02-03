@@ -197,56 +197,61 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
   final id = extra as String;
 
   final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(command.jid);
-  if (conversation != null) {
-    if (!conversation.open) {
-      // Re-open the conversation
-      final updatedConversation = await cs.updateConversation(
-        conversation.id,
-        open: true,
-        lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
-      );
+
+  await cs.voidSynchronized(() async {
+    final conversation = await cs.getConversationByJid(command.jid);
+    if (conversation != null) {
+      if (!conversation.open) {
+        // Re-open the conversation
+        final updatedConversation = await cs.updateConversation(
+          conversation.jid,
+          open: true,
+          lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+        );
+
+        sendEvent(
+          ConversationAddedEvent(
+            conversation: updatedConversation,
+          ),
+          id: id,
+        );
+        return;
+      }
 
       sendEvent(
-        ConversationAddedEvent(
-          conversation: updatedConversation,
-        ),
+        NoConversationModifiedEvent(),
         id: id,
       );
       return;
+    } else {
+      final css = GetIt.I.get<ContactsService>();
+      final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+      final contactId = await css.getContactIdForJid(command.jid);
+      await cs.voidSynchronized(() async {
+        final conversation = await cs.addConversationFromData(
+          command.title,
+          null,
+          command.avatarUrl,
+          command.jid,
+          0,
+          DateTime.now().millisecondsSinceEpoch,
+          true,
+          preferences.defaultMuteState,
+          preferences.enableOmemoByDefault,
+          contactId,
+          await css.getProfilePicturePathForJid(command.jid),
+          await css.getContactDisplayName(contactId),
+        );
+
+        sendEvent(
+          ConversationAddedEvent(
+            conversation: conversation,
+          ),
+          id: id,
+        );
+      });
     }
-
-    sendEvent(
-      NoConversationModifiedEvent(),
-      id: id,
-    );
-    return;
-  } else {
-    final css = GetIt.I.get<ContactsService>();
-    final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
-    final contactId = await css.getContactIdForJid(command.jid);
-    final conversation = await cs.addConversationFromData(
-      command.title,
-      null,
-      command.avatarUrl,
-      command.jid,
-      0,
-      DateTime.now().millisecondsSinceEpoch,
-      true,
-      preferences.defaultMuteState,
-      preferences.enableOmemoByDefault,
-      contactId,
-      await css.getProfilePicturePathForJid(command.jid),
-      await css.getContactDisplayName(contactId),
-    );
-
-    sendEvent(
-      ConversationAddedEvent(
-        conversation: conversation,
-      ),
-      id: id,
-    );
-  }
+  });
 }
 
 Future<void> performGetMessagesForJid(GetMessagesForJidCommand command, { dynamic extra }) async {
@@ -398,43 +403,45 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
   final jid = command.jid;
   final roster = GetIt.I.get<RosterService>();
   final inRoster = await roster.isInRoster(jid);
-  
   final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(jid);
-  if (conversation != null) {
-    final c = await cs.updateConversation(
-      conversation.id,
-      open: true,
-      lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
-    );
 
-    sendEvent(
-      AddContactResultEvent(conversation: c, added: !inRoster),
-      id: id,
-    );
-  } else {
-    final css = GetIt.I.get<ContactsService>();
-    final contactId = await css.getContactIdForJid(jid);
-    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    final c = await cs.addConversationFromData(
-      jid.split('@')[0],
-      null,
-      '',
-      jid,
-      0,
-      DateTime.now().millisecondsSinceEpoch,
-      true,
-      prefs.defaultMuteState,
-      prefs.enableOmemoByDefault,
-      contactId,
-      await css.getProfilePicturePathForJid(jid),
-      await css.getContactDisplayName(contactId),
-    );
-    sendEvent(
-      AddContactResultEvent(conversation: c, added: !inRoster),
-      id: id,
-    );
-  }
+  await cs.voidSynchronized(() async {
+    final conversation = await cs.getConversationByJid(jid);
+    if (conversation != null) {
+      final c = await cs.updateConversation(
+        conversation.jid,
+        open: true,
+        lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+      );
+
+      sendEvent(
+        AddContactResultEvent(conversation: c, added: !inRoster),
+        id: id,
+      );
+    } else {
+      final css = GetIt.I.get<ContactsService>();
+      final contactId = await css.getContactIdForJid(jid);
+      final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+      final c = await cs.addConversationFromData(
+        jid.split('@')[0],
+        null,
+        '',
+        jid,
+        0,
+        DateTime.now().millisecondsSinceEpoch,
+        true,
+        prefs.defaultMuteState,
+        prefs.enableOmemoByDefault,
+        contactId,
+        await css.getProfilePicturePathForJid(jid),
+        await css.getContactDisplayName(contactId),
+      );
+      sendEvent(
+        AddContactResultEvent(conversation: c, added: !inRoster),
+        id: id,
+      );
+    }
+  });
 
   // Manage subscription requests
   final srs = GetIt.I.get<SubscriptionRequestService>();
@@ -549,16 +556,19 @@ Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { 
 
 Future<void> performCloseConversation(CloseConversationCommand command, { dynamic extra }) async {
   final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(command.jid);
-  if (conversation == null) {
-    // TODO(Unknown): Should not happen
-    return;
-  }
 
-  await cs.updateConversation(
-    conversation.id,
-    open: false,
-  );
+  await cs.voidSynchronized(() async {
+    final conversation = await cs.getConversationByJid(command.jid);
+    if (conversation == null) {
+      // TODO(Unknown): Should not happen
+      return;
+    }
+
+    await cs.updateConversation(
+      conversation.jid,
+      open: false,
+    );
+  });
 
   sendEvent(
     CloseConversationEvent(),
@@ -619,13 +629,16 @@ Future<void> performSendFiles(SendFilesCommand command, { dynamic extra }) async
 
 Future<void> performSetMuteState(SetConversationMuteStatusCommand command, { dynamic extra }) async {
   final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(command.jid);
-  final newConversation = await cs.updateConversation(
-    conversation!.id,
-    muted: command.muted,
-  );
 
-  sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+  await cs.voidSynchronized(() async {
+    final conversation = await cs.getConversationByJid(command.jid);
+    final newConversation = await cs.updateConversation(
+      conversation!.jid,
+      muted: command.muted,
+    );
+
+    sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+  });
 }
 
 Future<void> performGetOmemoFingerprints(GetConversationOmemoFingerprintsCommand command, { dynamic extra }) async {
@@ -663,11 +676,14 @@ Future<void> performRecreateSessions(RecreateSessionsCommand command, { dynamic 
 
 Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command, { dynamic extra }) async {
   final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(command.jid);
-  await cs.updateConversation(
-    conversation!.id,
-    encrypted: command.enabled,
-  );
+
+  await cs.voidSynchronized(() async {
+    final conversation = await cs.getConversationByJid(command.jid);
+    await cs.updateConversation(
+      conversation!.jid,
+      encrypted: command.enabled,
+    );
+  });
 }
 
 Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand command, { dynamic extra }) async {
@@ -729,18 +745,24 @@ Future<void> performMessageRetraction(RetractMessageCommentCommand command, { dy
 }
 
 Future<void> performMarkConversationAsRead(MarkConversationAsReadCommand command, { dynamic extra }) async {
+  final cs = GetIt.I.get<ConversationService>();
+
   // Update the database
-  final conversation = await GetIt.I.get<ConversationService>().updateConversation(
-    command.conversationId,
-    unreadCounter: 0,
-  );
+  final conversation = await cs.conversationSynchronized(() async {
+    final c = await cs.updateConversation(
+      command.conversationJid,
+      unreadCounter: 0,
+    );
+
+    sendEvent(ConversationUpdatedEvent(conversation: c));
+
+    return c;
+  });
 
   // Dismiss notifications for that chat
   await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
     conversation.jid,
   );
-
-  sendEvent(ConversationUpdatedEvent(conversation: conversation));
 
   if (conversation.lastMessage != null) {
     await GetIt.I.get<XmppService>().sendReadMarker(
@@ -752,12 +774,16 @@ Future<void> performMarkConversationAsRead(MarkConversationAsReadCommand command
 
 Future<void> performMarkMessageAsRead(MarkMessageAsReadCommand command, { dynamic extra }) async {
   final cs = GetIt.I.get<ConversationService>();
-  final oldConversation = await cs.getConversationByJid(command.conversationJid);
-  final conversation = await cs.updateConversation(
-    oldConversation!.id,
-    unreadCounter: command.newUnreadCounter,
-  );
-  sendEvent(ConversationUpdatedEvent(conversation: conversation));
+
+  await cs.voidSynchronized(() async {
+    final oldConversation = await cs.getConversationByJid(command.conversationJid);
+    final conversation = await cs.updateConversation(
+      oldConversation!.jid,
+      unreadCounter: command.newUnreadCounter,
+    );
+
+    sendEvent(ConversationUpdatedEvent(conversation: conversation));
+  });
 
   await GetIt.I.get<XmppService>().sendReadMarker(
     command.conversationJid,

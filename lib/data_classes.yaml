@@ -473,7 +473,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          conversationId: int
+          conversationJid: String
       - name: MarkMessageAsReadCommand
         extends: BackgroundCommand
         implements:
