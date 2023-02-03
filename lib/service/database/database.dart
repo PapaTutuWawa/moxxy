@@ -34,6 +34,7 @@ import 'package:moxxyv2/service/database/migrations/0000_stickers_privacy.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
 import 'package:moxxyv2/service/database/migrations/0001_conversation_primary_key.dart';
 import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
+import 'package:moxxyv2/service/database/migrations/0001_remove_auto_accept_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0001_subscriptions.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
@@ -89,7 +90,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 28,
+      version: 29,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -209,6 +210,10 @@ class DatabaseService {
         if (oldVersion < 28) {
           _log.finest('Running migration for database version 28');
           await upgradeFromV27ToV28(db);
+        }
+        if (oldVersion < 29) {
+          _log.finest('Running migration for database version 29');
+          await upgradeFromV28ToV29(db);
         }
       },
     );

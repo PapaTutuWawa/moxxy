@@ -326,14 +326,6 @@ Future<void> createDatabase(Database db, int version) async {
   await db.insert(
     preferenceTable,
     Preference(
-      'autoAcceptSubscriptionRequests',
-      typeBool,
-      'false',
-    ).toDatabaseJson(),
-  );
-  await db.insert(
-    preferenceTable,
-    Preference(
       'debugEnabled',
       typeBool,
       'false',

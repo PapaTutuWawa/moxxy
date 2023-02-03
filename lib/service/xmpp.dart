@@ -731,7 +731,6 @@ class XmppService {
   }
 
   Future<void> _onSubscriptionRequestReceived(SubscriptionRequestReceivedEvent event, { dynamic extra }) async {
-    final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final jid = event.from.toBare().toString();
     
     // Auto-accept if the JID is in the roster
@@ -746,56 +745,6 @@ class XmppService {
     await GetIt.I.get<SubscriptionRequestService>().addSubscriptionRequest(
       event.from.toBare().toString(),
     );
-
-    // TODO(Unknown): Maybe remove this option
-    if (prefs.autoAcceptSubscriptionRequests) {
-      await srs.acceptSubscriptionRequest(jid);
-    }
-
-    if (!prefs.showSubscriptionRequests) return;
-    
-    final css = GetIt.I.get<ContactsService>();
-    final cs = GetIt.I.get<ConversationService>();
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-
-    await cs.voidSynchronized(() async {
-      final conversation = await cs.getConversationByJid(event.from.toBare().toString());
-      if (conversation == null) {
-        final bare = event.from.toBare().toString();
-        final contactId = await css.getContactIdForJid(bare);
-        final conv = await cs.addConversationFromData(
-          bare.split('@')[0],
-          null,
-          '', // TODO(Unknown): avatarUrl
-          bare,
-          0,
-          timestamp,
-          true,
-          prefs.defaultMuteState,
-          prefs.enableOmemoByDefault,
-          contactId,
-          await css.getProfilePicturePathForJid(bare),
-          await css.getContactDisplayName(contactId),
-        );
-
-        sendEvent(
-          ConversationAddedEvent(
-            conversation: conv,
-          ),
-        );
-      } else {
-        final newConversation = await cs.updateConversation(
-          conversation.jid,
-          open: true,
-        );
-
-        sendEvent(
-          ConversationUpdatedEvent(
-            conversation: newConversation,
-          ),
-        );
-      }
-    }); 
   }
 
   Future<void> _onDeliveryReceiptReceived(DeliveryReceiptReceivedEvent event, { dynamic extra }) async {

@@ -318,8 +318,6 @@
 		"showContactRequestsSubtext": "This will show people who added you to their contact list but sent no message yet",
 		"profilePictureVisibility": "Make profile picture public",
 		"profilePictureVisibilitSubtext": "If enabled, everyone can see your profile picture. If disabled, only users on your contact list can see your profile picture.",
-		"autoAcceptSubscriptionRequests": "Auto-accept subscription requests",
-		"autoAcceptSubscriptionRequestsSubtext": "If enabled, subscription requests will be automatically accepted if the user is in the contact list.",
 		"conversationsSection": "Conversation",
 		"sendChatMarkers": "Send chat markers",
 		"sendChatMarkersSubtext": "This will tell your conversation partner if you received or read a message",

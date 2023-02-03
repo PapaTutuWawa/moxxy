@@ -318,8 +318,6 @@
 		"showContactRequestsSubtext": "Dies zeigt Personen in der Chatübersicht an, die Dich zu ihrer Kontaktliste hinzugefügt haben, aber noch keine Nachricht gesendet haben",
 		"profilePictureVisibility": "Öffentliches Profilbild",
 		"profilePictureVisibilitSubtext": "Wenn aktiviert, dann kann jeder Dein Profilbild sehen. Wenn deaktiviert, dann können nur Personen aus deiner Kontaktliste kein Profilbild sehen",
-		"autoAcceptSubscriptionRequests": "Subscriptionanfragen automatisch annehmen",
-		"autoAcceptSubscriptionRequestsSubtext": "Wenn aktiviert, dann werden Subscriptionanfragen automatisch angenommen, wenn die Person in deiner Kontaktliste ist",
 		"conversationsSection": "Unterhaltungen",
 		"sendChatMarkers": "Chatmarker senden",
 		"sendChatMarkersSubtext": "Dies teilt Deinem Gesprächspartner mit, ob du Nachrichten empfangen oder gelesen hast",

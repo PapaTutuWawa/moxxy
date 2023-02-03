@@ -57,20 +57,6 @@ class PrivacyPage extends StatelessWidget {
               ),
             ),
             SettingsRow(
-              title: t.pages.settings.privacy.autoAcceptSubscriptionRequests,
-              description: t.pages.settings.privacy.autoAcceptSubscriptionRequestsSubtext,
-              suffix: Switch(
-                value: state.autoAcceptSubscriptionRequests,
-                onChanged: (value) {
-                  context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(autoAcceptSubscriptionRequests: value),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SettingsRow(
               title: t.pages.settings.privacy.stickersPrivacy,
               description: t.pages.settings.privacy.stickersPrivacySubtext,
               suffix: Switch(
