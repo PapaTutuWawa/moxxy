@@ -75,18 +75,19 @@ class Conversation with _$Conversation {
   /// JSON
   factory Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
 
-  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<Map<String, dynamic>> sharedMedia, Message? lastMessage) {
+  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<SharedMedium> sharedMedia, Message? lastMessage) {
     return Conversation.fromJson({
       ...json,
+      'sharedMedia': <Map<String, dynamic>>[],
       'muted': intToBool(json['muted']! as int),
       'open': intToBool(json['open']! as int),
-      'sharedMedia': sharedMedia,
       'inRoster': inRoster,
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
     }).copyWith(
       lastMessage: lastMessage,
+      sharedMedia: sharedMedia,
     );
   }
   

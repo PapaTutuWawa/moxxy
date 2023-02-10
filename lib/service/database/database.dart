@@ -249,7 +249,9 @@ class DatabaseService {
           c,
           rosterItem != null && !rosterItem.pseudoRosterItem,
           rosterItem?.subscription ?? 'none',
-          sharedMediaRaw,
+          sharedMediaRaw
+            .map(SharedMedium.fromDatabaseJson)
+            .toList(),
           lastMessage,
         ),
       );
@@ -356,7 +358,7 @@ class DatabaseService {
       c,
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
-      sharedMedia.map((m) => m.toJson()).toList(),
+      sharedMedia.toList(),
       lastMessage,
     );
   }
