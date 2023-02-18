@@ -3,9 +3,9 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -40,7 +40,7 @@ class ConversationPage extends StatefulWidget {
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
-  final FlutterListViewController _scrollController = FlutterListViewController();
+  final ScrollController _scrollController = ScrollController();
   late final AnimationController _animationController; 
   late final AnimationController _overviewAnimationController;
   late final TabController _tabController;
@@ -111,63 +111,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     }
   }
 
-  Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth, String jid) {
-    if (_index.isEven) {
-      // Render a date bubble at the top of the list
-      if (_index == 2 * state.messages.length - 1) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DateBubble(
-              formatDateBubble(
-                DateTime.fromMillisecondsSinceEpoch(
-                  state.messages.last.timestamp,
-                ),
-                DateTime.now(),
-              ),
-            ),
-          ],
-        );
-      }
-
-      final prevIndexRaw = (_index + 2) ~/ 2;
-      final prevIndex = state.messages.length - prevIndexRaw;
-      final prevMessageDateTime = prevIndex < 0 || prevIndexRaw == 0 ?
-        null :
-        DateTime.fromMillisecondsSinceEpoch(
-          state.messages[prevIndex].timestamp,
-        );
-
-      if (prevMessageDateTime == null) return const SizedBox();
-
-      final nextIndexRaw = _index ~/ 2;
-      final nextIndex = state.messages.length - nextIndexRaw;
-      final nextMessageDateTime = nextIndex < 0 || nextIndexRaw == 0 ?
-        null :
-        DateTime.fromMillisecondsSinceEpoch(
-          state.messages[nextIndex].timestamp,
-        );
-      if (nextMessageDateTime == null) return const SizedBox();
-      
-      // Check if we have to render a date bubble
-      if (prevMessageDateTime.day != nextMessageDateTime.day ||
-          prevMessageDateTime.month != nextMessageDateTime.month ||
-          prevMessageDateTime.year != nextMessageDateTime.year) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DateBubble(
-              formatDateBubble(nextMessageDateTime, DateTime.now()),
-            ),
-          ],
-        );
-      }
-
-      return const SizedBox();
-    }
-    
-    final index = state.messages.length - 1 - (_index - 1) ~/ 2;
-    final item = state.messages[index];
+  Widget _renderBubble(ConversationState state, Message message, int index, double maxWidth) {
+    final item = message;
 
     if (item.isPseudoMessage) {
       return Row(
@@ -188,12 +133,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
     final start = index - 1 < 0 ?
       true :
-      isSent(state.messages[index - 1], jid) != isSent(item, jid);
+      isSent(state.messages[index - 1], state.jid) != isSent(item, state.jid);
     final end = index + 1 >= state.messages.length ?
       true :
-      isSent(state.messages[index + 1], jid) != isSent(item, jid);
+      isSent(state.messages[index + 1], state.jid) != isSent(item, state.jid);
     final between = !start && !end;
-    final sentBySelf = isSent(item, jid);
+    final sentBySelf = isSent(message, state.jid);
     
     final bubble = RawChatBubble(
       item,
@@ -210,27 +155,29 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       message: item,
       sentBySelf: sentBySelf,
       maxWidth: maxWidth,
-      onSwipedCallback: (_) => _quoteMessage(context, item),
+      onSwipedCallback: (_) => _quoteMessage(context, message),
       onReactionTap: (reaction) {
         final bloc = context.read<ConversationBloc>();
         if (reaction.reactedBySelf) {
           bloc.add(
             ReactionRemovedEvent(
               reaction.emoji,
-              index,
+              //index,
+              0,
             ),
           );
         } else {
           bloc.add(
             ReactionAddedEvent(
               reaction.emoji,
-              index,
+              //index,
+              0,
             ),
           );
         }
       },
       onLongPressed: (event) async {
-        if (!item.isLongpressable) {
+        if (!message.isLongpressable) {
           return;
         }
 
@@ -301,7 +248,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     if (emoji != null) {
                       // ignore: use_build_context_synchronously
                       context.read<ConversationBloc>().add(
-                        ReactionAddedEvent(emoji, index),
+                        //ReactionAddedEvent(emoji, index),
+                        ReactionAddedEvent(emoji, 0),
                       );
                     }
 
@@ -552,22 +500,36 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     //       be static over the entire lifetime of the BLoC.
                     buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation?.encrypted != next.conversation?.encrypted,
                     builder: (context, state) => Expanded(
-                      child: FlutterListView(
-                        shrinkWrap: true,
-                        controller: _scrollController,
+                      // Inspired by https://github.com/SimformSolutionsPvtLtd/flutter_chatview/blob/main/lib/src/widgets/chat_groupedlist_widget.dart
+                      child: SingleChildScrollView(
                         reverse: true,
-                        delegate: FlutterListViewDelegate(
-                          (BuildContext context, int index) => _renderBubble(
+                        controller: _scrollController,
+                        child: GroupedListView<Message, DateTime>(
+                          elements: state.messages,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          groupBy: (message) {
+                            final dt = DateTime.fromMillisecondsSinceEpoch(message.timestamp);
+                            return DateTime(
+                              dt.year,
+                              dt.month,
+                              dt.day,
+                            );
+                          },
+                          groupSeparatorBuilder: (DateTime dt) => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              DateBubble(
+                                formatDateBubble(dt, DateTime.now()),
+                              ),
+                            ],
+                          ),
+                          indexedItemBuilder: (context, message, index) => _renderBubble(
                             state,
-                            context,
+                            message,
                             index,
                             maxWidth,
-                            state.jid,                           
                           ),
-                          childCount: state.messages.length * 2,
-                          keepPosition: true,
-                          keepPositionOffset: 40,
-                          firstItemAlign: FirstItemAlign.end,
                         ),
                       ),
                     ),

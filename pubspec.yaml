@@ -34,7 +34,6 @@ dependencies:
   flutter_image_compress: 1.1.0
   flutter_isolate: 2.0.2
   flutter_keyboard_visibility: 5.4.0
-  flutter_list_view: 1.1.21
   flutter_localizations:
     sdk: flutter
   flutter_parsed_text: 2.2.1
@@ -45,6 +44,7 @@ dependencies:
   fluttertoast: 8.1.1
   freezed_annotation: 2.1.0
   get_it: 7.2.0
+  grouped_list: 5.1.2
   hex: 0.2.0
   image: 3.2.0
   json_annotation: 4.6.0
