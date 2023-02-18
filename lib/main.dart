@@ -261,7 +261,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case conversationRoute: return PageTransition<dynamic>(
             type: PageTransitionType.rightToLeft,
             settings: settings,
-            child: const ConversationPage(),
+            child: ConversationPage(
+              conversationJid: settings.arguments as String,
+            ),
           );
           case sharedMediaRoute: return SharedMediaPage.route;
           case blocklistRoute: return BlocklistPage.route;

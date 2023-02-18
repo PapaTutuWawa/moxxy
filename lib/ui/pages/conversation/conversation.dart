@@ -13,6 +13,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
@@ -25,14 +26,13 @@ import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 class ConversationPage extends StatefulWidget {
-  const ConversationPage({ super.key });
+  const ConversationPage({
+    required this.conversationJid,
+    super.key,
+  });
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const ConversationPage(),
-    settings: const RouteSettings(
-      name: conversationRoute,
-    ),
-  );
+  /// The JID of the current conversation
+  final String conversationJid;
   
   @override
   ConversationPageState createState() => ConversationPageState();
@@ -40,7 +40,6 @@ class ConversationPage extends StatefulWidget {
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
   late final AnimationController _animationController; 
   late final AnimationController _overviewAnimationController;
   late final TabController _tabController;
@@ -50,6 +49,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   late FocusNode _textfieldFocus;
   final ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
 
+  late final BidirectionalConversationController _conversationController;
+  
   @override
   void initState() {
     super.initState();
@@ -58,7 +59,13 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       vsync: this,
     );
     _textfieldFocus = FocusNode();
-    _scrollController.addListener(_onScroll);
+
+    // TODO
+    _conversationController = BidirectionalConversationController(
+      widget.conversationJid,
+    );
+    _conversationController.scrollController.addListener(_onScroll);
+    _conversationController.fetchOlderMessages();
 
     _overviewAnimationController = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -80,9 +87,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   void dispose() {
     _tabController.dispose();
     _controller.dispose();
-    _scrollController
-      ..removeListener(_onScroll)
-      ..dispose();
+    _conversationController.dispose();
     _animationController.dispose();
     _overviewAnimationController.dispose();
     _textfieldFocus.dispose();
@@ -133,10 +138,13 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
     final start = index - 1 < 0 ?
       true :
-      isSent(state.messages[index - 1], state.jid) != isSent(item, state.jid);
-    final end = index + 1 >= state.messages.length ?
-      true :
-      isSent(state.messages[index + 1], state.jid) != isSent(item, state.jid);
+      false;
+//      isSent(state.messages[index - 1], state.jid) != isSent(item, state.jid);
+    // final end = index + 1 >= state.messages.length ?
+    //   true :
+    //   false;
+    final end = true;
+//      isSent(state.messages[index + 1], state.jid) != isSent(item, state.jid);
     final between = !start && !end;
     final sentBySelf = isSent(message, state.jid);
     
@@ -401,9 +409,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
   /// Taken from https://bloclibrary.dev/#/flutterinfinitelisttutorial
   bool _isScrolledToBottom() {
-    if (!_scrollController.hasClients) return false;
+    if (!_conversationController.scrollController.hasClients) return false;
 
-    return _scrollController.offset <= 10;
+    return _conversationController.scrollController.offset <= 10;
   }
   
   void _onScroll() {
@@ -495,43 +503,47 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     },
                   ),
 
-                  BlocBuilder<ConversationBloc, ConversationState>(
-                    // NOTE: We don't need to update when the jid changes as it should
-                    //       be static over the entire lifetime of the BLoC.
-                    buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation?.encrypted != next.conversation?.encrypted,
-                    builder: (context, state) => Expanded(
-                      // Inspired by https://github.com/SimformSolutionsPvtLtd/flutter_chatview/blob/main/lib/src/widgets/chat_groupedlist_widget.dart
-                      child: SingleChildScrollView(
-                        reverse: true,
-                        controller: _scrollController,
-                        child: GroupedListView<Message, DateTime>(
-                          elements: state.messages,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          groupBy: (message) {
-                            final dt = DateTime.fromMillisecondsSinceEpoch(message.timestamp);
-                            return DateTime(
-                              dt.year,
-                              dt.month,
-                              dt.day,
-                            );
-                          },
-                          groupSeparatorBuilder: (DateTime dt) => Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              DateBubble(
-                                formatDateBubble(dt, DateTime.now()),
+                  Expanded(
+                    child: StreamBuilder<List<Message>>(
+                      initialData: [],
+                      stream: _conversationController.messageStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return SingleChildScrollView(
+                            reverse: true,
+                            controller: _conversationController.scrollController,
+                            child: GroupedListView<Message, DateTime>(
+                              elements: snapshot.data!,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              groupBy: (message) {
+                                final dt = DateTime.fromMillisecondsSinceEpoch(message.timestamp);
+                                return DateTime(
+                                  dt.year,
+                                  dt.month,
+                                  dt.day,
+                                );
+                              },
+                              groupSeparatorBuilder: (DateTime dt) => Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  DateBubble(
+                                    formatDateBubble(dt, DateTime.now()),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          indexedItemBuilder: (context, message, index) => _renderBubble(
-                            state,
-                            message,
-                            index,
-                            maxWidth,
-                          ),
-                        ),
-                      ),
+                              indexedItemBuilder: (context, message, index) => _renderBubble(
+                                context.read<ConversationBloc>().state,
+                                message,
+                                index,
+                                maxWidth,
+                              ),
+                            ),
+                          );
+                        }
+
+                        return CircularProgressIndicator();
+                      },
                     ),
                   ),
 
@@ -543,6 +555,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       _controller,
                       _tabController,
                       _textfieldFocus,
+                      _conversationController,
                       _isSpeedDialOpen,
                     ),
                   ),
@@ -570,7 +583,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       heroTag: 'fabScrollDown',
                       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                       onPressed: () {
-                        _scrollController.jumpTo(0);
+                        _conversationController.animateToBottom();
                       },
                       child: const Icon(
                         Icons.arrow_downward,

@@ -10,6 +10,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/timer.dart';
@@ -93,6 +94,7 @@ class ConversationBottomRow extends StatefulWidget {
     this.controller,
     this.tabController,
     this.focusNode,
+    this.conversationController,
     this.speedDialValueNotifier, {
       super.key,
     }
@@ -101,6 +103,7 @@ class ConversationBottomRow extends StatefulWidget {
   final TabController tabController;
   final FocusNode focusNode;
   final ValueNotifier<bool> speedDialValueNotifier;
+  final BidirectionalConversationController conversationController;
 
   @override
   ConversationBottomRowState createState() => ConversationBottomRowState();
@@ -298,6 +301,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                       context.read<ConversationBloc>().add(
                                         MessageSentEvent(),
                                       );
+                                      widget.conversationController.animateToBottom();
                                       widget.controller.text = '';
                                       return;
                                       case SendButtonState.multi:

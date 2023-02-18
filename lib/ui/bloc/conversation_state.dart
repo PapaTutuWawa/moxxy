@@ -15,7 +15,6 @@ class ConversationState with _$ConversationState {
     @Default('') String messageText,
     @Default(defaultSendButtonState) SendButtonState sendButtonState,
     @Default(null) Message? quotedMessage,
-    @Default(<Message>[]) List<Message> messages,
     @Default(null) Conversation? conversation,
     @Default('') String backgroundPath,
     @Default(false) bool pickerVisible,

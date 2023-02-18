@@ -82,6 +82,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
       EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
+      EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1008,6 +1009,24 @@ Future<void> performGetBlocklist(GetBlocklistCommand command, { dynamic extra })
   sendEvent(
     GetBlocklistResultEvent(
       entries: result,
+    ),
+    id: id,
+  );
+}
+
+Future<void> performGetPagedMessages(GetPagedMessagesCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final result = await GetIt.I.get<MessageService>().getPaginatedMessagesForJid(
+    command.conversationJid,
+    command.oldestMessageTimestamp,
+  );
+
+  sendEvent(
+    PagedMessagesResultEvent(
+      messages: result,
+      // TODO
+      hasOlderMessages: true,
     ),
     id: id,
   );

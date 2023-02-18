@@ -265,6 +265,16 @@ files:
           stickerPack:
             type: StickerPack
             deserialise: true
+      # Returned by [GetPagedMessagesCommand]
+      - name: PagedMessagesResultEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          messages:
+            type: List<Message>
+            deserialise: true
+          hasOlderMessages: bool
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -545,6 +555,13 @@ files:
         implements:
           - JsonImplementation
         attributes:
+      - name: GetPagedMessagesCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          conversationJid: String
+          oldestMessageTimestamp: int?
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

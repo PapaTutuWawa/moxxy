@@ -14,9 +14,11 @@ import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
 class MessageService {
-  MessageService() : _messageCache = HashMap(), _log = Logger('MessageService');
-  final HashMap<String, List<Message>> _messageCache;
-  final Logger _log;
+  // TODO(PapaTutuWawa): Maybe remove the cache
+  final HashMap<String, List<Message>> _messageCache = HashMap();
+
+  /// Logger
+  final Logger _log = Logger('MessageService');
 
   /// Returns the messages for [jid], either from cache or from the database.
   Future<List<Message>> getMessagesForJid(String jid) async {
@@ -33,6 +35,13 @@ class MessageService {
     return messages;
   }
 
+  Future<List<Message>> getPaginatedMessagesForJid(String jid, int? oldestTimestamp) async {
+    return GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
+      jid,
+      oldestTimestamp,
+    );
+  }
+  
   /// Wrapper around [DatabaseService]'s addMessageFromData that updates the cache.
   Future<Message> addMessageFromData(
     String body,

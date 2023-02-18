@@ -44,7 +44,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<JidBlockedEvent>(_onJidBlocked);
     on<JidAddedEvent>(_onJidAdded);
     on<CurrentConversationResetEvent>(_onCurrentConversationReset);
-    on<MessageAddedEvent>(_onMessageAdded);
     on<MessageUpdatedEvent>(_onMessageUpdated);
     on<ConversationUpdatedEvent>(_onConversationUpdated);
     on<AppStateChanged>(_onAppStateChanged);
@@ -160,24 +159,22 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     final navEvent = event.removeUntilConversations ? (
       PushedNamedAndRemoveUntilEvent(
-        const NavigationDestination(conversationRoute),
+        NavigationDestination(
+          conversationRoute,
+          arguments: event.jid,
+        ),
         ModalRoute.withName(conversationsRoute),
       )
     ) : (
       PushedNamedEvent(
-        const NavigationDestination(conversationRoute),
+        NavigationDestination(
+          conversationRoute,
+          arguments: event.jid,
+        ),
       )
     );
 
     GetIt.I.get<NavigationBloc>().add(navEvent);
-
-    // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetMessagesForJidCommand(
-        jid: event.jid,
-      ),
-    ) as events.MessagesResultEvent;
-    emit(state.copyWith(messages: result.messages));
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SetOpenConversationCommand(jid: event.jid),
@@ -302,23 +299,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         conversation: null,
         messageText: '',
         quotedMessage: null,
-        messages: [],
       ),
     );
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SetOpenConversationCommand(),
       awaitable: false,
-    );
-  }
-
-  Future<void> _onMessageAdded(MessageAddedEvent event, Emitter<ConversationState> emit) async {
-    if (!_isMessageForConversation(event.message)) return;
-
-    emit(
-      state.copyWith(
-        messages: List.from(<Message>[ ...state.messages, event.message ]),
-      ),
     );
   }
 
@@ -338,19 +324,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       }
     }
     */
-    
-    // We don't have to re-sort the list here as timestamps never change
-    emit(
-      state.copyWith(
-        messages: List.from(
-          state.messages.map<dynamic>((Message m) {
-            if (m.id == event.message.id) return event.message;
-
-            return m;
-          }),
-        ),
-      ),
-    );
   }
 
   Future<void> _onConversationUpdated(ConversationUpdatedEvent event, Emitter<ConversationState> emit) async {
@@ -570,86 +543,88 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onReactionAdded(ReactionAddedEvent event, Emitter<ConversationState> emit) async {
+    // TODO: Fix
     // Check if such a reaction already exists
-    final message = state.messages[event.index];
-    final msgs = List<Message>.from(state.messages);
-    final reactionIndex = message.reactions.indexWhere(
-      (Reaction r) => r.emoji == event.emoji,
-    );
-    if (reactionIndex != -1) {
-      // Ignore the request when the reaction would be invalid
-      final reaction = message.reactions[reactionIndex];
-      if (reaction.reactedBySelf) return;
+    // final message = state.messages[event.index];
+    // final msgs = List<Message>.from(state.messages);
+    // final reactionIndex = message.reactions.indexWhere(
+    //   (Reaction r) => r.emoji == event.emoji,
+    // );
+    // if (reactionIndex != -1) {
+    //   // Ignore the request when the reaction would be invalid
+    //   final reaction = message.reactions[reactionIndex];
+    //   if (reaction.reactedBySelf) return;
 
-      final reactions = List<Reaction>.from(message.reactions);
-      reactions[reactionIndex] = reaction.copyWith(
-        reactedBySelf: true,
-      );
-      msgs[event.index] = message.copyWith(
-        reactions: reactions,
-      );
-    } else {
-      // The reaction is new
-      msgs[event.index] = message.copyWith(
-        reactions: [
-          ...message.reactions,
-          Reaction(
-            [],
-            event.emoji,
-            true,
-          ),
-        ],
-      );
-    }
+    //   final reactions = List<Reaction>.from(message.reactions);
+    //   reactions[reactionIndex] = reaction.copyWith(
+    //     reactedBySelf: true,
+    //   );
+    //   msgs[event.index] = message.copyWith(
+    //     reactions: reactions,
+    //   );
+    // } else {
+    //   // The reaction is new
+    //   msgs[event.index] = message.copyWith(
+    //     reactions: [
+    //       ...message.reactions,
+    //       Reaction(
+    //         [],
+    //         event.emoji,
+    //         true,
+    //       ),
+    //     ],
+    //   );
+    // }
     
-    emit(
-      state.copyWith(
-        messages: msgs, 
-      ),
-    );
+    // emit(
+    //   state.copyWith(
+    //     messages: msgs, 
+    //   ),
+    // );
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-      AddReactionToMessageCommand(
-        messageId: message.id,
-        emoji: event.emoji,
-        conversationJid: message.conversationJid,
-      ),
-      awaitable: false,
-    );
+    // await MoxplatformPlugin.handler.getDataSender().sendData(
+    //   AddReactionToMessageCommand(
+    //     messageId: message.id,
+    //     emoji: event.emoji,
+    //     conversationJid: message.conversationJid,
+    //   ),
+    //   awaitable: false,
+    // );
   }
 
   Future<void> _onReactionRemoved(ReactionRemovedEvent event, Emitter<ConversationState> emit) async {
-    final message = state.messages[event.index];
-    final msgs = List<Message>.from(state.messages);
-    final reactionIndex = message.reactions.indexWhere(
-      (Reaction r) => r.emoji == event.emoji,
-    );
+    // TODO
+    // final message = state.messages[event.index];
+    // final msgs = List<Message>.from(state.messages);
+    // final reactionIndex = message.reactions.indexWhere(
+    //   (Reaction r) => r.emoji == event.emoji,
+    // );
 
-    // We assume that reactionIndex >= 0
-    assert(reactionIndex >= 0, 'The reaction must be found');
-    final reactions = List<Reaction>.from(message.reactions);
-    if (message.reactions[reactionIndex].senders.isEmpty) {
-      reactions.removeAt(reactionIndex);
-    } else {
-      reactions[reactionIndex] = reactions[reactionIndex].copyWith(
-        reactedBySelf: false,
-      );
-    }
-    msgs[event.index] = message.copyWith(reactions: reactions);
-    emit(
-      state.copyWith(
-        messages: msgs,
-      ),
-    );
+    // // We assume that reactionIndex >= 0
+    // assert(reactionIndex >= 0, 'The reaction must be found');
+    // final reactions = List<Reaction>.from(message.reactions);
+    // if (message.reactions[reactionIndex].senders.isEmpty) {
+    //   reactions.removeAt(reactionIndex);
+    // } else {
+    //   reactions[reactionIndex] = reactions[reactionIndex].copyWith(
+    //     reactedBySelf: false,
+    //   );
+    // }
+    // msgs[event.index] = message.copyWith(reactions: reactions);
+    // emit(
+    //   state.copyWith(
+    //     messages: msgs,
+    //   ),
+    // );
 
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-      RemoveReactionFromMessageCommand(
-        messageId: message.id,
-        emoji: event.emoji,
-        conversationJid: message.conversationJid,
-      ),
-      awaitable: false,
-    );
+    // await MoxplatformPlugin.handler.getDataSender().sendData(
+    //   RemoveReactionFromMessageCommand(
+    //     messageId: message.id,
+    //     emoji: event.emoji,
+    //     conversationJid: message.conversationJid,
+    //   ),
+    //   awaitable: false,
+    // );
   }
 
   Future<void> _onStickerSent(StickerSentEvent event, Emitter<ConversationState> emit) async {

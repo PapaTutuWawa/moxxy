@@ -41,6 +41,7 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -267,6 +268,39 @@ class DatabaseService {
       where: 'conversationJid = ?',
       whereArgs: [jid],
       orderBy: 'timestamp ASC',
+    );
+
+    final messages = List<Message>.empty(growable: true);
+    for (final m in rawMessages) {
+      Message? quotes;
+      if (m['quote_id'] != null) {
+        final rawQuote = (await _db.query(
+          'Messages',
+          where: 'conversationJid = ? AND id = ?',
+          whereArgs: [jid, m['quote_id']! as int],
+        )).first;
+        quotes = Message.fromDatabaseJson(rawQuote, null);
+      }
+
+      messages.add(Message.fromDatabaseJson(m, quotes));
+    }
+
+    return messages;
+  }
+
+  Future<List<Message>> getPaginatedMessagesForJid(String jid, int? oldestTimestamp) async {
+    final query = oldestTimestamp != null ?
+      'conversationJid = ? AND timestamp < ?' :
+      'conversationJid = ?';
+    final args = oldestTimestamp != null ?
+      [jid, oldestTimestamp!] :
+      [jid];
+    final rawMessages = await _db.query(
+      'Messages',
+      where: query,
+      whereArgs: args,
+      orderBy: 'timestamp DESC',
+      limit: paginatedMessageFetchAmount,
     );
 
     final messages = List<Message>.empty(growable: true);
