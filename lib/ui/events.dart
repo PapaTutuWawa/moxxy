@@ -104,8 +104,8 @@ Future<void> onMessageAdded(MessageAddedEvent event, { dynamic extra }) async {
 }
 
 Future<void> onMessageUpdated(MessageUpdatedEvent event, { dynamic extra }) async {
-  GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.MessageUpdatedEvent(event.message),
+  BidirectionalConversationController.currentController?.onMessageUpdated(
+    event.message,
   );
 }
 

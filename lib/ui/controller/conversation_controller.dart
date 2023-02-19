@@ -217,6 +217,30 @@ class BidirectionalConversationController {
       animateToBottom();
     }
   }
+
+  void onMessageUpdated(Message newMessage) {
+    // Ignore message updates for messages in chats that are not open.
+    if (newMessage.conversationJid != conversationJid) return;
+
+    // Ignore message updates for messages older than the oldest message
+    // we know about.
+    if (newMessage.timestamp < _messageCache.first.timestamp) return;
+
+    // We iterate in reverse as we can assume that the newer messages have a higher
+    // likeliness of being updated than older messages.
+    var messageFound = false;
+    for (var i = _messageCache.length - 1; i >= 0; i--) {
+      if (_messageCache[i].id == newMessage.id) {
+        _messageCache[i] = newMessage;
+        messageFound = true;
+        break;
+      }
+    }
+
+    if (messageFound) {
+      _messageStreamController.add(_messageCache);
+    }
+  }
   
   Future<void> sendMessage(bool encrypted) async {
     // Reset the text field
