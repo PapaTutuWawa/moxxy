@@ -527,6 +527,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                                 index,
                                 maxWidth,
                               ),
+                              sort: false,
                             ),
                           );
                         }

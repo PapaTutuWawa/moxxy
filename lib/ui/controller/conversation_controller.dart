@@ -53,11 +53,19 @@ class TextFieldData {
 
 class BidirectionalConversationController {
   BidirectionalConversationController(this.conversationJid) {
+    assert(BidirectionalConversationController.currentController == null, 'There can only be one BidirectionalConversationController');
+
     _scrollController.addListener(_handleScroll);
     _textController.addListener(_handleTextChanged);
     _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(_handleSoftKeyboardVisibilityChanged);
+
+    BidirectionalConversationController.currentController = this;
   }
 
+  /// A singleton referring to the current instance as there can only be one
+  /// BidirectionalConversationController at a time.
+  static BidirectionalConversationController? currentController;
+  
   late final StreamSubscription _keyboardVisibilitySubscription;
   
   /// The list of messages we know about
@@ -184,7 +192,7 @@ class BidirectionalConversationController {
     );
   }
 
-  void onMessageReceived(Message message) {
+  Future<void> onMessageReceived(Message message) async {
     // Drop the message if we don't really care about it
     if (message.conversationJid != conversationJid) return;
 
@@ -203,7 +211,11 @@ class BidirectionalConversationController {
     _messageCache.add(message);
     _messageStreamController.add(_messageCache);
 
-    // TODO: Scroll to the new message if we are at the bottom
+    // Scroll to bottom if we're at the bottom
+    if (_isScrolledToBottom()) {
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      animateToBottom();
+    }
   }
   
   Future<void> sendMessage(bool encrypted) async {
@@ -364,6 +376,8 @@ class BidirectionalConversationController {
   }
   
   void dispose() {
+    BidirectionalConversationController.currentController = null;
+
     _scrollController.dispose();
     _textController.dispose();
     _keyboardVisibilitySubscription.cancel();
