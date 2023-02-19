@@ -165,9 +165,12 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
-                          child: StreamBuilder<Message?>(
-                            initialData: null,
-                            stream: widget.conversationController.currentlyQuotedMessageStream,
+                          child: StreamBuilder<TextFieldData>(
+                            initialData: TextFieldData(
+                              true,
+                              null,
+                            ),
+                            stream: widget.conversationController.textFieldDataStream,
                             builder: (context, snapshot) {
                               return CustomTextField(
                                 backgroundColor: Theme
@@ -189,11 +192,11 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                 fontSize: textFieldFontSizeConversation,
                                 cornerRadius: textfieldRadiusConversation,
                                 controller: widget.conversationController.textController,
-                                topWidget: snapshot.data != null ?
+                                topWidget: snapshot.data!.quotedMessage != null ?
                                   buildQuoteMessageWidget(
-                                    snapshot.data!,
+                                    snapshot.data!.quotedMessage!,
                                     // TODO
-                                    isSent(snapshot.data!, ''),
+                                    isSent(snapshot.data!.quotedMessage!, ''),
                                     resetQuote: widget.conversationController.removeQuote,
                                   ) :
                                   null,
@@ -222,7 +225,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                   minWidth: 24,
                                   minHeight: 24,
                                 ),
-                                suffixIcon: widget.conversationController.messageBody.isEmpty && snapshot.data == null ?
+                                suffixIcon: snapshot.data!.isBodyEmpty && snapshot.data!.quotedMessage == null ?
                                   IntrinsicWidth(
                                     child: Row(
                                       children: const [

@@ -32,6 +32,22 @@ class MessageEditingState {
   final Message? quoted;
 }
 
+class TextFieldData {
+  const TextFieldData(
+    this.isBodyEmpty,
+    this.quotedMessage,
+  );
+
+  /// Flag indicating whether the current text input is empty.
+  final bool isBodyEmpty;
+
+  /// The currently quoted message.
+  final Message? quotedMessage;
+
+  /// Flag indicating whether the picker is currently open or not.
+  /// final bool pickerVisible;
+}
+
 class BidirectionalConversationController {
   BidirectionalConversationController(this.conversationJid) {
     _scrollController.addListener(_handleScroll);
@@ -84,8 +100,10 @@ class BidirectionalConversationController {
 
   /// The currently quoted message
   Message? _quotedMessage;
-  final StreamController<Message?> _currentlyQuotedMessageStreamController = StreamController();
-  Stream<Message?> get currentlyQuotedMessageStream => _currentlyQuotedMessageStreamController.stream;
+
+  /// Stream containing data for the TextField
+  final StreamController<TextFieldData> _textFieldDataStreamController = StreamController();
+  Stream<TextFieldData> get textFieldDataStream => _textFieldDataStreamController.stream;
   
   void _handleTextChanged() {
     final text = _textController.text;
@@ -102,6 +120,13 @@ class BidirectionalConversationController {
           conversation.SendButtonState.send,
       );
     }
+
+    _textFieldDataStreamController.add(
+      TextFieldData(
+        messageBody.isEmpty,
+        _quotedMessage,
+      ),
+    );
   }
   
   void _setIsFetching(bool state) {
@@ -242,13 +267,23 @@ class BidirectionalConversationController {
   /// Quote [message] for a message.
   void quoteMessage(Message message) {
     _quotedMessage = message;
-    _currentlyQuotedMessageStreamController.add(message);
+    _textFieldDataStreamController.add(
+      TextFieldData(
+        messageBody.isEmpty,
+        message,
+      ),
+    );
   }
 
   /// Remove the currently active quote.
   void removeQuote() {
     _quotedMessage = null;
-    _currentlyQuotedMessageStreamController.add(null);
+    _textFieldDataStreamController.add(
+      TextFieldData(
+        messageBody.isEmpty,
+        null,
+      ),
+    );
   }
   
   /// Enter the "edit mode" for a message.
