@@ -118,7 +118,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     }
   }
 
-  Widget _renderBubble(ConversationState state, Message message, int index, double maxWidth) {
+  Widget _renderBubble(ConversationState state, Message message, List<Message> messages, int index, double maxWidth) {
     final item = message;
 
     if (item.isPseudoMessage) {
@@ -138,17 +138,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       );
     }
 
+    final ownJid = GetIt.I.get<UIDataService>().ownJid!;
     final start = index - 1 < 0 ?
       true :
-      false;
-//      isSent(state.messages[index - 1], state.jid) != isSent(item, state.jid);
-    // final end = index + 1 >= state.messages.length ?
-    //   true :
-    //   false;
-    final end = true;
-//      isSent(state.messages[index + 1], state.jid) != isSent(item, state.jid);
+      isSent(messages[index - 1], ownJid) != isSent(item, ownJid);
+    final end = index + 1 >= messages.length ?
+      true :
+      isSent(messages[index + 1], ownJid) != isSent(item, ownJid);
     final between = !start && !end;
-    final sentBySelf = isSent(message, GetIt.I.get<UIDataService>().ownJid!);
+    final sentBySelf = isSent(message, ownJid);
     
     final bubble = RawChatBubble(
       item,
@@ -513,6 +511,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                               indexedItemBuilder: (context, message, index) => _renderBubble(
                                 context.read<ConversationBloc>().state,
                                 message,
+                                snapshot.data!,
                                 index,
                                 maxWidth,
                               ),
