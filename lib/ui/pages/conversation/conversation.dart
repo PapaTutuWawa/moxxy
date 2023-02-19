@@ -167,22 +167,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       maxWidth: maxWidth,
       onSwipedCallback: _conversationController.quoteMessage,
       onReactionTap: (reaction) {
-        final bloc = context.read<ConversationBloc>();
         if (reaction.reactedBySelf) {
-          bloc.add(
-            ReactionRemovedEvent(
-              reaction.emoji,
-              //index,
-              0,
-            ),
+          _conversationController.removeReaction(
+            index,
+            reaction.emoji,
           );
         } else {
-          bloc.add(
-            ReactionAddedEvent(
-              reaction.emoji,
-              //index,
-              0,
-            ),
+          _conversationController.addReaction(
+            index,
+            reaction.emoji,
           );
         }
       },
@@ -256,10 +249,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       ),
                     );
                     if (emoji != null) {
-                      // ignore: use_build_context_synchronously
-                      context.read<ConversationBloc>().add(
-                        //ReactionAddedEvent(emoji, index),
-                        ReactionAddedEvent(emoji, 0),
+                      _conversationController.addReaction(
+                        index,
+                        emoji,
                       );
                     }
 
