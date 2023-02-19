@@ -376,6 +376,21 @@ class BidirectionalConversationController {
       awaitable: false,
     );
   }
+
+  /// Send the sticker identified by the Sticker pack [packId] and [hashKey].
+  void sendSticker(String packId, String hashKey) {
+    MoxplatformPlugin.handler.getDataSender().sendData(
+      SendStickerCommand(
+        stickerPackId: packId,
+        stickerHashKey: hashKey,
+        recipient: conversationJid,
+      ),
+      awaitable: false,
+    );
+
+    // Close the picker
+    togglePickerVisibility(false);
+  }
   
   Future<void> sendMessage(bool encrypted) async {
     // Stop the compose timer

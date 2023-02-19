@@ -47,7 +47,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<SendButtonLockedEvent>(_onSendButtonLocked);
     on<SendButtonLockPressedEvent>(_onSendButtonLockPressed);
     on<RecordingCanceledEvent>(_onRecordingCanceled);
-    on<StickerSentEvent>(_onStickerSent);
 
     _audioRecorder = Record();
   }
@@ -298,18 +297,5 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     final file = await _audioRecorder.stop();
     unawaited(File(file!).delete());
-  }
-
-  Future<void> _onStickerSent(StickerSentEvent event, Emitter<ConversationState> emit) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-      SendStickerCommand(
-        stickerPackId: event.stickerPackId,
-        stickerHashKey: event.stickerHashKey,
-        recipient: state.conversation!.jid,
-      ),
-      awaitable: false,
-    );
-    
-    // Close the picker
   }
 }

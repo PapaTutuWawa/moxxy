@@ -79,10 +79,3 @@ class SendButtonLockPressedEvent extends ConversationEvent {}
 
 /// Triggered when the recording has been canceled
 class RecordingCanceledEvent extends ConversationEvent {}
-
-/// Triggered when a sticker has been sent
-class StickerSentEvent extends ConversationEvent {
-  StickerSentEvent(this.stickerPackId, this.stickerHashKey);
-  final String stickerPackId;
-  final String stickerHashKey;
-}
