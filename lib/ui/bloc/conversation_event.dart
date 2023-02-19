@@ -59,23 +59,11 @@ class ConversationUpdatedEvent extends ConversationEvent {
   final Conversation conversation;
 }
 
-/// Triggered when the app is left, either by the screen locking or the user switching apps
-class AppStateChanged extends ConversationEvent {
-  AppStateChanged(this.open);
-  final bool open;
-}
-
 /// Triggered when the user wants to pick images and videos for sending
 class ImagePickerRequestedEvent extends ConversationEvent {}
 
 /// Triggered when the user wants to pick generic files for sending
 class FilePickerRequestedEvent extends ConversationEvent {}
-
-/// Triggered when we received our own JID
-class OwnJidReceivedEvent extends ConversationEvent {
-  OwnJidReceivedEvent(this.jid);
-  final String jid;
-}
 
 /// Triggered when we enable or disable Omemo in the chat
 class OmemoSetEvent extends ConversationEvent {

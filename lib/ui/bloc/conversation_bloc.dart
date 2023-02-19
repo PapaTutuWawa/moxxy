@@ -31,18 +31,13 @@ part 'conversation_event.dart';
 part 'conversation_state.dart';
 
 class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
-  ConversationBloc()
-    : _currentChatState = ChatState.gone,
-      _lastChangeTimestamp = 0,
-      super(ConversationState()) {
+  ConversationBloc() : super(ConversationState()) {
     on<RequestedConversationEvent>(_onRequestedConversation);
     on<InitConversationEvent>(_onInit);
     on<JidBlockedEvent>(_onJidBlocked);
     on<JidAddedEvent>(_onJidAdded);
     on<CurrentConversationResetEvent>(_onCurrentConversationReset);
-    on<MessageUpdatedEvent>(_onMessageUpdated);
     on<ConversationUpdatedEvent>(_onConversationUpdated);
-    on<AppStateChanged>(_onAppStateChanged);
     on<BackgroundChangedEvent>(_onBackgroundChanged);
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
@@ -59,63 +54,15 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     _audioRecorder = Record();
   }
-  /// The current chat state with the conversation partner
-  ChatState _currentChatState;
-  /// Timer to be able to send <paused /> notifications
-  Timer? _composeTimer;
-  /// The last time the text has been changed
-  int _lastChangeTimestamp;
 
   /// The audio recorder
   late Record _audioRecorder;
   DateTime? _recordingStart;
   
-  void _setLastChangeTimestamp() {
-    _lastChangeTimestamp = DateTime.now().millisecondsSinceEpoch;
-  }
-  
-  void _startComposeTimer() {
-    if (_composeTimer != null) return;
-
-    _composeTimer = Timer.periodic(
-      const Duration(seconds: 3),
-      (_) {
-        final now = DateTime.now().millisecondsSinceEpoch;
-        if (now - _lastChangeTimestamp >= 3000) {
-          // No change since 5 seconds
-          _updateChatState(ChatState.paused);
-          _stopComposeTimer();
-        }
-      }
-    );
-  }
-
-  void _stopComposeTimer() {
-    if (_composeTimer == null) return;
-
-    _composeTimer!.cancel();
-    _composeTimer = null;
-  }
-  
   bool _isSameConversation(String jid) => jid == state.conversation?.jid;
   
   /// Returns true if [msg] is meant for the open conversation. False otherwise.
   bool _isMessageForConversation(Message msg) => msg.conversationJid == state.conversation?.jid;
-
-  /// Updates the local chat state and sends a chat state notification to the conversation
-  /// partner.
-  void _updateChatState(ChatState s) {
-    if (s == _currentChatState) return;
-
-    _currentChatState = s;
-    MoxplatformPlugin.handler.getDataSender().sendData(
-      SendChatStateCommand(
-        state: s.toString().split('.').last,
-        jid: state.conversation!.jid,
-      ),
-      awaitable: false,
-    );
-  }
   
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
     emit(
@@ -138,8 +85,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         isRecording: false,
       ),
     );
-
-    _updateChatState(ChatState.active);
 
     final navEvent = event.removeUntilConversations ? (
       PushedNamedAndRemoveUntilEvent(
@@ -198,7 +143,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
   Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
     GetIt.I.get<SharedMediaBloc>().add(JidRemovedEvent());
-    _updateChatState(ChatState.gone);
 
     // Reset conversation so that we don't accidentally send chat states to chats
     // that are not currently focused.
@@ -236,17 +180,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     if (!_isSameConversation(event.conversation.jid)) return;
 
     emit(state.copyWith(conversation: event.conversation));
-  }
-
-  Future<void> _onAppStateChanged(AppStateChanged event, Emitter<ConversationState> emit) async {
-    if (state.conversation == null) return;
-
-    if (event.open) {
-      _updateChatState(ChatState.active);
-    } else {
-      _stopComposeTimer();
-      _updateChatState(ChatState.gone);
-    }
   }
 
   Future<void> _onBackgroundChanged(BackgroundChangedEvent event, Emitter<ConversationState> emit) async {

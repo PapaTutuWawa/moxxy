@@ -60,6 +60,8 @@ class BidirectionalConversationController {
     _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(_handleSoftKeyboardVisibilityChanged);
 
     BidirectionalConversationController.currentController = this;
+
+    _updateChatState(ChatState.active);
   }
 
   /// A singleton referring to the current instance as there can only be one
@@ -124,6 +126,46 @@ class BidirectionalConversationController {
   final StreamController<bool> _pickerVisibleStreamController = StreamController.broadcast();
   Stream<bool> get pickerVisibleStream => _pickerVisibleStreamController.stream;
 
+  /// The timer for managing the "compose" state
+  Timer? _composeTimer;
+
+  /// The last time the TextField was modified
+  int _lastChangeTimestamp = 0;
+
+  void _updateChatState(ChatState state) {
+    MoxplatformPlugin.handler.getDataSender().sendData(
+      SendChatStateCommand(
+        state: state.toString().split('.').last,
+        jid: conversationJid,
+      ),
+      awaitable: false,
+    );
+  }
+  
+  void _startComposeTimer() {
+    if (_composeTimer != null) return;
+
+    _updateChatState(ChatState.composing);
+    _composeTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) {
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (now - _lastChangeTimestamp >= 3000) {
+          // No change since 3 seconds
+          _stopComposeTimer();
+          _updateChatState(ChatState.active);
+        }
+      },
+    );
+  }
+
+  void _stopComposeTimer() {
+    if (_composeTimer == null) return;
+
+    _composeTimer?.cancel();
+    _composeTimer = null;
+  }
+  
   void _handleSoftKeyboardVisibilityChanged(bool visible) {
     if (visible && _pickerVisible) {
       togglePickerVisibility(false);
@@ -153,6 +195,9 @@ class BidirectionalConversationController {
         _pickerVisible,
       ),
     );
+
+    _lastChangeTimestamp = DateTime.now().millisecondsSinceEpoch;
+    _startComposeTimer();
   }
   
   void _setIsFetching(bool state) {
@@ -243,6 +288,9 @@ class BidirectionalConversationController {
   }
   
   Future<void> sendMessage(bool encrypted) async {
+    // Stop the compose timer
+    _stopComposeTimer();
+
     // Reset the text field
     final text = _textController.text;
     assert(text.isNotEmpty, 'Cannot send empty text messages');
@@ -398,10 +446,21 @@ class BidirectionalConversationController {
 
     return true;
   }
+
+  /// React to app livecycle changes
+  void handleAppStateChange(bool open) {
+    _updateChatState(
+      open ?
+        ChatState.active :
+        ChatState.gone,
+    );
+  }
   
   void dispose() {
     BidirectionalConversationController.currentController = null;
 
+    _updateChatState(ChatState.gone);
+    
     _scrollController.dispose();
     _textController.dispose();
     _keyboardVisibilitySubscription.cancel();

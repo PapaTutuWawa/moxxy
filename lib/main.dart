@@ -30,6 +30,7 @@ import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/events.dart';
 /*
 import "package:moxxyv2/ui/pages/register/register.dart";
@@ -228,13 +229,15 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         sender.sendData(
           SetCSIStateCommand(active: false),
         );
-        GetIt.I.get<ConversationBloc>().add(AppStateChanged(false));
+        BidirectionalConversationController
+          .currentController?.handleAppStateChange(false);
       break;
       case AppLifecycleState.resumed:
         sender.sendData(
           SetCSIStateCommand(active: true),
         );
-        GetIt.I.get<ConversationBloc>().add(AppStateChanged(true));
+        BidirectionalConversationController
+          .currentController?.handleAppStateChange(true);
       break;
       case AppLifecycleState.detached:
       case AppLifecycleState.inactive:
