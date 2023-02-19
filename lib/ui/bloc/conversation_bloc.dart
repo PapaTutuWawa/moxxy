@@ -36,11 +36,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       _lastChangeTimestamp = 0,
       super(ConversationState()) {
     on<RequestedConversationEvent>(_onRequestedConversation);
-    on<MessageTextChangedEvent>(_onMessageTextChanged);
     on<InitConversationEvent>(_onInit);
-    on<MessageSentEvent>(_onMessageSent);
-    on<MessageQuotedEvent>(_onMessageQuoted);
-    on<QuoteRemovedEvent>(_onQuoteRemoved);
     on<JidBlockedEvent>(_onJidBlocked);
     on<JidAddedEvent>(_onJidAdded);
     on<CurrentConversationResetEvent>(_onCurrentConversationReset);
@@ -51,11 +47,8 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
     on<PickerToggledEvent>(_onPickerToggled);
-    on<OwnJidReceivedEvent>(_onOwnJidReceived);
     on<OmemoSetEvent>(_onOmemoSet);
     on<MessageRetractedEvent>(_onMessageRetracted);
-    on<MessageEditSelectedEvent>(_onMessageEditSelected);
-    on<MessageEditCancelledEvent>(_onMessageEditCancelled);
     on<SendButtonDragStartedEvent>(_onDragStarted);
     on<SendButtonDragEndedEvent>(_onDragEnded);
     on<SendButtonLockedEvent>(_onSendButtonLocked);
@@ -142,13 +135,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     emit(
       state.copyWith(
         conversation: conversation,
-        quotedMessage: null,
-        messageEditing: false,
-        messageEditingOriginalBody: '',
-        messageText: '',
-        messageEditingId: null,
-        messageEditingSid: null,
-        sendButtonState: defaultSendButtonState,
         isLocked: false,
         isDragging: false,
         isRecording: false,
@@ -189,82 +175,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onMessageTextChanged(MessageTextChangedEvent event, Emitter<ConversationState> emit) async {
-    
-    _setLastChangeTimestamp();
-    _startComposeTimer();
-    _updateChatState(ChatState.composing);
-
-    SendButtonState sendButtonState;
-    if (state.messageEditing) {
-      sendButtonState = event.value == state.messageEditingOriginalBody ?
-        SendButtonState.cancelCorrection :
-        SendButtonState.send;
-    } else {
-      sendButtonState = event.value.isEmpty ?
-        defaultSendButtonState :
-        SendButtonState.send;
-    }
-    
-    return emit(
-      state.copyWith(
-        messageText: event.value,
-        sendButtonState: sendButtonState,
-      ),
-    );
-  }
-
-  Future<void> _onMessageSent(MessageSentEvent event, Emitter<ConversationState> emit) async {
-    // Set it but don't notify
-    _currentChatState = ChatState.active;
-    _stopComposeTimer();
-
-    // ignore: cast_nullable_to_non_nullable
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-      SendMessageCommand(
-        recipients: [state.conversation!.jid],
-        body: state.messageText,
-        quotedMessage: state.quotedMessage,
-        chatState: chatStateToString(ChatState.active),
-        editId: state.messageEditingId,
-        editSid: state.messageEditingSid,
-      ),
-      awaitable: false,
-    );
-
-    emit(
-      state.copyWith(
-        messageText: '',
-        quotedMessage: null,
-        sendButtonState: defaultSendButtonState,
-        pickerVisible: false,
-        messageEditing: false,
-        messageEditingOriginalBody: '',
-        messageEditingId: null,
-        messageEditingSid: null,
-      ),
-    );
-  }
-
-  Future<void> _onMessageQuoted(MessageQuotedEvent event, Emitter<ConversationState> emit) async {
-    // Ignore File Upload Notifications
-    if (event.message.isFileUploadNotification) return;
-
-    emit(
-      state.copyWith(
-        quotedMessage: event.message,
-      ),
-    );
-  }
-
-  Future<void> _onQuoteRemoved(QuoteRemovedEvent event, Emitter<ConversationState> emit) async {
-    return emit(
-      state.copyWith(
-        quotedMessage: null,
-      ),
-    );
-  }
-
   Future<void> _onJidBlocked(JidBlockedEvent event, Emitter<ConversationState> emit) async {
     // TODO(Unknown): Maybe have some state here
     await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -297,8 +207,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     emit(
       state.copyWith(
         conversation: null,
-        messageText: '',
-        quotedMessage: null,
       ),
     );
 
@@ -376,10 +284,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  Future<void> _onOwnJidReceived(OwnJidReceivedEvent event, Emitter<ConversationState> emit) async {
-    emit(state.copyWith(jid: event.jid));
-  }
-
   Future<void> _onOmemoSet(OmemoSetEvent event, Emitter<ConversationState> emit) async {
     emit(
       state.copyWith(
@@ -402,34 +306,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         conversationJid: state.conversation!.jid,
       ),
       awaitable: false,
-    );
-  }
-
-  Future<void> _onMessageEditSelected(MessageEditSelectedEvent event, Emitter<ConversationState> emit) async {
-    emit(
-      state.copyWith(
-        messageText: event.message.body,
-        quotedMessage: event.message.quotes,
-        messageEditing: true,
-        messageEditingOriginalBody: event.message.body,
-        messageEditingId: event.message.id,
-        messageEditingSid: event.message.sid,
-        sendButtonState: SendButtonState.cancelCorrection,
-      ),
-    );
-  }
-
-  Future<void> _onMessageEditCancelled(MessageEditCancelledEvent event, Emitter<ConversationState> emit) async {
-    emit(
-      state.copyWith(
-        messageText: '',
-        quotedMessage: null,
-        messageEditing: false,
-        messageEditingOriginalBody: '',
-        messageEditingId: null,
-        messageEditingSid: null,
-        sendButtonState: defaultSendButtonState,
-      ),
     );
   }
 

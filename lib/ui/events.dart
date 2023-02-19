@@ -97,9 +97,7 @@ Future<void> onConversationUpdated(ConversationUpdatedEvent event, { dynamic ext
 }
 
 Future<void> onMessageAdded(MessageAddedEvent event, { dynamic extra }) async {
-  GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.MessageAddedEvent(event.message),
-  );
+  // TODO
 }
 
 Future<void> onMessageUpdated(MessageUpdatedEvent event, { dynamic extra }) async {

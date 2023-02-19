@@ -162,7 +162,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState || prev.quotedMessage != next.quotedMessage || prev.pickerVisible != next.pickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody || prev.isRecording != next.isRecording,
+                    buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible || prev.isRecording != next.isRecording,
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
@@ -338,11 +338,10 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         final selection = widget.conversationController.textController.selection;
                         final baseOffset = max(selection.baseOffset, 0);
                         final extentOffset = max(selection.extentOffset, 0);
-                        final prefix = bloc.state.messageText.substring(0, baseOffset);
-                        final suffix = bloc.state.messageText.substring(extentOffset);
+                        final prefix = widget.conversationController.messageBody.substring(0, baseOffset);
+                        final suffix = widget.conversationController.messageBody.substring(extentOffset);
                         final newText = '$prefix${emoji.emoji}$suffix';
                         final newValue = baseOffset + emoji.emoji.codeUnits.length;
-                        bloc.add(MessageTextChangedEvent(newText));
                         widget.conversationController.textController
                           ..text = newText
                           ..selection = TextSelection(
@@ -353,7 +352,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       onBackspaceTapped: () {
                         // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
                         final bloc = context.read<ConversationBloc>();
-                        final text = bloc.state.messageText;
+                        final text = widget.conversationController.messageBody;
                         final selection = widget.conversationController.textController.selection;
                         final cursorPosition = widget.conversationController.textController.selection.base.offset;
  
@@ -362,11 +361,10 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         }
  
                         final newTextBeforeCursor = selection
-                        .textBefore(text).characters
-                        .skipLast(1)
-                        .toString();
+                          .textBefore(text).characters
+                          .skipLast(1)
+                          .toString();
  
-                        bloc.add(MessageTextChangedEvent(newTextBeforeCursor));
                         widget.conversationController.textController
                           ..text = newTextBeforeCursor
                           ..selection = TextSelection.fromPosition(

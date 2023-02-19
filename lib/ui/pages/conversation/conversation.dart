@@ -20,6 +20,7 @@ import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
@@ -150,7 +151,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     final end = true;
 //      isSent(state.messages[index + 1], state.jid) != isSent(item, state.jid);
     final between = !start && !end;
-    final sentBySelf = isSent(message, state.jid);
+    final sentBySelf = isSent(message, GetIt.I.get<UIDataService>().ownJid!);
     
     final bubble = RawChatBubble(
       item,

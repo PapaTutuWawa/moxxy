@@ -14,17 +14,6 @@ class BackgroundChangedEvent extends ConversationEvent {
   final String backgroundPath;
 }
 
-/// Triggered when the content of the input field changed.
-class MessageTextChangedEvent extends ConversationEvent {
-  MessageTextChangedEvent(this.value);
-  final String value;
-}
-
-/// Triggered a message is sent.
-class MessageSentEvent extends ConversationEvent {
-  MessageSentEvent();
-}
-
 /// Triggered before navigating to the ConversationPage to load the conversation
 /// into the state. This event will also redirect accordingly.
 class RequestedConversationEvent extends ConversationEvent {
@@ -43,15 +32,6 @@ class RequestedConversationEvent extends ConversationEvent {
   final bool removeUntilConversations;
 }
 
-/// Triggered by the UI when a message is quoted
-class MessageQuotedEvent extends ConversationEvent {
-  MessageQuotedEvent(this.message);
-  final Message message;
-}
-
-/// Triggered by the UI when the quote should be removed
-class QuoteRemovedEvent extends ConversationEvent {}
-
 /// Triggered by the UI when a user should be blocked
 class JidBlockedEvent extends ConversationEvent {
   JidBlockedEvent(this.jid);
@@ -66,12 +46,6 @@ class JidAddedEvent extends ConversationEvent {
 
 /// Triggered by the UI when we leave the conversation
 class CurrentConversationResetEvent extends ConversationEvent {}
-
-/// Triggered when we receive a message
-class MessageAddedEvent extends ConversationEvent {
-  MessageAddedEvent(this.message);
-  final Message message;
-}
 
 /// Triggered when we updated a message
 class MessageUpdatedEvent extends ConversationEvent {
@@ -119,17 +93,6 @@ class OmemoSetEvent extends ConversationEvent {
 class MessageRetractedEvent extends ConversationEvent {
   MessageRetractedEvent(this.id);
   final String id;
-}
-
-/// Triggered when a message has been selected for editing
-class MessageEditSelectedEvent extends ConversationEvent {
-  MessageEditSelectedEvent(this.message);
-  final Message message;
-}
-
-/// Triggered when a message edit has been cancelled
-class MessageEditCancelledEvent extends ConversationEvent {
-  MessageEditCancelledEvent();
 }
 
 /// Triggered when the dragging began
