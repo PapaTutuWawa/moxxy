@@ -81,6 +81,11 @@ class BidirectionalConversationController {
   bool _scrolledToBottomState = true;
   final StreamController<bool> _scrollToBottomStateStreamController = StreamController();
   Stream<bool> get scrollToBottomStateStream => _scrollToBottomStateStreamController.stream;
+
+  /// The currently quoted message
+  Message? _quotedMessage;
+  final StreamController<Message?> _currentlyQuotedMessageStreamController = StreamController();
+  Stream<Message?> get currentlyQuotedMessageStream => _currentlyQuotedMessageStreamController.stream;
   
   void _handleTextChanged() {
     final text = _textController.text;
@@ -125,6 +130,8 @@ class BidirectionalConversationController {
       _scrollToBottomStateStreamController.add(true);
     }
   }
+
+  String get messageBody => _textController.text;
   
   void animateToBottom() {
     _scrollController.animateTo(
@@ -156,7 +163,7 @@ class BidirectionalConversationController {
     // TODO: Scroll to the new message if we are at the bottom
   }
   
-  Future<void> onMessageSent(bool encrypted) async {
+  Future<void> sendMessage(bool encrypted) async {
     // Reset the text field
     final text = _textController.text;
     assert(text.isNotEmpty, 'Cannot send empty text messages');
@@ -172,7 +179,7 @@ class BidirectionalConversationController {
       SendMessageCommand(
         recipients: [conversationJid],
         body: text,
-        quotedMessage: _messageEditingState?.quoted,
+        quotedMessage: _quotedMessage,
         chatState: chatStateToString(ChatState.active),
         editId: _messageEditingState?.id,
         editSid: _messageEditingState?.sid,
@@ -232,6 +239,19 @@ class BidirectionalConversationController {
     _messageStreamController.add(_messageCache);
   }
 
+  /// Quote [message] for a message.
+  void quoteMessage(Message message) {
+    _quotedMessage = message;
+    _currentlyQuotedMessageStreamController.add(message);
+  }
+
+  /// Remove the currently active quote.
+  void removeQuote() {
+    _quotedMessage = null;
+    _currentlyQuotedMessageStreamController.add(null);
+  }
+  
+  /// Enter the "edit mode" for a message.
   void beginMessageEditing(String originalBody, Message? quotes, int id, String sid) {
     _messageEditingState = MessageEditingState(
       id,
@@ -240,10 +260,14 @@ class BidirectionalConversationController {
       quotes,
     );
     _textController.text = originalBody;
+    if (quotes != null) {
+      quoteMessage(quotes);
+    }
 
     _sendButtonStreamController.add(conversation.SendButtonState.cancelCorrection);
   }
 
+  /// Exit the "edit mode" for a message.
   void endMessageEditing() {
     _messageEditingState = null;
     _textController.text = '';

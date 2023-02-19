@@ -8,6 +8,7 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
@@ -164,79 +165,81 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
-                          child: CustomTextField(
-                            backgroundColor: Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldColor,
-                            textColor: Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldTextColor,
-                            maxLines: 5,
-                            hintText: t.pages.conversation.messageHint,
-                            hintTextColor: Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldHintTextColor,
-                            isDense: true,
-                            // onChanged: (value) {
-                            //   context.read<ConversationBloc>().add(
-                            //     MessageTextChangedEvent(value),
-                            //   );
-                            // },
-                            contentPadding: textfieldPaddingConversation,
-                            fontSize: textFieldFontSizeConversation,
-                            cornerRadius: textfieldRadiusConversation,
-                            controller: widget.conversationController.textController,
-                            topWidget: state.quotedMessage != null ?
-                              buildQuoteMessageWidget(
-                                state.quotedMessage!,
-                                isSent(state.quotedMessage!, state.jid),
-                                resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
-                              ) :
-                              null,
-                            focusNode: widget.focusNode,
-                            shouldSummonKeyboard: () => !state.pickerVisible,
-                            prefixIcon: IntrinsicWidth(
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: _TextFieldIconButton(
-                                      state.pickerVisible ? 
-                                      Icons.keyboard :
-                                      _getPickerIcon(),
-                                      () {
-                                        context.read<ConversationBloc>().add(
-                                          PickerToggledEvent(),
-                                        );
-                                      },
-                                    ),
-                                  ), 
-                                ],
-                              ),
-                            ),
-                            prefixIconConstraints: const BoxConstraints(
-                              minWidth: 24,
-                              minHeight: 24,
-                            ),
-                            suffixIcon: state.messageText.isEmpty && state.quotedMessage == null ?
-                              IntrinsicWidth(
-                                child: Row(
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 8),
-                                      child: _TextFieldRecordButton(),
-                                    ),
-                                  ],
+                          child: StreamBuilder<Message?>(
+                            initialData: null,
+                            stream: widget.conversationController.currentlyQuotedMessageStream,
+                            builder: (context, snapshot) {
+                              return CustomTextField(
+                                backgroundColor: Theme
+                                  .of(context)
+                                  .extension<MoxxyThemeData>()!
+                                  .conversationTextFieldColor,
+                                textColor: Theme
+                                  .of(context)
+                                  .extension<MoxxyThemeData>()!
+                                  .conversationTextFieldTextColor,
+                                maxLines: 5,
+                                hintText: t.pages.conversation.messageHint,
+                                hintTextColor: Theme
+                                  .of(context)
+                                  .extension<MoxxyThemeData>()!
+                                  .conversationTextFieldHintTextColor,
+                                isDense: true,
+                                contentPadding: textfieldPaddingConversation,
+                                fontSize: textFieldFontSizeConversation,
+                                cornerRadius: textfieldRadiusConversation,
+                                controller: widget.conversationController.textController,
+                                topWidget: snapshot.data != null ?
+                                  buildQuoteMessageWidget(
+                                    snapshot.data!,
+                                    // TODO
+                                    isSent(snapshot.data!, ''),
+                                    resetQuote: widget.conversationController.removeQuote,
+                                  ) :
+                                  null,
+                                focusNode: widget.focusNode,
+                                shouldSummonKeyboard: () => !state.pickerVisible,
+                                prefixIcon: IntrinsicWidth(
+                                  child: Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: _TextFieldIconButton(
+                                          state.pickerVisible ? 
+                                            Icons.keyboard :
+                                            _getPickerIcon(),
+                                          () {
+                                            context.read<ConversationBloc>().add(
+                                              PickerToggledEvent(),
+                                            );
+                                          },
+                                        ),
+                                      ), 
+                                    ],
+                                  ),
                                 ),
-                              ) :
-                              null,
-                            suffixIconConstraints: const BoxConstraints(
-                              minWidth: 24,
-                              minHeight: 24,
-                            ),
+                                prefixIconConstraints: const BoxConstraints(
+                                  minWidth: 24,
+                                  minHeight: 24,
+                                ),
+                                suffixIcon: widget.conversationController.messageBody.isEmpty && snapshot.data == null ?
+                                  IntrinsicWidth(
+                                    child: Row(
+                                      children: const [
+                                        Padding(
+                                          padding: EdgeInsets.only(right: 8),
+                                          child: _TextFieldRecordButton(),
+                                        ),
+                                      ],
+                                    ),
+                                  ) :
+                                  null,
+                                suffixIconConstraints: const BoxConstraints(
+                                  minWidth: 24,
+                                  minHeight: 24,
+                                ),
+                              );
+                            },
                           ),
                         ),
                         Padding(
@@ -297,7 +300,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                           widget.conversationController.endMessageEditing();
                                           return;
                                           case SendButtonState.send:
-                                          widget.conversationController.onMessageSent(
+                                          widget.conversationController.sendMessage(
                                             state.conversation!.encrypted,
                                           );
                                           return;

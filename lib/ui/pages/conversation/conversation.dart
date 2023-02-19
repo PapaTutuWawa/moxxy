@@ -102,10 +102,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     }
   }
   
-  void _quoteMessage(BuildContext context, Message message) {
-    context.read<ConversationBloc>().add(MessageQuotedEvent(message));
-  }
-
   Future<void> _retractMessage(BuildContext context, String originId) async {
     final result = await showConfirmationDialog(
       t.pages.conversation.retract,
@@ -171,7 +167,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       message: item,
       sentBySelf: sentBySelf,
       maxWidth: maxWidth,
-      onSwipedCallback: (_) => _quoteMessage(context, message),
+      onSwipedCallback: _conversationController.quoteMessage,
       onReactionTap: (reaction) {
         final bloc = context.read<ConversationBloc>();
         if (reaction.reactedBySelf) {
@@ -346,7 +342,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   icon: Icons.reply,
                   text: t.pages.conversation.quote,
                   onPressed: () {
-                    _quoteMessage(context, item);
+                    _conversationController.quoteMessage(item);
                     Navigator.of(context).pop();
                   },
                 ),
