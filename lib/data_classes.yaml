@@ -74,7 +74,7 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
-      # Send by the service if a message has been received or returned by # [SendMessageCommand].
+      # Send by the service if a message has been received or returned by [SendMessageCommand].
       - name: MessageAddedEvent
         extends: BackgroundEvent
         implements:
@@ -329,6 +329,7 @@ files:
             deserialise: true
           editSid: String?
           editId: int?
+          currentConversationJid: String?
       - name: SendFilesCommand
         extends: BackgroundCommand
         implements:

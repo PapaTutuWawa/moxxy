@@ -91,7 +91,6 @@ class _TextFieldRecordButton extends StatelessWidget {
 
 class ConversationBottomRow extends StatefulWidget {
   const ConversationBottomRow(
-    this.controller,
     this.tabController,
     this.focusNode,
     this.conversationController,
@@ -99,7 +98,6 @@ class ConversationBottomRow extends StatefulWidget {
       super.key,
     }
   );
-  final TextEditingController controller;
   final TabController tabController;
   final FocusNode focusNode;
   final ValueNotifier<bool> speedDialValueNotifier;
@@ -133,8 +131,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
     );
   }
   
-  IconData _getSendButtonIcon(ConversationState state) {
-    switch (state.sendButtonState) {
+  IconData _getSendButtonIcon(SendButtonState state) {
+    switch (state) {
       case SendButtonState.multi: return Icons.add;
       case SendButtonState.send: return Icons.send;
       case SendButtonState.cancelCorrection: return Icons.clear;
@@ -182,15 +180,15 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                               .extension<MoxxyThemeData>()!
                               .conversationTextFieldHintTextColor,
                             isDense: true,
-                            onChanged: (value) {
-                              context.read<ConversationBloc>().add(
-                                MessageTextChangedEvent(value),
-                              );
-                            },
+                            // onChanged: (value) {
+                            //   context.read<ConversationBloc>().add(
+                            //     MessageTextChangedEvent(value),
+                            //   );
+                            // },
                             contentPadding: textfieldPaddingConversation,
                             fontSize: textFieldFontSizeConversation,
                             cornerRadius: textfieldRadiusConversation,
-                            controller: widget.controller,
+                            controller: widget.conversationController.textController,
                             topWidget: state.quotedMessage != null ?
                               buildQuoteMessageWidget(
                                 state.quotedMessage!,
@@ -251,63 +249,64 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                               child: SizedBox(
                                 height: 45,
                                 width: 45,
-                                child: SpeedDial(
-                                  icon: _getSendButtonIcon(state),
-                                  backgroundColor: primaryColor,
-                                  foregroundColor: Colors.white,
-                                  children: [
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.image),
-                                      onTap: () {
-                                        context.read<ConversationBloc>().add(
-                                          ImagePickerRequestedEvent(),
-                                        );
-                                      },
+                                child: StreamBuilder<SendButtonState>(
+                                  initialData: defaultSendButtonState,
+                                  stream: widget.conversationController.sendButtonStream,
+                                  builder: (context, snapshot) {
+                                    return SpeedDial(
+                                      icon: _getSendButtonIcon(snapshot.data!),
                                       backgroundColor: primaryColor,
                                       foregroundColor: Colors.white,
-                                      label: t.pages.conversation.sendImages,
-                                    ),
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.file_present),
-                                      onTap: () {
-                                        context.read<ConversationBloc>().add(
-                                          FilePickerRequestedEvent(),
-                                        );
+                                      children: [
+                                        SpeedDialChild(
+                                          child: const Icon(Icons.image),
+                                          onTap: () {
+                                            context.read<ConversationBloc>().add(
+                                              ImagePickerRequestedEvent(),
+                                            );
+                                          },
+                                          backgroundColor: primaryColor,
+                                          foregroundColor: Colors.white,
+                                          label: t.pages.conversation.sendImages,
+                                        ),
+                                        SpeedDialChild(
+                                          child: const Icon(Icons.file_present),
+                                          onTap: () {
+                                            context.read<ConversationBloc>().add(
+                                              FilePickerRequestedEvent(),
+                                            );
+                                          },
+                                          backgroundColor: primaryColor,
+                                          foregroundColor: Colors.white,
+                                          label: t.pages.conversation.sendFiles,
+                                        ),
+                                        SpeedDialChild(
+                                          child: const Icon(Icons.photo_camera),
+                                          onTap: () {
+                                            showNotImplementedDialog('taking photos', context);
+                                          },
+                                          backgroundColor: primaryColor,
+                                          foregroundColor: Colors.white,
+                                          label: t.pages.conversation.takePhotos,
+                                        ),
+                                      ],
+                                      openCloseDial: widget.speedDialValueNotifier,
+                                      onPress: () {
+                                        switch (snapshot.data!) {
+                                          case SendButtonState.cancelCorrection:
+                                          widget.conversationController.endMessageEditing();
+                                          return;
+                                          case SendButtonState.send:
+                                          widget.conversationController.onMessageSent(
+                                            state.conversation!.encrypted,
+                                          );
+                                          return;
+                                          case SendButtonState.multi:
+                                          widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
+                                          return;
+                                        }
                                       },
-                                      backgroundColor: primaryColor,
-                                      foregroundColor: Colors.white,
-                                      label: t.pages.conversation.sendFiles,
-                                    ),
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.photo_camera),
-                                      onTap: () {
-                                        showNotImplementedDialog('taking photos', context);
-                                      },
-                                      backgroundColor: primaryColor,
-                                      foregroundColor: Colors.white,
-                                      label: t.pages.conversation.takePhotos,
-                                    ),
-                                  ],
-                                  openCloseDial: widget.speedDialValueNotifier,
-                                  onPress: () {
-                                    switch (state.sendButtonState) {
-                                      case SendButtonState.cancelCorrection:
-                                      context.read<ConversationBloc>().add(
-                                        MessageEditCancelledEvent(),
-                                      );
-                                      widget.controller.text = '';
-                                      return;
-                                      case SendButtonState.send:
-                                      context.read<ConversationBloc>().add(
-                                        MessageSentEvent(),
-                                      );
-                                      widget.conversationController.animateToBottom();
-                                      widget.controller.text = '';
-                                      return;
-                                      case SendButtonState.multi:
-                                      widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
-                                      return;
-                                    }
+                                    );
                                   },
                                 ),
                               ),
@@ -327,7 +326,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       tabController: widget.tabController,
                       onEmojiTapped: (emoji) {
                         final bloc = context.read<ConversationBloc>();
-                        final selection = widget.controller.selection;
+                        final selection = widget.conversationController.textController.selection;
                         final baseOffset = max(selection.baseOffset, 0);
                         final extentOffset = max(selection.extentOffset, 0);
                         final prefix = bloc.state.messageText.substring(0, baseOffset);
@@ -335,7 +334,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         final newText = '$prefix${emoji.emoji}$suffix';
                         final newValue = baseOffset + emoji.emoji.codeUnits.length;
                         bloc.add(MessageTextChangedEvent(newText));
-                        widget.controller
+                        widget.conversationController.textController
                           ..text = newText
                           ..selection = TextSelection(
                             baseOffset: newValue,
@@ -346,8 +345,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
                         final bloc = context.read<ConversationBloc>();
                         final text = bloc.state.messageText;
-                        final selection = widget.controller.selection;
-                        final cursorPosition = widget.controller.selection.base.offset;
+                        final selection = widget.conversationController.textController.selection;
+                        final cursorPosition = widget.conversationController.textController.selection.base.offset;
  
                         if (cursorPosition < 0) {
                           return;
@@ -359,7 +358,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                         .toString();
  
                         bloc.add(MessageTextChangedEvent(newTextBeforeCursor));
-                        widget.controller
+                        widget.conversationController.textController
                           ..text = newTextBeforeCursor
                           ..selection = TextSelection.fromPosition(
                             TextPosition(offset: newTextBeforeCursor.length),

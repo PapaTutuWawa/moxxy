@@ -182,19 +182,20 @@ class XmppService {
   }
   
   /// Sends a message to JIDs in [recipients] with the body of [body].
-  Future<void> sendMessage({
-      required String body,
-      required List<String> recipients,
-      Message? quotedMessage,
-      String? commandId,
-      ChatState? chatState,
-      sticker.Sticker? sticker,
+  Future<Message?> sendMessage({
+    required String body,
+    required List<String> recipients,
+    String? currentConversationJid,
+    Message? quotedMessage,
+    String? commandId,
+    ChatState? chatState,
+    sticker.Sticker? sticker,
   }) async {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    
+
     for (final recipient in recipients) {
       final sid = conn.generateId();
       final originId = conn.generateId();
@@ -236,10 +237,12 @@ class XmppService {
       assert(message != null, 'The message must be non-null');
 
       // Using the same ID should be fine.
-      sendEvent(
-        MessageAddedEvent(message: message!),
-        id: commandId,
-      );
+      if (recipient == currentConversationJid) {
+        sendEvent(
+          MessageAddedEvent(message: message!),
+          id: commandId,
+        );
+      }
       
       conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
         MessageDetails(

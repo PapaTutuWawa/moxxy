@@ -300,6 +300,7 @@ Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) a
       ? chatStateFromString(command.chatState)
       : null,
     quotedMessage: command.quotedMessage,
+    currentConversationJid: command.currentConversationJid,
     commandId: extra as String,
   );
 }

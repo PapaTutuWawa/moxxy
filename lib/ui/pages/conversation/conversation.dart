@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
@@ -39,7 +40,6 @@ class ConversationPage extends StatefulWidget {
 }
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
-  final TextEditingController _controller = TextEditingController();
   late final AnimationController _animationController; 
   late final AnimationController _overviewAnimationController;
   late final TabController _tabController;
@@ -50,6 +50,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   final ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
 
   late final BidirectionalConversationController _conversationController;
+
+  late final StreamSubscription _scrolledToBottomButtonSubscription;
   
   @override
   void initState() {
@@ -60,12 +62,11 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     );
     _textfieldFocus = FocusNode();
 
-    // TODO
     _conversationController = BidirectionalConversationController(
       widget.conversationJid,
     );
-    _conversationController.scrollController.addListener(_onScroll);
     _conversationController.fetchOlderMessages();
+    _scrolledToBottomButtonSubscription = _conversationController.scrollToBottomStateStream.listen(_onScrollToBottomStateChanged);
 
     _overviewAnimationController = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -86,7 +87,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   @override
   void dispose() {
     _tabController.dispose();
-    _controller.dispose();
     _conversationController.dispose();
     _animationController.dispose();
     _overviewAnimationController.dispose();
@@ -94,6 +94,14 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     super.dispose();
   }
 
+  void _onScrollToBottomStateChanged(bool visible) {
+    if (visible) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
+  }
+  
   void _quoteMessage(BuildContext context, Message message) {
     context.read<ConversationBloc>().add(MessageQuotedEvent(message));
   }
@@ -277,10 +285,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   icon: Icons.edit,
                   text: t.pages.conversation.edit,
                   onPressed: () {
-                    context.read<ConversationBloc>().add(
-                      MessageEditSelectedEvent(item),
+                    _conversationController.beginMessageEditing(
+                      item.body,
+                      item.quotes,
+                      item.id,
+                      item.sid,
                     );
-                    _controller.text = item.body;
                     Navigator.of(context).pop();
                   },
                 ),
@@ -405,24 +415,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
         ),
       ),
     );
-  }
-
-  /// Taken from https://bloclibrary.dev/#/flutterinfinitelisttutorial
-  bool _isScrolledToBottom() {
-    if (!_conversationController.scrollController.hasClients) return false;
-
-    return _conversationController.scrollController.offset <= 10;
-  }
-  
-  void _onScroll() {
-    final isScrolledToBottom = _isScrolledToBottom();
-    if (isScrolledToBottom && !_scrolledToBottomState) {
-      _animationController.reverse();
-    } else if (!isScrolledToBottom && _scrolledToBottomState) {
-      _animationController.forward();
-    }
-
-    _scrolledToBottomState = isScrolledToBottom;
   }
   
   @override
@@ -552,7 +544,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       .scaffoldBackgroundColor
                       .withOpacity(0.4),
                     child: ConversationBottomRow(
-                      _controller,
                       _tabController,
                       _textfieldFocus,
                       _conversationController,
