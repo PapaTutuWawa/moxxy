@@ -422,13 +422,13 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
         // TODO(PapaTutuWawa): Check if we are recording an audio message and handle
         //                     that accordingly
         final bloc = GetIt.I.get<ConversationBloc>();
+        if (!_conversationController.handlePop()) {
+          return false;
+        }
+
         if (bloc.state.isRecording) {
           // TODO(PapaTutuWawa): Show a dialog
           return true;
-        } else if (bloc.state.pickerVisible) {
-          bloc.add(PickerToggledEvent(handleKeyboard: false));
-
-          return false;
         } else {
           bloc.add(CurrentConversationResetEvent());
 
@@ -552,11 +552,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             ),
           ),
 
-          BlocBuilder<ConversationBloc, ConversationState>(
-            buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible,
-            builder: (context, state) => Positioned(
+          StreamBuilder<bool>(
+            initialData: false,
+            stream: _conversationController.pickerVisibleStream,
+            builder: (context, snapshot) => Positioned(
               right: 8,
-              bottom: state.pickerVisible ?
+              bottom: snapshot.data! ?
                 pickerHeight + 80 :
                 80,
               child: Material(

@@ -46,7 +46,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<BackgroundChangedEvent>(_onBackgroundChanged);
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
-    on<PickerToggledEvent>(_onPickerToggled);
     on<OmemoSetEvent>(_onOmemoSet);
     on<MessageRetractedEvent>(_onMessageRetracted);
     on<SendButtonDragStartedEvent>(_onDragStarted);
@@ -57,7 +56,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ReactionAddedEvent>(_onReactionAdded);
     on<ReactionRemovedEvent>(_onReactionRemoved);
     on<StickerSentEvent>(_onStickerSent);
-    on<SoftKeyboardVisibilityChanged>(_onSoftKeyboardVisibilityChanged);
 
     _audioRecorder = Record();
   }
@@ -267,23 +265,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onPickerToggled(PickerToggledEvent event, Emitter<ConversationState> emit) async {
-    final newState = !state.pickerVisible;
-    emit(
-      state.copyWith(
-        pickerVisible: newState,
-      ),
-    );
-
-    if (event.handleKeyboard) {
-      if (newState) {
-        await SystemChannels.textInput.invokeMethod('TextInput.hide');
-      } else {
-        await SystemChannels.textInput.invokeMethod('TextInput.show');
-      }
-    }
-  }
-
   Future<void> _onOmemoSet(OmemoSetEvent event, Emitter<ConversationState> emit) async {
     emit(
       state.copyWith(
@@ -320,7 +301,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       state.copyWith(
         isDragging: true,
         isRecording: true,
-        pickerVisible: false,
       ),
     );
     
@@ -514,20 +494,5 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
     
     // Close the picker
-    emit(
-      state.copyWith(
-        pickerVisible: false,
-      ),
-    );
-  }
-
-  Future<void> _onSoftKeyboardVisibilityChanged(SoftKeyboardVisibilityChanged event, Emitter<ConversationState> emit) async {
-    if (event.visible && (state.pickerVisible)) {
-      emit(
-        state.copyWith(
-          pickerVisible: false,
-        ),
-      );
-    }
   }
 }

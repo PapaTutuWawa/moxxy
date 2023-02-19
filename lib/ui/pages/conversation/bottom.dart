@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
@@ -110,29 +109,6 @@ class ConversationBottomRow extends StatefulWidget {
 }
 
 class ConversationBottomRowState extends State<ConversationBottomRow> {
-  late StreamSubscription<bool> _keyboardVisibilitySubscription;
-  
-  @override
-  void initState() {
-    super.initState();
-
-    _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(
-      _onKeyboardVisibilityChanged,
-    );
-  }
-
-  @override
-  void dispose() {
-    _keyboardVisibilitySubscription.cancel();
-    super.dispose();
-  }
-
-  void _onKeyboardVisibilityChanged(bool visible) {
-    GetIt.I.get<ConversationBloc>().add(
-      SoftKeyboardVisibilityChanged(visible),
-    );
-  }
-  
   IconData _getSendButtonIcon(SendButtonState state) {
     switch (state) {
       case SendButtonState.multi: return Icons.add;
@@ -162,7 +138,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible || prev.isRecording != next.isRecording,
+                    buildWhen: (prev, next) => prev.isRecording != next.isRecording,
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
@@ -170,6 +146,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                             initialData: TextFieldData(
                               true,
                               null,
+                              false,
                             ),
                             stream: widget.conversationController.textFieldDataStream,
                             builder: (context, snapshot) {
@@ -204,20 +181,18 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                   ) :
                                   null,
                                 focusNode: widget.focusNode,
-                                shouldSummonKeyboard: () => !state.pickerVisible,
+                                shouldSummonKeyboard: () => !snapshot.data!.pickerVisible,
                                 prefixIcon: IntrinsicWidth(
                                   child: Row(
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.only(left: 8),
                                         child: _TextFieldIconButton(
-                                          state.pickerVisible ? 
+                                          snapshot.data!.pickerVisible ? 
                                             Icons.keyboard :
                                             _getPickerIcon(),
                                           () {
-                                            context.read<ConversationBloc>().add(
-                                              PickerToggledEvent(),
-                                            );
+                                            widget.conversationController.togglePickerVisibility(true);
                                           },
                                         ),
                                       ), 
@@ -327,10 +302,11 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                   ),
                 ),
 
-                BlocBuilder<ConversationBloc, ConversationState>(
-                  buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible,
-                  builder: (context, state) => Offstage(
-                    offstage: !state.pickerVisible,
+                StreamBuilder<bool>(
+                  initialData: false,
+                  stream: widget.conversationController.pickerVisibleStream,
+                  builder: (context, snapshot) => Offstage(
+                    offstage: !snapshot.data!,
                     child: CombinedPicker(
                       tabController: widget.tabController,
                       onEmojiTapped: (emoji) {

@@ -12,7 +12,6 @@ class ConversationState with _$ConversationState {
   factory ConversationState({
     @Default(null) Conversation? conversation,
     @Default('') String backgroundPath,
-    @Default(false) bool pickerVisible,
 
     // For recording
     @Default(false) bool isDragging,

@@ -71,12 +71,6 @@ class ImagePickerRequestedEvent extends ConversationEvent {}
 /// Triggered when the user wants to pick generic files for sending
 class FilePickerRequestedEvent extends ConversationEvent {}
 
-/// Triggered when the emoji button is pressed
-class PickerToggledEvent extends ConversationEvent {
-  PickerToggledEvent({this.handleKeyboard = true});
-  final bool handleKeyboard;
-}
-
 /// Triggered when we received our own JID
 class OwnJidReceivedEvent extends ConversationEvent {
   OwnJidReceivedEvent(this.jid);
@@ -129,10 +123,4 @@ class StickerSentEvent extends ConversationEvent {
   StickerSentEvent(this.stickerPackId, this.stickerHashKey);
   final String stickerPackId;
   final String stickerHashKey;
-}
-
-/// Triggered when the softkeyboard's visibility changed
-class SoftKeyboardVisibilityChanged extends ConversationEvent {
-  SoftKeyboardVisibilityChanged(this.visible);
-  final bool visible;
 }

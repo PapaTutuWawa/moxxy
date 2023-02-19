@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/animation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -36,6 +38,7 @@ class TextFieldData {
   const TextFieldData(
     this.isBodyEmpty,
     this.quotedMessage,
+    this.pickerVisible,
   );
 
   /// Flag indicating whether the current text input is empty.
@@ -45,15 +48,18 @@ class TextFieldData {
   final Message? quotedMessage;
 
   /// Flag indicating whether the picker is currently open or not.
-  /// final bool pickerVisible;
+  final bool pickerVisible;
 }
 
 class BidirectionalConversationController {
   BidirectionalConversationController(this.conversationJid) {
     _scrollController.addListener(_handleScroll);
     _textController.addListener(_handleTextChanged);
+    _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(_handleSoftKeyboardVisibilityChanged);
   }
 
+  late final StreamSubscription _keyboardVisibilitySubscription;
+  
   /// The list of messages we know about
   final List<Message> _messageCache = List<Message>.empty(growable: true);
 
@@ -104,6 +110,17 @@ class BidirectionalConversationController {
   /// Stream containing data for the TextField
   final StreamController<TextFieldData> _textFieldDataStreamController = StreamController();
   Stream<TextFieldData> get textFieldDataStream => _textFieldDataStreamController.stream;
+
+  /// Flag indicating whether the (emoji/sticker) picker is visible
+  bool _pickerVisible = false;
+  final StreamController<bool> _pickerVisibleStreamController = StreamController.broadcast();
+  Stream<bool> get pickerVisibleStream => _pickerVisibleStreamController.stream;
+
+  void _handleSoftKeyboardVisibilityChanged(bool visible) {
+    if (visible && _pickerVisible) {
+      togglePickerVisibility(false);
+    }
+  }
   
   void _handleTextChanged() {
     final text = _textController.text;
@@ -125,6 +142,7 @@ class BidirectionalConversationController {
       TextFieldData(
         messageBody.isEmpty,
         _quotedMessage,
+        _pickerVisible,
       ),
     );
   }
@@ -271,6 +289,7 @@ class BidirectionalConversationController {
       TextFieldData(
         messageBody.isEmpty,
         message,
+        _pickerVisible,
       ),
     );
   }
@@ -282,6 +301,7 @@ class BidirectionalConversationController {
       TextFieldData(
         messageBody.isEmpty,
         null,
+        _pickerVisible,
       ),
     );
   }
@@ -309,9 +329,43 @@ class BidirectionalConversationController {
 
     _sendButtonStreamController.add(conversation.defaultSendButtonState);
   }
+
+  /// Toggles the visibility of the (emoji/sticker) picker
+  void togglePickerVisibility(bool handleKeyboard) {
+    final newState = !_pickerVisible;
+
+    if (handleKeyboard) {
+      if (newState) {
+        SystemChannels.textInput.invokeMethod('TextInput.hide');
+      } else {
+        SystemChannels.textInput.invokeMethod('TextInput.show');
+      }
+    }
+
+    _pickerVisible = newState;
+    _pickerVisibleStreamController.add(newState);
+    _textFieldDataStreamController.add(
+      TextFieldData(
+        messageBody.isEmpty,
+        _quotedMessage,
+        newState,
+      ),
+    );
+  }
+
+  /// React to a onWillPop callback.
+  bool handlePop() {
+    if (_pickerVisible) {
+      togglePickerVisibility(false);
+      return false;
+    }
+
+    return true;
+  }
   
   void dispose() {
     _scrollController.dispose();
     _textController.dispose();
+    _keyboardVisibilitySubscription.cancel();
   }
 }
