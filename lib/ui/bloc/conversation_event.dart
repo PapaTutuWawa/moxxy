@@ -47,12 +47,6 @@ class JidAddedEvent extends ConversationEvent {
 /// Triggered by the UI when we leave the conversation
 class CurrentConversationResetEvent extends ConversationEvent {}
 
-/// Triggered when we updated a message
-class MessageUpdatedEvent extends ConversationEvent {
-  MessageUpdatedEvent(this.message);
-  final Message message;
-}
-
 /// Triggered when we updated a conversation
 class ConversationUpdatedEvent extends ConversationEvent {
   ConversationUpdatedEvent(this.conversation);

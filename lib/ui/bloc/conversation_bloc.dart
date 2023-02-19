@@ -155,24 +155,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
   }
 
-  Future<void> _onMessageUpdated(MessageUpdatedEvent event, Emitter<ConversationState> emit) async {
-    if (!_isMessageForConversation(event.message)) return;
-
-    // TODO(Unknown): Check if we are iterating the correct wa
-    // Small trick: The newer messages are much more likely to be updated than
-    // older messages.
-    /*
-    final messages = state.messages;
-    for (int i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].id == event.message.id) {
-        print("Found message to update");
-        messages[i] = event.message;
-        break;
-      }
-    }
-    */
-  }
-
   Future<void> _onConversationUpdated(ConversationUpdatedEvent event, Emitter<ConversationState> emit) async {
     if (!_isSameConversation(event.conversation.jid)) return;
 
