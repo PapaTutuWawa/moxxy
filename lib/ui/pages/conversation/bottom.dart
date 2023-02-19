@@ -15,6 +15,7 @@ import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/timer.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
@@ -195,8 +196,10 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                 topWidget: snapshot.data!.quotedMessage != null ?
                                   buildQuoteMessageWidget(
                                     snapshot.data!.quotedMessage!,
-                                    // TODO
-                                    isSent(snapshot.data!.quotedMessage!, ''),
+                                    isSent(
+                                      snapshot.data!.quotedMessage!,
+                                      GetIt.I.get<UIDataService>().ownJid!,
+                                    ),
                                     resetQuote: widget.conversationController.removeQuote,
                                   ) :
                                   null,
