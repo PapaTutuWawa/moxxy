@@ -71,12 +71,6 @@ class OmemoSetEvent extends ConversationEvent {
   final bool enabled;
 }
 
-/// Triggered when a message should be retracted
-class MessageRetractedEvent extends ConversationEvent {
-  MessageRetractedEvent(this.id);
-  final String id;
-}
-
 /// Triggered when the dragging began
 class SendButtonDragStartedEvent extends ConversationEvent {}
 

@@ -42,7 +42,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
     on<OmemoSetEvent>(_onOmemoSet);
-    on<MessageRetractedEvent>(_onMessageRetracted);
     on<SendButtonDragStartedEvent>(_onDragStarted);
     on<SendButtonDragEndedEvent>(_onDragEnded);
     on<SendButtonLockedEvent>(_onSendButtonLocked);
@@ -209,16 +208,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
       SetOmemoEnabledCommand(enabled: event.enabled, jid: state.conversation!.jid),
-      awaitable: false,
-    );
-  }
-
-  Future<void> _onMessageRetracted(MessageRetractedEvent event, Emitter<ConversationState> emit) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-      RetractMessageCommentCommand(
-        originId: event.id,
-        conversationJid: state.conversation!.jid,
-      ),
       awaitable: false,
     );
   }

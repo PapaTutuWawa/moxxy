@@ -286,6 +286,17 @@ class BidirectionalConversationController {
       _messageStreamController.add(_messageCache);
     }
   }
+
+  /// Retract the message with originId [originId].
+  void retractMessage(String originId) {
+    MoxplatformPlugin.handler.getDataSender().sendData(
+      RetractMessageCommentCommand(
+        originId: originId,
+        conversationJid: conversationJid,
+      ),
+      awaitable: false,
+    );
+  }
   
   Future<void> sendMessage(bool encrypted) async {
     // Stop the compose timer

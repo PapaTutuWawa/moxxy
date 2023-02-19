@@ -111,10 +111,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     );
 
     if (result) {
-      // ignore: use_build_context_synchronously
-      context.read<ConversationBloc>().add(
-        MessageRetractedEvent(originId),
-      );
+      _conversationController.retractMessage(originId);
 
       // ignore: use_build_context_synchronously
       Navigator.of(context).pop();
