@@ -926,6 +926,7 @@ Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) a
     body: sticker!.desc,
     recipients: [command.recipient],
     sticker: sticker,
+    currentConversationJid: command.recipient,
   );
 }
 
