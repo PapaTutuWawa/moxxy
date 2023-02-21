@@ -300,7 +300,7 @@ class DatabaseService {
       where: query,
       whereArgs: args,
       orderBy: 'timestamp DESC',
-      limit: paginatedMessageFetchAmount,
+      limit: messagePaginationSize,
     );
 
     final messages = List<Message>.empty(growable: true);

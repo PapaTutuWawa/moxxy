@@ -462,7 +462,7 @@ class BidirectionalConversationController {
     if (result.messages.length == 0) {
       hasOlderMessages = false;
       return;
-    } else if (result.messages.length < paginatedMessageFetchAmount) {
+    } else if (result.messages.length < messagePaginationSize) {
       // This means we reached the end of messages we can fetch
       hasOlderMessages = false;
     }
