@@ -1,19 +1,16 @@
 import 'dart:async';
-import 'package:flutter/animation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
-import 'package:get_it/get_it.dart';
-import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxplatform/moxplatform.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
-import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
-import 'package:moxxyv2/ui/service/data.dart';
-import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
+import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 
 class MessageEditingState {
   const MessageEditingState(
@@ -54,12 +51,11 @@ class TextFieldData {
 }
 
 class BidirectionalConversationController extends BidirectionalController<Message> {
-  BidirectionalConversationController(this.conversationJid) : super(
+  BidirectionalConversationController(this.conversationJid) : assert(BidirectionalConversationController.currentController == null, 'There can only be one BidirectionalConversationController'),
+  super(
     pageSize: messagePaginationSize,
     maxPageAmount: maxMessagePages,
   ) {
-    assert(BidirectionalConversationController.currentController == null, 'There can only be one BidirectionalConversationController');
-
     _textController.addListener(_handleTextChanged);
     _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(_handleSoftKeyboardVisibilityChanged);
 
@@ -72,7 +68,7 @@ class BidirectionalConversationController extends BidirectionalController<Messag
   /// BidirectionalConversationController at a time.
   static BidirectionalConversationController? currentController;
   
-  late final StreamSubscription _keyboardVisibilitySubscription;
+  late final StreamSubscription<bool> _keyboardVisibilitySubscription;
   
   /// TextEditingController for the TextField
   final TextEditingController _textController = TextEditingController();

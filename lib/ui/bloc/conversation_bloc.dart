@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,13 +8,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
-import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/events.dart' as events;
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
@@ -56,9 +51,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   DateTime? _recordingStart;
   
   bool _isSameConversation(String jid) => jid == state.conversation?.jid;
-  
-  /// Returns true if [msg] is meant for the open conversation. False otherwise.
-  bool _isMessageForConversation(Message msg) => msg.conversationJid == state.conversation?.jid;
   
   Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
     emit(

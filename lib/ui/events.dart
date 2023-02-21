@@ -98,7 +98,7 @@ Future<void> onConversationUpdated(ConversationUpdatedEvent event, { dynamic ext
 }
 
 Future<void> onMessageAdded(MessageAddedEvent event, { dynamic extra }) async {
-  BidirectionalConversationController.currentController?.onMessageReceived(
+  await BidirectionalConversationController.currentController?.onMessageReceived(
     event.message,
   );
 }

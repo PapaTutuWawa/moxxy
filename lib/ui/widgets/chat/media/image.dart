@@ -81,15 +81,15 @@ class ImageChatWidget extends StatelessWidget {
         height: size.height,
         child: Image.file(
           File(message.mediaUrl!),
-          cacheWidth: size.width?.toInt(),
-          cacheHeight: size.height?.toInt(),
+          cacheWidth: size.width.toInt(),
+          cacheHeight: size.height.toInt(),
         ),
       );
     } else {
       image = Image.file(
         File(message.mediaUrl!),
-        cacheWidth: size.width?.toInt(),
-        cacheHeight: size.height?.toInt(),
+        cacheWidth: size.width.toInt(),
+        cacheHeight: size.height.toInt(),
       );
     }
 

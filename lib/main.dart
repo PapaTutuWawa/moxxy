@@ -265,7 +265,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             type: PageTransitionType.rightToLeft,
             settings: settings,
             child: ConversationPage(
-              conversationJid: settings.arguments as String,
+              conversationJid: settings.arguments! as String,
             ),
           );
           case sharedMediaRoute: return SharedMediaPage.route;

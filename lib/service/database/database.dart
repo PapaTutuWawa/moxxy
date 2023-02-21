@@ -293,7 +293,7 @@ class DatabaseService {
       'conversationJid = ? AND timestamp < ?' :
       'conversationJid = ?';
     final args = oldestTimestamp != null ?
-      [jid, oldestTimestamp!] :
+      [jid, oldestTimestamp] :
       [jid];
     final rawMessages = await _db.query(
       'Messages',

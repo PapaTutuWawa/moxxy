@@ -182,7 +182,7 @@ class XmppService {
   }
   
   /// Sends a message to JIDs in [recipients] with the body of [body].
-  Future<Message?> sendMessage({
+  Future<void> sendMessage({
     required String body,
     required List<String> recipients,
     String? currentConversationJid,

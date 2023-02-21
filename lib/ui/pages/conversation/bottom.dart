@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +6,6 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
@@ -143,7 +141,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       children: [
                         Expanded(
                           child: StreamBuilder<TextFieldData>(
-                            initialData: TextFieldData(
+                            initialData: const TextFieldData(
                               true,
                               null,
                               false,
@@ -310,7 +308,6 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     child: CombinedPicker(
                       tabController: widget.tabController,
                       onEmojiTapped: (emoji) {
-                        final bloc = context.read<ConversationBloc>();
                         final selection = widget.conversationController.textController.selection;
                         final baseOffset = max(selection.baseOffset, 0);
                         final extentOffset = max(selection.extentOffset, 0);
@@ -327,7 +324,6 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       },
                       onBackspaceTapped: () {
                         // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
-                        final bloc = context.read<ConversationBloc>();
                         final text = widget.conversationController.messageBody;
                         final selection = widget.conversationController.textController.selection;
                         final cursorPosition = widget.conversationController.textController.selection.base.offset;

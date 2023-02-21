@@ -46,13 +46,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   late final TabController _tabController;
   late Animation<double> _overviewMsgAnimation;
   late final Animation<double> _scrollToBottom;
-  bool _scrolledToBottomState = true;
   late FocusNode _textfieldFocus;
   final ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
 
   late final BidirectionalConversationController _conversationController;
 
-  late final StreamSubscription _scrolledToBottomButtonSubscription;
+  late final StreamSubscription<bool> _scrolledToBottomButtonSubscription;
   
   @override
   void initState() {
@@ -92,6 +91,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     _animationController.dispose();
     _overviewAnimationController.dispose();
     _textfieldFocus.dispose();
+    _scrolledToBottomButtonSubscription.cancel();
     super.dispose();
   }
 
@@ -481,7 +481,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
 
                   Expanded(
                     child: StreamBuilder<List<Message>>(
-                      initialData: [],
+                      initialData: const [],
                       stream: _conversationController.dataStream,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
@@ -520,7 +520,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                           );
                         }
 
-                        return CircularProgressIndicator();
+                        // TODO(Unknown): Find a better solution
+                        return const CircularProgressIndicator();
                       },
                     ),
                   ),
@@ -560,9 +561,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     child: FloatingActionButton(
                       heroTag: 'fabScrollDown',
                       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                      onPressed: () {
-                        _conversationController.animateToBottom();
-                      },
+                      onPressed: _conversationController.animateToBottom,
                       child: const Icon(
                         Icons.arrow_downward,
                         // TODO(Unknown): Theme dependent

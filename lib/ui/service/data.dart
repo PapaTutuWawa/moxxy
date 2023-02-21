@@ -5,11 +5,8 @@ import 'package:moxxyv2/shared/events.dart';
 class UIDataService {
   bool isLoggedIn = false;
 
-  String? _ownJid;
-  String? get ownJid => _ownJid;
-  set ownJid(String? ownJid) {
-    _ownJid = ownJid;
-  }
+  /// The JID of the currently active account.
+  String? ownJid;
 
   /// When receiving a PreStartDoneEvent, this function will process it and set
   /// all properties of the UIDataService accordingly.
