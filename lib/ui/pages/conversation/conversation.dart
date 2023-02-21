@@ -66,7 +66,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     _conversationController = BidirectionalConversationController(
       widget.conversationJid,
     );
-    _conversationController.fetchOlderMessages();
+    _conversationController.fetchOlderData();
     _scrolledToBottomButtonSubscription = _conversationController.scrollToBottomStateStream.listen(_onScrollToBottomStateChanged);
 
     _overviewAnimationController = AnimationController(
@@ -482,7 +482,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   Expanded(
                     child: StreamBuilder<List<Message>>(
                       initialData: [],
-                      stream: _conversationController.messageStream,
+                      stream: _conversationController.dataStream,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           return SingleChildScrollView(

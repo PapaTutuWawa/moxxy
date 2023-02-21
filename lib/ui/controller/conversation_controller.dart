@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
+import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -52,11 +53,13 @@ class TextFieldData {
   final bool pickerVisible;
 }
 
-class BidirectionalConversationController {
-  BidirectionalConversationController(this.conversationJid) {
+class BidirectionalConversationController extends BidirectionalController<Message> {
+  BidirectionalConversationController(this.conversationJid) : super(
+    pageSize: messagePaginationSize,
+    maxPageAmount: maxMessagePages,
+  ) {
     assert(BidirectionalConversationController.currentController == null, 'There can only be one BidirectionalConversationController');
 
-    _scrollController.addListener(_handleScroll);
     _textController.addListener(_handleTextChanged);
     _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(_handleSoftKeyboardVisibilityChanged);
 
@@ -71,31 +74,6 @@ class BidirectionalConversationController {
   
   late final StreamSubscription _keyboardVisibilitySubscription;
   
-  /// The list of messages we know about
-  final List<Message> _messageCache = List<Message>.empty(growable: true);
-
-  /// Flag indicating whether we are currently fetching messages.
-  bool isFetchingMessages = false;
-  final StreamController<bool> _isFetchingStreamController = StreamController();
-  Stream<bool> get isFetchingStream => _isFetchingStreamController.stream;
-
-  /// Flag indicating whether we have newer messages we could request from the database
-  bool hasNewerMessages = false;
-
-  /// Flag indicating whether we have older messages we could request from the database
-  bool hasOlderMessages = true;
-
-  /// Flag indicating whether messages have been fetched once
-  bool hasFetchedOnce = false;
-  
-  /// Scroll controller for managing things like loading newer and older messages
-  final ScrollController _scrollController = ScrollController();
-  ScrollController get scrollController => _scrollController;
-
-  /// Stream for message updates
-  final StreamController<List<Message>> _messageStreamController = StreamController();
-  Stream<List<Message>> get messageStream => _messageStreamController.stream;
-
   /// TextEditingController for the TextField
   final TextEditingController _textController = TextEditingController();
   TextEditingController get textController => _textController;
@@ -200,29 +178,15 @@ class BidirectionalConversationController {
     _lastChangeTimestamp = DateTime.now().millisecondsSinceEpoch;
     _startComposeTimer();
   }
-  
-  void _setIsFetching(bool state) {
-    isFetchingMessages = state;
-    _isFetchingStreamController.add(state);
-  }
 
-  /// Taken from https://bloclibrary.dev/#/flutterinfinitelisttutorial
-  bool _isScrolledToBottom() {
-    return _scrollController.offset <= 10;
-  }
-  
-  void _handleScroll() {
-    if (!_scrollController.hasClients) return;
+  @override
+  void handleScroll() {
+    super.handleScroll();
 
-    // Fetch older messages when we reach the top edge of the list
-    // TODO(Unknown): Do not hide the scroll to bottom button unless we are on the
-    //                last page.
-    if (_scrollController.offset >= _scrollController.position.maxScrollExtent - 20 && !isFetchingMessages) {
-      unawaited(fetchOlderMessages());
-    } else if (_isScrolledToBottom() && !_scrolledToBottomState) {
+    if (isScrolledToBottom && !_scrolledToBottomState && !hasNewerData) {
       _scrolledToBottomState = true;
       _scrollToBottomStateStreamController.add(false);
-    } else if (!_isScrolledToBottom() && _scrolledToBottomState) {
+    } else if (!isScrolledToBottom && _scrolledToBottomState) {
       _scrolledToBottomState = false;
       _scrollToBottomStateStreamController.add(true);
     }
@@ -230,35 +194,38 @@ class BidirectionalConversationController {
 
   String get messageBody => _textController.text;
   
-  void animateToBottom() {
-    _scrollController.animateTo(
-      _scrollController.position.minScrollExtent,
-      curve: Curves.easeIn,
-      duration: const Duration(milliseconds: 300),
-    );
-  }
-
   Future<void> onMessageReceived(Message message) async {
     // Drop the message if we don't really care about it
     if (message.conversationJid != conversationJid) return;
 
-    if (message.timestamp < _messageCache.last.timestamp) {
-      if (message.timestamp < _messageCache.first.timestamp) {
+    // TODO: Guard against not being initialized yet, i.e. not having loaded the first
+    //       messages
+
+    var shouldScrollToBottom = true;
+    if (message.timestamp < cache.last.timestamp) {
+      if (message.timestamp < cache.first.timestamp) {
         // The message is older than the oldest message we know about. Drop it.
         // It will be fetched when scrolling up.
-        hasOlderMessages = true;
+        hasOlderData = true;
         return;
       }
 
-      // TODO: Correctly insert the message
+      // Insert the message at the appropriate place
+      shouldScrollToBottom = addItemWhereFirst(
+        (item, next) {
+          if (next == null) return false;
+
+          return item.timestamp <= message.timestamp && next.timestamp >= message.timestamp;
+        },
+        message,
+      );
+    } else {
+      // Just add the new message
+      addItem(message);
     }
 
-    // Notify the UI
-    _messageCache.add(message);
-    _messageStreamController.add(_messageCache);
-
     // Scroll to bottom if we're at the bottom
-    if (_isScrolledToBottom()) {
+    if (isScrolledToBottom && shouldScrollToBottom) {
       await Future<void>.delayed(const Duration(milliseconds: 300));
       animateToBottom();
     }
@@ -270,22 +237,9 @@ class BidirectionalConversationController {
 
     // Ignore message updates for messages older than the oldest message
     // we know about.
-    if (newMessage.timestamp < _messageCache.first.timestamp) return;
+    if (newMessage.timestamp < cache.first.timestamp) return;
 
-    // We iterate in reverse as we can assume that the newer messages have a higher
-    // likeliness of being updated than older messages.
-    var messageFound = false;
-    for (var i = _messageCache.length - 1; i >= 0; i--) {
-      if (_messageCache[i].id == newMessage.id) {
-        _messageCache[i] = newMessage;
-        messageFound = true;
-        break;
-      }
-    }
-
-    if (messageFound) {
-      _messageStreamController.add(_messageCache);
-    }
+    replaceItem((msg) => msg.id == newMessage.id, newMessage);
   }
 
   /// Retract the message with originId [originId].
@@ -301,7 +255,7 @@ class BidirectionalConversationController {
 
   /// Add [emoji] as a reaction to the message at index [index].
   void addReaction(int index, String emoji) {
-    final message = _messageCache[index];
+    final message = cache[index];
     final reactionIndex = message.reactions.indexWhere(
       (Reaction r) => r.emoji == emoji,
     );
@@ -315,12 +269,12 @@ class BidirectionalConversationController {
       reactions[reactionIndex] = reaction.copyWith(
         reactedBySelf: true,
       );
-      _messageCache[index] = _messageCache[index].copyWith(
+      cache[index] = cache[index].copyWith(
         reactions: reactions,
       );
     } else {
       // The reaction is new
-      _messageCache[index] = message.copyWith(
+      cache[index] = message.copyWith(
         reactions: [
           ...message.reactions,
           Reaction(
@@ -332,7 +286,7 @@ class BidirectionalConversationController {
       );
     }
 
-    _messageStreamController.add(_messageCache);
+    forceUpdateUI();
 
     MoxplatformPlugin.handler.getDataSender().sendData(
       AddReactionToMessageCommand(
@@ -346,7 +300,7 @@ class BidirectionalConversationController {
 
   /// Remove the reaction [emoji] from the message at index [index].
   void removeReaction(int index, String emoji) {
-    final message = _messageCache[index];
+    final message = cache[index];
     final reactionIndex = message.reactions.indexWhere(
       (Reaction r) => r.emoji == emoji,
     );
@@ -361,11 +315,11 @@ class BidirectionalConversationController {
         reactedBySelf: false,
       );
     }
-    _messageCache[index] = _messageCache[index].copyWith(
+    cache[index] = cache[index].copyWith(
       reactions: reactions,
     );
 
-    _messageStreamController.add(_messageCache);
+    forceUpdateUI();
 
     MoxplatformPlugin.handler.getDataSender().sendData(
       RemoveReactionFromMessageCommand(
@@ -420,14 +374,12 @@ class BidirectionalConversationController {
       awaitable: true,
     ) as MessageAddedEvent;
     
-    if (!hasNewerMessages) {
+    if (!hasNewerData) {
       if (wasEditing) {
         // TODO: Handle
       } else {
-        _messageCache.add(result.message);
+        addItem(result.message);
       }
-
-      _messageStreamController.add(_messageCache);
       
       await Future<void>.delayed(const Duration(milliseconds: 300));
       animateToBottom();
@@ -438,37 +390,23 @@ class BidirectionalConversationController {
     _sendButtonStreamController.add(conversation.defaultSendButtonState);
   }
 
-  Future<void> fetchOlderMessages() async {
-    if (isFetchingMessages ||
-        _messageCache.isEmpty && hasFetchedOnce) return;
-    if (!hasOlderMessages) return;
-
-    _setIsFetching(true);
-
+  @override
+  Future<List<Message>> fetchOlderDataImpl(Message? oldestElement) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       GetPagedMessagesCommand(
         conversationJid: conversationJid,
-        oldestMessageTimestamp: !hasFetchedOnce ?
-          null :
-          _messageCache.first.timestamp,
+        oldestMessageTimestamp: oldestElement?.timestamp,
       ),
     ) as PagedMessagesResultEvent;
 
-    _setIsFetching(false);
-    hasFetchedOnce = true;
-    hasOlderMessages = result.hasOlderMessages;
+    return result.messages.reversed.toList();
+  }
 
-    if (result.messages.length == 0) {
-      hasOlderMessages = false;
-      return;
-    } else if (result.messages.length < messagePaginationSize) {
-      // This means we reached the end of messages we can fetch
-      hasOlderMessages = false;
-    }
-
-    _messageCache.insertAll(0, result.messages.reversed);
-    _messageStreamController.add(_messageCache);
+  @override
+  Future<List<Message>> fetchNewerDataImpl(Message? newestElement) async {
+    // TODO: Implement
+    return [];
   }
 
   /// Quote [message] for a message.
@@ -560,14 +498,14 @@ class BidirectionalConversationController {
         ChatState.gone,
     );
   }
-  
+
+  @override
   void dispose() {
+    super.dispose();
     BidirectionalConversationController.currentController = null;
 
-    _updateChatState(ChatState.gone);
-    
-    _scrollController.dispose();
     _textController.dispose();
     _keyboardVisibilitySubscription.cancel();
+    _updateChatState(ChatState.gone);
   }
 }
