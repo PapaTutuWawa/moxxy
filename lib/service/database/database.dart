@@ -288,9 +288,12 @@ class DatabaseService {
     return messages;
   }
 
-  Future<List<Message>> getPaginatedMessagesForJid(String jid, int? oldestTimestamp) async {
+  Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
+    final comparator = olderThan ?
+      '<' :
+      '>';
     final query = oldestTimestamp != null ?
-      'conversationJid = ? AND timestamp < ?' :
+      'conversationJid = ? AND timestamp $comparator ?' :
       'conversationJid = ?';
     final args = oldestTimestamp != null ?
       [jid, oldestTimestamp] :

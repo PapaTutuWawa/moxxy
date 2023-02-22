@@ -1021,14 +1021,13 @@ Future<void> performGetPagedMessages(GetPagedMessagesCommand command, { dynamic 
 
   final result = await GetIt.I.get<MessageService>().getPaginatedMessagesForJid(
     command.conversationJid,
-    command.oldestMessageTimestamp,
+    command.olderThan,
+    command.timestamp,
   );
 
   sendEvent(
     PagedMessagesResultEvent(
       messages: result,
-      // TODO
-      hasOlderMessages: true,
     ),
     id: id,
   );

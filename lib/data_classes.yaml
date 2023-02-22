@@ -274,7 +274,6 @@ files:
           messages:
             type: List<Message>
             deserialise: true
-          hasOlderMessages: bool
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -562,7 +561,8 @@ files:
           - JsonImplementation
         attributes:
           conversationJid: String
-          oldestMessageTimestamp: int?
+          olderThan: bool
+          timestamp: int?
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

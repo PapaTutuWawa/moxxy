@@ -200,7 +200,7 @@ class BidirectionalController<T> {
   }
 
   /// Replaces the first item for which [test] returns true with [newItem].
-  void replaceItem(bool Function(T) test, T newItem) {
+  bool replaceItem(bool Function(T) test, T newItem) {
     // We iterate in reverse as we can assume that the newer messages have a higher
     // likeliness of being updated than older messages.
     var found = false;
@@ -215,6 +215,8 @@ class BidirectionalController<T> {
     if (found) {
       _dataStreamController.add(_cache);
     }
+
+    return found;
   }
   
   /// Animate to the bottom of the view.

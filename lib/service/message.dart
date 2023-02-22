@@ -35,9 +35,10 @@ class MessageService {
     return messages;
   }
 
-  Future<List<Message>> getPaginatedMessagesForJid(String jid, int? oldestTimestamp) async {
+  Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
     return GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
       jid,
+      olderThan,
       oldestTimestamp,
     );
   }

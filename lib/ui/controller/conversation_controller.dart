@@ -194,8 +194,8 @@ class BidirectionalConversationController extends BidirectionalController<Messag
     // Drop the message if we don't really care about it
     if (message.conversationJid != conversationJid) return;
 
-    // TODO: Guard against not being initialized yet, i.e. not having loaded the first
-    //       messages
+    // TODO(Unknown): Guard against not being initialized yet, i.e. not having loaded the first
+    //                messages.
 
     var shouldScrollToBottom = true;
     if (message.timestamp < cache.last.timestamp) {
@@ -369,21 +369,26 @@ class BidirectionalConversationController extends BidirectionalController<Messag
       ),
       awaitable: true,
     ) as MessageAddedEvent;
-    
+
+    var foundMessage = false;
     if (!hasNewerData) {
       if (wasEditing) {
-        // TODO: Handle
+        foundMessage = replaceItem(
+          (message) => message.id == result.message.id,
+          result.message,
+        );
       } else {
         addItem(result.message);
+        foundMessage = false;
       }
-      
-      await Future<void>.delayed(const Duration(milliseconds: 300));
-      animateToBottom();
+
+      if (foundMessage) {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        animateToBottom();
+      }
     } else {
       // TODO(PapaTutuWawa): Load the newest page and scroll to it
     }
-
-    _sendButtonStreamController.add(conversation.defaultSendButtonState);
   }
 
   @override
@@ -392,7 +397,8 @@ class BidirectionalConversationController extends BidirectionalController<Messag
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
       GetPagedMessagesCommand(
         conversationJid: conversationJid,
-        oldestMessageTimestamp: oldestElement?.timestamp,
+        timestamp: oldestElement?.timestamp,
+        olderThan: true,
       ),
     ) as PagedMessagesResultEvent;
 
@@ -401,8 +407,16 @@ class BidirectionalConversationController extends BidirectionalController<Messag
 
   @override
   Future<List<Message>> fetchNewerDataImpl(Message? newestElement) async {
-    // TODO: Implement
-    return [];
+    // ignore: cast_nullable_to_non_nullable
+    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
+      GetPagedMessagesCommand(
+        conversationJid: conversationJid,
+        timestamp: newestElement?.timestamp,
+        olderThan: false,
+      ),
+    ) as PagedMessagesResultEvent;
+
+    return result.messages.reversed.toList();
   }
 
   /// Quote [message] for a message.
