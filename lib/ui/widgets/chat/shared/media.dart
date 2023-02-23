@@ -5,14 +5,29 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/summary.dart';
 
 class SharedMediaDisplay extends StatelessWidget {
-  const SharedMediaDisplay(this.sharedMedia, this.jid, this.title, { super.key });
-  final List<SharedMedium> sharedMedia;
+  const SharedMediaDisplay({
+    required this.preview,
+    required this.jid,
+    required this.title,
+    required this.sharedMediaAmount,
+    super.key,
+  });
+
+  /// The list of preview shared media items.
+  final List<SharedMedium> preview;
+
+  /// The JID of the conversation.
   final String jid;
+
+  /// The title of the conversation.
   final String title;
+
+  /// The total amount of shared media items associated with the conversation.
+  final int sharedMediaAmount;
   
   @override
   Widget build(BuildContext context) {
-    if (sharedMedia.isEmpty) return const SizedBox();
+    if (preview.isEmpty) return const SizedBox();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,12 +55,12 @@ class SharedMediaDisplay extends StatelessWidget {
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
               ),
-              children: sharedMedia
+              children: preview
                 .sublist(0, 8)
                 .map((el) {
-                  if (el == sharedMedia.last) {
+                  if (el == preview.last) {
                     return SharedSummaryWidget(
-                      notShown: sharedMedia.length - 7,
+                      notShown: sharedMediaAmount - 7,
                       conversationJid: jid,
                       conversationTitle: title,
                     );

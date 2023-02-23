@@ -50,9 +50,10 @@ class ProfilePage extends StatelessWidget {
 
                   if (!state.isSelfProfile && state.conversation!.sharedMedia.isNotEmpty)
                     SharedMediaDisplay(
-                      state.conversation!.sharedMedia,
-                      state.conversation!.jid,
-                      state.conversation!.titleWithOptionalContact,
+                      preview: state.conversation!.sharedMedia,
+                      jid: state.conversation!.jid,
+                      title: state.conversation!.titleWithOptionalContact,
+                      sharedMediaAmount: state.conversation!.sharedMediaAmount,
                     ),
                 ],
               ),

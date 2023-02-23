@@ -550,6 +550,7 @@ class XmppService {
             true,
             prefs.defaultMuteState,
             prefs.enableOmemoByDefault,
+            paths.length,
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
@@ -580,6 +581,7 @@ class XmppService {
             lastMessage: lastMessages[recipient],
             lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
             open: true,
+            sharedMediaAmount: c.sharedMediaAmount + paths.length,
           );
 
           sharedMediaMap[recipient] = await _createSharedMedia(
@@ -1328,6 +1330,9 @@ class XmppService {
           true,
           prefs.defaultMuteState,
           message.encrypted,
+          // Always use 0 here, since a possible shared media item only is created
+          // afterwards.
+          0,
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),

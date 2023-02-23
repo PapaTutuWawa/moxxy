@@ -478,7 +478,18 @@ class HttpFileTransferService {
       job.mId,
       mime: mime,
     );
-    final newConv = conv.copyWith(
+
+    final cs = GetIt.I.get<ConversationService>();
+    final updatedConv = await cs.createOrUpdateConversation(
+      conv.jid,
+      update: (c) {
+        return cs.updateConversation(
+          c.jid,
+          sharedMediaAmount: c.sharedMediaAmount + 1,
+        );
+      },
+    );
+    final newConv = updatedConv!.copyWith(
       lastMessage: conv.lastMessage?.id == job.mId ?
         msg :
         conv.lastMessage,

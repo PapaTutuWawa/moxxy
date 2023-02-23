@@ -120,6 +120,7 @@ class NewConversationPage extends StatelessWidget {
                         false,
                         false,
                         ChatState.gone,
+                        0,
                         contactId: item.contactId,
                         contactAvatarPath: item.contactAvatarPath,
                         contactDisplayName: item.contactDisplayName,

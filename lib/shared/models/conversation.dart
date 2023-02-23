@@ -60,6 +60,8 @@ class Conversation with _$Conversation {
     bool encrypted,
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState,
+    // The amount of shared media items that are in the database
+    int sharedMediaAmount,
     {
       // The id of the contact in the device's phonebook if it exists
       String? contactId,

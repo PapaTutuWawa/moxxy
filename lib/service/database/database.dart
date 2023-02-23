@@ -32,6 +32,7 @@ import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attrib
 import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers_privacy.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
+import 'package:moxxyv2/service/database/migrations/0001_conversation_media_amount.dart';
 import 'package:moxxyv2/service/database/migrations/0001_conversation_primary_key.dart';
 import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
 import 'package:moxxyv2/service/database/migrations/0001_remove_auto_accept_subscriptions.dart';
@@ -91,7 +92,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 29,
+      version: 30,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -215,6 +216,10 @@ class DatabaseService {
         if (oldVersion < 29) {
           _log.finest('Running migration for database version 29');
           await upgradeFromV28ToV29(db);
+        }
+        if (oldVersion < 30) {
+          _log.finest('Running migration for database version 30');
+          await upgradeFromV29ToV30(db);
         }
       },
     );
@@ -362,6 +367,7 @@ class DatabaseService {
     Object? contactId = notSpecified,
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
+    int? sharedMediaAmount,
   }) async {
     final cd = (await _db.query(
       'Conversations',
@@ -407,6 +413,9 @@ class DatabaseService {
     if (contactDisplayName != notSpecified) {
       c['contactDisplayName'] = contactDisplayName as String?;
     }
+    if (sharedMediaAmount != null) {
+      c['sharedMediaAmount'] = sharedMediaAmount;
+    }
 
     await _db.update(
       'Conversations',
@@ -437,6 +446,7 @@ class DatabaseService {
     bool open,
     bool muted,
     bool encrypted,
+    int sharedMediaAmount,
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
@@ -456,6 +466,7 @@ class DatabaseService {
       muted,
       encrypted,
       ChatState.gone,
+      sharedMediaAmount,
       contactId: contactId,
       contactAvatarPath: contactAvatarPath,
       contactDisplayName: contactDisplayName,
