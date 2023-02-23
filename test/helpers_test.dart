@@ -2,8 +2,6 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:test/test.dart';
 
-import './helpers/xml.dart';
-
 void main() {
   group('padInt', () {
     test('0 should be padded to 00', () {
@@ -17,15 +15,6 @@ void main() {
     });
     test('99 should not be padded', () {
       expect(padInt(99), '99');
-    });
-  });
-
-  group('firstWhereOrNull', () {
-    test('[] should not contain 1', () {
-      expect(firstWhereOrNull<int>([], (int element) => element == 1), null);
-    });
-    test('[1, 2, 3] should contain 2', () {
-      expect(firstWhereOrNull([ 1, 2, 3 ], (int element) => element == 2), 2);
     });
   });
 
@@ -141,75 +130,6 @@ void main() {
     });
   });
 
-  group('compareXMLNodes', () {
-    test('Compare simple nodes', () {
-      expect(
-        compareXMLNodes(
-          XMLNode.fromString('<a xmlns="a:b:c"></a>'),
-          XMLNode.fromString('<a xmlns="a:b:c" />'),
-        ),
-        true,
-      );
-
-      expect(
-        compareXMLNodes(
-          XMLNode.fromString('<a xmlns="a:b:c"><child count="1"></child></a>'),
-          XMLNode.fromString('<a xmlns="a:b:c"><child count="1" /></a>'),
-        ),
-        true,
-      );
-
-      expect(
-        compareXMLNodes(
-          XMLNode.fromString('<a xmlns="a:b:c"><child count="1" /></a>'),
-          XMLNode.fromString('<a xmlns="a:b:c"><child count="2" /></a>'),
-        ),
-        false,
-      );
-
-      expect(
-        compareXMLNodes(
-          XMLNode.fromString('<a xmlns="a:b:c"><child>some text</child></a>'),
-          XMLNode.fromString('<a xmlns="a:b:c"><child>some other text</child></a>'),
-        ),
-        false,
-      );
-
-      expect(
-        compareXMLNodes(
-          XMLNode.fromString('<a xmlns="a:b:c"><child>some text</child></a>'),
-          XMLNode.fromString('<a xmlns="a:b:c"><child>some text</child></a>'),
-        ),
-        true,
-      );
-    });
-    test('Compare nodes and ignore the id attribute', () {
-        expect(
-          compareXMLNodes(
-            XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn' id='3c080624-949f-4c9f-9646-2cc6088d820b'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' node='http://moxxy.im' hash='sha-1' /></presence>"),
-            XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' hash='sha-1' node='http://moxxy.im' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' /></presence>"),
-            ignoreId: false,
-          ),
-          false,
-        );
-        expect(
-          compareXMLNodes(
-            XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn' id='3c080624-949f-4c9f-9646-2cc6088d820b'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' node='http://moxxy.im' hash='sha-1' /></presence>"),
-            XMLNode.fromString("<presence xmlns='jabber:client' from='polynomdivision@test.server/MU29eEZn'><show>chat</show><c xmlns='http://jabber.org/protocol/caps' hash='sha-1' node='http://moxxy.im' ver='eTczQOjOi9iroU5zVG7uBBTD4eQ=' /></presence>"),
-          ),
-          true,
-        );
-    });
-  });
-
-  group('firstNotNull', () {
-    test('Test simple lists', () {
-      expect(firstNotNull<int?>([null, null]), null);
-      expect(firstNotNull([1, null]), 1);
-      expect(firstNotNull([null, null, 2]), 2);
-    });
-  });
-
   group('filenameWithSuffix', () {
     test('Test simple filenames', () {
       expect(filenameWithSuffix('test.jpg', '(1)'), 'test(1).jpg');
@@ -244,7 +164,7 @@ void main() {
         DateTime(2022, 7, 29, 7, 25),
         DateTime(2022, 7, 31, 11, 15),
       ),
-      'Fri, 29. July',
+      'Fri., 29. July',
     );
 
     expect(
@@ -253,6 +173,36 @@ void main() {
         DateTime(2022, 7, 31, 11, 15),
       ),
       '29. July 2019',
+    );
+  });
+
+  test('clampedListPrepend', () {
+    expect(
+      clampedListPrepend([1, 2, 3], 4, 4),
+      [4, 1, 2, 3],
+    );
+    expect(
+      clampedListPrepend([1, 2, 3, 4], 5, 4),
+      [5, 1, 2, 3],
+    );
+    expect(
+      clampedListPrepend([1, 2, 3, 4, 5, 6], 7, 4),
+      [7, 1, 2, 3],
+    );
+  });
+
+  test('clampedListPrependAll', () {
+    expect(
+      clampedListPrependAll([1, 2, 3], [4, 5], 5),
+      [4, 5, 1, 2, 3],
+    );
+    expect(
+      clampedListPrependAll([1, 2, 3], [4, 5], 4),
+      [4, 5, 1, 2],
+    );
+    expect(
+      clampedListPrependAll([1, 2, 3, 4, 5], [6, 7], 4),
+      [6, 7, 1, 2],
     );
   });
 }

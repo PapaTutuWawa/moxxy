@@ -274,6 +274,15 @@ files:
           messages:
             type: List<Message>
             deserialise: true
+      # Returned by [GetPagedSharedMediaCommand]
+      - name: PagedSharedMediaResultEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          media:
+            type: List<SharedMedium>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -556,6 +565,14 @@ files:
           - JsonImplementation
         attributes:
       - name: GetPagedMessagesCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          conversationJid: String
+          olderThan: bool
+          timestamp: int?
+      - name: GetPagedSharedMediaCommand
         extends: BackgroundCommand
         implements:
           - JsonImplementation

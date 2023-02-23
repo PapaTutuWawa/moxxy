@@ -52,6 +52,7 @@ class ProfilePage extends StatelessWidget {
                     SharedMediaDisplay(
                       state.conversation!.sharedMedia,
                       state.conversation!.jid,
+                      state.conversation!.titleWithOptionalContact,
                     ),
                 ],
               ),

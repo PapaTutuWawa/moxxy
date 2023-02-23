@@ -5,9 +5,10 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/summary.dart';
 
 class SharedMediaDisplay extends StatelessWidget {
-  const SharedMediaDisplay(this.sharedMedia, this.jid, { super.key });
+  const SharedMediaDisplay(this.sharedMedia, this.jid, this.title, { super.key });
   final List<SharedMedium> sharedMedia;
   final String jid;
+  final String title;
 
   List<Widget> _renderItems() {
     final tmp = List<Widget>.empty(growable: true);
@@ -20,7 +21,13 @@ class SharedMediaDisplay extends StatelessWidget {
     }
 
     if (sharedMedia.length >= 8) {
-      tmp.add(SharedSummaryWidget(sharedMedia.length - 7));
+      tmp.add(
+        SharedSummaryWidget(
+          notShown: sharedMedia.length - 7,
+          conversationJid: jid,
+          conversationTitle: title,
+        ),
+      );
     }
     
     return tmp;

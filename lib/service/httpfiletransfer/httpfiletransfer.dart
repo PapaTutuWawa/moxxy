@@ -23,6 +23,7 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -481,11 +482,14 @@ class HttpFileTransferService {
       lastMessage: conv.lastMessage?.id == job.mId ?
         msg :
         conv.lastMessage,
-      sharedMedia: [
+      sharedMedia: clampedListPrepend<SharedMedium>(
+        conv.sharedMedia,
         sharedMedium,
-        ...conv.sharedMedia,
-      ],
+        8,
+      ),
     );
+
+    _log.finest('Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}');
     GetIt.I.get<ConversationService>().setConversation(newConv);
 
     // Show a notification

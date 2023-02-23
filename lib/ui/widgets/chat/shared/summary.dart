@@ -1,11 +1,19 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class SharedSummaryWidget extends StatelessWidget {
-  const SharedSummaryWidget(this.notShown, { super.key });
+  const SharedSummaryWidget({
+    required this.notShown,
+    required this.conversationJid,
+    required this.conversationTitle,
+    super.key,
+  });
   final int notShown;
+  final String conversationJid;
+  final String conversationTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +28,13 @@ class SharedSummaryWidget extends StatelessWidget {
         ),
       ),
       color: sharedMediaSummaryBackgroundColor,
-      onTap: () => Navigator.of(context).pushNamed(sharedMediaRoute),
+      onTap: () => Navigator.of(context).pushNamed(
+        sharedMediaRoute,
+        arguments: SharedMediaPageArguments(
+          conversationJid,
+          conversationTitle,
+        ),
+      ),
     );
   }
 }

@@ -289,6 +289,9 @@ class MessageService {
         if (isMedia) {
           await GetIt.I.get<DatabaseService>().removeSharedMediumByMessageId(msg.id);
 
+          // TODO(Unknown): Technically, we would have to then load 1 shared media
+          //                item from the database to, if possible, fill the list
+          //                back up to 8 items.
           newConversation = newConversation.copyWith(
             sharedMedia: newConversation.sharedMedia.where((SharedMedium medium) {
               return medium.messageId != msg.id;

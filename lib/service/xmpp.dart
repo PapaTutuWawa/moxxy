@@ -555,14 +555,14 @@ class XmppService {
             await css.getContactDisplayName(contactId),
           );
 
-          sharedMediaMap[recipient] = await _createSharedMedia(
+          final sharedMedia = await _createSharedMedia(
             messages,
             paths,
             recipient,
             newConversation.jid,
           );
           newConversation = newConversation.copyWith(
-            sharedMedia: sharedMediaMap[recipient]!,
+            sharedMedia: sharedMedia.sublist(0, 8),
           );
 
           // Update the cache
@@ -591,10 +591,11 @@ class XmppService {
           );
 
           newConversation = newConversation.copyWith(
-            sharedMedia: [
-              ...sharedMediaMap[recipient]!,
-              ...c.sharedMedia,
-            ],
+            sharedMedia: clampedListPrependAll(
+              c.sharedMedia,
+              sharedMediaMap[recipient]!,
+              8,
+            ),
           );
 
           // Update the cache

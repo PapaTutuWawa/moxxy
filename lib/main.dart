@@ -26,7 +26,6 @@ import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -94,7 +93,6 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
   GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
   GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
-  GetIt.I.registerSingleton<SharedMediaBloc>(SharedMediaBloc());
   GetIt.I.registerSingleton<CropBloc>(CropBloc());
   GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
   GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
@@ -116,7 +114,9 @@ void main() async {
   setupBlocs(navKey);
 
   await initializeServiceIfNeeded();
- 
+
+  imageCache.maximumSizeBytes = 500 * 1024 * 1024;
+  
   runApp(
     MultiBlocProvider(
       providers: [
@@ -146,9 +146,6 @@ void main() async {
         ),
         BlocProvider<AddContactBloc>(
           create: (_) => GetIt.I.get<AddContactBloc>(),
-        ),
-        BlocProvider<SharedMediaBloc>(
-          create: (_) => GetIt.I.get<SharedMediaBloc>(),
         ),
         BlocProvider<CropBloc>(
           create: (_) => GetIt.I.get<CropBloc>(),
@@ -268,7 +265,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               conversationJid: settings.arguments! as String,
             ),
           );
-          case sharedMediaRoute: return SharedMediaPage.route;
+          case sharedMediaRoute: return SharedMediaPage.getRoute(
+            settings.arguments! as SharedMediaPageArguments,
+          );
           case blocklistRoute: return BlocklistPage.route;
           case profileRoute: return ProfilePage.route;
           case settingsRoute: return SettingsPage.route;

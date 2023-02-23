@@ -14,7 +14,6 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
-import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -97,13 +96,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       SetOpenConversationCommand(jid: event.jid),
       awaitable: false,
     );
-    GetIt.I.get<SharedMediaBloc>().add(
-      SetSharedMedia(
-        conversation.title,
-        conversation.jid,
-        conversation.sharedMedia,
-      ),
-    );
   }
 
   Future<void> _onJidBlocked(JidBlockedEvent event, Emitter<ConversationState> emit) async {
@@ -130,8 +122,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   }
 
   Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
-    GetIt.I.get<SharedMediaBloc>().add(JidRemovedEvent());
-
     // Reset conversation so that we don't accidentally send chat states to chats
     // that are not currently focused.
     emit(

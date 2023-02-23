@@ -236,6 +236,7 @@ class DatabaseService {
         where: 'conversation_jid = ?',
         whereArgs: [jid],
         orderBy: 'timestamp DESC',
+        limit: 8,
       );
       final rosterItem = await GetIt.I.get<RosterService>()
         .getRosterItemByJid(jid);
@@ -288,6 +289,9 @@ class DatabaseService {
     return messages;
   }
 
+  /// Query at max [messagePaginationSize] messages for the conversation [jid] from the database.
+  /// [olderThan] specified whether the messages must be older (true) or newer (false) than [oldestTimestamp].
+  /// If [oldestTimestamp] is null, then use the oldest/newest message.
   Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
     final comparator = olderThan ?
       '<' :
@@ -322,6 +326,27 @@ class DatabaseService {
     }
 
     return messages;
+  }
+
+  Future<List<SharedMedium>> getPaginatedSharedMediaForJid(String jid, bool olderThan, int? oldestTimestamp) async {
+    final comparator = olderThan ?
+      '<' :
+      '>';
+    final query = oldestTimestamp != null ?
+      'conversation_jid = ? AND timestamp $comparator ?' :
+      'conversation_jid = ?';
+    final args = oldestTimestamp != null ?
+      [jid, oldestTimestamp] :
+      [jid];
+    final rawMedia = await _db.query(
+      mediaTable,
+      where: query,
+      whereArgs: args,
+      orderBy: 'timestamp DESC',
+      limit: sharedMediaPaginationSize,
+    );
+
+    return rawMedia.map(SharedMedium.fromDatabaseJson).toList();
   }
   
   /// Updates the conversation with JID [jid] inside the database.

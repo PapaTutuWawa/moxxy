@@ -83,6 +83,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
       EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
+      EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1028,6 +1029,23 @@ Future<void> performGetPagedMessages(GetPagedMessagesCommand command, { dynamic 
   sendEvent(
     PagedMessagesResultEvent(
       messages: result,
+    ),
+    id: id,
+  );
+}
+
+Future<void> performGetPagedSharedMedia(GetPagedSharedMediaCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final result = await GetIt.I.get<DatabaseService>().getPaginatedSharedMediaForJid(
+    command.conversationJid,
+    command.olderThan,
+    command.timestamp,
+  );
+
+  sendEvent(
+    PagedSharedMediaResultEvent(
+      media: result,
     ),
     id: id,
   );
