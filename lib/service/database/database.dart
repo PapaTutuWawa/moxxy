@@ -248,7 +248,10 @@ class DatabaseService {
 
       Message? lastMessage;
       if (c['lastMessageId'] != null) {
-        lastMessage = await getMessageById(c['lastMessageId']! as int);
+        lastMessage = await getMessageById(
+          c['lastMessageId']! as int,
+          jid,
+        );
       }
         
       tmp.add(
@@ -591,11 +594,11 @@ class DatabaseService {
     );
   }
 
-  Future<Message?> getMessageById(int id) async {
+  Future<Message?> getMessageById(int id, String conversationJid) async {
     final messagesRaw = await _db.query(
       'Messages',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND conversationJid = ?',
+      whereArgs: [id, conversationJid],
       limit: 1,
     );
 
@@ -606,11 +609,16 @@ class DatabaseService {
     return Message.fromDatabaseJson(msg, null);
   }
   
-  Future<Message?> getMessageByXmppId(String id, String conversationJid) async {
+  Future<Message?> getMessageByXmppId(String id, String conversationJid, {bool includeOriginId = true}) async {
+    final idQuery = includeOriginId ?
+      '(sid = ? OR originId = ?)' :
+      'sid = ?';
     final messagesRaw = await _db.query(
       'Messages',
-      where: 'conversationJid = ? AND (sid = ? or originId = ?)',
-      whereArgs: [conversationJid, id, id],
+      where: 'conversationJid = ? AND $idQuery',
+      whereArgs: includeOriginId ?
+        [conversationJid, id, id] :
+        [conversationJid, id],
       limit: 1,
     );
 
@@ -671,6 +679,7 @@ class DatabaseService {
       limit: 1,
     )).first;
     final m = Map<String, dynamic>.from(md);
+    final jid = m['conversationJid']! as String;
 
     if (body != notSpecified) {
       m['body'] = body as String?;
@@ -762,7 +771,10 @@ class DatabaseService {
 
     Message? quotes;
     if (m['quote_id'] != null) {
-      quotes = await getMessageById(m['quote_id']! as int);
+      quotes = await getMessageById(
+        m['quote_id']! as int,
+        jid,
+      );
     }
     
     return Message.fromDatabaseJson(m, quotes);

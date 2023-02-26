@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:io';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -14,27 +12,12 @@ import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 
 class MessageService {
-  // TODO(PapaTutuWawa): Maybe remove the cache
-  final HashMap<String, List<Message>> _messageCache = HashMap();
-
   /// Logger
   final Logger _log = Logger('MessageService');
 
-  /// Returns the messages for [jid], either from cache or from the database.
-  Future<List<Message>> getMessagesForJid(String jid) async {
-    if (!_messageCache.containsKey(jid)) {
-      _messageCache[jid] = await GetIt.I.get<DatabaseService>().loadMessagesForJid(jid);
-    }
-
-    final messages = _messageCache[jid];
-    if (messages == null) {
-      _log.warning('No messages found for $jid. Returning [].');
-      return [];
-    }
-
-    return messages;
-  }
-
+  /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
+  /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
+  /// than [oldestTimestamp], or the newest messages are returned if null.
   Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
     return GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
       jid,
@@ -115,45 +98,28 @@ class MessageService {
       pseudoMessageData: pseudoMessageData,
     );
 
-    // Only update the cache if the conversation already has been loaded. This prevents
-    // us from accidentally not loading the conversation afterwards.
-    if (_messageCache.containsKey(conversationJid)) {
-      _messageCache[conversationJid] = _messageCache[conversationJid]!..add(msg);
-    }
-
     return msg;
   }
 
   Future<Message?> getMessageByStanzaId(String conversationJid, String stanzaId) async {
-    if (!_messageCache.containsKey(conversationJid)) {
-      await getMessagesForJid(conversationJid);
-    }
-    
-    return firstWhereOrNull(
-      _messageCache[conversationJid]!,
-      (message) => message.sid == stanzaId,
+    return GetIt.I.get<DatabaseService>().getMessageByXmppId(
+      stanzaId,
+      conversationJid,
+      includeOriginId: false,
     );
   }
 
   Future<Message?> getMessageByStanzaOrOriginId(String conversationJid, String id) async {
-    if (!_messageCache.containsKey(conversationJid)) {
-      await getMessagesForJid(conversationJid);
-    }
-    
-    return firstWhereOrNull(
-      _messageCache[conversationJid]!,
-      (message) => message.sid == id || message.originId == id,
+    return GetIt.I.get<DatabaseService>().getMessageByXmppId(
+      id,
+      conversationJid,
     );
   }
   
   Future<Message?> getMessageById(String conversationJid, int id) async {
-    if (!_messageCache.containsKey(conversationJid)) {
-      await getMessagesForJid(conversationJid);
-    }
-
-    return firstWhereOrNull(
-      _messageCache[conversationJid]!,
-      (message) => message.id == id,
+    return GetIt.I.get<DatabaseService>().getMessageById(
+      id,
+      conversationJid,
     );
   }
 
@@ -185,7 +151,7 @@ class MessageService {
     bool? isEdited,
     Object? reactions = notSpecified,
   }) async {
-    final newMessage = await GetIt.I.get<DatabaseService>().updateMessage(
+    return GetIt.I.get<DatabaseService>().updateMessage(
       id,
       body: body,
       mediaUrl: mediaUrl,
@@ -213,16 +179,6 @@ class MessageService {
       isEdited: isEdited,
       reactions: reactions,
     );
-
-    if (_messageCache.containsKey(newMessage.conversationJid)) {
-      _messageCache[newMessage.conversationJid] = _messageCache[newMessage.conversationJid]!.map((m) {
-        if (m.id == newMessage.id) return newMessage;
-
-        return m;
-      }).toList();
-    }
-    
-    return newMessage;
   }
 
   /// Helper function that manages everything related to retracting a message. It

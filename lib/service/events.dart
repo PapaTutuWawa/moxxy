@@ -46,7 +46,6 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<AddConversationCommand>(performAddConversation),
       EventTypeMatcher<AddContactCommand>(performAddContact),
       EventTypeMatcher<RemoveContactCommand>(performRemoveContact),
-      EventTypeMatcher<GetMessagesForJidCommand>(performGetMessagesForJid),
       EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation),
       EventTypeMatcher<SendMessageCommand>(performSendMessage),
       EventTypeMatcher<BlockJidCommand>(performBlockJid),
@@ -255,17 +254,6 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
       );
       return c;
     },
-  );
-}
-
-Future<void> performGetMessagesForJid(GetMessagesForJidCommand command, { dynamic extra }) async {
-  final id = extra as String;
-
-  sendEvent(
-    MessagesResultEvent(
-      messages: await GetIt.I.get<MessageService>().getMessagesForJid(command.jid),
-    ),
-    id: id,
   );
 }
 
