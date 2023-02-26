@@ -1,8 +1,6 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
@@ -10,9 +8,11 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/timer.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
@@ -90,48 +90,25 @@ class _TextFieldRecordButton extends StatelessWidget {
 
 class ConversationBottomRow extends StatefulWidget {
   const ConversationBottomRow(
-    this.controller,
     this.tabController,
     this.focusNode,
+    this.conversationController,
     this.speedDialValueNotifier, {
       super.key,
     }
   );
-  final TextEditingController controller;
   final TabController tabController;
   final FocusNode focusNode;
   final ValueNotifier<bool> speedDialValueNotifier;
+  final BidirectionalConversationController conversationController;
 
   @override
   ConversationBottomRowState createState() => ConversationBottomRowState();
 }
 
 class ConversationBottomRowState extends State<ConversationBottomRow> {
-  late StreamSubscription<bool> _keyboardVisibilitySubscription;
-  
-  @override
-  void initState() {
-    super.initState();
-
-    _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(
-      _onKeyboardVisibilityChanged,
-    );
-  }
-
-  @override
-  void dispose() {
-    _keyboardVisibilitySubscription.cancel();
-    super.dispose();
-  }
-
-  void _onKeyboardVisibilityChanged(bool visible) {
-    GetIt.I.get<ConversationBloc>().add(
-      SoftKeyboardVisibilityChanged(visible),
-    );
-  }
-  
-  IconData _getSendButtonIcon(ConversationState state) {
-    switch (state.sendButtonState) {
+  IconData _getSendButtonIcon(SendButtonState state) {
+    switch (state) {
       case SendButtonState.multi: return Icons.add;
       case SendButtonState.send: return Icons.send;
       case SendButtonState.cancelCorrection: return Icons.clear;
@@ -159,83 +136,89 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.sendButtonState != next.sendButtonState || prev.quotedMessage != next.quotedMessage || prev.pickerVisible != next.pickerVisible || prev.messageText != next.messageText || prev.messageEditing != next.messageEditing || prev.messageEditingOriginalBody != next.messageEditingOriginalBody || prev.isRecording != next.isRecording,
+                    buildWhen: (prev, next) => prev.isRecording != next.isRecording,
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
-                          child: CustomTextField(
-                            backgroundColor: Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldColor,
-                            textColor: Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldTextColor,
-                            maxLines: 5,
-                            hintText: t.pages.conversation.messageHint,
-                            hintTextColor: Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldHintTextColor,
-                            isDense: true,
-                            onChanged: (value) {
-                              context.read<ConversationBloc>().add(
-                                MessageTextChangedEvent(value),
+                          child: StreamBuilder<TextFieldData>(
+                            initialData: const TextFieldData(
+                              true,
+                              null,
+                              false,
+                            ),
+                            stream: widget.conversationController.textFieldDataStream,
+                            builder: (context, snapshot) {
+                              return CustomTextField(
+                                backgroundColor: Theme
+                                  .of(context)
+                                  .extension<MoxxyThemeData>()!
+                                  .conversationTextFieldColor,
+                                textColor: Theme
+                                  .of(context)
+                                  .extension<MoxxyThemeData>()!
+                                  .conversationTextFieldTextColor,
+                                maxLines: 5,
+                                hintText: t.pages.conversation.messageHint,
+                                hintTextColor: Theme
+                                  .of(context)
+                                  .extension<MoxxyThemeData>()!
+                                  .conversationTextFieldHintTextColor,
+                                isDense: true,
+                                contentPadding: textfieldPaddingConversation,
+                                fontSize: textFieldFontSizeConversation,
+                                cornerRadius: textfieldRadiusConversation,
+                                controller: widget.conversationController.textController,
+                                topWidget: snapshot.data!.quotedMessage != null ?
+                                  buildQuoteMessageWidget(
+                                    snapshot.data!.quotedMessage!,
+                                    isSent(
+                                      snapshot.data!.quotedMessage!,
+                                      GetIt.I.get<UIDataService>().ownJid!,
+                                    ),
+                                    resetQuote: widget.conversationController.removeQuote,
+                                  ) :
+                                  null,
+                                focusNode: widget.focusNode,
+                                shouldSummonKeyboard: () => !snapshot.data!.pickerVisible,
+                                prefixIcon: IntrinsicWidth(
+                                  child: Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: _TextFieldIconButton(
+                                          snapshot.data!.pickerVisible ? 
+                                            Icons.keyboard :
+                                            _getPickerIcon(),
+                                          () {
+                                            widget.conversationController.togglePickerVisibility(true);
+                                          },
+                                        ),
+                                      ), 
+                                    ],
+                                  ),
+                                ),
+                                prefixIconConstraints: const BoxConstraints(
+                                  minWidth: 24,
+                                  minHeight: 24,
+                                ),
+                                suffixIcon: snapshot.data!.isBodyEmpty && snapshot.data!.quotedMessage == null ?
+                                  IntrinsicWidth(
+                                    child: Row(
+                                      children: const [
+                                        Padding(
+                                          padding: EdgeInsets.only(right: 8),
+                                          child: _TextFieldRecordButton(),
+                                        ),
+                                      ],
+                                    ),
+                                  ) :
+                                  null,
+                                suffixIconConstraints: const BoxConstraints(
+                                  minWidth: 24,
+                                  minHeight: 24,
+                                ),
                               );
                             },
-                            contentPadding: textfieldPaddingConversation,
-                            fontSize: textFieldFontSizeConversation,
-                            cornerRadius: textfieldRadiusConversation,
-                            controller: widget.controller,
-                            topWidget: state.quotedMessage != null ?
-                              buildQuoteMessageWidget(
-                                state.quotedMessage!,
-                                isSent(state.quotedMessage!, state.jid),
-                                resetQuote: () => context.read<ConversationBloc>().add(QuoteRemovedEvent()),
-                              ) :
-                              null,
-                            focusNode: widget.focusNode,
-                            shouldSummonKeyboard: () => !state.pickerVisible,
-                            prefixIcon: IntrinsicWidth(
-                              child: Row(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8),
-                                    child: _TextFieldIconButton(
-                                      state.pickerVisible ? 
-                                      Icons.keyboard :
-                                      _getPickerIcon(),
-                                      () {
-                                        context.read<ConversationBloc>().add(
-                                          PickerToggledEvent(),
-                                        );
-                                      },
-                                    ),
-                                  ), 
-                                ],
-                              ),
-                            ),
-                            prefixIconConstraints: const BoxConstraints(
-                              minWidth: 24,
-                              minHeight: 24,
-                            ),
-                            suffixIcon: state.messageText.isEmpty && state.quotedMessage == null ?
-                              IntrinsicWidth(
-                                child: Row(
-                                  children: const [
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 8),
-                                      child: _TextFieldRecordButton(),
-                                    ),
-                                  ],
-                                ),
-                              ) :
-                              null,
-                            suffixIconConstraints: const BoxConstraints(
-                              minWidth: 24,
-                              minHeight: 24,
-                            ),
                           ),
                         ),
                         Padding(
@@ -248,62 +231,64 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                               child: SizedBox(
                                 height: 45,
                                 width: 45,
-                                child: SpeedDial(
-                                  icon: _getSendButtonIcon(state),
-                                  backgroundColor: primaryColor,
-                                  foregroundColor: Colors.white,
-                                  children: [
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.image),
-                                      onTap: () {
-                                        context.read<ConversationBloc>().add(
-                                          ImagePickerRequestedEvent(),
-                                        );
-                                      },
+                                child: StreamBuilder<SendButtonState>(
+                                  initialData: defaultSendButtonState,
+                                  stream: widget.conversationController.sendButtonStream,
+                                  builder: (context, snapshot) {
+                                    return SpeedDial(
+                                      icon: _getSendButtonIcon(snapshot.data!),
                                       backgroundColor: primaryColor,
                                       foregroundColor: Colors.white,
-                                      label: t.pages.conversation.sendImages,
-                                    ),
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.file_present),
-                                      onTap: () {
-                                        context.read<ConversationBloc>().add(
-                                          FilePickerRequestedEvent(),
-                                        );
+                                      children: [
+                                        SpeedDialChild(
+                                          child: const Icon(Icons.image),
+                                          onTap: () {
+                                            context.read<ConversationBloc>().add(
+                                              ImagePickerRequestedEvent(),
+                                            );
+                                          },
+                                          backgroundColor: primaryColor,
+                                          foregroundColor: Colors.white,
+                                          label: t.pages.conversation.sendImages,
+                                        ),
+                                        SpeedDialChild(
+                                          child: const Icon(Icons.file_present),
+                                          onTap: () {
+                                            context.read<ConversationBloc>().add(
+                                              FilePickerRequestedEvent(),
+                                            );
+                                          },
+                                          backgroundColor: primaryColor,
+                                          foregroundColor: Colors.white,
+                                          label: t.pages.conversation.sendFiles,
+                                        ),
+                                        SpeedDialChild(
+                                          child: const Icon(Icons.photo_camera),
+                                          onTap: () {
+                                            showNotImplementedDialog('taking photos', context);
+                                          },
+                                          backgroundColor: primaryColor,
+                                          foregroundColor: Colors.white,
+                                          label: t.pages.conversation.takePhotos,
+                                        ),
+                                      ],
+                                      openCloseDial: widget.speedDialValueNotifier,
+                                      onPress: () {
+                                        switch (snapshot.data!) {
+                                          case SendButtonState.cancelCorrection:
+                                          widget.conversationController.endMessageEditing();
+                                          return;
+                                          case SendButtonState.send:
+                                          widget.conversationController.sendMessage(
+                                            state.conversation!.encrypted,
+                                          );
+                                          return;
+                                          case SendButtonState.multi:
+                                          widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
+                                          return;
+                                        }
                                       },
-                                      backgroundColor: primaryColor,
-                                      foregroundColor: Colors.white,
-                                      label: t.pages.conversation.sendFiles,
-                                    ),
-                                    SpeedDialChild(
-                                      child: const Icon(Icons.photo_camera),
-                                      onTap: () {
-                                        showNotImplementedDialog('taking photos', context);
-                                      },
-                                      backgroundColor: primaryColor,
-                                      foregroundColor: Colors.white,
-                                      label: t.pages.conversation.takePhotos,
-                                    ),
-                                  ],
-                                  openCloseDial: widget.speedDialValueNotifier,
-                                  onPress: () {
-                                    switch (state.sendButtonState) {
-                                      case SendButtonState.cancelCorrection:
-                                      context.read<ConversationBloc>().add(
-                                        MessageEditCancelledEvent(),
-                                      );
-                                      widget.controller.text = '';
-                                      return;
-                                      case SendButtonState.send:
-                                      context.read<ConversationBloc>().add(
-                                        MessageSentEvent(),
-                                      );
-                                      widget.controller.text = '';
-                                      return;
-                                      case SendButtonState.multi:
-                                      widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
-                                      return;
-                                    }
+                                    );
                                   },
                                 ),
                               ),
@@ -315,23 +300,22 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                   ),
                 ),
 
-                BlocBuilder<ConversationBloc, ConversationState>(
-                  buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible,
-                  builder: (context, state) => Offstage(
-                    offstage: !state.pickerVisible,
+                StreamBuilder<bool>(
+                  initialData: false,
+                  stream: widget.conversationController.pickerVisibleStream,
+                  builder: (context, snapshot) => Offstage(
+                    offstage: !snapshot.data!,
                     child: CombinedPicker(
                       tabController: widget.tabController,
                       onEmojiTapped: (emoji) {
-                        final bloc = context.read<ConversationBloc>();
-                        final selection = widget.controller.selection;
+                        final selection = widget.conversationController.textController.selection;
                         final baseOffset = max(selection.baseOffset, 0);
                         final extentOffset = max(selection.extentOffset, 0);
-                        final prefix = bloc.state.messageText.substring(0, baseOffset);
-                        final suffix = bloc.state.messageText.substring(extentOffset);
+                        final prefix = widget.conversationController.messageBody.substring(0, baseOffset);
+                        final suffix = widget.conversationController.messageBody.substring(extentOffset);
                         final newText = '$prefix${emoji.emoji}$suffix';
                         final newValue = baseOffset + emoji.emoji.codeUnits.length;
-                        bloc.add(MessageTextChangedEvent(newText));
-                        widget.controller
+                        widget.conversationController.textController
                           ..text = newText
                           ..selection = TextSelection(
                             baseOffset: newValue,
@@ -340,33 +324,29 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       },
                       onBackspaceTapped: () {
                         // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
-                        final bloc = context.read<ConversationBloc>();
-                        final text = bloc.state.messageText;
-                        final selection = widget.controller.selection;
-                        final cursorPosition = widget.controller.selection.base.offset;
+                        final text = widget.conversationController.messageBody;
+                        final selection = widget.conversationController.textController.selection;
+                        final cursorPosition = widget.conversationController.textController.selection.base.offset;
  
                         if (cursorPosition < 0) {
                           return;
                         }
  
                         final newTextBeforeCursor = selection
-                        .textBefore(text).characters
-                        .skipLast(1)
-                        .toString();
+                          .textBefore(text).characters
+                          .skipLast(1)
+                          .toString();
  
-                        bloc.add(MessageTextChangedEvent(newTextBeforeCursor));
-                        widget.controller
+                        widget.conversationController.textController
                           ..text = newTextBeforeCursor
                           ..selection = TextSelection.fromPosition(
                             TextPosition(offset: newTextBeforeCursor.length),
                           );
                       },
                       onStickerTapped: (sticker, pack) {
-                        context.read<ConversationBloc>().add(
-                          StickerSentEvent(
-                            pack.id,
-                            sticker.hashKey,
-                          ),
+                        widget.conversationController.sendSticker(
+                          pack.id,
+                          sticker.hashKey,
                         );
                       },
                     ),

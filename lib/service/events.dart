@@ -46,7 +46,6 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<AddConversationCommand>(performAddConversation),
       EventTypeMatcher<AddContactCommand>(performAddContact),
       EventTypeMatcher<RemoveContactCommand>(performRemoveContact),
-      EventTypeMatcher<GetMessagesForJidCommand>(performGetMessagesForJid),
       EventTypeMatcher<SetOpenConversationCommand>(performSetOpenConversation),
       EventTypeMatcher<SendMessageCommand>(performSendMessage),
       EventTypeMatcher<BlockJidCommand>(performBlockJid),
@@ -82,6 +81,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<FetchStickerPackCommand>(performFetchStickerPack),
       EventTypeMatcher<InstallStickerPackCommand>(performStickerPackInstall),
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
+      EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
+      EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
   ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -214,6 +215,7 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
         true,
         preferences.defaultMuteState,
         preferences.enableOmemoByDefault,
+        0,
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
@@ -255,17 +257,6 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
   );
 }
 
-Future<void> performGetMessagesForJid(GetMessagesForJidCommand command, { dynamic extra }) async {
-  final id = extra as String;
-
-  sendEvent(
-    MessagesResultEvent(
-      messages: await GetIt.I.get<MessageService>().getMessagesForJid(command.jid),
-    ),
-    id: id,
-  );
-}
-
 Future<void> performSetOpenConversation(SetOpenConversationCommand command, { dynamic extra }) async {
   await GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? '');
 
@@ -299,6 +290,7 @@ Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) a
       ? chatStateFromString(command.chatState)
       : null,
     quotedMessage: command.quotedMessage,
+    currentConversationJid: command.currentConversationJid,
     commandId: extra as String,
   );
 }
@@ -423,6 +415,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
         true,
         prefs.defaultMuteState,
         prefs.enableOmemoByDefault,
+        0,
         contactId,
         await css.getProfilePicturePathForJid(jid),
         await css.getContactDisplayName(contactId),
@@ -924,6 +917,7 @@ Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) a
     body: sticker!.desc,
     recipients: [command.recipient],
     sticker: sticker,
+    currentConversationJid: command.recipient,
   );
 }
 
@@ -1008,6 +1002,40 @@ Future<void> performGetBlocklist(GetBlocklistCommand command, { dynamic extra })
   sendEvent(
     GetBlocklistResultEvent(
       entries: result,
+    ),
+    id: id,
+  );
+}
+
+Future<void> performGetPagedMessages(GetPagedMessagesCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final result = await GetIt.I.get<MessageService>().getPaginatedMessagesForJid(
+    command.conversationJid,
+    command.olderThan,
+    command.timestamp,
+  );
+
+  sendEvent(
+    PagedMessagesResultEvent(
+      messages: result,
+    ),
+    id: id,
+  );
+}
+
+Future<void> performGetPagedSharedMedia(GetPagedSharedMediaCommand command, { dynamic extra }) async {
+  final id = extra as String;
+
+  final result = await GetIt.I.get<DatabaseService>().getPaginatedSharedMediaForJid(
+    command.conversationJid,
+    command.olderThan,
+    command.timestamp,
+  );
+
+  sendEvent(
+    PagedSharedMediaResultEvent(
+      media: result,
     ),
     id: id,
   );

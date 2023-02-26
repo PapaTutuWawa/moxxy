@@ -489,13 +489,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
-  flutter_list_view:
-    dependency: "direct main"
-    description:
-      name: flutter_list_view
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.21"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
@@ -642,6 +635,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  grouped_list:
+    dependency: "direct main"
+    description:
+      name: grouped_list
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.1.2"
   hex:
     dependency: "direct main"
     description:

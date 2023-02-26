@@ -32,6 +32,7 @@ import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attrib
 import 'package:moxxyv2/service/database/migrations/0000_stickers_missing_attributes3.dart';
 import 'package:moxxyv2/service/database/migrations/0000_stickers_privacy.dart';
 import 'package:moxxyv2/service/database/migrations/0000_xmpp_state.dart';
+import 'package:moxxyv2/service/database/migrations/0001_conversation_media_amount.dart';
 import 'package:moxxyv2/service/database/migrations/0001_conversation_primary_key.dart';
 import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
 import 'package:moxxyv2/service/database/migrations/0001_remove_auto_accept_subscriptions.dart';
@@ -41,6 +42,7 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -90,7 +92,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 29,
+      version: 30,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -215,6 +217,10 @@ class DatabaseService {
           _log.finest('Running migration for database version 29');
           await upgradeFromV28ToV29(db);
         }
+        if (oldVersion < 30) {
+          _log.finest('Running migration for database version 30');
+          await upgradeFromV29ToV30(db);
+        }
       },
     );
 
@@ -235,13 +241,17 @@ class DatabaseService {
         where: 'conversation_jid = ?',
         whereArgs: [jid],
         orderBy: 'timestamp DESC',
+        limit: 8,
       );
       final rosterItem = await GetIt.I.get<RosterService>()
         .getRosterItemByJid(jid);
 
       Message? lastMessage;
       if (c['lastMessageId'] != null) {
-        lastMessage = await getMessageById(c['lastMessageId']! as int);
+        lastMessage = await getMessageById(
+          c['lastMessageId']! as int,
+          jid,
+        );
       }
         
       tmp.add(
@@ -286,6 +296,66 @@ class DatabaseService {
 
     return messages;
   }
+
+  /// Query at max [messagePaginationSize] messages for the conversation [jid] from the database.
+  /// [olderThan] specified whether the messages must be older (true) or newer (false) than [oldestTimestamp].
+  /// If [oldestTimestamp] is null, then use the oldest/newest message.
+  Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
+    final comparator = olderThan ?
+      '<' :
+      '>';
+    final query = oldestTimestamp != null ?
+      'conversationJid = ? AND timestamp $comparator ?' :
+      'conversationJid = ?';
+    final args = oldestTimestamp != null ?
+      [jid, oldestTimestamp] :
+      [jid];
+    final rawMessages = await _db.query(
+      'Messages',
+      where: query,
+      whereArgs: args,
+      orderBy: 'timestamp DESC',
+      limit: messagePaginationSize,
+    );
+
+    final messages = List<Message>.empty(growable: true);
+    for (final m in rawMessages) {
+      Message? quotes;
+      if (m['quote_id'] != null) {
+        final rawQuote = (await _db.query(
+          'Messages',
+          where: 'conversationJid = ? AND id = ?',
+          whereArgs: [jid, m['quote_id']! as int],
+        )).first;
+        quotes = Message.fromDatabaseJson(rawQuote, null);
+      }
+
+      messages.add(Message.fromDatabaseJson(m, quotes));
+    }
+
+    return messages;
+  }
+
+  Future<List<SharedMedium>> getPaginatedSharedMediaForJid(String jid, bool olderThan, int? oldestTimestamp) async {
+    final comparator = olderThan ?
+      '<' :
+      '>';
+    final query = oldestTimestamp != null ?
+      'conversation_jid = ? AND timestamp $comparator ?' :
+      'conversation_jid = ?';
+    final args = oldestTimestamp != null ?
+      [jid, oldestTimestamp] :
+      [jid];
+    final rawMedia = await _db.query(
+      mediaTable,
+      where: query,
+      whereArgs: args,
+      orderBy: 'timestamp DESC',
+      limit: sharedMediaPaginationSize,
+    );
+
+    return rawMedia.map(SharedMedium.fromDatabaseJson).toList();
+  }
   
   /// Updates the conversation with JID [jid] inside the database.
   Future<Conversation> updateConversation(String jid, {
@@ -300,6 +370,7 @@ class DatabaseService {
     Object? contactId = notSpecified,
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
+    int? sharedMediaAmount,
   }) async {
     final cd = (await _db.query(
       'Conversations',
@@ -345,6 +416,9 @@ class DatabaseService {
     if (contactDisplayName != notSpecified) {
       c['contactDisplayName'] = contactDisplayName as String?;
     }
+    if (sharedMediaAmount != null) {
+      c['sharedMediaAmount'] = sharedMediaAmount;
+    }
 
     await _db.update(
       'Conversations',
@@ -375,6 +449,7 @@ class DatabaseService {
     bool open,
     bool muted,
     bool encrypted,
+    int sharedMediaAmount,
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
@@ -394,6 +469,7 @@ class DatabaseService {
       muted,
       encrypted,
       ChatState.gone,
+      sharedMediaAmount,
       contactId: contactId,
       contactAvatarPath: contactAvatarPath,
       contactDisplayName: contactDisplayName,
@@ -518,11 +594,11 @@ class DatabaseService {
     );
   }
 
-  Future<Message?> getMessageById(int id) async {
+  Future<Message?> getMessageById(int id, String conversationJid) async {
     final messagesRaw = await _db.query(
       'Messages',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND conversationJid = ?',
+      whereArgs: [id, conversationJid],
       limit: 1,
     );
 
@@ -533,11 +609,16 @@ class DatabaseService {
     return Message.fromDatabaseJson(msg, null);
   }
   
-  Future<Message?> getMessageByXmppId(String id, String conversationJid) async {
+  Future<Message?> getMessageByXmppId(String id, String conversationJid, {bool includeOriginId = true}) async {
+    final idQuery = includeOriginId ?
+      '(sid = ? OR originId = ?)' :
+      'sid = ?';
     final messagesRaw = await _db.query(
       'Messages',
-      where: 'conversationJid = ? AND (sid = ? or originId = ?)',
-      whereArgs: [conversationJid, id, id],
+      where: 'conversationJid = ? AND $idQuery',
+      whereArgs: includeOriginId ?
+        [conversationJid, id, id] :
+        [conversationJid, id],
       limit: 1,
     );
 
@@ -598,6 +679,7 @@ class DatabaseService {
       limit: 1,
     )).first;
     final m = Map<String, dynamic>.from(md);
+    final jid = m['conversationJid']! as String;
 
     if (body != notSpecified) {
       m['body'] = body as String?;
@@ -689,7 +771,10 @@ class DatabaseService {
 
     Message? quotes;
     if (m['quote_id'] != null) {
-      quotes = await getMessageById(m['quote_id']! as int);
+      quotes = await getMessageById(
+        m['quote_id']! as int,
+        jid,
+      );
     }
     
     return Message.fromDatabaseJson(m, quotes);

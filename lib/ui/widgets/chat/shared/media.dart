@@ -5,45 +5,38 @@ import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/summary.dart';
 
 class SharedMediaDisplay extends StatelessWidget {
-  const SharedMediaDisplay(this.sharedMedia, this.jid, { super.key });
-  final List<SharedMedium> sharedMedia;
+  const SharedMediaDisplay({
+    required this.preview,
+    required this.jid,
+    required this.title,
+    required this.sharedMediaAmount,
+    super.key,
+  });
+
+  /// The list of preview shared media items.
+  final List<SharedMedium> preview;
+
+  /// The JID of the conversation.
   final String jid;
 
-  List<Widget> _renderItems() {
-    final tmp = List<Widget>.empty(growable: true);
+  /// The title of the conversation.
+  final String title;
 
-    // NOTE: 6, since that lets us iterate from 0 to 6 (7 elements), thus leaving
-    //       one space for the summary button
-    final clampedEndIndex = sharedMedia.length >= 8 ? 6 : sharedMedia.length - 1;
-    for (var i = 0; i <= clampedEndIndex; i++) {
-      tmp.add(buildSharedMediaWidget(sharedMedia[i], jid));
-    }
-
-    if (sharedMedia.length >= 8) {
-      tmp.add(SharedSummaryWidget(sharedMedia.length - 7));
-    }
-    
-    return tmp;
-  }
+  /// The total amount of shared media items associated with the conversation.
+  final int sharedMediaAmount;
   
   @override
   Widget build(BuildContext context) {
-    if (sharedMedia.isEmpty) return const SizedBox();
+    if (preview.isEmpty) return const SizedBox();
 
-    final width = MediaQuery.of(context).size.width;
-    // NOTE: Based on the formula width = 2padding + (n-1)5 + 75n,
-    //       with n being the number of item to show. If we set n=4, then
-    //       the padding will always be the same.
-    final padding = 0.5 * (width - 15 - 300);
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(
+          padding: const EdgeInsets.only(
             top: 25,
-            left: padding,
-            right: padding,
+            left: 16,
+            right: 16,
           ),
           child: Text(
             t.pages.profile.conversation.sharedMedia,
@@ -51,16 +44,33 @@ class SharedMediaDisplay extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 8, left: padding, right: padding),
+          padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
           child: Container(
             alignment: Alignment.topLeft,
-            child: Wrap(
-              spacing: 5,
-              runSpacing: 5,
-              children: _renderItems(),
+            child: GridView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              children: preview
+                .sublist(0, 8)
+                .map((el) {
+                  if (el == preview.last) {
+                    return SharedSummaryWidget(
+                      notShown: sharedMediaAmount - 7,
+                      conversationJid: jid,
+                      conversationTitle: title,
+                    );
+                  }
+
+                  return buildSharedMediaWidget(el, jid);
+                }).toList(),
             ),
           ),
-        )
+        ),
       ],
     );
   }

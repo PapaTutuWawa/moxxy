@@ -77,6 +77,7 @@ Future<void> createDatabase(Database db, int version) async {
       muted INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       lastMessageId INTEGER,
+      sharedMediaAmount INTEGER NOT NULL,
       contactId TEXT,
       contactAvatarPath TEXT,
       contactDisplayName TEXT,

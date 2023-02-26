@@ -412,3 +412,33 @@ Future<String> getStickerPackPath(String hashFunction, String hashValue) async {
     '${hashFunction}_$hashValue',
   );
 }
+
+/// Prepend [item] to [list], but ensure that the resulting list's size is
+/// smaller than or equal to [maxSize].
+List<T> clampedListPrepend<T>(List<T> list, T item, int maxSize) {
+  return clampedListPrependAll(
+    list,
+    [item],
+    maxSize,
+  );
+}
+
+/// Prepend [items] to [list], but ensure that the resulting list has a size
+/// that is smaller than or equal to [maxSize].
+List<T> clampedListPrependAll<T>(List<T> list, List<T> items, int maxSize) {
+  if (items.length >= maxSize) {
+    return items.sublist(0, maxSize);
+  }
+
+  if (list.length + items.length <= maxSize) {
+    return [
+      ...items,
+      ...list,
+    ];
+  }
+
+  return [
+    ...items,
+    ...list,
+  ].sublist(0, maxSize);
+}

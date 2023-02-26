@@ -14,8 +14,8 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart' as conversations;
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart' as new_conversation;
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
-import 'package:moxxyv2/ui/bloc/sharedmedia_bloc.dart' as sharedmedia;
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart' as stickers;
+import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/prestart.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 
@@ -88,23 +88,17 @@ Future<void> onConversationUpdated(ConversationUpdatedEvent event, { dynamic ext
   GetIt.I.get<profile.ProfileBloc>().add(
     profile.ConversationUpdatedEvent(event.conversation),
   );
-  GetIt.I.get<sharedmedia.SharedMediaBloc>().add(
-    sharedmedia.UpdatedSharedMedia(
-      event.conversation.jid,
-      event.conversation.sharedMedia,
-    ),
-  );
 }
 
 Future<void> onMessageAdded(MessageAddedEvent event, { dynamic extra }) async {
-  GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.MessageAddedEvent(event.message),
+  await BidirectionalConversationController.currentController?.onMessageReceived(
+    event.message,
   );
 }
 
 Future<void> onMessageUpdated(MessageUpdatedEvent event, { dynamic extra }) async {
-  GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.MessageUpdatedEvent(event.message),
+  BidirectionalConversationController.currentController?.onMessageUpdated(
+    event.message,
   );
 }
 

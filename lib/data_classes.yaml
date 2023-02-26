@@ -39,15 +39,6 @@ files:
           stickers:
             type: List<StickerPack>?
             deserialise: true
-      # Returned by [GetMessagesForJidCommand]
-      - name: MessagesResultEvent
-        extends: BackgroundEvent
-        implements:
-          - JsonImplementation
-        attributes:
-          messages:
-            type: List<Message>
-            deserialise: true
       # Triggered if a conversation has been added.
       # Also returned by [AddConversationCommand]
       - name: ConversationAddedEvent
@@ -74,7 +65,7 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
-      # Send by the service if a message has been received or returned by # [SendMessageCommand].
+      # Send by the service if a message has been received or returned by [SendMessageCommand].
       - name: MessageAddedEvent
         extends: BackgroundEvent
         implements:
@@ -265,6 +256,24 @@ files:
           stickerPack:
             type: StickerPack
             deserialise: true
+      # Returned by [GetPagedMessagesCommand]
+      - name: PagedMessagesResultEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          messages:
+            type: List<Message>
+            deserialise: true
+      # Returned by [GetPagedSharedMediaCommand]
+      - name: PagedSharedMediaResultEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          media:
+            type: List<SharedMedium>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -294,12 +303,6 @@ files:
           lastMessageBody: String
           avatarUrl: String
           jid: String
-      - name: GetMessagesForJidCommand
-        extends: BackgroundCommand
-        implements:
-          - JsonImplementation
-        attributes:
-          jid: String
       - name: SetOpenConversationCommand
         extends: BackgroundCommand
         implements:
@@ -319,6 +322,7 @@ files:
             deserialise: true
           editSid: String?
           editId: int?
+          currentConversationJid: String?
       - name: SendFilesCommand
         extends: BackgroundCommand
         implements:
@@ -545,6 +549,22 @@ files:
         implements:
           - JsonImplementation
         attributes:
+      - name: GetPagedMessagesCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          conversationJid: String
+          olderThan: bool
+          timestamp: int?
+      - name: GetPagedSharedMediaCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          conversationJid: String
+          olderThan: bool
+          timestamp: int?
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

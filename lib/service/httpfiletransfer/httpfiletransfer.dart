@@ -23,6 +23,7 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -477,15 +478,29 @@ class HttpFileTransferService {
       job.mId,
       mime: mime,
     );
-    final newConv = conv.copyWith(
+
+    final cs = GetIt.I.get<ConversationService>();
+    final updatedConv = await cs.createOrUpdateConversation(
+      conv.jid,
+      update: (c) {
+        return cs.updateConversation(
+          c.jid,
+          sharedMediaAmount: c.sharedMediaAmount + 1,
+        );
+      },
+    );
+    final newConv = updatedConv!.copyWith(
       lastMessage: conv.lastMessage?.id == job.mId ?
         msg :
         conv.lastMessage,
-      sharedMedia: [
+      sharedMedia: clampedListPrepend<SharedMedium>(
+        conv.sharedMedia,
         sharedMedium,
-        ...conv.sharedMedia,
-      ],
+        8,
+      ),
     );
+
+    _log.finest('Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}');
     GetIt.I.get<ConversationService>().setConversation(newConv);
 
     // Show a notification

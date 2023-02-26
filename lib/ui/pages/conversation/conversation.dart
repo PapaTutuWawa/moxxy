@@ -1,11 +1,12 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_list_view/flutter_list_view.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -13,11 +14,13 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
@@ -25,31 +28,31 @@ import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 class ConversationPage extends StatefulWidget {
-  const ConversationPage({ super.key });
+  const ConversationPage({
+    required this.conversationJid,
+    super.key,
+  });
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const ConversationPage(),
-    settings: const RouteSettings(
-      name: conversationRoute,
-    ),
-  );
+  /// The JID of the current conversation
+  final String conversationJid;
   
   @override
   ConversationPageState createState() => ConversationPageState();
 }
 
 class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
-  final TextEditingController _controller = TextEditingController();
-  final FlutterListViewController _scrollController = FlutterListViewController();
   late final AnimationController _animationController; 
   late final AnimationController _overviewAnimationController;
   late final TabController _tabController;
   late Animation<double> _overviewMsgAnimation;
   late final Animation<double> _scrollToBottom;
-  bool _scrolledToBottomState = true;
   late FocusNode _textfieldFocus;
   final ValueNotifier<bool> _isSpeedDialOpen = ValueNotifier(false);
 
+  late final BidirectionalConversationController _conversationController;
+
+  late final StreamSubscription<bool> _scrolledToBottomButtonSubscription;
+  
   @override
   void initState() {
     super.initState();
@@ -58,7 +61,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       vsync: this,
     );
     _textfieldFocus = FocusNode();
-    _scrollController.addListener(_onScroll);
+
+    _conversationController = BidirectionalConversationController(
+      widget.conversationJid,
+    );
+    _conversationController.fetchOlderData();
+    _scrolledToBottomButtonSubscription = _conversationController.scrollToBottomStateStream.listen(_onScrollToBottomStateChanged);
 
     _overviewAnimationController = AnimationController(
       duration: const Duration(milliseconds: 200),
@@ -79,20 +87,22 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   @override
   void dispose() {
     _tabController.dispose();
-    _controller.dispose();
-    _scrollController
-      ..removeListener(_onScroll)
-      ..dispose();
+    _conversationController.dispose();
     _animationController.dispose();
     _overviewAnimationController.dispose();
     _textfieldFocus.dispose();
+    _scrolledToBottomButtonSubscription.cancel();
     super.dispose();
   }
 
-  void _quoteMessage(BuildContext context, Message message) {
-    context.read<ConversationBloc>().add(MessageQuotedEvent(message));
+  void _onScrollToBottomStateChanged(bool visible) {
+    if (visible) {
+      _animationController.forward();
+    } else {
+      _animationController.reverse();
+    }
   }
-
+  
   Future<void> _retractMessage(BuildContext context, String originId) async {
     final result = await showConfirmationDialog(
       t.pages.conversation.retract,
@@ -101,73 +111,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     );
 
     if (result) {
-      // ignore: use_build_context_synchronously
-      context.read<ConversationBloc>().add(
-        MessageRetractedEvent(originId),
-      );
+      _conversationController.retractMessage(originId);
 
       // ignore: use_build_context_synchronously
       Navigator.of(context).pop();
     }
   }
 
-  Widget _renderBubble(ConversationState state, BuildContext context, int _index, double maxWidth, String jid) {
-    if (_index.isEven) {
-      // Render a date bubble at the top of the list
-      if (_index == 2 * state.messages.length - 1) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DateBubble(
-              formatDateBubble(
-                DateTime.fromMillisecondsSinceEpoch(
-                  state.messages.last.timestamp,
-                ),
-                DateTime.now(),
-              ),
-            ),
-          ],
-        );
-      }
-
-      final prevIndexRaw = (_index + 2) ~/ 2;
-      final prevIndex = state.messages.length - prevIndexRaw;
-      final prevMessageDateTime = prevIndex < 0 || prevIndexRaw == 0 ?
-        null :
-        DateTime.fromMillisecondsSinceEpoch(
-          state.messages[prevIndex].timestamp,
-        );
-
-      if (prevMessageDateTime == null) return const SizedBox();
-
-      final nextIndexRaw = _index ~/ 2;
-      final nextIndex = state.messages.length - nextIndexRaw;
-      final nextMessageDateTime = nextIndex < 0 || nextIndexRaw == 0 ?
-        null :
-        DateTime.fromMillisecondsSinceEpoch(
-          state.messages[nextIndex].timestamp,
-        );
-      if (nextMessageDateTime == null) return const SizedBox();
-      
-      // Check if we have to render a date bubble
-      if (prevMessageDateTime.day != nextMessageDateTime.day ||
-          prevMessageDateTime.month != nextMessageDateTime.month ||
-          prevMessageDateTime.year != nextMessageDateTime.year) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DateBubble(
-              formatDateBubble(nextMessageDateTime, DateTime.now()),
-            ),
-          ],
-        );
-      }
-
-      return const SizedBox();
-    }
-    
-    final index = state.messages.length - 1 - (_index - 1) ~/ 2;
-    final item = state.messages[index];
+  Widget _renderBubble(ConversationState state, Message message, List<Message> messages, int index, double maxWidth) {
+    final item = message;
 
     if (item.isPseudoMessage) {
       return Row(
@@ -186,14 +138,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       );
     }
 
+    final ownJid = GetIt.I.get<UIDataService>().ownJid!;
     final start = index - 1 < 0 ?
       true :
-      isSent(state.messages[index - 1], jid) != isSent(item, jid);
-    final end = index + 1 >= state.messages.length ?
+      isSent(messages[index - 1], ownJid) != isSent(item, ownJid);
+    final end = index + 1 >= messages.length ?
       true :
-      isSent(state.messages[index + 1], jid) != isSent(item, jid);
+      isSent(messages[index + 1], ownJid) != isSent(item, ownJid);
     final between = !start && !end;
-    final sentBySelf = isSent(item, jid);
+    final sentBySelf = isSent(message, ownJid);
     
     final bubble = RawChatBubble(
       item,
@@ -210,27 +163,22 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       message: item,
       sentBySelf: sentBySelf,
       maxWidth: maxWidth,
-      onSwipedCallback: (_) => _quoteMessage(context, item),
+      onSwipedCallback: _conversationController.quoteMessage,
       onReactionTap: (reaction) {
-        final bloc = context.read<ConversationBloc>();
         if (reaction.reactedBySelf) {
-          bloc.add(
-            ReactionRemovedEvent(
-              reaction.emoji,
-              index,
-            ),
+          _conversationController.removeReaction(
+            index,
+            reaction.emoji,
           );
         } else {
-          bloc.add(
-            ReactionAddedEvent(
-              reaction.emoji,
-              index,
-            ),
+          _conversationController.addReaction(
+            index,
+            reaction.emoji,
           );
         }
       },
       onLongPressed: (event) async {
-        if (!item.isLongpressable) {
+        if (!message.isLongpressable) {
           return;
         }
 
@@ -299,9 +247,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       ),
                     );
                     if (emoji != null) {
-                      // ignore: use_build_context_synchronously
-                      context.read<ConversationBloc>().add(
-                        ReactionAddedEvent(emoji, index),
+                      _conversationController.addReaction(
+                        index,
+                        emoji,
                       );
                     }
 
@@ -321,10 +269,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   icon: Icons.edit,
                   text: t.pages.conversation.edit,
                   onPressed: () {
-                    context.read<ConversationBloc>().add(
-                      MessageEditSelectedEvent(item),
+                    _conversationController.beginMessageEditing(
+                      item.body,
+                      item.quotes,
+                      item.id,
+                      item.sid,
                     );
-                    _controller.text = item.body;
                     Navigator.of(context).pop();
                   },
                 ),
@@ -380,7 +330,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   icon: Icons.reply,
                   text: t.pages.conversation.quote,
                   onPressed: () {
-                    _quoteMessage(context, item);
+                    _conversationController.quoteMessage(item);
                     Navigator.of(context).pop();
                   },
                 ),
@@ -450,24 +400,6 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       ),
     );
   }
-
-  /// Taken from https://bloclibrary.dev/#/flutterinfinitelisttutorial
-  bool _isScrolledToBottom() {
-    if (!_scrollController.hasClients) return false;
-
-    return _scrollController.offset <= 10;
-  }
-  
-  void _onScroll() {
-    final isScrolledToBottom = _isScrolledToBottom();
-    if (isScrolledToBottom && !_scrolledToBottomState) {
-      _animationController.reverse();
-    } else if (!isScrolledToBottom && _scrolledToBottomState) {
-      _animationController.forward();
-    }
-
-    _scrolledToBottomState = isScrolledToBottom;
-  }
   
   @override
   Widget build(BuildContext context) {
@@ -477,13 +409,13 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
         // TODO(PapaTutuWawa): Check if we are recording an audio message and handle
         //                     that accordingly
         final bloc = GetIt.I.get<ConversationBloc>();
+        if (!_conversationController.handlePop()) {
+          return false;
+        }
+
         if (bloc.state.isRecording) {
           // TODO(PapaTutuWawa): Show a dialog
           return true;
-        } else if (bloc.state.pickerVisible) {
-          bloc.add(PickerToggledEvent(handleKeyboard: false));
-
-          return false;
         } else {
           bloc.add(CurrentConversationResetEvent());
 
@@ -547,29 +479,50 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     },
                   ),
 
-                  BlocBuilder<ConversationBloc, ConversationState>(
-                    // NOTE: We don't need to update when the jid changes as it should
-                    //       be static over the entire lifetime of the BLoC.
-                    buildWhen: (prev, next) => prev.messages != next.messages || prev.conversation?.encrypted != next.conversation?.encrypted,
-                    builder: (context, state) => Expanded(
-                      child: FlutterListView(
-                        shrinkWrap: true,
-                        controller: _scrollController,
-                        reverse: true,
-                        delegate: FlutterListViewDelegate(
-                          (BuildContext context, int index) => _renderBubble(
-                            state,
-                            context,
-                            index,
-                            maxWidth,
-                            state.jid,                           
-                          ),
-                          childCount: state.messages.length * 2,
-                          keepPosition: true,
-                          keepPositionOffset: 40,
-                          firstItemAlign: FirstItemAlign.end,
-                        ),
-                      ),
+                  Expanded(
+                    child: StreamBuilder<List<Message>>(
+                      initialData: const [],
+                      stream: _conversationController.dataStream,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return SingleChildScrollView(
+                            reverse: true,
+                            controller: _conversationController.scrollController,
+                            child: GroupedListView<Message, DateTime>(
+                              elements: snapshot.data!,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              groupBy: (message) {
+                                final dt = DateTime.fromMillisecondsSinceEpoch(message.timestamp);
+                                return DateTime(
+                                  dt.year,
+                                  dt.month,
+                                  dt.day,
+                                );
+                              },
+                              groupSeparatorBuilder: (DateTime dt) => Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  DateBubble(
+                                    formatDateBubble(dt, DateTime.now()),
+                                  ),
+                                ],
+                              ),
+                              indexedItemBuilder: (context, message, index) => _renderBubble(
+                                context.read<ConversationBloc>().state,
+                                message,
+                                snapshot.data!,
+                                index,
+                                maxWidth,
+                              ),
+                              sort: false,
+                            ),
+                          );
+                        }
+
+                        // TODO(Unknown): Find a better solution
+                        return const CircularProgressIndicator();
+                      },
                     ),
                   ),
 
@@ -578,9 +531,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       .scaffoldBackgroundColor
                       .withOpacity(0.4),
                     child: ConversationBottomRow(
-                      _controller,
                       _tabController,
                       _textfieldFocus,
+                      _conversationController,
                       _isSpeedDialOpen,
                     ),
                   ),
@@ -589,11 +542,12 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             ),
           ),
 
-          BlocBuilder<ConversationBloc, ConversationState>(
-            buildWhen: (prev, next) => prev.pickerVisible != next.pickerVisible,
-            builder: (context, state) => Positioned(
+          StreamBuilder<bool>(
+            initialData: false,
+            stream: _conversationController.pickerVisibleStream,
+            builder: (context, snapshot) => Positioned(
               right: 8,
-              bottom: state.pickerVisible ?
+              bottom: snapshot.data! ?
                 pickerHeight + 80 :
                 80,
               child: Material(
@@ -607,9 +561,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     child: FloatingActionButton(
                       heroTag: 'fabScrollDown',
                       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-                      onPressed: () {
-                        _scrollController.jumpTo(0);
-                      },
+                      onPressed: _conversationController.animateToBottom,
                       child: const Icon(
                         Icons.arrow_downward,
                         // TODO(Unknown): Theme dependent

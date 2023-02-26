@@ -99,6 +99,7 @@ class ConversationService {
     Object? contactId = notSpecified,
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
+    int? sharedMediaAmount,
   }) async {
     final conversation = (await _getConversationByJid(jid))!;
     var newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
@@ -114,6 +115,7 @@ class ConversationService {
       contactId: contactId,
       contactAvatarPath: contactAvatarPath,
       contactDisplayName: contactDisplayName,
+      sharedMediaAmount: sharedMediaAmount,
     );
 
     // Copy over the old lastMessage if a new one was not set
@@ -139,6 +141,7 @@ class ConversationService {
     bool open,
     bool muted,
     bool encrypted,
+    int sharedMediaAmount,
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
@@ -153,6 +156,7 @@ class ConversationService {
       open,
       muted,
       encrypted,
+      sharedMediaAmount,
       contactId,
       contactAvatarPath,
       contactDisplayName,

@@ -183,18 +183,19 @@ class XmppService {
   
   /// Sends a message to JIDs in [recipients] with the body of [body].
   Future<void> sendMessage({
-      required String body,
-      required List<String> recipients,
-      Message? quotedMessage,
-      String? commandId,
-      ChatState? chatState,
-      sticker.Sticker? sticker,
+    required String body,
+    required List<String> recipients,
+    String? currentConversationJid,
+    Message? quotedMessage,
+    String? commandId,
+    ChatState? chatState,
+    sticker.Sticker? sticker,
   }) async {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    
+
     for (final recipient in recipients) {
       final sid = conn.generateId();
       final originId = conn.generateId();
@@ -236,10 +237,12 @@ class XmppService {
       assert(message != null, 'The message must be non-null');
 
       // Using the same ID should be fine.
-      sendEvent(
-        MessageAddedEvent(message: message!),
-        id: commandId,
-      );
+      if (recipient == currentConversationJid) {
+        sendEvent(
+          MessageAddedEvent(message: message!),
+          id: commandId,
+        );
+      }
       
       conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
         MessageDetails(
@@ -547,19 +550,20 @@ class XmppService {
             true,
             prefs.defaultMuteState,
             prefs.enableOmemoByDefault,
+            paths.length,
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
           );
 
-          sharedMediaMap[recipient] = await _createSharedMedia(
+          final sharedMedia = await _createSharedMedia(
             messages,
             paths,
             recipient,
             newConversation.jid,
           );
           newConversation = newConversation.copyWith(
-            sharedMedia: sharedMediaMap[recipient]!,
+            sharedMedia: sharedMedia.sublist(0, 8),
           );
 
           // Update the cache
@@ -577,6 +581,7 @@ class XmppService {
             lastMessage: lastMessages[recipient],
             lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
             open: true,
+            sharedMediaAmount: c.sharedMediaAmount + paths.length,
           );
 
           sharedMediaMap[recipient] = await _createSharedMedia(
@@ -588,10 +593,11 @@ class XmppService {
           );
 
           newConversation = newConversation.copyWith(
-            sharedMedia: [
-              ...sharedMediaMap[recipient]!,
-              ...c.sharedMedia,
-            ],
+            sharedMedia: clampedListPrependAll(
+              c.sharedMedia,
+              sharedMediaMap[recipient]!,
+              8,
+            ),
           );
 
           // Update the cache
@@ -1324,6 +1330,9 @@ class XmppService {
           true,
           prefs.defaultMuteState,
           message.encrypted,
+          // Always use 0 here, since a possible shared media item only is created
+          // afterwards.
+          0,
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),

@@ -42,7 +42,7 @@ class TextChatWidget extends StatelessWidget {
     final fontsize = EmojiUtil.hasOnlyEmojis(
       message.body,
       ignoreWhitespace: true,
-    ) && !message.hasError ?
+    ) && !message.hasError && !message.isRetracted ?
       fontsizeBodyOnlyEmojis :
       fontsizeBody;
 

@@ -32,7 +32,10 @@ class SharedImageWidget extends StatelessWidget {
           ) : null,
           image: DecorationImage(
             fit: BoxFit.cover,
-            image: FileImage(File(path)),
+            image: FileImage(
+              File(path),
+              scale: 4,
+            ),
           ),
         ),
         clipBehavior: Clip.hardEdge,

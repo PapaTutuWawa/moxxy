@@ -14,17 +14,6 @@ class BackgroundChangedEvent extends ConversationEvent {
   final String backgroundPath;
 }
 
-/// Triggered when the content of the input field changed.
-class MessageTextChangedEvent extends ConversationEvent {
-  MessageTextChangedEvent(this.value);
-  final String value;
-}
-
-/// Triggered a message is sent.
-class MessageSentEvent extends ConversationEvent {
-  MessageSentEvent();
-}
-
 /// Triggered before navigating to the ConversationPage to load the conversation
 /// into the state. This event will also redirect accordingly.
 class RequestedConversationEvent extends ConversationEvent {
@@ -43,15 +32,6 @@ class RequestedConversationEvent extends ConversationEvent {
   final bool removeUntilConversations;
 }
 
-/// Triggered by the UI when a message is quoted
-class MessageQuotedEvent extends ConversationEvent {
-  MessageQuotedEvent(this.message);
-  final Message message;
-}
-
-/// Triggered by the UI when the quote should be removed
-class QuoteRemovedEvent extends ConversationEvent {}
-
 /// Triggered by the UI when a user should be blocked
 class JidBlockedEvent extends ConversationEvent {
   JidBlockedEvent(this.jid);
@@ -67,28 +47,10 @@ class JidAddedEvent extends ConversationEvent {
 /// Triggered by the UI when we leave the conversation
 class CurrentConversationResetEvent extends ConversationEvent {}
 
-/// Triggered when we receive a message
-class MessageAddedEvent extends ConversationEvent {
-  MessageAddedEvent(this.message);
-  final Message message;
-}
-
-/// Triggered when we updated a message
-class MessageUpdatedEvent extends ConversationEvent {
-  MessageUpdatedEvent(this.message);
-  final Message message;
-}
-
 /// Triggered when we updated a conversation
 class ConversationUpdatedEvent extends ConversationEvent {
   ConversationUpdatedEvent(this.conversation);
   final Conversation conversation;
-}
-
-/// Triggered when the app is left, either by the screen locking or the user switching apps
-class AppStateChanged extends ConversationEvent {
-  AppStateChanged(this.open);
-  final bool open;
 }
 
 /// Triggered when the user wants to pick images and videos for sending
@@ -97,39 +59,10 @@ class ImagePickerRequestedEvent extends ConversationEvent {}
 /// Triggered when the user wants to pick generic files for sending
 class FilePickerRequestedEvent extends ConversationEvent {}
 
-/// Triggered when the emoji button is pressed
-class PickerToggledEvent extends ConversationEvent {
-  PickerToggledEvent({this.handleKeyboard = true});
-  final bool handleKeyboard;
-}
-
-/// Triggered when we received our own JID
-class OwnJidReceivedEvent extends ConversationEvent {
-  OwnJidReceivedEvent(this.jid);
-  final String jid;
-}
-
 /// Triggered when we enable or disable Omemo in the chat
 class OmemoSetEvent extends ConversationEvent {
   OmemoSetEvent(this.enabled);
   final bool enabled;
-}
-
-/// Triggered when a message should be retracted
-class MessageRetractedEvent extends ConversationEvent {
-  MessageRetractedEvent(this.id);
-  final String id;
-}
-
-/// Triggered when a message has been selected for editing
-class MessageEditSelectedEvent extends ConversationEvent {
-  MessageEditSelectedEvent(this.message);
-  final Message message;
-}
-
-/// Triggered when a message edit has been cancelled
-class MessageEditCancelledEvent extends ConversationEvent {
-  MessageEditCancelledEvent();
 }
 
 /// Triggered when the dragging began
@@ -146,30 +79,3 @@ class SendButtonLockPressedEvent extends ConversationEvent {}
 
 /// Triggered when the recording has been canceled
 class RecordingCanceledEvent extends ConversationEvent {}
-
-/// Triggered when a reaction has been added
-class ReactionAddedEvent extends ConversationEvent {
-  ReactionAddedEvent(this.emoji, this.index);
-  final String emoji;
-  final int index;
-}
-
-/// Triggered when a reaction has been removed
-class ReactionRemovedEvent extends ConversationEvent {
-  ReactionRemovedEvent(this.emoji, this.index);
-  final String emoji;
-  final int index;
-}
-
-/// Triggered when a sticker has been sent
-class StickerSentEvent extends ConversationEvent {
-  StickerSentEvent(this.stickerPackId, this.stickerHashKey);
-  final String stickerPackId;
-  final String stickerHashKey;
-}
-
-/// Triggered when the softkeyboard's visibility changed
-class SoftKeyboardVisibilityChanged extends ConversationEvent {
-  SoftKeyboardVisibilityChanged(this.visible);
-  final bool visible;
-}

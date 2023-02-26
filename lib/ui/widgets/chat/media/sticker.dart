@@ -83,7 +83,12 @@ class StickerChatWidget extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Image.file(File(sticker.path)),
+                  child: Image.file(
+                    File(sticker.path),
+                    // TODO(Unknown): Maybe set the cache size based on display dimensions
+                    cacheWidth: 300,
+                    cacheHeight: 300,
+                  ),
                 ) :
                 InkWell(
                   onTap: () {
