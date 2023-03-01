@@ -11,3 +11,6 @@ const int sharedMediaPaginationSize = 60;
 
 /// The amount of pages of shared media we can cache in memory
 const int maxSharedMediaPages = 3;
+
+/// The amount of conversations for which we cache the first page.
+const int conversationMessagePageCacheSize = 4;

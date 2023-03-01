@@ -47,6 +47,13 @@ class LRUCache<K, V> extends Cache<K, V> {
 
   @override
   List<V> getValues() => _cache.values.map((i) => i.value).toList();
+
+  void replaceValue(K key, V newValue) {
+    _cache[key] = _LRUCacheEntry(
+      newValue,
+      _cache[key]!.t,
+    );
+  }
   
   @override
   void cache(K key, V value) {

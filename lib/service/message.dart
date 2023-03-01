@@ -7,23 +7,48 @@ import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/shared/cache.dart';
+import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:synchronized/synchronized.dart';
 
 class MessageService {
   /// Logger
   final Logger _log = Logger('MessageService');
 
+  final LRUCache<String, List<Message>> _messageCache = LRUCache(conversationMessagePageCacheSize);
+  final Lock _cacheLock = Lock();
+  
   /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
   /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
   /// than [oldestTimestamp], or the newest messages are returned if null.
   Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
-    return GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
+    if (olderThan && oldestTimestamp == null) {
+      final result = await _cacheLock.synchronized<List<Message>?>(() {
+        return _messageCache.getValue(jid);
+      });
+      if (result != null) return result;
+    }
+
+    final page = await GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
       jid,
       olderThan,
       oldestTimestamp,
     );
+
+    if (olderThan && oldestTimestamp == null) {
+      await _cacheLock.synchronized(() {
+        _messageCache.cache(
+          jid,
+          page,
+        );
+      });
+    }
+
+    return page;
   }
   
   /// Wrapper around [DatabaseService]'s addMessageFromData that updates the cache.
@@ -98,6 +123,20 @@ class MessageService {
       pseudoMessageData: pseudoMessageData,
     );
 
+    await _cacheLock.synchronized(() {
+      final cachedList = _messageCache.getValue(conversationJid);
+      if (cachedList != null) {
+        _messageCache.replaceValue(
+          conversationJid,
+          clampedListPrepend(
+            cachedList,
+            msg,
+            messagePaginationSize,
+          ),
+        );
+      }
+    });
+    
     return msg;
   }
 
@@ -151,7 +190,7 @@ class MessageService {
     bool? isEdited,
     Object? reactions = notSpecified,
   }) async {
-    return GetIt.I.get<DatabaseService>().updateMessage(
+    final msg = await GetIt.I.get<DatabaseService>().updateMessage(
       id,
       body: body,
       mediaUrl: mediaUrl,
@@ -179,6 +218,24 @@ class MessageService {
       isEdited: isEdited,
       reactions: reactions,
     );
+
+    await _cacheLock.synchronized(() {
+      final page = _messageCache.getValue(msg.conversationJid);
+      if (page != null) {
+        _messageCache.replaceValue(
+          msg.conversationJid,
+          page.map((m) {
+            if (m.id == msg.id) {
+              return msg;
+            }
+
+            return m;
+          }).toList(),
+        );
+      }
+    });
+    
+    return msg;
   }
 
   /// Helper function that manages everything related to retracting a message. It
