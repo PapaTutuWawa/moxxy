@@ -14,15 +14,11 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class StickerWrapper extends StatelessWidget {
   const StickerWrapper(
     this.sticker, {
-      this.width,
-      this.height,
       this.cover = true,
       super.key,
     }
   );
   final Sticker sticker;
-  final double? width;
-  final double? height;
   final bool cover;
 
   @override
@@ -33,8 +29,6 @@ class StickerWrapper extends StatelessWidget {
         fit: cover ?
           BoxFit.contain :
           null,
-        width: width,
-        height: height,
       );
     } else {
       return Image.network(
@@ -42,18 +36,12 @@ class StickerWrapper extends StatelessWidget {
          fit: cover ?
           BoxFit.contain :
           null,
-        width: width,
-        height: height,
         loadingBuilder: (_, child, event) {
           if (event == null) return child;
 
-          return ClipRRect(
-            borderRadius: const BorderRadius.all(radiusLarge),
-            child: SizedBox(
-              width: width,
-              height: height,
-              child: const ShimmerWidget(),
-            ),
+          return const ClipRRect(
+            borderRadius: BorderRadius.all(radiusLarge),
+            child: ShimmerWidget(),
           );
         },
       );
@@ -139,9 +127,6 @@ class StickerPackPage extends StatelessWidget {
   }
   
   Widget _buildBody(BuildContext context, StickerPackState state) {
-    final width = MediaQuery.of(context).size.width;
-    final itemSize = (width - 2 * 15 - 3 * 30) / 4;
-
     return Column(
       children: [
         Row(
@@ -186,50 +171,41 @@ class StickerPackPage extends StatelessWidget {
         ),
 
         Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: ListView.builder(
+          padding: const EdgeInsets.only(
+            top: 16,
+            left: 8,
+            right: 8,
+          ),
+          child: GridView.builder(
             shrinkWrap: true,
-            itemCount: (state.stickerPack!.stickers.length / 4).ceil(),
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemCount: state.stickerPack!.stickers.length,
             itemBuilder: (_, index) {
-              final length = state.stickerPack!.stickers.length - index * 4;
-
-              return SizedBox(
-                width: width,
-                child: Row(
-                  children: List<int>.generate(
-                    length >= 4 ?
-                    4 :
-                    length,
-                    (i) => i,
-                  ).map((rowIndex) {
-                      final sticker = state.stickerPack!.stickers[index * 4 + rowIndex];
-                      return Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: InkWell(
-                          onTap: () {
-                            showDialog<void>(
-                              context: context,
-                              builder: (context) {
-                                return IgnorePointer(
-                                  child: StickerWrapper(
-                                    sticker,
-                                    width: width - 80 * 2,
-                                    cover: false,
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          child: StickerWrapper(
-                            sticker,
-                            width: itemSize,
-                            height: itemSize,
-                          ),
+              final sticker = state.stickerPack!.stickers[index];
+              return InkWell(
+                child: StickerWrapper(
+                  sticker,
+                  cover: false,
+                ),
+                onTap: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (context) {
+                      return IgnorePointer(
+                        child: StickerWrapper(
+                          sticker,
+                          cover: false,
                         ),
                       );
-                  }).toList(),
-                ),
-              );
+                    },
+                  );
+                },
+              ); 
             },
           ),
         ),

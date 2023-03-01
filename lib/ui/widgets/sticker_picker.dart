@@ -74,54 +74,48 @@ class StickerPicker extends StatelessWidget {
         }
 
         final sindex = (si - 1) ~/ 2;
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: (stickerPacks[sindex].stickers.length / 4).ceil(),
-          itemBuilder: (_, index) {
-            final stickersLength = stickerPacks[sindex].stickers.length - index * 4;
-            return SizedBox(
-              width: width,
-              child: Row(
-                children: List<int>.generate(
-                  stickersLength >= 4 ?
-                  4 :
-                  stickersLength,
-                  (i) => i,
-                ).map((rowIndex) {
-                    return Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: InkWell(
-                        onTap: () {
-                          onStickerTapped(
-                            stickerPacks[sindex].stickers[index * 4 + rowIndex],
-                            stickerPacks[sindex],
-                          );
-                        },
-                        onLongPress: () {
-                          Vibrate.feedback(FeedbackType.medium);
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 15,
+          ),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+            ),
+            itemCount: stickerPacks[sindex].stickers.length,
+            itemBuilder: (_, index) {
+              return InkWell(
+                onTap: () {
+                  onStickerTapped(
+                    stickerPacks[sindex].stickers[index],
+                    stickerPacks[sindex],
+                  );
+                },
+                onLongPress: () {
+                  Vibrate.feedback(FeedbackType.medium);
 
-                          context.read<StickerPackBloc>().add(
-                            LocallyAvailableStickerPackRequested(
-                              stickerPacks[sindex].id,
-                            ),
-                          );
-                        },
-                        child: Image.file(
-                          File(
-                            stickerPacks[sindex].stickers[index * 4 + rowIndex].path,
-                          ),
-                          key: ValueKey('${state.stickerPacks[sindex].id}_${index * 4 + rowIndex}'),
-                          fit: BoxFit.contain,
-                          width: _itemSize,
-                          height: _itemSize,
-                        ),
-                      ),
-                    );
-                }).toList(),
-              ),
-            );
-          },
+                  context.read<StickerPackBloc>().add(
+                    LocallyAvailableStickerPackRequested(
+                      stickerPacks[sindex].id,
+                    ),
+                  );
+                },
+                child: Image.file(
+                  File(
+                    stickerPacks[sindex].stickers[index].path,
+                  ),
+                  key: ValueKey('${state.stickerPacks[sindex].id}_$index'),
+                  fit: BoxFit.contain,
+                  width: _itemSize,
+                  height: _itemSize,
+                ),
+              );
+            },
+          ),
         );
       },
     );
