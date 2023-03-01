@@ -58,7 +58,7 @@ class SharedMediaDisplay extends StatelessWidget {
               children: preview
                 .sublist(0, 8)
                 .map((el) {
-                  if (el == preview.last) {
+                  if (el == preview.last && sharedMediaAmount >= 8) {
                     return SharedSummaryWidget(
                       notShown: sharedMediaAmount - 7,
                       conversationJid: jid,
