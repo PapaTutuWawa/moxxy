@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -341,9 +342,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
 
                         Visibility(
                           visible: showBadge,
-                          child: Badge(
-                            backgroundColor: bubbleColorSent,
-                            label: Text(badgeText),
+                          child: badges.Badge(
+                            badgeContent: Text(badgeText),
+                            badgeColor: bubbleColorSent,
                           ),
                         ),
                       ],
