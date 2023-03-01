@@ -1169,8 +1169,8 @@ class DatabaseService {
     //       to cast dynamic to List<int>.
     final opks = List<Map<String, dynamic>>.empty(growable: true);
     final opksIter = deviceJson['opks']! as List<dynamic>;
-    for (final _opk in opksIter) {
-      final opk = _opk as Map<String, dynamic>;
+    for (final tmpOpk in opksIter) {
+      final opk = tmpOpk as Map<String, dynamic>;
       opks.add(<String, dynamic>{
         'id': opk['id']! as int,
         'public': opk['public']! as String,

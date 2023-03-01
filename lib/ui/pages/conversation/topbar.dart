@@ -178,7 +178,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                           context.read<ConversationBloc>().add(OmemoSetEvent(false));
                         }
                       },
-                      icon: state.conversation?.encrypted == true ?
+                      icon: (state.conversation?.encrypted ?? false) ?
                         const Icon(Icons.lock) :
                         const Icon(Icons.lock_open),
                       itemBuilder: (BuildContext c) => [

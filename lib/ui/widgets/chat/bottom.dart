@@ -41,11 +41,11 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
     super.initState();
 
     // Different name for now to prevent possible shadowing issues
-    final _now = DateTime.now().millisecondsSinceEpoch;
-    _timestampString = formatMessageTimestamp(widget.message.timestamp, _now);
+    final initNow = DateTime.now().millisecondsSinceEpoch;
+    _timestampString = formatMessageTimestamp(widget.message.timestamp, initNow);
 
     // Only start the timer if neccessary
-    if (_now - widget.message.timestamp <= 15 * Duration.millisecondsPerMinute) {
+    if (initNow - widget.message.timestamp <= 15 * Duration.millisecondsPerMinute) {
       _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
         setState(() {
           final now = DateTime.now().millisecondsSinceEpoch;

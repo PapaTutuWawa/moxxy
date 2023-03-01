@@ -113,7 +113,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
     if (state.conversations.isNotEmpty) {
       return ListView.builder(
         itemCount: state.conversations.length,
-        itemBuilder: (_context, index) {
+        itemBuilder: (context, index) {
           final item = state.conversations[index];
           final row = ConversationsListRow(
             maxTextWidth,
@@ -140,6 +140,8 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
                 );
                 
                 await _controller.forward();
+
+                // ignore: use_build_context_synchronously
                 await showDialog<void>(
                   context: context,
                   builder: (context) => OverviewMenu(

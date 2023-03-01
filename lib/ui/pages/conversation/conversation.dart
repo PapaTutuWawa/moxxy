@@ -200,6 +200,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
         //).animate(_controller);
 
         await _overviewAnimationController.forward();
+        // ignore: use_build_context_synchronously
         await showDialog<void>(
           context: context,
           builder: (context) => OverviewMenu(
@@ -473,7 +474,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   BlocBuilder<ConversationBloc, ConversationState>(
                     buildWhen: (prev, next) => prev.conversation?.inRoster != next.conversation?.inRoster,
                     builder: (context, state) {
-                      if (state.conversation?.inRoster == true) return Container();
+                      if (state.conversation?.inRoster ?? false) return Container();
 
                       return _renderNotInRosterWidget(state, context);
                     },

@@ -4,9 +4,9 @@ import 'package:meta/meta.dart';
 
 class BidirectionalController<T> {
   BidirectionalController({
-    this.scrollActivationOffset = 10,
     required this.pageSize,
     required this.maxPageAmount,
+    this.scrollActivationOffset = 10,
   }) {
     _controller.addListener(handleScroll);
   }

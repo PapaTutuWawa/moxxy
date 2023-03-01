@@ -293,7 +293,7 @@ class HttpFileTransferService {
         );
         _log.finest('Sent message with file upload for ${job.path} to $recipient');
 
-        final isMultiMedia = job.mime?.startsWith('image/') == true || job.mime?.startsWith('video/') == true;
+        final isMultiMedia = (job.mime?.startsWith('image/') ?? false) || (job.mime?.startsWith('video/') ?? false);
         if (isMultiMedia) {
           _log.finest('File appears to be either an image or a video. Copying it to the correct directory...');
           unawaited(_copyFile(job));

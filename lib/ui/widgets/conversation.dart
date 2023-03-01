@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:badges/badges.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -56,16 +55,16 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   void initState() {
     super.initState();
 
-    final _now = DateTime.now().millisecondsSinceEpoch;
+    final initNow = DateTime.now().millisecondsSinceEpoch;
 
     _timestampString = formatConversationTimestamp(
       widget.conversation.lastChangeTimestamp,
-      _now,
+      initNow,
     );
 
     // NOTE: We could also check and run the timer hourly, but who has a messenger on the
     //       conversation screen open for hours on end?
-    if (widget.update && widget.conversation.lastChangeTimestamp > -1 && _now - widget.conversation.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+    if (widget.update && widget.conversation.lastChangeTimestamp > -1 && initNow - widget.conversation.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
       _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
         final now = DateTime.now().millisecondsSinceEpoch;
         setState(() {
@@ -320,7 +319,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ...widget.conversation.lastMessage?.isThumbnailable == true && !widget.conversation.isTyping ? [
+                        ...(widget.conversation.lastMessage?.isThumbnailable ?? false) && !widget.conversation.isTyping ? [
                           Padding(
                             padding: const EdgeInsets.only(right: 5),
                             child: BlocBuilder<StickersBloc, StickersState>(
@@ -343,8 +342,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                         Visibility(
                           visible: showBadge,
                           child: Badge(
-                            badgeContent: Text(badgeText),
-                            badgeColor: bubbleColorSent,
+                            backgroundColor: bubbleColorSent,
+                            label: Text(badgeText),
                           ),
                         ),
                       ],

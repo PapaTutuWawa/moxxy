@@ -799,7 +799,7 @@ class XmppService {
   }
 
   Future<void> _onDeliveryReceiptReceived(DeliveryReceiptReceivedEvent event, { dynamic extra }) async {
-    _log.finest('Received delivery receipt from ${event.from.toString()}');
+    _log.finest('Received delivery receipt from ${event.from}');
     final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
@@ -827,7 +827,7 @@ class XmppService {
   }
 
   Future<void> _onChatMarker(ChatMarkerEvent event, { dynamic extra }) async {
-    _log.finest('Chat marker from ${event.from.toString()}');
+    _log.finest('Chat marker from ${event.from}');
 
     final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();

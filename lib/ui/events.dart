@@ -58,7 +58,7 @@ Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
     event,
   );
 
-  log.finest('<-- ${(event).toString()}');
+  log.finest('<-- $event');
 
   // First attempt to deal with awaitables
   var found = false;

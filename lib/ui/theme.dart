@@ -73,12 +73,17 @@ MaterialStateProperty<Color> _makeEnabledDisabledProperty(Color enabled, Color d
 ThemeData getThemeData(BuildContext context, Brightness brightness) {
   return ThemeData(
     brightness: brightness,
-    backgroundColor: const Color(0xff303030),
 
     // NOTE: Mainly for the SettingsSection
     colorScheme: brightness == Brightness.dark ?
-      const ColorScheme.dark(secondary: primaryColor) :
-      const ColorScheme.light(secondary: primaryColor),
+      const ColorScheme.dark(
+        secondary: primaryColor,
+        background: Color(0xff303030),
+      ) :
+      const ColorScheme.light(
+        secondary: primaryColor,
+        background: Color(0xff303030),
+      ),
 
     // UI elements
     elevatedButtonTheme: ElevatedButtonThemeData(

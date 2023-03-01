@@ -1,7 +1,7 @@
 {
   description = "Moxxy v2";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:AtaraxiaSjel/nixpkgs/update/flutter";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -29,7 +29,7 @@
       useGoogleAPIs = false;
       useGoogleTVAddOns = false;
     };
-    pinnedJDK = pkgs.jdk;
+    pinnedJDK = pkgs.jdk17;
 
     pythonEnv = pkgs.python3.withPackages (ps: with ps; [
       requests pyyaml # For the build scripts

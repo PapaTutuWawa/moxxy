@@ -33,9 +33,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   Future<void> waitUntilInitialized() async {
     final comp = await _lock.synchronized(() {
       if (!_initialized) {
-        final _completer = Completer<void>();
-        _completers.add(_completer);
-        return _completer;
+        final completer = Completer<void>();
+        _completers.add(completer);
+        return completer;
       }
 
       return null;

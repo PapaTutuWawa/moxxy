@@ -48,13 +48,13 @@ class ProfileOptions extends StatelessWidget {
                   children: [
                     Text(
                       option.title,
-                      style: Theme.of(context).textTheme.headline6,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
 
                     if (option.description != null)
                       Text(
                         option.description!,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
                   ],
                 ),

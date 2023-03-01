@@ -161,8 +161,7 @@ class StickerPackPage extends StatelessWidget {
                       state.stickerPack?.description ?? '',
                     ),
 
-                    ...state.stickerPack?.restricted == true ?
-                      [
+                    if (state.stickerPack?.restricted ?? false)
                         Padding(
                           padding: const EdgeInsets.only(top: 16),
                           child: Text(
@@ -172,7 +171,6 @@ class StickerPackPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                      ] : [],
                   ],
                 ),
               ),
