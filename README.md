@@ -29,6 +29,8 @@ build the app with `flutter build apk --debug` to create a debug build,
 `flutter build apk --release` to create a relase build or just run the app in development
 mode with `flutter run`.
 
+If the build fails, see `TROUBLESHOOTING.md` for common issues.
+
 After implementing a change or a feature, please ensure that nothing is broken by the change
 by running `flutter test` afterwards. Also make sure that the code passes the linter by
 running `flutter analyze`. This project also uses [gitlint](https://github.com/jorisroovers/gitlint)
