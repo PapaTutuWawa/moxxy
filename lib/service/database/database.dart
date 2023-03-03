@@ -372,19 +372,7 @@ class DatabaseService {
     Object? contactDisplayName = notSpecified,
     int? sharedMediaAmount,
   }) async {
-    final cd = (await _db.query(
-      'Conversations',
-      where: 'jid = ?',
-      whereArgs: [jid],
-    )).first;
-    final c = Map<String, dynamic>.from(cd);
-
-    final sharedMedia = (await _db.query(
-      'SharedMedia',
-      where: 'conversation_jid = ?',
-      whereArgs: [jid],
-      orderBy: 'timestamp DESC',
-    )).map(SharedMedium.fromDatabaseJson);
+    final c = <String, dynamic>{};
     
     if (lastMessage != null) {
       c['lastMessageId'] = lastMessage.id;
@@ -420,16 +408,26 @@ class DatabaseService {
       c['sharedMediaAmount'] = sharedMediaAmount;
     }
 
-    await _db.update(
-      'Conversations',
-      c,
-      where: 'jid = ?',
-      whereArgs: [jid],
+    final setString = c.entries.map((entry) => '${entry.key} = ${entry.value}').join(', ');
+    final result = await _db.rawQuery(
+      'UPDATE $conversationsTable SET $setString WHERE jid = ? RETURNING *',
+      [jid],
     );
+    assert(result.length == 1, 'Only one conversation must be modified');
+    final conv = result.first;
+
+    // TODO(Unknown): Maybe either don't do this or do this only when we need to.
+    final sharedMedia = (await _db.query(
+      'SharedMedia',
+      where: 'conversation_jid = ?',
+      whereArgs: [jid],
+      orderBy: 'timestamp DESC',
+      limit: 8,
+    )).map(SharedMedium.fromDatabaseJson);
 
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     return Conversation.fromDatabaseJson(
-      c,
+      conv,
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
       sharedMedia.toList(),
@@ -672,14 +670,7 @@ class DatabaseService {
     bool? isEdited,
     Object? reactions = notSpecified,
   }) async {
-    final md = (await _db.query(
-      'Messages',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    )).first;
-    final m = Map<String, dynamic>.from(md);
-    final jid = m['conversationJid']! as String;
+    final m = <String, dynamic>{};
 
     if (body != notSpecified) {
       m['body'] = body as String?;
@@ -762,22 +753,23 @@ class DatabaseService {
       );
     }
 
-    await _db.update(
-      'Messages',
-      m,
-      where: 'id = ?',
-      whereArgs: [id],
+    final setString = m.entries.map((entry) => '${entry.key} = ${entry.value}').join(', ');
+    final result = await _db.rawQuery(
+      'UPDATE $messagesTable SET $setString WHERE id = ? RETURNING *',
+      [id],
     );
+    assert(result.length == 1, 'Only one message should be affected');
+    final msg = result.first;
 
     Message? quotes;
-    if (m['quote_id'] != null) {
+    if (msg['quote_id'] != null) {
       quotes = await getMessageById(
-        m['quote_id']! as int,
-        jid,
+        msg['quote_id']! as int,
+        msg['conversationJid']! as String,
       );
     }
     
-    return Message.fromDatabaseJson(m, quotes);
+    return Message.fromDatabaseJson(msg, quotes);
   }
   
   /// Loads roster items from the database
@@ -848,13 +840,7 @@ class DatabaseService {
       Object? contactDisplayName = notSpecified,
     }
   ) async {
-    final id_ = (await _db.query(
-      rosterTable,
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    )).first;
-    final i = Map<String, dynamic>.from(id_);
+    final i = <String, dynamic>{};
 
     if (avatarUrl != null) {
       i['avatarUrl'] = avatarUrl;
@@ -889,13 +875,15 @@ class DatabaseService {
       i['pseudoRosterItem'] = boolToInt(pseudoRosterItem as bool);
     }
 
-    await _db.update(
-      rosterTable,
-      i,
-      where: 'id = ?',
-      whereArgs: [id],
+    final setString = i.entries.map((entry) => '${entry.key} = ${entry.value}').join(', ');
+    final result = await _db.rawQuery(
+      'UPDATE $rosterTable SET $setString WHERE id = ? RETURNING *',
+      [id],
     );
-    return RosterItem.fromDatabaseJson(i);
+    assert(result.length == 1, 'Only one roster item must be modified');
+    final item = result.first;
+
+    return RosterItem.fromDatabaseJson(item);
   }
 
   Future<PreferencesState> getPreferences() async {
