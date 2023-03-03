@@ -55,9 +55,35 @@ import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as path;
 import 'package:random_string/random_string.dart';
+// ignore: implementation_imports
+import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 const databasePasswordKey = 'database_encryption_password';
+
+extension DatabaseUpdateAndReturn on Database {
+  /// Like update but returns the affected row.
+  Future<Map<String, Object?>> updateAndReturn(
+    String table,
+    Map<String, Object?> values, {
+    required String where,
+    required List<Object?> whereArgs, 
+  }) async {
+    final q = SqlBuilder.update(
+      table,
+      values,
+      where: where,
+      whereArgs: whereArgs,
+    );
+
+    final result = await rawQuery(
+      '${q.sql} RETURNING *',
+      q.arguments,
+    );
+    assert(result.length == 1, 'Only one row must be returned');
+    return result.first;
+  }
+}
 
 class DatabaseService {
   /// Secure storage for accesing the database encryption key.
@@ -408,13 +434,12 @@ class DatabaseService {
       c['sharedMediaAmount'] = sharedMediaAmount;
     }
 
-    final setString = c.entries.map((entry) => '${entry.key} = ${entry.value}').join(', ');
-    final result = await _db.rawQuery(
-      'UPDATE $conversationsTable SET $setString WHERE jid = ? RETURNING *',
-      [jid],
+    final result = await _db.updateAndReturn(
+      conversationsTable,
+      c,
+      where: 'jid = ?',
+      whereArgs: [jid],
     );
-    assert(result.length == 1, 'Only one conversation must be modified');
-    final conv = result.first;
 
     // TODO(Unknown): Maybe either don't do this or do this only when we need to.
     final sharedMedia = (await _db.query(
@@ -427,7 +452,7 @@ class DatabaseService {
 
     final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     return Conversation.fromDatabaseJson(
-      conv,
+      result,
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
       sharedMedia.toList(),
@@ -753,13 +778,12 @@ class DatabaseService {
       );
     }
 
-    final setString = m.entries.map((entry) => '${entry.key} = ${entry.value}').join(', ');
-    final result = await _db.rawQuery(
-      'UPDATE $messagesTable SET $setString WHERE id = ? RETURNING *',
-      [id],
+    final msg = await _db.updateAndReturn(
+      messagesTable,
+      m,
+      where: 'id = ?',
+      whereArgs: [id],
     );
-    assert(result.length == 1, 'Only one message should be affected');
-    final msg = result.first;
 
     Message? quotes;
     if (msg['quote_id'] != null) {
@@ -875,15 +899,14 @@ class DatabaseService {
       i['pseudoRosterItem'] = boolToInt(pseudoRosterItem as bool);
     }
 
-    final setString = i.entries.map((entry) => '${entry.key} = ${entry.value}').join(', ');
-    final result = await _db.rawQuery(
-      'UPDATE $rosterTable SET $setString WHERE id = ? RETURNING *',
-      [id],
+    final result = await _db.updateAndReturn(
+      rosterTable,
+      i,
+      where: 'id = ?',
+      whereArgs: [id],
     );
-    assert(result.length == 1, 'Only one roster item must be modified');
-    final item = result.first;
 
-    return RosterItem.fromDatabaseJson(item);
+    return RosterItem.fromDatabaseJson(result);
   }
 
   Future<PreferencesState> getPreferences() async {

@@ -1503,13 +1503,13 @@ packages:
     source: hosted
     version: "1.9.1"
   sqflite_common:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: sqflite_common
-      sha256: b504fc5b4576a05586a0bb99d9bcc0d37a78d9d5ed68b96c361d5d3a8e538275
+      sha256: bfd6973aaeeb93475bc0d875ac9aefddf7965ef22ce09790eb963992ffc5183f
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.1+1"
+    version: "2.4.2+2"
   sqflite_sqlcipher:
     dependency: "direct main"
     description:
