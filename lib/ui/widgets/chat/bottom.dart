@@ -107,72 +107,70 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         ),
-        ...widget.message.isEdited ? [
+        if (widget.message.isEdited)
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
               Icons.edit,
+              color: Colors.white,
               size: _bubbleBottomIconSize,
             ),
           ),
-        ] : [],
-        ...widget.message.stickerPackId != null && !GetIt.I.get<PreferencesBloc>().state.enableStickers ? [
+        if (widget.message.stickerPackId != null && !GetIt.I.get<PreferencesBloc>().state.enableStickers)
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
               PhosphorIcons.stickerBold,
               size: _bubbleBottomIconSize,
+              color: Colors.white,
             ),
           ),
-        ] : [],
-        ...widget.message.encrypted ? [
+        if (widget.message.encrypted)
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
               Icons.lock,
+              color: Colors.white,
               size: _bubbleBottomIconSize,
             ),
           ),
-        ] : [],
-        ...widget.message.hasError ? [
+        if (widget.message.hasError)
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
               Icons.info_outline,
-              size: _bubbleBottomIconSize,
               color: Colors.red,
+              size: _bubbleBottomIconSize,
             ),
           ),
-        ] : [],
-        ...widget.message.hasWarning ? [
+        if (widget.message.hasWarning)
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
               Icons.warning,
-              size: _bubbleBottomIconSize,
               color: Colors.yellow,
+              size: _bubbleBottomIconSize,
             ),
           ),
-        ] : [],
-        ..._showCheckmark() ? [
+        if (_showCheckmark())
             const Padding(
               padding: EdgeInsets.only(left: 3),
               child: Icon(
                 Icons.done,
+                color: Colors.white,
                 size: _bubbleBottomIconSize,
               ),
             ),
-          ] : [],
-        ..._showCheckmarks() ? [
+        if (_showCheckmarks())
             const Padding(
               padding: EdgeInsets.only(left: 3),
               child: Icon(
                 Icons.done_all,
+                color: Colors.white,
                 size: _bubbleBottomIconSize,
               ),
             ),
-          ] : [],
-        ..._showBlueCheckmarks() ? [
+        if (_showBlueCheckmarks())
             Padding(
               padding: const EdgeInsets.only(left: 3),
               child: Icon(
@@ -181,7 +179,6 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
                 color: Colors.blue.shade700,
               ),
             ),
-          ] : [],
       ],
     );
   }
