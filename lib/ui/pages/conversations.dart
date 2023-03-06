@@ -7,6 +7,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -15,9 +16,7 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-enum ConversationsOptions {
-  settings
-}
+enum ConversationsOptions { settings }
 
 class ConversationsRowDismissible extends StatefulWidget {
   const ConversationsRowDismissible({
@@ -29,10 +28,12 @@ class ConversationsRowDismissible extends StatefulWidget {
   final Widget child;
 
   @override
-  ConversationsRowDismissibleState createState() => ConversationsRowDismissibleState();
+  ConversationsRowDismissibleState createState() =>
+      ConversationsRowDismissibleState();
 }
 
-class ConversationsRowDismissibleState extends State<ConversationsRowDismissible> {
+class ConversationsRowDismissibleState
+    extends State<ConversationsRowDismissible> {
   DismissDirection direction = DismissDirection.none;
 
   @override
@@ -41,8 +42,8 @@ class ConversationsRowDismissibleState extends State<ConversationsRowDismissible
       key: ValueKey('conversation;${widget.item}'),
       // TODO(Unknown): Show a snackbar allowing the user to revert the action
       onDismissed: (direction) => context.read<ConversationsBloc>().add(
-        ConversationClosedEvent(widget.item.jid),
-      ),
+            ConversationClosedEvent(widget.item.jid),
+          ),
       onUpdate: (details) {
         if (details.direction != direction) {
           setState(() {
@@ -75,21 +76,22 @@ class ConversationsRowDismissibleState extends State<ConversationsRowDismissible
 }
 
 class ConversationsPage extends StatefulWidget {
-  const ConversationsPage({ super.key });
+  const ConversationsPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const ConversationsPage(),
-    settings: const RouteSettings(
-      name: conversationsRoute,
-    ),
-  );
+        builder: (context) => const ConversationsPage(),
+        settings: const RouteSettings(
+          name: conversationsRoute,
+        ),
+      );
 
   @override
   ConversationsPageState createState() => ConversationsPageState();
 }
 
-class ConversationsPageState extends State<ConversationsPage> with TickerProviderStateMixin {
-  late final AnimationController _controller; 
+class ConversationsPageState extends State<ConversationsPage>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
   late Animation<double> _convY;
 
   @override
@@ -100,7 +102,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
       vsync: this,
     );
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
@@ -128,7 +130,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
             child: GestureDetector(
               onLongPressStart: (event) async {
                 Vibrate.feedback(FeedbackType.medium);
-                
+
                 _convY = Tween<double>(
                   begin: event.globalPosition.dy - 20,
                   end: 200,
@@ -138,7 +140,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
                     curve: Curves.easeInOutCubic,
                   ),
                 );
-                
+
                 await _controller.forward();
 
                 // ignore: use_build_context_synchronously
@@ -150,18 +152,20 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
                     left: 0,
                     right: 0,
                     children: [
-                      ...item.unreadCounter != 0 ? [
-                        OverviewMenuItem(
-                          icon: Icons.done_all,
-                          text: t.pages.conversations.markAsRead,
-                          onPressed: () {
-                            context.read<ConversationsBloc>().add(
-                              ConversationMarkedAsReadEvent(item.jid),
-                            );
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      ] : [],
+                      ...item.unreadCounter != 0
+                          ? [
+                              OverviewMenuItem(
+                                icon: Icons.done_all,
+                                text: t.pages.conversations.markAsRead,
+                                onPressed: () {
+                                  context.read<ConversationsBloc>().add(
+                                        ConversationMarkedAsReadEvent(item.jid),
+                                      );
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ]
+                          : [],
                       OverviewMenuItem(
                         icon: Icons.close,
                         text: t.pages.conversations.closeChat,
@@ -179,8 +183,8 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
                             // TODO(Unknown): Show a snackbar allowing the user to revert the action
                             // ignore: use_build_context_synchronously
                             context.read<ConversationsBloc>().add(
-                              ConversationClosedEvent(item.jid),
-                            );
+                                  ConversationClosedEvent(item.jid),
+                                );
 
                             // ignore: use_build_context_synchronously
                             Navigator.of(context).pop();
@@ -195,8 +199,9 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
               },
               child: InkWell(
                 onTap: () => GetIt.I.get<ConversationBloc>().add(
-                  RequestedConversationEvent(item.jid, item.title, item.avatarUrl),
-                ),
+                      RequestedConversationEvent(
+                          item.jid, item.title, item.avatarUrl),
+                    ),
                 child: row,
               ),
             ),
@@ -226,7 +231,7 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationsBloc, ConversationsState>(
@@ -246,20 +251,21 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
               ),
             ),
             () => GetIt.I.get<profile.ProfileBloc>().add(
-              profile.ProfilePageRequestedEvent(
-                true,
-                jid: state.jid,
-                avatarUrl: state.avatarUrl,
-                displayName: state.displayName,
-              ),
-            ),
+                  profile.ProfilePageRequestedEvent(
+                    true,
+                    jid: state.jid,
+                    avatarUrl: state.avatarUrl,
+                    displayName: state.displayName,
+                  ),
+                ),
             showBackButton: false,
             extra: [
               PopupMenuButton(
                 onSelected: (ConversationsOptions result) {
                   switch (result) {
-                    case ConversationsOptions.settings: Navigator.pushNamed(context, settingsRoute);
-                    break;
+                    case ConversationsOptions.settings:
+                      Navigator.pushNamed(context, settingsRoute);
+                      break;
                   }
                 },
                 icon: const Icon(Icons.more_vert),
@@ -280,6 +286,22 @@ class ConversationsPageState extends State<ConversationsPage> with TickerProvide
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           children: [
+            SpeedDialChild(
+              child: const Icon(Icons.notes),
+              onTap: () {
+                context.read<NewConversationBloc>().add(
+                      NewConversationAddedEvent(
+                        "notes@self.me",
+                        t.pages.conversations.speeddialAddNoteToSelf,
+                        "",
+                      ),
+                    );
+              },
+              backgroundColor: primaryColor,
+              // TODO(Unknown): Theme dependent?
+              foregroundColor: Colors.white,
+              label: t.pages.conversations.speeddialAddNoteToSelf,
+            ),
             SpeedDialChild(
               child: const Icon(Icons.group),
               onTap: () => showNotImplementedDialog('groupchat', context),
