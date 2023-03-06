@@ -5,12 +5,14 @@ import 'package:moxxmpp/moxxmpp.dart';
 part 'xmpp_state.freezed.dart';
 part 'xmpp_state.g.dart';
 
-class StreamManagementStateConverter implements JsonConverter<StreamManagementState, Map<String, dynamic>> {
+class StreamManagementStateConverter
+    implements JsonConverter<StreamManagementState, Map<String, dynamic>> {
   const StreamManagementStateConverter();
 
   @override
-  StreamManagementState fromJson(Map<String, dynamic> json) => StreamManagementState.fromJson(json);
-  
+  StreamManagementState fromJson(Map<String, dynamic> json) =>
+      StreamManagementState.fromJson(json);
+
   @override
   Map<String, dynamic> toJson(StreamManagementState state) => state.toJson();
 }
@@ -33,15 +35,16 @@ class XmppState with _$XmppState {
   const XmppState._();
 
   // JSON serialization
-  factory XmppState.fromJson(Map<String, dynamic> json) => _$XmppStateFromJson(json);
+  factory XmppState.fromJson(Map<String, dynamic> json) =>
+      _$XmppStateFromJson(json);
 
   factory XmppState.fromDatabaseTuples(Map<String, String?> tuples) {
     final smStateString = tuples['smState'];
     final isSmStateNotNull = smStateString != null && smStateString != 'null';
     final json = <String, dynamic>{
-      'smState': isSmStateNotNull ?
-        jsonDecode(smStateString) as Map<String, dynamic> :
-        null,
+      'smState': isSmStateNotNull
+          ? jsonDecode(smStateString) as Map<String, dynamic>
+          : null,
       'srid': tuples['srid'],
       'resource': tuples['resource'],
       'jid': tuples['jid'],
@@ -55,12 +58,12 @@ class XmppState with _$XmppState {
 
     return XmppState.fromJson(json);
   }
-  
+
   Map<String, String?> toDatabaseTuples() {
     final json = toJson()
       ..remove('smState')
       ..remove('askedStoragePermission');
-      
+
     return {
       ...json.cast<String, String?>(),
       'smState': jsonEncode(smState?.toJson()),

@@ -5,7 +5,9 @@ typedef UIProgressCallback = void Function(double?);
 /// This class handles download progress notifications from the backend and relays them
 /// to the correct ChatBubble instance so that it can update itself.
 class UIProgressService {
-  UIProgressService() : _callbacks = {}, _log = Logger('UIProgressService');
+  UIProgressService()
+      : _callbacks = {},
+        _log = Logger('UIProgressService');
 
   final Logger _log;
   // Database message id -> callback function
@@ -25,7 +27,7 @@ class UIProgressService {
     _log.finest('Unregistering all callbacks');
     _callbacks.clear();
   }
-  
+
   void onProgress(int id, double? progress) {
     if (_callbacks.containsKey(id)) {
       if (progress == 1.0) {

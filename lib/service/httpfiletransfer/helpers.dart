@@ -5,7 +5,8 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:path/path.dart' as path;
 
 /// Calculates the path for a given file to be saved to and, if neccessary, create it.
-Future<String> getDownloadPath(String filename, String conversationJid, String? mime) async {
+Future<String> getDownloadPath(
+    String filename, String conversationJid, String? mime) async {
   String type;
   var prependMoxxy = true;
   if (mime != null && ['image/', 'video/'].any((e) => mime.startsWith(e))) {
@@ -14,9 +15,12 @@ Future<String> getDownloadPath(String filename, String conversationJid, String? 
     type = ExternalPath.DIRECTORY_DOWNLOADS;
     prependMoxxy = false;
   }
-  
-  final externalDir = await ExternalPath.getExternalStoragePublicDirectory(type);
-  final fileDirectory = prependMoxxy ? path.join(externalDir, 'Moxxy', conversationJid) : externalDir;
+
+  final externalDir =
+      await ExternalPath.getExternalStoragePublicDirectory(type);
+  final fileDirectory = prependMoxxy
+      ? path.join(externalDir, 'Moxxy', conversationJid)
+      : externalDir;
   final dir = Directory(fileDirectory);
   if (!dir.existsSync()) {
     await dir.create(recursive: true);
@@ -43,7 +47,7 @@ bool isRequestOkay(int? statusCode) {
 }
 
 class FileMetadata {
-  const FileMetadata({ this.mime, this.size });
+  const FileMetadata({this.mime, this.size});
   final String? mime;
   final int? size;
 }
@@ -53,7 +57,7 @@ class FileMetadata {
 /// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Length
 Future<FileMetadata> peekFile(String url) async {
   final result = await peekUrl(Uri.parse(url));
-  
+
   return FileMetadata(
     mime: result?.contentType,
     size: result?.contentLength,

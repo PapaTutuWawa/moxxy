@@ -3,7 +3,6 @@ import 'package:meta/meta.dart';
 
 @immutable
 class MediaFileLocation {
-
   const MediaFileLocation(
     this.url,
     this.filename,
@@ -34,16 +33,23 @@ class MediaFileLocation {
   }
 
   @override
-  int get hashCode => url.hashCode ^ filename.hashCode ^ encryptionScheme.hashCode ^ key.hashCode ^ iv.hashCode ^ plaintextHashes.hashCode ^ ciphertextHashes.hashCode;
+  int get hashCode =>
+      url.hashCode ^
+      filename.hashCode ^
+      encryptionScheme.hashCode ^
+      key.hashCode ^
+      iv.hashCode ^
+      plaintextHashes.hashCode ^
+      ciphertextHashes.hashCode;
 
   @override
-  bool operator==(Object other) {
+  bool operator ==(Object other) {
     // TODO(PapaTutuWawa): Compare the Maps
     return other is MediaFileLocation &&
-           url == other.url &&
-           filename == other.filename &&
-           encryptionScheme == other.encryptionScheme &&
-           key == other.key &&
-           iv == other.iv;
+        url == other.url &&
+        filename == other.filename &&
+        encryptionScheme == other.encryptionScheme &&
+        key == other.key &&
+        iv == other.iv;
   }
 }

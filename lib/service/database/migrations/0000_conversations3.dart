@@ -4,11 +4,11 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 Future<void> upgradeFromV8ToV9(Database db) async {
   // Step 1
   //await db.execute('PRAGMA foreign_keys = 0;');
-  
+
   // Step 2
   // Step 4
   await db.execute(
-      '''
+    '''
       CREATE TABLE ${conversationsTable}_new (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       jid TEXT NOT NULL,
@@ -25,17 +25,19 @@ Future<void> upgradeFromV8ToV9(Database db) async {
   );
 
   // Step 5
-  await db.execute('INSERT INTO ${conversationsTable}_new SELECT * from $conversationsTable');
+  await db.execute(
+      'INSERT INTO ${conversationsTable}_new SELECT * from $conversationsTable');
 
   // Step 6
   await db.execute('DROP TABLE $conversationsTable;');
 
   // Step 7
-  await db.execute('ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;');
+  await db.execute(
+      'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;');
 
   // Step 10
   //await db.execute('PRAGMA foreign_key_check;');
-  
+
   // Step 11
 
   // Step 12

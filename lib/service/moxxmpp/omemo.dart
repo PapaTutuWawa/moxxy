@@ -25,7 +25,9 @@ class MoxxyOmemoManager extends BaseOmemoManager {
     }
 
     // Encrypt when the conversation is set to use OMEMO.
-    return GetIt.I.get<ConversationService>().shouldEncryptForConversation(toJid);
+    return GetIt.I
+        .get<ConversationService>()
+        .shouldEncryptForConversation(toJid);
   }
 }
 
@@ -34,7 +36,10 @@ class MoxxyBTBVTrustManager extends BlindTrustBeforeVerificationTrustManager {
     Map<RatchetMapKey, BTBVTrustState> trustCache,
     Map<RatchetMapKey, bool> enablementCache,
     Map<String, List<int>> devices,
-  ) : super(trustCache: trustCache, enablementCache: enablementCache, devices: devices);
+  ) : super(
+            trustCache: trustCache,
+            enablementCache: enablementCache,
+            devices: devices);
 
   @override
   Future<void> commitState() async {

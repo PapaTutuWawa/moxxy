@@ -37,29 +37,30 @@ class SharedMediaPage extends StatefulWidget {
 
   /// The arguments passed to the page.
   final SharedMediaPageArguments arguments;
-  
+
   @override
   SharedMediaPageState createState() => SharedMediaPageState();
 }
 
 class SharedMediaPageState extends State<SharedMediaPage> {
   late final BidirectionalSharedMediaController _controller;
-  
+
   @override
   void initState() {
     super.initState();
 
-    _controller = BidirectionalSharedMediaController(widget.arguments.conversationJid);
+    _controller =
+        BidirectionalSharedMediaController(widget.arguments.conversationJid);
     _controller.fetchOlderData();
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
 
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();

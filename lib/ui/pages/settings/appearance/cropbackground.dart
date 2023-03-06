@@ -10,14 +10,14 @@ import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropBackgroundPage extends StatefulWidget {
-  const CropBackgroundPage({ super.key });
-  
+  const CropBackgroundPage({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const CropBackgroundPage(),
-    settings: const RouteSettings(
-      name: backgroundCroppingRoute,
-    ),
-  );
+        builder: (context) => const CropBackgroundPage(),
+        settings: const RouteSettings(
+          name: backgroundCroppingRoute,
+        ),
+      );
 
   @override
   CropBackgroundPageState createState() => CropBackgroundPageState();
@@ -27,13 +27,13 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
   CropBackgroundPageState() : super();
   double? _scalingFactorCached;
   TransformationController? _controller;
-  
+
   double _scalingFactor(BuildContext context, CropBackgroundState state) {
     if (_scalingFactorCached != null) return _scalingFactorCached!;
 
     final query = MediaQuery.of(context);
-    final width = query.size.width;// * query.devicePixelRatio;
-    final height = query.size.height;// * query.devicePixelRatio;
+    final width = query.size.width; // * query.devicePixelRatio;
+    final height = query.size.height; // * query.devicePixelRatio;
 
     final q = height / state.imageHeight;
     final delta = width - state.imageWidth * q;
@@ -45,7 +45,7 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
     _scalingFactorCached = qp;
     return qp;
   }
-  
+
   Widget _buildImage(BuildContext context, CropBackgroundState state) {
     if (state.image == null) {
       return const Center(
@@ -71,9 +71,10 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
         fit: BoxFit.contain,
       );
     }
-    
+
     final q = _scalingFactor(context, state);
-    _controller ??= TransformationController(Matrix4.identity()..scale(q, q, 1));
+    _controller ??=
+        TransformationController(Matrix4.identity()..scale(q, q, 1));
     return InteractiveViewer(
       constrained: false,
       maxScale: 4,
@@ -100,9 +101,9 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
             child: Stack(
               children: [
                 // ignore: prefer_if_elements_to_conditional_expressions
-                state.imageHeight != 0 && state.imageWidth != 0 ?
-                  _buildImage(context, state) :
-                  const SizedBox(),
+                state.imageHeight != 0 && state.imageWidth != 0
+                    ? _buildImage(context, state)
+                    : const SizedBox(),
                 Positioned(
                   top: 8,
                   left: 8,
@@ -110,7 +111,9 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                     color: const Color.fromRGBO(0, 0, 0, 0),
                     child: CancelButton(
                       onPressed: () {
-                        context.read<CropBackgroundBloc>().add(CropBackgroundResetEvent());
+                        context
+                            .read<CropBackgroundBloc>()
+                            .add(CropBackgroundResetEvent());
                         context.read<NavigationBloc>().add(PoppedRouteEvent());
                       },
                     ),
@@ -137,9 +140,10 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                               value: state.blurEnabled,
                               onChanged: (_) {
                                 if (state.isWorking) return;
-                                
-                                context.read<CropBackgroundBloc>()
-                                .add(BlurToggledEvent());
+
+                                context
+                                    .read<CropBackgroundBloc>()
+                                    .add(BlurToggledEvent());
                               },
                             ),
                           ],
@@ -159,23 +163,22 @@ class CropBackgroundPageState extends State<CropBackgroundPage> {
                         cornerRadius: 100,
                         onTap: () {
                           final q = _scalingFactor(context, state);
-                          final value = _controller == null ?
-                            (Matrix4.identity()..scale(q, q, 1)) :
-                            _controller!.value;
+                          final value = _controller == null
+                              ? (Matrix4.identity()..scale(q, q, 1))
+                              : _controller!.value;
                           final translation = value.getTranslation();
-                          final scale = _controller == null ?
-                            1.0 :
-                            value.entry(0, 0);
+                          final scale =
+                              _controller == null ? 1.0 : value.entry(0, 0);
 
                           context.read<CropBackgroundBloc>().add(
-                            BackgroundSetEvent(
-                              translation.x,
-                              translation.y,
-                              scale,
-                              MediaQuery.of(context).size.height,
-                              MediaQuery.of(context).size.width,
-                            ),
-                          );
+                                BackgroundSetEvent(
+                                  translation.x,
+                                  translation.y,
+                                  scale,
+                                  MediaQuery.of(context).size.height,
+                                  MediaQuery.of(context).size.width,
+                                ),
+                              );
                         },
                         enabled: !state.isWorking,
                         child: Text(t.pages.cropbackground.setAsBackground),

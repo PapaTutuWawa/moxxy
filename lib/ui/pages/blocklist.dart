@@ -6,28 +6,24 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-enum BlocklistOptions {
-  unblockAll
-}
+enum BlocklistOptions { unblockAll }
 
 class BlocklistPage extends StatelessWidget {
-  const BlocklistPage({ super.key });
+  const BlocklistPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const BlocklistPage(),
-    settings: const RouteSettings(
-      name: blocklistRoute,
-    ),
-  );
-  
+        builder: (_) => const BlocklistPage(),
+        settings: const RouteSettings(
+          name: blocklistRoute,
+        ),
+      );
+
   Widget _buildListView(BlocklistState state) {
     // ignore: non_bool_condition,avoid_dynamic_calls
     if (state.blocklist.isEmpty) {
       return Column(
         children: [
-          if (state.isWorking)
-            const LinearProgressIndicator(),
-
+          if (state.isWorking) const LinearProgressIndicator(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
             child: Column(
@@ -49,9 +45,7 @@ class BlocklistPage extends StatelessWidget {
 
     return Column(
       children: [
-        if (state.isWorking)
-          const LinearProgressIndicator(),
-
+        if (state.isWorking) const LinearProgressIndicator(),
         ListView.builder(
           shrinkWrap: true,
           itemCount: state.blocklist.length,
@@ -81,7 +75,9 @@ class BlocklistPage extends StatelessWidget {
 
                       if (result) {
                         // ignore: use_build_context_synchronously
-                        context.read<BlocklistBloc>().add(UnblockedJidEvent(jid));
+                        context
+                            .read<BlocklistBloc>()
+                            .add(UnblockedJidEvent(jid));
                       }
                     },
                   ),

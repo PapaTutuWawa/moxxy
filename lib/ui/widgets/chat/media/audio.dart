@@ -22,11 +22,7 @@ String doubleToTimestamp(double p) {
   return '$minutes:$seconds';
 }
 
-enum _AudioPlaybackState {
-  playing,
-  paused,
-  stopped
-}
+enum _AudioPlaybackState { playing, paused, stopped }
 
 class _AudioWidget extends StatelessWidget {
   const _AudioWidget(
@@ -68,7 +64,7 @@ class _AudioWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -82,11 +78,10 @@ class _AudioWidget extends StatelessWidget {
             children: [
               Slider(
                 onChanged: onChanged,
-                value: (position != null && duration != null) ?
-                  (position! / duration!).clamp(0, 1) :
-                  0,
+                value: (position != null && duration != null)
+                    ? (position! / duration!).clamp(0, 1)
+                    : 0,
               ),
-
               SizedBox(
                 width: maxWidth - 80,
                 child: Row(
@@ -97,7 +92,6 @@ class _AudioWidget extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 20),
             ],
           ),
@@ -112,11 +106,9 @@ class AudioChatWidget extends StatefulWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent,
-    {
-      super.key,
-    }
-  );
+    this.sent, {
+    super.key,
+  });
   final Message message;
   final BorderRadius radius;
   final double maxWidth;
@@ -131,7 +123,7 @@ class AudioChatState extends State<AudioChatWidget> {
   double? _duration;
   double? _position;
   Audio? _audioFile;
-  
+
   @override
   void initState() {
     super.initState();
@@ -144,7 +136,7 @@ class AudioChatState extends State<AudioChatWidget> {
       super.setState(fn);
     }
   }
-  
+
   Future<void> _init() async {
     _audioFile = Audio.loadFromAbsolutePath(
       widget.message.mediaUrl!,
@@ -165,13 +157,13 @@ class AudioChatState extends State<AudioChatWidget> {
       },
     );
   }
-  
+
   @override
   void dispose() {
     _audioFile?.dispose();
     super.dispose();
   }
-  
+
   Widget _buildUploading() {
     return MediaBaseChatWidget(
       _AudioWidget(
@@ -207,7 +199,7 @@ class AudioChatState extends State<AudioChatWidget> {
       gradient: false,
     );
   }
-  
+
   /// The audio file exists locally
   Widget _buildAudio() {
     return MediaBaseChatWidget(
@@ -232,15 +224,15 @@ class AudioChatState extends State<AudioChatWidget> {
             });
           }
         },
-        _playState == _AudioPlaybackState.playing ?
-          const Icon(Icons.pause) :
-          const Icon(Icons.play_arrow),
+        _playState == _AudioPlaybackState.playing
+            ? const Icon(Icons.pause)
+            : const Icon(Icons.play_arrow),
         (p) {
           if (_duration == null || _audioFile == null) return;
 
           setState(() {
-              _position = p * _duration!;
-              _audioFile!.seek(_position!);
+            _position = p * _duration!;
+            _audioFile!.seek(_position!);
           });
         },
         _duration,
@@ -256,9 +248,9 @@ class AudioChatState extends State<AudioChatWidget> {
   Widget _buildDownloadable() {
     return FileChatBaseWidget(
       widget.message,
-      widget.message.isFileUploadNotification ?
-        (widget.message.filename ?? '') :
-        filenameFromUrl(widget.message.srcUrl!),
+      widget.message.isFileUploadNotification
+          ? (widget.message.filename ?? '')
+          : filenameFromUrl(widget.message.srcUrl!),
       widget.radius,
       widget.maxWidth,
       widget.sent,
@@ -266,22 +258,24 @@ class AudioChatState extends State<AudioChatWidget> {
       downloadButton: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
-            RequestDownloadCommand(message: widget.message),
-            awaitable: false,
-          );
+                RequestDownloadCommand(message: widget.message),
+                awaitable: false,
+              );
         },
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (widget.message.isUploading) return _buildUploading();
-    if (widget.message.isFileUploadNotification || widget.message.isDownloading) return _buildDownloading();
+    if (widget.message.isFileUploadNotification || widget.message.isDownloading)
+      return _buildDownloading();
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (widget.message.mediaUrl != null && File(widget.message.mediaUrl!).existsSync()) return _buildAudio();
-    
+    if (widget.message.mediaUrl != null &&
+        File(widget.message.mediaUrl!).existsSync()) return _buildAudio();
+
     return _buildDownloadable();
   }
 }

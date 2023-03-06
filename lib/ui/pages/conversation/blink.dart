@@ -21,7 +21,8 @@ class BlinkingIcon extends StatefulWidget {
   BlinkingIconState createState() => BlinkingIconState();
 }
 
-class BlinkingIconState extends State<BlinkingIcon> with TickerProviderStateMixin {
+class BlinkingIconState extends State<BlinkingIcon>
+    with TickerProviderStateMixin {
   late final AnimationController _recordingBlinkController;
   late final Animation<Color?> _recordingBlink;
   bool _blinkForward = true;
@@ -30,7 +31,7 @@ class BlinkingIconState extends State<BlinkingIcon> with TickerProviderStateMixi
   void initState() {
     super.initState();
 
-     _recordingBlinkController = AnimationController(
+    _recordingBlinkController = AnimationController(
       duration: widget.duration,
       vsync: this,
     );
@@ -52,20 +53,20 @@ class BlinkingIconState extends State<BlinkingIcon> with TickerProviderStateMixi
         }
       });
 
-      _startBlinking();
+    _startBlinking();
   }
 
   Future<void> _startBlinking() async {
     await Future<void>.delayed(widget.delay);
     await _recordingBlinkController.forward();
   }
-  
+
   @override
   void dispose() {
     _recordingBlinkController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(

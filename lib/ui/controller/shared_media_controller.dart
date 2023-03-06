@@ -6,12 +6,15 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 
-class BidirectionalSharedMediaController extends BidirectionalController<SharedMedium> {
-  BidirectionalSharedMediaController(this.conversationJid) : assert(BidirectionalSharedMediaController.currentController == null, 'There can only be one BidirectionalSharedMediaController'),
-  super(
-    pageSize: sharedMediaPaginationSize,
-    maxPageAmount: maxSharedMediaPages,
-  ) {
+class BidirectionalSharedMediaController
+    extends BidirectionalController<SharedMedium> {
+  BidirectionalSharedMediaController(this.conversationJid)
+      : assert(BidirectionalSharedMediaController.currentController == null,
+            'There can only be one BidirectionalSharedMediaController'),
+        super(
+          pageSize: sharedMediaPaginationSize,
+          maxPageAmount: maxSharedMediaPages,
+        ) {
     BidirectionalSharedMediaController.currentController = this;
   }
 
@@ -20,31 +23,33 @@ class BidirectionalSharedMediaController extends BidirectionalController<SharedM
   static BidirectionalSharedMediaController? currentController;
 
   final String conversationJid;
-  
+
   @override
-  Future<List<SharedMedium>> fetchOlderDataImpl(SharedMedium? oldestElement) async {
+  Future<List<SharedMedium>> fetchOlderDataImpl(
+      SharedMedium? oldestElement) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetPagedSharedMediaCommand(
-        conversationJid: conversationJid,
-        timestamp: oldestElement?.timestamp,
-        olderThan: true,
-      ),
-    ) as PagedSharedMediaResultEvent;
+          GetPagedSharedMediaCommand(
+            conversationJid: conversationJid,
+            timestamp: oldestElement?.timestamp,
+            olderThan: true,
+          ),
+        ) as PagedSharedMediaResultEvent;
 
     return result.media;
   }
 
   @override
-  Future<List<SharedMedium>> fetchNewerDataImpl(SharedMedium? newestElement) async {
+  Future<List<SharedMedium>> fetchNewerDataImpl(
+      SharedMedium? newestElement) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetPagedSharedMediaCommand(
-        conversationJid: conversationJid,
-        timestamp: newestElement?.timestamp,
-        olderThan: false,
-      ),
-    ) as PagedSharedMediaResultEvent;
+          GetPagedSharedMediaCommand(
+            conversationJid: conversationJid,
+            timestamp: newestElement?.timestamp,
+            olderThan: false,
+          ),
+        ) as PagedSharedMediaResultEvent;
 
     return result.media;
   }

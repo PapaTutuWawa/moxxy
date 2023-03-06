@@ -31,7 +31,7 @@ class ContactsService {
 
   /// Logger.
   final Logger _log = Logger('ContactsService');
-  
+
   /// JID -> Id.
   Map<String, String>? _contactIds;
 
@@ -70,8 +70,8 @@ class ContactsService {
 
     final jabberContacts = List<ContactWrapper>.empty(growable: true);
     for (final c in contacts) {
-      final index = c.socialMedias
-        .indexWhere((s) => s.label == SocialMediaLabel.jabber);
+      final index =
+          c.socialMedias.indexWhere((s) => s.label == SocialMediaLabel.jabber);
       if (index == -1) continue;
 
       jabberContacts.add(
@@ -94,19 +94,21 @@ class ContactsService {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     return prefs.enableContactIntegration;
   }
-  
+
   /// Checks if we a) have the permission to access the contact list and b) if the
   /// user wants to use this integration.
   /// Returns true if we can proceed with accessing the contact list. False, if not.
   Future<bool> _canUseContactIntegration() async {
     if (!(await isContactIntegrationEnabled())) {
-      _log.finest('_canUseContactIntegration: Returning false since enableContactIntegration is false');
+      _log.finest(
+          '_canUseContactIntegration: Returning false since enableContactIntegration is false');
       return false;
     }
 
     final permission = await Permission.contacts.status;
     if (permission == PermissionStatus.denied) {
-      _log.finest("_canUseContactIntegration: Returning false since we don't have the contacts permission");
+      _log.finest(
+          "_canUseContactIntegration: Returning false since we don't have the contacts permission");
       return false;
     }
 
@@ -128,8 +130,7 @@ class ContactsService {
   /// [id] is the id of the contact. A null value indicates that there is no
   /// contact and null will be returned immediately.
   Future<String?> getContactDisplayName(String? id) async {
-    if (id == null ||
-        !(await _canUseContactIntegration())) return null;
+    if (id == null || !(await _canUseContactIntegration())) return null;
     if (_contactDisplayNames.containsKey(id)) return _contactDisplayNames[id];
 
     final result = await FlutterContacts.getContact(
@@ -158,9 +159,7 @@ class ContactsService {
     if (id == null) return null;
 
     final avatarPath = await getContactProfilePicturePath(id);
-    return File(avatarPath).existsSync() ?
-      avatarPath :
-      null;
+    return File(avatarPath).existsSync() ? avatarPath : null;
   }
 
   Future<void> scanContacts() async {
@@ -171,8 +170,8 @@ class ContactsService {
     // JID -> Id
     final knownContactIds = await _getContactIds();
     // Id -> JID
-    final knownContactIdsReverse = knownContactIds
-      .map((key, value) => MapEntry(value, key));
+    final knownContactIdsReverse =
+        knownContactIds.map((key, value) => MapEntry(value, key));
     final modifiedRosterItems = List<RosterItem>.empty(growable: true);
     final addedRosterItems = List<RosterItem>.empty(growable: true);
     final removedRosterItems = List<String>.empty(growable: true);
@@ -257,7 +256,7 @@ class ContactsService {
             contact.jid,
             contactId: contact.id,
             contactAvatarPath: contactAvatarPath,
-            contactDisplayName: contact.displayName,           
+            contactDisplayName: contact.displayName,
           );
         },
       );

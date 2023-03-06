@@ -13,12 +13,10 @@ import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 class TextChatWidget extends StatelessWidget {
   const TextChatWidget(
     this.message,
-    this.sent,
-    {
-      this.topWidget,
-      super.key,
-    }
-  );
+    this.sent, {
+    this.topWidget,
+    super.key,
+  });
   final Message message;
   final bool sent;
   final Widget? topWidget;
@@ -36,21 +34,23 @@ class TextChatWidget extends StatelessWidget {
 
     return message.body;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final fontsize = EmojiUtil.hasOnlyEmojis(
-      message.body,
-      ignoreWhitespace: true,
-    ) && !message.hasError && !message.isRetracted ?
-      fontsizeBodyOnlyEmojis :
-      fontsizeBody;
+              message.body,
+              ignoreWhitespace: true,
+            ) &&
+            !message.hasError &&
+            !message.isRetracted
+        ? fontsizeBodyOnlyEmojis
+        : fontsizeBody;
 
     return IntrinsicWidth(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ...topWidget != null ? [ topWidget! ] : [],
+          ...topWidget != null ? [topWidget!] : [],
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ParsedText(
@@ -63,7 +63,8 @@ class TextChatWidget extends StatelessWidget {
                 MatchText(
                   // Taken from flutter_parsed_text's source code. Added ";" and "%" to
                   // valid URLs
-                  pattern: r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+-~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&\/\/=\;\%]*)',
+                  pattern:
+                      r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+-~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&\/\/=\;\%]*)',
                   style: const TextStyle(
                     decoration: TextDecoration.underline,
                   ),
@@ -73,9 +74,9 @@ class TextChatWidget extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: topWidget != null ?
-              const EdgeInsets.only(left: 8, right: 8, bottom: 8) :
-              EdgeInsets.zero,
+            padding: topWidget != null
+                ? const EdgeInsets.only(left: 8, right: 8, bottom: 8)
+                : EdgeInsets.zero,
             child: MessageBubbleBottom(message, sent),
           )
         ],

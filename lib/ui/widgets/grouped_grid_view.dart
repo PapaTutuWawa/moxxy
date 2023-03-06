@@ -52,7 +52,7 @@ class GroupedGridView<T, K> extends StatelessWidget {
 
   /// Optional ScrollController that is attached to the ListView.
   final ScrollController? controller;
-  
+
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -60,7 +60,8 @@ class GroupedGridView<T, K> extends StatelessWidget {
       controller: controller,
       itemBuilder: (context, index) {
         if (index.isEven) {
-          return separatorBuilder(context, getKey(_categories[index ~/ 2].first));
+          return separatorBuilder(
+              context, getKey(_categories[index ~/ 2].first));
         } else {
           return Padding(
             padding: gridPadding ?? EdgeInsets.zero,

@@ -20,11 +20,9 @@ class VideoChatWidget extends StatelessWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent,
-    {
-      super.key,
-    }
-  );
+    this.sent, {
+    super.key,
+  });
   final Message message;
   final double maxWidth;
   final BorderRadius radius;
@@ -69,9 +67,9 @@ class VideoChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.isFileUploadNotification ?
-          (message.filename ?? '') :
-          filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification
+            ? (message.filename ?? '')
+            : filenameFromUrl(message.srcUrl!),
         radius,
         maxWidth,
         sent,
@@ -106,7 +104,7 @@ class VideoChatWidget extends StatelessWidget {
       final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
-         SizedBox(
+        SizedBox(
           width: size.width,
           height: size.height,
           child: BlurHash(
@@ -124,9 +122,9 @@ class VideoChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.isFileUploadNotification ?
-          (message.filename ?? '') :
-          filenameFromUrl(message.srcUrl!),
+        message.isFileUploadNotification
+            ? (message.filename ?? '')
+            : filenameFromUrl(message.srcUrl!),
         radius,
         maxWidth,
         sent,
@@ -134,22 +132,24 @@ class VideoChatWidget extends StatelessWidget {
         downloadButton: DownloadButton(
           onPressed: () {
             MoxplatformPlugin.handler.getDataSender().sendData(
-              RequestDownloadCommand(message: message),
-              awaitable: false,
-            );
+                  RequestDownloadCommand(message: message),
+                  awaitable: false,
+                );
           },
         ),
       );
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     if (message.isUploading) return _buildUploading();
-    if (message.isFileUploadNotification || message.isDownloading) return _buildDownloading();
+    if (message.isFileUploadNotification || message.isDownloading)
+      return _buildDownloading();
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) return _buildVideo();
+    if (message.mediaUrl != null && File(message.mediaUrl!).existsSync())
+      return _buildVideo();
 
     return _buildDownloadable();
   }

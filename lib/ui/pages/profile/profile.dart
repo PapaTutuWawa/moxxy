@@ -9,15 +9,15 @@ import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/media.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({ super.key });
- 
+  const ProfilePage({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const ProfilePage(),
-    settings: const RouteSettings(
-      name: profileRoute,
-    ),
-  );
-  
+        builder: (_) => const ProfilePage(),
+        settings: const RouteSettings(
+          name: profileRoute,
+        ),
+      );
+
   Widget _buildHeader(BuildContext context, ProfileState state) {
     if (state.isSelfProfile) {
       return SelfProfileHeader(
@@ -25,8 +25,8 @@ class ProfilePage extends StatelessWidget {
         state.avatarUrl,
         state.displayName,
         (path, hash) => context.read<ProfileBloc>().add(
-          AvatarSetEvent(path, hash),
-        ),
+              AvatarSetEvent(path, hash),
+            ),
       );
     }
 
@@ -47,8 +47,8 @@ class ProfilePage extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8),
                     child: _buildHeader(context, state),
                   ),
-
-                  if (!state.isSelfProfile && state.conversation!.sharedMedia.isNotEmpty)
+                  if (!state.isSelfProfile &&
+                      state.conversation!.sharedMedia.isNotEmpty)
                     SharedMediaDisplay(
                       preview: state.conversation!.sharedMedia,
                       jid: state.conversation!.jid,
@@ -62,7 +62,8 @@ class ProfilePage extends StatelessWidget {
                 left: 8,
                 child: IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                  onPressed: () =>
+                      context.read<NavigationBloc>().add(PoppedRouteEvent()),
                 ),
               ),
               Positioned(
@@ -74,7 +75,9 @@ class ProfilePage extends StatelessWidget {
                     color: Colors.white,
                     icon: const Icon(Icons.info_outline),
                     onPressed: () {
-                      context.read<ServerInfoBloc>().add(ServerInfoPageRequested());
+                      context
+                          .read<ServerInfoBloc>()
+                          .add(ServerInfoPageRequested());
                     },
                   ),
                 ),

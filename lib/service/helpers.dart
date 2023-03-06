@@ -72,7 +72,7 @@ String xmppErrorToTranslatableString(XmppError error) {
   } else if (error is NoConnectionError) {
     return t.errors.login.noConnection;
   }
-  
+
   return t.errors.login.unspecified;
 }
 
@@ -93,7 +93,6 @@ String getStickerHashKeyType(Map<String, String> hashes) {
 
   assert(false, 'No valid hash found');
   return '';
-
 }
 
 String getStickerHashKey(Map<String, String> hashes) {
@@ -106,7 +105,8 @@ String getUnrecoverableErrorString(NonRecoverableErrorEvent event) {
   final error = event.error;
   if (error is SaslAccountDisabledError) {
     return t.errors.connection.saslAccountDisabled;
-  } else if (error is SaslCredentialsExpiredError || error is SaslNotAuthorizedError) {
+  } else if (error is SaslCredentialsExpiredError ||
+      error is SaslNotAuthorizedError) {
     return t.errors.connection.saslInvalidCredentials;
   }
 
@@ -141,7 +141,7 @@ String? createFallbackBodyForQuotedMessage(Message? quotedMessage) {
     String quotedMediaUrl;
     if (quotedMessage.srcUrl != null && quotedMessage.srcUrl!.isNotEmpty) {
       quotedMediaUrl = '• ${quotedMessage.srcUrl!}';
-    } else if (quotedMessage.body.isNotEmpty){
+    } else if (quotedMessage.body.isNotEmpty) {
       quotedMediaUrl = '• ${quotedMessage.body}';
     } else {
       quotedMediaUrl = '';

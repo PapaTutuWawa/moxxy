@@ -16,7 +16,8 @@ class HttpPeekResult {
 /// called whenever new data has been downloaded.
 ///
 /// Returns the status code if the server responded. If an error occurs, returns null.
-Future<int?> downloadFile(Uri uri, String destination, ProgressCallback onProgress) async {
+Future<int?> downloadFile(
+    Uri uri, String destination, ProgressCallback onProgress) async {
   // TODO(Unknown): How do we close fileSink? Do we have to?
   IOSink? fileSink;
   final client = HttpClient();
@@ -28,7 +29,7 @@ Future<int?> downloadFile(Uri uri, String destination, ProgressCallback onProgre
       client.close(force: true);
       return resp.statusCode;
     }
-    
+
     // The size of the remote file
     final length = resp.contentLength;
 
@@ -36,19 +37,21 @@ Future<int?> downloadFile(Uri uri, String destination, ProgressCallback onProgre
     var bytes = 0;
     final downloadCompleter = Completer<void>();
     unawaited(
-      resp.transform(
-        StreamTransformer<List<int>, List<int>>.fromHandlers(
-          handleData: (data, sink) {
-            bytes += data.length;
-            onProgress(length, bytes);
+      resp
+          .transform(
+            StreamTransformer<List<int>, List<int>>.fromHandlers(
+              handleData: (data, sink) {
+                bytes += data.length;
+                onProgress(length, bytes);
 
-            sink.add(data);
-          },
-          handleDone: (sink) {
-            downloadCompleter.complete();
-          },
-        ),
-      ).pipe(fileSink),
+                sink.add(data);
+              },
+              handleDone: (sink) {
+                downloadCompleter.complete();
+              },
+            ),
+          )
+          .pipe(fileSink),
     );
 
     // Wait for the download to complete
@@ -69,7 +72,8 @@ Future<int?> downloadFile(Uri uri, String destination, ProgressCallback onProgre
 /// been downloaded.
 ///
 /// Returns the status code if the server responded. If an error occurs, returns null.
-Future<int?> uploadFile(Uri destination, Map<String, String> headers, String filePath, ProgressCallback onProgress) async {
+Future<int?> uploadFile(Uri destination, Map<String, String> headers,
+    String filePath, ProgressCallback onProgress) async {
   final client = HttpClient();
   try {
     final req = await client.putUrl(destination);
@@ -84,18 +88,18 @@ Future<int?> uploadFile(Uri destination, Map<String, String> headers, String fil
 
     var bytes = 0;
     final stream = file.openRead().transform(
-      StreamTransformer<List<int>, List<int>>.fromHandlers(
-        handleData: (data, sink) {
-          bytes += data.length;
-          onProgress(length, bytes);
+          StreamTransformer<List<int>, List<int>>.fromHandlers(
+            handleData: (data, sink) {
+              bytes += data.length;
+              onProgress(length, bytes);
 
-          sink.add(data);
-        },
-        handleDone: (sink) {
-          sink.close();
-        },
-      ),
-    );
+              sink.add(data);
+            },
+            handleDone: (sink) {
+              sink.close();
+            },
+          ),
+        );
     await req.addStream(stream);
     final resp = await req.close();
 
@@ -125,9 +129,7 @@ Future<HttpPeekResult?> peekUrl(Uri uri) async {
     client.close(force: true);
     final contentType = resp.headers['Content-Type'];
     return HttpPeekResult(
-      contentType != null && contentType.isNotEmpty ?
-        contentType.first :
-        null,
+      contentType != null && contentType.isNotEmpty ? contentType.first : null,
       resp.contentLength,
     );
   } catch (ex) {

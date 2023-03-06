@@ -16,17 +16,18 @@ class ServerInfoBloc extends Bloc<ServerInfoEvent, ServerInfoState> {
     on<ServerInfoPageRequested>(_onServerInfoRequested);
   }
 
-  Future<void> _onServerInfoRequested(ServerInfoPageRequested event, Emitter<ServerInfoState> emit) async {
+  Future<void> _onServerInfoRequested(
+      ServerInfoPageRequested event, Emitter<ServerInfoState> emit) async {
     emit(state.copyWith(working: true));
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(const NavigationDestination(serverInfoRoute)),
-    );
+          PushedNamedEvent(const NavigationDestination(serverInfoRoute)),
+        );
 
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetFeaturesCommand(),
-    ) as GetFeaturesEvent;
+          GetFeaturesCommand(),
+        ) as GetFeaturesEvent;
 
     emit(
       state.copyWith(
@@ -37,6 +38,6 @@ class ServerInfoBloc extends Bloc<ServerInfoEvent, ServerInfoState> {
         carbonsSupported: result.supportsCarbons,
         working: false,
       ),
-    );   
+    );
   }
 }

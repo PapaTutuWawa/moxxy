@@ -10,7 +10,7 @@ Future<List<int>> hashFileImpl(HashRequest request) async {
   return CryptographicHashManager.hashFromData(data, request.hash);
 }
 
-Future<EncryptionResult> encryptFileImpl(EncryptionRequest request) async { 
+Future<EncryptionResult> encryptFileImpl(EncryptionRequest request) async {
   Cipher algorithm;
   switch (request.encryption) {
     case SFSEncryptionType.aes128GcmNoPadding:
@@ -48,12 +48,14 @@ Future<EncryptionResult> encryptFileImpl(EncryptionRequest request) async {
     iv,
     {
       hashSha256: base64Encode(
-        await CryptographicHashManager.hashFromData(plaintext, HashFunction.sha256),
+        await CryptographicHashManager.hashFromData(
+            plaintext, HashFunction.sha256),
       ),
     },
     {
       hashSha256: base64Encode(
-        await CryptographicHashManager.hashFromData(ciphertext, HashFunction.sha256),
+        await CryptographicHashManager.hashFromData(
+            ciphertext, HashFunction.sha256),
       ),
     },
   );
@@ -75,7 +77,7 @@ Future<DecryptionResult> decryptFileImpl(DecryptionRequest request) async {
       // ignore: dead_code
       break;
   }
-  
+
   final ciphertextRaw = await File(request.source).readAsBytes();
   final mac = List<int>.empty(growable: true);
   final ciphertext = List<int>.empty(growable: true);
@@ -104,7 +106,7 @@ Future<DecryptionResult> decryptFileImpl(DecryptionRequest request) async {
       break;
     }
   }
-  
+
   final secretBox = SecretBox(
     ciphertext,
     nonce: request.iv,

@@ -8,10 +8,9 @@ class QuotedFileWidget extends StatelessWidget {
   const QuotedFileWidget(
     this.message,
     this.sent, {
-      this.resetQuote,
-      super.key,
-    }
-  );
+    this.resetQuote,
+    super.key,
+  });
   final Message message;
   final bool sent;
   final void Function()? resetQuote;

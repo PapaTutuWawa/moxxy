@@ -7,20 +7,23 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
   @override
   bool shouldTriggerAckedEvent(Stanza stanza) {
     return stanza.tag == 'message' &&
-      stanza.id != null && (
-        stanza.firstTag('body') != null ||
-        stanza.firstTag('x', xmlns: oobDataXmlns) != null ||
-        stanza.firstTag('file-sharing', xmlns: sfsXmlns) != null ||
-        stanza.firstTag('file-upload', xmlns: fileUploadNotificationXmlns) != null ||
-        stanza.firstTag('encrypted', xmlns: omemoXmlns) != null
-      );
+        stanza.id != null &&
+        (stanza.firstTag('body') != null ||
+            stanza.firstTag('x', xmlns: oobDataXmlns) != null ||
+            stanza.firstTag('file-sharing', xmlns: sfsXmlns) != null ||
+            stanza.firstTag('file-upload',
+                    xmlns: fileUploadNotificationXmlns) !=
+                null ||
+            stanza.firstTag('encrypted', xmlns: omemoXmlns) != null);
   }
-  
+
   @override
   Future<void> commitState() async {
-    await GetIt.I.get<XmppStateService>().modifyXmppState((s) => s.copyWith(
-      smState: state,
-    ),);
+    await GetIt.I.get<XmppStateService>().modifyXmppState(
+          (s) => s.copyWith(
+            smState: state,
+          ),
+        );
   }
 
   @override

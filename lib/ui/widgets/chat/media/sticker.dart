@@ -16,26 +16,20 @@ class StickerChatWidget extends StatelessWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent,
-    {
-      super.key,
-    }
-  );
+    this.sent, {
+    super.key,
+  });
   final Message message;
   final double maxWidth;
   final BorderRadius radius;
   final bool sent;
-  
+
   Widget _buildNotAvailable(BuildContext context) {
     return Align(
-      alignment: sent ?
-        Alignment.centerRight :
-        Alignment.centerLeft,
+      alignment: sent ? Alignment.centerRight : Alignment.centerLeft,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: sent ?
-            bubbleColorSent :
-            bubbleColorReceived,
+          color: sent ? bubbleColorSent : bubbleColorReceived,
           borderRadius: const BorderRadius.all(radiusLarge),
         ),
         child: Padding(
@@ -58,15 +52,17 @@ class StickerChatWidget extends StatelessWidget {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
-      buildWhen: (prev, next) => prev.stickerPacks.length != next.stickerPacks.length,
+      buildWhen: (prev, next) =>
+          prev.stickerPacks.length != next.stickerPacks.length,
       builder: (context, state) {
         Sticker? sticker;
         if (message.stickerPackId != null && message.stickerHashKey != null) {
-          final stickerKey = StickerKey(message.stickerPackId!, message.stickerHashKey!);
+          final stickerKey =
+              StickerKey(message.stickerPackId!, message.stickerHashKey!);
           sticker = state.stickerMap[stickerKey];
         }
 
@@ -74,52 +70,48 @@ class StickerChatWidget extends StatelessWidget {
           child: Column(
             children: [
               // ignore: prefer_if_elements_to_conditional_expressions
-              sticker != null && GetIt.I.get<PreferencesBloc>().state.enableStickers ?
-                InkWell(
-                  onTap: () {
-                    GetIt.I.get<StickerPackBloc>().add(
-                      LocallyAvailableStickerPackRequested(
-                        sticker!.stickerPackId,
+              sticker != null &&
+                      GetIt.I.get<PreferencesBloc>().state.enableStickers
+                  ? InkWell(
+                      onTap: () {
+                        GetIt.I.get<StickerPackBloc>().add(
+                              LocallyAvailableStickerPackRequested(
+                                sticker!.stickerPackId,
+                              ),
+                            );
+                      },
+                      child: Image.file(
+                        File(sticker.path),
+                        // TODO(Unknown): Maybe set the cache size based on display dimensions
+                        cacheWidth: 300,
+                        cacheHeight: 300,
                       ),
-                    );
-                  },
-                  child: Image.file(
-                    File(sticker.path),
-                    // TODO(Unknown): Maybe set the cache size based on display dimensions
-                    cacheWidth: 300,
-                    cacheHeight: 300,
-                  ),
-                ) :
-                InkWell(
-                  onTap: () {
-                    context.read<StickerPackBloc>().add(
-                      RemoteStickerPackRequested(
-                        message.stickerPackId!,
-                        // TODO(PapaTutuWawa): This does not feel clean
-                        message.sender.split('/').first,
-                      ),
-                    );
-                  },
-                  child: _buildNotAvailable(context),
-                ),
+                    )
+                  : InkWell(
+                      onTap: () {
+                        context.read<StickerPackBloc>().add(
+                              RemoteStickerPackRequested(
+                                message.stickerPackId!,
+                                // TODO(PapaTutuWawa): This does not feel clean
+                                message.sender.split('/').first,
+                              ),
+                            );
+                      },
+                      child: _buildNotAvailable(context),
+                    ),
 
               Align(
-                alignment: sent ?
-                  Alignment.centerRight :
-                  Alignment.centerLeft,
+                alignment: sent ? Alignment.centerRight : Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 1),
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: sent ?
-                        bubbleColorSent :
-                        bubbleColorReceived,
+                      color: sent ? bubbleColorSent : bubbleColorReceived,
                       borderRadius: const BorderRadius.all(radiusLarge),
                     ),
-
                     child: Padding(
                       padding: const EdgeInsets.all(8),
-                      child: MessageBubbleBottom(message, sent, shrink: true), 
+                      child: MessageBubbleBottom(message, sent, shrink: true),
                     ),
                   ),
                 ),

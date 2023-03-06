@@ -19,7 +19,8 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
     on<PageResetEvent>(_onPageReset);
   }
 
-  Future<void> _onContactAdded(AddedContactEvent event, Emitter<AddContactState> emit) async {
+  Future<void> _onContactAdded(
+      AddedContactEvent event, Emitter<AddContactState> emit) async {
     final validation = validateJidString(state.jid);
     if (validation != null) {
       emit(state.copyWith(jidError: validation));
@@ -35,37 +36,39 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
 
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      AddContactCommand(
-        jid: state.jid,
-      ),
-    ) as AddContactResultEvent;
+          AddContactCommand(
+            jid: state.jid,
+          ),
+        ) as AddContactResultEvent;
 
     await _onPageReset(PageResetEvent(), emit);
-    
+
     if (result.conversation != null) {
       if (result.added) {
         GetIt.I.get<ConversationsBloc>().add(
-          ConversationsAddedEvent(result.conversation!),
-        );
+              ConversationsAddedEvent(result.conversation!),
+            );
       } else {
         GetIt.I.get<ConversationsBloc>().add(
-          ConversationsUpdatedEvent(result.conversation!),
-        );
+              ConversationsUpdatedEvent(result.conversation!),
+            );
       }
     }
 
-    assert(result.conversation != null, 'RequestedConversationEvent must contain a not null conversation');
+    assert(result.conversation != null,
+        'RequestedConversationEvent must contain a not null conversation');
     GetIt.I.get<ConversationBloc>().add(
-      RequestedConversationEvent(
-        result.conversation!.jid,
-        result.conversation!.title,
-        result.conversation!.avatarUrl,
-        removeUntilConversations: true,
-      ),
-    );
+          RequestedConversationEvent(
+            result.conversation!.jid,
+            result.conversation!.title,
+            result.conversation!.avatarUrl,
+            removeUntilConversations: true,
+          ),
+        );
   }
 
-  Future<void> _onJidChanged(JidChangedEvent event, Emitter<AddContactState> emit) async {
+  Future<void> _onJidChanged(
+      JidChangedEvent event, Emitter<AddContactState> emit) async {
     emit(
       state.copyWith(
         jid: event.jid,
@@ -73,7 +76,8 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
     );
   }
 
-  Future<void> _onPageReset(PageResetEvent event, Emitter<AddContactState> emit) async {
+  Future<void> _onPageReset(
+      PageResetEvent event, Emitter<AddContactState> emit) async {
     emit(
       state.copyWith(
         jidError: null,

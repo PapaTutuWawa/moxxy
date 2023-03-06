@@ -6,7 +6,8 @@ abstract class PreferencesEvent {}
 /// If [notify] is true, then the background service will be
 /// notified of this change.
 class PreferencesChangedEvent extends PreferencesEvent {
-  PreferencesChangedEvent(this.preferences, {
+  PreferencesChangedEvent(
+    this.preferences, {
     this.notify = true,
   });
   final PreferencesState preferences;

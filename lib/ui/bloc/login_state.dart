@@ -1,8 +1,7 @@
 part of 'login_bloc.dart';
 
 class LoginFormState {
-
-  const LoginFormState(this.isOkay, { this.error });
+  const LoginFormState(this.isOkay, {this.error});
   final bool isOkay;
   final String? error;
 }

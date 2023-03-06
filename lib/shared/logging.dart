@@ -14,7 +14,8 @@ Future<List<int>> deriveKey(String key) async {
 /// This function is "validated" against
 /// https://github.com/monal-im/Monal/blob/develop/UDPLogServer/server.py if
 /// [key] is derived using [deriveKey].
-Future<List<int>> encryptData(List<int> data, List<int> key, { List<int>? nonce }) async {
+Future<List<int>> encryptData(List<int> data, List<int> key,
+    {List<int>? nonce}) async {
   final algorithm = AesGcm.with256bits();
 
   final secretBox = await algorithm.encrypt(
@@ -23,7 +24,7 @@ Future<List<int>> encryptData(List<int> data, List<int> key, { List<int>? nonce 
     nonce: nonce ?? algorithm.newNonce(),
   );
 
-  return [ ...secretBox.nonce, ...secretBox.mac.bytes, ...secretBox.cipherText ];
+  return [...secretBox.nonce, ...secretBox.mac.bytes, ...secretBox.cipherText];
 }
 
 /// Just a wrapper around encoder to compress the payload using GZip.
@@ -32,7 +33,8 @@ List<int> compressData(List<int> payload) {
 }
 
 /// Format a log message similarly as to how Monal does it.
-List<int> logToPayload(String line, int timestamp, String loglevel, int counter, { String? filename }) {
+List<int> logToPayload(String line, int timestamp, String loglevel, int counter,
+    {String? filename}) {
   return utf8.encode(
     jsonEncode(
       <String, dynamic>{
@@ -40,22 +42,26 @@ List<int> logToPayload(String line, int timestamp, String loglevel, int counter,
         'timestamp': timestamp.toString(),
         'level': loglevel,
         '_counter': counter,
-        ...filename != null ? <String, String>{ 'filename': filename } : <String, String>{}
+        ...filename != null
+            ? <String, String>{'filename': filename}
+            : <String, String>{}
       },
     ),
   );
 }
 
 class UDPLogger {
-
-  UDPLogger(): _counter = 0, _canSend = false, _enabled = true;
+  UDPLogger()
+      : _counter = 0,
+        _canSend = false,
+        _enabled = true;
   late UDP _sender;
   late Endpoint _target;
   late List<int> _derivedKey;
   int _counter;
   bool _canSend;
   bool _enabled;
-  
+
   Future<void> init(String key, String ip, int port) async {
     _sender = await UDP.bind(Endpoint.any());
     _derivedKey = await deriveKey(key);
@@ -66,11 +72,13 @@ class UDPLogger {
 
   void setEnabled(bool enabled) => _enabled = enabled;
   bool isEnabled() => _enabled;
-  
-  Future<void> sendLog(String line, int timestamp, String loglevel, { String? filename }) async {
+
+  Future<void> sendLog(String line, int timestamp, String loglevel,
+      {String? filename}) async {
     if (!_canSend || !_enabled) return;
 
-    final rawPayload = logToPayload(line, timestamp, loglevel, _counter, filename: filename);
+    final rawPayload =
+        logToPayload(line, timestamp, loglevel, _counter, filename: filename);
     final compressed = compressData(rawPayload);
     final encrypted = await encryptData(compressed, _derivedKey);
 

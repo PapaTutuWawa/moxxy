@@ -19,7 +19,8 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
     on<BlocklistPushedEvent>(_onBlocklistPushed);
   }
 
-  Future<void> _onBlocklistRequested(BlocklistRequestedEvent event, Emitter<BlocklistState> emit) async {
+  Future<void> _onBlocklistRequested(
+      BlocklistRequestedEvent event, Emitter<BlocklistState> emit) async {
     final mustDoWork = state.blocklist.isEmpty;
 
     if (mustDoWork) {
@@ -29,18 +30,18 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
         ),
       );
     }
-    
+
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(blocklistRoute),
-      ),
-    );
+          PushedNamedEvent(
+            const NavigationDestination(blocklistRoute),
+          ),
+        );
 
     if (state.blocklist.isEmpty) {
       // ignore: cast_nullable_to_non_nullable
       final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-        GetBlocklistCommand(),
-      ) as GetBlocklistResultEvent;
+            GetBlocklistCommand(),
+          ) as GetBlocklistResultEvent;
 
       emit(
         state.copyWith(
@@ -50,35 +51,38 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
       );
     }
   }
-  
-  Future<void> _onJidUnblocked(UnblockedJidEvent event, Emitter<BlocklistState> emit) async {
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-      UnblockJidCommand(
-        jid: event.jid,
-      ),
-    );
 
-    final blocklist = state.blocklist
-      .where((String i) => i != event.jid)
-      .toList();
+  Future<void> _onJidUnblocked(
+      UnblockedJidEvent event, Emitter<BlocklistState> emit) async {
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+          UnblockJidCommand(
+            jid: event.jid,
+          ),
+        );
+
+    final blocklist =
+        state.blocklist.where((String i) => i != event.jid).toList();
     emit(state.copyWith(blocklist: blocklist));
   }
 
-  Future<void> _onUnblockedAll(UnblockedAllEvent event, Emitter<BlocklistState> emit) async {
+  Future<void> _onUnblockedAll(
+      UnblockedAllEvent event, Emitter<BlocklistState> emit) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      UnblockAllCommand(),
-    );
+          UnblockAllCommand(),
+        );
 
     emit(
       state.copyWith(blocklist: <String>[]),
     );
   }
 
-  Future<void> _onBlocklistPushed(BlocklistPushedEvent event, Emitter<BlocklistState> emit) async {
+  Future<void> _onBlocklistPushed(
+      BlocklistPushedEvent event, Emitter<BlocklistState> emit) async {
     final blocklist = state.blocklist..addAll(event.added);
     emit(
       state.copyWith(
-        blocklist: blocklist.where((String i) => !event.removed.contains(i)).toList(),
+        blocklist:
+            blocklist.where((String i) => !event.removed.contains(i)).toList(),
       ),
     );
   }

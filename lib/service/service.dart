@@ -46,7 +46,8 @@ Future<void> initializeServiceIfNeeded() async {
   final handler = MoxplatformPlugin.handler;
   if (await handler.isRunning()) {
     if (kDebugMode) {
-      logger.fine('Since kDebugMode is true, waiting 600ms before sending PreStartCommand');
+      logger.fine(
+          'Since kDebugMode is true, waiting 600ms before sending PreStartCommand');
       sleep(const Duration(milliseconds: 600));
     }
 
@@ -57,11 +58,12 @@ Future<void> initializeServiceIfNeeded() async {
     // ignore: cascade_invocations
     logger.info('Service is running. Sending pre start command');
     await handler.getDataSender().sendData(
-      PerformPreStartCommand(
-        systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
-      ),
-      awaitable: false,
-    );
+          PerformPreStartCommand(
+            systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale
+                .toLanguageTag(),
+          ),
+          awaitable: false,
+        );
   } else {
     logger.info('Service is not running. Initializing service... ');
     await handler.start(
@@ -74,7 +76,7 @@ Future<void> initializeServiceIfNeeded() async {
 
 /// A middleware for packing an event into a [DataWrapper] and also
 /// logging what we send.
-void sendEvent(BackgroundEvent event, { String? id }) {
+void sendEvent(BackgroundEvent event, {String? id}) {
   // NOTE: *S*erver to *F*oreground
   GetIt.I.get<Logger>().fine('--> ${event.toJson()["type"]}');
   GetIt.I.get<BackgroundService>().sendEvent(event, id: id);
@@ -83,33 +85,36 @@ void sendEvent(BackgroundEvent event, { String? id }) {
 void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.onRecord.listen((record) {
-      final logMessageHeader = '[${record.level.name}] (${record.loggerName}) ${record.time}: ';
-      var msg = record.message;
-      do {
-        final tooLong = logMessageHeader.length + msg.length >= 967;
-        final line = tooLong ? msg.substring(0, 967 - logMessageHeader.length) : msg;
+    final logMessageHeader =
+        '[${record.level.name}] (${record.loggerName}) ${record.time}: ';
+    var msg = record.message;
+    do {
+      final tooLong = logMessageHeader.length + msg.length >= 967;
+      final line =
+          tooLong ? msg.substring(0, 967 - logMessageHeader.length) : msg;
 
-        if (tooLong) {
-          msg = msg.substring(967 - logMessageHeader.length - 2);
-        } else {
-          msg = '';
+      if (tooLong) {
+        msg = msg.substring(967 - logMessageHeader.length - 2);
+      } else {
+        msg = '';
+      }
+
+      final logMessage = logMessageHeader + line;
+
+      if (GetIt.I.isRegistered<UDPLogger>()) {
+        final udp = GetIt.I.get<UDPLogger>();
+        if (udp.isEnabled()) {
+          udp.sendLog(logMessage, record.time.millisecondsSinceEpoch,
+              record.level.name);
         }
+      }
 
-        final logMessage = logMessageHeader + line;
-
-        if (GetIt.I.isRegistered<UDPLogger>()) {
-          final udp = GetIt.I.get<UDPLogger>();
-          if (udp.isEnabled()) {
-            udp.sendLog(logMessage, record.time.millisecondsSinceEpoch, record.level.name);
-          }
-        }
-
-        // ignore: literal_only_boolean_expressions
-        if (/*kDebugMode*/ true) {
-          // ignore: avoid_print
-          print(logMessage);
-        }
-      } while (msg.isNotEmpty);
+      // ignore: literal_only_boolean_expressions
+      if (/*kDebugMode*/ true) {
+        // ignore: avoid_print
+        print(logMessage);
+      }
+    } while (msg.isNotEmpty);
   });
 }
 
@@ -141,13 +146,14 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<Logger>(Logger('MoxxyService'));
   GetIt.I.registerSingleton<UDPLogger>(UDPLogger());
   GetIt.I.registerSingleton<LanguageService>(LanguageService());
-  
+
   // Initialize the database
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
   await GetIt.I.get<DatabaseService>().initialize();
 
   // Initialize services
-  GetIt.I.registerSingleton<ConnectivityWatcherService>(ConnectivityWatcherService());
+  GetIt.I.registerSingleton<ConnectivityWatcherService>(
+      ConnectivityWatcherService());
   GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
   GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
   GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
@@ -162,7 +168,8 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<ContactsService>(ContactsService());
   GetIt.I.registerSingleton<StickersService>(StickersService());
   GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
-  GetIt.I.registerSingleton<SubscriptionRequestService>(SubscriptionRequestService());
+  GetIt.I.registerSingleton<SubscriptionRequestService>(
+      SubscriptionRequestService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
@@ -172,10 +179,11 @@ Future<void> entrypoint() async {
   await GetIt.I.get<ConnectivityWatcherService>().initialize();
 
   if (!kDebugMode) {
-    final enableDebug = (await GetIt.I.get<PreferencesService>().getPreferences()).debugEnabled;
+    final enableDebug =
+        (await GetIt.I.get<PreferencesService>().getPreferences()).debugEnabled;
     Logger.root.level = enableDebug ? Level.ALL : Level.INFO;
   }
-  
+
   // Init the UDPLogger
   await initUDPLogger();
 
@@ -186,16 +194,16 @@ Future<void> entrypoint() async {
     connectivityManager,
     MoxxyTCPSocketWrapper(),
   )..registerFeatureNegotiators([
-    ResourceBindingNegotiator(),
-    StartTlsNegotiator(),
-    StreamManagementNegotiator(),
-    CSINegotiator(),
-    RosterFeatureNegotiator(),
-    SaslScramNegotiator(10, '', '', ScramHashType.sha512),
-    SaslScramNegotiator(9, '', '', ScramHashType.sha256),
-    SaslScramNegotiator(8, '', '', ScramHashType.sha1),
-    SaslPlainNegotiator(),
-  ]);
+      ResourceBindingNegotiator(),
+      StartTlsNegotiator(),
+      StreamManagementNegotiator(),
+      CSINegotiator(),
+      RosterFeatureNegotiator(),
+      SaslScramNegotiator(10, '', '', ScramHashType.sha512),
+      SaslScramNegotiator(9, '', '', ScramHashType.sha256),
+      SaslScramNegotiator(8, '', '', ScramHashType.sha1),
+      SaslPlainNegotiator(),
+    ]);
   await connection.registerManagers([
     MoxxyStreamManagementManager(),
     DiscoManager([
@@ -229,12 +237,12 @@ Future<void> entrypoint() async {
     LastMessageCorrectionManager(),
     MessageReactionsManager(),
     StickersManager(),
-  ]); 
-    
+  ]);
+
   GetIt.I.registerSingleton<XmppConnection>(connection);
 
   GetIt.I.get<Logger>().finest('Done with xmpp');
-  
+
   final settings = await xmpp.getConnectionSettings();
 
   // Ensure we can access translations here
@@ -242,23 +250,29 @@ Future<void> entrypoint() async {
   //                window here.
   WidgetsFlutterBinding.ensureInitialized();
   LocaleSettings.useDeviceLocale();
-  
+
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
-    unawaited(GetIt.I.get<OmemoService>().initializeIfNeeded(settings.jid.toBare().toString()));
+    unawaited(GetIt.I
+        .get<OmemoService>()
+        .initializeIfNeeded(settings.jid.toBare().toString()));
 
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
-    await connection.getManagerById<MoxxyStreamManagementManager>(smManager)!.loadState();
+    await connection
+        .getManagerById<MoxxyStreamManagementManager>(smManager)!
+        .loadState();
     await xmpp.connect(settings, false);
   } else {
     GetIt.I.get<BackgroundService>().setNotification(
-      'Moxxy',
-      t.notifications.permanent.idle,
-    );
+          'Moxxy',
+          t.notifications.permanent.idle,
+        );
   }
 
-  unawaited(GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().removeQueueLock());
+  unawaited(GetIt.I
+      .get<SynchronizedQueue<Map<String, dynamic>?>>()
+      .removeQueueLock());
   sendEvent(ServiceReadyEvent());
 }
 
@@ -275,9 +289,9 @@ Future<void> handleUIEvent(Map<String, dynamic>? data) async {
     log.warning('Received null from the UI isolate. Ignoring...');
     return;
   }
-  
+
   final id = data['id']! as String;
-  final command = getCommandFromJson(data['data']! as Map<String, dynamic>); 
+  final command = getCommandFromJson(data['data']! as Map<String, dynamic>);
   if (command == null) {
     log.severe("Unknown command type ${data['type']}");
     return;

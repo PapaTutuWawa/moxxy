@@ -25,7 +25,8 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     on<StickerPackAddedEvent>(_onStickerPackAdded);
   }
 
-  Future<void> _onStickersSet(StickersSetEvent event, Emitter<StickersState> emit) async {
+  Future<void> _onStickersSet(
+      StickersSetEvent event, Emitter<StickersState> emit) async {
     // Also store a mapping of (pack Id, sticker Id) -> Sticker to allow fast lookup
     // of the sticker in the UI.
     final map = <StickerKey, Sticker>{};
@@ -36,7 +37,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         map[StickerKey(pack.id, sticker.hashKey)] = sticker;
       }
     }
-    
+
     emit(
       state.copyWith(
         stickerPacks: event.stickerPacks,
@@ -45,7 +46,8 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     );
   }
 
-  Future<void> _onStickerPackRemoved(StickerPackRemovedEvent event, Emitter<StickersState> emit) async {
+  Future<void> _onStickerPackRemoved(
+      StickerPackRemovedEvent event, Emitter<StickersState> emit) async {
     final stickerPack = firstWhereOrNull(
       state.stickerPacks,
       (StickerPack sp) => sp.id == event.stickerPackId,
@@ -68,14 +70,15 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     );
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      RemoveStickerPackCommand(
-        stickerPackId: event.stickerPackId,
-      ),
-      awaitable: false,
-    );
+          RemoveStickerPackCommand(
+            stickerPackId: event.stickerPackId,
+          ),
+          awaitable: false,
+        );
   }
 
-  Future<void> _onStickerPackImported(StickerPackImportedEvent event, Emitter<StickersState> emit) async {
+  Future<void> _onStickerPackImported(
+      StickerPackImportedEvent event, Emitter<StickersState> emit) async {
     final file = await FilePicker.platform.pickFiles();
     if (file == null) return;
 
@@ -84,12 +87,12 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         isImportRunning: true,
       ),
     );
-    
+
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      ImportStickerPackCommand(
-        path: file.files.single.path!,
-      ),
-    );
+          ImportStickerPackCommand(
+            path: file.files.single.path!,
+          ),
+        );
 
     if (result is StickerPackImportSuccessEvent) {
       final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
@@ -129,7 +132,8 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     }
   }
 
-  Future<void> _onStickerPackAdded(StickerPackAddedEvent event, Emitter<StickersState> emit) async {
+  Future<void> _onStickerPackAdded(
+      StickerPackAddedEvent event, Emitter<StickersState> emit) async {
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
     for (final sticker in event.stickerPack.stickers) {
       if (!sticker.isImage) continue;

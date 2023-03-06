@@ -29,7 +29,7 @@ class BlurhashChatWidget extends StatelessWidget {
               height: height.toDouble(),
               child: BlurHash(
                 hash: thumbnailData,
-                decodingWidth: width, 
+                decodingWidth: width,
                 decodingHeight: height,
               ),
             ),

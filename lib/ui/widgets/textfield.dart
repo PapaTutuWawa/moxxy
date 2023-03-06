@@ -68,28 +68,31 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = textColor != null ?
-      TextStyle(
-        color: textColor,
-        fontSize: fontSize,
-      ) :
-      null;
+    final style = textColor != null
+        ? TextStyle(
+            color: textColor,
+            fontSize: fontSize,
+          )
+        : null;
     return Column(
       children: [
         DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(cornerRadius),
             color: backgroundColor,
-            boxShadow: enableBoxShadow ? const [BoxShadow(blurRadius: 6)] : null,
-            border: borderWidth != null && borderColor != null ? Border.all(
-              color: borderColor!,
-              width: borderWidth!,
-            ) : null,
+            boxShadow:
+                enableBoxShadow ? const [BoxShadow(blurRadius: 6)] : null,
+            border: borderWidth != null && borderColor != null
+                ? Border.all(
+                    color: borderColor!,
+                    width: borderWidth!,
+                  )
+                : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ...topWidget != null ? [ topWidget! ] : [],
+              ...topWidget != null ? [topWidget!] : [],
               TextField(
                 maxLines: maxLines,
                 minLines: minLines,
@@ -140,7 +143,7 @@ class CustomTextField extends StatelessWidget {
               ),
             ),
           ),
-        ) 
+        )
       ],
     );
   }

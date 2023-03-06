@@ -5,19 +5,25 @@ import 'package:moxxyv2/ui/constants.dart';
 class PermanentSnackBar extends StatefulWidget {
   // TODO(Unknown): Remove linter ignore
   // ignore: prefer_const_constructors_in_immutables
-  PermanentSnackBar({ required this.text, required this.actionText, required this.onPressed, super.key });
+  PermanentSnackBar(
+      {required this.text,
+      required this.actionText,
+      required this.onPressed,
+      super.key});
   final String text;
   final String actionText;
   final void Function() onPressed;
 
   @override
   // ignore: no_logic_in_create_state
-  PermanentSnackBarState createState() => PermanentSnackBarState(text: text, actionText: actionText, onPressed: onPressed);
+  PermanentSnackBarState createState() => PermanentSnackBarState(
+      text: text, actionText: actionText, onPressed: onPressed);
 }
 
-class PermanentSnackBarState extends State<PermanentSnackBar> with TickerProviderStateMixin {
-
-  PermanentSnackBarState({ required this.text, required this.actionText, required this.onPressed });
+class PermanentSnackBarState extends State<PermanentSnackBar>
+    with TickerProviderStateMixin {
+  PermanentSnackBarState(
+      {required this.text, required this.actionText, required this.onPressed});
   final String text;
   final String actionText;
   final void Function() onPressed;
@@ -38,12 +44,14 @@ class PermanentSnackBarState extends State<PermanentSnackBar> with TickerProvide
     _animation = Tween(
       begin: const Offset(0, 1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
+    ).animate(
+      CurvedAnimation(
         parent: _controller!,
         curve: Curves.easeOutCubic,
-    ),);
+      ),
+    );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return SlideTransition(

@@ -14,10 +14,9 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class StickerWrapper extends StatelessWidget {
   const StickerWrapper(
     this.sticker, {
-      this.cover = true,
-      super.key,
-    }
-  );
+    this.cover = true,
+    super.key,
+  });
   final Sticker sticker;
   final bool cover;
 
@@ -26,16 +25,12 @@ class StickerWrapper extends StatelessWidget {
     if (sticker.path.isNotEmpty) {
       return Image.file(
         File(sticker.path),
-        fit: cover ?
-          BoxFit.contain :
-          null,
+        fit: cover ? BoxFit.contain : null,
       );
     } else {
       return Image.network(
         sticker.urlSources.first,
-         fit: cover ?
-          BoxFit.contain :
-          null,
+        fit: cover ? BoxFit.contain : null,
         loadingBuilder: (_, child, event) {
           if (event == null) return child;
 
@@ -50,16 +45,17 @@ class StickerWrapper extends StatelessWidget {
 }
 
 class StickerPackPage extends StatelessWidget {
-  const StickerPackPage({ super.key });
+  const StickerPackPage({super.key});
 
   static MaterialPageRoute<void> get route => MaterialPageRoute<void>(
-    builder: (_) => const StickerPackPage(),
-    settings: const RouteSettings(
-      name: stickerPackRoute,
-    ),
-  );
+        builder: (_) => const StickerPackPage(),
+        settings: const RouteSettings(
+          name: stickerPackRoute,
+        ),
+      );
 
-  Future<void> _onDeletePressed(BuildContext context, StickerPackState state) async {
+  Future<void> _onDeletePressed(
+      BuildContext context, StickerPackState state) async {
     final result = await showConfirmationDialog(
       t.pages.stickerPack.removeConfirmTitle,
       t.pages.stickerPack.removeConfirmBody,
@@ -68,12 +64,13 @@ class StickerPackPage extends StatelessWidget {
     if (result) {
       // ignore: use_build_context_synchronously
       context.read<StickerPackBloc>().add(
-        StickerPackRemovedEvent(state.stickerPack!.id),
-      );
+            StickerPackRemovedEvent(state.stickerPack!.id),
+          );
     }
   }
 
-  Future<void> _onInstallPressed(BuildContext context, StickerPackState state) async {
+  Future<void> _onInstallPressed(
+      BuildContext context, StickerPackState state) async {
     final result = await showConfirmationDialog(
       t.pages.stickerPack.installConfirmTitle,
       t.pages.stickerPack.installConfirmBody,
@@ -82,8 +79,8 @@ class StickerPackPage extends StatelessWidget {
     if (result) {
       // ignore: use_build_context_synchronously
       context.read<StickerPackBloc>().add(
-        StickerPackInstalledEvent(),
-      );
+            StickerPackInstalledEvent(),
+          );
     }
   }
 
@@ -125,7 +122,7 @@ class StickerPackPage extends StatelessWidget {
       },
     );
   }
-  
+
   Widget _buildBody(BuildContext context, StickerPackState state) {
     return Column(
       children: [
@@ -145,31 +142,27 @@ class StickerPackPage extends StatelessWidget {
                     Text(
                       state.stickerPack?.description ?? '',
                     ),
-
                     if (state.stickerPack?.restricted ?? false)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Text(
-                            t.pages.stickerPack.restricted,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                          t.pages.stickerPack.restricted,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                      ),
                   ],
                 ),
               ),
             ),
-
             const Spacer(),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _buildButton(context, state),
             ),
           ],
         ),
-
         Padding(
           padding: const EdgeInsets.only(
             top: 16,
@@ -205,14 +198,14 @@ class StickerPackPage extends StatelessWidget {
                     },
                   );
                 },
-              ); 
+              );
             },
           ),
         ),
       ],
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickerPackBloc, StickerPackState>(
@@ -220,17 +213,17 @@ class StickerPackPage extends StatelessWidget {
         appBar: BorderlessTopbar.simple(
           state.stickerPack?.name ?? '...',
         ),
-        body: state.isWorking ?
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                CircularProgressIndicator(),
-              ],
-            ),
-          ) :
-          _buildBody(context, state),
+        body: state.isWorking
+            ? SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    CircularProgressIndicator(),
+                  ],
+                ),
+              )
+            : _buildBody(context, state),
       ),
     );
   }

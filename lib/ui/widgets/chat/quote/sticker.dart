@@ -13,10 +13,9 @@ class QuotedStickerWidget extends StatelessWidget {
   const QuotedStickerWidget(
     this.message,
     this.sent, {
-      this.resetQuote,
-      super.key,
-    }
-  );
+    this.resetQuote,
+    super.key,
+  });
   final Message message;
   final bool sent;
   final void Function()? resetQuote;
@@ -27,7 +26,8 @@ class QuotedStickerWidget extends StatelessWidget {
     if (message.stickerPackId != null &&
         message.stickerHashKey != null &&
         GetIt.I.get<PreferencesBloc>().state.enableStickers) {
-      final stickerKey = StickerKey(message.stickerPackId!, message.stickerHashKey!);
+      final stickerKey =
+          StickerKey(message.stickerPackId!, message.stickerHashKey!);
       sticker = GetIt.I.get<StickersBloc>().state.stickerMap[stickerKey];
     }
 

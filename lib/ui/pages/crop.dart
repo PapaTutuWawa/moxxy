@@ -9,15 +9,15 @@ import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 
 class CropPage extends StatelessWidget {
-  const CropPage({ super.key });
- 
+  const CropPage({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const CropPage(),
-    settings: const RouteSettings(
-      name: cropRoute,
-    ),
-  );
-  
+        builder: (_) => const CropPage(),
+        settings: const RouteSettings(
+          name: cropRoute,
+        ),
+      );
+
   Widget _buildImageBody(BuildContext context, CropState state) {
     return Stack(
       children: [
@@ -55,15 +55,14 @@ class CropPage extends StatelessWidget {
                 enabled: !state.isWorking,
                 onTap: () async {
                   context.read<CropBloc>().add(
-                    ImageCroppedEvent(),
-                  );
+                        ImageCroppedEvent(),
+                      );
                 },
                 child: Text(t.pages.crop.setProfilePicture),
               ),
             ],
           ),
         ),
-
         BackdropSpinner(
           enabled: state.isWorking,
         ),
@@ -76,7 +75,7 @@ class CropPage extends StatelessWidget {
       child: CircularProgressIndicator(),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CropBloc, CropState>(
@@ -87,9 +86,9 @@ class CropPage extends StatelessWidget {
             return true;
           },
           child: SafeArea(
-            child: state.image != null ?
-              _buildImageBody(context, state) :
-              _buildLoadingBody(),
+            child: state.image != null
+                ? _buildImageBody(context, state)
+                : _buildLoadingBody(),
           ),
         );
       },

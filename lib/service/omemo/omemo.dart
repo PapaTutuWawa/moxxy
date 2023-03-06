@@ -30,11 +30,12 @@ class OmemoService {
 
   bool _initialized = false;
   final Lock _lock = Lock();
-  final Queue<Completer<void>> _waitingForInitialization = Queue<Completer<void>>();
+  final Queue<Completer<void>> _waitingForInitialization =
+      Queue<Completer<void>>();
   final Map<String, Map<int, String>> _fingerprintCache = {};
 
   late OmemoManager omemoManager;
-  
+
   Future<void> initializeIfNeeded(String jid) async {
     final done = await _lock.synchronized(() => _initialized);
     if (done) return;
@@ -47,7 +48,8 @@ class OmemoService {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
     } else {
       _log.info('OMEMO marker found. Restoring OMEMO state...');
-      for (final ratchet in await GetIt.I.get<DatabaseService>().loadRatchets()) {
+      for (final ratchet
+          in await GetIt.I.get<DatabaseService>().loadRatchets()) {
         final key = RatchetMapKey(ratchet.jid, ratchet.id);
         ratchetMap[key] = ratchet.ratchet;
       }
@@ -55,8 +57,9 @@ class OmemoService {
       deviceList.addAll(await db.loadOmemoDeviceList());
     }
 
-    final om = GetIt.I.get<moxxmpp.XmppConnection>().
-      getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
+    final om = GetIt.I
+        .get<moxxmpp.XmppConnection>()
+        .getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
     omemoManager = OmemoManager(
       device ?? await compute(generateNewIdentityImpl, jid),
       await loadTrustManager(),
@@ -80,12 +83,13 @@ class OmemoService {
     omemoManager.eventStream.listen((event) async {
       if (event is RatchetModifiedEvent) {
         await GetIt.I.get<DatabaseService>().saveRatchet(
-          OmemoDoubleRatchetWrapper(event.ratchet, event.deviceId, event.jid),
-        );
+              OmemoDoubleRatchetWrapper(
+                  event.ratchet, event.deviceId, event.jid),
+            );
 
         if (event.added) {
           // Cache the fingerprint
-          final fingerprint = await event.ratchet.getOmemoFingerprint(); 
+          final fingerprint = await event.ratchet.getOmemoFingerprint();
           await GetIt.I.get<DatabaseService>().addFingerprintsToCache([
             OmemoCacheTriple(
               event.jid,
@@ -106,12 +110,13 @@ class OmemoService {
         await commitDevice(event.device);
 
         // Publish it
-        await GetIt.I.get<moxxmpp.XmppConnection>()
-          .getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!
-          .publishBundle(await event.device.toBundle());
+        await GetIt.I
+            .get<moxxmpp.XmppConnection>()
+            .getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!
+            .publishBundle(await event.device.toBundle());
       }
     });
-    
+
     await _lock.synchronized(() {
       _initialized = true;
 
@@ -128,7 +133,7 @@ class OmemoService {
     // Add a pseudo message if it is not about our own devices
     final xmppState = await GetIt.I.get<XmppStateService>().getXmppState();
     if (jid == xmppState.jid) return;
-    
+
     final ms = GetIt.I.get<MessageService>();
     final message = await ms.addMessageFromData(
       '',
@@ -152,7 +157,7 @@ class OmemoService {
       ),
     );
   }
-  
+
   Future<model.OmemoDevice> regenerateDevice(String jid) async {
     // Prevent access to the session manager as it is (mostly) guarded ensureInitialized
     await _lock.synchronized(() {
@@ -164,7 +169,7 @@ class OmemoService {
 
     // Clear the database
     await GetIt.I.get<DatabaseService>().emptyOmemoSessionTables();
-    
+
     // Regenerate the identity in the background
     final device = await compute(generateNewIdentityImpl, jid);
     await omemoManager.replaceDevice(device);
@@ -173,13 +178,14 @@ class OmemoService {
     await commitTrustManager(await omemoManager.trustManager.toJson());
 
     // Remove the old device
-    final omemo = GetIt.I.get<moxxmpp.XmppConnection>()
-      .getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
+    final omemo = GetIt.I
+        .get<moxxmpp.XmppConnection>()
+        .getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
     await omemo.deleteDevice(oldId);
 
     // Publish the new one
     await omemo.publishBundle(await omemoManager.getDeviceBundle());
-    
+
     // Allow access again
     await _lock.synchronized(() {
       _initialized = true;
@@ -199,7 +205,7 @@ class OmemoService {
       await getDeviceId(),
     );
   }
-  
+
   /// Ensures that the code following this *AWAITED* call can access every method
   /// of the OmemoService.
   Future<void> ensureInitialized() async {
@@ -217,11 +223,11 @@ class OmemoService {
       await completer.future;
     }
   }
-  
+
   Future<void> commitDeviceMap(Map<String, List<int>> deviceMap) async {
     await GetIt.I.get<DatabaseService>().saveOmemoDeviceList(deviceMap);
   }
-  
+
   Future<void> commitDevice(OmemoDevice device) async {
     await GetIt.I.get<DatabaseService>().saveOmemoDevice(device);
   }
@@ -234,7 +240,8 @@ class OmemoService {
     _log.finest('publishDeviceIfNeeded: Done');
 
     final conn = GetIt.I.get<moxxmpp.XmppConnection>();
-    final omemo = conn.getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
+    final omemo =
+        conn.getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
     final dm = conn.getManagerById<moxxmpp.DiscoManager>(moxxmpp.discoManager)!;
     final bareJid = conn.getConnectionSettings().jid.toBare();
     final device = await omemoManager.getDevice();
@@ -249,20 +256,23 @@ class OmemoService {
     }
 
     final bundleIds = bundlesRaw
-      .get<List<moxxmpp.DiscoItem>>()
-      .where((item) => item.name != null)
-      .map((item) => int.parse(item.name!));
+        .get<List<moxxmpp.DiscoItem>>()
+        .where((item) => item.name != null)
+        .map((item) => int.parse(item.name!));
     if (!bundleIds.contains(device.id)) {
       final result = await omemo.publishBundle(await device.toBundle());
-      if (result.isType<moxxmpp.OmemoError>()) return result.get<moxxmpp.OmemoError>();
+      if (result.isType<moxxmpp.OmemoError>())
+        return result.get<moxxmpp.OmemoError>();
       return null;
     }
-    
+
     final idsRaw = await omemo.getDeviceList(bareJid);
-    final ids = idsRaw.isType<moxxmpp.OmemoError>() ? <int>[] : idsRaw.get<List<int>>();
+    final ids =
+        idsRaw.isType<moxxmpp.OmemoError>() ? <int>[] : idsRaw.get<List<int>>();
     if (!ids.contains(device.id)) {
       final result = await omemo.publishBundle(await device.toBundle());
-      if (result.isType<moxxmpp.OmemoError>()) return result.get<moxxmpp.OmemoError>();
+      if (result.isType<moxxmpp.OmemoError>())
+        return result.get<moxxmpp.OmemoError>();
       return null;
     }
 
@@ -271,9 +281,10 @@ class OmemoService {
 
   Future<void> _fetchFingerprintsAndCache(moxxmpp.JID jid) async {
     final bareJid = jid.toBare().toString();
-    final allDevicesRaw = await GetIt.I.get<moxxmpp.XmppConnection>()
-      .getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!
-      .retrieveDeviceBundles(jid);
+    final allDevicesRaw = await GetIt.I
+        .get<moxxmpp.XmppConnection>()
+        .getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!
+        .retrieveDeviceBundles(jid);
     if (allDevicesRaw.isType<List<OmemoBundle>>()) {
       final allDevices = allDevicesRaw.get<List<OmemoBundle>>();
       final map = <int, String>{};
@@ -297,8 +308,9 @@ class OmemoService {
     final bareJid = jid.toBare().toString();
     if (!_fingerprintCache.containsKey(bareJid)) {
       // First try to load it from the database
-      final triples = await GetIt.I.get<DatabaseService>()
-        .getFingerprintsFromCache(bareJid);
+      final triples = await GetIt.I
+          .get<DatabaseService>()
+          .getFingerprintsFromCache(bareJid);
       if (triples.isEmpty) {
         // We found no fingerprints in the database, so try to fetch them
         await _fetchFingerprintsAndCache(jid);
@@ -315,15 +327,16 @@ class OmemoService {
       }
     }
   }
-  
+
   Future<List<model.OmemoDevice>> getOmemoKeysForJid(String jid) async {
     await ensureInitialized();
 
     // Get finger prints if we have to
     await _loadOrFetchFingerprints(moxxmpp.JID.fromString(jid));
-    
+
     final keys = List<model.OmemoDevice>.empty(growable: true);
-    final tm = omemoManager.trustManager as BlindTrustBeforeVerificationTrustManager;
+    final tm =
+        omemoManager.trustManager as BlindTrustBeforeVerificationTrustManager;
     final trustMap = await tm.getDevicesTrust(jid);
 
     if (!_fingerprintCache.containsKey(jid)) return [];
@@ -344,14 +357,14 @@ class OmemoService {
 
   Future<void> commitTrustManager(Map<String, dynamic> json) async {
     await GetIt.I.get<DatabaseService>().saveTrustCache(
-      json['trust']! as Map<String, int>,
-    );
+          json['trust']! as Map<String, int>,
+        );
     await GetIt.I.get<DatabaseService>().saveTrustEnablementList(
-      json['enable']! as Map<String, bool>,
-    );
+          json['enable']! as Map<String, bool>,
+        );
     await GetIt.I.get<DatabaseService>().saveTrustDeviceList(
-      json['devices']! as Map<String, List<int>>,
-    );
+          json['devices']! as Map<String, List<int>>,
+        );
   }
 
   Future<MoxxyBTBVTrustManager> loadTrustManager() async {
@@ -362,8 +375,9 @@ class OmemoService {
       await db.loadTrustDeviceList(),
     );
   }
-  
-  Future<void> setOmemoKeyEnabled(String jid, int deviceId, bool enabled) async {
+
+  Future<void> setOmemoKeyEnabled(
+      String jid, int deviceId, bool enabled) async {
     await ensureInitialized();
     await omemoManager.trustManager.setEnabled(jid, deviceId, enabled);
   }
@@ -377,7 +391,7 @@ class OmemoService {
     await ensureInitialized();
     return omemoManager.getDeviceId();
   }
-  
+
   Future<String> getDeviceFingerprint() => omemoManager.getDeviceFingerprint();
 
   /// Returns a list of OmemoDevices for devices we have sessions with and other devices
@@ -393,9 +407,10 @@ class OmemoService {
     // Get fingerprints if we have to
     await _loadOrFetchFingerprints(ownJid);
 
-    final tm = omemoManager.trustManager as BlindTrustBeforeVerificationTrustManager;
+    final tm =
+        omemoManager.trustManager as BlindTrustBeforeVerificationTrustManager;
     final trustMap = await tm.getDevicesTrust(bareJid);
-    
+
     for (final deviceId in _fingerprintCache[bareJid]!.keys) {
       if (deviceId == ownId) continue;
       if (keys.indexWhere((key) => key.deviceId == deviceId) != -1) continue;
@@ -417,7 +432,8 @@ class OmemoService {
   }
 
   Future<void> verifyDevice(int deviceId, String jid) async {
-    final tm = omemoManager.trustManager as BlindTrustBeforeVerificationTrustManager;
+    final tm =
+        omemoManager.trustManager as BlindTrustBeforeVerificationTrustManager;
     await tm.setDeviceTrust(
       jid,
       deviceId,

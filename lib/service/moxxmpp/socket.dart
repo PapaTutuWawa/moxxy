@@ -8,12 +8,14 @@ class MoxxyTCPSocketWrapper extends TCPSocketWrapper {
   Future<List<MoxSrvRecord>> srvQuery(String domain, bool dnssec) async {
     final records = await MoxdnsPlugin.srvQuery(domain, dnssec);
     return records
-      .map((record) => MoxSrvRecord(
-        record.priority,
-        record.weight,
-        record.target,
-        record.port,
-      ),)
-      .toList();
+        .map(
+          (record) => MoxSrvRecord(
+            record.priority,
+            record.weight,
+            record.target,
+            record.port,
+          ),
+        )
+        .toList();
   }
 }

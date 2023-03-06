@@ -9,7 +9,8 @@ import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-Widget _buildLanguageOption(BuildContext context, String localeCode, PreferencesState state) {
+Widget _buildLanguageOption(
+    BuildContext context, String localeCode, PreferencesState state) {
   final selected = state.languageLocaleCode == localeCode;
   return SimpleDialogOption(
     onPressed: () => Navigator.pop(context, localeCode),
@@ -22,24 +23,26 @@ Widget _buildLanguageOption(BuildContext context, String localeCode, Preferences
             fontSize: 16,
           ),
         ),
-        ...selected ? [
-          const Spacer(),
-          const Icon(Icons.check),
-        ] : [],
+        ...selected
+            ? [
+                const Spacer(),
+                const Icon(Icons.check),
+              ]
+            : [],
       ],
     ),
   );
 }
 
 class AppearanceSettingsPage extends StatelessWidget {
-  const AppearanceSettingsPage({ super.key });
+  const AppearanceSettingsPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const AppearanceSettingsPage(),
-    settings: const RouteSettings(
-      name: appearanceRoute,
-    ),
-  );
+        builder: (_) => const AppearanceSettingsPage(),
+        settings: const RouteSettings(
+          name: appearanceRoute,
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +55,8 @@ class AppearanceSettingsPage extends StatelessWidget {
             SettingsRow(
               title: t.pages.settings.appearance.language,
               description: t.pages.settings.appearance.languageSubtext(
-                selectedLanguage: localeCodeToLanguageName(state.languageLocaleCode),
+                selectedLanguage:
+                    localeCodeToLanguageName(state.languageLocaleCode),
               ),
               onTap: () async {
                 final result = await showDialog<String>(
@@ -60,7 +64,8 @@ class AppearanceSettingsPage extends StatelessWidget {
                   builder: (context) {
                     return SimpleDialog(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
+                        borderRadius:
+                            BorderRadius.circular(textfieldRadiusRegular),
                       ),
                       title: Text(t.pages.settings.appearance.language),
                       children: [
@@ -80,10 +85,10 @@ class AppearanceSettingsPage extends StatelessWidget {
                 // Change preferences and set the app's locale
                 // ignore: use_build_context_synchronously
                 context.read<PreferencesBloc>().add(
-                  PreferencesChangedEvent(
-                    state.copyWith(languageLocaleCode: result),
-                  ),
-                );
+                      PreferencesChangedEvent(
+                        state.copyWith(languageLocaleCode: result),
+                      ),
+                    );
 
                 if (result == 'default') {
                   LocaleSettings.useDeviceLocale();

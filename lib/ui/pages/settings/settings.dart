@@ -14,15 +14,15 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({ super.key });
+  const SettingsPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const SettingsPage(),
-    settings: const RouteSettings(
-      name: settingsRoute,
-    ),
-  );
-  
+        builder: (_) => const SettingsPage(),
+        settings: const RouteSettings(
+          name: settingsRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,7 +42,6 @@ class SettingsPage extends StatelessWidget {
                 Navigator.pushNamed(context, appearanceRoute);
               },
             ),
-
             SectionTitle(t.pages.settings.settings.conversationsSection),
             SettingsRow(
               title: t.pages.settings.settings.conversationsSection,
@@ -92,11 +91,10 @@ class SettingsPage extends StatelessWidget {
               ),
               onTap: () {
                 GetIt.I.get<BlocklistBloc>().add(
-                  BlocklistRequestedEvent(),
-                );
+                      BlocklistRequestedEvent(),
+                    );
               },
             ),
-
             SectionTitle(t.pages.settings.settings.accountSection),
             SettingsRow(
               title: t.pages.settings.settings.signOut,
@@ -116,7 +114,6 @@ class SettingsPage extends StatelessWidget {
                 }
               },
             ),
-
             SectionTitle(t.pages.settings.settings.miscellaneousSection),
             SettingsRow(
               title: t.pages.settings.about.title,
@@ -138,10 +135,8 @@ class SettingsPage extends StatelessWidget {
                 Navigator.pushNamed(context, licensesRoute);
               },
             ),
-
             if (kDebugMode || state.showDebugMenu)
               SectionTitle(t.pages.settings.settings.debuggingSection),
-
             if (kDebugMode || state.showDebugMenu)
               SettingsRow(
                 title: t.pages.settings.debugging.title,

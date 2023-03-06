@@ -9,14 +9,14 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class AddContactPage extends StatefulWidget {
-  const AddContactPage({ super.key });
-  
+  const AddContactPage({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const AddContactPage(),
-    settings: const RouteSettings(
-      name: addContactRoute,
-    ),
-  );
+        builder: (_) => const AddContactPage(),
+        settings: const RouteSettings(
+          name: addContactRoute,
+        ),
+      );
 
   @override
   AddContactPageState createState() => AddContactPageState();
@@ -35,8 +35,8 @@ class AddContactPageState extends State<AddContactPage> {
           }
 
           context.read<AddContactBloc>().add(
-            PageResetEvent(),
-          );
+                PageResetEvent(),
+              );
           return true;
         },
         child: Scaffold(
@@ -47,14 +47,15 @@ class AddContactPageState extends State<AddContactPage> {
                 visible: state.isWorking,
                 child: const LinearProgressIndicator(),
               ),
-
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                        .add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   labelText: t.pages.addcontact.xmppAddress,
                   onChanged: (value) => context.read<AddContactBloc>().add(
-                    JidChangedEvent(value),
-                  ),
+                        JidChangedEvent(value),
+                      ),
                   controller: _controller,
                   enabled: !state.isWorking,
                   cornerRadius: textfieldRadiusRegular,
@@ -70,26 +71,30 @@ class AddContactPageState extends State<AddContactPage> {
                       _controller.text = jid.path;
                       // ignore: use_build_context_synchronously
                       context.read<AddContactBloc>().add(
-                        JidChangedEvent(jid.path),
-                      );
+                            JidChangedEvent(jid.path),
+                          );
                     },
                   ),
                 ),
               ),
-
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                        .add(const EdgeInsets.only(top: 8)),
                 child: Text(t.pages.addcontact.subtitle),
               ),
-              
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 32)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                        .add(const EdgeInsets.only(top: 32)),
                 child: Row(
                   children: [
                     Expanded(
                       child: RoundedButton(
                         cornerRadius: 32,
-                        onTap: () => context.read<AddContactBloc>().add(AddedContactEvent()),
+                        onTap: () => context
+                            .read<AddContactBloc>()
+                            .add(AddedContactEvent()),
                         enabled: !state.isWorking,
                         child: Text(t.pages.addcontact.buttonAddToContact),
                       ),
