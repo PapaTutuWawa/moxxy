@@ -35,13 +35,14 @@ class ConversationPage extends StatefulWidget {
 
   /// The JID of the current conversation
   final String conversationJid;
-  
+
   @override
   ConversationPageState createState() => ConversationPageState();
 }
 
-class ConversationPageState extends State<ConversationPage> with TickerProviderStateMixin {
-  late final AnimationController _animationController; 
+class ConversationPageState extends State<ConversationPage>
+    with TickerProviderStateMixin {
+  late final AnimationController _animationController;
   late final AnimationController _overviewAnimationController;
   late final TabController _tabController;
   late Animation<double> _overviewMsgAnimation;
@@ -52,7 +53,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
   late final BidirectionalConversationController _conversationController;
 
   late final StreamSubscription<bool> _scrolledToBottomButtonSubscription;
-  
+
   @override
   void initState() {
     super.initState();
@@ -66,13 +67,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       widget.conversationJid,
     );
     _conversationController.fetchOlderData();
-    _scrolledToBottomButtonSubscription = _conversationController.scrollToBottomStateStream.listen(_onScrollToBottomStateChanged);
+    _scrolledToBottomButtonSubscription = _conversationController
+        .scrollToBottomStateStream
+        .listen(_onScrollToBottomStateChanged);
 
     _overviewAnimationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     // Values taken from here: https://stackoverflow.com/questions/45539395/flutter-float-action-button-hiding-the-visibility-of-items#45598028
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 180),
@@ -83,7 +86,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       curve: const Interval(0.5, 1),
     );
   }
-  
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -102,7 +105,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       _animationController.reverse();
     }
   }
-  
+
   Future<void> _retractMessage(BuildContext context, String originId) async {
     final result = await showConfirmationDialog(
       t.pages.conversation.retract,
@@ -118,7 +121,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     }
   }
 
-  Widget _renderBubble(ConversationState state, Message message, List<Message> messages, int index, double maxWidth) {
+  Widget _renderBubble(ConversationState state, Message message,
+      List<Message> messages, int index, double maxWidth) {
     final item = message;
 
     if (item.isPseudoMessage) {
@@ -139,15 +143,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
     }
 
     final ownJid = GetIt.I.get<UIDataService>().ownJid!;
-    final start = index - 1 < 0 ?
-      true :
-      isSent(messages[index - 1], ownJid) != isSent(item, ownJid);
-    final end = index + 1 >= messages.length ?
-      true :
-      isSent(messages[index + 1], ownJid) != isSent(item, ownJid);
+    final start = index - 1 < 0
+        ? true
+        : isSent(messages[index - 1], ownJid) != isSent(item, ownJid);
+    final end = index + 1 >= messages.length
+        ? true
+        : isSent(messages[index + 1], ownJid) != isSent(item, ownJid);
     final between = !start && !end;
     final sentBySelf = isSent(message, ownJid);
-    
+
     final bubble = RawChatBubble(
       item,
       maxWidth,
@@ -157,7 +161,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       between,
       end,
     );
-    
+
     return ChatBubble(
       bubble: bubble,
       message: item,
@@ -215,9 +219,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
               end,
             ),
             highlight: bubble,
-            materialColor: item.isSticker ?
-              Colors.transparent :
-              null,
+            materialColor: item.isSticker ? Colors.transparent : null,
             children: [
               if (item.isReactable)
                 OverviewMenuItem(
@@ -265,7 +267,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   onPressed: () => _retractMessage(context, item.originId!),
                 ),
               // TODO(Unknown): Also allow correcting older messages
-              if (item.canEdit(sentBySelf) && state.conversation!.lastMessage?.id == item.id)
+              if (item.canEdit(sentBySelf) &&
+                  state.conversation!.lastMessage?.id == item.id)
                 OverviewMenuItem(
                   icon: Icons.edit,
                   text: t.pages.conversation.edit,
@@ -343,10 +346,11 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       },
     );
   }
-  
+
   /// Render a widget that allows the user to either block the user or add them to their
   /// roster
-  Widget _renderNotInRosterWidget(ConversationState state, BuildContext context) {
+  Widget _renderNotInRosterWidget(
+      ConversationState state, BuildContext context) {
     return ColoredBox(
       color: Colors.black38,
       child: SizedBox(
@@ -359,10 +363,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                 child: Text(
                   t.pages.conversation.addToContacts,
                   style: TextStyle(
-                    color: Theme
-                      .of(context)
-                      .extension<MoxxyThemeData>()!
-                      .conversationTextFieldColor,
+                    color: Theme.of(context)
+                        .extension<MoxxyThemeData>()!
+                        .conversationTextFieldColor,
                   ),
                 ),
                 onPressed: () async {
@@ -376,8 +379,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   if (result) {
                     // ignore: use_build_context_synchronously
                     context.read<ConversationBloc>().add(
-                      JidAddedEvent(jid),
-                    );
+                          JidAddedEvent(jid),
+                        );
                   }
                 },
               ),
@@ -387,10 +390,9 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                 child: Text(
                   t.pages.conversation.blockShort,
                   style: TextStyle(
-                    color: Theme
-                      .of(context)
-                      .extension<MoxxyThemeData>()!
-                      .conversationTextFieldColor,
+                    color: Theme.of(context)
+                        .extension<MoxxyThemeData>()!
+                        .conversationTextFieldColor,
                   ),
                 ),
                 onPressed: () => blockJid(state.conversation!.jid, context),
@@ -401,7 +403,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
@@ -437,7 +439,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             right: 0,
             bottom: 0,
             child: BlocBuilder<ConversationBloc, ConversationState>(
-              buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
+              buildWhen: (prev, next) =>
+                  prev.backgroundPath != next.backgroundPath,
               builder: (context, state) {
                 final query = MediaQuery.of(context);
 
@@ -453,7 +456,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                 return SizedBox(
                   width: query.size.width,
                   height: query.size.height,
-                  child: ColoredBox(color: Theme.of(context).scaffoldBackgroundColor),
+                  child: ColoredBox(
+                      color: Theme.of(context).scaffoldBackgroundColor),
                 );
               },
             ),
@@ -472,14 +476,16 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.conversation?.inRoster != next.conversation?.inRoster,
+                    buildWhen: (prev, next) =>
+                        prev.conversation?.inRoster !=
+                        next.conversation?.inRoster,
                     builder: (context, state) {
-                      if (state.conversation?.inRoster ?? false) return Container();
+                      if (state.conversation?.inRoster ?? false)
+                        return Container();
 
                       return _renderNotInRosterWidget(state, context);
                     },
                   ),
-
                   Expanded(
                     child: StreamBuilder<List<Message>>(
                       initialData: const [],
@@ -488,13 +494,15 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                         if (snapshot.hasData) {
                           return SingleChildScrollView(
                             reverse: true,
-                            controller: _conversationController.scrollController,
+                            controller:
+                                _conversationController.scrollController,
                             child: GroupedListView<Message, DateTime>(
                               elements: snapshot.data!,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
                               groupBy: (message) {
-                                final dt = DateTime.fromMillisecondsSinceEpoch(message.timestamp);
+                                final dt = DateTime.fromMillisecondsSinceEpoch(
+                                    message.timestamp);
                                 return DateTime(
                                   dt.year,
                                   dt.month,
@@ -509,7 +517,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                                   ),
                                 ],
                               ),
-                              indexedItemBuilder: (context, message, index) => _renderBubble(
+                              indexedItemBuilder: (context, message, index) =>
+                                  _renderBubble(
                                 context.read<ConversationBloc>().state,
                                 message,
                                 snapshot.data!,
@@ -526,11 +535,10 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                       },
                     ),
                   ),
-
                   ColoredBox(
                     color: Theme.of(context)
-                      .scaffoldBackgroundColor
-                      .withOpacity(0.4),
+                        .scaffoldBackgroundColor
+                        .withOpacity(0.4),
                     child: ConversationBottomRow(
                       _tabController,
                       _textfieldFocus,
@@ -548,9 +556,7 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
             stream: _conversationController.pickerVisibleStream,
             builder: (context, snapshot) => Positioned(
               right: 8,
-              bottom: snapshot.data! ?
-                pickerHeight + 80 :
-                80,
+              bottom: snapshot.data! ? pickerHeight + 80 : 80,
               child: Material(
                 color: const Color.fromRGBO(0, 0, 0, 0),
                 child: ScaleTransition(
@@ -561,7 +567,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                     height: 45,
                     child: FloatingActionButton(
                       heroTag: 'fabScrollDown',
-                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
                       onPressed: _conversationController.animateToBottom,
                       child: const Icon(
                         Icons.arrow_downward,
@@ -630,8 +637,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   onWillAccept: (data) => state.isDragging,
                   onAccept: (_) {
                     context.read<ConversationBloc>().add(
-                      SendButtonLockedEvent(),
-                    );
+                          SendButtonLockedEvent(),
+                        );
                   },
                   builder: (context, _, __) {
                     return AnimatedScale(
@@ -642,33 +649,31 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                         width: 45,
                         child: FloatingActionButton(
                           heroTag: 'fabLock',
-                          onPressed: state.isLocked ?
-                          () {
-                            context.read<ConversationBloc>().add(
-                              SendButtonLockPressedEvent(),
-                            );
-                          } :
-                          null,
-                          backgroundColor: state.isLocked ?
-                            Colors.red.shade600 :
-                            Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldColor,
-                          child: state.isLocked ?
-                            BlinkingIcon(
-                              icon: Icons.mic,
-                              duration: const Duration(milliseconds: 600),
-                              start: Colors.white,
-                              end: Colors.red.shade600,
-                            ) :
-                            Icon(
-                              Icons.lock,
-                              color: Theme
-                                .of(context)
-                                .extension<MoxxyThemeData>()!
-                                .conversationTextFieldTextColor,
-                            ),
+                          onPressed: state.isLocked
+                              ? () {
+                                  context.read<ConversationBloc>().add(
+                                        SendButtonLockPressedEvent(),
+                                      );
+                                }
+                              : null,
+                          backgroundColor: state.isLocked
+                              ? Colors.red.shade600
+                              : Theme.of(context)
+                                  .extension<MoxxyThemeData>()!
+                                  .conversationTextFieldColor,
+                          child: state.isLocked
+                              ? BlinkingIcon(
+                                  icon: Icons.mic,
+                                  duration: const Duration(milliseconds: 600),
+                                  start: Colors.white,
+                                  end: Colors.red.shade600,
+                                )
+                              : Icon(
+                                  Icons.lock,
+                                  color: Theme.of(context)
+                                      .extension<MoxxyThemeData>()!
+                                      .conversationTextFieldTextColor,
+                                ),
                         ),
                       ),
                     );
@@ -687,8 +692,8 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                   onWillAccept: (_) => state.isDragging,
                   onAccept: (_) {
                     context.read<ConversationBloc>().add(
-                      RecordingCanceledEvent(),
-                    );
+                          RecordingCanceledEvent(),
+                        );
                   },
                   builder: (context, _, __) {
                     return AnimatedScale(
@@ -699,23 +704,21 @@ class ConversationPageState extends State<ConversationPage> with TickerProviderS
                         width: 45,
                         child: FloatingActionButton(
                           heroTag: 'fabCancel',
-                          onPressed: state.isLocked ?
-                          () {
-                            context.read<ConversationBloc>().add(
-                              RecordingCanceledEvent(),
-                            );
-                          } :
-                          null,
-                          backgroundColor: Theme
-                              .of(context)
+                          onPressed: state.isLocked
+                              ? () {
+                                  context.read<ConversationBloc>().add(
+                                        RecordingCanceledEvent(),
+                                      );
+                                }
+                              : null,
+                          backgroundColor: Theme.of(context)
                               .extension<MoxxyThemeData>()!
                               .conversationTextFieldColor,
                           child: Icon(
                             Icons.delete,
-                            color: Theme
-                              .of(context)
-                              .extension<MoxxyThemeData>()!
-                              .conversationTextFieldTextColor,
+                            color: Theme.of(context)
+                                .extension<MoxxyThemeData>()!
+                                .conversationTextFieldTextColor,
                           ),
                         ),
                       ),

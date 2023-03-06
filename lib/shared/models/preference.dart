@@ -12,9 +12,10 @@ class Preference with _$Preference {
   ) = _Preference;
 
   const Preference._();
-  
+
   /// JSON
-  factory Preference.fromJson(Map<String, dynamic> json) => _$PreferenceFromJson(json);
+  factory Preference.fromJson(Map<String, dynamic> json) =>
+      _$PreferenceFromJson(json);
 
   factory Preference.fromDatabaseJson(Map<String, dynamic> json) {
     return Preference.fromJson(json);

@@ -73,7 +73,8 @@ void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.onRecord.listen((record) {
     // ignore: avoid_print
-    print('[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}');
+    print(
+        '[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}');
   });
   GetIt.I.registerSingleton<Logger>(Logger('MoxxyMain'));
 }
@@ -85,7 +86,8 @@ Future<void> setupUIServices() async {
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
-  GetIt.I.registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
+  GetIt.I
+      .registerSingleton<NavigationBloc>(NavigationBloc(navigationKey: navKey));
   GetIt.I.registerSingleton<ConversationsBloc>(ConversationsBloc());
   GetIt.I.registerSingleton<NewConversationBloc>(NewConversationBloc());
   GetIt.I.registerSingleton<ConversationBloc>(ConversationBloc());
@@ -116,7 +118,7 @@ void main() async {
   await initializeServiceIfNeeded();
 
   imageCache.maximumSizeBytes = 500 * 1024 * 1024;
-  
+
   runApp(
     MultiBlocProvider(
       providers: [
@@ -183,7 +185,7 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp(this.navigationKey, { super.key });
+  const MyApp(this.navigationKey, {super.key});
   final GlobalKey<NavigatorState> navigationKey;
 
   @override
@@ -199,17 +201,19 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _initState();
   }
 
-  /// Async "version" of initState() 
+  /// Async "version" of initState()
   Future<void> _initState() async {
     WidgetsBinding.instance.addObserver(this);
 
     // Set up receiving share intents
     await GetIt.I.get<UISharingService>().initialize();
-    
+
     // Lift the UI block
-    await GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().removeQueueLock();
+    await GetIt.I
+        .get<SynchronizedQueue<Map<String, dynamic>?>>()
+        .removeQueueLock();
   }
-  
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -226,19 +230,19 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
         sender.sendData(
           SetCSIStateCommand(active: false),
         );
-        BidirectionalConversationController
-          .currentController?.handleAppStateChange(false);
-      break;
+        BidirectionalConversationController.currentController
+            ?.handleAppStateChange(false);
+        break;
       case AppLifecycleState.resumed:
         sender.sendData(
           SetCSIStateCommand(active: true),
         );
-        BidirectionalConversationController
-          .currentController?.handleAppStateChange(true);
-      break;
+        BidirectionalConversationController.currentController
+            ?.handleAppStateChange(true);
+        break;
       case AppLifecycleState.detached:
       case AppLifecycleState.inactive:
-      break;
+        break;
     }
   }
 
@@ -254,43 +258,70 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       navigatorKey: widget.navigationKey,
       onGenerateRoute: (settings) {
         switch (settings.name) {
-          case introRoute: return Intro.route;
-          case loginRoute: return Login.route;
-          case conversationsRoute: return ConversationsPage.route;
-          case newConversationRoute: return NewConversationPage.route;
-          case conversationRoute: return PageTransition<dynamic>(
-            type: PageTransitionType.rightToLeft,
-            settings: settings,
-            child: ConversationPage(
-              conversationJid: settings.arguments! as String,
-            ),
-          );
-          case sharedMediaRoute: return SharedMediaPage.getRoute(
-            settings.arguments! as SharedMediaPageArguments,
-          );
-          case blocklistRoute: return BlocklistPage.route;
-          case profileRoute: return ProfilePage.route;
-          case settingsRoute: return SettingsPage.route;
-          case aboutRoute: return SettingsAboutPage.route;
-          case licensesRoute: return SettingsLicensesPage.route;
-          case networkRoute: return NetworkPage.route;
-          case privacyRoute: return PrivacyPage.route;
-          case debuggingRoute: return DebuggingPage.route;
-          case addContactRoute: return AddContactPage.route;
-          case cropRoute: return CropPage.route;
-          case sendFilesRoute: return SendFilesPage.route;
-          case backgroundCroppingRoute: return CropBackgroundPage.route;
-          case shareSelectionRoute: return ShareSelectionPage.route;
-          case serverInfoRoute: return ServerInfoPage.route;
-          case conversationSettingsRoute: return ConversationSettingsPage.route;
-          case devicesRoute: return DevicesPage.route;
-          case ownDevicesRoute: return OwnDevicesPage.route;
-          case appearanceRoute: return AppearanceSettingsPage.route;
-          case qrCodeScannerRoute: return QrCodeScanningPage.getRoute(
-            settings.arguments! as QrCodeScanningArguments,
-          );
-          case stickersRoute: return StickersSettingsPage.route;
-          case stickerPackRoute: return StickerPackPage.route;
+          case introRoute:
+            return Intro.route;
+          case loginRoute:
+            return Login.route;
+          case conversationsRoute:
+            return ConversationsPage.route;
+          case newConversationRoute:
+            return NewConversationPage.route;
+          case conversationRoute:
+            return PageTransition<dynamic>(
+              type: PageTransitionType.rightToLeft,
+              settings: settings,
+              child: ConversationPage(
+                conversationJid: settings.arguments! as String,
+              ),
+            );
+          case sharedMediaRoute:
+            return SharedMediaPage.getRoute(
+              settings.arguments! as SharedMediaPageArguments,
+            );
+          case blocklistRoute:
+            return BlocklistPage.route;
+          case profileRoute:
+            return ProfilePage.route;
+          case settingsRoute:
+            return SettingsPage.route;
+          case aboutRoute:
+            return SettingsAboutPage.route;
+          case licensesRoute:
+            return SettingsLicensesPage.route;
+          case networkRoute:
+            return NetworkPage.route;
+          case privacyRoute:
+            return PrivacyPage.route;
+          case debuggingRoute:
+            return DebuggingPage.route;
+          case addContactRoute:
+            return AddContactPage.route;
+          case cropRoute:
+            return CropPage.route;
+          case sendFilesRoute:
+            return SendFilesPage.route;
+          case backgroundCroppingRoute:
+            return CropBackgroundPage.route;
+          case shareSelectionRoute:
+            return ShareSelectionPage.route;
+          case serverInfoRoute:
+            return ServerInfoPage.route;
+          case conversationSettingsRoute:
+            return ConversationSettingsPage.route;
+          case devicesRoute:
+            return DevicesPage.route;
+          case ownDevicesRoute:
+            return OwnDevicesPage.route;
+          case appearanceRoute:
+            return AppearanceSettingsPage.route;
+          case qrCodeScannerRoute:
+            return QrCodeScanningPage.getRoute(
+              settings.arguments! as QrCodeScanningArguments,
+            );
+          case stickersRoute:
+            return StickersSettingsPage.route;
+          case stickerPackRoute:
+            return StickerPackPage.route;
         }
 
         return null;

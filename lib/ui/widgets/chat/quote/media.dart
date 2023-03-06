@@ -9,10 +9,9 @@ class QuotedMediaBaseWidget extends StatelessWidget {
     this.child,
     this.text,
     this.sent, {
-      this.resetQuote,
-      super.key,
-    }
-  );
+    this.resetQuote,
+    super.key,
+  });
   final Message message;
   final Widget child;
   final String text;
@@ -26,7 +25,6 @@ class QuotedMediaBaseWidget extends StatelessWidget {
       Row(
         children: [
           child,
-
           Padding(
             padding: const EdgeInsets.only(left: 8),
             child: Column(
@@ -38,7 +36,6 @@ class QuotedMediaBaseWidget extends StatelessWidget {
                   resetQuoteNotNull: resetQuote != null,
                   sent: sent,
                 ),
-
                 Text(
                   text,
                   style: TextStyle(

@@ -25,7 +25,9 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     on<StickerPackRequested>(_onStickerPackRequested);
   }
 
-  Future<void> _onLocalStickerPackRequested(LocallyAvailableStickerPackRequested event, Emitter<StickerPackState> emit) async {
+  Future<void> _onLocalStickerPackRequested(
+      LocallyAvailableStickerPackRequested event,
+      Emitter<StickerPackState> emit) async {
     emit(
       state.copyWith(
         isWorking: true,
@@ -35,10 +37,10 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
 
     // Navigate
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(stickerPackRoute),
-      ),
-    );
+          PushedNamedEvent(
+            const NavigationDestination(stickerPackRoute),
+          ),
+        );
 
     // Apply
     final stickerPack = firstWhereOrNull(
@@ -54,7 +56,8 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     );
   }
 
-  Future<void> _onStickerPackRemoved(StickerPackRemovedEvent event, Emitter<StickerPackState> emit) async {
+  Future<void> _onStickerPackRemoved(
+      StickerPackRemovedEvent event, Emitter<StickerPackState> emit) async {
     // Reset internal state
     emit(
       state.copyWith(
@@ -65,17 +68,19 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
 
     // Leave the page
     GetIt.I.get<NavigationBloc>().add(
-      PoppedRouteEvent(),
-    );
-    
+          PoppedRouteEvent(),
+        );
+
     // Remove the sticker pack
     GetIt.I.get<stickers.StickersBloc>().add(
-      stickers.StickerPackRemovedEvent(event.stickerPackId),
-    );
+          stickers.StickerPackRemovedEvent(event.stickerPackId),
+        );
   }
 
-  Future<void> _onRemoteStickerPackRequested(RemoteStickerPackRequested event, Emitter<StickerPackState> emit) async {
-    final mustDoWork = state.stickerPack == null || state.stickerPack?.id != event.stickerPackId;
+  Future<void> _onRemoteStickerPackRequested(
+      RemoteStickerPackRequested event, Emitter<StickerPackState> emit) async {
+    final mustDoWork = state.stickerPack == null ||
+        state.stickerPack?.id != event.stickerPackId;
     if (mustDoWork) {
       emit(
         state.copyWith(
@@ -87,18 +92,18 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
 
     // Navigate
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(stickerPackRoute),
-      ),
-    );
+          PushedNamedEvent(
+            const NavigationDestination(stickerPackRoute),
+          ),
+        );
 
     if (mustDoWork) {
       final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-        FetchStickerPackCommand(
-          stickerPackId: event.stickerPackId,
-          jid: event.jid,
-        ),
-      );
+            FetchStickerPackCommand(
+              stickerPackId: event.stickerPackId,
+              jid: event.jid,
+            ),
+          );
 
       if (result is FetchStickerPackSuccessResult) {
         emit(
@@ -110,13 +115,14 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       } else {
         // Leave the page
         GetIt.I.get<NavigationBloc>().add(
-          PoppedRouteEvent(),
-        );
+              PoppedRouteEvent(),
+            );
       }
     }
   }
 
-  Future<void> _onStickerPackInstalled(StickerPackInstalledEvent event, Emitter<StickerPackState> emit) async {
+  Future<void> _onStickerPackInstalled(
+      StickerPackInstalledEvent event, Emitter<StickerPackState> emit) async {
     assert(!state.stickerPack!.local, 'Sticker pack must be remote');
     emit(
       state.copyWith(
@@ -125,31 +131,31 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     );
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      InstallStickerPackCommand(
-        stickerPack: state.stickerPack!,
-      ),
-    );
+          InstallStickerPackCommand(
+            stickerPack: state.stickerPack!,
+          ),
+        );
 
     emit(
       state.copyWith(
         isInstalling: false,
       ),
     );
-    
+
     if (result is StickerPackInstallSuccessEvent) {
       GetIt.I.get<stickers.StickersBloc>().add(
-        stickers.StickerPackAddedEvent(result.stickerPack),
-      );
+            stickers.StickerPackAddedEvent(result.stickerPack),
+          );
 
       // Leave the page
       GetIt.I.get<NavigationBloc>().add(
-        PoppedRouteEvent(),
-      );
+            PoppedRouteEvent(),
+          );
     } else {
       // Leave the page
       GetIt.I.get<NavigationBloc>().add(
-        PoppedRouteEvent(),
-      );
+            PoppedRouteEvent(),
+          );
 
       await Fluttertoast.showToast(
         msg: t.pages.stickerPack.fetchingFailure,
@@ -159,7 +165,8 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     }
   }
 
-  Future<void> _onStickerPackRequested(StickerPackRequested event, Emitter<StickerPackState> emit) async {
+  Future<void> _onStickerPackRequested(
+      StickerPackRequested event, Emitter<StickerPackState> emit) async {
     // Find out if the sticker pack is locally available or not
     final stickerPack = firstWhereOrNull(
       GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,

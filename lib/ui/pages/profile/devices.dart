@@ -12,15 +12,15 @@ enum DevicesOptions {
 }
 
 class DevicesPage extends StatelessWidget {
-  const DevicesPage({ super.key });
+  const DevicesPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const DevicesPage(),
-    settings: const RouteSettings(
-      name: devicesRoute,
-    ),
-  );
-  
+        builder: (context) => const DevicesPage(),
+        settings: const RouteSettings(
+          name: devicesRoute,
+        ),
+      );
+
   Widget _buildBody(BuildContext context, DevicesState state) {
     if (state.working) {
       return const Center(
@@ -35,7 +35,6 @@ class DevicesPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset('assets/images/empty.png'),
-
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
@@ -47,7 +46,7 @@ class DevicesPage extends StatelessWidget {
         ),
       );
     }
-    
+
     final hasVerifiedDevices = state.devices.any((item) => item.verified);
     return ListView.builder(
       itemCount: state.devices.length,
@@ -68,16 +67,16 @@ class DevicesPage extends StatelessWidget {
 
             // ignore: use_build_context_synchronously
             context.read<DevicesBloc>().add(
-              DeviceVerifiedEvent(result, item.deviceId),
-            );
+                  DeviceVerifiedEvent(result, item.deviceId),
+                );
           },
           onEnableValueChanged: (value) {
             context.read<DevicesBloc>().add(
-              DeviceEnabledSetEvent(
-                item.deviceId,
-                value,
-              ),
-            );
+                  DeviceEnabledSetEvent(
+                    item.deviceId,
+                    value,
+                  ),
+                );
           },
         );
       },
@@ -96,7 +95,7 @@ class DevicesPage extends StatelessWidget {
       context.read<DevicesBloc>().add(SessionsRecreatedEvent());
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DevicesBloc, DevicesState>(

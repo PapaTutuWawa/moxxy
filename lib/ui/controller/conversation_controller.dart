@@ -50,14 +50,19 @@ class TextFieldData {
   final bool pickerVisible;
 }
 
-class BidirectionalConversationController extends BidirectionalController<Message> {
-  BidirectionalConversationController(this.conversationJid) : assert(BidirectionalConversationController.currentController == null, 'There can only be one BidirectionalConversationController'),
-  super(
-    pageSize: messagePaginationSize,
-    maxPageAmount: maxMessagePages,
-  ) {
+class BidirectionalConversationController
+    extends BidirectionalController<Message> {
+  BidirectionalConversationController(this.conversationJid)
+      : assert(BidirectionalConversationController.currentController == null,
+            'There can only be one BidirectionalConversationController'),
+        super(
+          pageSize: messagePaginationSize,
+          maxPageAmount: maxMessagePages,
+        ) {
     _textController.addListener(_handleTextChanged);
-    _keyboardVisibilitySubscription = KeyboardVisibilityController().onChange.listen(_handleSoftKeyboardVisibilityChanged);
+    _keyboardVisibilitySubscription = KeyboardVisibilityController()
+        .onChange
+        .listen(_handleSoftKeyboardVisibilityChanged);
 
     BidirectionalConversationController.currentController = this;
 
@@ -67,16 +72,18 @@ class BidirectionalConversationController extends BidirectionalController<Messag
   /// A singleton referring to the current instance as there can only be one
   /// BidirectionalConversationController at a time.
   static BidirectionalConversationController? currentController;
-  
+
   late final StreamSubscription<bool> _keyboardVisibilitySubscription;
-  
+
   /// TextEditingController for the TextField
   final TextEditingController _textController = TextEditingController();
   TextEditingController get textController => _textController;
 
   /// Stream for SendButtonState updates
-  final StreamController<conversation.SendButtonState> _sendButtonStreamController = StreamController();
-  Stream<conversation.SendButtonState> get sendButtonStream => _sendButtonStreamController.stream;
+  final StreamController<conversation.SendButtonState>
+      _sendButtonStreamController = StreamController();
+  Stream<conversation.SendButtonState> get sendButtonStream =>
+      _sendButtonStreamController.stream;
 
   /// The JID of the current chat
   final String conversationJid;
@@ -86,19 +93,24 @@ class BidirectionalConversationController extends BidirectionalController<Messag
 
   /// Flag indicating whether we are scrolled to the bottom or not.
   bool _scrolledToBottomState = true;
-  final StreamController<bool> _scrollToBottomStateStreamController = StreamController();
-  Stream<bool> get scrollToBottomStateStream => _scrollToBottomStateStreamController.stream;
+  final StreamController<bool> _scrollToBottomStateStreamController =
+      StreamController();
+  Stream<bool> get scrollToBottomStateStream =>
+      _scrollToBottomStateStreamController.stream;
 
   /// The currently quoted message
   Message? _quotedMessage;
 
   /// Stream containing data for the TextField
-  final StreamController<TextFieldData> _textFieldDataStreamController = StreamController();
-  Stream<TextFieldData> get textFieldDataStream => _textFieldDataStreamController.stream;
+  final StreamController<TextFieldData> _textFieldDataStreamController =
+      StreamController();
+  Stream<TextFieldData> get textFieldDataStream =>
+      _textFieldDataStreamController.stream;
 
   /// Flag indicating whether the (emoji/sticker) picker is visible
   bool _pickerVisible = false;
-  final StreamController<bool> _pickerVisibleStreamController = StreamController.broadcast();
+  final StreamController<bool> _pickerVisibleStreamController =
+      StreamController.broadcast();
   Stream<bool> get pickerVisibleStream => _pickerVisibleStreamController.stream;
 
   /// The timer for managing the "compose" state
@@ -109,14 +121,14 @@ class BidirectionalConversationController extends BidirectionalController<Messag
 
   void _updateChatState(ChatState state) {
     MoxplatformPlugin.handler.getDataSender().sendData(
-      SendChatStateCommand(
-        state: state.toString().split('.').last,
-        jid: conversationJid,
-      ),
-      awaitable: false,
-    );
+          SendChatStateCommand(
+            state: state.toString().split('.').last,
+            jid: conversationJid,
+          ),
+          awaitable: false,
+        );
   }
-  
+
   void _startComposeTimer() {
     if (_composeTimer != null) return;
 
@@ -140,26 +152,26 @@ class BidirectionalConversationController extends BidirectionalController<Messag
     _composeTimer?.cancel();
     _composeTimer = null;
   }
-  
+
   void _handleSoftKeyboardVisibilityChanged(bool visible) {
     if (visible && _pickerVisible) {
       togglePickerVisibility(false);
     }
   }
-  
+
   void _handleTextChanged() {
     final text = _textController.text;
     if (_messageEditingState != null) {
       _sendButtonStreamController.add(
-        text == _messageEditingState?.originalBody ?
-          conversation.SendButtonState.cancelCorrection :
-          conversation.SendButtonState.send,
+        text == _messageEditingState?.originalBody
+            ? conversation.SendButtonState.cancelCorrection
+            : conversation.SendButtonState.send,
       );
     } else {
       _sendButtonStreamController.add(
-        text.isEmpty ?
-          conversation.defaultSendButtonState :
-          conversation.SendButtonState.send,
+        text.isEmpty
+            ? conversation.defaultSendButtonState
+            : conversation.SendButtonState.send,
       );
     }
 
@@ -189,7 +201,7 @@ class BidirectionalConversationController extends BidirectionalController<Messag
   }
 
   String get messageBody => _textController.text;
-  
+
   Future<void> onMessageReceived(Message message) async {
     // Drop the message if we don't really care about it
     if (message.conversationJid != conversationJid) return;
@@ -211,7 +223,8 @@ class BidirectionalConversationController extends BidirectionalController<Messag
         (item, next) {
           if (next == null) return false;
 
-          return item.timestamp <= message.timestamp && next.timestamp >= message.timestamp;
+          return item.timestamp <= message.timestamp &&
+              next.timestamp >= message.timestamp;
         },
         message,
       );
@@ -241,12 +254,12 @@ class BidirectionalConversationController extends BidirectionalController<Messag
   /// Retract the message with originId [originId].
   void retractMessage(String originId) {
     MoxplatformPlugin.handler.getDataSender().sendData(
-      RetractMessageCommentCommand(
-        originId: originId,
-        conversationJid: conversationJid,
-      ),
-      awaitable: false,
-    );
+          RetractMessageCommentCommand(
+            originId: originId,
+            conversationJid: conversationJid,
+          ),
+          awaitable: false,
+        );
   }
 
   /// Add [emoji] as a reaction to the message at index [index].
@@ -285,13 +298,13 @@ class BidirectionalConversationController extends BidirectionalController<Messag
     forceUpdateUI();
 
     MoxplatformPlugin.handler.getDataSender().sendData(
-      AddReactionToMessageCommand(
-        messageId: message.id,
-        emoji: emoji,
-        conversationJid: conversationJid,
-      ),
-      awaitable: false,
-    );
+          AddReactionToMessageCommand(
+            messageId: message.id,
+            emoji: emoji,
+            conversationJid: conversationJid,
+          ),
+          awaitable: false,
+        );
   }
 
   /// Remove the reaction [emoji] from the message at index [index].
@@ -318,30 +331,30 @@ class BidirectionalConversationController extends BidirectionalController<Messag
     forceUpdateUI();
 
     MoxplatformPlugin.handler.getDataSender().sendData(
-      RemoveReactionFromMessageCommand(
-        messageId: message.id,
-        emoji: emoji,
-        conversationJid: conversationJid,
-      ),
-      awaitable: false,
-    );
+          RemoveReactionFromMessageCommand(
+            messageId: message.id,
+            emoji: emoji,
+            conversationJid: conversationJid,
+          ),
+          awaitable: false,
+        );
   }
 
   /// Send the sticker identified by the Sticker pack [packId] and [hashKey].
   void sendSticker(String packId, String hashKey) {
     MoxplatformPlugin.handler.getDataSender().sendData(
-      SendStickerCommand(
-        stickerPackId: packId,
-        stickerHashKey: hashKey,
-        recipient: conversationJid,
-      ),
-      awaitable: false,
-    );
+          SendStickerCommand(
+            stickerPackId: packId,
+            stickerHashKey: hashKey,
+            recipient: conversationJid,
+          ),
+          awaitable: false,
+        );
 
     // Close the picker
     togglePickerVisibility(false);
   }
-  
+
   Future<void> sendMessage(bool encrypted) async {
     // Stop the compose timer
     _stopComposeTimer();
@@ -358,17 +371,17 @@ class BidirectionalConversationController extends BidirectionalController<Messag
     // Add message to the database and send it
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      SendMessageCommand(
-        recipients: [conversationJid],
-        body: text,
-        quotedMessage: _quotedMessage,
-        chatState: chatStateToString(ChatState.active),
-        editId: _messageEditingState?.id,
-        editSid: _messageEditingState?.sid,
-        currentConversationJid: conversationJid,
-      ),
-      awaitable: true,
-    ) as MessageAddedEvent;
+          SendMessageCommand(
+            recipients: [conversationJid],
+            body: text,
+            quotedMessage: _quotedMessage,
+            chatState: chatStateToString(ChatState.active),
+            editId: _messageEditingState?.id,
+            editSid: _messageEditingState?.sid,
+            currentConversationJid: conversationJid,
+          ),
+          awaitable: true,
+        ) as MessageAddedEvent;
 
     var foundMessage = false;
     if (!hasNewerData) {
@@ -395,12 +408,12 @@ class BidirectionalConversationController extends BidirectionalController<Messag
   Future<List<Message>> fetchOlderDataImpl(Message? oldestElement) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetPagedMessagesCommand(
-        conversationJid: conversationJid,
-        timestamp: oldestElement?.timestamp,
-        olderThan: true,
-      ),
-    ) as PagedMessagesResultEvent;
+          GetPagedMessagesCommand(
+            conversationJid: conversationJid,
+            timestamp: oldestElement?.timestamp,
+            olderThan: true,
+          ),
+        ) as PagedMessagesResultEvent;
 
     return result.messages.reversed.toList();
   }
@@ -409,12 +422,12 @@ class BidirectionalConversationController extends BidirectionalController<Messag
   Future<List<Message>> fetchNewerDataImpl(Message? newestElement) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetPagedMessagesCommand(
-        conversationJid: conversationJid,
-        timestamp: newestElement?.timestamp,
-        olderThan: false,
-      ),
-    ) as PagedMessagesResultEvent;
+          GetPagedMessagesCommand(
+            conversationJid: conversationJid,
+            timestamp: newestElement?.timestamp,
+            olderThan: false,
+          ),
+        ) as PagedMessagesResultEvent;
 
     return result.messages.reversed.toList();
   }
@@ -442,9 +455,10 @@ class BidirectionalConversationController extends BidirectionalController<Messag
       ),
     );
   }
-  
+
   /// Enter the "edit mode" for a message.
-  void beginMessageEditing(String originalBody, Message? quotes, int id, String sid) {
+  void beginMessageEditing(
+      String originalBody, Message? quotes, int id, String sid) {
     _messageEditingState = MessageEditingState(
       id,
       sid,
@@ -456,7 +470,8 @@ class BidirectionalConversationController extends BidirectionalController<Messag
       quoteMessage(quotes);
     }
 
-    _sendButtonStreamController.add(conversation.SendButtonState.cancelCorrection);
+    _sendButtonStreamController
+        .add(conversation.SendButtonState.cancelCorrection);
   }
 
   /// Exit the "edit mode" for a message.
@@ -503,9 +518,7 @@ class BidirectionalConversationController extends BidirectionalController<Messag
   /// React to app livecycle changes
   void handleAppStateChange(bool open) {
     _updateChatState(
-      open ?
-        ChatState.active :
-        ChatState.gone,
+      open ? ChatState.active : ChatState.gone,
     );
   }
 

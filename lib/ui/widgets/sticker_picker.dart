@@ -25,9 +25,8 @@ class StickerPicker extends StatelessWidget {
 
   Widget _buildList(BuildContext context, StickersState state) {
     // TODO(PapaTutuWawa): Solve this somewhere else
-    final stickerPacks = state.stickerPacks
-      .where((pack) => !pack.restricted)
-      .toList();
+    final stickerPacks =
+        state.stickerPacks.where((pack) => !pack.restricted).toList();
 
     if (stickerPacks.isEmpty) {
       return Padding(
@@ -43,10 +42,10 @@ class StickerPicker extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   context.read<nav.NavigationBloc>().add(
-                    nav.PushedNamedEvent(
-                      const nav.NavigationDestination(stickersRoute),
-                    ),
-                  );
+                        nav.PushedNamedEvent(
+                          const nav.NavigationDestination(stickersRoute),
+                        ),
+                      );
                 },
                 child: Text(t.pages.conversation.stickerSettings),
               ),
@@ -99,10 +98,10 @@ class StickerPicker extends StatelessWidget {
                   Vibrate.feedback(FeedbackType.medium);
 
                   context.read<StickerPackBloc>().add(
-                    LocallyAvailableStickerPackRequested(
-                      stickerPacks[sindex].id,
-                    ),
-                  );
+                        LocallyAvailableStickerPackRequested(
+                          stickerPacks[sindex].id,
+                        ),
+                      );
                 },
                 child: Image.file(
                   File(
@@ -120,7 +119,7 @@ class StickerPicker extends StatelessWidget {
       },
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(

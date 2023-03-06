@@ -15,16 +15,17 @@ enum OwnDevicesOptions {
 }
 
 class OwnDevicesPage extends StatelessWidget {
-  const OwnDevicesPage({ super.key });
+  const OwnDevicesPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const OwnDevicesPage(),
-    settings: const RouteSettings(
-      name: ownDevicesRoute,
-    ),
-  );
+        builder: (context) => const OwnDevicesPage(),
+        settings: const RouteSettings(
+          name: ownDevicesRoute,
+        ),
+      );
 
-  Future<void> _showDeviceQRCode(BuildContext context, int deviceId, String fingerprint) async {
+  Future<void> _showDeviceQRCode(
+      BuildContext context, int deviceId, String fingerprint) async {
     final jid = GetIt.I.get<UIDataService>().ownJid;
     showQrCode(
       context,
@@ -32,7 +33,7 @@ class OwnDevicesPage extends StatelessWidget {
       embedLogo: false,
     );
   }
-  
+
   Widget _buildBody(BuildContext context, OwnDevicesState state) {
     if (state.working) {
       return const Center(
@@ -68,64 +69,65 @@ class OwnDevicesPage extends StatelessWidget {
                 true,
                 true,
                 onShowQrCodePressed: () {
-                  _showDeviceQRCode(context, state.deviceId, state.deviceFingerprint);
+                  _showDeviceQRCode(
+                      context, state.deviceId, state.deviceFingerprint);
                 },
               ),
-              ...state.keys.isNotEmpty ?
-                [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        top: 32,
-                        left: 16,
-                      ),
-                      child: Text(
-                        t.pages.profile.owndevices.otherDevices,
-                        style: const TextStyle(
-                          fontSize: fontsizeSubtitle,
+              ...state.keys.isNotEmpty
+                  ? [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            top: 32,
+                            left: 16,
+                          ),
+                          child: Text(
+                            t.pages.profile.owndevices.otherDevices,
+                            style: const TextStyle(
+                              fontSize: fontsizeSubtitle,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                ] :
-                [],
+                    ]
+                  : [],
             ],
           );
         }
 
         final item = state.keys[index - 1];
         final fingerprint = item.fingerprint;
-        
+
         return FingerprintListItem(
           fingerprint,
           item.enabled,
           item.verified,
           hasVerifiedDevices,
-          onVerifiedPressed: !item.hasSessionWith ?
-            null :
-            () async {
-              if (item.verified) return;
-              if (!item.hasSessionWith) return;
+          onVerifiedPressed: !item.hasSessionWith
+              ? null
+              : () async {
+                  if (item.verified) return;
+                  if (!item.hasSessionWith) return;
 
-              final uri = await scanXmppUriQrCode(context);
-              if (uri == null) return;
+                  final uri = await scanXmppUriQrCode(context);
+                  if (uri == null) return;
 
-              // ignore: use_build_context_synchronously
-              context.read<OwnDevicesBloc>().add(
-                DeviceVerifiedEvent(uri, item.deviceId),
-              );
-            },
-          onEnableValueChanged: !item.hasSessionWith ?
-            null :
-            (value) {
-              context.read<OwnDevicesBloc>().add(
-                OwnDeviceEnabledSetEvent(
-                  item.deviceId,
-                  value,
-                ),
-              );
-            },
+                  // ignore: use_build_context_synchronously
+                  context.read<OwnDevicesBloc>().add(
+                        DeviceVerifiedEvent(uri, item.deviceId),
+                      );
+                },
+          onEnableValueChanged: !item.hasSessionWith
+              ? null
+              : (value) {
+                  context.read<OwnDevicesBloc>().add(
+                        OwnDeviceEnabledSetEvent(
+                          item.deviceId,
+                          value,
+                        ),
+                      );
+                },
           onDeletePressed: () async {
             final result = await showConfirmationDialog(
               t.pages.profile.owndevices.deleteDeviceConfirmTitle,
@@ -135,7 +137,9 @@ class OwnDevicesPage extends StatelessWidget {
 
             if (result) {
               // ignore: use_build_context_synchronously
-              context.read<OwnDevicesBloc>().add(OwnDeviceRemovedEvent(item.deviceId));
+              context
+                  .read<OwnDevicesBloc>()
+                  .add(OwnDeviceRemovedEvent(item.deviceId));
             }
           },
         );
@@ -168,7 +172,7 @@ class OwnDevicesPage extends StatelessWidget {
       context.read<OwnDevicesBloc>().add(OwnDeviceRegeneratedEvent());
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OwnDevicesBloc, OwnDevicesState>(

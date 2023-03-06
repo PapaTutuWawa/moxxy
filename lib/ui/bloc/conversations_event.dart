@@ -7,11 +7,9 @@ class ConversationsInitEvent extends ConversationsEvent {
   ConversationsInitEvent(
     this.displayName,
     this.jid,
-    this.conversations,
-    {
-      this.avatarUrl,
-    }
-  );
+    this.conversations, {
+    this.avatarUrl,
+  });
   final String displayName;
   final String jid;
   final String? avatarUrl;

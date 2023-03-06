@@ -22,19 +22,24 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginSubmittedEvent>(_onSubmitted);
   }
 
-  Future<void> _onJidChanged(LoginJidChangedEvent event, Emitter<LoginState> emit) async {
+  Future<void> _onJidChanged(
+      LoginJidChangedEvent event, Emitter<LoginState> emit) async {
     emit(state.copyWith(jid: event.jid));
   }
 
-  Future<void> _onPasswordChanged(LoginPasswordChangedEvent event, Emitter<LoginState> emit) async {
+  Future<void> _onPasswordChanged(
+      LoginPasswordChangedEvent event, Emitter<LoginState> emit) async {
     emit(state.copyWith(password: event.password));
   }
 
-  Future<void> _onPasswordVisibilityToggled(LoginPasswordVisibilityToggledEvent event, Emitter<LoginState> emit) async {
+  Future<void> _onPasswordVisibilityToggled(
+      LoginPasswordVisibilityToggledEvent event,
+      Emitter<LoginState> emit) async {
     emit(state.copyWith(passwordVisible: !state.passwordVisible));
   }
-  
-  Future<void> _onSubmitted(LoginSubmittedEvent event, Emitter<LoginState> emit) async {
+
+  Future<void> _onSubmitted(
+      LoginSubmittedEvent event, Emitter<LoginState> emit) async {
     final jidValidity = validateJidString(state.jid);
     if (jidValidity != null) {
       return emit(
@@ -49,11 +54,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return emit(
         state.copyWith(
           jidState: const LoginFormState(true),
-          passwordState: const LoginFormState(false, error: 'Password cannot be empty'),
+          passwordState:
+              const LoginFormState(false, error: 'Password cannot be empty'),
         ),
       );
     }
-    
+
     emit(
       state.copyWith(
         working: true,
@@ -64,12 +70,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     );
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      LoginCommand(
-        jid: state.jid,
-        password: state.password,
-        useDirectTLS: true,
-      ),
-    );
+          LoginCommand(
+            jid: state.jid,
+            password: state.password,
+            useDirectTLS: true,
+          ),
+        );
 
     if (result is LoginSuccessfulEvent) {
       emit(state.copyWith(working: false));
@@ -79,20 +85,20 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
       // Set up BLoCs
       GetIt.I.get<ConversationsBloc>().add(
-        ConversationsInitEvent(
-          result.preStart.displayName!,
-          state.jid,
-          result.preStart.conversations!,
-        ),
-      );
+            ConversationsInitEvent(
+              result.preStart.displayName!,
+              state.jid,
+              result.preStart.conversations!,
+            ),
+          );
       GetIt.I.get<NavigationBloc>().add(
-        PushedNamedAndRemoveUntilEvent(
-          const NavigationDestination(
-            conversationsRoute,
-          ),
-          (_) => false,
-        ),
-      );
+            PushedNamedAndRemoveUntilEvent(
+              const NavigationDestination(
+                conversationsRoute,
+              ),
+              (_) => false,
+            ),
+          );
     } else if (result is LoginFailureEvent) {
       GetIt.I.get<UIDataService>().isLoggedIn = false;
       return emit(

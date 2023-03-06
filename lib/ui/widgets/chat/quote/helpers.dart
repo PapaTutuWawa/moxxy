@@ -25,14 +25,18 @@ class QuoteSenderText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sentBySelf = resetQuoteNotNull ?
-      sent :
-      sender == GetIt.I.get<UIDataService>().ownJid;
+    final sentBySelf = resetQuoteNotNull
+        ? sent
+        : sender == GetIt.I.get<UIDataService>().ownJid;
 
     return Text(
-      sentBySelf ?
-        t.messages.you :
-        GetIt.I.get<ConversationBloc>().state.conversation!.titleWithOptionalContact,
+      sentBySelf
+          ? t.messages.you
+          : GetIt.I
+              .get<ConversationBloc>()
+              .state
+              .conversation!
+              .titleWithOptionalContact,
       style: const TextStyle(
         color: bubbleTextQuoteSenderColor,
         fontWeight: FontWeight.bold,
@@ -48,5 +52,7 @@ class QuoteSenderText extends StatelessWidget {
 Color getQuoteTextColor(BuildContext context, bool insideTextField) {
   if (!insideTextField) return bubbleTextQuoteColor;
 
-  return Theme.of(context).extension<MoxxyThemeData>()!.bubbleQuoteInTextFieldTextColor;
+  return Theme.of(context)
+      .extension<MoxxyThemeData>()!
+      .bubbleQuoteInTextFieldTextColor;
 }

@@ -42,7 +42,7 @@ class StickersService {
       (sticker) => sticker.hashKey == hashKey,
     );
   }
-  
+
   Future<List<StickerPack>> getStickerPacks() async {
     if (_stickerPacks.isEmpty) {
       final packs = await GetIt.I.get<DatabaseService>().loadStickerPacks();
@@ -53,7 +53,7 @@ class StickersService {
 
     return _stickerPacks.values.toList();
   }
-  
+
   Future<void> removeStickerPack(String id) async {
     final pack = await getStickerPackById(id);
     assert(pack != null, 'The sticker pack must exist');
@@ -71,36 +71,36 @@ class StickersService {
         ),
       );
     }
-    
+
     // Remove from the database
     await GetIt.I.get<DatabaseService>().removeStickerPackById(id);
 
     // Remove from the cache
     _stickerPacks.remove(id);
-    
+
     // Retract from PubSub
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
-    final result = await GetIt.I.get<moxxmpp.XmppConnection>()
-      .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
-      .retractStickerPack(moxxmpp.JID.fromString(state.jid!), id);
+    final result = await GetIt.I
+        .get<moxxmpp.XmppConnection>()
+        .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
+        .retractStickerPack(moxxmpp.JID.fromString(state.jid!), id);
 
     if (result.isType<moxxmpp.PubSubError>()) {
       _log.severe('Failed to retract sticker pack');
     }
   }
-  
+
   Future<void> _publishStickerPack(moxxmpp.StickerPack pack) async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
-    final result = await GetIt.I.get<moxxmpp.XmppConnection>()
-      .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
-      .publishStickerPack(
-        moxxmpp.JID.fromString(state.jid!),
-        pack,
-        accessModel: prefs.isStickersNodePublic ?
-          'open' :
-          null,
-      );
+    final result = await GetIt.I
+        .get<moxxmpp.XmppConnection>()
+        .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
+        .publishStickerPack(
+          moxxmpp.JID.fromString(state.jid!),
+          pack,
+          accessModel: prefs.isStickersNodePublic ? 'open' : null,
+        );
 
     if (result.isType<moxxmpp.PubSubError>()) {
       _log.severe('Failed to publish sticker pack');
@@ -117,7 +117,8 @@ class StickersService {
     return stickerDirPath;
   }
 
-  Future<void> importFromPubSubWithEvent(moxxmpp.JID jid, String stickerPackId) async {
+  Future<void> importFromPubSubWithEvent(
+      moxxmpp.JID jid, String stickerPackId) async {
     final stickerPack = await importFromPubSub(jid, stickerPackId);
     if (stickerPack == null) return;
 
@@ -127,15 +128,17 @@ class StickersService {
       ),
     );
   }
-  
+
   /// Takes the jid of the host [jid] and the id [stickerPackId] of the sticker pack
   /// and tries to fetch and install it, including publishing on our own PubSub node.
   ///
   /// On success, returns the installed StickerPack. On failure, returns null.
-  Future<StickerPack?> importFromPubSub(moxxmpp.JID jid, String stickerPackId) async {
-    final result = await GetIt.I.get<moxxmpp.XmppConnection>()
-      .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
-      .fetchStickerPack(jid.toBare(), stickerPackId);
+  Future<StickerPack?> importFromPubSub(
+      moxxmpp.JID jid, String stickerPackId) async {
+    final result = await GetIt.I
+        .get<moxxmpp.XmppConnection>()
+        .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
+        .fetchStickerPack(jid.toBare(), stickerPackId);
 
     if (result.isType<moxxmpp.PubSubError>()) {
       _log.warning('Failed to fetch sticker pack $jid:$stickerPackId');
@@ -150,7 +153,7 @@ class StickersService {
     // Install the sticker pack
     return installFromPubSub(stickerPackRaw);
   }
-  
+
   Future<StickerPack?> installFromPubSub(StickerPack remotePack) async {
     assert(!remotePack.local, 'Sticker pack must be remote');
 
@@ -182,7 +185,7 @@ class StickersService {
         path: stickerPath,
         hashKey: getStickerHashKey(sticker.hashes),
       );
-    } 
+    }
 
     if (!success) {
       _log.severe('Import failed');
@@ -216,13 +219,13 @@ class StickersService {
     unawaited(
       _publishStickerPack(remotePack.toMoxxmpp()),
     );
-    
+
     return remotePack.copyWith(
       stickers: stickersDb,
       local: true,
     );
   }
-  
+
   /// Imports a sticker pack from [path].
   /// The format is as follows:
   /// - The file MUST be an uncompressed tar archive
@@ -246,12 +249,12 @@ class StickersService {
       node,
       hashAvailable: false,
     );
- 
+
     if (packRaw.restricted) {
       _log.severe('Invalid sticker pack: Restricted');
       return null;
     }
-    
+
     for (final sticker in packRaw.stickers) {
       final filename = sticker.metadata.name;
       if (filename == null) {
@@ -261,7 +264,8 @@ class StickersService {
 
       final stickerFile = archive.findFile(filename);
       if (stickerFile == null) {
-        _log.severe('Invalid sticker pack: $filename does not exist in archive');
+        _log.severe(
+            'Invalid sticker pack: $filename does not exist in archive');
         return null;
       }
     }
@@ -276,7 +280,7 @@ class StickersService {
       _log.severe('Invalid sticker pack: Already exists');
       return null;
     }
-    
+
     final stickerDirPath = await getStickerPackPath(
       pack.hashAlgorithm.toName(),
       pack.hashValue,
@@ -285,7 +289,7 @@ class StickersService {
     if (!stickerDir.existsSync()) await stickerDir.create(recursive: true);
 
     final db = GetIt.I.get<DatabaseService>();
-    
+
     // Create the sticker pack first
     final stickerPack = StickerPack(
       pack.hashValue,
@@ -318,9 +322,9 @@ class StickersService {
           null,
           sticker.metadata.hashes,
           sticker.sources
-            .whereType<moxxmpp.StatelessFileSharingUrlSource>()
-            .map((moxxmpp.StatelessFileSharingUrlSource source) => source.url)
-            .toList(),
+              .whereType<moxxmpp.StatelessFileSharingUrlSource>()
+              .map((moxxmpp.StatelessFileSharingUrlSource source) => source.url)
+              .toList(),
           stickerPath,
           pack.hashValue,
           sticker.suggests,
@@ -335,7 +339,8 @@ class StickersService {
     // Add it to the cache
     _stickerPacks[pack.hashValue] = stickerPackWithStickers;
 
-    _log.info('Sticker pack ${stickerPack.id} successfully added to the database');
+    _log.info(
+        'Sticker pack ${stickerPack.id} successfully added to the database');
 
     // Publish but don't block
     unawaited(_publishStickerPack(pack));

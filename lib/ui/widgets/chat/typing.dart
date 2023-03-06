@@ -22,7 +22,9 @@ class _FlashingCircle extends StatelessWidget {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        final circleFlashPercent = interval.transform(controller.value,);
+        final circleFlashPercent = interval.transform(
+          controller.value,
+        );
         final circleColorPercent = sin(pi * circleFlashPercent);
 
         return Container(
@@ -43,25 +45,26 @@ class _FlashingCircle extends StatelessWidget {
 }
 
 class TypingIndicatorWidget extends StatefulWidget {
-  const TypingIndicatorWidget(this.colorLight, this.colorDark, { super.key });
+  const TypingIndicatorWidget(this.colorLight, this.colorDark, {super.key});
   final Color colorLight;
   final Color colorDark;
-  
+
   @override
   TypingIndicatorWidgetState createState() => TypingIndicatorWidgetState();
 }
 
-class TypingIndicatorWidgetState extends State<TypingIndicatorWidget> with TickerProviderStateMixin {
-
+class TypingIndicatorWidgetState extends State<TypingIndicatorWidget>
+    with TickerProviderStateMixin {
   TypingIndicatorWidgetState();
   late AnimationController _controller;
   late Animation<double> _animation;
-  
+
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1200))
       ..forward()
       ..repeat();
 
@@ -77,7 +80,7 @@ class TypingIndicatorWidgetState extends State<TypingIndicatorWidget> with Ticke
     _controller.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return IntrinsicWidth(

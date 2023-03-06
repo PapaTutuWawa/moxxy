@@ -23,7 +23,8 @@ import 'package:url_launcher/url_launcher.dart';
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action. Resolves to true if the user pressed the confirm button. Returns false if
 /// the cancel button was pressed.
-Future<bool> showConfirmationDialog(String title, String body, BuildContext context) async {
+Future<bool> showConfirmationDialog(
+    String title, String body, BuildContext context) async {
   final result = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
@@ -50,7 +51,8 @@ Future<bool> showConfirmationDialog(String title, String body, BuildContext cont
 }
 
 /// Shows a dialog telling the user that the [feature] feature is not implemented.
-Future<void> showNotImplementedDialog(String feature, BuildContext context) async {
+Future<void> showNotImplementedDialog(
+    String feature, BuildContext context) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
@@ -62,9 +64,7 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
         ),
         content: SingleChildScrollView(
           child: ListBody(
-            children: [
-              Text('The $feature feature is not yet implemented.')
-            ],
+            children: [Text('The $feature feature is not yet implemented.')],
           ),
         ),
         actions: [
@@ -79,7 +79,8 @@ Future<void> showNotImplementedDialog(String feature, BuildContext context) asyn
 }
 
 /// Shows a dialog giving the user a very simple information with an "Okay" button.
-Future<void> showInfoDialog(String title, String body, BuildContext context) async {
+Future<void> showInfoDialog(
+    String title, String body, BuildContext context) async {
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
@@ -118,14 +119,15 @@ Future<Uint8List?> pickAndCropImage(BuildContext context) async {
   );
 
   if (result != null) {
-    return GetIt.I.get<CropBloc>().cropImageWithData(result.files.single.bytes!);
+    return GetIt.I
+        .get<CropBloc>()
+        .cropImageWithData(result.files.single.bytes!);
   }
 
   return null;
 }
 
 class PickedAvatar {
-
   const PickedAvatar(this.path, this.hash);
   final String path;
   final String hash;
@@ -134,7 +136,8 @@ class PickedAvatar {
 /// Open the file picker to pick an image, open the cropping tool and then save it.
 /// [oldPath] is the path of the old avatar or "" if none has been set.
 /// Returns the path of the new avatar path.
-Future<PickedAvatar?> pickAvatar(BuildContext context, String jid, String oldPath) async {
+Future<PickedAvatar?> pickAvatar(
+    BuildContext context, String jid, String oldPath) async {
   final data = await pickAndCropImage(context);
 
   if (data != null) {
@@ -149,8 +152,9 @@ Future<PickedAvatar?> pickAvatar(BuildContext context, String jid, String oldPat
 
     final hash = (await Sha1().hash(compressedData)).bytes;
     final hashhex = HEX.encode(hash);
-    final avatarPath = await saveAvatarInCache(compressedData, hashhex, jid, oldPath);
-    
+    final avatarPath =
+        await saveAvatarInCache(compressedData, hashhex, jid, oldPath);
+
     return PickedAvatar(avatarPath, hashhex);
   }
 
@@ -171,8 +175,10 @@ String avatarAltText(String text) {
 Color getTileColor(BuildContext context) {
   final theme = Theme.of(context);
   switch (theme.brightness) {
-    case Brightness.light: return tileColorLight;
-    case Brightness.dark: return tileColorDark;
+    case Brightness.light:
+      return tileColorLight;
+    case Brightness.dark:
+      return tileColorDark;
   }
 }
 
@@ -180,9 +186,12 @@ Color getTileColor(BuildContext context) {
 /// language code [localeCode], e.g. "de", "en", ...
 String localeCodeToLanguageName(String localeCode) {
   switch (localeCode) {
-    case 'de': return 'Deutsch';
-    case 'en': return 'English';
-    case 'default': return t.pages.settings.appearance.systemLanguage;
+    case 'de':
+      return 'Deutsch';
+    case 'en':
+      return 'English';
+    case 'default':
+      return t.pages.settings.appearance.systemLanguage;
   }
 
   assert(false, 'Language code $localeCode has no name');
@@ -218,7 +227,7 @@ Future<Uri?> scanXmppUriQrCode(BuildContext context) async {
 }
 
 /// Shows a dialog with the given data string encoded as a QR Code.
-void showQrCode(BuildContext context, String data, { bool embedLogo = true }) {
+void showQrCode(BuildContext context, String data, {bool embedLogo = true}) {
   showDialog<void>(
     context: context,
     builder: (BuildContext context) => Center(
@@ -231,14 +240,13 @@ void showQrCode(BuildContext context, String data, { bool embedLogo = true }) {
             data: data,
             size: 220,
             backgroundColor: Colors.white,
-            embeddedImage: embedLogo ?
-              const AssetImage('assets/images/logo.png') :
-              null,
-            embeddedImageStyle: embedLogo ?
-              QrEmbeddedImageStyle(
-                size: const Size(50, 50),
-              ) :
-              null,
+            embeddedImage:
+                embedLogo ? const AssetImage('assets/images/logo.png') : null,
+            embeddedImageStyle: embedLogo
+                ? QrEmbeddedImageStyle(
+                    size: const Size(50, 50),
+                  )
+                : null,
           ),
         ),
       ),
@@ -251,7 +259,8 @@ void showQrCode(BuildContext context, String data, { bool embedLogo = true }) {
 ///
 /// Returns the index of the device in [devices] on success. On failure of any kind,
 /// returns -1.
-int isVerificationUriValid(List<OmemoDevice> devices, Uri scannedUri, String deviceJid, int deviceId) {
+int isVerificationUriValid(
+    List<OmemoDevice> devices, Uri scannedUri, String deviceJid, int deviceId) {
   if (scannedUri.queryParameters.isEmpty) {
     // No query parameters
     Fluttertoast.showToast(
@@ -274,9 +283,8 @@ int isVerificationUriValid(List<OmemoDevice> devices, Uri scannedUri, String dev
   }
 
   // TODO(PapaTutuWawa): Use an exception safe version of firstWhere
-  final sidParam = scannedUri.queryParameters
-    .keys
-    .firstWhere((param) => param.startsWith('omemo2-sid-'));
+  final sidParam = scannedUri.queryParameters.keys
+      .firstWhere((param) => param.startsWith('omemo2-sid-'));
   final id = int.parse(sidParam.replaceFirst('omemo2-sid-', ''));
   final fp = scannedUri.queryParameters[sidParam];
 
@@ -338,17 +346,17 @@ Future<void> handleUri(String uriString) async {
       if (node == moxxmpp.stickersXmlns && item != null) {
         // Retrieve a sticker pack
         GetIt.I.get<StickerPackBloc>().add(
-          StickerPackRequested(
-            uri.path,
-            item,
-          ),
-        );
+              StickerPackRequested(
+                uri.path,
+                item,
+              ),
+            );
       }
     }
 
     return;
   }
-  
+
   await launchUrl(
     redirectUrl(uri),
     mode: LaunchMode.externalNonBrowserApplication,

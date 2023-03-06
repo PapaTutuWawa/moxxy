@@ -13,7 +13,7 @@ class PlayButton extends StatelessWidget {
     return Align(
       child: DecoratedIcon(
         Icons.play_arrow,
-        shadows: const [ BoxShadow(blurRadius: 16) ],
+        shadows: const [BoxShadow(blurRadius: 16)],
         size: size,
       ),
     );

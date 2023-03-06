@@ -55,26 +55,32 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SetPreferencesCommand>(performSetPreferences),
       EventTypeMatcher<RequestDownloadCommand>(performRequestDownload),
       EventTypeMatcher<SetAvatarCommand>(performSetAvatar),
-      EventTypeMatcher<SetShareOnlineStatusCommand>(performSetShareOnlineStatus),
+      EventTypeMatcher<SetShareOnlineStatusCommand>(
+          performSetShareOnlineStatus),
       EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
       EventTypeMatcher<SendChatStateCommand>(performSendChatState),
       EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
       EventTypeMatcher<SignOutCommand>(performSignOut),
       EventTypeMatcher<SendFilesCommand>(performSendFiles),
       EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
-      EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(performGetOmemoFingerprints),
+      EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(
+          performGetOmemoFingerprints),
       EventTypeMatcher<SetOmemoDeviceEnabledCommand>(performEnableOmemoKey),
       EventTypeMatcher<RecreateSessionsCommand>(performRecreateSessions),
       EventTypeMatcher<SetOmemoEnabledCommand>(performSetOmemoEnabled),
-      EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(performGetOwnOmemoFingerprints),
+      EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(
+          performGetOwnOmemoFingerprints),
       EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
       EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
       EventTypeMatcher<RetractMessageCommentCommand>(performMessageRetraction),
-      EventTypeMatcher<MarkConversationAsReadCommand>(performMarkConversationAsRead),
+      EventTypeMatcher<MarkConversationAsReadCommand>(
+          performMarkConversationAsRead),
       EventTypeMatcher<MarkMessageAsReadCommand>(performMarkMessageAsRead),
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
-      EventTypeMatcher<RemoveReactionFromMessageCommand>(performRemoveMessageReaction),
-      EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(performMarkDeviceVerified),
+      EventTypeMatcher<RemoveReactionFromMessageCommand>(
+          performRemoveMessageReaction),
+      EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(
+          performMarkDeviceVerified),
       EventTypeMatcher<ImportStickerPackCommand>(performImportStickerPack),
       EventTypeMatcher<SendStickerCommand>(performSendSticker),
       EventTypeMatcher<RemoveStickerPackCommand>(performRemoveStickerPack),
@@ -83,7 +89,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
       EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
-  ]);
+    ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
   GetIt.I.registerSingleton<SynchronizedQueue<Map<String, dynamic>?>>(
@@ -91,33 +97,34 @@ void setupBackgroundEventHandler() {
   );
 }
 
-Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
+Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
   final id = extra as String;
 
   GetIt.I.get<Logger>().fine('Performing login...');
   final result = await GetIt.I.get<XmppService>().connectAwaitable(
-    ConnectionSettings(
-      jid: JID.fromString(command.jid),
-      password: command.password,
-      useDirectTLS: command.useDirectTLS,
-      allowPlainAuth: true,
-    ),
-    true,
-  );
+        ConnectionSettings(
+          jid: JID.fromString(command.jid),
+          password: command.password,
+          useDirectTLS: command.useDirectTLS,
+          allowPlainAuth: true,
+        ),
+        true,
+      );
   GetIt.I.get<Logger>().fine('Login done');
 
   // ignore: avoid_dynamic_calls
   final xc = GetIt.I.get<XmppConnection>();
   if (result.success) {
     await xc.reconnectionPolicy.setShouldReconnect(true);
-    final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
+    final preferences =
+        await GetIt.I.get<PreferencesService>().getPreferences();
     final settings = xc.getConnectionSettings();
     sendEvent(
       LoginSuccessfulEvent(
         jid: settings.jid.toString(),
         preStart: await _buildPreStartDoneEvent(preferences),
       ),
-      id:id,
+      id: id,
     );
   } else {
     await xc.reconnectionPolicy.setShouldReconnect(false);
@@ -130,7 +137,8 @@ Future<void> performLogin(LoginCommand command, { dynamic extra }) async {
   }
 }
 
-Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) async {
+Future<PreStartDoneEvent> _buildPreStartDoneEvent(
+    PreferencesState preferences) async {
   final xss = GetIt.I.get<XmppStateService>();
   final state = await xss.getXmppState();
 
@@ -142,9 +150,11 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
   if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
     permissions.add(Permission.storage.value);
 
-    await xss.modifyXmppState((state) => state.copyWith(
-      askedStoragePermission: true,
-    ),);
+    await xss.modifyXmppState(
+      (state) => state.copyWith(
+        askedStoragePermission: true,
+      ),
+    );
   }
 
   return PreStartDoneEvent(
@@ -155,13 +165,16 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(PreferencesState preferences) 
     avatarHash: state.avatarHash,
     permissionsToRequest: permissions,
     preferences: preferences,
-    conversations: (await GetIt.I.get<DatabaseService>().loadConversations()).where((c) => c.open).toList(),
+    conversations: (await GetIt.I.get<DatabaseService>().loadConversations())
+        .where((c) => c.open)
+        .toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
     stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
 }
 
-Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) async {
+Future<void> performPreStart(PerformPreStartCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
 
@@ -173,8 +186,8 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
     LocaleSettings.setLocaleRaw(preferences.languageLocaleCode);
   }
   GetIt.I.get<XmppService>().setNotificationText(
-    await GetIt.I.get<XmppConnection>().getConnectionState(),
-  );
+        await GetIt.I.get<XmppConnection>().getConnectionState(),
+      );
 
   final settings = await GetIt.I.get<XmppService>().getConnectionSettings();
   if (settings != null) {
@@ -194,7 +207,8 @@ Future<void> performPreStart(PerformPreStartCommand command, { dynamic extra }) 
   }
 }
 
-Future<void> performAddConversation(AddConversationCommand command, { dynamic extra }) async {
+Future<void> performAddConversation(AddConversationCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final cs = GetIt.I.get<ConversationService>();
@@ -257,19 +271,24 @@ Future<void> performAddConversation(AddConversationCommand command, { dynamic ex
   );
 }
 
-Future<void> performSetOpenConversation(SetOpenConversationCommand command, { dynamic extra }) async {
+Future<void> performSetOpenConversation(SetOpenConversationCommand command,
+    {dynamic extra}) async {
   await GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? '');
 
   // Null just means that the chat has been closed
   if (command.jid != null) {
-    await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(command.jid!);
+    await GetIt.I
+        .get<NotificationsService>()
+        .dismissNotificationsByJid(command.jid!);
   }
 }
 
-Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) async {
+Future<void> performSendMessage(SendMessageCommand command,
+    {dynamic extra}) async {
   final xs = GetIt.I.get<XmppService>();
   if (command.editSid != null && command.editId != null) {
-    assert(command.recipients.length == 1, 'Edits must not be sent to multiple recipients');
+    assert(command.recipients.length == 1,
+        'Edits must not be sent to multiple recipients');
 
     await xs.sendMessageCorrection(
       command.editId!,
@@ -277,8 +296,8 @@ Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) a
       command.editSid!,
       command.recipients.first,
       command.chatState.isNotEmpty
-        ? chatStateFromString(command.chatState)
-        : null,
+          ? chatStateFromString(command.chatState)
+          : null,
     );
     return;
   }
@@ -287,27 +306,30 @@ Future<void> performSendMessage(SendMessageCommand command, { dynamic extra }) a
     body: command.body,
     recipients: command.recipients,
     chatState: command.chatState.isNotEmpty
-      ? chatStateFromString(command.chatState)
-      : null,
+        ? chatStateFromString(command.chatState)
+        : null,
     quotedMessage: command.quotedMessage,
     currentConversationJid: command.currentConversationJid,
     commandId: extra as String,
   );
 }
 
-Future<void> performBlockJid(BlockJidCommand command, { dynamic extra }) async {
+Future<void> performBlockJid(BlockJidCommand command, {dynamic extra}) async {
   await GetIt.I.get<BlocklistService>().blockJid(command.jid);
 }
 
-Future<void> performUnblockJid(UnblockJidCommand command, { dynamic extra }) async {
+Future<void> performUnblockJid(UnblockJidCommand command,
+    {dynamic extra}) async {
   await GetIt.I.get<BlocklistService>().unblockJid(command.jid);
 }
 
-Future<void> performUnblockAll(UnblockAllCommand command, { dynamic extra }) async {
+Future<void> performUnblockAll(UnblockAllCommand command,
+    {dynamic extra}) async {
   await GetIt.I.get<BlocklistService>().unblockAll();
 }
 
-Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) async {
+Future<void> performSetCSIState(SetCSIStateCommand command,
+    {dynamic extra}) async {
   // Tell the [XmppService] about the app state
   GetIt.I.get<XmppService>().setAppState(command.active);
 
@@ -323,7 +345,8 @@ Future<void> performSetCSIState(SetCSIStateCommand command, { dynamic extra }) a
   }
 }
 
-Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extra }) async {
+Future<void> performSetPreferences(SetPreferencesCommand command,
+    {dynamic extra}) async {
   final ps = GetIt.I.get<PreferencesService>();
   final oldPrefs = await ps.getPreferences();
   await ps.modifyPreferences((_) => command.preferences);
@@ -351,10 +374,12 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
 
   // TODO(Unknown): Maybe handle this in StickersService
   // If sticker visibility was changed, apply the settings to the PubSub node
-  final pm = GetIt.I.get<XmppConnection>()
-    .getManagerById<PubSubManager>(pubsubManager)!;
+  final pm = GetIt.I
+      .get<XmppConnection>()
+      .getManagerById<PubSubManager>(pubsubManager)!;
   final ownJid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
-  if (command.preferences.isStickersNodePublic && !oldPrefs.isStickersNodePublic) {
+  if (command.preferences.isStickersNodePublic &&
+      !oldPrefs.isStickersNodePublic) {
     // Set to open
     unawaited(
       pm.configure(
@@ -366,7 +391,8 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
         ),
       ),
     );
-  } else if (!command.preferences.isStickersNodePublic && oldPrefs.isStickersNodePublic) {
+  } else if (!command.preferences.isStickersNodePublic &&
+      oldPrefs.isStickersNodePublic) {
     // Set to presence
     unawaited(
       pm.configure(
@@ -379,18 +405,19 @@ Future<void> performSetPreferences(SetPreferencesCommand command, { dynamic extr
       ),
     );
   }
-  
+
   // Set the locale
-  final locale = command.preferences.languageLocaleCode == 'default' ?
-    GetIt.I.get<LanguageService>().defaultLocale :
-    command.preferences.languageLocaleCode;
+  final locale = command.preferences.languageLocaleCode == 'default'
+      ? GetIt.I.get<LanguageService>().defaultLocale
+      : command.preferences.languageLocaleCode;
   LocaleSettings.setLocaleRaw(locale);
   GetIt.I.get<XmppService>().setNotificationText(
-    await GetIt.I.get<XmppConnection>().getConnectionState(),
-  );
+        await GetIt.I.get<XmppConnection>().getConnectionState(),
+      );
 }
 
-Future<void> performAddContact(AddContactCommand command, { dynamic extra }) async {
+Future<void> performAddContact(AddContactCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final jid = command.jid;
@@ -443,7 +470,7 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
       return newConversation;
     },
   );
- 
+
   // Manage subscription requests
   final srs = GetIt.I.get<SubscriptionRequestService>();
   final hasSubscriptionRequest = await srs.hasPendingSubscriptionRequest(jid);
@@ -455,20 +482,22 @@ Future<void> performAddContact(AddContactCommand command, { dynamic extra }) asy
   final item = await roster.getRosterItemByJid(jid);
   if (item != null) {
     if (item.subscription != 'from' && item.subscription != 'both') {
-      GetIt.I.get<Logger>().finest('Roster item already exists with no presence subscription from them. Sending subscription request');
+      GetIt.I.get<Logger>().finest(
+          'Roster item already exists with no presence subscription from them. Sending subscription request');
       srs.sendSubscriptionRequest(jid);
     }
   } else {
     await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
   }
-  
+
   // Try to figure out an avatar
   // TODO(Unknown): Don't do that here. Do it more intelligently.
   await GetIt.I.get<AvatarService>().subscribeJid(jid);
   await GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid, '');
 }
 
-Future<void> performRemoveContact(RemoveContactCommand command, { dynamic extra }) async {
+Future<void> performRemoveContact(RemoveContactCommand command,
+    {dynamic extra}) async {
   final rs = GetIt.I.get<RosterService>();
   final cs = GetIt.I.get<ConversationService>();
 
@@ -488,7 +517,8 @@ Future<void> performRemoveContact(RemoveContactCommand command, { dynamic extra 
   }
 }
 
-Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic extra }) async {
+Future<void> performRequestDownload(RequestDownloadCommand command,
+    {dynamic extra}) async {
   final ms = GetIt.I.get<MessageService>();
   final srv = GetIt.I.get<HttpFileTransferService>();
 
@@ -524,15 +554,18 @@ Future<void> performRequestDownload(RequestDownloadCommand command, { dynamic ex
   );
 }
 
-Future<void> performSetAvatar(SetAvatarCommand command, { dynamic extra }) async {
-  await GetIt.I.get<XmppStateService>().modifyXmppState((state) => state.copyWith(
-    avatarUrl: command.path,
-    avatarHash: command.hash,
-  ),);
+Future<void> performSetAvatar(SetAvatarCommand command, {dynamic extra}) async {
+  await GetIt.I.get<XmppStateService>().modifyXmppState(
+        (state) => state.copyWith(
+          avatarUrl: command.path,
+          avatarHash: command.hash,
+        ),
+      );
   await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
 
-Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { dynamic extra }) async {
+Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command,
+    {dynamic extra}) async {
   final rs = GetIt.I.get<RosterService>();
   final srs = GetIt.I.get<SubscriptionRequestService>();
   final item = await rs.getRosterItemByJid(command.jid);
@@ -555,7 +588,8 @@ Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command, { 
   }
 }
 
-Future<void> performCloseConversation(CloseConversationCommand command, { dynamic extra }) async {
+Future<void> performCloseConversation(CloseConversationCommand command,
+    {dynamic extra}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   await cs.createOrUpdateConversation(
@@ -574,7 +608,8 @@ Future<void> performCloseConversation(CloseConversationCommand command, { dynami
   );
 }
 
-Future<void> performSendChatState(SendChatStateCommand command, { dynamic extra }) async {
+Future<void> performSendChatState(SendChatStateCommand command,
+    {dynamic extra}) async {
   final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
   // Only send chat states if the users wants to send them
@@ -582,17 +617,20 @@ Future<void> performSendChatState(SendChatStateCommand command, { dynamic extra 
 
   final conn = GetIt.I.get<XmppConnection>();
   conn
-    .getManagerById<ChatStateManager>(chatStateManager)!
-    .sendChatState(chatStateFromString(command.state), command.jid);
+      .getManagerById<ChatStateManager>(chatStateManager)!
+      .sendChatState(chatStateFromString(command.state), command.jid);
 }
 
-Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) async {
+Future<void> performGetFeatures(GetFeaturesCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
-  final sm = conn.getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!;
+  final sm = conn.getNegotiatorById<StreamManagementNegotiator>(
+      streamManagementNegotiator)!;
   final csi = conn.getNegotiatorById<CSINegotiator>(csiNegotiator)!;
-  final httpFileUpload = conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
+  final httpFileUpload =
+      conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
   final userBlocking = conn.getManagerById<BlockingManager>(blockingManager)!;
   final carbons = conn.getManagerById<CarbonsManager>(carbonsManager)!;
   sendEvent(
@@ -607,7 +645,7 @@ Future<void> performGetFeatures(GetFeaturesCommand command, { dynamic extra }) a
   );
 }
 
-Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
+Future<void> performSignOut(SignOutCommand command, {dynamic extra}) async {
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
@@ -621,11 +659,12 @@ Future<void> performSignOut(SignOutCommand command, { dynamic extra }) async {
   );
 }
 
-Future<void> performSendFiles(SendFilesCommand command, { dynamic extra }) async {
+Future<void> performSendFiles(SendFilesCommand command, {dynamic extra}) async {
   await GetIt.I.get<XmppService>().sendFiles(command.paths, command.recipients);
 }
 
-Future<void> performSetMuteState(SetConversationMuteStatusCommand command, { dynamic extra }) async {
+Future<void> performSetMuteState(SetConversationMuteStatusCommand command,
+    {dynamic extra}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   final conversation = await cs.createOrUpdateConversation(
@@ -643,7 +682,9 @@ Future<void> performSetMuteState(SetConversationMuteStatusCommand command, { dyn
   }
 }
 
-Future<void> performGetOmemoFingerprints(GetConversationOmemoFingerprintsCommand command, { dynamic extra }) async {
+Future<void> performGetOmemoFingerprints(
+    GetConversationOmemoFingerprintsCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();
@@ -655,11 +696,13 @@ Future<void> performGetOmemoFingerprints(GetConversationOmemoFingerprintsCommand
   );
 }
 
-Future<void> performEnableOmemoKey(SetOmemoDeviceEnabledCommand command, { dynamic extra }) async {
+Future<void> performEnableOmemoKey(SetOmemoDeviceEnabledCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();
-  await omemo.setOmemoKeyEnabled(command.jid, command.deviceId, command.enabled);
+  await omemo.setOmemoKeyEnabled(
+      command.jid, command.deviceId, command.enabled);
 
   await performGetOmemoFingerprints(
     GetConversationOmemoFingerprintsCommand(jid: command.jid),
@@ -667,16 +710,18 @@ Future<void> performEnableOmemoKey(SetOmemoDeviceEnabledCommand command, { dynam
   );
 }
 
-Future<void> performRecreateSessions(RecreateSessionsCommand command, { dynamic extra }) async {
+Future<void> performRecreateSessions(RecreateSessionsCommand command,
+    {dynamic extra}) async {
   await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
 
   final conn = GetIt.I.get<XmppConnection>();
   await conn.getManagerById<BaseOmemoManager>(omemoManager)!.sendOmemoHeartbeat(
-    command.jid,
-  );
+        command.jid,
+      );
 }
 
-Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command, { dynamic extra }) async {
+Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command,
+    {dynamic extra}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   await cs.createOrUpdateConversation(
@@ -690,7 +735,9 @@ Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command, { dynamic ex
   );
 }
 
-Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand command, { dynamic extra }) async {
+Future<void> performGetOwnOmemoFingerprints(
+    GetOwnOmemoFingerprintsCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
   final os = GetIt.I.get<OmemoService>();
   final xs = GetIt.I.get<XmppService>();
@@ -707,18 +754,23 @@ Future<void> performGetOwnOmemoFingerprints(GetOwnOmemoFingerprintsCommand comma
   );
 }
 
-Future<void> performRemoveOwnDevice(RemoveOwnDeviceCommand command, { dynamic extra }) async {
-  await GetIt.I.get<XmppConnection>()
-    .getManagerById<BaseOmemoManager>(omemoManager)!
-    .deleteDevice(command.deviceId);
+Future<void> performRemoveOwnDevice(RemoveOwnDeviceCommand command,
+    {dynamic extra}) async {
+  await GetIt.I
+      .get<XmppConnection>()
+      .getManagerById<BaseOmemoManager>(omemoManager)!
+      .deleteDevice(command.deviceId);
 }
 
-Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dynamic extra }) async {
+Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
-  final jid = GetIt.I.get<XmppConnection>()
-    .getConnectionSettings()
-    .jid.toBare()
-    .toString();
+  final jid = GetIt.I
+      .get<XmppConnection>()
+      .getConnectionSettings()
+      .jid
+      .toBare()
+      .toString();
   final device = await GetIt.I.get<OmemoService>().regenerateDevice(jid);
 
   sendEvent(
@@ -727,28 +779,32 @@ Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command, { dy
   );
 }
 
-Future<void> performMessageRetraction(RetractMessageCommentCommand command, { dynamic extra }) async {
-  await GetIt.I.get<MessageService>().retractMessage( 
-    command.conversationJid,
-    command.originId,
-    '',
-    true,
-  );
+Future<void> performMessageRetraction(RetractMessageCommentCommand command,
+    {dynamic extra}) async {
+  await GetIt.I.get<MessageService>().retractMessage(
+        command.conversationJid,
+        command.originId,
+        '',
+        true,
+      );
 
   // Send the retraction
-  (GetIt.I.get<XmppConnection>().getManagerById(messageManager)! as MessageManager)
-    .sendMessage(
-      MessageDetails(
-        to: command.conversationJid,
-        messageRetraction: MessageRetractionData(
-          command.originId,
-          t.messages.retractedFallback,
-        ),
+  (GetIt.I.get<XmppConnection>().getManagerById(messageManager)!
+          as MessageManager)
+      .sendMessage(
+    MessageDetails(
+      to: command.conversationJid,
+      messageRetraction: MessageRetractionData(
+        command.originId,
+        t.messages.retractedFallback,
       ),
-    );
+    ),
+  );
 }
 
-Future<void> performMarkConversationAsRead(MarkConversationAsReadCommand command, { dynamic extra }) async {
+Future<void> performMarkConversationAsRead(
+    MarkConversationAsReadCommand command,
+    {dynamic extra}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   // Update the database
@@ -766,19 +822,20 @@ Future<void> performMarkConversationAsRead(MarkConversationAsReadCommand command
 
     if (conversation.lastMessage != null) {
       await GetIt.I.get<XmppService>().sendReadMarker(
-        command.conversationJid,
-        conversation.lastMessage!.sid,
-      );
+            command.conversationJid,
+            conversation.lastMessage!.sid,
+          );
     }
   }
 
   // Dismiss notifications for that chat
   await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
-    command.conversationJid,
-  );
+        command.conversationJid,
+      );
 }
 
-Future<void> performMarkMessageAsRead(MarkMessageAsReadCommand command, { dynamic extra }) async {
+Future<void> performMarkMessageAsRead(MarkMessageAsReadCommand command,
+    {dynamic extra}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   final conversation = await cs.createOrUpdateConversation(
@@ -795,16 +852,18 @@ Future<void> performMarkMessageAsRead(MarkMessageAsReadCommand command, { dynami
     sendEvent(ConversationUpdatedEvent(conversation: conversation));
 
     await GetIt.I.get<XmppService>().sendReadMarker(
-      command.conversationJid,
-      command.sid,
-    );
+          command.conversationJid,
+          command.sid,
+        );
   }
 }
 
-Future<void> performAddMessageReaction(AddReactionToMessageCommand command, { dynamic extra }) async {
+Future<void> performAddMessageReaction(AddReactionToMessageCommand command,
+    {dynamic extra}) async {
   final ms = GetIt.I.get<MessageService>();
   final conn = GetIt.I.get<XmppConnection>();
-  final msg = await ms.getMessageById(command.conversationJid, command.messageId);
+  final msg =
+      await ms.getMessageById(command.conversationJid, command.messageId);
   assert(msg != null, 'The message must be found');
 
   // Update the state
@@ -816,33 +875,33 @@ Future<void> performAddMessageReaction(AddReactionToMessageCommand command, { dy
     reactions[i] = reactions[i].copyWith(reactedBySelf: true);
   }
   await ms.updateMessage(msg.id, reactions: reactions);
-  
+
   // Collect all our reactions
-  final ownReactions = reactions
-    .where((r) => r.reactedBySelf)
-    .map((r) => r.emoji)
-    .toList();
+  final ownReactions =
+      reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
   // Send the reaction
   conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-    MessageDetails(
-      to: command.conversationJid,
-      messageReactions: MessageReactions(
-        msg.originId ?? msg.sid,
-        ownReactions,
-      ),
-      requestChatMarkers: false,
-      messageProcessingHints: !msg.containsNoStore ?
-        [MessageProcessingHint.store] :
-        null,
-    ),
-  );
+        MessageDetails(
+          to: command.conversationJid,
+          messageReactions: MessageReactions(
+            msg.originId ?? msg.sid,
+            ownReactions,
+          ),
+          requestChatMarkers: false,
+          messageProcessingHints:
+              !msg.containsNoStore ? [MessageProcessingHint.store] : null,
+        ),
+      );
 }
 
-Future<void> performRemoveMessageReaction(RemoveReactionFromMessageCommand command, { dynamic extra }) async {
+Future<void> performRemoveMessageReaction(
+    RemoveReactionFromMessageCommand command,
+    {dynamic extra}) async {
   final ms = GetIt.I.get<MessageService>();
   final conn = GetIt.I.get<XmppConnection>();
-  final msg = await ms.getMessageById(command.conversationJid, command.messageId);
+  final msg =
+      await ms.getMessageById(command.conversationJid, command.messageId);
   assert(msg != null, 'The message must be found');
 
   // Update the state
@@ -855,39 +914,39 @@ Future<void> performRemoveMessageReaction(RemoveReactionFromMessageCommand comma
     reactions[i] = reactions[i].copyWith(reactedBySelf: false);
   }
   await ms.updateMessage(msg.id, reactions: reactions);
-  
+
   // Collect all our reactions
-  final ownReactions = reactions
-    .where((r) => r.reactedBySelf)
-    .map((r) => r.emoji)
-    .toList();
+  final ownReactions =
+      reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
   // Send the reaction
   conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-    MessageDetails(
-      to: command.conversationJid,
-      messageReactions: MessageReactions(
-        msg.originId ?? msg.sid,
-        ownReactions,
-      ),
-      requestChatMarkers: false,
-      messageProcessingHints: !msg.containsNoStore ?
-        [MessageProcessingHint.store] :
-        null,
-    ),
-  );
+        MessageDetails(
+          to: command.conversationJid,
+          messageReactions: MessageReactions(
+            msg.originId ?? msg.sid,
+            ownReactions,
+          ),
+          requestChatMarkers: false,
+          messageProcessingHints:
+              !msg.containsNoStore ? [MessageProcessingHint.store] : null,
+        ),
+      );
 }
 
-Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command, { dynamic extra }) async {
+Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
+    {dynamic extra}) async {
   await GetIt.I.get<OmemoService>().verifyDevice(
-    command.deviceId,
-    command.jid,
-  );
+        command.deviceId,
+        command.jid,
+      );
 }
 
-Future<void> performImportStickerPack(ImportStickerPackCommand command, { dynamic extra }) async {
+Future<void> performImportStickerPack(ImportStickerPackCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
-  final result = await GetIt.I.get<StickersService>().importFromFile(command.path);
+  final result =
+      await GetIt.I.get<StickersService>().importFromFile(command.path);
   if (result != null) {
     sendEvent(
       StickerPackImportSuccessEvent(
@@ -903,7 +962,8 @@ Future<void> performImportStickerPack(ImportStickerPackCommand command, { dynami
   }
 }
 
-Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) async {
+Future<void> performSendSticker(SendStickerCommand command,
+    {dynamic extra}) async {
   final xs = GetIt.I.get<XmppService>();
   final ss = GetIt.I.get<StickersService>();
 
@@ -921,18 +981,21 @@ Future<void> performSendSticker(SendStickerCommand command, { dynamic extra }) a
   );
 }
 
-Future<void> performRemoveStickerPack(RemoveStickerPackCommand command, { dynamic extra }) async {
+Future<void> performRemoveStickerPack(RemoveStickerPackCommand command,
+    {dynamic extra}) async {
   await GetIt.I.get<StickersService>().removeStickerPack(
-    command.stickerPackId,
-  );
+        command.stickerPackId,
+      );
 }
 
-Future<void> performFetchStickerPack(FetchStickerPackCommand command, { dynamic extra }) async {
+Future<void> performFetchStickerPack(FetchStickerPackCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
-  final result = await GetIt.I.get<XmppConnection>()
-    .getManagerById<StickersManager>(stickersManager)!
-    .fetchStickerPack(JID.fromString(command.jid), command.stickerPackId);
+  final result = await GetIt.I
+      .get<XmppConnection>()
+      .getManagerById<StickersManager>(stickersManager)!
+      .fetchStickerPack(JID.fromString(command.jid), command.stickerPackId);
 
   if (result.isType<PubSubError>()) {
     sendEvent(
@@ -948,22 +1011,25 @@ Future<void> performFetchStickerPack(FetchStickerPackCommand command, { dynamic 
           stickerPack.name,
           stickerPack.summary,
           stickerPack.stickers
-            .map((s) => sticker.Sticker(
-              '',
-              s.metadata.mediaType!,
-              s.metadata.desc!,
-              s.metadata.size!,
-              s.metadata.width,
-              s.metadata.height,
-              s.metadata.hashes,
-              s.sources
-                .whereType<StatelessFileSharingUrlSource>()
-                .map((src) => src.url)
-                .toList(),
-              '',
-              command.stickerPackId,
-              s.suggests,
-            ),).toList(),
+              .map(
+                (s) => sticker.Sticker(
+                  '',
+                  s.metadata.mediaType!,
+                  s.metadata.desc!,
+                  s.metadata.size!,
+                  s.metadata.width,
+                  s.metadata.height,
+                  s.metadata.hashes,
+                  s.sources
+                      .whereType<StatelessFileSharingUrlSource>()
+                      .map((src) => src.url)
+                      .toList(),
+                  '',
+                  command.stickerPackId,
+                  s.suggests,
+                ),
+              )
+              .toList(),
           stickerPack.hashAlgorithm.toName(),
           stickerPack.hashValue,
           stickerPack.restricted,
@@ -975,7 +1041,8 @@ Future<void> performFetchStickerPack(FetchStickerPackCommand command, { dynamic 
   }
 }
 
-Future<void> performStickerPackInstall(InstallStickerPackCommand command, { dynamic extra }) async {
+Future<void> performStickerPackInstall(InstallStickerPackCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final ss = GetIt.I.get<StickersService>();
@@ -995,7 +1062,8 @@ Future<void> performStickerPackInstall(InstallStickerPackCommand command, { dyna
   }
 }
 
-Future<void> performGetBlocklist(GetBlocklistCommand command, { dynamic extra }) async {
+Future<void> performGetBlocklist(GetBlocklistCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final result = await GetIt.I.get<BlocklistService>().getBlocklist();
@@ -1007,14 +1075,15 @@ Future<void> performGetBlocklist(GetBlocklistCommand command, { dynamic extra })
   );
 }
 
-Future<void> performGetPagedMessages(GetPagedMessagesCommand command, { dynamic extra }) async {
+Future<void> performGetPagedMessages(GetPagedMessagesCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
   final result = await GetIt.I.get<MessageService>().getPaginatedMessagesForJid(
-    command.conversationJid,
-    command.olderThan,
-    command.timestamp,
-  );
+        command.conversationJid,
+        command.olderThan,
+        command.timestamp,
+      );
 
   sendEvent(
     PagedMessagesResultEvent(
@@ -1024,14 +1093,16 @@ Future<void> performGetPagedMessages(GetPagedMessagesCommand command, { dynamic 
   );
 }
 
-Future<void> performGetPagedSharedMedia(GetPagedSharedMediaCommand command, { dynamic extra }) async {
+Future<void> performGetPagedSharedMedia(GetPagedSharedMediaCommand command,
+    {dynamic extra}) async {
   final id = extra as String;
 
-  final result = await GetIt.I.get<DatabaseService>().getPaginatedSharedMediaForJid(
-    command.conversationJid,
-    command.olderThan,
-    command.timestamp,
-  );
+  final result =
+      await GetIt.I.get<DatabaseService>().getPaginatedSharedMediaForJid(
+            command.conversationJid,
+            command.olderThan,
+            command.timestamp,
+          );
 
   sendEvent(
     PagedSharedMediaResultEvent(

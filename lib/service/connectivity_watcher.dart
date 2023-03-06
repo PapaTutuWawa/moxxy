@@ -16,7 +16,7 @@ class ConnectivityWatcherService {
 
   /// Lock for accessing _timer
   final Lock _lock = Lock();
-  
+
   Future<void> initialize() async {
     GetIt.I.get<ConnectivityService>().stream.listen(_onConnectivityEvent);
   }
@@ -27,13 +27,13 @@ class ConnectivityWatcherService {
       await _stopTimer();
     }
   }
-  
+
   Future<void> _onTimerElapsed() async {
     await _stopTimer();
     await GetIt.I.get<NotificationsService>().showWarningNotification(
-      'Moxxy',
-      t.errors.connection.connectionTimeout,
-    );
+          'Moxxy',
+          t.errors.connection.connectionTimeout,
+        );
   }
 
   /// Stops the currently running timer, if there is one.
@@ -43,23 +43,26 @@ class ConnectivityWatcherService {
       _timer = null;
     });
   }
-  
+
   /// Starts the timer. If it is already running, it stops the currently running one before
   /// starting the new one.
   Future<void> _startTimer() async {
     await _stopTimer();
     _timer = Timer(const Duration(minutes: 30), _onTimerElapsed);
   }
-  
+
   /// Called when the XMPP connection state changed
-  Future<void> onConnectionStateChanged(XmppConnectionState before, XmppConnectionState current) async {
-    if (before == XmppConnectionState.connected && current != XmppConnectionState.connected) {
+  Future<void> onConnectionStateChanged(
+      XmppConnectionState before, XmppConnectionState current) async {
+    if (before == XmppConnectionState.connected &&
+        current != XmppConnectionState.connected) {
       // We somehow lost connection
       if (await GetIt.I.get<ConnectivityService>().hasConnection()) {
         _log.finest('Lost connection to server. Starting warning timer...');
         await _startTimer();
       } else {
-        _log.finest('Lost connection to server but no network connectivity available. Stopping warning timer...');
+        _log.finest(
+            'Lost connection to server but no network connectivity available. Stopping warning timer...');
         await _stopTimer();
       }
     } else if (current == XmppConnectionState.connected) {

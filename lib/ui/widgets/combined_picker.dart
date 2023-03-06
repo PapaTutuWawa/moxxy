@@ -19,7 +19,7 @@ class CombinedPicker extends StatelessWidget {
 
   /// The controlling tab controller
   final TabController tabController;
-  
+
   /// Called when an emoji has been tapped from the list.
   final void Function(Emoji) onEmojiTapped;
 
@@ -28,7 +28,7 @@ class CombinedPicker extends StatelessWidget {
 
   /// Called when a sticker has been tapped
   final void Function(Sticker, StickerPack) onStickerTapped;
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
@@ -50,7 +50,6 @@ class CombinedPicker extends StatelessWidget {
                     Tab(icon: Icon(PhosphorIcons.stickerBold)),
                   ],
                 ),
-
                 Expanded(
                   child: TabBarView(
                     controller: tabController,

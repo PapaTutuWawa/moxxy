@@ -29,7 +29,8 @@ class VideoThumbnail extends StatelessWidget {
             File(snapshot.data!),
             fit: BoxFit.cover,
           );
-        } else if (snapshot.hasError || snapshot.hasData && snapshot.data == null) {
+        } else if (snapshot.hasError ||
+            snapshot.hasData && snapshot.data == null) {
           widget = SizedBox(
             width: size.width,
             height: size.height,

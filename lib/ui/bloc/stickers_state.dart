@@ -11,7 +11,9 @@ class StickerKey {
 
   @override
   bool operator ==(Object other) {
-    return other is StickerKey && other.packId == packId && other.stickerHashKey == stickerHashKey;
+    return other is StickerKey &&
+        other.packId == packId &&
+        other.stickerHashKey == stickerHashKey;
   }
 }
 

@@ -9,15 +9,15 @@ const TextStyle _labelStyle = TextStyle(
 );
 
 class ServerInfoPage extends StatelessWidget {
-  const ServerInfoPage({ super.key });
- 
+  const ServerInfoPage({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const ServerInfoPage(),
-    settings: const RouteSettings(
-      name: serverInfoRoute,
-    ),
-  );
-  
+        builder: (_) => const ServerInfoPage(),
+        settings: const RouteSettings(
+          name: serverInfoRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

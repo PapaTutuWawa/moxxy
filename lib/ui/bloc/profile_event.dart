@@ -5,14 +5,12 @@ abstract class ProfileEvent {}
 /// Triggered when a navigation to a profile page is requested
 class ProfilePageRequestedEvent extends ProfileEvent {
   ProfilePageRequestedEvent(
-    this.isSelfProfile,
-    {
-      this.conversation,
-      this.jid,
-      this.avatarUrl,
-      this.displayName,
-    }
-  );
+    this.isSelfProfile, {
+    this.conversation,
+    this.jid,
+    this.avatarUrl,
+    this.displayName,
+  });
   final bool isSelfProfile;
   final Conversation? conversation;
   final String? jid;

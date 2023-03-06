@@ -33,7 +33,8 @@ class PreferencesState with _$PreferencesState {
     @Default(true) bool isStickersNodePublic,
     @Default(false) bool showDebugMenu,
   }) = _PreferencesState;
-  
+
   // JSON serialization
-  factory PreferencesState.fromJson(Map<String, dynamic> json) => _$PreferencesStateFromJson(json);
+  factory PreferencesState.fromJson(Map<String, dynamic> json) =>
+      _$PreferencesStateFromJson(json);
 }

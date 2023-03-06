@@ -43,24 +43,40 @@ int errorTypeFromException(dynamic exception) {
 }
 
 String errorToTranslatableString(int error) {
-  assert(error != noError, 'Calling errorToTranslatableString with noError makes no sense');
+  assert(error != noError,
+      'Calling errorToTranslatableString with noError makes no sense');
 
   switch (error) {
-    case messageNotEncryptedForDevice: return t.errors.omemo.notEncryptedForDevice;
-    case messageInvalidHMAC: return t.errors.omemo.invalidHmac;
-    case messageNoDecryptionKey: return t.errors.omemo.noDecryptionKey;
-    case messageInvalidAffixElements: return t.errors.omemo.messageInvalidAfixElement;
-    case fileUploadFailedError: return t.errors.message.fileUploadFailed;
-    case messageContactDoesNotSupportOmemo: return t.errors.message.contactDoesntSupportOmemo;
-    case fileDownloadFailedError: return t.errors.message.fileDownloadFailed;
-    case messageServiceUnavailable: return t.errors.message.serviceUnavailable;
-    case messageRemoteServerTimeout: return t.errors.message.remoteServerTimeout;
-    case messageRemoteServerNotFound: return t.errors.message.remoteServerNotFound;
-    case messageFailedToEncrypt: return t.errors.message.failedToEncrypt;
-    case messageFailedToDecryptFile: return t.errors.message.failedToDecryptFile;
-    case messageChatEncryptedButFileNot: return t.errors.message.fileNotEncrypted;
-    case messageFailedToEncryptFile: return t.errors.message.failedToEncryptFile;
-    case unspecifiedError: return t.errors.message.unspecified;
+    case messageNotEncryptedForDevice:
+      return t.errors.omemo.notEncryptedForDevice;
+    case messageInvalidHMAC:
+      return t.errors.omemo.invalidHmac;
+    case messageNoDecryptionKey:
+      return t.errors.omemo.noDecryptionKey;
+    case messageInvalidAffixElements:
+      return t.errors.omemo.messageInvalidAfixElement;
+    case fileUploadFailedError:
+      return t.errors.message.fileUploadFailed;
+    case messageContactDoesNotSupportOmemo:
+      return t.errors.message.contactDoesntSupportOmemo;
+    case fileDownloadFailedError:
+      return t.errors.message.fileDownloadFailed;
+    case messageServiceUnavailable:
+      return t.errors.message.serviceUnavailable;
+    case messageRemoteServerTimeout:
+      return t.errors.message.remoteServerTimeout;
+    case messageRemoteServerNotFound:
+      return t.errors.message.remoteServerNotFound;
+    case messageFailedToEncrypt:
+      return t.errors.message.failedToEncrypt;
+    case messageFailedToDecryptFile:
+      return t.errors.message.failedToDecryptFile;
+    case messageChatEncryptedButFileNot:
+      return t.errors.message.fileNotEncrypted;
+    case messageFailedToEncryptFile:
+      return t.errors.message.failedToEncryptFile;
+    case unspecifiedError:
+      return t.errors.message.unspecified;
   }
 
   assert(false, 'Invalid error code $error used');

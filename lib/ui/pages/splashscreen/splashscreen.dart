@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Splashscreen extends StatelessWidget {
-  const Splashscreen({ super.key });
+  const Splashscreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -9,7 +9,8 @@ class Splashscreen extends StatelessWidget {
       body: Center(
         child: Image.asset(
           'assets/images/logo.png',
-          width: 200, height: 200,
+          width: 200,
+          height: 200,
         ),
       ),
     );

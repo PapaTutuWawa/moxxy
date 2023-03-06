@@ -21,7 +21,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<MuteStateSetEvent>(_onMuteStateSet);
   }
 
-  Future<void> _onProfileRequested(ProfilePageRequestedEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onProfileRequested(
+      ProfilePageRequestedEvent event, Emitter<ProfileState> emit) async {
     if (event.isSelfProfile) {
       emit(
         state.copyWith(
@@ -41,21 +42,24 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(
-          profileRoute,
-        ),
-      ),
-    );
+          PushedNamedEvent(
+            const NavigationDestination(
+              profileRoute,
+            ),
+          ),
+        );
   }
 
-  Future<void> _onConversationUpdated(ConversationUpdatedEvent event, Emitter<ProfileState> emit) async {
-    if (state.conversation == null || state.conversation!.jid != event.conversation.jid) return;
+  Future<void> _onConversationUpdated(
+      ConversationUpdatedEvent event, Emitter<ProfileState> emit) async {
+    if (state.conversation == null ||
+        state.conversation!.jid != event.conversation.jid) return;
 
     emit(state.copyWith(conversation: event.conversation));
   }
 
-  Future<void> _onAvatarSet(AvatarSetEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onAvatarSet(
+      AvatarSetEvent event, Emitter<ProfileState> emit) async {
     emit(
       state.copyWith(
         avatarUrl: event.path,
@@ -63,17 +67,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     );
 
     GetIt.I.get<ConversationsBloc>().add(AvatarChangedEvent(event.path));
-    
+
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetAvatarCommand(
-        path: event.path,
-        hash: event.hash,
-      ),
-      awaitable: false,
-    );
+          SetAvatarCommand(
+            path: event.path,
+            hash: event.hash,
+          ),
+          awaitable: false,
+        );
   }
 
-  Future<void> _onSetSubscriptionState(SetSubscriptionStateEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onSetSubscriptionState(
+      SetSubscriptionStateEvent event, Emitter<ProfileState> emit) async {
     emit(
       state.copyWith(
         conversation: state.conversation!.copyWith(
@@ -85,12 +90,13 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     );
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
-      awaitable: false,
-    );
+          SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
+          awaitable: false,
+        );
   }
 
-  Future<void> _onMuteStateSet(MuteStateSetEvent event, Emitter<ProfileState> emit) async {
+  Future<void> _onMuteStateSet(
+      MuteStateSetEvent event, Emitter<ProfileState> emit) async {
     emit(
       state.copyWith(
         conversation: state.conversation!.copyWith(
@@ -99,8 +105,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ),
     );
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetConversationMuteStatusCommand(jid: event.jid, muted: event.muted),
-      awaitable: false,
-    );
+          SetConversationMuteStatusCommand(jid: event.jid, muted: event.muted),
+          awaitable: false,
+        );
   }
 }

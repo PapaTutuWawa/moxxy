@@ -10,15 +10,15 @@ import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class PrivacyPage extends StatelessWidget {
-  const PrivacyPage({ super.key });
+  const PrivacyPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const PrivacyPage(),
-    settings: const RouteSettings(
-      name: privacyRoute,
-    ),
-  );
-  
+        builder: (_) => const PrivacyPage(),
+        settings: const RouteSettings(
+          name: privacyRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +27,6 @@ class PrivacyPage extends StatelessWidget {
         builder: (context, state) => ListView(
           children: [
             SectionTitle(t.pages.settings.privacy.generalSection),
-
             SettingsRow(
               title: t.pages.settings.privacy.showContactRequests,
               description: t.pages.settings.privacy.showContactRequestsSubtext,
@@ -35,24 +34,25 @@ class PrivacyPage extends StatelessWidget {
                 value: state.showSubscriptionRequests,
                 onChanged: (value) {
                   context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(showSubscriptionRequests: value),
-                    ),
-                  );
+                        PreferencesChangedEvent(
+                          state.copyWith(showSubscriptionRequests: value),
+                        ),
+                      );
                 },
               ),
             ),
             SettingsRow(
               title: t.pages.settings.privacy.profilePictureVisibility,
-              description: t.pages.settings.privacy.profilePictureVisibilitSubtext,
+              description:
+                  t.pages.settings.privacy.profilePictureVisibilitSubtext,
               suffix: Switch(
                 value: state.isAvatarPublic,
                 onChanged: (value) {
                   context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(isAvatarPublic: value),
-                    ),
-                  );
+                        PreferencesChangedEvent(
+                          state.copyWith(isAvatarPublic: value),
+                        ),
+                      );
                 },
               ),
             ),
@@ -63,14 +63,13 @@ class PrivacyPage extends StatelessWidget {
                 value: state.isStickersNodePublic,
                 onChanged: (value) {
                   context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(isStickersNodePublic: value),
-                    ),
-                  );
+                        PreferencesChangedEvent(
+                          state.copyWith(isStickersNodePublic: value),
+                        ),
+                      );
                 },
               ),
             ),
-
             SectionTitle(t.pages.settings.privacy.conversationsSection),
             SettingsRow(
               title: t.pages.settings.privacy.sendChatMarkers,
@@ -79,10 +78,10 @@ class PrivacyPage extends StatelessWidget {
                 value: state.sendChatMarkers,
                 onChanged: (value) {
                   context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(sendChatMarkers: value),
-                    ),
-                  );
+                        PreferencesChangedEvent(
+                          state.copyWith(sendChatMarkers: value),
+                        ),
+                      );
                 },
               ),
             ),
@@ -93,14 +92,13 @@ class PrivacyPage extends StatelessWidget {
                 value: state.sendChatStates,
                 onChanged: (value) {
                   context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(sendChatStates: value),
-                    ),
-                  );
+                        PreferencesChangedEvent(
+                          state.copyWith(sendChatStates: value),
+                        ),
+                      );
                 },
               ),
             ),
-
             SectionTitle(t.pages.settings.privacy.redirectsSection),
             RedirectSettingsTile(
               'Youtube',
@@ -108,7 +106,7 @@ class PrivacyPage extends StatelessWidget {
               (state) => state.youtubeRedirect,
               (state, value) => state.copyWith(youtubeRedirect: value),
               (state) => state.enableYoutubeRedirect,
-              (state, value) => state.copyWith(enableYoutubeRedirect: value), 
+              (state, value) => state.copyWith(enableYoutubeRedirect: value),
             ),
             RedirectSettingsTile(
               'Twitter',
@@ -116,7 +114,7 @@ class PrivacyPage extends StatelessWidget {
               (state) => state.twitterRedirect,
               (state, value) => state.copyWith(twitterRedirect: value),
               (state) => state.enableTwitterRedirect,
-              (state, value) => state.copyWith(enableTwitterRedirect: value), 
+              (state, value) => state.copyWith(enableTwitterRedirect: value),
             ),
           ],
         ),

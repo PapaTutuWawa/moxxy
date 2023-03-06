@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 class TopbarTitleText extends StatelessWidget {
-  const TopbarTitleText(this.text, { super.key });
+  const TopbarTitleText(this.text, {super.key});
   final String text;
 
   static const double fontSize = 20;
-  
+
   @override
   Widget build(BuildContext context) {
     return Text(
@@ -21,13 +21,11 @@ class TopbarAvatarAndName extends StatelessWidget {
   const TopbarAvatarAndName(
     this.title,
     this.avatar,
-    this.onTap,
-    {
-      this.showBackButton = true,
-      this.extra = const [],
-      super.key,
-    }
-  );
+    this.onTap, {
+    this.showBackButton = true,
+    this.extra = const [],
+    super.key,
+  });
   final Widget title;
   final Widget avatar;
   final List<Widget> extra;
@@ -63,19 +61,20 @@ class TopbarAvatarAndName extends StatelessWidget {
 
 /// Provides a Signal-like topbar without borders or anything else
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
-  const BorderlessTopbar(this.child, { super.key })
-    : preferredSize = const Size.fromHeight(60);
+  const BorderlessTopbar(this.child, {super.key})
+      : preferredSize = const Size.fromHeight(60);
 
-  factory BorderlessTopbar.justBackButton({ Key? key }) {
+  factory BorderlessTopbar.justBackButton({Key? key}) {
     return BorderlessTopbar(
-      Row(children: const [ BackButton() ]),
+      Row(children: const [BackButton()]),
       key: key,
     );
   }
 
   /// A simple borderless topbar that displays just the back button (if wanted) and a
   /// Text() title.
-  factory BorderlessTopbar.simple(String title, { List<Widget> extra = const [], bool showBackButton = true, Key? key }) {
+  factory BorderlessTopbar.simple(String title,
+      {List<Widget> extra = const [], bool showBackButton = true, Key? key}) {
     return BorderlessTopbar(
       Row(
         children: [
@@ -100,7 +99,8 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   /// Displays a clickable avatar and title and a back button, if wanted
-  factory BorderlessTopbar.avatarAndName(TopbarAvatarAndName child, { Key? key }) {
+  factory BorderlessTopbar.avatarAndName(TopbarAvatarAndName child,
+      {Key? key}) {
     return BorderlessTopbar(child, key: key);
   }
 
@@ -108,7 +108,7 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   final Size preferredSize;
-  
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(

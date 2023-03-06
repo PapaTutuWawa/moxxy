@@ -3,8 +3,8 @@ import 'package:moxxmpp/moxxmpp.dart';
 
 @immutable
 class EncryptionResult {
-
-  const EncryptionResult(this.key, this.iv, this.plaintextHashes, this.ciphertextHashes);
+  const EncryptionResult(
+      this.key, this.iv, this.plaintextHashes, this.ciphertextHashes);
   final List<int> key;
   final List<int> iv;
 
@@ -14,7 +14,6 @@ class EncryptionResult {
 
 @immutable
 class EncryptionRequest {
-
   const EncryptionRequest(this.source, this.dest, this.encryption);
   final String source;
   final String dest;
@@ -23,7 +22,6 @@ class EncryptionRequest {
 
 @immutable
 class DecryptionResult {
-
   const DecryptionResult(
     this.decryptionOkay,
     this.plaintextOkay,
@@ -36,7 +34,6 @@ class DecryptionResult {
 
 @immutable
 class DecryptionRequest {
-
   const DecryptionRequest(
     this.source,
     this.dest,
@@ -57,7 +54,6 @@ class DecryptionRequest {
 
 @immutable
 class HashRequest {
-
   const HashRequest(this.path, this.hash);
   final String path;
   final HashFunction hash;

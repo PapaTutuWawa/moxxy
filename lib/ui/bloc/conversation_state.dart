@@ -5,6 +5,7 @@ enum SendButtonState {
   send,
   cancelCorrection,
 }
+
 const defaultSendButtonState = SendButtonState.multi;
 
 @freezed

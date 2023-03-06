@@ -34,10 +34,11 @@ void setupEventHandler() {
       EventTypeMatcher<ServiceReadyEvent>(onServiceReady),
       EventTypeMatcher<MessageNotificationTappedEvent>(onNotificationTappend),
       EventTypeMatcher<StickerPackAddedEvent>(onStickerPackAdded),
-  ]);
+    ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
-  GetIt.I.registerSingleton<SynchronizedQueue<Map<String, dynamic>?>>(SynchronizedQueue<Map<String, dynamic>?>(handleIsolateEvent));
+  GetIt.I.registerSingleton<SynchronizedQueue<Map<String, dynamic>?>>(
+      SynchronizedQueue<Map<String, dynamic>?>(handleIsolateEvent));
 }
 
 Future<void> receiveIsolateEvent(Map<String, dynamic>? json) async {
@@ -50,7 +51,7 @@ Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
     log.warning('Received null from the background service. Ignoring...');
     return;
   }
-  
+
   // NOTE: This feels dirty, but we gotta do it
   final event = getEventFromJson(json['data']! as Map<String, dynamic>)!;
   final data = DataWrapper<BackgroundEvent>(
@@ -72,92 +73,101 @@ Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
   log.warning('Failed to match event');
 }
 
-Future<void> onConversationAdded(ConversationAddedEvent event, { dynamic extra }) async {
+Future<void> onConversationAdded(ConversationAddedEvent event,
+    {dynamic extra}) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
-    conversations.ConversationsAddedEvent(event.conversation),
-  );
+        conversations.ConversationsAddedEvent(event.conversation),
+      );
 }
 
-Future<void> onConversationUpdated(ConversationUpdatedEvent event, { dynamic extra }) async {
+Future<void> onConversationUpdated(ConversationUpdatedEvent event,
+    {dynamic extra}) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
-    conversations.ConversationsUpdatedEvent(event.conversation),
-  );
+        conversations.ConversationsUpdatedEvent(event.conversation),
+      );
   GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.ConversationUpdatedEvent(event.conversation),
-  );
+        conversation.ConversationUpdatedEvent(event.conversation),
+      );
   GetIt.I.get<profile.ProfileBloc>().add(
-    profile.ConversationUpdatedEvent(event.conversation),
-  );
+        profile.ConversationUpdatedEvent(event.conversation),
+      );
 }
 
-Future<void> onMessageAdded(MessageAddedEvent event, { dynamic extra }) async {
-  await BidirectionalConversationController.currentController?.onMessageReceived(
+Future<void> onMessageAdded(MessageAddedEvent event, {dynamic extra}) async {
+  await BidirectionalConversationController.currentController
+      ?.onMessageReceived(
     event.message,
   );
 }
 
-Future<void> onMessageUpdated(MessageUpdatedEvent event, { dynamic extra }) async {
+Future<void> onMessageUpdated(MessageUpdatedEvent event,
+    {dynamic extra}) async {
   BidirectionalConversationController.currentController?.onMessageUpdated(
     event.message,
   );
 }
 
-Future<void> onBlocklistPushed(BlocklistPushEvent event, { dynamic extra }) async {
+Future<void> onBlocklistPushed(BlocklistPushEvent event,
+    {dynamic extra}) async {
   GetIt.I.get<blocklist.BlocklistBloc>().add(
-    blocklist.BlocklistPushedEvent(
-      event.added,
-      event.removed,
-    ),
-  );
+        blocklist.BlocklistPushedEvent(
+          event.added,
+          event.removed,
+        ),
+      );
 }
 
-Future<void> onRosterPush(RosterDiffEvent event, { dynamic extra }) async {
+Future<void> onRosterPush(RosterDiffEvent event, {dynamic extra}) async {
   GetIt.I.get<new_conversation.NewConversationBloc>().add(
-    new_conversation.RosterPushedEvent(
-      event.added,
-      event.modified,
-      event.removed,
-    ),
-  );
+        new_conversation.RosterPushedEvent(
+          event.added,
+          event.modified,
+          event.removed,
+        ),
+      );
 }
 
-Future<void> onProgress(ProgressEvent event, { dynamic extra }) async {
+Future<void> onProgress(ProgressEvent event, {dynamic extra}) async {
   GetIt.I.get<UIProgressService>().onProgress(event.id, event.progress);
 }
 
-Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event, { dynamic extra }) async {
+Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event,
+    {dynamic extra}) async {
   // Evict the profile picture from the cache
   await FileImage(File(event.path)).evict();
 
   GetIt.I.get<conversations.ConversationsBloc>().add(
-    conversations.AvatarChangedEvent(event.path),
-  );
+        conversations.AvatarChangedEvent(event.path),
+      );
   GetIt.I.get<profile.ProfileBloc>().add(
-    profile.AvatarSetEvent(event.path, event.hash),
-  );
+        profile.AvatarSetEvent(event.path, event.hash),
+      );
 }
 
-Future<void> onServiceReady(ServiceReadyEvent event, { dynamic extra }) async {
+Future<void> onServiceReady(ServiceReadyEvent event, {dynamic extra}) async {
   await MoxplatformPlugin.handler.getDataSender().sendData(
-    PerformPreStartCommand(
-      systemLocaleCode: WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
-    ),
-    awaitable: false,
-  );
+        PerformPreStartCommand(
+          systemLocaleCode:
+              WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+        ),
+        awaitable: false,
+      );
 }
 
-Future<void> onNotificationTappend(MessageNotificationTappedEvent event, { dynamic extra }) async {
+Future<void> onNotificationTappend(MessageNotificationTappedEvent event,
+    {dynamic extra}) async {
   GetIt.I.get<conversation.ConversationBloc>().add(
-    conversation.RequestedConversationEvent(
-      event.conversationJid,
-      event.title,
-      event.avatarUrl,
-    ),
-  );
+        conversation.RequestedConversationEvent(
+          event.conversationJid,
+          event.title,
+          event.avatarUrl,
+        ),
+      );
 }
 
-Future<void> onStickerPackAdded(StickerPackAddedEvent event, { dynamic extra }) async {
+Future<void> onStickerPackAdded(StickerPackAddedEvent event,
+    {dynamic extra}) async {
   GetIt.I.get<stickers.StickersBloc>().add(
-    stickers.StickerPackAddedEvent(event.stickerPack),
-  );
+        stickers.StickerPackAddedEvent(event.stickerPack),
+      );
 }

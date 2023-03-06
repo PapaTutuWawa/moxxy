@@ -23,7 +23,8 @@ const sharedMediaContainerDimension = 75.0;
 
 /// A widget to show a message that was sent within a chat or is about to be sent.
 class SharedMediaContainer extends StatelessWidget {
-  const SharedMediaContainer(this.child, {
+  const SharedMediaContainer(
+    this.child, {
     required this.color,
     this.onTap,
     this.size = sharedMediaContainerDimension,
@@ -43,7 +44,7 @@ class SharedMediaContainer extends StatelessWidget {
       width: size,
       child: AspectRatio(
         aspectRatio: 1,
-        child: child, 
+        child: child,
       ),
     );
 
@@ -51,12 +52,12 @@ class SharedMediaContainer extends StatelessWidget {
       borderRadius: BorderRadius.circular(borderRadius),
       child: Material(
         color: color,
-        child: onTap != null ?
-          InkWell(
-            onTap: onTap,
-            child: childWidget,
-          ) :
-          childWidget,
+        child: onTap != null
+            ? InkWell(
+                onTap: onTap,
+                child: childWidget,
+              )
+            : childWidget,
       ),
     );
   }

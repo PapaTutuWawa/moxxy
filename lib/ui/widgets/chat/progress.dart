@@ -8,7 +8,7 @@ import 'package:moxxyv2/ui/service/progress.dart';
 //       we, for example, use blurhash, then we compute the image from the blurhash on every
 //       update.
 class ProgressWidget extends StatefulWidget {
-  const ProgressWidget({ required this.id, super.key });
+  const ProgressWidget({required this.id, super.key});
   final int id;
 
   @override
@@ -17,7 +17,7 @@ class ProgressWidget extends StatefulWidget {
 }
 
 class ProgressWidgetState extends State<ProgressWidget> {
-  ProgressWidgetState({ required this.id });
+  ProgressWidgetState({required this.id});
   final int id;
 
   double? _progress;
@@ -27,7 +27,7 @@ class ProgressWidgetState extends State<ProgressWidget> {
       _progress = progress;
     });
   }
-  
+
   @override
   void initState() {
     // Register against the DownloadService
@@ -43,7 +43,7 @@ class ProgressWidgetState extends State<ProgressWidget> {
 
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(

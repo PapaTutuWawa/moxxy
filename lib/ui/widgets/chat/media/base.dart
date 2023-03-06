@@ -9,14 +9,12 @@ class MediaBaseChatWidget extends StatelessWidget {
   const MediaBaseChatWidget(
     this.background,
     this.bottom,
-    this.radius,
-    {
-      this.onTap,
-      this.extra,
-      this.gradient = true,
-      super.key,
-    }
-  );
+    this.radius, {
+    this.onTap,
+    this.extra,
+    this.gradient = true,
+    super.key,
+  });
   final Widget background;
   final Widget? extra;
   final MessageBubbleBottom bottom;
@@ -33,13 +31,8 @@ class MediaBaseChatWidget extends StatelessWidget {
           borderRadius: radius,
           child: background,
         ),
-
-        if (gradient)
-          BottomGradient(radius),
-
-        if (extra != null)
-          extra!,
-
+        if (gradient) BottomGradient(radius),
+        if (extra != null) extra!,
         Positioned(
           bottom: 0,
           left: 0,
@@ -53,12 +46,12 @@ class MediaBaseChatWidget extends StatelessWidget {
     );
 
     return IntrinsicWidth(
-      child: onTap != null ?
-        InkWell(
-          onTap: onTap,
-          child: content,
-        ) :
-        content,
+      child: onTap != null
+          ? InkWell(
+              onTap: onTap,
+              child: content,
+            )
+          : content,
     );
   }
 }

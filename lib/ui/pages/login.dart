@@ -8,16 +8,17 @@ import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class Login extends StatelessWidget {
-  const Login({ super.key });
- 
+  const Login({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const Login(),
-    settings: const RouteSettings(
-      name: loginRoute,
-    ),
-  );
-  
-  @override Widget build(BuildContext context) {
+        builder: (_) => const Login(),
+        settings: const RouteSettings(
+          name: loginRoute,
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (BuildContext context, LoginState state) => WillPopScope(
         onWillPop: () async => !state.working,
@@ -32,7 +33,9 @@ class Login extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                        .add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
                   errorText: state.jidState.error,
@@ -42,11 +45,15 @@ class Login extends StatelessWidget {
                   borderColor: primaryColor,
                   borderWidth: 1,
                   enableIMEFeatures: false,
-                  onChanged: (value) => context.read<LoginBloc>().add(LoginJidChangedEvent(value)),
+                  onChanged: (value) => context
+                      .read<LoginBloc>()
+                      .add(LoginJidChangedEvent(value)),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                        .add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   // ignore: avoid_dynamic_calls
                   errorText: state.passwordState.error,
@@ -54,9 +61,13 @@ class Login extends StatelessWidget {
                   suffixIcon: Padding(
                     padding: const EdgeInsetsDirectional.only(end: 8),
                     child: InkWell(
-                      onTap: () => context.read<LoginBloc>().add(LoginPasswordVisibilityToggledEvent()),
+                      onTap: () => context
+                          .read<LoginBloc>()
+                          .add(LoginPasswordVisibilityToggledEvent()),
                       child: Icon(
-                        state.passwordVisible ? Icons.visibility : Icons.visibility_off,
+                        state.passwordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                     ),
                   ),
@@ -66,11 +77,15 @@ class Login extends StatelessWidget {
                   borderColor: primaryColor,
                   borderWidth: 1,
                   enableIMEFeatures: false,
-                  onChanged: (value) => context.read<LoginBloc>().add(LoginPasswordChangedEvent(value)),
+                  onChanged: (value) => context
+                      .read<LoginBloc>()
+                      .add(LoginPasswordChangedEvent(value)),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                        .add(const EdgeInsets.only(top: 8)),
                 child: ExpansionTile(
                   title: Text(t.pages.login.advancedOptions),
                   children: [
@@ -88,14 +103,18 @@ class Login extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                        .add(const EdgeInsets.only(top: 8)),
                 child: Row(
                   children: [
                     Expanded(
                       child: RoundedButton(
                         cornerRadius: 32,
                         enabled: !state.working,
-                        onTap: () => context.read<LoginBloc>().add(LoginSubmittedEvent()),
+                        onTap: () => context
+                            .read<LoginBloc>()
+                            .add(LoginSubmittedEvent()),
                         child: const Text('Login'),
                       ),
                     )

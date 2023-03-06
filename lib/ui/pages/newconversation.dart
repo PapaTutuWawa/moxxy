@@ -11,15 +11,15 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class NewConversationPage extends StatelessWidget {
-  const NewConversationPage({ super.key });
- 
+  const NewConversationPage({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const NewConversationPage(),
-    settings: const RouteSettings(
-      name: newConversationRoute,
-    ),
-  );
-  
+        builder: (_) => const NewConversationPage(),
+        settings: const RouteSettings(
+          name: newConversationRoute,
+        ),
+      );
+
   Widget _renderIconEntry(IconData icon, String text, void Function() onTap) {
     return InkWell(
       onTap: onTap,
@@ -46,32 +46,34 @@ class NewConversationPage extends StatelessWidget {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
     return Scaffold(
       appBar: BorderlessTopbar.simple(t.pages.newconversation.title),
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
-        builder: (BuildContext context, NewConversationState state) => ListView.builder(
+        builder: (BuildContext context, NewConversationState state) =>
+            ListView.builder(
           itemCount: state.roster.length + 1,
           itemBuilder: (context, index) {
-            switch(index) {
-              case 0: return _renderIconEntry(
-                Icons.person_add,
-                t.pages.newconversation.addContact,
-                () => Navigator.pushNamed(context, addContactRoute),
-              );
+            switch (index) {
+              case 0:
+                return _renderIconEntry(
+                  Icons.person_add,
+                  t.pages.newconversation.addContact,
+                  () => Navigator.pushNamed(context, addContactRoute),
+                );
               default:
                 final item = state.roster[index - 1];
                 return Dismissible(
                   key: ValueKey('roster;${item.jid}'),
-                  direction: item.pseudoRosterItem ?
-                    DismissDirection.none :
-                    DismissDirection.horizontal,
+                  direction: item.pseudoRosterItem
+                      ? DismissDirection.none
+                      : DismissDirection.horizontal,
                   onDismissed: (_) => context.read<NewConversationBloc>().add(
-                    NewConversationRosterItemRemovedEvent(item.jid),
-                  ),
+                        NewConversationRosterItemRemovedEvent(item.jid),
+                      ),
                   background: ColoredBox(
                     color: Colors.red,
                     child: Padding(
@@ -87,12 +89,12 @@ class NewConversationPage extends StatelessWidget {
                   ),
                   child: InkWell(
                     onTap: () => context.read<NewConversationBloc>().add(
-                      NewConversationAddedEvent(
-                        item.jid,
-                        item.title,
-                        item.avatarUrl,
-                      ),
-                    ),
+                          NewConversationAddedEvent(
+                            item.jid,
+                            item.title,
+                            item.avatarUrl,
+                          ),
+                        ),
                     child: ConversationsListRow(
                       maxTextWidth,
                       Conversation(
@@ -127,9 +129,8 @@ class NewConversationPage extends StatelessWidget {
                       ),
                       false,
                       showTimestamp: false,
-                      titleSuffixIcon: item.pseudoRosterItem ?
-                        Icons.smartphone :
-                        null,
+                      titleSuffixIcon:
+                          item.pseudoRosterItem ? Icons.smartphone : null,
                     ),
                   ),
                 );

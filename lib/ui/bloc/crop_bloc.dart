@@ -22,7 +22,8 @@ class CropBloc extends Bloc<CropEvent, CropState> {
   late Completer<Uint8List?> _completer;
   final GlobalKey cropKey = GlobalKey();
 
-  Future<void> _onImageCropped(ImageCroppedEvent event, Emitter<CropState> emit) async {
+  Future<void> _onImageCropped(
+      ImageCroppedEvent event, Emitter<CropState> emit) async {
     emit(
       state.copyWith(
         isWorking: true,
@@ -39,7 +40,8 @@ class CropBloc extends Bloc<CropEvent, CropState> {
     await _onImageReset(ResetImageEvent(), emit);
   }
 
-  Future<void> _onImageReset(ResetImageEvent event, Emitter<CropState> emit) async {
+  Future<void> _onImageReset(
+      ResetImageEvent event, Emitter<CropState> emit) async {
     emit(
       state.copyWith(
         image: null,
@@ -55,7 +57,7 @@ class CropBloc extends Bloc<CropEvent, CropState> {
       ),
     );
   }
-  
+
   Future<void> _performCropping(String path) async {
     final file = File(path);
     if (!file.existsSync()) _completer.complete(null);
@@ -74,10 +76,10 @@ class CropBloc extends Bloc<CropEvent, CropState> {
 
     add(ResetImageEvent());
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(cropRoute),
-      ),
-    );   
+          PushedNamedEvent(
+            const NavigationDestination(cropRoute),
+          ),
+        );
     _performCropping(path);
 
     return _completer.future;
@@ -90,13 +92,13 @@ class CropBloc extends Bloc<CropEvent, CropState> {
     _completer = Completer();
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(cropRoute),
-      ),
-    );
+          PushedNamedEvent(
+            const NavigationDestination(cropRoute),
+          ),
+        );
 
     add(SetImageEvent(data));
-    
+
     return _completer.future;
   }
 }

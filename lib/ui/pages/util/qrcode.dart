@@ -11,16 +11,17 @@ class QrCodeScanningArguments {
 }
 
 class QrCodeScanningPage extends StatelessWidget {
-  const QrCodeScanningPage(this.args, { super.key });
+  const QrCodeScanningPage(this.args, {super.key});
   final QrCodeScanningArguments args;
 
-  static MaterialPageRoute<String> getRoute(QrCodeScanningArguments args) => MaterialPageRoute<String>(
-    builder: (_) => QrCodeScanningPage(args),
-    settings: const RouteSettings(
-      name: qrCodeScannerRoute,
-    ),
-  );
-  
+  static MaterialPageRoute<String> getRoute(QrCodeScanningArguments args) =>
+      MaterialPageRoute<String>(
+        builder: (_) => QrCodeScanningPage(args),
+        settings: const RouteSettings(
+          name: qrCodeScannerRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

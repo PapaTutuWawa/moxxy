@@ -50,8 +50,8 @@ void _cropImage(List<dynamic> data) {
   port.send(true);
 }
 
-class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> {
-
+class CropBackgroundBloc
+    extends Bloc<CropBackgroundEvent, CropBackgroundState> {
   CropBackgroundBloc() : super(CropBackgroundState()) {
     on<CropBackgroundRequestedEvent>(_onRequested);
     on<CropBackgroundResetEvent>(_onReset);
@@ -71,15 +71,17 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
       ),
     );
   }
-  
-  Future<void> _onRequested(CropBackgroundRequestedEvent event, Emitter<CropBackgroundState> emit) async {
+
+  Future<void> _onRequested(CropBackgroundRequestedEvent event,
+      Emitter<CropBackgroundState> emit) async {
     // Navigate to the page
     _resetState(emit);
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(const NavigationDestination(backgroundCroppingRoute)),
-    );
-    
+          PushedNamedEvent(
+              const NavigationDestination(backgroundCroppingRoute)),
+        );
+
     final data = await File(event.path).readAsBytes();
     final imageSize = (await getImageSizeFromData(data))!;
     emit(
@@ -92,15 +94,18 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
     );
   }
 
-  Future<void> _onReset(CropBackgroundResetEvent event, Emitter<CropBackgroundState> emit) async {
+  Future<void> _onReset(
+      CropBackgroundResetEvent event, Emitter<CropBackgroundState> emit) async {
     _resetState(emit);
   }
 
-  Future<void> _onBlurToggled(BlurToggledEvent event, Emitter<CropBackgroundState> emit) async {
+  Future<void> _onBlurToggled(
+      BlurToggledEvent event, Emitter<CropBackgroundState> emit) async {
     emit(state.copyWith(blurEnabled: !state.blurEnabled));
   }
 
-  Future<void> _onBackgroundSet(BackgroundSetEvent event, Emitter<CropBackgroundState> emit) async {
+  Future<void> _onBackgroundSet(
+      BackgroundSetEvent event, Emitter<CropBackgroundState> emit) async {
     emit(state.copyWith(isWorking: true));
 
     final appDir = await getApplicationDocumentsDirectory();
@@ -122,7 +127,7 @@ class CropBackgroundBloc extends Bloc<CropBackgroundEvent, CropBackgroundState> 
       ],
     );
     await port.first;
-    
+
     _resetState(emit);
 
     GetIt.I.get<PreferencesBloc>().add(BackgroundImageSetEvent(backgroundPath));

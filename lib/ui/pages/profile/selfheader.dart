@@ -11,9 +11,9 @@ class SelfProfileHeader extends StatelessWidget {
     this.jid,
     this.avatarUrl,
     this.displayName,
-    this.setAvatar,
-    { super.key, }
-  );
+    this.setAvatar, {
+    super.key,
+  });
   final String jid;
   final String avatarUrl;
   final String displayName;
@@ -26,7 +26,7 @@ class SelfProfileHeader extends StatelessWidget {
       setAvatar(avatar.path, avatar.hash);
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -42,7 +42,6 @@ class SelfProfileHeader extends StatelessWidget {
             ),
           ),
         ),
-
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Row(
@@ -93,8 +92,8 @@ class SelfProfileHeader extends StatelessWidget {
                   title: t.pages.profile.general.omemo,
                   onTap: () {
                     context.read<OwnDevicesBloc>().add(
-                      OwnDevicesRequestedEvent(),
-                    );
+                          OwnDevicesRequestedEvent(),
+                        );
                   },
                 ),
               ],

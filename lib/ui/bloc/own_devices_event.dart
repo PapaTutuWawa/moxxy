@@ -7,10 +7,9 @@ class OwnDevicesRequestedEvent extends OwnDevicesEvent {}
 
 /// Triggered by the UI when we want to enable or disable a key
 class OwnDeviceEnabledSetEvent extends OwnDevicesEvent {
-
- OwnDeviceEnabledSetEvent(this.deviceId, this.enabled);
- final int deviceId;
- final bool enabled;
+  OwnDeviceEnabledSetEvent(this.deviceId, this.enabled);
+  final int deviceId;
+  final bool enabled;
 }
 
 /// Triggered by the UI when all OMEMO sessions should be recreated

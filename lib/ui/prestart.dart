@@ -15,13 +15,13 @@ import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
 
 /// Handler for when we received a [PreStartDoneEvent].
-Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
+Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
   GetIt.I.get<PreferencesBloc>().add(
-    PreferencesChangedEvent(
-      result.preferences,
-      notify: false,
-    ),
-  );
+        PreferencesChangedEvent(
+          result.preferences,
+          notify: false,
+        ),
+      );
 
   WidgetsFlutterBinding.ensureInitialized();
   if (result.preferences.languageLocaleCode == 'default') {
@@ -29,49 +29,51 @@ Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
   } else {
     LocaleSettings.setLocaleRaw(result.preferences.languageLocaleCode);
   }
-  
+
   if (result.state == preStartLoggedInState) {
     // Set up the data service
     GetIt.I.get<UIDataService>().processPreStartDoneEvent(result);
 
     // Set up the BLoCs
     GetIt.I.get<ConversationsBloc>().add(
-      ConversationsInitEvent(
-        result.displayName!,
-        result.jid!,
-        result.conversations!,
-        avatarUrl: result.avatarUrl,
-      ),
-    );
+          ConversationsInitEvent(
+            result.displayName!,
+            result.jid!,
+            result.conversations!,
+            avatarUrl: result.avatarUrl,
+          ),
+        );
     GetIt.I.get<NewConversationBloc>().add(
-      NewConversationInitEvent(
-        result.roster!,
-      ),
-    );
+          NewConversationInitEvent(
+            result.roster!,
+          ),
+        );
     GetIt.I.get<StickersBloc>().add(
-      StickersSetEvent(
-        result.stickers!,
-      ),
-    );
+          StickersSetEvent(
+            result.stickers!,
+          ),
+        );
     GetIt.I.get<ShareSelectionBloc>().add(
-      ShareSelectionInitEvent(
-        result.conversations!,
-        result.roster!,
-      ),
-    );
+          ShareSelectionInitEvent(
+            result.conversations!,
+            result.roster!,
+          ),
+        );
 
     final sharing = GetIt.I.get<UISharingService>();
     if (sharing.hasEarlyMedia) {
-      GetIt.I.get<Logger>().finest('Early media available. Navigating to share selection');
+      GetIt.I
+          .get<Logger>()
+          .finest('Early media available. Navigating to share selection');
       await sharing.handleEarlySharedMedia();
     } else {
       GetIt.I.get<Logger>().finest('Navigating to conversations');
       GetIt.I.get<NavigationBloc>().add(
-        PushedNamedAndRemoveUntilEvent(
-          const NavigationDestination(conversationsRoute),
-          (_) => false,
-        ),
-      );
+            PushedNamedAndRemoveUntilEvent(
+              const NavigationDestination(conversationsRoute),
+              (_) => false,
+            ),
+          );
     }
   } else if (result.state == preStartNotLoggedInState) {
     // Set UI data
@@ -83,10 +85,10 @@ Future<void> preStartDone(PreStartDoneEvent result, { dynamic extra }) async {
     // Navigate to the intro page
     GetIt.I.get<Logger>().finest('Navigating to intro');
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedAndRemoveUntilEvent(
-        const NavigationDestination(introRoute),
-        (_) => false,
-      ),
-    );
+          PushedNamedAndRemoveUntilEvent(
+            const NavigationDestination(introRoute),
+            (_) => false,
+          ),
+        );
   }
 }

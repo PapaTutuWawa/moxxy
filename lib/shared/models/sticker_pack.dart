@@ -22,23 +22,26 @@ class StickerPack with _$StickerPack {
   const StickerPack._();
 
   /// Moxxmpp
-  factory StickerPack.fromMoxxmpp(moxxmpp.StickerPack pack, bool local) => StickerPack(
-    pack.id,
-    pack.name,
-    pack.summary,
-    pack.stickers
-      .map((sticker) => Sticker.fromMoxxmpp(sticker, pack.id))
-      .toList(),
-    pack.hashAlgorithm.toName(),
-    pack.hashValue,
-    pack.restricted,
-    local,
-  );
-  
-  /// JSON
-  factory StickerPack.fromJson(Map<String, dynamic> json) => _$StickerPackFromJson(json);
+  factory StickerPack.fromMoxxmpp(moxxmpp.StickerPack pack, bool local) =>
+      StickerPack(
+        pack.id,
+        pack.name,
+        pack.summary,
+        pack.stickers
+            .map((sticker) => Sticker.fromMoxxmpp(sticker, pack.id))
+            .toList(),
+        pack.hashAlgorithm.toName(),
+        pack.hashValue,
+        pack.restricted,
+        local,
+      );
 
-  factory StickerPack.fromDatabaseJson(Map<String, dynamic> json, List<Sticker> stickers) {
+  /// JSON
+  factory StickerPack.fromJson(Map<String, dynamic> json) =>
+      _$StickerPackFromJson(json);
+
+  factory StickerPack.fromDatabaseJson(
+      Map<String, dynamic> json, List<Sticker> stickers) {
     final pack = StickerPack.fromJson({
       ...json,
       'local': true,
@@ -48,7 +51,7 @@ class StickerPack with _$StickerPack {
 
     return pack.copyWith(stickers: stickers);
   }
-  
+
   Map<String, dynamic> toDatabaseJson() {
     final json = toJson()
       ..remove('local')
@@ -61,14 +64,12 @@ class StickerPack with _$StickerPack {
   }
 
   moxxmpp.StickerPack toMoxxmpp() => moxxmpp.StickerPack(
-    id,
-    name,
-    description,
-    moxxmpp.hashFunctionFromName(hashAlgorithm),
-    hashValue,
-    stickers
-      .map((sticker) => sticker.toMoxxmpp())
-      .toList(),
-    restricted,
-  );
+        id,
+        name,
+        description,
+        moxxmpp.hashFunctionFromName(hashAlgorithm),
+        hashValue,
+        stickers.map((sticker) => sticker.toMoxxmpp()).toList(),
+        restricted,
+      );
 }

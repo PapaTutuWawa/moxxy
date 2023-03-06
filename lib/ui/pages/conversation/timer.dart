@@ -13,7 +13,7 @@ String intToTimestring(int p) {
 }
 
 class TimerWidget extends StatefulWidget {
-  const TimerWidget({ super.key });
+  const TimerWidget({super.key});
 
   @override
   TimerWidgetState createState() => TimerWidgetState();

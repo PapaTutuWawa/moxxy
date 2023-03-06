@@ -36,39 +36,34 @@ class SettingsRow extends StatelessWidget {
         child: Row(
           crossAxisAlignment: crossAxisAlignment,
           children: [
-          if (prefix != null)
-            prefix!,
-
-          Expanded(
-            child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
-                ),
+            if (prefix != null) prefix!,
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  if (description != null)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        top: 4,
+                      ),
+                      child: Text(
+                        description!,
+                        maxLines: maxLines,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                ],
               ),
-
-              if (description != null)
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: 4,
-                  ),
-                  child: Text(
-                    description!,
-                    maxLines: maxLines,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-              ],
             ),
-          ),
-
-          if (suffix != null)
-              suffix!,
+            if (suffix != null) suffix!,
           ],
         ),
       ),

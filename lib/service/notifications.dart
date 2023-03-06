@@ -50,10 +50,11 @@ class NotificationsService {
         ),
       );
     } else {
-      logger.warning('Received unknown notification action key ${action.buttonKeyPressed}');
+      logger.warning(
+          'Received unknown notification action key ${action.buttonKeyPressed}');
     }
   }
-  
+
   Future<void> initialize() async {
     final an = AwesomeNotifications();
     await an.initialize(
@@ -62,12 +63,14 @@ class NotificationsService {
         NotificationChannel(
           channelKey: _messageChannelKey,
           channelName: t.notifications.channels.messagesChannelName,
-          channelDescription: t.notifications.channels.messagesChannelDescription,
+          channelDescription:
+              t.notifications.channels.messagesChannelDescription,
         ),
         NotificationChannel(
           channelKey: _warningChannelKey,
           channelName: t.notifications.channels.warningChannelName,
-          channelDescription: t.notifications.channels.warningChannelDescription,
+          channelDescription:
+              t.notifications.channels.warningChannelDescription,
         ),
       ],
       debug: kDebugMode,
@@ -81,11 +84,13 @@ class NotificationsService {
   bool shouldShowNotification(String jid) {
     return GetIt.I.get<XmppService>().getCurrentlyOpenedChatJid() != jid;
   }
-  
+
   /// Show a notification for a message [m] grouped by its conversationJid
   /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
   /// then Android's BigPicture will be used.
-  Future<void> showNotification(modelc.Conversation c, modelm.Message m, String title, { String? body }) async {
+  Future<void> showNotification(
+      modelc.Conversation c, modelm.Message m, String title,
+      {String? body}) async {
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
     String body;
     if (m.stickerPackId != null) {
@@ -98,12 +103,11 @@ class NotificationsService {
 
     final css = GetIt.I.get<ContactsService>();
     final contactIntegrationEnabled = await css.isContactIntegrationEnabled();
-    final title = contactIntegrationEnabled ?
-      c.contactDisplayName ?? c.title :
-      c.title;
-    final avatarPath = contactIntegrationEnabled ?
-      c.contactAvatarPath ?? c.avatarUrl :
-      c.avatarUrl;
+    final title =
+        contactIntegrationEnabled ? c.contactDisplayName ?? c.title : c.title;
+    final avatarPath = contactIntegrationEnabled
+        ? c.contactAvatarPath ?? c.avatarUrl
+        : c.avatarUrl;
 
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
@@ -113,12 +117,10 @@ class NotificationsService {
         summary: title,
         title: title,
         body: body,
-        largeIcon: avatarPath.isNotEmpty ?
-          'file://$avatarPath' :
-          null,
-        notificationLayout: m.isThumbnailable ?
-          NotificationLayout.BigPicture :
-          NotificationLayout.Messaging,
+        largeIcon: avatarPath.isNotEmpty ? 'file://$avatarPath' : null,
+        notificationLayout: m.isThumbnailable
+            ? NotificationLayout.BigPicture
+            : NotificationLayout.Messaging,
         category: NotificationCategory.Message,
         bigPicture: m.isThumbnailable ? 'file://${m.mediaUrl}' : null,
         payload: <String, String>{

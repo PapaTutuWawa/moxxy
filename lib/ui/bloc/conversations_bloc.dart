@@ -43,8 +43,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
 
     if (comp != null) await comp.future;
   }
-  
-  Future<void> _onInit(ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
+
+  Future<void> _onInit(
+      ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
     emit(
       state.copyWith(
         displayName: event.displayName,
@@ -65,39 +66,46 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     });
   }
 
-  Future<void> _onConversationsAdded(ConversationsAddedEvent event, Emitter<ConversationsState> emit) async {
+  Future<void> _onConversationsAdded(
+      ConversationsAddedEvent event, Emitter<ConversationsState> emit) async {
     // TODO(Unknown): Should we guard against adding the same conversation multiple times?
     emit(
       state.copyWith(
-        conversations: List.from(<Conversation>[ ...state.conversations, event.conversation ])
+        conversations: List.from(
+            <Conversation>[...state.conversations, event.conversation])
           ..sort(compareConversation),
       ),
     );
 
     // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
     GetIt.I.get<ShareSelectionBloc>().add(
-      ConversationsModified(state.conversations),
-    );
+          ConversationsModified(state.conversations),
+        );
   }
 
-  Future<void> _onConversationsUpdated(ConversationsUpdatedEvent event, Emitter<ConversationsState> emit) async {
+  Future<void> _onConversationsUpdated(
+      ConversationsUpdatedEvent event, Emitter<ConversationsState> emit) async {
     emit(
       state.copyWith(
-        conversations: List.from(state.conversations.map((c) {
-          if (c.jid == event.conversation.jid) return event.conversation;
+        conversations: List.from(
+          state.conversations.map((c) {
+            if (c.jid == event.conversation.jid) return event.conversation;
 
-          return c;
-        }).toList()..sort(compareConversation),),
+            return c;
+          }).toList()
+            ..sort(compareConversation),
+        ),
       ),
     );
 
     // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
     GetIt.I.get<ShareSelectionBloc>().add(
-      ConversationsModified(state.conversations),
-    );
+          ConversationsModified(state.conversations),
+        );
   }
 
-  Future<void> _onAvatarChanged(AvatarChangedEvent event, Emitter<ConversationsState> emit) async {
+  Future<void> _onAvatarChanged(
+      AvatarChangedEvent event, Emitter<ConversationsState> emit) async {
     return emit(
       state.copyWith(
         avatarUrl: event.path,
@@ -105,22 +113,25 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     );
   }
 
-  Future<void> _onConversationClosed(ConversationClosedEvent event, Emitter<ConversationsState> emit) async {
+  Future<void> _onConversationClosed(
+      ConversationClosedEvent event, Emitter<ConversationsState> emit) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      CloseConversationCommand(jid: event.jid),
-    );
+          CloseConversationCommand(jid: event.jid),
+        );
 
     emit(
       state.copyWith(
-        conversations: state.conversations.where((c) => c.jid != event.jid).toList(),
+        conversations:
+            state.conversations.where((c) => c.jid != event.jid).toList(),
       ),
     );
   }
 
-  Future<void> _onConversationMarkedAsRead(ConversationMarkedAsReadEvent event, Emitter<ConversationsState> emit) async {
+  Future<void> _onConversationMarkedAsRead(ConversationMarkedAsReadEvent event,
+      Emitter<ConversationsState> emit) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      MarkConversationAsReadCommand(conversationJid: event.jid),
-      awaitable: false,
-    );   
+          MarkConversationAsReadCommand(conversationJid: event.jid),
+          awaitable: false,
+        );
   }
 }

@@ -11,7 +11,7 @@ import 'package:moxxyv2/ui/widgets/profile/options.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
-  const ConversationProfileHeader(this.conversation, { super.key });
+  const ConversationProfileHeader(this.conversation, {super.key});
   final Conversation conversation;
 
   Future<void> _showAvatarFullsize(BuildContext context, String path) async {
@@ -24,7 +24,7 @@ class ConversationProfileHeader extends StatelessWidget {
       },
     );
   }
-  
+
   Widget _buildAvatar(BuildContext context) {
     return RebuildOnContactIntegrationChange(
       builder: () {
@@ -46,7 +46,7 @@ class ConversationProfileHeader extends StatelessWidget {
       },
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -54,7 +54,9 @@ class ConversationProfileHeader extends StatelessWidget {
         Hero(
           tag: 'conversation_profile_picture',
           child: Material(
-            child: _buildAvatar(context,),
+            child: _buildAvatar(
+              context,
+            ),
           ),
         ),
         Padding(
@@ -77,7 +79,6 @@ class ConversationProfileHeader extends StatelessWidget {
             ),
           ),
         ),
-
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
@@ -93,25 +94,25 @@ class ConversationProfileHeader extends StatelessWidget {
                   title: t.pages.profile.general.omemo,
                   onTap: () {
                     context.read<DevicesBloc>().add(
-                      DevicesRequestedEvent(conversation.jid),
-                    );
+                          DevicesRequestedEvent(conversation.jid),
+                        );
                   },
                 ),
                 ProfileOption(
-                  icon: conversation.muted ?
-                    Icons.notifications_off :
-                    Icons.notifications,
+                  icon: conversation.muted
+                      ? Icons.notifications_off
+                      : Icons.notifications,
                   title: t.pages.profile.conversation.notifications,
-                  description: conversation.muted ?
-                    t.pages.profile.conversation.notificationsMuted :
-                    t.pages.profile.conversation.notificationsEnabled,
+                  description: conversation.muted
+                      ? t.pages.profile.conversation.notificationsMuted
+                      : t.pages.profile.conversation.notificationsEnabled,
                   onTap: () {
                     context.read<ProfileBloc>().add(
-                      MuteStateSetEvent(
-                        conversation.jid,
-                        !conversation.muted,
-                      ),
-                    );
+                          MuteStateSetEvent(
+                            conversation.jid,
+                            !conversation.muted,
+                          ),
+                        );
                   },
                 ),
               ],

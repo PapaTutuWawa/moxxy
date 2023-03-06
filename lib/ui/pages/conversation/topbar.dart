@@ -13,17 +13,12 @@ import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-enum ConversationOption {
-  close,
-  block
-}
+enum ConversationOption { close, block }
 
-enum EncryptionOption {
-  omemo,
-  none
-}
+enum EncryptionOption { omemo, none }
 
-PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData icon) {
+PopupMenuItem<dynamic> popupItemWithIcon(
+    dynamic value, String text, IconData icon) {
   return PopupMenuItem<dynamic>(
     value: value,
     child: Row(
@@ -42,21 +37,22 @@ PopupMenuItem<dynamic> popupItemWithIcon(dynamic value, String text, IconData ic
 /// as it should
 // TODO(PapaTutuWawa): The conversation title may overflow the Topbar
 // TODO(Unknown): Maybe merge with BorderlessTopbar
-class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget {
-  const ConversationTopbar({ super.key });
+class ConversationTopbar extends StatelessWidget
+    implements PreferredSizeWidget {
+  const ConversationTopbar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(60);
 
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
-    return prev.conversation?.title != next.conversation?.title
-      || prev.conversation?.avatarUrl != next.conversation?.avatarUrl
-      || prev.conversation?.chatState != next.conversation?.chatState
-      || prev.conversation?.jid != next.conversation?.jid
-      || prev.conversation?.encrypted != next.conversation?.encrypted
-      || prev.conversation?.sharedMedia != next.conversation?.sharedMedia;
+    return prev.conversation?.title != next.conversation?.title ||
+        prev.conversation?.avatarUrl != next.conversation?.avatarUrl ||
+        prev.conversation?.chatState != next.conversation?.chatState ||
+        prev.conversation?.jid != next.conversation?.jid ||
+        prev.conversation?.encrypted != next.conversation?.encrypted ||
+        prev.conversation?.sharedMedia != next.conversation?.sharedMedia;
   }
-  
+
   Widget _buildChatState(ChatState state) {
     switch (state) {
       case ChatState.paused:
@@ -73,7 +69,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
       case ChatState.inactive:
       case ChatState.gone:
         return Container();
-    } 
+    }
   }
 
   bool _isChatStateVisible(ChatState state) {
@@ -83,13 +79,13 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
   /// Summon the profile page of the currently open conversation
   void _openProfile(BuildContext context, ConversationState state) {
     context.read<profile.ProfileBloc>().add(
-      profile.ProfilePageRequestedEvent(
-        false,
-        conversation: state.conversation,
-      ),
-    );
+          profile.ProfilePageRequestedEvent(
+            false,
+            conversation: state.conversation,
+          ),
+        );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationBloc, ConversationState>(
@@ -116,8 +112,12 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                           child: RebuildOnContactIntegrationChange(
                             builder: () => AvatarWrapper(
                               radius: 25,
-                              avatarUrl: state.conversation?.avatarPathWithOptionalContact ?? '',
-                              altText: state.conversation?.titleWithOptionalContact ?? 'A',
+                              avatarUrl: state.conversation
+                                      ?.avatarPathWithOptionalContact ??
+                                  '',
+                              altText: state
+                                      .conversation?.titleWithOptionalContact ??
+                                  'A',
                             ),
                           ),
                         ),
@@ -130,9 +130,7 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                           children: [
                             AnimatedPositioned(
                               duration: const Duration(milliseconds: 200),
-                              top: _isChatStateVisible(chatState) ?
-                                0 :
-                                10,
+                              top: _isChatStateVisible(chatState) ? 0 : 10,
                               left: 0,
                               right: 0,
                               curve: Curves.easeInOutCubic,
@@ -141,7 +139,9 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                                 children: [
                                   RebuildOnContactIntegrationChange(
                                     builder: () => TopbarTitleText(
-                                      state.conversation?.titleWithOptionalContact ?? '',
+                                      state.conversation
+                                              ?.titleWithOptionalContact ??
+                                          '',
                                     ),
                                   ),
                                 ],
@@ -152,9 +152,8 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                               right: 0,
                               bottom: 0,
                               child: AnimatedOpacity(
-                                opacity: _isChatStateVisible(chatState) ?
-                                  1.0 :
-                                  0.0,
+                                opacity:
+                                    _isChatStateVisible(chatState) ? 1.0 : 0.0,
                                 curve: Curves.easeInOutCubic,
                                 duration: const Duration(milliseconds: 100),
                                 child: Row(
@@ -172,61 +171,74 @@ class ConversationTopbar extends StatelessWidget implements PreferredSizeWidget 
                     // ignore: implicit_dynamic_type
                     PopupMenuButton(
                       onSelected: (result) {
-                        if (result == EncryptionOption.omemo && state.conversation!.encrypted == false) {
-                          context.read<ConversationBloc>().add(OmemoSetEvent(true));
-                        } else if (result == EncryptionOption.none && state.conversation!.encrypted == true) {
-                          context.read<ConversationBloc>().add(OmemoSetEvent(false));
+                        if (result == EncryptionOption.omemo &&
+                            state.conversation!.encrypted == false) {
+                          context
+                              .read<ConversationBloc>()
+                              .add(OmemoSetEvent(true));
+                        } else if (result == EncryptionOption.none &&
+                            state.conversation!.encrypted == true) {
+                          context
+                              .read<ConversationBloc>()
+                              .add(OmemoSetEvent(false));
                         }
                       },
-                      icon: (state.conversation?.encrypted ?? false) ?
-                        const Icon(Icons.lock) :
-                        const Icon(Icons.lock_open),
+                      icon: (state.conversation?.encrypted ?? false)
+                          ? const Icon(Icons.lock)
+                          : const Icon(Icons.lock_open),
                       itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(EncryptionOption.none, t.pages.conversation.unencrypted, Icons.lock_open),
-                        popupItemWithIcon(EncryptionOption.omemo, t.pages.conversation.encrypted, Icons.lock),
+                        popupItemWithIcon(EncryptionOption.none,
+                            t.pages.conversation.unencrypted, Icons.lock_open),
+                        popupItemWithIcon(EncryptionOption.omemo,
+                            t.pages.conversation.encrypted, Icons.lock),
                       ],
                     ),
                     // ignore: implicit_dynamic_type
                     PopupMenuButton(
                       onSelected: (result) async {
                         switch (result) {
-                          case ConversationOption.close: {
-                            final result = await showConfirmationDialog(
-                              t.pages.conversation.closeChatConfirmTitle,
-                              t.pages.conversation.closeChatConfirmSubtext,
-                              context,
-                            );
-
-                            if (result) {
-                              // ignore: use_build_context_synchronously
-                              context.read<ConversationsBloc>().add(
-                                ConversationClosedEvent(state.conversation!.jid),
+                          case ConversationOption.close:
+                            {
+                              final result = await showConfirmationDialog(
+                                t.pages.conversation.closeChatConfirmTitle,
+                                t.pages.conversation.closeChatConfirmSubtext,
+                                context,
                               );
 
-                              // Navigate back
-                              // ignore: use_build_context_synchronously
-                              context.read<NavigationBloc>().add(
-                                PoppedRouteEvent(),
-                              );
+                              if (result) {
+                                // ignore: use_build_context_synchronously
+                                context.read<ConversationsBloc>().add(
+                                      ConversationClosedEvent(
+                                          state.conversation!.jid),
+                                    );
+
+                                // Navigate back
+                                // ignore: use_build_context_synchronously
+                                context.read<NavigationBloc>().add(
+                                      PoppedRouteEvent(),
+                                    );
+                              }
                             }
-                          }
-                          break;
-                          case ConversationOption.block: {
-                            await blockJid(state.conversation!.jid, context);
-                          }
-                          break;
+                            break;
+                          case ConversationOption.block:
+                            {
+                              await blockJid(state.conversation!.jid, context);
+                            }
+                            break;
                         }
                       },
                       icon: const Icon(Icons.more_vert),
                       itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(ConversationOption.close, t.pages.conversation.closeChat, Icons.close),
-                        popupItemWithIcon(ConversationOption.block, t.pages.conversation.blockUser, Icons.block)
+                        popupItemWithIcon(ConversationOption.close,
+                            t.pages.conversation.closeChat, Icons.close),
+                        popupItemWithIcon(ConversationOption.block,
+                            t.pages.conversation.blockUser, Icons.block)
                       ],
                     ),
                   ],
                 ),
               ),
-            ),   
+            ),
           ),
         );
       },
