@@ -175,7 +175,7 @@ class FileChatWidget extends StatelessWidget {
     }
     if (message.isFileUploadNotification || message.isDownloading) {
       return _buildDownloading();
-      }
+    }
 
     return _buildNonDownloaded();
   }

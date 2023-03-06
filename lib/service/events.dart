@@ -510,8 +510,8 @@ Future<void> performAddContact(
   if (item != null) {
     if (item.subscription != 'from' && item.subscription != 'both') {
       GetIt.I.get<Logger>().finest(
-        'Roster item already exists with no presence subscription from them. Sending subscription request',
-      );
+            'Roster item already exists with no presence subscription from them. Sending subscription request',
+          );
       srs.sendSubscriptionRequest(jid);
     }
   } else {

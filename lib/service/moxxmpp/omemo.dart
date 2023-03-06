@@ -37,10 +37,10 @@ class MoxxyBTBVTrustManager extends BlindTrustBeforeVerificationTrustManager {
     Map<RatchetMapKey, bool> enablementCache,
     Map<String, List<int>> devices,
   ) : super(
-            trustCache: trustCache,
-            enablementCache: enablementCache,
-            devices: devices,
-          );
+          trustCache: trustCache,
+          enablementCache: enablementCache,
+          devices: devices,
+        );
 
   @override
   Future<void> commitState() async {

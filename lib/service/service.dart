@@ -261,9 +261,9 @@ Future<void> entrypoint() async {
   if (settings != null) {
     unawaited(
       GetIt.I
-        .get<OmemoService>()
-        .initializeIfNeeded(settings.jid.toBare().toString()),
-      );
+          .get<OmemoService>()
+          .initializeIfNeeded(settings.jid.toBare().toString()),
+    );
 
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
@@ -279,10 +279,8 @@ Future<void> entrypoint() async {
   }
 
   unawaited(
-    GetIt.I
-      .get<SynchronizedQueue<Map<String, dynamic>?>>()
-      .removeQueueLock(),
-    );
+    GetIt.I.get<SynchronizedQueue<Map<String, dynamic>?>>().removeQueueLock(),
+  );
   sendEvent(ServiceReadyEvent());
 }
 

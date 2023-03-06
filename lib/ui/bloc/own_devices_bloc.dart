@@ -25,9 +25,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   }
 
   Future<void> _onRequested(
-      OwnDevicesRequestedEvent event,
-      Emitter<OwnDevicesState> emit,
-    ) async {
+    OwnDevicesRequestedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     emit(state.copyWith(working: true));
 
     GetIt.I.get<NavigationBloc>().add(
@@ -52,9 +52,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   }
 
   Future<void> _onDeviceEnabledSet(
-      OwnDeviceEnabledSetEvent event,
-      Emitter<OwnDevicesState> emit,
-    ) async {
+    OwnDeviceEnabledSetEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
           SetOmemoDeviceEnabledCommand(
@@ -79,9 +79,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   }
 
   Future<void> _onSessionsRecreated(
-      OwnSessionsRecreatedEvent event,
-      Emitter<OwnDevicesState> emit,
-    ) async {
+    OwnSessionsRecreatedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
           RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
@@ -103,9 +103,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   }
 
   Future<void> _onDeviceRemoved(
-      OwnDeviceRemovedEvent event,
-      Emitter<OwnDevicesState> emit,
-    ) async {
+    OwnDeviceRemovedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
           RemoveOwnDeviceCommand(deviceId: event.deviceId),
@@ -122,9 +122,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   }
 
   Future<void> _onDeviceRegenerated(
-      OwnDeviceRegeneratedEvent event,
-      Emitter<OwnDevicesState> emit,
-    ) async {
+    OwnDeviceRegeneratedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     emit(state.copyWith(working: true));
 
     // ignore: cast_nullable_to_non_nullable
@@ -143,9 +143,9 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
   }
 
   Future<void> _onDeviceVerified(
-      DeviceVerifiedEvent event,
-      Emitter<OwnDevicesState> emit,
-    ) async {
+    DeviceVerifiedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     final ownJid = GetIt.I.get<UIDataService>().ownJid!;
     final result = isVerificationUriValid(
       state.keys,

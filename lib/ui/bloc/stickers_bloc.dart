@@ -26,9 +26,9 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
   }
 
   Future<void> _onStickersSet(
-      StickersSetEvent event,
-      Emitter<StickersState> emit,
-    ) async {
+    StickersSetEvent event,
+    Emitter<StickersState> emit,
+  ) async {
     // Also store a mapping of (pack Id, sticker Id) -> Sticker to allow fast lookup
     // of the sticker in the UI.
     final map = <StickerKey, Sticker>{};
@@ -49,9 +49,9 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
   }
 
   Future<void> _onStickerPackRemoved(
-      StickerPackRemovedEvent event,
-      Emitter<StickersState> emit,
-    ) async {
+    StickerPackRemovedEvent event,
+    Emitter<StickersState> emit,
+  ) async {
     final stickerPack = firstWhereOrNull(
       state.stickerPacks,
       (StickerPack sp) => sp.id == event.stickerPackId,
@@ -82,9 +82,9 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
   }
 
   Future<void> _onStickerPackImported(
-      StickerPackImportedEvent event,
-      Emitter<StickersState> emit,
-    ) async {
+    StickerPackImportedEvent event,
+    Emitter<StickersState> emit,
+  ) async {
     final file = await FilePicker.platform.pickFiles();
     if (file == null) return;
 
@@ -139,9 +139,9 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
   }
 
   Future<void> _onStickerPackAdded(
-      StickerPackAddedEvent event,
-      Emitter<StickersState> emit,
-    ) async {
+    StickerPackAddedEvent event,
+    Emitter<StickersState> emit,
+  ) async {
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
     for (final sticker in event.stickerPack.stickers) {
       if (!sticker.isImage) continue;

@@ -269,14 +269,15 @@ class AudioChatState extends State<AudioChatWidget> {
   @override
   Widget build(BuildContext context) {
     if (widget.message.isUploading) return _buildUploading();
-    if (widget.message.isFileUploadNotification || widget.message.isDownloading) {
+    if (widget.message.isFileUploadNotification ||
+        widget.message.isDownloading) {
       return _buildDownloading();
     }
 
     // TODO(PapaTutuWawa): Maybe use an async builder
     if (widget.message.mediaUrl != null &&
         File(widget.message.mediaUrl!).existsSync()) {
-        return _buildAudio();
+      return _buildAudio();
     }
 
     return _buildDownloadable();

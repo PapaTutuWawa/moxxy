@@ -45,7 +45,7 @@ int errorTypeFromException(dynamic exception) {
 String errorToTranslatableString(int error) {
   assert(
     error != noError,
-      'Calling errorToTranslatableString with noError makes no sense',
+    'Calling errorToTranslatableString with noError makes no sense',
   );
 
   switch (error) {

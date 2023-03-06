@@ -56,11 +56,11 @@ MessageType getMessageType(Message message) {
 
 /// Build an inlinable message widget
 Widget buildMessageWidget(
-    Message message,
-    double maxWidth,
-    BorderRadius radius,
-    bool sent,
-  ) {
+  Message message,
+  double maxWidth,
+  BorderRadius radius,
+  bool sent,
+) {
   // Retracted messages are always rendered as a text message
   if (message.isRetracted) {
     return TextChatWidget(
@@ -100,7 +100,7 @@ Widget buildMessageWidget(
 Widget buildQuoteMessageWidget(
   Message message,
   bool sent, {
-    void Function()? resetQuote,
+  void Function()? resetQuote,
 }) {
   switch (getMessageType(message)) {
     case MessageType.sticker:

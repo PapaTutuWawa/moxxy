@@ -26,9 +26,9 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
   }
 
   Future<void> _onLocalStickerPackRequested(
-      LocallyAvailableStickerPackRequested event,
-      Emitter<StickerPackState> emit,
-    ) async {
+    LocallyAvailableStickerPackRequested event,
+    Emitter<StickerPackState> emit,
+  ) async {
     emit(
       state.copyWith(
         isWorking: true,
@@ -58,9 +58,9 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
   }
 
   Future<void> _onStickerPackRemoved(
-      StickerPackRemovedEvent event,
-      Emitter<StickerPackState> emit,
-    ) async {
+    StickerPackRemovedEvent event,
+    Emitter<StickerPackState> emit,
+  ) async {
     // Reset internal state
     emit(
       state.copyWith(
@@ -81,9 +81,9 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
   }
 
   Future<void> _onRemoteStickerPackRequested(
-      RemoteStickerPackRequested event,
-      Emitter<StickerPackState> emit,
-    ) async {
+    RemoteStickerPackRequested event,
+    Emitter<StickerPackState> emit,
+  ) async {
     final mustDoWork = state.stickerPack == null ||
         state.stickerPack?.id != event.stickerPackId;
     if (mustDoWork) {
@@ -127,9 +127,9 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
   }
 
   Future<void> _onStickerPackInstalled(
-      StickerPackInstalledEvent event,
-      Emitter<StickerPackState> emit,
-    ) async {
+    StickerPackInstalledEvent event,
+    Emitter<StickerPackState> emit,
+  ) async {
     assert(!state.stickerPack!.local, 'Sticker pack must be remote');
     emit(
       state.copyWith(
@@ -173,9 +173,9 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
   }
 
   Future<void> _onStickerPackRequested(
-      StickerPackRequested event,
-      Emitter<StickerPackState> emit,
-    ) async {
+    StickerPackRequested event,
+    Emitter<StickerPackState> emit,
+  ) async {
     // Find out if the sticker pack is locally available or not
     final stickerPack = firstWhereOrNull(
       GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,

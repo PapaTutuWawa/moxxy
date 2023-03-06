@@ -22,9 +22,9 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   }
 
   Future<void> _onRequested(
-      DevicesRequestedEvent event,
-      Emitter<DevicesState> emit,
-    ) async {
+    DevicesRequestedEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     emit(state.copyWith(working: true, jid: event.jid));
 
     GetIt.I.get<NavigationBloc>().add(
@@ -49,9 +49,9 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   }
 
   Future<void> _onDeviceEnabledSet(
-      DeviceEnabledSetEvent event,
-      Emitter<DevicesState> emit,
-    ) async {
+    DeviceEnabledSetEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
           SetOmemoDeviceEnabledCommand(
@@ -64,9 +64,9 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   }
 
   Future<void> _onSessionsRecreated(
-      SessionsRecreatedEvent event,
-      Emitter<DevicesState> emit,
-    ) async {
+    SessionsRecreatedEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
           RecreateSessionsCommand(jid: state.jid),
@@ -78,9 +78,9 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   }
 
   Future<void> _onDeviceVerified(
-      DeviceVerifiedEvent event,
-      Emitter<DevicesState> emit,
-    ) async {
+    DeviceVerifiedEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     final result = isVerificationUriValid(
       state.devices,
       event.uri,

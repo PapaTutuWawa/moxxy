@@ -13,12 +13,12 @@ class BlurToggledEvent extends CropBackgroundEvent {}
 
 class BackgroundSetEvent extends CropBackgroundEvent {
   BackgroundSetEvent(
-      this.x,
-      this.y,
-      this.q,
-      this.viewportHeight,
-      this.viewportWidth,
-    );
+    this.x,
+    this.y,
+    this.q,
+    this.viewportHeight,
+    this.viewportWidth,
+  );
   final double x;
   final double y;
   final double q;

@@ -74,15 +74,15 @@ class CropBackgroundBloc
 
   Future<void> _onRequested(
     CropBackgroundRequestedEvent event,
-      Emitter<CropBackgroundState> emit,
-    ) async {
+    Emitter<CropBackgroundState> emit,
+  ) async {
     // Navigate to the page
     _resetState(emit);
 
     GetIt.I.get<NavigationBloc>().add(
           PushedNamedEvent(
-              const NavigationDestination(backgroundCroppingRoute),
-            ),
+            const NavigationDestination(backgroundCroppingRoute),
+          ),
         );
 
     final data = await File(event.path).readAsBytes();
@@ -98,23 +98,23 @@ class CropBackgroundBloc
   }
 
   Future<void> _onReset(
-      CropBackgroundResetEvent event,
-      Emitter<CropBackgroundState> emit,
-    ) async {
+    CropBackgroundResetEvent event,
+    Emitter<CropBackgroundState> emit,
+  ) async {
     _resetState(emit);
   }
 
   Future<void> _onBlurToggled(
-      BlurToggledEvent event,
-      Emitter<CropBackgroundState> emit,
-    ) async {
+    BlurToggledEvent event,
+    Emitter<CropBackgroundState> emit,
+  ) async {
     emit(state.copyWith(blurEnabled: !state.blurEnabled));
   }
 
   Future<void> _onBackgroundSet(
-      BackgroundSetEvent event,
-      Emitter<CropBackgroundState> emit,
-    ) async {
+    BackgroundSetEvent event,
+    Emitter<CropBackgroundState> emit,
+  ) async {
     emit(state.copyWith(isWorking: true));
 
     final appDir = await getApplicationDocumentsDirectory();

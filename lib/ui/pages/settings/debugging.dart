@@ -55,8 +55,8 @@ class DebuggingPage extends StatelessWidget {
                   context: context,
                   builder: (BuildContext context) => AlertDialog(
                     title: Text(
-                        t.pages.settings.debugging.generalEncryptionPassword,
-                     ),
+                      t.pages.settings.debugging.generalEncryptionPassword,
+                    ),
                     content: TextField(
                       minLines: 1,
                       obscureText: true,
@@ -69,9 +69,8 @@ class DebuggingPage extends StatelessWidget {
                           context.read<PreferencesBloc>().add(
                                 PreferencesChangedEvent(
                                   state.copyWith(
-                                      debugPassphrase:
-                                          _passphraseController.text,
-                                        ),
+                                    debugPassphrase: _passphraseController.text,
+                                  ),
                                 ),
                               );
                           Navigator.of(context).pop();
@@ -132,9 +131,8 @@ class DebuggingPage extends StatelessWidget {
                           context.read<PreferencesBloc>().add(
                                 PreferencesChangedEvent(
                                   state.copyWith(
-                                      debugPort:
-                                          int.parse(_portController.text),
-                                        ),
+                                    debugPort: int.parse(_portController.text),
+                                  ),
                                 ),
                               );
                           Navigator.of(context).pop();

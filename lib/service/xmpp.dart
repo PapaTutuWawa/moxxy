@@ -48,11 +48,11 @@ class XmppService {
       EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
       EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
       EventTypeMatcher<SubscriptionRequestReceivedEvent>(
-          _onSubscriptionRequestReceived,
-        ),
+        _onSubscriptionRequestReceived,
+      ),
       EventTypeMatcher<DeliveryReceiptReceivedEvent>(
-          _onDeliveryReceiptReceived,
-        ),
+        _onDeliveryReceiptReceived,
+      ),
       EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
       EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
       EventTypeMatcher<StanzaAckedEvent>(_onStanzaAcked),
@@ -60,8 +60,8 @@ class XmppService {
       EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
       EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
       EventTypeMatcher<BlocklistUnblockAllPushEvent>(
-          _onBlocklistUnblockAllPush,
-        ),
+        _onBlocklistUnblockAllPush,
+      ),
       EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
       EventTypeMatcher<NonRecoverableErrorEvent>(_onUnrecoverableError),
     ]);
@@ -362,9 +362,9 @@ class XmppService {
                 type: event.type,
                 children: [
                   makeChatMarker(
-                      'received',
-                      event.stanzaId.originId ?? event.sid,
-                    )
+                    'received',
+                    event.stanzaId.originId ?? event.sid,
+                  )
                 ],
               ),
             ),
@@ -378,8 +378,8 @@ class XmppService {
                 type: event.type,
                 children: [
                   makeMessageDeliveryResponse(
-                      event.stanzaId.originId ?? event.sid,
-                    )
+                    event.stanzaId.originId ?? event.sid,
+                  )
                 ],
               ),
             ),
@@ -468,11 +468,11 @@ class XmppService {
   /// [conversationJid] is the JID of the conversation these shared media entries
   /// belong to.
   Future<List<SharedMedium>> _createSharedMedia(
-      Map<String, Map<String, Message>> messages,
-      List<String> paths,
-      String recipient,
-      String conversationJid,
-    ) async {
+    Map<String, Map<String, Message>> messages,
+    List<String> paths,
+    String recipient,
+    String conversationJid,
+  ) async {
     final sharedMedia = List<SharedMedium>.empty(growable: true);
     for (final path in paths) {
       sharedMedia.add(
@@ -832,8 +832,8 @@ class XmppService {
   }
 
   Future<void> _onSubscriptionRequestReceived(
-      SubscriptionRequestReceivedEvent event, {
-      dynamic extra,
+    SubscriptionRequestReceivedEvent event, {
+    dynamic extra,
   }) async {
     final jid = event.from.toBare().toString();
 
@@ -1070,8 +1070,9 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final msg = await ms.getMessageByStanzaId(
-        conversationJid, event.messageCorrectionId!,
-      );
+      conversationJid,
+      event.messageCorrectionId!,
+    );
     if (msg == null) {
       _log.warning(
         'Received message correction for message ${event.messageCorrectionId} we cannot find.',
@@ -1092,8 +1093,8 @@ class XmppService {
     // Check if the message can be corrected
     if (!msg.canEdit(true)) {
       _log.warning(
-          'Received a message correction for a message that cannot be edited',
-        );
+        'Received a message correction for a message that cannot be edited',
+      );
       return;
     }
 
@@ -1490,16 +1491,16 @@ class XmppService {
         await ms.getMessageByStanzaId(conversationJid, event.funReplacement!);
     if (message == null) {
       _log.warning(
-          'Received a FileUploadNotification replacement for unknown message',
-        );
+        'Received a FileUploadNotification replacement for unknown message',
+      );
       return;
     }
 
     // Check if we can even replace the message
     if (!message.isFileUploadNotification) {
       _log.warning(
-          'Received a FileUploadNotification replacement for message that is not marked as a FileUploadNotification',
-        );
+        'Received a FileUploadNotification replacement for message that is not marked as a FileUploadNotification',
+      );
       return;
     }
 
@@ -1508,8 +1509,8 @@ class XmppService {
     final bareSender = event.fromJid.toBare().toString();
     if (message.sender.split('/').first != bareSender) {
       _log.warning(
-          'Received a FileUploadNotification replacement by $bareSender for message that is not sent by $bareSender',
-        );
+        'Received a FileUploadNotification replacement by $bareSender for message that is not sent by $bareSender',
+      );
       return;
     }
 
@@ -1579,8 +1580,8 @@ class XmppService {
       }
     } else {
       _log.finest(
-          'Wanted to mark message as acked but did not find the message to ack',
-        );
+        'Wanted to mark message as acked but did not find the message to ack',
+      );
     }
   }
 
@@ -1624,8 +1625,8 @@ class XmppService {
 
     if (message == null) {
       _log.warning(
-          'Message could not be sent but we cannot find it in the database',
-        );
+        'Message could not be sent but we cannot find it in the database',
+      );
       return;
     }
 

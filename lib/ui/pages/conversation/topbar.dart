@@ -18,10 +18,10 @@ enum ConversationOption { close, block }
 enum EncryptionOption { omemo, none }
 
 PopupMenuItem<dynamic> popupItemWithIcon(
-    dynamic value,
-    String text,
-    IconData icon,
-  ) {
+  dynamic value,
+  String text,
+  IconData icon,
+) {
   return PopupMenuItem<dynamic>(
     value: value,
     child: Row(
@@ -197,9 +197,9 @@ class ConversationTopbar extends StatelessWidget
                         ),
                         popupItemWithIcon(
                           EncryptionOption.omemo,
-                            t.pages.conversation.encrypted,
-                            Icons.lock,
-                          ),
+                          t.pages.conversation.encrypted,
+                          Icons.lock,
+                        ),
                       ],
                     ),
                     // ignore: implicit_dynamic_type
@@ -218,8 +218,8 @@ class ConversationTopbar extends StatelessWidget
                                 // ignore: use_build_context_synchronously
                                 context.read<ConversationsBloc>().add(
                                       ConversationClosedEvent(
-                                          state.conversation!.jid,
-                                        ),
+                                        state.conversation!.jid,
+                                      ),
                                     );
 
                                 // Navigate back
@@ -241,14 +241,14 @@ class ConversationTopbar extends StatelessWidget
                       itemBuilder: (BuildContext c) => [
                         popupItemWithIcon(
                           ConversationOption.close,
-                            t.pages.conversation.closeChat,
-                            Icons.close,
-                          ),
+                          t.pages.conversation.closeChat,
+                          Icons.close,
+                        ),
                         popupItemWithIcon(
                           ConversationOption.block,
-                            t.pages.conversation.blockUser,
-                            Icons.block,
-                          )
+                          t.pages.conversation.blockUser,
+                          Icons.block,
+                        )
                       ],
                     ),
                   ],

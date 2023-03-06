@@ -32,8 +32,9 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
   bool _alreadyShownNotificationShown = false;
 
   Future<void> _openUrl(String url) async {
-    if (!(await launchUrl(Uri.parse(url),
-        mode: LaunchMode.externalApplication,
+    if (!(await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
     ))) {
       // TODO(Unknown): Show a popup to copy the url
     }

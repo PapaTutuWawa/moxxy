@@ -16,9 +16,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   final GlobalKey<NavigatorState> navigationKey;
 
   Future<void> _onPushedNamed(
-      PushedNamedEvent event,
-      Emitter<NavigationState> emit,
-    ) async {
+    PushedNamedEvent event,
+    Emitter<NavigationState> emit,
+  ) async {
     await navigationKey.currentState!.pushNamed(
       event.destination.path,
       arguments: event.destination.arguments,
@@ -26,9 +26,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   }
 
   Future<void> _onPushedNamedAndRemoveUntil(
-      PushedNamedAndRemoveUntilEvent event,
-      Emitter<NavigationState> emit,
-    ) async {
+    PushedNamedAndRemoveUntilEvent event,
+    Emitter<NavigationState> emit,
+  ) async {
     await navigationKey.currentState!.pushNamedAndRemoveUntil(
       event.destination.path,
       event.predicate,
@@ -37,9 +37,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   }
 
   Future<void> _onPushedNamedReplaceEvent(
-      PushedNamedReplaceEvent event,
-      Emitter<NavigationState> emit,
-    ) async {
+    PushedNamedReplaceEvent event,
+    Emitter<NavigationState> emit,
+  ) async {
     await navigationKey.currentState!.pushReplacementNamed(
       event.destination.path,
       arguments: event.destination.arguments,
@@ -47,9 +47,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   }
 
   Future<void> _onPoppedRoute(
-      PoppedRouteEvent event,
-      Emitter<NavigationState> emit,
-    ) async {
+    PoppedRouteEvent event,
+    Emitter<NavigationState> emit,
+  ) async {
     navigationKey.currentState!.pop();
   }
 

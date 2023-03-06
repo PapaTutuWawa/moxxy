@@ -15,7 +15,8 @@ Future<List<int>> deriveKey(String key) async {
 /// https://github.com/monal-im/Monal/blob/develop/UDPLogServer/server.py if
 /// [key] is derived using [deriveKey].
 Future<List<int>> encryptData(
-  List<int> data, List<int> key, {
+  List<int> data,
+  List<int> key, {
   List<int>? nonce,
 }) async {
   final algorithm = AesGcm.with256bits();

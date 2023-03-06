@@ -41,9 +41,9 @@ class StickerPack with _$StickerPack {
       _$StickerPackFromJson(json);
 
   factory StickerPack.fromDatabaseJson(
-      Map<String, dynamic> json,
-      List<Sticker> stickers,
-    ) {
+    Map<String, dynamic> json,
+    List<Sticker> stickers,
+  ) {
     final pack = StickerPack.fromJson({
       ...json,
       'local': true,

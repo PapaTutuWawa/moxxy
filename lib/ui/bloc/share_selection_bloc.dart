@@ -70,10 +70,11 @@ class ShareSelectionBloc
     return state.selection.map((i) => state.items[i].jid).toList();
   }
 
-  void _updateItems(List<Conversation> conversations,
-      List<RosterItem> rosterItems,
-      Emitter<ShareSelectionState> emit,
-    ) {
+  void _updateItems(
+    List<Conversation> conversations,
+    List<RosterItem> rosterItems,
+    Emitter<ShareSelectionState> emit,
+  ) {
     // Use all conversations as a base
     final items = List<ShareListItem>.from(
       conversations.map((c) {
@@ -129,16 +130,16 @@ class ShareSelectionBloc
   }
 
   Future<void> _onShareSelectionInit(
-      ShareSelectionInitEvent event,
-      Emitter<ShareSelectionState> emit,
-    ) async {
+    ShareSelectionInitEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _updateItems(event.conversations, event.rosterItems, emit);
   }
 
   Future<void> _onRequested(
     ShareSelectionRequestedEvent event,
-      Emitter<ShareSelectionState> emit,
-    ) async {
+    Emitter<ShareSelectionState> emit,
+  ) async {
     emit(
       state.copyWith(
         paths: event.paths,
@@ -156,9 +157,9 @@ class ShareSelectionBloc
   }
 
   Future<void> _onConversationsModified(
-      ConversationsModified event,
-      Emitter<ShareSelectionState> emit,
-    ) async {
+    ConversationsModified event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _updateItems(
       event.conversations,
       GetIt.I.get<NewConversationBloc>().state.roster,
@@ -167,9 +168,9 @@ class ShareSelectionBloc
   }
 
   Future<void> _onRosterModified(
-      RosterModifiedEvent event,
-      Emitter<ShareSelectionState> emit,
-    ) async {
+    RosterModifiedEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _updateItems(
       GetIt.I.get<ConversationsBloc>().state.conversations,
       event.rosterItems,
@@ -178,9 +179,9 @@ class ShareSelectionBloc
   }
 
   Future<void> _onSubmit(
-      SubmittedEvent event,
-      Emitter<ShareSelectionState> emit,
-    ) async {
+    SubmittedEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     if (state.type == ShareSelectionType.text) {
       await MoxplatformPlugin.handler.getDataSender().sendData(
             SendMessageCommand(
@@ -217,9 +218,9 @@ class ShareSelectionBloc
   }
 
   Future<void> _onSelectionToggled(
-      SelectionToggledEvent event,
-      Emitter<ShareSelectionState> emit,
-    ) async {
+    SelectionToggledEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     if (state.selection.contains(event.index)) {
       emit(
         state.copyWith(
@@ -240,9 +241,9 @@ class ShareSelectionBloc
   }
 
   Future<void> _onReset(
-      ResetEvent event,
-      Emitter<ShareSelectionState> emit,
-    ) async {
+    ResetEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _resetState(emit);
   }
 }

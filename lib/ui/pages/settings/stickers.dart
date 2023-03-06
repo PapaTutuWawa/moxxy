@@ -51,7 +51,7 @@ class StickersSettingsPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               SectionTitle(
-                                  t.pages.settings.stickers.displayStickers,
+                                t.pages.settings.stickers.displayStickers,
                               ),
                               SettingsRow(
                                 title:
@@ -62,8 +62,8 @@ class StickersSettingsPage extends StatelessWidget {
                                     context.read<PreferencesBloc>().add(
                                           PreferencesChangedEvent(
                                             prefs.copyWith(
-                                                enableStickers: value,
-                                              ),
+                                              enableStickers: value,
+                                            ),
                                           ),
                                         );
                                   },
@@ -79,9 +79,9 @@ class StickersSettingsPage extends StatelessWidget {
                                     context.read<PreferencesBloc>().add(
                                           PreferencesChangedEvent(
                                             prefs.copyWith(
-                                                autoDownloadStickersFromContacts:
-                                                    value,
-                                                  ),
+                                              autoDownloadStickersFromContacts:
+                                                  value,
+                                            ),
                                           ),
                                         );
                                   },
@@ -96,9 +96,9 @@ class StickersSettingsPage extends StatelessWidget {
                                 title:
                                     t.pages.settings.stickers.importStickerPack,
                               ),
-                              SectionTitle(t
-                                  .pages.settings.stickers.stickerPacksSection,
-                                ),
+                              SectionTitle(
+                                t.pages.settings.stickers.stickerPacksSection,
+                              ),
                               if (stickers.stickerPacks.isEmpty)
                                 SettingsRow(
                                   title: t.pages.conversation

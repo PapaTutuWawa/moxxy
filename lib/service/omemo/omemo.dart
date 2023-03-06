@@ -84,10 +84,10 @@ class OmemoService {
       if (event is RatchetModifiedEvent) {
         await GetIt.I.get<DatabaseService>().saveRatchet(
               OmemoDoubleRatchetWrapper(
-                  event.ratchet,
-                  event.deviceId,
-                  event.jid,
-                ),
+                event.ratchet,
+                event.deviceId,
+                event.jid,
+              ),
             );
 
         if (event.added) {

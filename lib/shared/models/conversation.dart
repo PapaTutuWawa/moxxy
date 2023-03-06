@@ -80,12 +80,12 @@ class Conversation with _$Conversation {
       _$ConversationFromJson(json);
 
   factory Conversation.fromDatabaseJson(
-      Map<String, dynamic> json,
-      bool inRoster,
-      String subscription,
-      List<SharedMedium> sharedMedia,
-      Message? lastMessage,
-    ) {
+    Map<String, dynamic> json,
+    bool inRoster,
+    String subscription,
+    List<SharedMedium> sharedMedia,
+    Message? lastMessage,
+  ) {
     return Conversation.fromJson({
       ...json,
       'sharedMedia': <Map<String, dynamic>>[],

@@ -403,9 +403,9 @@ Future<String?> getVideoThumbnailPath(
     quality: 75,
   );
   assert(
-      r == thumbnailPath,
-      'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath',
-    );
+    r == thumbnailPath,
+    'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath',
+  );
 
   return thumbnailPath;
 }

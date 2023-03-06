@@ -17,9 +17,9 @@ class ServerInfoBloc extends Bloc<ServerInfoEvent, ServerInfoState> {
   }
 
   Future<void> _onServerInfoRequested(
-      ServerInfoPageRequested event,
-      Emitter<ServerInfoState> emit,
-    ) async {
+    ServerInfoPageRequested event,
+    Emitter<ServerInfoState> emit,
+  ) async {
     emit(state.copyWith(working: true));
 
     GetIt.I.get<NavigationBloc>().add(

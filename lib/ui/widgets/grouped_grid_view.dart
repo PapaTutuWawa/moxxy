@@ -61,8 +61,9 @@ class GroupedGridView<T, K> extends StatelessWidget {
       itemBuilder: (context, index) {
         if (index.isEven) {
           return separatorBuilder(
-              context, getKey(_categories[index ~/ 2].first),
-            );
+            context,
+            getKey(_categories[index ~/ 2].first),
+          );
         } else {
           return Padding(
             padding: gridPadding ?? EdgeInsets.zero,

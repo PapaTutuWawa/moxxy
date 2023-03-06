@@ -11,9 +11,10 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
         (stanza.firstTag('body') != null ||
             stanza.firstTag('x', xmlns: oobDataXmlns) != null ||
             stanza.firstTag('file-sharing', xmlns: sfsXmlns) != null ||
-            stanza.firstTag('file-upload',
-                    xmlns: fileUploadNotificationXmlns,
-                  ) !=
+            stanza.firstTag(
+                  'file-upload',
+                  xmlns: fileUploadNotificationXmlns,
+                ) !=
                 null ||
             stanza.firstTag('encrypted', xmlns: omemoXmlns) != null);
   }

@@ -199,10 +199,10 @@ class ConversationsPageState extends State<ConversationsPage>
               child: InkWell(
                 onTap: () => GetIt.I.get<ConversationBloc>().add(
                       RequestedConversationEvent(
-                          item.jid,
-                          item.title,
-                          item.avatarUrl,
-                        ),
+                        item.jid,
+                        item.title,
+                        item.avatarUrl,
+                      ),
                     ),
                 child: row,
               ),

@@ -32,8 +32,8 @@ class LicenseRow extends StatelessWidget {
     return ListTile(
       title: Text(library.name),
       subtitle: Text(
-          t.pages.settings.licenses.licensedUnder(license: library.license),
-        ),
+        t.pages.settings.licenses.licensedUnder(license: library.license),
+      ),
       onTap: _openUrl,
     );
   }

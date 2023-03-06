@@ -55,9 +55,9 @@ class StickerPackPage extends StatelessWidget {
       );
 
   Future<void> _onDeletePressed(
-      BuildContext context,
-      StickerPackState state,
-    ) async {
+    BuildContext context,
+    StickerPackState state,
+  ) async {
     final result = await showConfirmationDialog(
       t.pages.stickerPack.removeConfirmTitle,
       t.pages.stickerPack.removeConfirmBody,
@@ -72,9 +72,9 @@ class StickerPackPage extends StatelessWidget {
   }
 
   Future<void> _onInstallPressed(
-      BuildContext context,
-      StickerPackState state,
-    ) async {
+    BuildContext context,
+    StickerPackState state,
+  ) async {
     final result = await showConfirmationDialog(
       t.pages.stickerPack.installConfirmTitle,
       t.pages.stickerPack.installConfirmBody,

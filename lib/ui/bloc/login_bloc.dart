@@ -23,30 +23,30 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _onJidChanged(
-      LoginJidChangedEvent event,
-      Emitter<LoginState> emit,
-    ) async {
+    LoginJidChangedEvent event,
+    Emitter<LoginState> emit,
+  ) async {
     emit(state.copyWith(jid: event.jid));
   }
 
   Future<void> _onPasswordChanged(
-      LoginPasswordChangedEvent event,
-      Emitter<LoginState> emit,
-    ) async {
+    LoginPasswordChangedEvent event,
+    Emitter<LoginState> emit,
+  ) async {
     emit(state.copyWith(password: event.password));
   }
 
   Future<void> _onPasswordVisibilityToggled(
-      LoginPasswordVisibilityToggledEvent event,
-      Emitter<LoginState> emit,
-    ) async {
+    LoginPasswordVisibilityToggledEvent event,
+    Emitter<LoginState> emit,
+  ) async {
     emit(state.copyWith(passwordVisible: !state.passwordVisible));
   }
 
   Future<void> _onSubmitted(
-      LoginSubmittedEvent event,
-      Emitter<LoginState> emit,
-    ) async {
+    LoginSubmittedEvent event,
+    Emitter<LoginState> emit,
+  ) async {
     final jidValidity = validateJidString(state.jid);
     if (jidValidity != null) {
       return emit(

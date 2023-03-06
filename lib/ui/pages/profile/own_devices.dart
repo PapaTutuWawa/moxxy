@@ -25,10 +25,10 @@ class OwnDevicesPage extends StatelessWidget {
       );
 
   Future<void> _showDeviceQRCode(
-      BuildContext context,
-      int deviceId,
-      String fingerprint,
-    ) async {
+    BuildContext context,
+    int deviceId,
+    String fingerprint,
+  ) async {
     final jid = GetIt.I.get<UIDataService>().ownJid;
     showQrCode(
       context,
@@ -73,10 +73,10 @@ class OwnDevicesPage extends StatelessWidget {
                 true,
                 onShowQrCodePressed: () {
                   _showDeviceQRCode(
-                      context,
-                      state.deviceId,
-                      state.deviceFingerprint,
-                    );
+                    context,
+                    state.deviceId,
+                    state.deviceFingerprint,
+                  );
                 },
               ),
               ...state.keys.isNotEmpty

@@ -6,8 +6,8 @@ const warningFileIntegrityCheckFailed = 1;
 String warningToTranslatableString(int warning) {
   assert(
     warning != noWarning,
-      'Calling warningToTranslatableString with noWarning makes no sense',
-    );
+    'Calling warningToTranslatableString with noWarning makes no sense',
+  );
 
   switch (warning) {
     case warningFileIntegrityCheckFailed:

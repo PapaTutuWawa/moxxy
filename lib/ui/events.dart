@@ -38,8 +38,8 @@ void setupEventHandler() {
 
   GetIt.I.registerSingleton<EventHandler>(handler);
   GetIt.I.registerSingleton<SynchronizedQueue<Map<String, dynamic>?>>(
-      SynchronizedQueue<Map<String, dynamic>?>(handleIsolateEvent),
-    );
+    SynchronizedQueue<Map<String, dynamic>?>(handleIsolateEvent),
+  );
 }
 
 Future<void> receiveIsolateEvent(Map<String, dynamic>? json) async {

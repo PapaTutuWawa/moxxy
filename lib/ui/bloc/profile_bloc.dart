@@ -22,9 +22,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   Future<void> _onProfileRequested(
-      ProfilePageRequestedEvent event,
-      Emitter<ProfileState> emit,
-    ) async {
+    ProfilePageRequestedEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     if (event.isSelfProfile) {
       emit(
         state.copyWith(
@@ -53,9 +53,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   Future<void> _onConversationUpdated(
-      ConversationUpdatedEvent event,
-      Emitter<ProfileState> emit,
-    ) async {
+    ConversationUpdatedEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     if (state.conversation == null ||
         state.conversation!.jid != event.conversation.jid) return;
 
@@ -63,9 +63,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   Future<void> _onAvatarSet(
-      AvatarSetEvent event,
-      Emitter<ProfileState> emit,
-    ) async {
+    AvatarSetEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     emit(
       state.copyWith(
         avatarUrl: event.path,
@@ -84,9 +84,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   Future<void> _onSetSubscriptionState(
-      SetSubscriptionStateEvent event,
-      Emitter<ProfileState> emit,
-    ) async {
+    SetSubscriptionStateEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     emit(
       state.copyWith(
         conversation: state.conversation!.copyWith(
@@ -104,9 +104,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   Future<void> _onMuteStateSet(
-      MuteStateSetEvent event,
-      Emitter<ProfileState> emit,
-    ) async {
+    MuteStateSetEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
     emit(
       state.copyWith(
         conversation: state.conversation!.copyWith(

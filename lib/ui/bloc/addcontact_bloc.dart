@@ -59,8 +59,8 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
 
     assert(
       result.conversation != null,
-        'RequestedConversationEvent must contain a not null conversation',
-      );
+      'RequestedConversationEvent must contain a not null conversation',
+    );
     GetIt.I.get<ConversationBloc>().add(
           RequestedConversationEvent(
             result.conversation!.jid,

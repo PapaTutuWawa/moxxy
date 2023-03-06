@@ -40,15 +40,15 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
   final Color conversationOverlayTextColor;
 
   @override
-  MoxxyThemeData copyWith(
-      {Color? conversationTextFieldColor,
-      Color? profileFallbackBackgroundColor,
-      Color? profileFallbackTextColor,
-      Color? bubbleQuoteInTextFieldColor,
-      Color? bubbleQuoteInTextFieldTextColor,
-      Color? conversationTextFieldHintTextColor,
-      Color? conversationTextFieldTextColor,
-      Color? conversationOverlayTextColor,
+  MoxxyThemeData copyWith({
+    Color? conversationTextFieldColor,
+    Color? profileFallbackBackgroundColor,
+    Color? profileFallbackTextColor,
+    Color? bubbleQuoteInTextFieldColor,
+    Color? bubbleQuoteInTextFieldTextColor,
+    Color? conversationTextFieldHintTextColor,
+    Color? conversationTextFieldTextColor,
+    Color? conversationOverlayTextColor,
   }) {
     return MoxxyThemeData(
       conversationTextFieldColor:
@@ -80,9 +80,9 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
 /// only differentiate between a color for the element's disabled state and for all
 /// other states.
 MaterialStateProperty<Color> _makeEnabledDisabledProperty(
-    Color enabled,
-    Color disabled,
-  ) {
+  Color enabled,
+  Color disabled,
+) {
   return MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
     if (states.contains(MaterialState.disabled)) return disabled;
     return enabled;
