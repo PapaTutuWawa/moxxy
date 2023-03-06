@@ -48,7 +48,8 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
       Color? bubbleQuoteInTextFieldTextColor,
       Color? conversationTextFieldHintTextColor,
       Color? conversationTextFieldTextColor,
-      Color? conversationOverlayTextColor}) {
+      Color? conversationOverlayTextColor,
+  }) {
     return MoxxyThemeData(
       conversationTextFieldColor:
           conversationTextFieldColor ?? this.conversationTextFieldColor,
@@ -79,7 +80,9 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
 /// only differentiate between a color for the element's disabled state and for all
 /// other states.
 MaterialStateProperty<Color> _makeEnabledDisabledProperty(
-    Color enabled, Color disabled) {
+    Color enabled,
+    Color disabled,
+  ) {
   return MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
     if (states.contains(MaterialState.disabled)) return disabled;
     return enabled;

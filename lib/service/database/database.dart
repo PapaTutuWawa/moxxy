@@ -110,8 +110,10 @@ class DatabaseService {
       key = (await _storage.read(key: databasePasswordKey))!;
     } else {
       _log.finest('Database encryption not key found. Generating it...');
-      key = randomAlphaNumeric(40,
-          provider: CoreRandomProvider.from(Random.secure()));
+      key = randomAlphaNumeric(
+        40,
+        provider: CoreRandomProvider.from(Random.secure()),
+      );
       await _storage.write(key: databasePasswordKey, value: key);
       _log.finest('Key generation done...');
     }
@@ -328,7 +330,10 @@ class DatabaseService {
   /// [olderThan] specified whether the messages must be older (true) or newer (false) than [oldestTimestamp].
   /// If [oldestTimestamp] is null, then use the oldest/newest message.
   Future<List<Message>> getPaginatedMessagesForJid(
-      String jid, bool olderThan, int? oldestTimestamp) async {
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
     final comparator = olderThan ? '<' : '>';
     final query = oldestTimestamp != null
         ? 'conversationJid = ? AND timestamp $comparator ?'
@@ -362,7 +367,10 @@ class DatabaseService {
   }
 
   Future<List<SharedMedium>> getPaginatedSharedMediaForJid(
-      String jid, bool olderThan, int? oldestTimestamp) async {
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
     final comparator = olderThan ? '<' : '>';
     final query = oldestTimestamp != null
         ? 'conversation_jid = ? AND timestamp $comparator ?'
@@ -504,8 +512,12 @@ class DatabaseService {
 
   /// Like [addConversationFromData] but for [SharedMedium].
   Future<SharedMedium> addSharedMediumFromData(
-      String path, int timestamp, String conversationJid, int messageId,
-      {String? mime}) async {
+    String path,
+    int timestamp,
+    String conversationJid,
+    int messageId, {
+    String? mime,
+  }) async {
     final s = SharedMedium(
       -1,
       path,
@@ -632,8 +644,11 @@ class DatabaseService {
     return Message.fromDatabaseJson(msg, null);
   }
 
-  Future<Message?> getMessageByXmppId(String id, String conversationJid,
-      {bool includeOriginId = true}) async {
+  Future<Message?> getMessageByXmppId(
+    String id,
+    String conversationJid, {
+    bool includeOriginId = true,
+  }) async {
     final idQuery = includeOriginId ? '(sid = ? OR originId = ?)' : 'sid = ?';
     final messagesRaw = await _db.query(
       'Messages',
@@ -651,7 +666,9 @@ class DatabaseService {
   }
 
   Future<Message?> getMessageByOriginId(
-      String id, String conversationJid) async {
+    String id,
+    String conversationJid,
+  ) async {
     final messagesRaw = await _db.query(
       'Messages',
       where: 'conversationJid = ? AND originId = ?',

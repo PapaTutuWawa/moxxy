@@ -24,7 +24,10 @@ import 'package:url_launcher/url_launcher.dart';
 /// action. Resolves to true if the user pressed the confirm button. Returns false if
 /// the cancel button was pressed.
 Future<bool> showConfirmationDialog(
-    String title, String body, BuildContext context) async {
+    String title,
+    String body,
+    BuildContext context,
+  ) async {
   final result = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
@@ -52,7 +55,9 @@ Future<bool> showConfirmationDialog(
 
 /// Shows a dialog telling the user that the [feature] feature is not implemented.
 Future<void> showNotImplementedDialog(
-    String feature, BuildContext context) async {
+    String feature,
+    BuildContext context,
+  ) async {
   return showDialog<void>(
     context: context,
     barrierDismissible: false,
@@ -80,7 +85,10 @@ Future<void> showNotImplementedDialog(
 
 /// Shows a dialog giving the user a very simple information with an "Okay" button.
 Future<void> showInfoDialog(
-    String title, String body, BuildContext context) async {
+    String title,
+    String body,
+    BuildContext context,
+  ) async {
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
@@ -137,7 +145,10 @@ class PickedAvatar {
 /// [oldPath] is the path of the old avatar or "" if none has been set.
 /// Returns the path of the new avatar path.
 Future<PickedAvatar?> pickAvatar(
-    BuildContext context, String jid, String oldPath) async {
+    BuildContext context,
+    String jid,
+    String oldPath,
+  ) async {
   final data = await pickAndCropImage(context);
 
   if (data != null) {
@@ -260,7 +271,11 @@ void showQrCode(BuildContext context, String data, {bool embedLogo = true}) {
 /// Returns the index of the device in [devices] on success. On failure of any kind,
 /// returns -1.
 int isVerificationUriValid(
-    List<OmemoDevice> devices, Uri scannedUri, String deviceJid, int deviceId) {
+    List<OmemoDevice> devices,
+    Uri scannedUri,
+    String deviceJid,
+    int deviceId,
+  ) {
   if (scannedUri.queryParameters.isEmpty) {
     // No query parameters
     Fluttertoast.showToast(

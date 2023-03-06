@@ -9,8 +9,10 @@ import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 class BidirectionalSharedMediaController
     extends BidirectionalController<SharedMedium> {
   BidirectionalSharedMediaController(this.conversationJid)
-      : assert(BidirectionalSharedMediaController.currentController == null,
-            'There can only be one BidirectionalSharedMediaController'),
+      : assert(
+        BidirectionalSharedMediaController.currentController == null,
+            'There can only be one BidirectionalSharedMediaController',
+          ),
         super(
           pageSize: sharedMediaPaginationSize,
           maxPageAmount: maxSharedMediaPages,
@@ -26,7 +28,8 @@ class BidirectionalSharedMediaController
 
   @override
   Future<List<SharedMedium>> fetchOlderDataImpl(
-      SharedMedium? oldestElement) async {
+      SharedMedium? oldestElement,
+    ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
           GetPagedSharedMediaCommand(
@@ -41,7 +44,8 @@ class BidirectionalSharedMediaController
 
   @override
   Future<List<SharedMedium>> fetchNewerDataImpl(
-      SharedMedium? newestElement) async {
+      SharedMedium? newestElement,
+    ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
           GetPagedSharedMediaCommand(

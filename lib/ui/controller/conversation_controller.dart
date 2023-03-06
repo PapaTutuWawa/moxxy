@@ -53,8 +53,10 @@ class TextFieldData {
 class BidirectionalConversationController
     extends BidirectionalController<Message> {
   BidirectionalConversationController(this.conversationJid)
-      : assert(BidirectionalConversationController.currentController == null,
-            'There can only be one BidirectionalConversationController'),
+      : assert(
+        BidirectionalConversationController.currentController == null,
+            'There can only be one BidirectionalConversationController',
+          ),
         super(
           pageSize: messagePaginationSize,
           maxPageAmount: maxMessagePages,
@@ -458,7 +460,11 @@ class BidirectionalConversationController
 
   /// Enter the "edit mode" for a message.
   void beginMessageEditing(
-      String originalBody, Message? quotes, int id, String sid) {
+      String originalBody,
+      Message? quotes,
+      int id,
+      String sid,
+    ) {
     _messageEditingState = MessageEditingState(
       id,
       sid,

@@ -23,7 +23,9 @@ class CropBloc extends Bloc<CropEvent, CropState> {
   final GlobalKey cropKey = GlobalKey();
 
   Future<void> _onImageCropped(
-      ImageCroppedEvent event, Emitter<CropState> emit) async {
+      ImageCroppedEvent event,
+      Emitter<CropState> emit,
+    ) async {
     emit(
       state.copyWith(
         isWorking: true,
@@ -41,7 +43,9 @@ class CropBloc extends Bloc<CropEvent, CropState> {
   }
 
   Future<void> _onImageReset(
-      ResetImageEvent event, Emitter<CropState> emit) async {
+      ResetImageEvent event,
+      Emitter<CropState> emit,
+    ) async {
     emit(
       state.copyWith(
         image: null,

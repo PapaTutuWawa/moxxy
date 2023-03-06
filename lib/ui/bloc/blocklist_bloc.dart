@@ -20,7 +20,9 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onBlocklistRequested(
-      BlocklistRequestedEvent event, Emitter<BlocklistState> emit) async {
+    BlocklistRequestedEvent event,
+    Emitter<BlocklistState> emit,
+  ) async {
     final mustDoWork = state.blocklist.isEmpty;
 
     if (mustDoWork) {
@@ -53,7 +55,9 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onJidUnblocked(
-      UnblockedJidEvent event, Emitter<BlocklistState> emit) async {
+    UnblockedJidEvent event,
+    Emitter<BlocklistState> emit,
+  ) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
           UnblockJidCommand(
             jid: event.jid,
@@ -66,7 +70,9 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onUnblockedAll(
-      UnblockedAllEvent event, Emitter<BlocklistState> emit) async {
+    UnblockedAllEvent event,
+    Emitter<BlocklistState> emit,
+  ) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
           UnblockAllCommand(),
         );
@@ -77,7 +83,9 @@ class BlocklistBloc extends Bloc<BlocklistEvent, BlocklistState> {
   }
 
   Future<void> _onBlocklistPushed(
-      BlocklistPushedEvent event, Emitter<BlocklistState> emit) async {
+    BlocklistPushedEvent event,
+    Emitter<BlocklistState> emit,
+  ) async {
     final blocklist = state.blocklist..addAll(event.added);
     emit(
       state.copyWith(

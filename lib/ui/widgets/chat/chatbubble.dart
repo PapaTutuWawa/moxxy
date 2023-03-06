@@ -29,7 +29,7 @@ class RawChatBubble extends StatelessWidget {
   final bool start;
 
   static BorderRadius getBorderRadius(
-      bool sentBySelf, bool start, bool between, bool end) {
+      bool sentBySelf, bool start, bool between, bool end,) {
     return BorderRadius.only(
       topLeft: !sentBySelf && (between || end) && !(start && end)
           ? radiusSmall

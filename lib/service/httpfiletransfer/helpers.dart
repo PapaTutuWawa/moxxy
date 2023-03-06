@@ -6,7 +6,10 @@ import 'package:path/path.dart' as path;
 
 /// Calculates the path for a given file to be saved to and, if neccessary, create it.
 Future<String> getDownloadPath(
-    String filename, String conversationJid, String? mime) async {
+  String filename,
+  String conversationJid,
+  String? mime,
+) async {
   String type;
   var prependMoxxy = true;
   if (mime != null && ['image/', 'video/'].any((e) => mime.startsWith(e))) {

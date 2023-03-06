@@ -43,7 +43,10 @@ class AvatarService {
   }
 
   Future<void> updateAvatarForJid(
-      String jid, String hash, List<int> data) async {
+    String jid,
+    String hash,
+    List<int> data,
+  ) async {
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
     final originalConversation = await cs.getConversationByJid(jid);
@@ -227,7 +230,8 @@ class AvatarService {
     if (id == state.avatarHash) return;
 
     _log.info(
-        'Mismatch between saved avatar data and server-side avatar data about ourself');
+      'Mismatch between saved avatar data and server-side avatar data about ourself',
+    );
     final avatarDataResult = await am.getUserAvatar(jid);
     if (avatarDataResult.isType<AvatarError>()) {
       _log.severe('Failed to fetch our avatar');

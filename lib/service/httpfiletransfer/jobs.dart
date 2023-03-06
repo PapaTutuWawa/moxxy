@@ -6,8 +6,14 @@ import 'package:moxxyv2/shared/models/message.dart';
 /// A job describing the download of a file.
 @immutable
 class FileUploadJob {
-  const FileUploadJob(this.recipients, this.path, this.mime, this.encryptMap,
-      this.messageMap, this.thumbnails);
+  const FileUploadJob(
+    this.recipients,
+    this.path,
+    this.mime,
+    this.encryptMap,
+    this.messageMap,
+    this.thumbnails,
+  );
   final List<String> recipients;
   final String path;
   final String? mime;

@@ -84,7 +84,8 @@ class Conversation with _$Conversation {
       bool inRoster,
       String subscription,
       List<SharedMedium> sharedMedia,
-      Message? lastMessage) {
+      Message? lastMessage,
+    ) {
     return Conversation.fromJson({
       ...json,
       'sharedMedia': <Map<String, dynamic>>[],

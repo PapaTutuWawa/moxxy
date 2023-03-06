@@ -36,7 +36,10 @@ class CryptographyService {
   /// Encrypt the file at path [source] and write the encrypted data to [dest]. For the
   /// encryption, use the algorithm indicated by [encryption].
   Future<EncryptionResult> encryptFile(
-      String source, String dest, SFSEncryptionType encryption) async {
+    String source,
+    String dest,
+    SFSEncryptionType encryption,
+  ) async {
     _log.finest('Beginning encryption routine for $source');
     final key = encryption == SFSEncryptionType.aes128GcmNoPadding
         ? _randomBuffer(16)

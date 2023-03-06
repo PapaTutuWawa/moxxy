@@ -53,7 +53,9 @@ class ConnectivityWatcherService {
 
   /// Called when the XMPP connection state changed
   Future<void> onConnectionStateChanged(
-      XmppConnectionState before, XmppConnectionState current) async {
+    XmppConnectionState before,
+    XmppConnectionState current,
+  ) async {
     if (before == XmppConnectionState.connected &&
         current != XmppConnectionState.connected) {
       // We somehow lost connection
@@ -62,7 +64,8 @@ class ConnectivityWatcherService {
         await _startTimer();
       } else {
         _log.finest(
-            'Lost connection to server but no network connectivity available. Stopping warning timer...');
+          'Lost connection to server but no network connectivity available. Stopping warning timer...',
+        );
         await _stopTimer();
       }
     } else if (current == XmppConnectionState.connected) {

@@ -296,8 +296,10 @@ extension ExceptionSafeLock on Lock {
   /// that it cannot deadlock everything depending on the lock. Throws the exception again
   /// after the lock has been released.
   /// With [log], one can control how the stack trace gets displayed. Defaults to print.
-  Future<void> safeSynchronized(Future<void> Function() criticalSection,
-      {void Function(String) log = print}) async {
+  Future<void> safeSynchronized(
+    Future<void> Function() criticalSection, {
+    void Function(String) log = print,
+  }) async {
     Object? ex;
 
     await synchronized(() async {
@@ -368,7 +370,10 @@ Future<Size?> getImageSizeFromData(Uint8List bytes) async {
 /// If the thumbnail already exists, then just its path is returned. If not, then
 /// it gets generated first.
 Future<String?> getVideoThumbnailPath(
-    String path, String conversationJid, String mime) async {
+  String path,
+  String conversationJid,
+  String mime,
+) async {
   //print('getVideoThumbnailPath: Mime type: $mime');
 
   // Ignore mime types that may be wacky
@@ -397,8 +402,10 @@ Future<String?> getVideoThumbnailPath(
     imageFormat: ImageFormat.JPEG,
     quality: 75,
   );
-  assert(r == thumbnailPath,
-      'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath');
+  assert(
+      r == thumbnailPath,
+      'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath',
+    );
 
   return thumbnailPath;
 }

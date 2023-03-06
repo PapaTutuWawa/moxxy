@@ -279,7 +279,9 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                           child: const Icon(Icons.photo_camera),
                                           onTap: () {
                                             showNotImplementedDialog(
-                                                'taking photos', context);
+                                                'taking photos',
+                                                context,
+                                              );
                                           },
                                           backgroundColor: primaryColor,
                                           foregroundColor: Colors.white,

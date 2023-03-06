@@ -58,12 +58,14 @@ class HttpFileTransferService {
     await _uploadLock.synchronized(() async {
       if (_currentUploadJob != null) {
         _log.finest(
-            'Connectivity regained and there is still an upload job. Restarting it.');
+          'Connectivity regained and there is still an upload job. Restarting it.',
+        );
         unawaited(_performFileUpload(_currentUploadJob!));
       } else {
         if (_uploadQueue.isNotEmpty) {
           _log.finest(
-              'Connectivity regained and the upload queue is not empty. Starting a new upload job.');
+            'Connectivity regained and the upload queue is not empty. Starting a new upload job.',
+          );
           _currentUploadJob = _uploadQueue.removeFirst();
           unawaited(_performFileUpload(_currentUploadJob!));
         }
@@ -73,12 +75,14 @@ class HttpFileTransferService {
     await _downloadLock.synchronized(() async {
       if (_currentDownloadJob != null) {
         _log.finest(
-            'Connectivity regained and there is still a download job. Restarting it.');
+          'Connectivity regained and there is still a download job. Restarting it.',
+        );
         unawaited(_performFileDownload(_currentDownloadJob!));
       } else {
         if (_downloadQueue.isNotEmpty) {
           _log.finest(
-              'Connectivity regained and the download queue is not empty. Starting a new download job.');
+            'Connectivity regained and the download queue is not empty. Starting a new download job.',
+          );
           _currentDownloadJob = _downloadQueue.removeFirst();
           unawaited(_performFileDownload(_currentDownloadJob!));
         }
@@ -299,13 +303,15 @@ class HttpFileTransferService {
               ),
             );
         _log.finest(
-            'Sent message with file upload for ${job.path} to $recipient');
+          'Sent message with file upload for ${job.path} to $recipient',
+        );
 
         final isMultiMedia = (job.mime?.startsWith('image/') ?? false) ||
             (job.mime?.startsWith('video/') ?? false);
         if (isMultiMedia) {
           _log.finest(
-              'File appears to be either an image or a video. Copying it to the correct directory...');
+            'File appears to be either an image or a video. Copying it to the correct directory...',
+          );
           unawaited(_copyFile(job));
         }
       }
@@ -356,7 +362,8 @@ class HttpFileTransferService {
     }
 
     _log.finest(
-        'Downloading ${job.location.url} as $filename (MIME guess ${job.mimeGuess}) to $downloadPath (-> $downloadedPath)');
+      'Downloading ${job.location.url} as $filename (MIME guess ${job.mimeGuess}) to $downloadPath (-> $downloadedPath)',
+    );
 
     int? downloadStatusCode;
     try {
@@ -381,7 +388,8 @@ class HttpFileTransferService {
 
     if (!isRequestOkay(downloadStatusCode)) {
       _log.warning(
-          'HTTP GET of ${job.location.url} returned $downloadStatusCode');
+        'HTTP GET of ${job.location.url} returned $downloadStatusCode',
+      );
       await _fileDownloadFailed(job, fileDownloadFailedError);
       return;
     }
@@ -420,13 +428,15 @@ class HttpFileTransferService {
         integrityCheckPassed = result.plaintextOkay && result.ciphertextOkay;
       } catch (ex) {
         _log.warning(
-            'Decryption of $downloadPath ($downloadedPath) failed: $ex');
+          'Decryption of $downloadPath ($downloadedPath) failed: $ex',
+        );
         await _fileDownloadFailed(job, messageFailedToDecryptFile);
         return;
       }
 
       unawaited(
-          Directory(pathlib.dirname(downloadPath)).delete(recursive: true));
+        Directory(pathlib.dirname(downloadPath)).delete(recursive: true),
+      );
     }
 
     // Check the MIME type
@@ -517,7 +527,8 @@ class HttpFileTransferService {
     );
 
     _log.finest(
-        'Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}');
+      'Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}',
+    );
     GetIt.I.get<ConversationService>().setConversation(newConv);
 
     // Show a notification

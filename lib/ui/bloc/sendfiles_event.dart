@@ -8,8 +8,12 @@ enum SendFilesType {
 abstract class SendFilesEvent {}
 
 class SendFilesPageRequestedEvent extends SendFilesEvent {
-  SendFilesPageRequestedEvent(this.recipients, this.type,
-      {this.paths, this.popEntireStack = false});
+  SendFilesPageRequestedEvent(
+    this.recipients,
+    this.type, {
+    this.paths,
+    this.popEntireStack = false,
+  });
   final List<String> recipients;
   final SendFilesType type;
   final List<String>? paths;

@@ -4,8 +4,12 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 
 class RedirectDialog extends StatefulWidget {
-  const RedirectDialog(this.callback, this.serviceName, this.initialText,
-      {super.key});
+  const RedirectDialog(
+    this.callback,
+    this.serviceName,
+    this.initialText, {
+    super.key,
+  });
   final void Function(String url) callback;
   final String serviceName;
   final String initialText;

@@ -64,7 +64,8 @@ class TypingIndicatorWidgetState extends State<TypingIndicatorWidget>
     super.initState();
 
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1200))
+        vsync: this, duration: const Duration(milliseconds: 1200),
+      )
       ..forward()
       ..repeat();
 

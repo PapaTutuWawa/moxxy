@@ -16,7 +16,8 @@ class PreferencesService {
   }
 
   Future<void> modifyPreferences(
-      PreferencesState Function(PreferencesState) func) async {
+    PreferencesState Function(PreferencesState) func,
+  ) async {
     if (_preferences == null) await _loadPreferences();
 
     _preferences = func(_preferences!);

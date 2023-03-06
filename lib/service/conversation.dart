@@ -10,7 +10,8 @@ import 'package:synchronized/synchronized.dart';
 typedef CreateConversationCallback = Future<Conversation> Function();
 
 typedef UpdateConversationCallback = Future<Conversation> Function(
-    Conversation);
+  Conversation,
+);
 
 typedef PreRunConversationCallback = Future<void> Function(Conversation?);
 

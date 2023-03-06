@@ -42,7 +42,9 @@ class ConversationSettingsPage extends StatelessWidget {
   }
 
   Future<void> _removeBackgroundImage(
-      BuildContext context, PreferencesState state) async {
+      BuildContext context,
+      PreferencesState state,
+    ) async {
     final backgroundPath = state.backgroundPath;
     if (backgroundPath.isEmpty) return;
 

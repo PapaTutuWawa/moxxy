@@ -27,7 +27,10 @@ class MessageService {
   /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
   /// than [oldestTimestamp], or the newest messages are returned if null.
   Future<List<Message>> getPaginatedMessagesForJid(
-      String jid, bool olderThan, int? oldestTimestamp) async {
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
     if (olderThan && oldestTimestamp == null) {
       final result = await _cacheLock.synchronized<List<Message>?>(() {
         return _messageCache.getValue(jid);
@@ -142,7 +145,9 @@ class MessageService {
   }
 
   Future<Message?> getMessageByStanzaId(
-      String conversationJid, String stanzaId) async {
+    String conversationJid,
+    String stanzaId,
+  ) async {
     return GetIt.I.get<DatabaseService>().getMessageByXmppId(
           stanzaId,
           conversationJid,
@@ -151,7 +156,9 @@ class MessageService {
   }
 
   Future<Message?> getMessageByStanzaOrOriginId(
-      String conversationJid, String id) async {
+    String conversationJid,
+    String id,
+  ) async {
     return GetIt.I.get<DatabaseService>().getMessageByXmppId(
           id,
           conversationJid,
@@ -254,8 +261,12 @@ class MessageService {
   /// [selfRetract] indicates whether the message retraction came from the UI. If true,
   /// then the sender check (see security considerations of XEP-0424) is skipped as
   /// the UI already verifies it.
-  Future<void> retractMessage(String conversationJid, String originId,
-      String bareSender, bool selfRetract) async {
+  Future<void> retractMessage(
+    String conversationJid,
+    String originId,
+    String bareSender,
+    bool selfRetract,
+  ) async {
     final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
           originId,
           conversationJid,
@@ -263,7 +274,8 @@ class MessageService {
 
     if (msg == null) {
       _log.finest(
-          'Got message retraction for origin Id $originId, but did not find the message');
+        'Got message retraction for origin Id $originId, but did not find the message',
+      );
       return;
     }
 
@@ -271,7 +283,8 @@ class MessageService {
     if (!selfRetract) {
       if (JID.fromString(msg.sender).toBare().toString() != bareSender) {
         _log.warning(
-            'Received invalid message retraction from $bareSender but its original sender is ${msg.sender}');
+          'Received invalid message retraction from $bareSender but its original sender is ${msg.sender}',
+        );
         return;
       }
     }
@@ -339,7 +352,8 @@ class MessageService {
       }
     } else {
       _log.warning(
-          'Failed to find conversation with conversationJid $conversationJid');
+        'Failed to find conversation with conversationJid $conversationJid',
+      );
     }
   }
 }

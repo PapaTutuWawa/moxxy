@@ -47,7 +47,8 @@ Future<void> initializeServiceIfNeeded() async {
   if (await handler.isRunning()) {
     if (kDebugMode) {
       logger.fine(
-          'Since kDebugMode is true, waiting 600ms before sending PreStartCommand');
+        'Since kDebugMode is true, waiting 600ms before sending PreStartCommand',
+      );
       sleep(const Duration(milliseconds: 600));
     }
 
@@ -104,8 +105,11 @@ void setupLogging() {
       if (GetIt.I.isRegistered<UDPLogger>()) {
         final udp = GetIt.I.get<UDPLogger>();
         if (udp.isEnabled()) {
-          udp.sendLog(logMessage, record.time.millisecondsSinceEpoch,
-              record.level.name);
+          udp.sendLog(
+            logMessage,
+            record.time.millisecondsSinceEpoch,
+            record.level.name,
+          );
         }
       }
 
@@ -153,7 +157,8 @@ Future<void> entrypoint() async {
 
   // Initialize services
   GetIt.I.registerSingleton<ConnectivityWatcherService>(
-      ConnectivityWatcherService());
+    ConnectivityWatcherService(),
+  );
   GetIt.I.registerSingleton<ConnectivityService>(ConnectivityService());
   GetIt.I.registerSingleton<PreferencesService>(PreferencesService());
   GetIt.I.registerSingleton<BlocklistService>(BlocklistService());
@@ -169,7 +174,8 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<StickersService>(StickersService());
   GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
   GetIt.I.registerSingleton<SubscriptionRequestService>(
-      SubscriptionRequestService());
+    SubscriptionRequestService(),
+  );
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
@@ -253,9 +259,11 @@ Future<void> entrypoint() async {
 
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
-    unawaited(GetIt.I
+    unawaited(
+      GetIt.I
         .get<OmemoService>()
-        .initializeIfNeeded(settings.jid.toBare().toString()));
+        .initializeIfNeeded(settings.jid.toBare().toString()),
+      );
 
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
@@ -270,9 +278,11 @@ Future<void> entrypoint() async {
         );
   }
 
-  unawaited(GetIt.I
+  unawaited(
+    GetIt.I
       .get<SynchronizedQueue<Map<String, dynamic>?>>()
-      .removeQueueLock());
+      .removeQueueLock(),
+    );
   sendEvent(ServiceReadyEvent());
 }
 

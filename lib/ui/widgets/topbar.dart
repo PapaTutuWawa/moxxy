@@ -73,8 +73,12 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
 
   /// A simple borderless topbar that displays just the back button (if wanted) and a
   /// Text() title.
-  factory BorderlessTopbar.simple(String title,
-      {List<Widget> extra = const [], bool showBackButton = true, Key? key}) {
+  factory BorderlessTopbar.simple(
+    String title, {
+    List<Widget> extra = const [],
+    bool showBackButton = true,
+    Key? key,
+  }) {
     return BorderlessTopbar(
       Row(
         children: [
@@ -99,8 +103,10 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   /// Displays a clickable avatar and title and a back button, if wanted
-  factory BorderlessTopbar.avatarAndName(TopbarAvatarAndName child,
-      {Key? key}) {
+  factory BorderlessTopbar.avatarAndName(
+    TopbarAvatarAndName child, {
+    Key? key,
+  }) {
     return BorderlessTopbar(child, key: key);
   }
 

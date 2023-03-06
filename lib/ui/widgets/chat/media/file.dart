@@ -170,10 +170,12 @@ class FileChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!message.isDownloading && message.mediaUrl != null)
+    if (!message.isDownloading && message.mediaUrl != null) {
       return _buildInner();
-    if (message.isFileUploadNotification || message.isDownloading)
+    }
+    if (message.isFileUploadNotification || message.isDownloading) {
       return _buildDownloading();
+      }
 
     return _buildNonDownloaded();
   }

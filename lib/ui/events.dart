@@ -38,7 +38,8 @@ void setupEventHandler() {
 
   GetIt.I.registerSingleton<EventHandler>(handler);
   GetIt.I.registerSingleton<SynchronizedQueue<Map<String, dynamic>?>>(
-      SynchronizedQueue<Map<String, dynamic>?>(handleIsolateEvent));
+      SynchronizedQueue<Map<String, dynamic>?>(handleIsolateEvent),
+    );
 }
 
 Future<void> receiveIsolateEvent(Map<String, dynamic>? json) async {
@@ -73,15 +74,19 @@ Future<void> handleIsolateEvent(Map<String, dynamic>? json) async {
   log.warning('Failed to match event');
 }
 
-Future<void> onConversationAdded(ConversationAddedEvent event,
-    {dynamic extra}) async {
+Future<void> onConversationAdded(
+  ConversationAddedEvent event, {
+  dynamic extra,
+}) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
         conversations.ConversationsAddedEvent(event.conversation),
       );
 }
 
-Future<void> onConversationUpdated(ConversationUpdatedEvent event,
-    {dynamic extra}) async {
+Future<void> onConversationUpdated(
+  ConversationUpdatedEvent event, {
+  dynamic extra,
+}) async {
   GetIt.I.get<conversations.ConversationsBloc>().add(
         conversations.ConversationsUpdatedEvent(event.conversation),
       );
@@ -100,15 +105,19 @@ Future<void> onMessageAdded(MessageAddedEvent event, {dynamic extra}) async {
   );
 }
 
-Future<void> onMessageUpdated(MessageUpdatedEvent event,
-    {dynamic extra}) async {
+Future<void> onMessageUpdated(
+  MessageUpdatedEvent event, {
+  dynamic extra,
+}) async {
   BidirectionalConversationController.currentController?.onMessageUpdated(
     event.message,
   );
 }
 
-Future<void> onBlocklistPushed(BlocklistPushEvent event,
-    {dynamic extra}) async {
+Future<void> onBlocklistPushed(
+  BlocklistPushEvent event, {
+  dynamic extra,
+}) async {
   GetIt.I.get<blocklist.BlocklistBloc>().add(
         blocklist.BlocklistPushedEvent(
           event.added,
@@ -131,8 +140,10 @@ Future<void> onProgress(ProgressEvent event, {dynamic extra}) async {
   GetIt.I.get<UIProgressService>().onProgress(event.id, event.progress);
 }
 
-Future<void> onSelfAvatarChanged(SelfAvatarChangedEvent event,
-    {dynamic extra}) async {
+Future<void> onSelfAvatarChanged(
+  SelfAvatarChangedEvent event, {
+  dynamic extra,
+}) async {
   // Evict the profile picture from the cache
   await FileImage(File(event.path)).evict();
 
@@ -154,8 +165,10 @@ Future<void> onServiceReady(ServiceReadyEvent event, {dynamic extra}) async {
       );
 }
 
-Future<void> onNotificationTappend(MessageNotificationTappedEvent event,
-    {dynamic extra}) async {
+Future<void> onNotificationTappend(
+  MessageNotificationTappedEvent event, {
+  dynamic extra,
+}) async {
   GetIt.I.get<conversation.ConversationBloc>().add(
         conversation.RequestedConversationEvent(
           event.conversationJid,
@@ -165,8 +178,10 @@ Future<void> onNotificationTappend(MessageNotificationTappedEvent event,
       );
 }
 
-Future<void> onStickerPackAdded(StickerPackAddedEvent event,
-    {dynamic extra}) async {
+Future<void> onStickerPackAdded(
+  StickerPackAddedEvent event, {
+  dynamic extra,
+}) async {
   GetIt.I.get<stickers.StickersBloc>().add(
         stickers.StickerPackAddedEvent(event.stickerPack),
       );

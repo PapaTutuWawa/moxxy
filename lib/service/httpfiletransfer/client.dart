@@ -17,7 +17,10 @@ class HttpPeekResult {
 ///
 /// Returns the status code if the server responded. If an error occurs, returns null.
 Future<int?> downloadFile(
-    Uri uri, String destination, ProgressCallback onProgress) async {
+  Uri uri,
+  String destination,
+  ProgressCallback onProgress,
+) async {
   // TODO(Unknown): How do we close fileSink? Do we have to?
   IOSink? fileSink;
   final client = HttpClient();
@@ -72,8 +75,12 @@ Future<int?> downloadFile(
 /// been downloaded.
 ///
 /// Returns the status code if the server responded. If an error occurs, returns null.
-Future<int?> uploadFile(Uri destination, Map<String, String> headers,
-    String filePath, ProgressCallback onProgress) async {
+Future<int?> uploadFile(
+  Uri destination,
+  Map<String, String> headers,
+  String filePath,
+  ProgressCallback onProgress,
+) async {
   final client = HttpClient();
   try {
     final req = await client.putUrl(destination);

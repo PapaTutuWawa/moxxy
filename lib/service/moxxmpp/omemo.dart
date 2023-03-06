@@ -39,7 +39,8 @@ class MoxxyBTBVTrustManager extends BlindTrustBeforeVerificationTrustManager {
   ) : super(
             trustCache: trustCache,
             enablementCache: enablementCache,
-            devices: devices);
+            devices: devices,
+          );
 
   @override
   Future<void> commitState() async {

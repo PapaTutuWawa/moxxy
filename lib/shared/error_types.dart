@@ -43,8 +43,10 @@ int errorTypeFromException(dynamic exception) {
 }
 
 String errorToTranslatableString(int error) {
-  assert(error != noError,
-      'Calling errorToTranslatableString with noError makes no sense');
+  assert(
+    error != noError,
+      'Calling errorToTranslatableString with noError makes no sense',
+  );
 
   switch (error) {
     case messageNotEncryptedForDevice:

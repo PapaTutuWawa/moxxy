@@ -4,7 +4,11 @@ import 'package:moxxmpp/moxxmpp.dart';
 @immutable
 class EncryptionResult {
   const EncryptionResult(
-      this.key, this.iv, this.plaintextHashes, this.ciphertextHashes);
+    this.key,
+    this.iv,
+    this.plaintextHashes,
+    this.ciphertextHashes,
+  );
   final List<int> key;
   final List<int> iv;
 

@@ -21,7 +21,8 @@ class MoxxyConnectivityManager extends ConnectivityManager {
       final result = await GetIt.I.get<ConnectivityService>().hasConnection();
       if (!result) {
         _log.finest(
-            'No network connection at initialization: Creating completer');
+          'No network connection at initialization: Creating completer',
+        );
         _completer = Completer<void>();
       }
     });
@@ -31,7 +32,8 @@ class MoxxyConnectivityManager extends ConnectivityManager {
     if (event.regained) {
       await _completerLock.synchronized(() {
         _log.finest(
-            'Network regained. _completer != null: ${_completer != null}');
+          'Network regained. _completer != null: ${_completer != null}',
+        );
         _completer?.complete();
         _completer = null;
       });

@@ -56,7 +56,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RequestDownloadCommand>(performRequestDownload),
       EventTypeMatcher<SetAvatarCommand>(performSetAvatar),
       EventTypeMatcher<SetShareOnlineStatusCommand>(
-          performSetShareOnlineStatus),
+        performSetShareOnlineStatus,
+      ),
       EventTypeMatcher<CloseConversationCommand>(performCloseConversation),
       EventTypeMatcher<SendChatStateCommand>(performSendChatState),
       EventTypeMatcher<GetFeaturesCommand>(performGetFeatures),
@@ -64,23 +65,28 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<SendFilesCommand>(performSendFiles),
       EventTypeMatcher<SetConversationMuteStatusCommand>(performSetMuteState),
       EventTypeMatcher<GetConversationOmemoFingerprintsCommand>(
-          performGetOmemoFingerprints),
+        performGetOmemoFingerprints,
+      ),
       EventTypeMatcher<SetOmemoDeviceEnabledCommand>(performEnableOmemoKey),
       EventTypeMatcher<RecreateSessionsCommand>(performRecreateSessions),
       EventTypeMatcher<SetOmemoEnabledCommand>(performSetOmemoEnabled),
       EventTypeMatcher<GetOwnOmemoFingerprintsCommand>(
-          performGetOwnOmemoFingerprints),
+        performGetOwnOmemoFingerprints,
+      ),
       EventTypeMatcher<RemoveOwnDeviceCommand>(performRemoveOwnDevice),
       EventTypeMatcher<RegenerateOwnDeviceCommand>(performRegenerateOwnDevice),
       EventTypeMatcher<RetractMessageCommentCommand>(performMessageRetraction),
       EventTypeMatcher<MarkConversationAsReadCommand>(
-          performMarkConversationAsRead),
+        performMarkConversationAsRead,
+      ),
       EventTypeMatcher<MarkMessageAsReadCommand>(performMarkMessageAsRead),
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
       EventTypeMatcher<RemoveReactionFromMessageCommand>(
-          performRemoveMessageReaction),
+        performRemoveMessageReaction,
+      ),
       EventTypeMatcher<MarkOmemoDeviceAsVerifiedCommand>(
-          performMarkDeviceVerified),
+        performMarkDeviceVerified,
+      ),
       EventTypeMatcher<ImportStickerPackCommand>(performImportStickerPack),
       EventTypeMatcher<SendStickerCommand>(performSendSticker),
       EventTypeMatcher<RemoveStickerPackCommand>(performRemoveStickerPack),
@@ -138,7 +144,8 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
 }
 
 Future<PreStartDoneEvent> _buildPreStartDoneEvent(
-    PreferencesState preferences) async {
+  PreferencesState preferences,
+) async {
   final xss = GetIt.I.get<XmppStateService>();
   final state = await xss.getXmppState();
 
@@ -173,8 +180,10 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
   );
 }
 
-Future<void> performPreStart(PerformPreStartCommand command,
-    {dynamic extra}) async {
+Future<void> performPreStart(
+  PerformPreStartCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
 
@@ -207,8 +216,10 @@ Future<void> performPreStart(PerformPreStartCommand command,
   }
 }
 
-Future<void> performAddConversation(AddConversationCommand command,
-    {dynamic extra}) async {
+Future<void> performAddConversation(
+  AddConversationCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final cs = GetIt.I.get<ConversationService>();
@@ -271,8 +282,10 @@ Future<void> performAddConversation(AddConversationCommand command,
   );
 }
 
-Future<void> performSetOpenConversation(SetOpenConversationCommand command,
-    {dynamic extra}) async {
+Future<void> performSetOpenConversation(
+  SetOpenConversationCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? '');
 
   // Null just means that the chat has been closed
@@ -283,12 +296,16 @@ Future<void> performSetOpenConversation(SetOpenConversationCommand command,
   }
 }
 
-Future<void> performSendMessage(SendMessageCommand command,
-    {dynamic extra}) async {
+Future<void> performSendMessage(
+  SendMessageCommand command, {
+  dynamic extra,
+}) async {
   final xs = GetIt.I.get<XmppService>();
   if (command.editSid != null && command.editId != null) {
-    assert(command.recipients.length == 1,
-        'Edits must not be sent to multiple recipients');
+    assert(
+      command.recipients.length == 1,
+      'Edits must not be sent to multiple recipients',
+    );
 
     await xs.sendMessageCorrection(
       command.editId!,
@@ -318,18 +335,24 @@ Future<void> performBlockJid(BlockJidCommand command, {dynamic extra}) async {
   await GetIt.I.get<BlocklistService>().blockJid(command.jid);
 }
 
-Future<void> performUnblockJid(UnblockJidCommand command,
-    {dynamic extra}) async {
+Future<void> performUnblockJid(
+  UnblockJidCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I.get<BlocklistService>().unblockJid(command.jid);
 }
 
-Future<void> performUnblockAll(UnblockAllCommand command,
-    {dynamic extra}) async {
+Future<void> performUnblockAll(
+  UnblockAllCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I.get<BlocklistService>().unblockAll();
 }
 
-Future<void> performSetCSIState(SetCSIStateCommand command,
-    {dynamic extra}) async {
+Future<void> performSetCSIState(
+  SetCSIStateCommand command, {
+  dynamic extra,
+}) async {
   // Tell the [XmppService] about the app state
   GetIt.I.get<XmppService>().setAppState(command.active);
 
@@ -345,8 +368,10 @@ Future<void> performSetCSIState(SetCSIStateCommand command,
   }
 }
 
-Future<void> performSetPreferences(SetPreferencesCommand command,
-    {dynamic extra}) async {
+Future<void> performSetPreferences(
+  SetPreferencesCommand command, {
+  dynamic extra,
+}) async {
   final ps = GetIt.I.get<PreferencesService>();
   final oldPrefs = await ps.getPreferences();
   await ps.modifyPreferences((_) => command.preferences);
@@ -416,8 +441,10 @@ Future<void> performSetPreferences(SetPreferencesCommand command,
       );
 }
 
-Future<void> performAddContact(AddContactCommand command,
-    {dynamic extra}) async {
+Future<void> performAddContact(
+  AddContactCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final jid = command.jid;
@@ -483,7 +510,8 @@ Future<void> performAddContact(AddContactCommand command,
   if (item != null) {
     if (item.subscription != 'from' && item.subscription != 'both') {
       GetIt.I.get<Logger>().finest(
-          'Roster item already exists with no presence subscription from them. Sending subscription request');
+        'Roster item already exists with no presence subscription from them. Sending subscription request',
+      );
       srs.sendSubscriptionRequest(jid);
     }
   } else {
@@ -496,8 +524,10 @@ Future<void> performAddContact(AddContactCommand command,
   await GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid, '');
 }
 
-Future<void> performRemoveContact(RemoveContactCommand command,
-    {dynamic extra}) async {
+Future<void> performRemoveContact(
+  RemoveContactCommand command, {
+  dynamic extra,
+}) async {
   final rs = GetIt.I.get<RosterService>();
   final cs = GetIt.I.get<ConversationService>();
 
@@ -517,8 +547,10 @@ Future<void> performRemoveContact(RemoveContactCommand command,
   }
 }
 
-Future<void> performRequestDownload(RequestDownloadCommand command,
-    {dynamic extra}) async {
+Future<void> performRequestDownload(
+  RequestDownloadCommand command, {
+  dynamic extra,
+}) async {
   final ms = GetIt.I.get<MessageService>();
   final srv = GetIt.I.get<HttpFileTransferService>();
 
@@ -564,8 +596,10 @@ Future<void> performSetAvatar(SetAvatarCommand command, {dynamic extra}) async {
   await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
 
-Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command,
-    {dynamic extra}) async {
+Future<void> performSetShareOnlineStatus(
+  SetShareOnlineStatusCommand command, {
+  dynamic extra,
+}) async {
   final rs = GetIt.I.get<RosterService>();
   final srs = GetIt.I.get<SubscriptionRequestService>();
   final item = await rs.getRosterItemByJid(command.jid);
@@ -588,8 +622,10 @@ Future<void> performSetShareOnlineStatus(SetShareOnlineStatusCommand command,
   }
 }
 
-Future<void> performCloseConversation(CloseConversationCommand command,
-    {dynamic extra}) async {
+Future<void> performCloseConversation(
+  CloseConversationCommand command, {
+  dynamic extra,
+}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   await cs.createOrUpdateConversation(
@@ -608,8 +644,10 @@ Future<void> performCloseConversation(CloseConversationCommand command,
   );
 }
 
-Future<void> performSendChatState(SendChatStateCommand command,
-    {dynamic extra}) async {
+Future<void> performSendChatState(
+  SendChatStateCommand command, {
+  dynamic extra,
+}) async {
   final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
 
   // Only send chat states if the users wants to send them
@@ -621,13 +659,16 @@ Future<void> performSendChatState(SendChatStateCommand command,
       .sendChatState(chatStateFromString(command.state), command.jid);
 }
 
-Future<void> performGetFeatures(GetFeaturesCommand command,
-    {dynamic extra}) async {
+Future<void> performGetFeatures(
+  GetFeaturesCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final conn = GetIt.I.get<XmppConnection>();
   final sm = conn.getNegotiatorById<StreamManagementNegotiator>(
-      streamManagementNegotiator)!;
+    streamManagementNegotiator,
+  )!;
   final csi = conn.getNegotiatorById<CSINegotiator>(csiNegotiator)!;
   final httpFileUpload =
       conn.getManagerById<HttpFileUploadManager>(httpFileUploadManager)!;
@@ -663,8 +704,10 @@ Future<void> performSendFiles(SendFilesCommand command, {dynamic extra}) async {
   await GetIt.I.get<XmppService>().sendFiles(command.paths, command.recipients);
 }
 
-Future<void> performSetMuteState(SetConversationMuteStatusCommand command,
-    {dynamic extra}) async {
+Future<void> performSetMuteState(
+  SetConversationMuteStatusCommand command, {
+  dynamic extra,
+}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   final conversation = await cs.createOrUpdateConversation(
@@ -683,8 +726,9 @@ Future<void> performSetMuteState(SetConversationMuteStatusCommand command,
 }
 
 Future<void> performGetOmemoFingerprints(
-    GetConversationOmemoFingerprintsCommand command,
-    {dynamic extra}) async {
+  GetConversationOmemoFingerprintsCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();
@@ -696,13 +740,18 @@ Future<void> performGetOmemoFingerprints(
   );
 }
 
-Future<void> performEnableOmemoKey(SetOmemoDeviceEnabledCommand command,
-    {dynamic extra}) async {
+Future<void> performEnableOmemoKey(
+  SetOmemoDeviceEnabledCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();
   await omemo.setOmemoKeyEnabled(
-      command.jid, command.deviceId, command.enabled);
+    command.jid,
+    command.deviceId,
+    command.enabled,
+  );
 
   await performGetOmemoFingerprints(
     GetConversationOmemoFingerprintsCommand(jid: command.jid),
@@ -710,8 +759,10 @@ Future<void> performEnableOmemoKey(SetOmemoDeviceEnabledCommand command,
   );
 }
 
-Future<void> performRecreateSessions(RecreateSessionsCommand command,
-    {dynamic extra}) async {
+Future<void> performRecreateSessions(
+  RecreateSessionsCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
 
   final conn = GetIt.I.get<XmppConnection>();
@@ -720,8 +771,10 @@ Future<void> performRecreateSessions(RecreateSessionsCommand command,
       );
 }
 
-Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command,
-    {dynamic extra}) async {
+Future<void> performSetOmemoEnabled(
+  SetOmemoEnabledCommand command, {
+  dynamic extra,
+}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   await cs.createOrUpdateConversation(
@@ -736,8 +789,9 @@ Future<void> performSetOmemoEnabled(SetOmemoEnabledCommand command,
 }
 
 Future<void> performGetOwnOmemoFingerprints(
-    GetOwnOmemoFingerprintsCommand command,
-    {dynamic extra}) async {
+  GetOwnOmemoFingerprintsCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
   final os = GetIt.I.get<OmemoService>();
   final xs = GetIt.I.get<XmppService>();
@@ -754,16 +808,20 @@ Future<void> performGetOwnOmemoFingerprints(
   );
 }
 
-Future<void> performRemoveOwnDevice(RemoveOwnDeviceCommand command,
-    {dynamic extra}) async {
+Future<void> performRemoveOwnDevice(
+  RemoveOwnDeviceCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I
       .get<XmppConnection>()
       .getManagerById<BaseOmemoManager>(omemoManager)!
       .deleteDevice(command.deviceId);
 }
 
-Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command,
-    {dynamic extra}) async {
+Future<void> performRegenerateOwnDevice(
+  RegenerateOwnDeviceCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
   final jid = GetIt.I
       .get<XmppConnection>()
@@ -779,8 +837,10 @@ Future<void> performRegenerateOwnDevice(RegenerateOwnDeviceCommand command,
   );
 }
 
-Future<void> performMessageRetraction(RetractMessageCommentCommand command,
-    {dynamic extra}) async {
+Future<void> performMessageRetraction(
+  RetractMessageCommentCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I.get<MessageService>().retractMessage(
         command.conversationJid,
         command.originId,
@@ -803,8 +863,9 @@ Future<void> performMessageRetraction(RetractMessageCommentCommand command,
 }
 
 Future<void> performMarkConversationAsRead(
-    MarkConversationAsReadCommand command,
-    {dynamic extra}) async {
+  MarkConversationAsReadCommand command, {
+  dynamic extra,
+}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   // Update the database
@@ -834,8 +895,10 @@ Future<void> performMarkConversationAsRead(
       );
 }
 
-Future<void> performMarkMessageAsRead(MarkMessageAsReadCommand command,
-    {dynamic extra}) async {
+Future<void> performMarkMessageAsRead(
+  MarkMessageAsReadCommand command, {
+  dynamic extra,
+}) async {
   final cs = GetIt.I.get<ConversationService>();
 
   final conversation = await cs.createOrUpdateConversation(
@@ -858,8 +921,10 @@ Future<void> performMarkMessageAsRead(MarkMessageAsReadCommand command,
   }
 }
 
-Future<void> performAddMessageReaction(AddReactionToMessageCommand command,
-    {dynamic extra}) async {
+Future<void> performAddMessageReaction(
+  AddReactionToMessageCommand command, {
+  dynamic extra,
+}) async {
   final ms = GetIt.I.get<MessageService>();
   final conn = GetIt.I.get<XmppConnection>();
   final msg =
@@ -896,8 +961,9 @@ Future<void> performAddMessageReaction(AddReactionToMessageCommand command,
 }
 
 Future<void> performRemoveMessageReaction(
-    RemoveReactionFromMessageCommand command,
-    {dynamic extra}) async {
+  RemoveReactionFromMessageCommand command, {
+  dynamic extra,
+}) async {
   final ms = GetIt.I.get<MessageService>();
   final conn = GetIt.I.get<XmppConnection>();
   final msg =
@@ -934,16 +1000,20 @@ Future<void> performRemoveMessageReaction(
       );
 }
 
-Future<void> performMarkDeviceVerified(MarkOmemoDeviceAsVerifiedCommand command,
-    {dynamic extra}) async {
+Future<void> performMarkDeviceVerified(
+  MarkOmemoDeviceAsVerifiedCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I.get<OmemoService>().verifyDevice(
         command.deviceId,
         command.jid,
       );
 }
 
-Future<void> performImportStickerPack(ImportStickerPackCommand command,
-    {dynamic extra}) async {
+Future<void> performImportStickerPack(
+  ImportStickerPackCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
   final result =
       await GetIt.I.get<StickersService>().importFromFile(command.path);
@@ -962,8 +1032,10 @@ Future<void> performImportStickerPack(ImportStickerPackCommand command,
   }
 }
 
-Future<void> performSendSticker(SendStickerCommand command,
-    {dynamic extra}) async {
+Future<void> performSendSticker(
+  SendStickerCommand command, {
+  dynamic extra,
+}) async {
   final xs = GetIt.I.get<XmppService>();
   final ss = GetIt.I.get<StickersService>();
 
@@ -981,15 +1053,19 @@ Future<void> performSendSticker(SendStickerCommand command,
   );
 }
 
-Future<void> performRemoveStickerPack(RemoveStickerPackCommand command,
-    {dynamic extra}) async {
+Future<void> performRemoveStickerPack(
+  RemoveStickerPackCommand command, {
+  dynamic extra,
+}) async {
   await GetIt.I.get<StickersService>().removeStickerPack(
         command.stickerPackId,
       );
 }
 
-Future<void> performFetchStickerPack(FetchStickerPackCommand command,
-    {dynamic extra}) async {
+Future<void> performFetchStickerPack(
+  FetchStickerPackCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final result = await GetIt.I
@@ -1041,8 +1117,10 @@ Future<void> performFetchStickerPack(FetchStickerPackCommand command,
   }
 }
 
-Future<void> performStickerPackInstall(InstallStickerPackCommand command,
-    {dynamic extra}) async {
+Future<void> performStickerPackInstall(
+  InstallStickerPackCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final ss = GetIt.I.get<StickersService>();
@@ -1062,8 +1140,10 @@ Future<void> performStickerPackInstall(InstallStickerPackCommand command,
   }
 }
 
-Future<void> performGetBlocklist(GetBlocklistCommand command,
-    {dynamic extra}) async {
+Future<void> performGetBlocklist(
+  GetBlocklistCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final result = await GetIt.I.get<BlocklistService>().getBlocklist();
@@ -1075,8 +1155,10 @@ Future<void> performGetBlocklist(GetBlocklistCommand command,
   );
 }
 
-Future<void> performGetPagedMessages(GetPagedMessagesCommand command,
-    {dynamic extra}) async {
+Future<void> performGetPagedMessages(
+  GetPagedMessagesCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final result = await GetIt.I.get<MessageService>().getPaginatedMessagesForJid(
@@ -1093,8 +1175,10 @@ Future<void> performGetPagedMessages(GetPagedMessagesCommand command,
   );
 }
 
-Future<void> performGetPagedSharedMedia(GetPagedSharedMediaCommand command,
-    {dynamic extra}) async {
+Future<void> performGetPagedSharedMedia(
+  GetPagedSharedMediaCommand command, {
+  dynamic extra,
+}) async {
   final id = extra as String;
 
   final result =

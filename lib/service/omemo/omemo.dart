@@ -84,7 +84,10 @@ class OmemoService {
       if (event is RatchetModifiedEvent) {
         await GetIt.I.get<DatabaseService>().saveRatchet(
               OmemoDoubleRatchetWrapper(
-                  event.ratchet, event.deviceId, event.jid),
+                  event.ratchet,
+                  event.deviceId,
+                  event.jid,
+                ),
             );
 
         if (event.added) {
@@ -261,8 +264,9 @@ class OmemoService {
         .map((item) => int.parse(item.name!));
     if (!bundleIds.contains(device.id)) {
       final result = await omemo.publishBundle(await device.toBundle());
-      if (result.isType<moxxmpp.OmemoError>())
+      if (result.isType<moxxmpp.OmemoError>()) {
         return result.get<moxxmpp.OmemoError>();
+      }
       return null;
     }
 
@@ -271,8 +275,9 @@ class OmemoService {
         idsRaw.isType<moxxmpp.OmemoError>() ? <int>[] : idsRaw.get<List<int>>();
     if (!ids.contains(device.id)) {
       final result = await omemo.publishBundle(await device.toBundle());
-      if (result.isType<moxxmpp.OmemoError>())
+      if (result.isType<moxxmpp.OmemoError>()) {
         return result.get<moxxmpp.OmemoError>();
+      }
       return null;
     }
 
@@ -377,7 +382,10 @@ class OmemoService {
   }
 
   Future<void> setOmemoKeyEnabled(
-      String jid, int deviceId, bool enabled) async {
+    String jid,
+    int deviceId,
+    bool enabled,
+  ) async {
     await ensureInitialized();
     await omemoManager.trustManager.setEnabled(jid, deviceId, enabled);
   }

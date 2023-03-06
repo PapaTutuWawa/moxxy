@@ -101,14 +101,16 @@ class ContactsService {
   Future<bool> _canUseContactIntegration() async {
     if (!(await isContactIntegrationEnabled())) {
       _log.finest(
-          '_canUseContactIntegration: Returning false since enableContactIntegration is false');
+        '_canUseContactIntegration: Returning false since enableContactIntegration is false',
+      );
       return false;
     }
 
     final permission = await Permission.contacts.status;
     if (permission == PermissionStatus.denied) {
       _log.finest(
-          "_canUseContactIntegration: Returning false since we don't have the contacts permission");
+        "_canUseContactIntegration: Returning false since we don't have the contacts permission",
+      );
       return false;
     }
 

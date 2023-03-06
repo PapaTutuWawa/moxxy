@@ -28,8 +28,12 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
   }
 
   @override
-  Future<void> commitRoster(String? version, List<String> removed,
-      List<XmppRosterItem> modified, List<XmppRosterItem> added) async {
+  Future<void> commitRoster(
+    String? version,
+    List<String> removed,
+    List<XmppRosterItem> modified,
+    List<XmppRosterItem> added,
+  ) async {
     final rs = GetIt.I.get<RosterService>();
     final xss = GetIt.I.get<XmppStateService>();
     await xss.modifyXmppState(

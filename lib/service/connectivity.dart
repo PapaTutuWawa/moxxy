@@ -25,7 +25,8 @@ class ConnectivityService {
   @visibleForTesting
   void setConnectivity(ConnectivityResult result) {
     _log.warning(
-        'Internal connectivity state changed by request originating from outside ConnectivityService');
+      'Internal connectivity state changed by request originating from outside ConnectivityService',
+    );
     _connectivity = result;
   }
 

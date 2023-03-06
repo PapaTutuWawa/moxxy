@@ -79,7 +79,8 @@ class Intro extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                            horizontal: paddingVeryLarge)
+                            horizontal: paddingVeryLarge,
+                          )
                         .add(const EdgeInsets.only(bottom: paddingVeryLarge)),
                     child: TextButton(
                       child: Text(t.pages.intro.registerButton),

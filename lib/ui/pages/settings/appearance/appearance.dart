@@ -10,7 +10,10 @@ import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 Widget _buildLanguageOption(
-    BuildContext context, String localeCode, PreferencesState state) {
+    BuildContext context,
+    String localeCode,
+    PreferencesState state,
+  ) {
   final selected = state.languageLocaleCode == localeCode;
   return SimpleDialogOption(
     onPressed: () => Navigator.pop(context, localeCode),

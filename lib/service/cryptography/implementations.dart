@@ -49,13 +49,17 @@ Future<EncryptionResult> encryptFileImpl(EncryptionRequest request) async {
     {
       hashSha256: base64Encode(
         await CryptographicHashManager.hashFromData(
-            plaintext, HashFunction.sha256),
+          plaintext,
+          HashFunction.sha256,
+        ),
       ),
     },
     {
       hashSha256: base64Encode(
         await CryptographicHashManager.hashFromData(
-            ciphertext, HashFunction.sha256),
+          ciphertext,
+          HashFunction.sha256,
+        ),
       ),
     },
   );

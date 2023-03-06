@@ -48,9 +48,11 @@ class XmppService {
       EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
       EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
       EventTypeMatcher<SubscriptionRequestReceivedEvent>(
-          _onSubscriptionRequestReceived),
+          _onSubscriptionRequestReceived,
+        ),
       EventTypeMatcher<DeliveryReceiptReceivedEvent>(
-          _onDeliveryReceiptReceived),
+          _onDeliveryReceiptReceived,
+        ),
       EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
       EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
       EventTypeMatcher<StanzaAckedEvent>(_onStanzaAcked),
@@ -58,7 +60,8 @@ class XmppService {
       EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
       EventTypeMatcher<BlocklistUnblockPushEvent>(_onBlocklistUnblockPush),
       EventTypeMatcher<BlocklistUnblockAllPushEvent>(
-          _onBlocklistUnblockAllPush),
+          _onBlocklistUnblockAllPush,
+        ),
       EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
       EventTypeMatcher<NonRecoverableErrorEvent>(_onUnrecoverableError),
     ]);
@@ -140,8 +143,13 @@ class XmppService {
   ///
   /// This function handles updating the message and optionally the corresponding
   /// conversation.
-  Future<void> sendMessageCorrection(int id, String newBody, String oldId,
-      String recipient, ChatState? chatState) async {
+  Future<void> sendMessageCorrection(
+    int id,
+    String newBody,
+    String oldId,
+    String recipient,
+    ChatState? chatState,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final conn = GetIt.I.get<XmppConnection>();
@@ -354,7 +362,9 @@ class XmppService {
                 type: event.type,
                 children: [
                   makeChatMarker(
-                      'received', event.stanzaId.originId ?? event.sid)
+                      'received',
+                      event.stanzaId.originId ?? event.sid,
+                    )
                 ],
               ),
             ),
@@ -368,7 +378,8 @@ class XmppService {
                 type: event.type,
                 children: [
                   makeMessageDeliveryResponse(
-                      event.stanzaId.originId ?? event.sid)
+                      event.stanzaId.originId ?? event.sid,
+                    )
                 ],
               ),
             ),
@@ -416,7 +427,9 @@ class XmppService {
   }
 
   Future<void> connect(
-      ConnectionSettings settings, bool triggeredFromUI) async {
+    ConnectionSettings settings,
+    bool triggeredFromUI,
+  ) async {
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
     final lastResource = state.resource;
 
@@ -432,7 +445,9 @@ class XmppService {
   }
 
   Future<XmppConnectionResult> connectAwaitable(
-      ConnectionSettings settings, bool triggeredFromUI) async {
+    ConnectionSettings settings,
+    bool triggeredFromUI,
+  ) async {
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
     final lastResource = state.resource;
 
@@ -456,7 +471,8 @@ class XmppService {
       Map<String, Map<String, Message>> messages,
       List<String> paths,
       String recipient,
-      String conversationJid) async {
+      String conversationJid,
+    ) async {
     final sharedMedia = List<SharedMedium>.empty(growable: true);
     for (final path in paths) {
       sharedMedia.add(
@@ -727,8 +743,10 @@ class XmppService {
     }
   }
 
-  Future<void> _onConnectionStateChanged(ConnectionStateChangedEvent event,
-      {dynamic extra}) async {
+  Future<void> _onConnectionStateChanged(
+    ConnectionStateChangedEvent event, {
+    dynamic extra,
+  }) async {
     setNotificationText(event.state);
 
     await GetIt.I.get<ConnectivityWatcherService>().onConnectionStateChanged(
@@ -802,8 +820,10 @@ class XmppService {
     }
   }
 
-  Future<void> _onResourceBindingSuccess(ResourceBindingSuccessEvent event,
-      {dynamic extra}) async {
+  Future<void> _onResourceBindingSuccess(
+    ResourceBindingSuccessEvent event, {
+    dynamic extra,
+  }) async {
     await GetIt.I.get<XmppStateService>().modifyXmppState(
           (state) => state.copyWith(
             resource: event.resource,
@@ -812,8 +832,9 @@ class XmppService {
   }
 
   Future<void> _onSubscriptionRequestReceived(
-      SubscriptionRequestReceivedEvent event,
-      {dynamic extra}) async {
+      SubscriptionRequestReceivedEvent event, {
+      dynamic extra,
+  }) async {
     final jid = event.from.toBare().toString();
 
     // Auto-accept if the JID is in the roster
@@ -830,8 +851,10 @@ class XmppService {
         );
   }
 
-  Future<void> _onDeliveryReceiptReceived(DeliveryReceiptReceivedEvent event,
-      {dynamic extra}) async {
+  Future<void> _onDeliveryReceiptReceived(
+    DeliveryReceiptReceivedEvent event, {
+    dynamic extra,
+  }) async {
     _log.finest('Received delivery receipt from ${event.from}');
     final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
@@ -840,7 +863,8 @@ class XmppService {
     final dbMsg = await db.getMessageByXmppId(event.id, sender);
     if (dbMsg == null) {
       _log.warning(
-          'Did not find the message with id ${event.id} in the database!');
+        'Did not find the message with id ${event.id} in the database!',
+      );
       return;
     }
 
@@ -973,7 +997,9 @@ class XmppService {
 
   /// Handle a message retraction given the MessageEvent [event].
   Future<void> _handleMessageRetraction(
-      MessageEvent event, String conversationJid) async {
+    MessageEvent event,
+    String conversationJid,
+  ) async {
     await GetIt.I.get<MessageService>().retractMessage(
           conversationJid,
           event.messageRetraction!.id,
@@ -995,7 +1021,8 @@ class XmppService {
   Future<void> _handleErrorMessage(MessageEvent event) async {
     if (event.error == null) {
       _log.warning(
-          'Received error for message ${event.sid} without an error element');
+        'Received error for message ${event.sid} without an error element',
+      );
       return;
     }
 
@@ -1037,14 +1064,18 @@ class XmppService {
   }
 
   Future<void> _handleMessageCorrection(
-      MessageEvent event, String conversationJid) async {
+    MessageEvent event,
+    String conversationJid,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final msg = await ms.getMessageByStanzaId(
-        conversationJid, event.messageCorrectionId!);
+        conversationJid, event.messageCorrectionId!,
+      );
     if (msg == null) {
       _log.warning(
-          'Received message correction for message ${event.messageCorrectionId} we cannot find.');
+        'Received message correction for message ${event.messageCorrectionId} we cannot find.',
+      );
       return;
     }
 
@@ -1053,14 +1084,16 @@ class XmppService {
     final bareSender = event.fromJid.toBare().toString();
     if (msg.sender.split('/').first != bareSender) {
       _log.warning(
-          'Received a message correction from $bareSender for message that is not sent by $bareSender');
+        'Received a message correction from $bareSender for message that is not sent by $bareSender',
+      );
       return;
     }
 
     // Check if the message can be corrected
     if (!msg.canEdit(true)) {
       _log.warning(
-          'Received a message correction for a message that cannot be edited');
+          'Received a message correction for a message that cannot be edited',
+        );
       return;
     }
 
@@ -1082,7 +1115,9 @@ class XmppService {
   }
 
   Future<void> _handleMessageReactions(
-      MessageEvent event, String conversationJid) async {
+    MessageEvent event,
+    String conversationJid,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
     // TODO(Unknown): Once we support groupchats, we need to instead query by the stanza-id
     final msg = await ms.getMessageByStanzaOrOriginId(
@@ -1091,7 +1126,8 @@ class XmppService {
     );
     if (msg == null) {
       _log.warning(
-          'Received reactions for ${event.messageReactions!.messageId} from ${event.fromJid} for $conversationJid, but could not find message.');
+        'Received reactions for ${event.messageReactions!.messageId} from ${event.fromJid} for $conversationJid, but could not find message.',
+      );
       return;
     }
 
@@ -1185,8 +1221,9 @@ class XmppService {
     }
 
     // Process the chat state update. Can also be attached to other messages
-    if (event.chatState != null)
+    if (event.chatState != null) {
       await _onChatState(event.chatState!, conversationJid);
+    }
 
     // Process message corrections separately
     if (event.messageCorrectionId != null) {
@@ -1445,20 +1482,24 @@ class XmppService {
   }
 
   Future<void> _handleFileUploadNotificationReplacement(
-      MessageEvent event, String conversationJid) async {
+    MessageEvent event,
+    String conversationJid,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
     var message =
         await ms.getMessageByStanzaId(conversationJid, event.funReplacement!);
     if (message == null) {
       _log.warning(
-          'Received a FileUploadNotification replacement for unknown message');
+          'Received a FileUploadNotification replacement for unknown message',
+        );
       return;
     }
 
     // Check if we can even replace the message
     if (!message.isFileUploadNotification) {
       _log.warning(
-          'Received a FileUploadNotification replacement for message that is not marked as a FileUploadNotification');
+          'Received a FileUploadNotification replacement for message that is not marked as a FileUploadNotification',
+        );
       return;
     }
 
@@ -1467,7 +1508,8 @@ class XmppService {
     final bareSender = event.fromJid.toBare().toString();
     if (message.sender.split('/').first != bareSender) {
       _log.warning(
-          'Received a FileUploadNotification replacement by $bareSender for message that is not sent by $bareSender');
+          'Received a FileUploadNotification replacement by $bareSender for message that is not sent by $bareSender',
+        );
       return;
     }
 
@@ -1506,12 +1548,15 @@ class XmppService {
       }
     } else {
       _log.warning(
-          'Received a File Upload Notification replacement but the replacement contains no file!');
+        'Received a File Upload Notification replacement but the replacement contains no file!',
+      );
     }
   }
 
-  Future<void> _onAvatarUpdated(AvatarUpdatedEvent event,
-      {dynamic extra}) async {
+  Future<void> _onAvatarUpdated(
+    AvatarUpdatedEvent event, {
+    dynamic extra,
+  }) async {
     await GetIt.I.get<AvatarService>().handleAvatarUpdate(event);
   }
 
@@ -1534,31 +1579,40 @@ class XmppService {
       }
     } else {
       _log.finest(
-          'Wanted to mark message as acked but did not find the message to ack');
+          'Wanted to mark message as acked but did not find the message to ack',
+        );
     }
   }
 
-  Future<void> _onBlocklistBlockPush(BlocklistBlockPushEvent event,
-      {dynamic extra}) async {
+  Future<void> _onBlocklistBlockPush(
+    BlocklistBlockPushEvent event, {
+    dynamic extra,
+  }) async {
     await GetIt.I
         .get<BlocklistService>()
         .onBlocklistPush(BlockPushType.block, event.items);
   }
 
-  Future<void> _onBlocklistUnblockPush(BlocklistUnblockPushEvent event,
-      {dynamic extra}) async {
+  Future<void> _onBlocklistUnblockPush(
+    BlocklistUnblockPushEvent event, {
+    dynamic extra,
+  }) async {
     await GetIt.I
         .get<BlocklistService>()
         .onBlocklistPush(BlockPushType.unblock, event.items);
   }
 
-  Future<void> _onBlocklistUnblockAllPush(BlocklistUnblockAllPushEvent event,
-      {dynamic extra}) async {
+  Future<void> _onBlocklistUnblockAllPush(
+    BlocklistUnblockAllPushEvent event, {
+    dynamic extra,
+  }) async {
     GetIt.I.get<BlocklistService>().onUnblockAllPush();
   }
 
-  Future<void> _onStanzaSendingCancelled(StanzaSendingCancelledEvent event,
-      {dynamic extra}) async {
+  Future<void> _onStanzaSendingCancelled(
+    StanzaSendingCancelledEvent event, {
+    dynamic extra,
+  }) async {
     // We only really care about messages
     if (event.data.stanza.tag != 'message') return;
 
@@ -1570,7 +1624,8 @@ class XmppService {
 
     if (message == null) {
       _log.warning(
-          'Message could not be sent but we cannot find it in the database');
+          'Message could not be sent but we cannot find it in the database',
+        );
       return;
     }
 
@@ -1584,8 +1639,10 @@ class XmppService {
     sendEvent(MessageUpdatedEvent(message: newMessage));
   }
 
-  Future<void> _onUnrecoverableError(NonRecoverableErrorEvent event,
-      {dynamic extra}) async {
+  Future<void> _onUnrecoverableError(
+    NonRecoverableErrorEvent event, {
+    dynamic extra,
+  }) async {
     await GetIt.I.get<NotificationsService>().showWarningNotification(
           t.notifications.titles.error,
           getUnrecoverableErrorString(event),

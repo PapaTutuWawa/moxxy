@@ -118,7 +118,9 @@ class StickersService {
   }
 
   Future<void> importFromPubSubWithEvent(
-      moxxmpp.JID jid, String stickerPackId) async {
+    moxxmpp.JID jid,
+    String stickerPackId,
+  ) async {
     final stickerPack = await importFromPubSub(jid, stickerPackId);
     if (stickerPack == null) return;
 
@@ -134,7 +136,9 @@ class StickersService {
   ///
   /// On success, returns the installed StickerPack. On failure, returns null.
   Future<StickerPack?> importFromPubSub(
-      moxxmpp.JID jid, String stickerPackId) async {
+    moxxmpp.JID jid,
+    String stickerPackId,
+  ) async {
     final result = await GetIt.I
         .get<moxxmpp.XmppConnection>()
         .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
@@ -265,7 +269,8 @@ class StickersService {
       final stickerFile = archive.findFile(filename);
       if (stickerFile == null) {
         _log.severe(
-            'Invalid sticker pack: $filename does not exist in archive');
+          'Invalid sticker pack: $filename does not exist in archive',
+        );
         return null;
       }
     }
@@ -340,7 +345,8 @@ class StickersService {
     _stickerPacks[pack.hashValue] = stickerPackWithStickers;
 
     _log.info(
-        'Sticker pack ${stickerPack.id} successfully added to the database');
+      'Sticker pack ${stickerPack.id} successfully added to the database',
+    );
 
     // Publish but don't block
     unawaited(_publishStickerPack(pack));

@@ -51,7 +51,8 @@ class NotificationsService {
       );
     } else {
       logger.warning(
-          'Received unknown notification action key ${action.buttonKeyPressed}');
+        'Received unknown notification action key ${action.buttonKeyPressed}',
+      );
     }
   }
 
@@ -89,8 +90,11 @@ class NotificationsService {
   /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
   /// then Android's BigPicture will be used.
   Future<void> showNotification(
-      modelc.Conversation c, modelm.Message m, String title,
-      {String? body}) async {
+    modelc.Conversation c,
+    modelm.Message m,
+    String title, {
+    String? body,
+  }) async {
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
     String body;
     if (m.stickerPackId != null) {

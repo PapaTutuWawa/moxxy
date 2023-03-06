@@ -20,7 +20,9 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
   }
 
   Future<void> _onContactAdded(
-      AddedContactEvent event, Emitter<AddContactState> emit) async {
+    AddedContactEvent event,
+    Emitter<AddContactState> emit,
+  ) async {
     final validation = validateJidString(state.jid);
     if (validation != null) {
       emit(state.copyWith(jidError: validation));
@@ -55,8 +57,10 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
       }
     }
 
-    assert(result.conversation != null,
-        'RequestedConversationEvent must contain a not null conversation');
+    assert(
+      result.conversation != null,
+        'RequestedConversationEvent must contain a not null conversation',
+      );
     GetIt.I.get<ConversationBloc>().add(
           RequestedConversationEvent(
             result.conversation!.jid,
@@ -68,7 +72,9 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
   }
 
   Future<void> _onJidChanged(
-      JidChangedEvent event, Emitter<AddContactState> emit) async {
+    JidChangedEvent event,
+    Emitter<AddContactState> emit,
+  ) async {
     emit(
       state.copyWith(
         jid: event.jid,
@@ -77,7 +83,9 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
   }
 
   Future<void> _onPageReset(
-      PageResetEvent event, Emitter<AddContactState> emit) async {
+    PageResetEvent event,
+    Emitter<AddContactState> emit,
+  ) async {
     emit(
       state.copyWith(
         jidError: null,

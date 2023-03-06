@@ -150,7 +150,11 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(
-      String avatarUrl, String avatarHash, String jid, String title) async {
+    String avatarUrl,
+    String avatarHash,
+    String jid,
+    String title,
+  ) async {
     final css = GetIt.I.get<ContactsService>();
     final contactId = await css.getContactIdForJid(jid);
     final item = await addRosterItemFromData(
@@ -180,8 +184,10 @@ class RosterService {
   /// Removes the [RosterItem] with jid [jid] from the server-side roster and, if
   /// successful, from the database. If [unsubscribe] is true, then [jid] won't receive
   /// our presence anymore.
-  Future<bool> removeFromRosterWrapper(String jid,
-      {bool unsubscribe = true}) async {
+  Future<bool> removeFromRosterWrapper(
+    String jid, {
+    bool unsubscribe = true,
+  }) async {
     final roster = GetIt.I.get<XmppConnection>().getRosterManager();
     final result = await roster.removeFromRoster(jid);
     if (result == RosterRemovalResult.okay ||

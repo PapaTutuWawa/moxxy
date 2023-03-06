@@ -74,7 +74,8 @@ void setupLogging() {
   Logger.root.onRecord.listen((record) {
     // ignore: avoid_print
     print(
-        '[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}');
+      '[${record.level.name}] (${record.loggerName}) ${record.time}: ${record.message}',
+    );
   });
   GetIt.I.registerSingleton<Logger>(Logger('MoxxyMain'));
 }

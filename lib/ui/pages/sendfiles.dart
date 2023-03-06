@@ -33,7 +33,11 @@ class SendFilesPage extends StatelessWidget {
       );
 
   Widget _renderPreview(
-      BuildContext context, String path, bool selected, int index) {
+      BuildContext context,
+      String path,
+      bool selected,
+      int index,
+    ) {
     final mime = lookupMimeType(path) ?? '';
 
     if (mime.startsWith('image/')) {
@@ -202,7 +206,11 @@ class SendFilesPage extends StatelessWidget {
                             final item = state.files[index];
 
                             return _renderPreview(
-                                context, item, index == state.index, index);
+                                context,
+                                item,
+                                index == state.index,
+                                index,
+                              );
                           } else {
                             return SharedMediaContainer(
                               const Icon(Icons.attach_file),

@@ -14,8 +14,10 @@ Future<List<int>> deriveKey(String key) async {
 /// This function is "validated" against
 /// https://github.com/monal-im/Monal/blob/develop/UDPLogServer/server.py if
 /// [key] is derived using [deriveKey].
-Future<List<int>> encryptData(List<int> data, List<int> key,
-    {List<int>? nonce}) async {
+Future<List<int>> encryptData(
+  List<int> data, List<int> key, {
+  List<int>? nonce,
+}) async {
   final algorithm = AesGcm.with256bits();
 
   final secretBox = await algorithm.encrypt(
@@ -33,8 +35,13 @@ List<int> compressData(List<int> payload) {
 }
 
 /// Format a log message similarly as to how Monal does it.
-List<int> logToPayload(String line, int timestamp, String loglevel, int counter,
-    {String? filename}) {
+List<int> logToPayload(
+  String line,
+  int timestamp,
+  String loglevel,
+  int counter, {
+  String? filename,
+}) {
   return utf8.encode(
     jsonEncode(
       <String, dynamic>{
@@ -73,8 +80,12 @@ class UDPLogger {
   void setEnabled(bool enabled) => _enabled = enabled;
   bool isEnabled() => _enabled;
 
-  Future<void> sendLog(String line, int timestamp, String loglevel,
-      {String? filename}) async {
+  Future<void> sendLog(
+    String line,
+    int timestamp,
+    String loglevel, {
+    String? filename,
+  }) async {
     if (!_canSend || !_enabled) return;
 
     final rawPayload =

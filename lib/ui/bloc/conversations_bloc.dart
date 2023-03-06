@@ -45,7 +45,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   }
 
   Future<void> _onInit(
-      ConversationsInitEvent event, Emitter<ConversationsState> emit) async {
+      ConversationsInitEvent event,
+      Emitter<ConversationsState> emit,
+    ) async {
     emit(
       state.copyWith(
         displayName: event.displayName,
@@ -67,13 +69,16 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   }
 
   Future<void> _onConversationsAdded(
-      ConversationsAddedEvent event, Emitter<ConversationsState> emit) async {
+      ConversationsAddedEvent event,
+      Emitter<ConversationsState> emit,
+    ) async {
     // TODO(Unknown): Should we guard against adding the same conversation multiple times?
     emit(
       state.copyWith(
         conversations: List.from(
-            <Conversation>[...state.conversations, event.conversation])
+            <Conversation>[...state.conversations, event.conversation]
           ..sort(compareConversation),
+        ),
       ),
     );
 
@@ -84,7 +89,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   }
 
   Future<void> _onConversationsUpdated(
-      ConversationsUpdatedEvent event, Emitter<ConversationsState> emit) async {
+      ConversationsUpdatedEvent event,
+      Emitter<ConversationsState> emit,
+    ) async {
     emit(
       state.copyWith(
         conversations: List.from(
@@ -105,7 +112,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   }
 
   Future<void> _onAvatarChanged(
-      AvatarChangedEvent event, Emitter<ConversationsState> emit) async {
+      AvatarChangedEvent event,
+      Emitter<ConversationsState> emit,
+    ) async {
     return emit(
       state.copyWith(
         avatarUrl: event.path,
@@ -114,7 +123,9 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   }
 
   Future<void> _onConversationClosed(
-      ConversationClosedEvent event, Emitter<ConversationsState> emit) async {
+      ConversationClosedEvent event,
+      Emitter<ConversationsState> emit,
+    ) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
           CloseConversationCommand(jid: event.jid),
         );
@@ -127,8 +138,10 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     );
   }
 
-  Future<void> _onConversationMarkedAsRead(ConversationMarkedAsReadEvent event,
-      Emitter<ConversationsState> emit) async {
+  Future<void> _onConversationMarkedAsRead(
+    ConversationMarkedAsReadEvent event,
+      Emitter<ConversationsState> emit,
+    ) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
           MarkConversationAsReadCommand(conversationJid: event.jid),
           awaitable: false,

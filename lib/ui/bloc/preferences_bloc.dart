@@ -27,7 +27,9 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   final Logger _log;
 
   Future<void> _onPreferencesChanged(
-      PreferencesChangedEvent event, Emitter<PreferencesState> emit) async {
+      PreferencesChangedEvent event,
+      Emitter<PreferencesState> emit,
+    ) async {
     if (event.notify) {
       await MoxplatformPlugin.handler.getDataSender().sendData(
             SetPreferencesCommand(
@@ -53,7 +55,9 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   }
 
   Future<void> _onSignedOut(
-      SignedOutEvent event, Emitter<PreferencesState> emit) async {
+      SignedOutEvent event,
+      Emitter<PreferencesState> emit,
+    ) async {
     GetIt.I.get<UIDataService>().isLoggedIn = false;
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -75,7 +79,9 @@ class PreferencesBloc extends Bloc<PreferencesEvent, PreferencesState> {
   }
 
   Future<void> _onBackgroundImageSet(
-      BackgroundImageSetEvent event, Emitter<PreferencesState> emit) async {
+      BackgroundImageSetEvent event,
+      Emitter<PreferencesState> emit,
+    ) async {
     if (state.backgroundPath.isNotEmpty) {
       // Invalidate the old entry
       _log.finest('Invalidating cache entry for ${state.backgroundPath}');

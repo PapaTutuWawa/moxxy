@@ -30,8 +30,10 @@ class BlocklistService {
   }
 
   Future<void> _requestBlocklist() async {
-    assert(_blocklist != null,
-        'The blocklist must be loaded from the database before requesting');
+    assert(
+      _blocklist != null,
+      'The blocklist must be loaded from the database before requesting',
+    );
 
     // Check if blocking is supported
     if (!(await _checkSupport())) {
@@ -174,7 +176,8 @@ class BlocklistService {
     // Check if blocking is supported
     if (!(await _checkSupport())) {
       _log.warning(
-          'Unblocking all JIDs requested but server does not support it.');
+        'Unblocking all JIDs requested but server does not support it.',
+      );
       return false;
     }
 

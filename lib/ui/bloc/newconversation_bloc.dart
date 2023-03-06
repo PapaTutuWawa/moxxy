@@ -24,8 +24,10 @@ class NewConversationBloc
     on<RosterPushedEvent>(_onRosterPushed);
   }
 
-  Future<void> _onInit(NewConversationInitEvent event,
-      Emitter<NewConversationState> emit) async {
+  Future<void> _onInit(
+    NewConversationInitEvent event,
+      Emitter<NewConversationState> emit,
+    ) async {
     return emit(
       state.copyWith(
         roster: event.roster,
@@ -33,13 +35,17 @@ class NewConversationBloc
     );
   }
 
-  Future<void> _onAdded(NewConversationAddedEvent event,
-      Emitter<NewConversationState> emit) async {
+  Future<void> _onAdded(
+    NewConversationAddedEvent event,
+      Emitter<NewConversationState> emit,
+    ) async {
     final conversations = GetIt.I.get<ConversationsBloc>();
 
     // Guard against an unneccessary roundtrip
-    if (listContains(conversations.state.conversations,
-        (Conversation c) => c.jid == event.jid)) {
+    if (listContains(
+        conversations.state.conversations,
+        (Conversation c) => c.jid == event.jid,
+      )) {
       GetIt.I.get<conversation.ConversationBloc>().add(
             conversation.RequestedConversationEvent(
               event.jid,
@@ -78,8 +84,10 @@ class NewConversationBloc
         );
   }
 
-  Future<void> _onRosterItemRemoved(NewConversationRosterItemRemovedEvent event,
-      Emitter<NewConversationState> emit) async {
+  Future<void> _onRosterItemRemoved(
+    NewConversationRosterItemRemovedEvent event,
+      Emitter<NewConversationState> emit,
+    ) async {
     emit(
       state.copyWith(
         roster: state.roster
@@ -99,7 +107,9 @@ class NewConversationBloc
   }
 
   Future<void> _onRosterPushed(
-      RosterPushedEvent event, Emitter<NewConversationState> emit) async {
+      RosterPushedEvent event,
+      Emitter<NewConversationState> emit,
+    ) async {
     // TODO(Unknown): Should we guard against adding the same entries multiple times?
     final roster = List<RosterItem>.from(event.added);
 

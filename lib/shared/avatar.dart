@@ -6,7 +6,11 @@ import 'package:path_provider/path_provider.dart';
 /// the [cache directory]/users/[jid]/avatar_[hash].png.
 /// [cache directory] is provided by path_provider.
 Future<String> saveAvatarInCache(
-    List<int> bytes, String hash, String jid, String oldPath) async {
+  List<int> bytes,
+  String hash,
+  String jid,
+  String oldPath,
+) async {
   final cacheDir = (await getApplicationDocumentsDirectory()).path;
   final avatarsDir = Directory(pathlib.join(cacheDir, 'avatars'));
   await avatarsDir.create(recursive: true);

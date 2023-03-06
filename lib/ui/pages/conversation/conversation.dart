@@ -121,8 +121,13 @@ class ConversationPageState extends State<ConversationPage>
     }
   }
 
-  Widget _renderBubble(ConversationState state, Message message,
-      List<Message> messages, int index, double maxWidth) {
+  Widget _renderBubble(
+    ConversationState state,
+    Message message,
+      List<Message> messages,
+      int index,
+      double maxWidth,
+    ) {
     final item = message;
 
     if (item.isPseudoMessage) {
@@ -350,7 +355,9 @@ class ConversationPageState extends State<ConversationPage>
   /// Render a widget that allows the user to either block the user or add them to their
   /// roster
   Widget _renderNotInRosterWidget(
-      ConversationState state, BuildContext context) {
+      ConversationState state,
+      BuildContext context,
+    ) {
     return ColoredBox(
       color: Colors.black38,
       child: SizedBox(
@@ -457,7 +464,8 @@ class ConversationPageState extends State<ConversationPage>
                   width: query.size.width,
                   height: query.size.height,
                   child: ColoredBox(
-                      color: Theme.of(context).scaffoldBackgroundColor),
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                    ),
                 );
               },
             ),
@@ -480,8 +488,9 @@ class ConversationPageState extends State<ConversationPage>
                         prev.conversation?.inRoster !=
                         next.conversation?.inRoster,
                     builder: (context, state) {
-                      if (state.conversation?.inRoster ?? false)
+                      if (state.conversation?.inRoster ?? false) {
                         return Container();
+                      }
 
                       return _renderNotInRosterWidget(state, context);
                     },
@@ -502,7 +511,8 @@ class ConversationPageState extends State<ConversationPage>
                               physics: const NeverScrollableScrollPhysics(),
                               groupBy: (message) {
                                 final dt = DateTime.fromMillisecondsSinceEpoch(
-                                    message.timestamp);
+                                    message.timestamp,
+                                  );
                                 return DateTime(
                                   dt.year,
                                   dt.month,

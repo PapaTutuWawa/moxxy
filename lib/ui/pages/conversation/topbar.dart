@@ -18,7 +18,10 @@ enum ConversationOption { close, block }
 enum EncryptionOption { omemo, none }
 
 PopupMenuItem<dynamic> popupItemWithIcon(
-    dynamic value, String text, IconData icon) {
+    dynamic value,
+    String text,
+    IconData icon,
+  ) {
   return PopupMenuItem<dynamic>(
     value: value,
     child: Row(
@@ -187,10 +190,16 @@ class ConversationTopbar extends StatelessWidget
                           ? const Icon(Icons.lock)
                           : const Icon(Icons.lock_open),
                       itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(EncryptionOption.none,
-                            t.pages.conversation.unencrypted, Icons.lock_open),
-                        popupItemWithIcon(EncryptionOption.omemo,
-                            t.pages.conversation.encrypted, Icons.lock),
+                        popupItemWithIcon(
+                          EncryptionOption.none,
+                          t.pages.conversation.unencrypted,
+                          Icons.lock_open,
+                        ),
+                        popupItemWithIcon(
+                          EncryptionOption.omemo,
+                            t.pages.conversation.encrypted,
+                            Icons.lock,
+                          ),
                       ],
                     ),
                     // ignore: implicit_dynamic_type
@@ -209,7 +218,8 @@ class ConversationTopbar extends StatelessWidget
                                 // ignore: use_build_context_synchronously
                                 context.read<ConversationsBloc>().add(
                                       ConversationClosedEvent(
-                                          state.conversation!.jid),
+                                          state.conversation!.jid,
+                                        ),
                                     );
 
                                 // Navigate back
@@ -229,10 +239,16 @@ class ConversationTopbar extends StatelessWidget
                       },
                       icon: const Icon(Icons.more_vert),
                       itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(ConversationOption.close,
-                            t.pages.conversation.closeChat, Icons.close),
-                        popupItemWithIcon(ConversationOption.block,
-                            t.pages.conversation.blockUser, Icons.block)
+                        popupItemWithIcon(
+                          ConversationOption.close,
+                            t.pages.conversation.closeChat,
+                            Icons.close,
+                          ),
+                        popupItemWithIcon(
+                          ConversationOption.block,
+                            t.pages.conversation.blockUser,
+                            Icons.block,
+                          )
                       ],
                     ),
                   ],
