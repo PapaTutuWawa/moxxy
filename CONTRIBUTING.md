@@ -43,10 +43,10 @@ to discuss the feature first.
 
 Before creating a pull request, please make sure you checked every item on the following checklist:
 
-[ ] I formatted the code with the dart formatter (`dart format`) before running the linter
-[ ] I ran the linter (`flutter analyze`) and introduced no new linter warnings
-[ ] I ran the tests (`flutter test`) and introduced no new failing tests
-[ ] I used [gitlint](https://github.com/jorisroovers/gitlint) to ensure propper formatting of my commig messages
+- [ ] I formatted the code with the dart formatter (`dart format`) before running the linter
+- [ ] I ran the linter (`flutter analyze`) and introduced no new linter warnings
+- [ ] I ran the tests (`flutter test`) and introduced no new failing tests
+- [ ] I used [gitlint](https://github.com/jorisroovers/gitlint) to ensure propper formatting of my commig messages
 
 If you think that your code is ready for a pull request, but you are not sure if it is ready, prefix the PR's title with "WIP: ", so that discussion
 can happen there. If you think your PR is ready for review, remove the "WIP: " prefix.
