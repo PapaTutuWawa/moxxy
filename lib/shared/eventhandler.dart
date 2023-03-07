@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 
-typedef EventCallbackType<E> = Future<void> Function(E event, { dynamic extra});
+typedef EventCallbackType<E> = Future<void> Function(E event, {dynamic extra});
 
 abstract class EventMatcher<E> {
   @mustCallSuper
@@ -37,13 +37,14 @@ class EventHandler {
   EventHandler() : _matchers = List.empty(growable: true);
   final List<EventMatcher<dynamic>> _matchers;
 
-  void addMatchers(List<EventMatcher<dynamic>> matchers) => _matchers.addAll(matchers);
+  void addMatchers(List<EventMatcher<dynamic>> matchers) =>
+      _matchers.addAll(matchers);
   void addMatcher(EventMatcher<dynamic> matcher) => _matchers.add(matcher);
 
   /// Calls the callback of the first [EventMatcher] for which matches returns true.
   /// Returns true in that case. Otherwise, returns false if no [EventMatcher] matches.
   /// If extra is provided, it will be passed down to the callback if it is called.
-  Future<bool> run(dynamic event, { dynamic extra }) async {
+  Future<bool> run(dynamic event, {dynamic extra}) async {
     for (final matcher in _matchers) {
       if (matcher.matches(event)) {
         await matcher.call(event, extra);

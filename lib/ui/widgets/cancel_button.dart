@@ -7,7 +7,7 @@ class CancelButton extends StatelessWidget {
     super.key,
   });
   final void Function() onPressed;
-  
+
   @override
   Widget build(BuildContext context) {
     return IconButton(

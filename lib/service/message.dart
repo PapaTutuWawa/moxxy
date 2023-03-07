@@ -19,13 +19,18 @@ class MessageService {
   /// Logger
   final Logger _log = Logger('MessageService');
 
-  final LRUCache<String, List<Message>> _messageCache = LRUCache(conversationMessagePageCacheSize);
+  final LRUCache<String, List<Message>> _messageCache =
+      LRUCache(conversationMessagePageCacheSize);
   final Lock _cacheLock = Lock();
-  
+
   /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
   /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
   /// than [oldestTimestamp], or the newest messages are returned if null.
-  Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
+  Future<List<Message>> getPaginatedMessagesForJid(
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
     if (olderThan && oldestTimestamp == null) {
       final result = await _cacheLock.synchronized<List<Message>?>(() {
         return _messageCache.getValue(jid);
@@ -33,11 +38,12 @@ class MessageService {
       if (result != null) return result;
     }
 
-    final page = await GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
-      jid,
-      olderThan,
-      oldestTimestamp,
-    );
+    final page =
+        await GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
+              jid,
+              olderThan,
+              oldestTimestamp,
+            );
 
     if (olderThan && oldestTimestamp == null) {
       await _cacheLock.synchronized(() {
@@ -50,7 +56,7 @@ class MessageService {
 
     return page;
   }
-  
+
   /// Wrapper around [DatabaseService]'s addMessageFromData that updates the cache.
   Future<Message> addMessageFromData(
     String body,
@@ -61,67 +67,65 @@ class MessageService {
     String sid,
     bool isFileUploadNotification,
     bool encrypted,
-    bool containsNoStore,
-    {
-      String? srcUrl,
-      String? key,
-      String? iv,
-      String? encryptionScheme,
-      String? mediaUrl,
-      String? mediaType,
-      String? thumbnailData,
-      int? mediaWidth,
-      int? mediaHeight,
-      String? originId,
-      String? quoteId,
-      String? filename,
-      int? errorType,
-      int? warningType,
-      Map<String, String>? plaintextHashes,
-      Map<String, String>? ciphertextHashes,
-      bool isDownloading = false,
-      bool isUploading = false,
-      int? mediaSize,
-      String? stickerPackId,
-      String? stickerHashKey,
-      int? pseudoMessageType,
-      Map<String, dynamic>? pseudoMessageData,
-    }
-  ) async {
+    bool containsNoStore, {
+    String? srcUrl,
+    String? key,
+    String? iv,
+    String? encryptionScheme,
+    String? mediaUrl,
+    String? mediaType,
+    String? thumbnailData,
+    int? mediaWidth,
+    int? mediaHeight,
+    String? originId,
+    String? quoteId,
+    String? filename,
+    int? errorType,
+    int? warningType,
+    Map<String, String>? plaintextHashes,
+    Map<String, String>? ciphertextHashes,
+    bool isDownloading = false,
+    bool isUploading = false,
+    int? mediaSize,
+    String? stickerPackId,
+    String? stickerHashKey,
+    int? pseudoMessageType,
+    Map<String, dynamic>? pseudoMessageData,
+  }) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
-      body,
-      timestamp,
-      sender,
-      conversationJid,
-      isMedia,
-      sid,
-      isFileUploadNotification,
-      encrypted,
-      containsNoStore,
-      srcUrl: srcUrl,
-      key: key,
-      iv: iv,
-      encryptionScheme: encryptionScheme,
-      mediaUrl: mediaUrl,
-      mediaType: mediaType,
-      thumbnailData: thumbnailData,
-      mediaWidth: mediaWidth,
-      mediaHeight: mediaHeight,
-      originId: originId,
-      quoteId: quoteId,
-      filename: filename,
-      errorType: errorType,
-      warningType: warningType,
-      plaintextHashes: plaintextHashes,
-      ciphertextHashes: ciphertextHashes,
-      isUploading: isUploading,
-      isDownloading: isDownloading,
-      mediaSize: mediaSize,
-      stickerPackId: stickerPackId,
-      stickerHashKey: stickerHashKey,
-      pseudoMessageType: pseudoMessageType,
-      pseudoMessageData: pseudoMessageData,
-    );
+          body,
+          timestamp,
+          sender,
+          conversationJid,
+          isMedia,
+          sid,
+          isFileUploadNotification,
+          encrypted,
+          containsNoStore,
+          srcUrl: srcUrl,
+          key: key,
+          iv: iv,
+          encryptionScheme: encryptionScheme,
+          mediaUrl: mediaUrl,
+          mediaType: mediaType,
+          thumbnailData: thumbnailData,
+          mediaWidth: mediaWidth,
+          mediaHeight: mediaHeight,
+          originId: originId,
+          quoteId: quoteId,
+          filename: filename,
+          errorType: errorType,
+          warningType: warningType,
+          plaintextHashes: plaintextHashes,
+          ciphertextHashes: ciphertextHashes,
+          isUploading: isUploading,
+          isDownloading: isDownloading,
+          mediaSize: mediaSize,
+          stickerPackId: stickerPackId,
+          stickerHashKey: stickerHashKey,
+          pseudoMessageType: pseudoMessageType,
+          pseudoMessageData: pseudoMessageData,
+        );
 
     await _cacheLock.synchronized(() {
       final cachedList = _messageCache.getValue(conversationJid);
@@ -136,34 +140,41 @@ class MessageService {
         );
       }
     });
-    
+
     return msg;
   }
 
-  Future<Message?> getMessageByStanzaId(String conversationJid, String stanzaId) async {
+  Future<Message?> getMessageByStanzaId(
+    String conversationJid,
+    String stanzaId,
+  ) async {
     return GetIt.I.get<DatabaseService>().getMessageByXmppId(
-      stanzaId,
-      conversationJid,
-      includeOriginId: false,
-    );
+          stanzaId,
+          conversationJid,
+          includeOriginId: false,
+        );
   }
 
-  Future<Message?> getMessageByStanzaOrOriginId(String conversationJid, String id) async {
+  Future<Message?> getMessageByStanzaOrOriginId(
+    String conversationJid,
+    String id,
+  ) async {
     return GetIt.I.get<DatabaseService>().getMessageByXmppId(
-      id,
-      conversationJid,
-    );
+          id,
+          conversationJid,
+        );
   }
-  
+
   Future<Message?> getMessageById(String conversationJid, int id) async {
     return GetIt.I.get<DatabaseService>().getMessageById(
-      id,
-      conversationJid,
-    );
+          id,
+          conversationJid,
+        );
   }
 
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
-  Future<Message> updateMessage(int id, {
+  Future<Message> updateMessage(
+    int id, {
     Object? body = notSpecified,
     Object? mediaUrl = notSpecified,
     Object? mediaType = notSpecified,
@@ -191,33 +202,33 @@ class MessageService {
     Object? reactions = notSpecified,
   }) async {
     final msg = await GetIt.I.get<DatabaseService>().updateMessage(
-      id,
-      body: body,
-      mediaUrl: mediaUrl,
-      mediaType: mediaType,
-      received: received,
-      displayed: displayed,
-      acked: acked,
-      errorType: errorType,
-      warningType: warningType,
-      isFileUploadNotification: isFileUploadNotification,
-      srcUrl: srcUrl,
-      key: key,
-      iv: iv,
-      encryptionScheme: encryptionScheme,
-      mediaWidth: mediaWidth,
-      mediaHeight: mediaHeight,
-      mediaSize: mediaSize,
-      isUploading: isUploading,
-      isDownloading: isDownloading,
-      originId: originId,
-      sid: sid,
-      isRetracted: isRetracted,
-      isMedia: isMedia,
-      thumbnailData: thumbnailData,
-      isEdited: isEdited,
-      reactions: reactions,
-    );
+          id,
+          body: body,
+          mediaUrl: mediaUrl,
+          mediaType: mediaType,
+          received: received,
+          displayed: displayed,
+          acked: acked,
+          errorType: errorType,
+          warningType: warningType,
+          isFileUploadNotification: isFileUploadNotification,
+          srcUrl: srcUrl,
+          key: key,
+          iv: iv,
+          encryptionScheme: encryptionScheme,
+          mediaWidth: mediaWidth,
+          mediaHeight: mediaHeight,
+          mediaSize: mediaSize,
+          isUploading: isUploading,
+          isDownloading: isDownloading,
+          originId: originId,
+          sid: sid,
+          isRetracted: isRetracted,
+          isMedia: isMedia,
+          thumbnailData: thumbnailData,
+          isEdited: isEdited,
+          reactions: reactions,
+        );
 
     await _cacheLock.synchronized(() {
       final page = _messageCache.getValue(msg.conversationJid);
@@ -234,7 +245,7 @@ class MessageService {
         );
       }
     });
-    
+
     return msg;
   }
 
@@ -250,21 +261,30 @@ class MessageService {
   /// [selfRetract] indicates whether the message retraction came from the UI. If true,
   /// then the sender check (see security considerations of XEP-0424) is skipped as
   /// the UI already verifies it.
-  Future<void> retractMessage(String conversationJid, String originId, String bareSender, bool selfRetract) async {
+  Future<void> retractMessage(
+    String conversationJid,
+    String originId,
+    String bareSender,
+    bool selfRetract,
+  ) async {
     final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
-      originId,
-      conversationJid,
-    );
+          originId,
+          conversationJid,
+        );
 
     if (msg == null) {
-      _log.finest('Got message retraction for origin Id $originId, but did not find the message');
+      _log.finest(
+        'Got message retraction for origin Id $originId, but did not find the message',
+      );
       return;
     }
 
     // Check if the retraction was sent by the original sender
     if (!selfRetract) {
       if (JID.fromString(msg.sender).toBare().toString() != bareSender) {
-        _log.warning('Received invalid message retraction from $bareSender but its original sender is ${msg.sender}');
+        _log.warning(
+          'Received invalid message retraction from $bareSender but its original sender is ${msg.sender}',
+        );
         return;
       }
     }
@@ -300,13 +320,16 @@ class MessageService {
         );
 
         if (isMedia) {
-          await GetIt.I.get<DatabaseService>().removeSharedMediumByMessageId(msg.id);
+          await GetIt.I
+              .get<DatabaseService>()
+              .removeSharedMediumByMessageId(msg.id);
 
           // TODO(Unknown): Technically, we would have to then load 1 shared media
           //                item from the database to, if possible, fill the list
           //                back up to 8 items.
           newConversation = newConversation.copyWith(
-            sharedMedia: newConversation.sharedMedia.where((SharedMedium medium) {
+            sharedMedia:
+                newConversation.sharedMedia.where((SharedMedium medium) {
               return medium.messageId != msg.id;
             }).toList(),
           );
@@ -326,9 +349,11 @@ class MessageService {
             conversation: newConversation,
           ),
         );
-      }      
+      }
     } else {
-      _log.warning('Failed to find conversation with conversationJid $conversationJid');
+      _log.warning(
+        'Failed to find conversation with conversationJid $conversationJid',
+      );
     }
   }
 }

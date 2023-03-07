@@ -16,15 +16,13 @@ class FingerprintListItem extends StatelessWidget {
     this.fingerprint,
     this.enabled,
     this.verified,
-    this.hasVerifiedKeys,
-    {
-      this.onVerifiedPressed,
-      this.onEnableValueChanged,
-      this.onShowQrCodePressed,
-      this.onDeletePressed,
-      super.key,
-    }
-  );
+    this.hasVerifiedKeys, {
+    this.onVerifiedPressed,
+    this.onEnableValueChanged,
+    this.onShowQrCodePressed,
+    this.onDeletePressed,
+    super.key,
+  });
   final String fingerprint;
   final bool enabled;
   final bool verified;
@@ -33,7 +31,7 @@ class FingerprintListItem extends StatelessWidget {
   final void Function(bool value)? onEnableValueChanged;
   final void Function()? onShowQrCodePressed;
   final void Function()? onDeletePressed;
-  
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -69,46 +67,31 @@ class FingerprintListItem extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 1,
               ),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  ...onEnableValueChanged != null ?
-                    [
-                      Switch(
-                        value: enabled,
-                        onChanged: onEnableValueChanged,
+                  if (onEnableValueChanged != null)
+                    Switch(
+                      value: enabled,
+                      onChanged: onEnableValueChanged,
+                    ),
+                  if (onVerifiedPressed != null)
+                    IconButton(
+                      icon: Icon(
+                        verified ? Icons.verified_user : Icons.qr_code_scanner,
                       ),
-                    ] :
-                    [],
-                  ...onVerifiedPressed != null ?
-                    [
-                      IconButton(
-                        icon: Icon(
-                          verified ?
-                            Icons.verified_user :
-                            Icons.qr_code_scanner,
-                        ),
-                        onPressed: onVerifiedPressed,
-                      ),
-                    ] :
-                    [],
-                  ...onShowQrCodePressed != null ?
-                    [
-                      IconButton(
-                        icon: const Icon(Icons.qr_code),
-                        onPressed: onShowQrCodePressed,
-                      ),
-                    ] :
-                    [],
-                  ...onDeletePressed != null ?
-                    [
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: onDeletePressed,
-                      ),
-                    ] :
-                    [],
+                      onPressed: onVerifiedPressed,
+                    ),
+                  if (onShowQrCodePressed != null)
+                    IconButton(
+                      icon: const Icon(Icons.qr_code),
+                      onPressed: onShowQrCodePressed,
+                    ),
+                  if (onDeletePressed != null)
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: onDeletePressed,
+                    ),
                 ],
               ),
             ],

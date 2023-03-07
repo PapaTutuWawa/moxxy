@@ -4,13 +4,11 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV13ToV14(Database db) async {
   // Create the new table
-  await db.execute(
-    '''
+  await db.execute('''
     CREATE TABLE $contactsTable (
       id TEXT PRIMARY KEY,
       jid TEXT NOT NULL
-    )'''
-  );
+    )''');
 
   // Migrate the conversations
   await db.execute(
@@ -32,9 +30,11 @@ Future<void> upgradeFromV13ToV14(Database db) async {
         ON DELETE SET NULL
     )''',
   );
-  await db.execute('INSERT INTO ${conversationsTable}_new SELECT *, NULL from $conversationsTable');
+  await db.execute(
+      'INSERT INTO ${conversationsTable}_new SELECT *, NULL from $conversationsTable');
   await db.execute('DROP TABLE $conversationsTable;');
-  await db.execute('ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;');
+  await db.execute(
+      'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;');
 
   // Migrate the roster items
   await db.execute(
@@ -52,7 +52,8 @@ Future<void> upgradeFromV13ToV14(Database db) async {
         ON DELETE SET NULL
     )''',
   );
-  await db.execute('INSERT INTO ${rosterTable}_new SELECT *, NULL from $rosterTable');
+  await db.execute(
+      'INSERT INTO ${rosterTable}_new SELECT *, NULL from $rosterTable');
   await db.execute('DROP TABLE $rosterTable;');
   await db.execute('ALTER TABLE ${rosterTable}_new RENAME TO $rosterTable;');
 

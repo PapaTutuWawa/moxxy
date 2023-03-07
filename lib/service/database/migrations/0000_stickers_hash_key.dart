@@ -11,12 +11,8 @@ Future<void> upgradeFromV17ToV18(Database db) async {
   );
 
   // Drop stickers
-  await db.execute(
-    'DROP TABLE $stickerPacksTable;'
-  );
-  await db.execute(
-    'DROP TABLE $stickersTable;'
-  );
+  await db.execute('DROP TABLE $stickerPacksTable;');
+  await db.execute('DROP TABLE $stickersTable;');
 
   await db.execute(
     '''

@@ -20,11 +20,9 @@ class RequestedConversationEvent extends ConversationEvent {
   RequestedConversationEvent(
     this.jid,
     this.title,
-    this.avatarUrl,
-    {
-      this.removeUntilConversations = false,
-    }
-  );
+    this.avatarUrl, {
+    this.removeUntilConversations = false,
+  });
   // These are placeholders in case we have to wait a bit longer
   final String jid;
   final String title;
@@ -75,7 +73,7 @@ class SendButtonDragEndedEvent extends ConversationEvent {}
 class SendButtonLockedEvent extends ConversationEvent {}
 
 /// Triggered when the FAB has been locked
-class SendButtonLockPressedEvent extends ConversationEvent {} 
+class SendButtonLockPressedEvent extends ConversationEvent {}
 
 /// Triggered when the recording has been canceled
 class RecordingCanceledEvent extends ConversationEvent {}

@@ -88,14 +88,12 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Contacts
-  await db.execute(
-    '''
+  await db.execute('''
     CREATE TABLE $contactsTable (
       id TEXT PRIMARY KEY,
       jid TEXT NOT NULL
-    )'''
-  );
-  
+    )''');
+
   // Shared media
   await db.execute(
     '''
@@ -172,13 +170,11 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Subscription requests
-  await db.execute(
-    '''
+  await db.execute('''
     CREATE TABLE $subscriptionsTable(
       jid TEXT PRIMARY KEY
-    )'''
-  );
-  
+    )''');
+
   // OMEMO
   await db.execute(
     '''

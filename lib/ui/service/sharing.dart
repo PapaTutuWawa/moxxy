@@ -24,12 +24,14 @@ class UISharingService {
     _log.finest('Handling media');
     final attachments = media.attachments ?? [];
     GetIt.I.get<ShareSelectionBloc>().add(
-      ShareSelectionRequestedEvent(
-        attachments.map((a) => a!.path).toList(),
-        media.content,
-        media.content != null ? ShareSelectionType.text : ShareSelectionType.media,
-      ),
-    );
+          ShareSelectionRequestedEvent(
+            attachments.map((a) => a!.path).toList(),
+            media.content,
+            media.content != null
+                ? ShareSelectionType.text
+                : ShareSelectionType.media,
+          ),
+        );
 
     await clearSharedMedia();
   }
@@ -43,7 +45,7 @@ class UISharingService {
 
   /// True if we have early media. False if not.
   bool get hasEarlyMedia => _media != null;
-  
+
   /// If Moxxy was started with a share intent, then this function is equivalent to
   /// [UISharingService._handleSharedMedia] but called with said share intent's metadata.
   Future<void> handleEarlySharedMedia() async {
@@ -61,7 +63,8 @@ class UISharingService {
       _media = media;
     }
 
-    ShareHandlerPlatform.instance.sharedMediaStream.listen((SharedMedia media) async {
+    ShareHandlerPlatform.instance.sharedMediaStream
+        .listen((SharedMedia media) async {
       if (GetIt.I.get<UIDataService>().isLoggedIn) {
         _log.finest('stream: Handle shared media via stream');
         await _handleSharedMedia(media);

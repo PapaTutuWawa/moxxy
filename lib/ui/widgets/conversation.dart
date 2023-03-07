@@ -25,15 +25,14 @@ class ConversationsListRow extends StatefulWidget {
     this.maxTextWidth,
     this.conversation,
     this.update, {
-      this.showTimestamp = true,
-      this.titleSuffixIcon,
-      this.extra,
-      this.enableAvatarOnTap = false,
-      this.avatarWidget,
-      this.extraWidgetWidth = 0,
-      super.key,
-    }
-  );
+    this.showTimestamp = true,
+    this.titleSuffixIcon,
+    this.extra,
+    this.enableAvatarOnTap = false,
+    this.avatarWidget,
+    this.extraWidgetWidth = 0,
+    super.key,
+  });
   final Conversation conversation;
   final double maxTextWidth;
   final double extraWidgetWidth;
@@ -65,7 +64,10 @@ class ConversationsListRowState extends State<ConversationsListRow> {
 
     // NOTE: We could also check and run the timer hourly, but who has a messenger on the
     //       conversation screen open for hours on end?
-    if (widget.update && widget.conversation.lastChangeTimestamp > -1 && initNow - widget.conversation.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+    if (widget.update &&
+        widget.conversation.lastChangeTimestamp > -1 &&
+        initNow - widget.conversation.lastChangeTimestamp >=
+            60 * Duration.millisecondsPerMinute) {
       _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
         final now = DateTime.now().millisecondsSinceEpoch;
         setState(() {
@@ -75,7 +77,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           );
         });
 
-        if (now - widget.conversation.lastChangeTimestamp >= 60 * Duration.millisecondsPerMinute) {
+        if (now - widget.conversation.lastChangeTimestamp >=
+            60 * Duration.millisecondsPerMinute) {
           _updateTimer!.cancel();
           _updateTimer = null;
         }
@@ -84,7 +87,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       _updateTimer = null;
     }
   }
-  
+
   @override
   void dispose() {
     if (_updateTimer != null) {
@@ -104,8 +107,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         );
 
         if (widget.enableAvatarOnTap &&
-          widget.conversation.avatarPathWithOptionalContact != null &&
-          widget.conversation.avatarPathWithOptionalContact!.isNotEmpty) {
+            widget.conversation.avatarPathWithOptionalContact != null &&
+            widget.conversation.avatarPathWithOptionalContact!.isNotEmpty) {
           return InkWell(
             onTap: () => showDialog<void>(
               context: context,
@@ -153,7 +156,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           size: 30,
         );
       }
-    } else if (widget.conversation.lastMessage!.mediaType!.startsWith('image/')) {
+    } else if (widget.conversation.lastMessage!.mediaType!
+        .startsWith('image/')) {
       if (widget.conversation.lastMessage!.mediaUrl == null) {
         preview = const SizedBox();
       } else {
@@ -163,7 +167,8 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           size: 30,
         );
       }
-    } else if (widget.conversation.lastMessage!.mediaType!.startsWith('video/')) {
+    } else if (widget.conversation.lastMessage!.mediaType!
+        .startsWith('video/')) {
       if (widget.conversation.lastMessage!.mediaUrl == null) {
         preview = const SizedBox();
       } else {
@@ -182,7 +187,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
       child: preview,
     );
   }
-  
+
   Widget _buildLastMessageBody() {
     if (widget.conversation.isTyping) {
       return const TypingIndicatorWidget(Colors.black, Colors.white);
@@ -209,7 +214,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         body = widget.conversation.lastMessage!.body;
       }
     }
-       
+
     return Text(
       body,
       maxLines: 1,
@@ -255,15 +260,18 @@ class ConversationsListRowState extends State<ConversationsListRow> {
 
   @override
   Widget build(BuildContext context) {
-    final badgeText = widget.conversation.unreadCounter > 99 ?
-      '99+' :
-      widget.conversation.unreadCounter.toString();
+    final badgeText = widget.conversation.unreadCounter > 99
+        ? '99+'
+        : widget.conversation.unreadCounter.toString();
     final screenWidth = MediaQuery.of(context).size.width;
     final width = screenWidth - 24 - 70 - widget.extraWidgetWidth;
     final textWidth = screenWidth * 0.6;
 
-    final showTimestamp = widget.conversation.lastChangeTimestamp != timestampNever && widget.showTimestamp;
-    final sentBySelf = widget.conversation.lastMessage?.sender == GetIt.I.get<UIDataService>().ownJid!;
+    final showTimestamp =
+        widget.conversation.lastChangeTimestamp != timestampNever &&
+            widget.showTimestamp;
+    final sentBySelf = widget.conversation.lastMessage?.sender ==
+        GetIt.I.get<UIDataService>().ownJid!;
 
     final showBadge = widget.conversation.unreadCounter > 0 && !sentBySelf;
 
@@ -293,17 +301,14 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      ...widget.titleSuffixIcon != null ?
-                        [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: Icon(
-                              widget.titleSuffixIcon,
-                              size: 17,
-                            ),
+                      if (widget.titleSuffixIcon != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(
+                            widget.titleSuffixIcon,
+                            size: 17,
                           ),
-                        ] :
-                        [],
+                        ),
                       Visibility(
                         visible: showTimestamp,
                         child: const Spacer(),
@@ -314,32 +319,35 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                       ),
                     ],
                   ),
-
                   Padding(
                     padding: const EdgeInsets.only(top: 5),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ...(widget.conversation.lastMessage?.isThumbnailable ?? false) && !widget.conversation.isTyping ? [
+                        if ((widget.conversation.lastMessage?.isThumbnailable ??
+                                false) &&
+                            !widget.conversation.isTyping)
                           Padding(
                             padding: const EdgeInsets.only(right: 5),
                             child: BlocBuilder<StickersBloc, StickersState>(
-                              buildWhen: (prev, next) => prev.stickerPacks.length != next.stickerPacks.length &&
-                                widget.conversation.lastMessage?.stickerPackId != null,
-                              builder: (_, state) => _buildLastMessagePreview(state),
+                              buildWhen: (prev, next) =>
+                                  prev.stickerPacks.length !=
+                                      next.stickerPacks.length &&
+                                  widget.conversation.lastMessage
+                                          ?.stickerPackId !=
+                                      null,
+                              builder: (_, state) =>
+                                  _buildLastMessagePreview(state),
                             ),
-                          ),
-                        ] : [
+                          )
+                        else
                           const SizedBox(height: 30),
-                        ],
                         LimitedBox(
                           maxWidth: textWidth,
                           child: _buildLastMessageBody(),
                         ),
                         const Spacer(),
-
                         _getLastMessageIcon(sentBySelf),
-
                         Visibility(
                           visible: showBadge,
                           child: badges.Badge(
@@ -354,11 +362,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
               ),
             ),
           ),
-          ...widget.extra != null ? [
-            const Spacer(),
-              widget.extra!
-            ] :
-            [],
+          ...widget.extra != null ? [const Spacer(), widget.extra!] : [],
         ],
       ),
     );

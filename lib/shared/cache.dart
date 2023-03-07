@@ -24,22 +24,22 @@ abstract class Cache<K, V> {
 }
 
 class _LRUCacheEntry<V> {
-
   const _LRUCacheEntry(this.value, this.t);
   final int t;
   final V value;
 }
 
 class LRUCache<K, V> extends Cache<K, V> {
-
-  LRUCache(this._maxSize) : _cache = {}, _t = 0;
+  LRUCache(this._maxSize)
+      : _cache = {},
+        _t = 0;
   final Map<K, _LRUCacheEntry<V>> _cache;
   final int _maxSize;
   int _t;
 
   @override
   bool inCache(K key) => _cache.containsKey(key);
-  
+
   @override
   V? getValue(K key) {
     return _cache[key]?.value;
@@ -54,7 +54,7 @@ class LRUCache<K, V> extends Cache<K, V> {
       _cache[key]!.t,
     );
   }
-  
+
   @override
   void cache(K key, V value) {
     if (_cache.length + 1 <= _maxSize) {

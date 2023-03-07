@@ -21,11 +21,9 @@ class ReactionBubble extends StatelessWidget {
       return const Color(0xff007db0);
     }
 
-    return sentBySelf ?
-      bubbleColorSent :
-      bubbleColorReceived;
+    return sentBySelf ? bubbleColorSent : bubbleColorReceived;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -40,7 +38,7 @@ class ReactionBubble extends StatelessWidget {
               '$emoji $reactions',
               style: const TextStyle(
                 fontSize: 18,
-              ),  
+              ),
             ),
           ),
         ),

@@ -11,7 +11,8 @@ class ConnectivityEvent {
 
 class ConnectivityService {
   /// The internal stream controller
-  final StreamController<ConnectivityEvent> _controller = StreamController<ConnectivityEvent>.broadcast();
+  final StreamController<ConnectivityEvent> _controller =
+      StreamController<ConnectivityEvent>.broadcast();
 
   /// The logger
   final Logger _log = Logger('ConnectivityService');
@@ -20,19 +21,22 @@ class ConnectivityService {
   late ConnectivityResult _connectivity;
 
   Stream<ConnectivityEvent> get stream => _controller.stream;
-  
+
   @visibleForTesting
   void setConnectivity(ConnectivityResult result) {
-    _log.warning('Internal connectivity state changed by request originating from outside ConnectivityService');
+    _log.warning(
+      'Internal connectivity state changed by request originating from outside ConnectivityService',
+    );
     _connectivity = result;
   }
-  
+
   Future<void> initialize() async {
     final conn = Connectivity();
     _connectivity = await conn.checkConnectivity();
 
     conn.onConnectivityChanged.listen((ConnectivityResult result) {
-      final regained = _connectivity == ConnectivityResult.none && result != ConnectivityResult.none;
+      final regained = _connectivity == ConnectivityResult.none &&
+          result != ConnectivityResult.none;
       final lost = result == ConnectivityResult.none;
       _connectivity = result;
 

@@ -10,21 +10,21 @@ import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class DebuggingPage extends StatelessWidget {
-  DebuggingPage({ super.key })
-    : _ipController = TextEditingController(),
-      _passphraseController = TextEditingController(),
-      _portController = TextEditingController();
+  DebuggingPage({super.key})
+      : _ipController = TextEditingController(),
+        _passphraseController = TextEditingController(),
+        _portController = TextEditingController();
   final TextEditingController _ipController;
   final TextEditingController _portController;
   final TextEditingController _passphraseController;
 
-  static MaterialPageRoute <dynamic>get route => MaterialPageRoute<dynamic>(
-    builder: (_) => DebuggingPage(),
-    settings: const RouteSettings(
-      name: debuggingRoute,
-    ),
-  );
-  
+  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
+        builder: (_) => DebuggingPage(),
+        settings: const RouteSettings(
+          name: debuggingRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,21 +39,24 @@ class DebuggingPage extends StatelessWidget {
                 value: state.debugEnabled,
                 onChanged: (value) {
                   context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(debugEnabled: value),
-                    ),
-                  );
+                        PreferencesChangedEvent(
+                          state.copyWith(debugEnabled: value),
+                        ),
+                      );
                 },
               ),
             ),
             SettingsRow(
               title: t.pages.settings.debugging.generalEncryptionPassword,
-              description: t.pages.settings.debugging.generalEncryptionPasswordSubtext,
+              description:
+                  t.pages.settings.debugging.generalEncryptionPasswordSubtext,
               onTap: () {
                 showDialog<void>(
                   context: context,
                   builder: (BuildContext context) => AlertDialog(
-                    title: Text(t.pages.settings.debugging.generalEncryptionPassword),
+                    title: Text(
+                      t.pages.settings.debugging.generalEncryptionPassword,
+                    ),
                     content: TextField(
                       minLines: 1,
                       obscureText: true,
@@ -64,10 +67,12 @@ class DebuggingPage extends StatelessWidget {
                         child: Text(t.global.dialogAccept),
                         onPressed: () {
                           context.read<PreferencesBloc>().add(
-                            PreferencesChangedEvent(
-                              state.copyWith(debugPassphrase: _passphraseController.text),
-                            ),
-                          );
+                                PreferencesChangedEvent(
+                                  state.copyWith(
+                                    debugPassphrase: _passphraseController.text,
+                                  ),
+                                ),
+                              );
                           Navigator.of(context).pop();
                         },
                       )
@@ -94,10 +99,10 @@ class DebuggingPage extends StatelessWidget {
                         child: Text(t.global.dialogAccept),
                         onPressed: () {
                           context.read<PreferencesBloc>().add(
-                            PreferencesChangedEvent(
-                              state.copyWith(debugIp: _ipController.text),
-                            ),
-                          );
+                                PreferencesChangedEvent(
+                                  state.copyWith(debugIp: _ipController.text),
+                                ),
+                              );
                           Navigator.of(context).pop();
                         },
                       )
@@ -124,10 +129,12 @@ class DebuggingPage extends StatelessWidget {
                         child: Text(t.global.dialogAccept),
                         onPressed: () {
                           context.read<PreferencesBloc>().add(
-                            PreferencesChangedEvent(
-                              state.copyWith(debugPort: int.parse(_portController.text)),
-                            ),
-                          );
+                                PreferencesChangedEvent(
+                                  state.copyWith(
+                                    debugPort: int.parse(_portController.text),
+                                  ),
+                                ),
+                              );
                           Navigator.of(context).pop();
                         },
                       )
@@ -138,21 +145,23 @@ class DebuggingPage extends StatelessWidget {
             ),
 
             // Hide the testing commands outside of debug mode
-            ...kDebugMode ? [
-              const SectionTitle('Testing'),
-              SettingsRow(
-                title: 'Reset showDebugMenu state',
-                onTap: () {
-                  context.read<PreferencesBloc>().add(
-                    PreferencesChangedEvent(
-                      state.copyWith(
-                        showDebugMenu: false,
-                      ),
+            ...kDebugMode
+                ? [
+                    const SectionTitle('Testing'),
+                    SettingsRow(
+                      title: 'Reset showDebugMenu state',
+                      onTap: () {
+                        context.read<PreferencesBloc>().add(
+                              PreferencesChangedEvent(
+                                state.copyWith(
+                                  showDebugMenu: false,
+                                ),
+                              ),
+                            );
+                      },
                     ),
-                  );
-                },
-              ),
-            ] : [],
+                  ]
+                : [],
           ],
         ),
       ),

@@ -5,12 +5,11 @@ import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 class SharedFileWidget extends StatelessWidget {
   const SharedFileWidget(
     this.path, {
-      this.onTap,
-      this.borderRadius = 10,
-      this.size = sharedMediaContainerDimension,
-      super.key,
-    }
-  );
+    this.onTap,
+    this.borderRadius = 10,
+    this.size = sharedMediaContainerDimension,
+    super.key,
+  });
   final String path;
   final void Function()? onTap;
   final double borderRadius;
@@ -21,7 +20,7 @@ class SharedFileWidget extends StatelessWidget {
     return SharedMediaContainer(
       Icon(
         Icons.file_present,
-        size: size * 2/3,
+        size: size * 2 / 3,
       ),
       color: sharedMediaItemBackgroundColor,
       borderRadius: borderRadius,

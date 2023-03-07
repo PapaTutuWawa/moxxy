@@ -17,11 +17,9 @@ class RawChatBubble extends StatelessWidget {
     this.chatEncrypted,
     this.start,
     this.between,
-    this.end,
-    {
-      super.key,
-    }
-  );
+    this.end, {
+    super.key,
+  });
   final Message message;
   final double maxWidth;
   final bool sentBySelf;
@@ -30,15 +28,28 @@ class RawChatBubble extends StatelessWidget {
   final bool end;
   final bool start;
 
-  static BorderRadius getBorderRadius(bool sentBySelf, bool start, bool between, bool end) {
+  static BorderRadius getBorderRadius(
+    bool sentBySelf,
+    bool start,
+    bool between,
+    bool end,
+  ) {
     return BorderRadius.only(
-      topLeft: !sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
-      topRight: sentBySelf && (between || end) && !(start && end) ? radiusSmall : radiusLarge,
-      bottomLeft: !sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
-      bottomRight: sentBySelf && (between || start) && !(start && end) ? radiusSmall : radiusLarge,
+      topLeft: !sentBySelf && (between || end) && !(start && end)
+          ? radiusSmall
+          : radiusLarge,
+      topRight: sentBySelf && (between || end) && !(start && end)
+          ? radiusSmall
+          : radiusLarge,
+      bottomLeft: !sentBySelf && (between || start) && !(start && end)
+          ? radiusSmall
+          : radiusLarge,
+      bottomRight: sentBySelf && (between || start) && !(start && end)
+          ? radiusSmall
+          : radiusLarge,
     );
   }
-  
+
   /// Specified when the message bubble should not have color
   bool _shouldNotColorBubble() {
     var isInlinedWidget = false;
@@ -50,7 +61,7 @@ class RawChatBubble extends StatelessWidget {
     if (message.isPseudoMessage) {
       return true;
     }
-    
+
     // Check if it is an embedded file
     if (message.isMedia && message.mediaUrl != null && isInlinedWidget) {
       return true;
@@ -75,14 +86,14 @@ class RawChatBubble extends StatelessWidget {
         return const Color(0xff585858);
       }
     }
-    
+
     if (sentBySelf) {
       return bubbleColorSent;
     } else {
       return bubbleColorReceived;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final borderRadius = getBorderRadius(sentBySelf, start, between, end);
@@ -95,9 +106,9 @@ class RawChatBubble extends StatelessWidget {
         borderRadius: borderRadius,
         child: Padding(
           // NOTE: Images don't work well with padding here
-          padding: message.isMedia || message.quotes != null ?
-            EdgeInsets.zero :
-            const EdgeInsets.all(8),
+          padding: message.isMedia || message.quotes != null
+              ? EdgeInsets.zero
+              : const EdgeInsets.all(8),
           child: buildMessageWidget(
             message,
             maxWidth,
@@ -139,7 +150,7 @@ class ChatBubble extends StatefulWidget {
 }
 
 class ChatBubbleState extends State<ChatBubble>
-  with AutomaticKeepAliveClientMixin<ChatBubble> {
+    with AutomaticKeepAliveClientMixin<ChatBubble> {
   @override
   bool get wantKeepAlive => true;
 
@@ -149,7 +160,9 @@ class ChatBubbleState extends State<ChatBubble>
       return SwipeDirection.none;
     }
 
-    return widget.sentBySelf ? SwipeDirection.endToStart : SwipeDirection.startToEnd;
+    return widget.sentBySelf
+        ? SwipeDirection.endToStart
+        : SwipeDirection.startToEnd;
   }
 
   Widget _buildReactions() {
@@ -162,21 +175,23 @@ class ChatBubbleState extends State<ChatBubble>
       child: Wrap(
         spacing: 1,
         runSpacing: 2,
-        children: widget.message.reactions.map(
-          (reaction) => ReactionBubble(
-            emoji: reaction.emoji,
-            reactions: reaction.reactions,
-            reactedTo: reaction.reactedBySelf,
-            sentBySelf: widget.sentBySelf,
-            onTap: widget.onReactionTap != null ?
-              () => widget.onReactionTap!(reaction) :
-              null,
-          ),
-        ).toList(),
+        children: widget.message.reactions
+            .map(
+              (reaction) => ReactionBubble(
+                emoji: reaction.emoji,
+                reactions: reaction.reactions,
+                reactedTo: reaction.reactedBySelf,
+                sentBySelf: widget.sentBySelf,
+                onTap: widget.onReactionTap != null
+                    ? () => widget.onReactionTap!(reaction)
+                    : null,
+              ),
+            )
+            .toList(),
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -200,7 +215,9 @@ class ChatBubbleState extends State<ChatBubble>
             }
 
             return Container(
-              alignment: direction == SwipeDirection.endToStart ? Alignment.centerRight : Alignment.centerLeft,
+              alignment: direction == SwipeDirection.endToStart
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
               child: Padding(
                 padding: EdgeInsets.only(
                   right: direction == SwipeDirection.endToStart ? 24.0 : 0.0,
@@ -211,13 +228,16 @@ class ChatBubbleState extends State<ChatBubble>
                     begin: 0,
                     end: 1.2,
                   )
-                  .animate(
-                    CurvedAnimation(
-                      parent: progress,
-                      curve: const Interval(0.5, 1,),
-                    ),
-                  )
-                  .value,
+                      .animate(
+                        CurvedAnimation(
+                          parent: progress,
+                          curve: const Interval(
+                            0.5,
+                            1,
+                          ),
+                        ),
+                      )
+                      .value,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.3),
@@ -245,24 +265,22 @@ class ChatBubbleState extends State<ChatBubble>
           right: widget.sentBySelf ? 8.0 : 0.0,
         ),
         child: Align(
-          alignment: widget.sentBySelf ?
-            Alignment.centerRight :
-            Alignment.centerLeft,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: widget.sentBySelf ?
-                CrossAxisAlignment.end :
-                CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onLongPressStart: widget.onLongPressed,
-                  child: widget.bubble,
-                ),
-
-                _buildReactions(),
-              ],
-            ),
+          alignment:
+              widget.sentBySelf ? Alignment.centerRight : Alignment.centerLeft,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: widget.sentBySelf
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onLongPressStart: widget.onLongPressed,
+                child: widget.bubble,
+              ),
+              _buildReactions(),
+            ],
           ),
+        ),
       ),
     );
   }

@@ -7,15 +7,14 @@ import 'package:url_launcher/url_launcher.dart';
 part 'licenses.moxxy.dart';
 
 class Library {
-
-  const Library({ required this.name, required this.license, required this.url });
+  const Library({required this.name, required this.license, required this.url});
   final String name;
   final String license;
   final String url;
 }
 
 class LicenseRow extends StatelessWidget {
-  const LicenseRow({ required this.library, super.key });
+  const LicenseRow({required this.library, super.key});
   final Library library;
 
   Future<void> _openUrl() async {
@@ -27,34 +26,37 @@ class LicenseRow extends StatelessWidget {
       // TODO(Unknown): Show a popup to copy the url
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(library.name),
-      subtitle: Text(t.pages.settings.licenses.licensedUnder(license: library.license)),
+      subtitle: Text(
+        t.pages.settings.licenses.licensedUnder(license: library.license),
+      ),
       onTap: _openUrl,
-   );
+    );
   }
 }
 
 class SettingsLicensesPage extends StatelessWidget {
-  const SettingsLicensesPage({ super.key });
+  const SettingsLicensesPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const SettingsLicensesPage(),
-    settings: const RouteSettings(
-      name: licensesRoute,
-    ),
-  );
-  
+        builder: (_) => const SettingsLicensesPage(),
+        settings: const RouteSettings(
+          name: licensesRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: BorderlessTopbar.simple(t.pages.settings.licenses.title),
       body: ListView.builder(
         itemCount: usedLibraryList.length,
-        itemBuilder: (context, index) => LicenseRow(library: usedLibraryList[index]),
+        itemBuilder: (context, index) =>
+            LicenseRow(library: usedLibraryList[index]),
       ),
     );
   }

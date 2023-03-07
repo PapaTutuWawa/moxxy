@@ -13,7 +13,8 @@ class RebuildOnContactIntegrationChange extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PreferencesBloc, PreferencesState>(
-      buildWhen: (prev, next) => prev.enableContactIntegration != next.enableContactIntegration,
+      buildWhen: (prev, next) =>
+          prev.enableContactIntegration != next.enableContactIntegration,
       builder: (_, __) => builder(),
     );
   }

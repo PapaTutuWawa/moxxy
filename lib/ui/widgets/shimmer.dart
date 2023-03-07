@@ -19,7 +19,8 @@ class ShimmerWidget extends StatefulWidget {
   ShimmerState createState() => ShimmerState();
 }
 
-class ShimmerState extends State<ShimmerWidget> with SingleTickerProviderStateMixin {
+class ShimmerState extends State<ShimmerWidget>
+    with SingleTickerProviderStateMixin {
   late Animation<Color?> _animation;
   late AnimationController _controller;
   bool forward = true;

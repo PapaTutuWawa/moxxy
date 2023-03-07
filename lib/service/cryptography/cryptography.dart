@@ -20,24 +20,30 @@ List<int> _randomBuffer(int length) {
 
 CipherAlgorithm _sfsToCipher(SFSEncryptionType type) {
   switch (type) {
-    case SFSEncryptionType.aes128GcmNoPadding: return CipherAlgorithm.aes128GcmNoPadding;
-    case SFSEncryptionType.aes256GcmNoPadding: return CipherAlgorithm.aes256GcmNoPadding;
-    case SFSEncryptionType.aes256CbcPkcs7: return CipherAlgorithm.aes256CbcPkcs7;
+    case SFSEncryptionType.aes128GcmNoPadding:
+      return CipherAlgorithm.aes128GcmNoPadding;
+    case SFSEncryptionType.aes256GcmNoPadding:
+      return CipherAlgorithm.aes256GcmNoPadding;
+    case SFSEncryptionType.aes256CbcPkcs7:
+      return CipherAlgorithm.aes256CbcPkcs7;
   }
 }
 
 class CryptographyService {
-
   CryptographyService() : _log = Logger('CryptographyService');
   final Logger _log;
 
   /// Encrypt the file at path [source] and write the encrypted data to [dest]. For the
   /// encryption, use the algorithm indicated by [encryption].
-  Future<EncryptionResult> encryptFile(String source, String dest, SFSEncryptionType encryption) async {
+  Future<EncryptionResult> encryptFile(
+    String source,
+    String dest,
+    SFSEncryptionType encryption,
+  ) async {
     _log.finest('Beginning encryption routine for $source');
-    final key = encryption == SFSEncryptionType.aes128GcmNoPadding ?
-      _randomBuffer(16) :
-      _randomBuffer(32);
+    final key = encryption == SFSEncryptionType.aes128GcmNoPadding
+        ? _randomBuffer(16)
+        : _randomBuffer(32);
     final iv = _randomBuffer(12);
     final result = (await MoxplatformPlugin.crypto.encryptFile(
       source,
@@ -98,7 +104,7 @@ class CryptographyService {
         break;
       }
     }
-     for (final entry in ciphertextHashes.entries) {
+    for (final entry in ciphertextHashes.entries) {
       if (entry.key == hashSha256) {
         if (base64Encode(result!.ciphertextHash) != entry.value) {
           passedCiphertextIntegrityCheck = false;
@@ -129,7 +135,7 @@ class CryptographyService {
       // Android itself does not provide more
       throw Exception();
     }
-    
+
     _log.finest('Beginning hash generation of $path');
     final data = await MoxplatformPlugin.crypto.hashFile(path, hashSpec);
     _log.finest('Hash generation done for $path');

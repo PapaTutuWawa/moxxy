@@ -39,24 +39,22 @@ class RosterService {
     bool pseudoRosterItem,
     String? contactId,
     String? contactAvatarPath,
-    String? contactDisplayName,
-    {
-      List<String> groups = const [],
-    }
-  ) async {
+    String? contactDisplayName, {
+    List<String> groups = const [],
+  }) async {
     final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(
-      avatarUrl,
-      avatarHash,
-      jid,
-      title,
-      subscription,
-      ask,
-      pseudoRosterItem,
-      contactId,
-      contactAvatarPath,
-      contactDisplayName,
-      groups: groups,
-    );
+          avatarUrl,
+          avatarHash,
+          jid,
+          title,
+          subscription,
+          ask,
+          pseudoRosterItem,
+          contactId,
+          contactAvatarPath,
+          contactDisplayName,
+          groups: groups,
+        );
 
     // Update the cache
     _rosterCache![item.jid] = item;
@@ -67,35 +65,34 @@ class RosterService {
   /// Wrapper around [DatabaseService]'s updateRosterItem that updates the cache.
   Future<RosterItem> updateRosterItem(
     int id, {
-      String? avatarUrl,
-      String? avatarHash,
-      String? title,
-      String? subscription,
-      String? ask,
-      Object pseudoRosterItem = notSpecified,
-      List<String>? groups,
-      Object? contactId = notSpecified,
-      Object? contactAvatarPath = notSpecified,
-      Object? contactDisplayName = notSpecified,
-    }
-  ) async {
+    String? avatarUrl,
+    String? avatarHash,
+    String? title,
+    String? subscription,
+    String? ask,
+    Object pseudoRosterItem = notSpecified,
+    List<String>? groups,
+    Object? contactId = notSpecified,
+    Object? contactAvatarPath = notSpecified,
+    Object? contactDisplayName = notSpecified,
+  }) async {
     final newItem = await GetIt.I.get<DatabaseService>().updateRosterItem(
-      id,
-      avatarUrl: avatarUrl,
-      avatarHash: avatarHash,
-      title: title,
-      subscription: subscription,
-      ask: ask,
-      pseudoRosterItem: pseudoRosterItem,
-      groups: groups,
-      contactId: contactId,
-      contactAvatarPath: contactAvatarPath,
-      contactDisplayName: contactDisplayName,
-    );
+          id,
+          avatarUrl: avatarUrl,
+          avatarHash: avatarHash,
+          title: title,
+          subscription: subscription,
+          ask: ask,
+          pseudoRosterItem: pseudoRosterItem,
+          groups: groups,
+          contactId: contactId,
+          contactAvatarPath: contactAvatarPath,
+          contactDisplayName: contactDisplayName,
+        );
 
     // Update cache
     _rosterCache![newItem.jid] = newItem;
-    
+
     return newItem;
   }
 
@@ -104,7 +101,7 @@ class RosterService {
     // NOTE: This call ensures that _rosterCache != null
     await GetIt.I.get<DatabaseService>().removeRosterItem(id);
     assert(_rosterCache != null, '_rosterCache must be non-null');
-    
+
     /// Update cache
     _rosterCache!.removeWhere((_, value) => value.id == id);
   }
@@ -120,7 +117,7 @@ class RosterService {
       }
     }
   }
-  
+
   /// Returns the entire roster
   Future<List<RosterItem>> getRoster() async {
     await _loadRosterIfNeeded();
@@ -135,7 +132,7 @@ class RosterService {
 
     return null;
   }
-  
+
   /// Load the roster from the database. This function is guarded against loading the
   /// roster multiple times and thus creating too many "RosterDiff" actions.
   Future<List<RosterItem>> loadRosterFromDatabase() async {
@@ -145,14 +142,19 @@ class RosterService {
     for (final item in items) {
       _rosterCache![item.jid] = item;
     }
-    
+
     return items;
   }
-  
+
   /// Attempts to add an item to the roster by first performing the roster set
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
-  Future<RosterItem> addToRosterWrapper(String avatarUrl, String avatarHash, String jid, String title) async {
+  Future<RosterItem> addToRosterWrapper(
+    String avatarUrl,
+    String avatarHash,
+    String jid,
+    String title,
+  ) async {
     final css = GetIt.I.get<ContactsService>();
     final contactId = await css.getContactIdForJid(jid);
     final item = await addRosterItemFromData(
@@ -167,24 +169,33 @@ class RosterService {
       await css.getProfilePicturePathForJid(jid),
       await css.getContactDisplayName(contactId),
     );
-    final result = await GetIt.I.get<XmppConnection>().getRosterManager().addToRoster(jid, title);
+    final result = await GetIt.I
+        .get<XmppConnection>()
+        .getRosterManager()
+        .addToRoster(jid, title);
     if (!result) {
       // TODO(Unknown): Signal error?
     }
 
-    sendEvent(RosterDiffEvent(added: [ item ]));
+    sendEvent(RosterDiffEvent(added: [item]));
     return item;
   }
 
   /// Removes the [RosterItem] with jid [jid] from the server-side roster and, if
   /// successful, from the database. If [unsubscribe] is true, then [jid] won't receive
   /// our presence anymore.
-  Future<bool> removeFromRosterWrapper(String jid, { bool unsubscribe = true }) async {
+  Future<bool> removeFromRosterWrapper(
+    String jid, {
+    bool unsubscribe = true,
+  }) async {
     final roster = GetIt.I.get<XmppConnection>().getRosterManager();
     final result = await roster.removeFromRoster(jid);
-    if (result == RosterRemovalResult.okay || result == RosterRemovalResult.itemNotFound) {
+    if (result == RosterRemovalResult.okay ||
+        result == RosterRemovalResult.itemNotFound) {
       if (unsubscribe) {
-        GetIt.I.get<SubscriptionRequestService>().sendUnsubscriptionRequest(jid);
+        GetIt.I
+            .get<SubscriptionRequestService>()
+            .sendUnsubscriptionRequest(jid);
       }
 
       _log.finest('Removing from roster maybe worked. Removing from database');

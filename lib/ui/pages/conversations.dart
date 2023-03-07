@@ -152,20 +152,17 @@ class ConversationsPageState extends State<ConversationsPage>
                     left: 0,
                     right: 0,
                     children: [
-                      ...item.unreadCounter != 0
-                          ? [
-                              OverviewMenuItem(
-                                icon: Icons.done_all,
-                                text: t.pages.conversations.markAsRead,
-                                onPressed: () {
-                                  context.read<ConversationsBloc>().add(
-                                        ConversationMarkedAsReadEvent(item.jid),
-                                      );
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                            ]
-                          : [],
+                      if (item.unreadCounter != 0)
+                        OverviewMenuItem(
+                          icon: Icons.done_all,
+                          text: t.pages.conversations.markAsRead,
+                          onPressed: () {
+                            context.read<ConversationsBloc>().add(
+                                  ConversationMarkedAsReadEvent(item.jid),
+                                );
+                            Navigator.of(context).pop();
+                          },
+                        ),
                       OverviewMenuItem(
                         icon: Icons.close,
                         text: t.pages.conversations.closeChat,
@@ -200,7 +197,10 @@ class ConversationsPageState extends State<ConversationsPage>
               child: InkWell(
                 onTap: () => GetIt.I.get<ConversationBloc>().add(
                       RequestedConversationEvent(
-                          item.jid, item.title, item.avatarUrl),
+                        item.jid,
+                        item.title,
+                        item.avatarUrl,
+                      ),
                     ),
                 child: row,
               ),

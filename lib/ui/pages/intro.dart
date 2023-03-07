@@ -5,15 +5,15 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 
 class Intro extends StatelessWidget {
-  const Intro({ super.key });
- 
+  const Intro({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const Intro(),
-    settings: const RouteSettings(
-      name: introRoute,
-    ),
-  );
-  
+        builder: (_) => const Intro(),
+        settings: const RouteSettings(
+          name: introRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     // TODO(Unknown): Fix the typography
@@ -25,7 +25,8 @@ class Intro extends StatelessWidget {
               padding: const EdgeInsets.only(top: 16),
               child: Image.asset(
                 'assets/images/logo.png',
-                width: 200, height: 200,
+                width: 200,
+                height: 200,
               ),
             ),
             const Padding(
@@ -47,7 +48,8 @@ class Intro extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(top: 8)),
+              padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
+                  .add(const EdgeInsets.only(top: 8)),
               child: Row(
                 children: [
                   Expanded(
@@ -76,7 +78,9 @@ class Intro extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge).add(const EdgeInsets.only(bottom: paddingVeryLarge)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: paddingVeryLarge,
+                    ).add(const EdgeInsets.only(bottom: paddingVeryLarge)),
                     child: TextButton(
                       child: Text(t.pages.intro.registerButton),
                       onPressed: () {

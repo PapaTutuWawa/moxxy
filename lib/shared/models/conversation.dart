@@ -9,19 +9,22 @@ import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 part 'conversation.freezed.dart';
 part 'conversation.g.dart';
 
-class ConversationChatStateConverter implements JsonConverter<ChatState, Map<String, dynamic>> {
+class ConversationChatStateConverter
+    implements JsonConverter<ChatState, Map<String, dynamic>> {
   const ConversationChatStateConverter();
 
   @override
-  ChatState fromJson(Map<String, dynamic> json) => chatStateFromString(json['chatState'] as String);
-  
+  ChatState fromJson(Map<String, dynamic> json) =>
+      chatStateFromString(json['chatState'] as String);
+
   @override
   Map<String, dynamic> toJson(ChatState state) => <String, String>{
-    'chatState': chatStateToString(state),
-  };
+        'chatState': chatStateToString(state),
+      };
 }
 
-class ConversationMessageConverter implements JsonConverter<Message?, Map<String, dynamic>> {
+class ConversationMessageConverter
+    implements JsonConverter<Message?, Map<String, dynamic>> {
   const ConversationMessageConverter();
 
   @override
@@ -30,11 +33,11 @@ class ConversationMessageConverter implements JsonConverter<Message?, Map<String
 
     return Message.fromJson(json['message']! as Map<String, dynamic>);
   }
-  
+
   @override
   Map<String, dynamic> toJson(Message? message) => <String, dynamic>{
-    'message': message?.toJson(),
-  };
+        'message': message?.toJson(),
+      };
 }
 
 @freezed
@@ -61,23 +64,28 @@ class Conversation with _$Conversation {
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState,
     // The amount of shared media items that are in the database
-    int sharedMediaAmount,
-    {
-      // The id of the contact in the device's phonebook if it exists
-      String? contactId,
-      // The path to the contact avatar, if available
-      String? contactAvatarPath,
-      // The contact's display name, if it exists
-      String? contactDisplayName,
-    }
-  ) = _Conversation;
+    int sharedMediaAmount, {
+    // The id of the contact in the device's phonebook if it exists
+    String? contactId,
+    // The path to the contact avatar, if available
+    String? contactAvatarPath,
+    // The contact's display name, if it exists
+    String? contactDisplayName,
+  }) = _Conversation;
 
   const Conversation._();
-  
-  /// JSON
-  factory Conversation.fromJson(Map<String, dynamic> json) => _$ConversationFromJson(json);
 
-  factory Conversation.fromDatabaseJson(Map<String, dynamic> json, bool inRoster, String subscription, List<SharedMedium> sharedMedia, Message? lastMessage) {
+  /// JSON
+  factory Conversation.fromJson(Map<String, dynamic> json) =>
+      _$ConversationFromJson(json);
+
+  factory Conversation.fromDatabaseJson(
+    Map<String, dynamic> json,
+    bool inRoster,
+    String subscription,
+    List<SharedMedium> sharedMedia,
+    Message? lastMessage,
+  ) {
     return Conversation.fromJson({
       ...json,
       'sharedMedia': <Map<String, dynamic>>[],
@@ -86,13 +94,14 @@ class Conversation with _$Conversation {
       'inRoster': inRoster,
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
-      'chatState': const ConversationChatStateConverter().toJson(ChatState.gone),
+      'chatState':
+          const ConversationChatStateConverter().toJson(ChatState.gone),
     }).copyWith(
       lastMessage: lastMessage,
       sharedMedia: sharedMedia,
     );
   }
-  
+
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
       ..remove('id')

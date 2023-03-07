@@ -57,23 +57,26 @@ class AutoDownloadSizeDialogState extends State<AutoDownloadSizeDialog> {
         child: Table(
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           children: _autoDownloadSizes
-            .map((size) => TableRow(
-              children: [
-                Text(
-                  size.value == -1 ?
-                    t.pages.settings.network.automaticDownloadAlways :
-                    size.text,
-                ),
-                Checkbox(
-                  value: size.value == selection,
-                  onChanged: (value) {
-                    if (size.value == selection) return;
+              .map(
+                (size) => TableRow(
+                  children: [
+                    Text(
+                      size.value == -1
+                          ? t.pages.settings.network.automaticDownloadAlways
+                          : size.text,
+                    ),
+                    Checkbox(
+                      value: size.value == selection,
+                      onChanged: (value) {
+                        if (size.value == selection) return;
 
-                    setState(() => selection = size.value);
-                  },
+                        setState(() => selection = size.value);
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),).toList(),
+              )
+              .toList(),
         ),
       ),
       actions: [
@@ -91,15 +94,15 @@ class AutoDownloadSizeDialogState extends State<AutoDownloadSizeDialog> {
 }
 
 class NetworkPage extends StatelessWidget {
-  const NetworkPage({ super.key });
+  const NetworkPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const NetworkPage(),
-    settings: const RouteSettings(
-      name: networkRoute,
-    ),
-  );
-  
+        builder: (_) => const NetworkPage(),
+        settings: const RouteSettings(
+          name: networkRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,11 +111,9 @@ class NetworkPage extends StatelessWidget {
         builder: (context, state) => ListView(
           children: [
             SectionTitle(t.pages.settings.network.automaticDownloadsSection),
-            
             SettingsRow(
               title: t.pages.settings.network.automaticDownloadsText,
             ),
-
             SettingsRow(
               title: t.pages.settings.network.wifi,
               padding: const EdgeInsets.symmetric(
@@ -122,10 +123,10 @@ class NetworkPage extends StatelessWidget {
               suffix: Switch(
                 value: state.autoDownloadWifi,
                 onChanged: (value) => context.read<PreferencesBloc>().add(
-                  PreferencesChangedEvent(
-                    state.copyWith(autoDownloadWifi: value),
-                  ),
-                ),
+                      PreferencesChangedEvent(
+                        state.copyWith(autoDownloadWifi: value),
+                      ),
+                    ),
               ),
             ),
             SettingsRow(
@@ -137,16 +138,16 @@ class NetworkPage extends StatelessWidget {
               suffix: Switch(
                 value: state.autoDownloadMobile,
                 onChanged: (value) => context.read<PreferencesBloc>().add(
-                  PreferencesChangedEvent(
-                    state.copyWith(autoDownloadMobile: value),
-                  ),
-                ),
+                      PreferencesChangedEvent(
+                        state.copyWith(autoDownloadMobile: value),
+                      ),
+                    ),
               ),
             ),
-
             SettingsRow(
               title: t.pages.settings.network.automaticDownloadsMaximumSize,
-              description: t.pages.settings.network.automaticDownloadsMaximumSizeSubtext,
+              description:
+                  t.pages.settings.network.automaticDownloadsMaximumSizeSubtext,
               onTap: () async {
                 final result = await showDialog<int>(
                   context: context,
@@ -159,10 +160,10 @@ class NetworkPage extends StatelessWidget {
 
                 // ignore: use_build_context_synchronously
                 context.read<PreferencesBloc>().add(
-                  PreferencesChangedEvent(
-                    state.copyWith(maximumAutoDownloadSize: result),
-                  ),
-                );
+                      PreferencesChangedEvent(
+                        state.copyWith(maximumAutoDownloadSize: result),
+                      ),
+                    );
               },
             ),
           ],

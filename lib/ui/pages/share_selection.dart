@@ -13,23 +13,23 @@ import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class ShareSelectionPage extends StatelessWidget {
-  const ShareSelectionPage({ super.key });
+  const ShareSelectionPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const ShareSelectionPage(),
-    settings: const RouteSettings(
-      name: shareSelectionRoute,
-    ),
-  );
+        builder: (_) => const ShareSelectionPage(),
+        settings: const RouteSettings(
+          name: shareSelectionRoute,
+        ),
+      );
 
   bool _buildWhen(ShareSelectionState prev, ShareSelectionState next) {
     // Prevent rebuilding when items changes. This prevents us from having to deal with
     // a roster update coming in while we are selecting JIDs to share to.
     // TODO(Unknown): But does it work?
     return prev.selection != next.selection ||
-      prev.paths != next.paths ||
-      prev.text != next.text ||
-      prev.type != next.type;
+        prev.paths != next.paths ||
+        prev.text != next.text ||
+        prev.type != next.type;
   }
 
   IconData? _getSuffixIcon(ShareListItem item) {
@@ -43,7 +43,7 @@ class ShareSelectionPage extends StatelessWidget {
 
     return null;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
@@ -54,18 +54,18 @@ class ShareSelectionPage extends StatelessWidget {
 
         // Navigate to the conversations page...
         GetIt.I.get<navigation.NavigationBloc>().add(
-          navigation.PushedNamedAndRemoveUntilEvent(
-            const navigation.NavigationDestination(conversationsRoute),
-            (_) => false,
-          ),
-        );
+              navigation.PushedNamedAndRemoveUntilEvent(
+                const navigation.NavigationDestination(conversationsRoute),
+                (_) => false,
+              ),
+            );
         // ...and put the app back into the background
         await MoveToBackground.moveTaskToBack();
 
         return false;
       },
       child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
-        buildWhen: _buildWhen, 
+        buildWhen: _buildWhen,
         builder: (context, state) => Scaffold(
           appBar: BorderlessTopbar.simple(t.pages.shareselection.shareWith),
           body: ListView.builder(
@@ -73,12 +73,12 @@ class ShareSelectionPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final item = state.items[index];
               final isSelected = state.selection.contains(index);
-              
+
               return InkWell(
                 onTap: () {
                   context.read<ShareSelectionBloc>().add(
-                    SelectionToggledEvent(index),
-                  );
+                        SelectionToggledEvent(index),
+                      );
                 },
                 child: ConversationsListRow(
                   maxTextWidth,
@@ -109,47 +109,48 @@ class ShareSelectionPage extends StatelessWidget {
                     value: isSelected,
                     onChanged: (_) {
                       context.read<ShareSelectionBloc>().add(
-                        SelectionToggledEvent(index),
-                      );
+                            SelectionToggledEvent(index),
+                          );
                     },
                   ),
                 ),
               );
             },
           ),
-          floatingActionButton: state.selection.isNotEmpty ?
-            FloatingActionButton(
-              onPressed: () async {
-                final bloc = context.read<ShareSelectionBloc>();
-                final hasUnencrypted = bloc.state.selection.any((selection) {
-                  return !bloc.state.items[selection].isEncrypted;
-                });
-                final hasEncrypted = bloc.state.selection.any((selection) {
-                  return bloc.state.items[selection].isEncrypted;
-                });
+          floatingActionButton: state.selection.isNotEmpty
+              ? FloatingActionButton(
+                  onPressed: () async {
+                    final bloc = context.read<ShareSelectionBloc>();
+                    final hasUnencrypted =
+                        bloc.state.selection.any((selection) {
+                      return !bloc.state.items[selection].isEncrypted;
+                    });
+                    final hasEncrypted = bloc.state.selection.any((selection) {
+                      return bloc.state.items[selection].isEncrypted;
+                    });
 
-                // Warn the user
-                if (hasUnencrypted && hasEncrypted) {
-                  final result = await showConfirmationDialog(
-                    t.pages.shareselection.confirmTitle,
-                    t.pages.shareselection.confirmBody,
-                    context,
-                  );
+                    // Warn the user
+                    if (hasUnencrypted && hasEncrypted) {
+                      final result = await showConfirmationDialog(
+                        t.pages.shareselection.confirmTitle,
+                        t.pages.shareselection.confirmBody,
+                        context,
+                      );
 
-                  if (result) {
+                      if (result) {
+                        bloc.add(SubmittedEvent());
+                      }
+                      return;
+                    }
+
                     bloc.add(SubmittedEvent());
-                  }
-                  return;
-                }
-
-                bloc.add(SubmittedEvent());
-              },
-              child: const Icon(
-                Icons.send,
-                color: Colors.white,
-              ),
-            ) :
-            null,
+                  },
+                  child: const Icon(
+                    Icons.send,
+                    color: Colors.white,
+                  ),
+                )
+              : null,
         ),
       ),
     );

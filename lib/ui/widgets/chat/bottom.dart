@@ -20,7 +20,9 @@ const _bubbleBottomIconSize = fontsizeSubbody * 1.5;
 /// [shrink] indiactes whether the internal Row element should have a mainAxisSize of
 /// min (true) or max (false). Defaults to false.
 class MessageBubbleBottom extends StatefulWidget {
-  const MessageBubbleBottom(this.message, this.sent, {
+  const MessageBubbleBottom(
+    this.message,
+    this.sent, {
     this.shrink = false,
     super.key,
   });
@@ -42,31 +44,35 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
 
     // Different name for now to prevent possible shadowing issues
     final initNow = DateTime.now().millisecondsSinceEpoch;
-    _timestampString = formatMessageTimestamp(widget.message.timestamp, initNow);
+    _timestampString =
+        formatMessageTimestamp(widget.message.timestamp, initNow);
 
     // Only start the timer if neccessary
-    if (initNow - widget.message.timestamp <= 15 * Duration.millisecondsPerMinute) {
+    if (initNow - widget.message.timestamp <=
+        15 * Duration.millisecondsPerMinute) {
       _updateTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
         setState(() {
           final now = DateTime.now().millisecondsSinceEpoch;
-          _timestampString = formatMessageTimestamp(widget.message.timestamp, now);
+          _timestampString =
+              formatMessageTimestamp(widget.message.timestamp, now);
 
-          if (now - widget.message.timestamp > 15 * Duration.millisecondsPerMinute) {
+          if (now - widget.message.timestamp >
+              15 * Duration.millisecondsPerMinute) {
             _updateTimer!.cancel();
           }
         });
       });
     } else {
       _updateTimer = null;
-    }   
+    }
   }
-  
+
   @override
   void dispose() {
     if (_updateTimer != null) {
       _updateTimer!.cancel();
     }
-    
+
     super.dispose();
   }
 
@@ -75,32 +81,28 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
   }
 
   bool _showCheckmarks() {
-    return widget.sent &&
-            widget.message.received &&
-            !widget.message.displayed;
+    return widget.sent && widget.message.received && !widget.message.displayed;
   }
 
   bool _showCheckmark() {
     return widget.sent &&
-            widget.message.acked &&
-            !widget.message.received &&
-            !widget.message.displayed;
+        widget.message.acked &&
+        !widget.message.received &&
+        !widget.message.displayed;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
-      mainAxisSize: widget.shrink ?
-        MainAxisSize.min :
-        MainAxisSize.max,
+      mainAxisSize: widget.shrink ? MainAxisSize.min : MainAxisSize.max,
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 3),
           child: Text(
-            widget.message.isMedia && widget.message.mediaSize != null ?
-              '${fileSizeToString(widget.message.mediaSize!)} • $_timestampString' :
-              _timestampString,
+            widget.message.isMedia && widget.message.mediaSize != null
+                ? '${fileSizeToString(widget.message.mediaSize!)} • $_timestampString'
+                : _timestampString,
             style: const TextStyle(
               fontSize: fontsizeSubbody,
               color: Color(0xffddfdfd),
@@ -116,7 +118,8 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
               size: _bubbleBottomIconSize,
             ),
           ),
-        if (widget.message.stickerPackId != null && !GetIt.I.get<PreferencesBloc>().state.enableStickers)
+        if (widget.message.stickerPackId != null &&
+            !GetIt.I.get<PreferencesBloc>().state.enableStickers)
           const Padding(
             padding: EdgeInsets.only(left: 3),
             child: Icon(
@@ -153,32 +156,32 @@ class MessageBubbleBottomState extends State<MessageBubbleBottom> {
             ),
           ),
         if (_showCheckmark())
-            const Padding(
-              padding: EdgeInsets.only(left: 3),
-              child: Icon(
-                Icons.done,
-                color: Colors.white,
-                size: _bubbleBottomIconSize,
-              ),
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.done,
+              color: Colors.white,
+              size: _bubbleBottomIconSize,
             ),
+          ),
         if (_showCheckmarks())
-            const Padding(
-              padding: EdgeInsets.only(left: 3),
-              child: Icon(
-                Icons.done_all,
-                color: Colors.white,
-                size: _bubbleBottomIconSize,
-              ),
+          const Padding(
+            padding: EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.done_all,
+              color: Colors.white,
+              size: _bubbleBottomIconSize,
             ),
+          ),
         if (_showBlueCheckmarks())
-            Padding(
-              padding: const EdgeInsets.only(left: 3),
-              child: Icon(
-                Icons.done_all,
-                size: _bubbleBottomIconSize,
-                color: Colors.blue.shade700,
-              ),
+          Padding(
+            padding: const EdgeInsets.only(left: 3),
+            child: Icon(
+              Icons.done_all,
+              size: _bubbleBottomIconSize,
+              color: Colors.blue.shade700,
             ),
+          ),
       ],
     );
   }

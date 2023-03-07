@@ -24,20 +24,23 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     on<DeviceVerifiedEvent>(_onDeviceVerified);
   }
 
-  Future<void> _onRequested(OwnDevicesRequestedEvent event, Emitter<OwnDevicesState> emit) async {
+  Future<void> _onRequested(
+    OwnDevicesRequestedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     emit(state.copyWith(working: true));
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(ownDevicesRoute),
-      ),
-    );
+          PushedNamedEvent(
+            const NavigationDestination(ownDevicesRoute),
+          ),
+        );
 
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetOwnOmemoFingerprintsCommand(),
-    ) as GetOwnOmemoFingerprintsResult;
-    
+          GetOwnOmemoFingerprintsCommand(),
+        ) as GetOwnOmemoFingerprintsResult;
+
     emit(
       state.copyWith(
         working: false,
@@ -47,17 +50,20 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
       ),
     );
   }
-  
-  Future<void> _onDeviceEnabledSet(OwnDeviceEnabledSetEvent event, Emitter<OwnDevicesState> emit) async {
+
+  Future<void> _onDeviceEnabledSet(
+    OwnDeviceEnabledSetEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetOmemoDeviceEnabledCommand(
-        jid: GetIt.I.get<UIDataService>().ownJid!,
-        deviceId: event.deviceId,
-        enabled: event.enabled,
-      ),
-      awaitable: false,
-    );
+          SetOmemoDeviceEnabledCommand(
+            jid: GetIt.I.get<UIDataService>().ownJid!,
+            deviceId: event.deviceId,
+            enabled: event.enabled,
+          ),
+          awaitable: false,
+        );
 
     emit(
       state.copyWith(
@@ -72,18 +78,23 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     );
   }
 
-  Future<void> _onSessionsRecreated(OwnSessionsRecreatedEvent event, Emitter<OwnDevicesState> emit) async {
+  Future<void> _onSessionsRecreated(
+    OwnSessionsRecreatedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
-      awaitable: false,
-    );
+          RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
+          awaitable: false,
+        );
     emit(
       state.copyWith(
         keys: List.from(
-          state.keys.map((key) => key.copyWith(
-            hasSessionWith: false,
-          ),),
+          state.keys.map(
+            (key) => key.copyWith(
+              hasSessionWith: false,
+            ),
+          ),
         ),
       ),
     );
@@ -91,30 +102,35 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
 
-  Future<void> _onDeviceRemoved(OwnDeviceRemovedEvent event, Emitter<OwnDevicesState> emit) async {
+  Future<void> _onDeviceRemoved(
+    OwnDeviceRemovedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      RemoveOwnDeviceCommand(deviceId: event.deviceId),
-      awaitable: false,
-    );
+          RemoveOwnDeviceCommand(deviceId: event.deviceId),
+          awaitable: false,
+        );
 
     emit(
       state.copyWith(
         keys: List.from(
-          state.keys
-            .where((key) => key.deviceId != event.deviceId),
+          state.keys.where((key) => key.deviceId != event.deviceId),
         ),
       ),
     );
   }
 
-  Future<void> _onDeviceRegenerated(OwnDeviceRegeneratedEvent event, Emitter<OwnDevicesState> emit) async {
+  Future<void> _onDeviceRegenerated(
+    OwnDeviceRegeneratedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     emit(state.copyWith(working: true));
 
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      RegenerateOwnDeviceCommand(),
-    ) as RegenerateOwnDeviceResult;
+          RegenerateOwnDeviceCommand(),
+        ) as RegenerateOwnDeviceResult;
 
     // Update the UI state
     emit(
@@ -126,7 +142,10 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     );
   }
 
-  Future<void> _onDeviceVerified(DeviceVerifiedEvent event, Emitter<OwnDevicesState> emit) async {
+  Future<void> _onDeviceVerified(
+    DeviceVerifiedEvent event,
+    Emitter<OwnDevicesState> emit,
+  ) async {
     final ownJid = GetIt.I.get<UIDataService>().ownJid!;
     final result = isVerificationUriValid(
       state.keys,
@@ -143,11 +162,11 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
     emit(state.copyWith(keys: newDevices));
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      MarkOmemoDeviceAsVerifiedCommand(
-        jid: ownJid,
-        deviceId: event.deviceId,
-      ),
-      awaitable: false,
-    );
+          MarkOmemoDeviceAsVerifiedCommand(
+            jid: ownJid,
+            deviceId: event.deviceId,
+          ),
+          awaitable: false,
+        );
   }
 }

@@ -11,7 +11,7 @@ class MoxxyConnectivityManager extends ConnectivityManager {
   }
 
   final Logger _log = Logger('MoxxyConnectivityManager');
-  
+
   Completer<void>? _completer;
 
   final Lock _completerLock = Lock();
@@ -20,16 +20,20 @@ class MoxxyConnectivityManager extends ConnectivityManager {
     await _completerLock.synchronized(() async {
       final result = await GetIt.I.get<ConnectivityService>().hasConnection();
       if (!result) {
-        _log.finest('No network connection at initialization: Creating completer');
+        _log.finest(
+          'No network connection at initialization: Creating completer',
+        );
         _completer = Completer<void>();
       }
     });
   }
-  
+
   Future<void> _onConnectivityChanged(ConnectivityEvent event) async {
     if (event.regained) {
       await _completerLock.synchronized(() {
-        _log.finest('Network regained. _completer != null: ${_completer != null}');
+        _log.finest(
+          'Network regained. _completer != null: ${_completer != null}',
+        );
         _completer?.complete();
         _completer = null;
       });
@@ -40,7 +44,7 @@ class MoxxyConnectivityManager extends ConnectivityManager {
       });
     }
   }
-  
+
   @override
   Future<bool> hasConnection() async {
     return GetIt.I.get<ConnectivityService>().hasConnection();

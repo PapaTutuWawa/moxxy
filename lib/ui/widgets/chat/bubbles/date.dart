@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DateBubble extends StatelessWidget {
-  const DateBubble(this.value, { super.key });
+  const DateBubble(this.value, {super.key});
   final String value;
 
   @override

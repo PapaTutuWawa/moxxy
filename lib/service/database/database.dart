@@ -67,7 +67,7 @@ extension DatabaseUpdateAndReturn on Database {
     String table,
     Map<String, Object?> values, {
     required String where,
-    required List<Object?> whereArgs, 
+    required List<Object?> whereArgs,
   }) async {
     final q = SqlBuilder.update(
       table,
@@ -97,7 +97,7 @@ class DatabaseService {
 
   /// The database.
   late Database _db;
-  
+
   Future<void> initialize() async {
     final dbPath = path.join(
       await getDatabasesPath(),
@@ -110,11 +110,14 @@ class DatabaseService {
       key = (await _storage.read(key: databasePasswordKey))!;
     } else {
       _log.finest('Database encryption not key found. Generating it...');
-      key = randomAlphaNumeric(40, provider: CoreRandomProvider.from(Random.secure()));
+      key = randomAlphaNumeric(
+        40,
+        provider: CoreRandomProvider.from(Random.secure()),
+      );
       await _storage.write(key: databasePasswordKey, value: key);
       _log.finest('Key generation done...');
     }
-    
+
     _db = await openDatabase(
       dbPath,
       password: key,
@@ -252,13 +255,14 @@ class DatabaseService {
 
     _log.finest('Database setup done');
   }
-  
+
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<List<Conversation>> loadConversations() async {
-    final conversationsRaw = await _db.query('Conversations',
+    final conversationsRaw = await _db.query(
+      'Conversations',
       orderBy: 'lastChangeTimestamp DESC',
     );
-    
+
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
       final jid = c['jid']! as String;
@@ -269,8 +273,8 @@ class DatabaseService {
         orderBy: 'timestamp DESC',
         limit: 8,
       );
-      final rosterItem = await GetIt.I.get<RosterService>()
-        .getRosterItemByJid(jid);
+      final rosterItem =
+          await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
 
       Message? lastMessage;
       if (c['lastMessageId'] != null) {
@@ -279,20 +283,18 @@ class DatabaseService {
           jid,
         );
       }
-        
+
       tmp.add(
         Conversation.fromDatabaseJson(
           c,
           rosterItem != null && !rosterItem.pseudoRosterItem,
           rosterItem?.subscription ?? 'none',
-          sharedMediaRaw
-            .map(SharedMedium.fromDatabaseJson)
-            .toList(),
+          sharedMediaRaw.map(SharedMedium.fromDatabaseJson).toList(),
           lastMessage,
         ),
       );
     }
-    
+
     return tmp;
   }
 
@@ -313,7 +315,8 @@ class DatabaseService {
           'Messages',
           where: 'conversationJid = ? AND id = ?',
           whereArgs: [jid, m['quote_id']! as int],
-        )).first;
+        ))
+            .first;
         quotes = Message.fromDatabaseJson(rawQuote, null);
       }
 
@@ -326,16 +329,16 @@ class DatabaseService {
   /// Query at max [messagePaginationSize] messages for the conversation [jid] from the database.
   /// [olderThan] specified whether the messages must be older (true) or newer (false) than [oldestTimestamp].
   /// If [oldestTimestamp] is null, then use the oldest/newest message.
-  Future<List<Message>> getPaginatedMessagesForJid(String jid, bool olderThan, int? oldestTimestamp) async {
-    final comparator = olderThan ?
-      '<' :
-      '>';
-    final query = oldestTimestamp != null ?
-      'conversationJid = ? AND timestamp $comparator ?' :
-      'conversationJid = ?';
-    final args = oldestTimestamp != null ?
-      [jid, oldestTimestamp] :
-      [jid];
+  Future<List<Message>> getPaginatedMessagesForJid(
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
+    final comparator = olderThan ? '<' : '>';
+    final query = oldestTimestamp != null
+        ? 'conversationJid = ? AND timestamp $comparator ?'
+        : 'conversationJid = ?';
+    final args = oldestTimestamp != null ? [jid, oldestTimestamp] : [jid];
     final rawMessages = await _db.query(
       'Messages',
       where: query,
@@ -352,7 +355,8 @@ class DatabaseService {
           'Messages',
           where: 'conversationJid = ? AND id = ?',
           whereArgs: [jid, m['quote_id']! as int],
-        )).first;
+        ))
+            .first;
         quotes = Message.fromDatabaseJson(rawQuote, null);
       }
 
@@ -362,16 +366,16 @@ class DatabaseService {
     return messages;
   }
 
-  Future<List<SharedMedium>> getPaginatedSharedMediaForJid(String jid, bool olderThan, int? oldestTimestamp) async {
-    final comparator = olderThan ?
-      '<' :
-      '>';
-    final query = oldestTimestamp != null ?
-      'conversation_jid = ? AND timestamp $comparator ?' :
-      'conversation_jid = ?';
-    final args = oldestTimestamp != null ?
-      [jid, oldestTimestamp] :
-      [jid];
+  Future<List<SharedMedium>> getPaginatedSharedMediaForJid(
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
+    final comparator = olderThan ? '<' : '>';
+    final query = oldestTimestamp != null
+        ? 'conversation_jid = ? AND timestamp $comparator ?'
+        : 'conversation_jid = ?';
+    final args = oldestTimestamp != null ? [jid, oldestTimestamp] : [jid];
     final rawMedia = await _db.query(
       mediaTable,
       where: query,
@@ -382,9 +386,10 @@ class DatabaseService {
 
     return rawMedia.map(SharedMedium.fromDatabaseJson).toList();
   }
-  
+
   /// Updates the conversation with JID [jid] inside the database.
-  Future<Conversation> updateConversation(String jid, {
+  Future<Conversation> updateConversation(
+    String jid, {
     int? lastChangeTimestamp,
     Message? lastMessage,
     bool? open,
@@ -399,7 +404,7 @@ class DatabaseService {
     int? sharedMediaAmount,
   }) async {
     final c = <String, dynamic>{};
-    
+
     if (lastMessage != null) {
       c['lastMessageId'] = lastMessage.id;
     }
@@ -448,9 +453,11 @@ class DatabaseService {
       whereArgs: [jid],
       orderBy: 'timestamp DESC',
       limit: 8,
-    )).map(SharedMedium.fromDatabaseJson);
+    ))
+        .map(SharedMedium.fromDatabaseJson);
 
-    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
+    final rosterItem =
+        await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     return Conversation.fromDatabaseJson(
       result,
       rosterItem != null,
@@ -477,7 +484,8 @@ class DatabaseService {
     String? contactAvatarPath,
     String? contactDisplayName,
   ) async {
-    final rosterItem = await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
+    final rosterItem =
+        await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     final conversation = Conversation(
       title,
       lastMessage,
@@ -503,7 +511,13 @@ class DatabaseService {
   }
 
   /// Like [addConversationFromData] but for [SharedMedium].
-  Future<SharedMedium> addSharedMediumFromData(String path, int timestamp, String conversationJid, int messageId, { String? mime }) async {
+  Future<SharedMedium> addSharedMediumFromData(
+    String path,
+    int timestamp,
+    String conversationJid,
+    int messageId, {
+    String? mime,
+  }) async {
     final s = SharedMedium(
       -1,
       path,
@@ -527,7 +541,7 @@ class DatabaseService {
       whereArgs: [messageId],
     );
   }
-  
+
   /// Same as [addConversationFromData] but for a [Message].
   Future<Message> addMessageFromData(
     String body,
@@ -538,33 +552,31 @@ class DatabaseService {
     String sid,
     bool isFileUploadNotification,
     bool encrypted,
-    bool containsNoStore,
-    {
-      String? srcUrl,
-      String? key,
-      String? iv,
-      String? encryptionScheme,
-      String? mediaUrl,
-      String? mediaType,
-      String? thumbnailData,
-      int? mediaWidth,
-      int? mediaHeight,
-      String? originId,
-      String? quoteId,
-      String? filename,
-      int? errorType,
-      int? warningType,
-      Map<String, String>? plaintextHashes,
-      Map<String, String>? ciphertextHashes,
-      bool isDownloading = false,
-      bool isUploading = false,
-      int? mediaSize,
-      String? stickerPackId,
-      String? stickerHashKey,
-      int? pseudoMessageType,
-      Map<String, dynamic>? pseudoMessageData,
-    }
-  ) async {
+    bool containsNoStore, {
+    String? srcUrl,
+    String? key,
+    String? iv,
+    String? encryptionScheme,
+    String? mediaUrl,
+    String? mediaType,
+    String? thumbnailData,
+    int? mediaWidth,
+    int? mediaHeight,
+    String? originId,
+    String? quoteId,
+    String? filename,
+    int? errorType,
+    int? warningType,
+    Map<String, String>? plaintextHashes,
+    Map<String, String>? ciphertextHashes,
+    bool isDownloading = false,
+    bool isUploading = false,
+    int? mediaSize,
+    String? stickerPackId,
+    String? stickerHashKey,
+    int? pseudoMessageType,
+    Map<String, dynamic>? pseudoMessageData,
+  }) async {
     var m = Message(
       sender,
       body,
@@ -631,17 +643,18 @@ class DatabaseService {
     final msg = messagesRaw.first;
     return Message.fromDatabaseJson(msg, null);
   }
-  
-  Future<Message?> getMessageByXmppId(String id, String conversationJid, {bool includeOriginId = true}) async {
-    final idQuery = includeOriginId ?
-      '(sid = ? OR originId = ?)' :
-      'sid = ?';
+
+  Future<Message?> getMessageByXmppId(
+    String id,
+    String conversationJid, {
+    bool includeOriginId = true,
+  }) async {
+    final idQuery = includeOriginId ? '(sid = ? OR originId = ?)' : 'sid = ?';
     final messagesRaw = await _db.query(
       'Messages',
       where: 'conversationJid = ? AND $idQuery',
-      whereArgs: includeOriginId ?
-        [conversationJid, id, id] :
-        [conversationJid, id],
+      whereArgs:
+          includeOriginId ? [conversationJid, id, id] : [conversationJid, id],
       limit: 1,
     );
 
@@ -652,7 +665,10 @@ class DatabaseService {
     return Message.fromDatabaseJson(msg, null);
   }
 
-  Future<Message?> getMessageByOriginId(String id, String conversationJid) async {
+  Future<Message?> getMessageByOriginId(
+    String id,
+    String conversationJid,
+  ) async {
     final messagesRaw = await _db.query(
       'Messages',
       where: 'conversationJid = ? AND originId = ?',
@@ -668,7 +684,8 @@ class DatabaseService {
   }
 
   /// Updates the message item with id [id] inside the database.
-  Future<Message> updateMessage(int id, {
+  Future<Message> updateMessage(
+    int id, {
     Object? body = notSpecified,
     Object? mediaUrl = notSpecified,
     Object? mediaType = notSpecified,
@@ -772,9 +789,7 @@ class DatabaseService {
     if (reactions != notSpecified) {
       assert(reactions != null, 'Cannot set reactions to null');
       m['reactions'] = jsonEncode(
-        (reactions! as List<Reaction>)
-          .map((r) => r.toJson())
-          .toList(),
+        (reactions! as List<Reaction>).map((r) => r.toJson()).toList(),
       );
     }
 
@@ -792,10 +807,10 @@ class DatabaseService {
         msg['conversationJid']! as String,
       );
     }
-    
+
     return Message.fromDatabaseJson(msg, quotes);
   }
-  
+
   /// Loads roster items from the database
   Future<List<RosterItem>> loadRosterItems() async {
     final items = await _db.query('RosterItems');
@@ -823,11 +838,9 @@ class DatabaseService {
     bool pseudoRosterItem,
     String? contactId,
     String? contactAvatarPath,
-    String? contactDisplayName,
-    {
-      List<String> groups = const [],
-    }
-  ) async {
+    String? contactDisplayName, {
+    List<String> groups = const [],
+  }) async {
     // TODO(PapaTutuWawa): Handle groups
     final i = RosterItem(
       -1,
@@ -852,18 +865,17 @@ class DatabaseService {
   /// Updates the roster item with id [id] inside the database.
   Future<RosterItem> updateRosterItem(
     int id, {
-      String? avatarUrl,
-      String? avatarHash,
-      String? title,
-      String? subscription,
-      String? ask,
-      Object pseudoRosterItem = notSpecified,
-      List<String>? groups,
-      Object? contactId = notSpecified,
-      Object? contactAvatarPath = notSpecified,
-      Object? contactDisplayName = notSpecified,
-    }
-  ) async {
+    String? avatarUrl,
+    String? avatarHash,
+    String? title,
+    String? subscription,
+    String? ask,
+    Object pseudoRosterItem = notSpecified,
+    List<String>? groups,
+    Object? contactId = notSpecified,
+    Object? contactAvatarPath = notSpecified,
+    Object? contactDisplayName = notSpecified,
+  }) async {
     final i = <String, dynamic>{};
 
     if (avatarUrl != null) {
@@ -910,21 +922,23 @@ class DatabaseService {
   }
 
   Future<PreferencesState> getPreferences() async {
-    final preferencesRaw = (await _db.query(preferenceTable))
-      .map((preference) {
-        switch (preference['type']! as int) {
-          case typeInt: return {
+    final preferencesRaw = (await _db.query(preferenceTable)).map((preference) {
+      switch (preference['type']! as int) {
+        case typeInt:
+          return {
             ...preference,
             'value': stringToInt(preference['value']! as String),
           };
-          case typeBool: return {
+        case typeBool:
+          return {
             ...preference,
             'value': stringToBool(preference['value']! as String),
           };
-          case typeString:
-          default: return preference;
-        }
-      }).toList();
+        case typeString:
+        default:
+          return preference;
+      }
+    }).toList();
     final json = <String, dynamic>{};
     for (final preference in preferencesRaw) {
       json[preference['key']! as String] = preference['value'];
@@ -935,27 +949,26 @@ class DatabaseService {
 
   Future<void> savePreferences(PreferencesState state) async {
     final stateJson = state.toJson();
-    final preferences = stateJson.keys
-      .map((key) {
-        int type;
-        String value;
-        if (stateJson[key] is int) {
-          type = typeInt;
-          value = intToString(stateJson[key]! as int);
-        } else if (stateJson[key] is bool) {
-          type = typeBool;
-          value = boolToString(stateJson[key]! as bool);
-        } else {
-          type = typeString;
-          value = stateJson[key]! as String;
-        }
+    final preferences = stateJson.keys.map((key) {
+      int type;
+      String value;
+      if (stateJson[key] is int) {
+        type = typeInt;
+        value = intToString(stateJson[key]! as int);
+      } else if (stateJson[key] is bool) {
+        type = typeBool;
+        value = boolToString(stateJson[key]! as bool);
+      } else {
+        type = typeString;
+        value = stateJson[key]! as String;
+      }
 
-        return {
-          'key': key,
-          'type': type,
-          'value': value,
-        };
-      });
+      return {
+        'key': key,
+        'type': type,
+        'value': value,
+      };
+    });
 
     final batch = _db.batch();
 
@@ -967,7 +980,7 @@ class DatabaseService {
         whereArgs: [preference['key']],
       );
     }
-    
+
     await batch.commit();
   }
 
@@ -986,14 +999,14 @@ class DatabaseService {
     for (final tuple in state.toDatabaseTuples().entries) {
       batch.insert(
         xmppStateTable,
-        <String, String?>{ 'key': tuple.key, 'value': tuple.value },
+        <String, String?>{'key': tuple.key, 'value': tuple.value},
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-    
+
     await batch.commit();
   }
-  
+
   Future<void> saveRatchet(OmemoDoubleRatchetWrapper ratchet) async {
     final json = await ratchet.ratchet.toJson();
     await _db.insert(
@@ -1041,7 +1054,8 @@ class DatabaseService {
   Future<Map<RatchetMapKey, BTBVTrustState>> loadTrustCache() async {
     final entries = await _db.query(omemoTrustCacheTable);
 
-    final mapEntries = entries.map<MapEntry<RatchetMapKey, BTBVTrustState>>((entry) {
+    final mapEntries =
+        entries.map<MapEntry<RatchetMapKey, BTBVTrustState>>((entry) {
       // TODO(PapaTutuWawa): Expose this from omemo_dart
       BTBVTrustState state;
       final value = entry['trust']! as int;
@@ -1175,7 +1189,8 @@ class DatabaseService {
     );
     if (data.isEmpty) return null;
 
-    final deviceJson = jsonDecode(data.first['data']! as String) as Map<String, dynamic>;
+    final deviceJson =
+        jsonDecode(data.first['data']! as String) as Map<String, dynamic>;
     // NOTE: We need to do this because Dart otherwise complains about not being able
     //       to cast dynamic to List<int>.
     final opks = List<Map<String, dynamic>>.empty(growable: true);
@@ -1257,7 +1272,7 @@ class DatabaseService {
     }
     await batch.commit();
   }
-  
+
   Future<List<OmemoCacheTriple>> getFingerprintsFromCache(String jid) async {
     final rawItems = await _db.query(
       omemoFingerprintCache,
@@ -1265,21 +1280,19 @@ class DatabaseService {
       whereArgs: [jid],
     );
 
-    return rawItems
-      .map((item) {
-        return OmemoCacheTriple(
-          jid,
-          item['id']! as int,
-          item['fingerprint']! as String,
-        );
-      })
-      .toList();
+    return rawItems.map((item) {
+      return OmemoCacheTriple(
+        jid,
+        item['id']! as int,
+        item['fingerprint']! as String,
+      );
+    }).toList();
   }
 
   Future<Map<String, String>> getContactIds() async {
     return Map<String, String>.fromEntries(
-      (await _db.query(contactsTable))
-        .map((item) => MapEntry(
+      (await _db.query(contactsTable)).map(
+        (item) => MapEntry(
           item['jid']! as String,
           item['id']! as String,
         ),
@@ -1355,9 +1368,7 @@ class DatabaseService {
       stickerPacks.add(
         sticker_pack.StickerPack.fromDatabaseJson(
           pack,
-          rawStickers
-            .map(sticker.Sticker.fromDatabaseJson)
-            .toList(),
+          rawStickers.map(sticker.Sticker.fromDatabaseJson).toList(),
         ),
       );
     }
@@ -1372,7 +1383,7 @@ class DatabaseService {
       whereArgs: [id],
     );
   }
-  
+
   Future<sticker_pack.StickerPack?> getStickerPackById(String id) async {
     final rawPack = await _db.query(
       stickerPacksTable,
@@ -1391,9 +1402,7 @@ class DatabaseService {
 
     return sticker_pack.StickerPack.fromDatabaseJson(
       rawPack.first,
-      rawStickers
-        .map(sticker.Sticker.fromDatabaseJson)
-        .toList(),
+      rawStickers.map(sticker.Sticker.fromDatabaseJson).toList(),
     );
   }
 
@@ -1423,15 +1432,13 @@ class DatabaseService {
   Future<List<String>> getBlocklistEntries() async {
     final result = await _db.query(blocklistTable);
 
-    return result
-      .map((m) => m['jid']! as String)
-      .toList();
+    return result.map((m) => m['jid']! as String).toList();
   }
 
   Future<List<String>> getSubscriptionRequests() async {
     return (await _db.query(subscriptionsTable))
-      .map((m) => m['jid']! as String)
-      .toList();
+        .map((m) => m['jid']! as String)
+        .toList();
   }
 
   Future<void> addSubscriptionRequest(String jid) async {

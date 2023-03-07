@@ -17,14 +17,12 @@ class FileChatBaseWidget extends StatelessWidget {
     this.filename,
     this.radius,
     this.maxWidth,
-    this.sent,
-    {
-      this.downloadButton,
-      this.onTap,
-      this.mimeType,
-      super.key,
-    }
-  );
+    this.sent, {
+    this.downloadButton,
+    this.onTap,
+    this.mimeType,
+    super.key,
+  });
   final Message message;
   final String filename;
   final BorderRadius radius;
@@ -57,9 +55,7 @@ class FileChatBaseWidget extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: Row(
             children: [
-              if (downloadButton != null)
-                downloadButton!,
-
+              if (downloadButton != null) downloadButton!,
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -70,7 +66,6 @@ class FileChatBaseWidget extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Row(
@@ -80,7 +75,6 @@ class FileChatBaseWidget extends StatelessWidget {
                             _mimeTypeToIcon(),
                             size: 48,
                           ),
-
                           Text(
                             mimeTypeToName(mimeType),
                             style: const TextStyle(
@@ -113,12 +107,10 @@ class FileChatWidget extends StatelessWidget {
     this.message,
     this.radius,
     this.maxWidth,
-    this.sent,
-    {
-      this.extra,
-      super.key,
-    }
-  );
+    this.sent, {
+    this.extra,
+    super.key,
+  });
   final Message message;
   final BorderRadius radius;
   final bool sent;
@@ -128,9 +120,9 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildNonDownloaded() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification ?
-        (message.filename ?? '') :
-        filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification
+          ? (message.filename ?? '')
+          : filenameFromUrl(message.srcUrl!),
       radius,
       maxWidth,
       sent,
@@ -138,9 +130,9 @@ class FileChatWidget extends StatelessWidget {
       downloadButton: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
-            RequestDownloadCommand(message: message),
-            awaitable: false,
-          );
+                RequestDownloadCommand(message: message),
+                awaitable: false,
+              );
         },
       ),
     );
@@ -149,9 +141,9 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildDownloading() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification ?
-        (message.filename ?? '') :
-        filenameFromUrl(message.srcUrl ?? ''),
+      message.isFileUploadNotification
+          ? (message.filename ?? '')
+          : filenameFromUrl(message.srcUrl ?? ''),
       radius,
       maxWidth,
       sent,
@@ -163,9 +155,9 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildInner() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification ?
-        (message.filename ?? '') :
-        filenameFromUrl(message.srcUrl!),
+      message.isFileUploadNotification
+          ? (message.filename ?? '')
+          : filenameFromUrl(message.srcUrl!),
       radius,
       maxWidth,
       sent,
@@ -178,8 +170,12 @@ class FileChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!message.isDownloading && message.mediaUrl != null) return _buildInner();
-    if (message.isFileUploadNotification || message.isDownloading) return _buildDownloading();
+    if (!message.isDownloading && message.mediaUrl != null) {
+      return _buildInner();
+    }
+    if (message.isFileUploadNotification || message.isDownloading) {
+      return _buildDownloading();
+    }
 
     return _buildNonDownloaded();
   }

@@ -15,7 +15,8 @@ part 'newconversation_bloc.freezed.dart';
 part 'newconversation_event.dart';
 part 'newconversation_state.dart';
 
-class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationState> {
+class NewConversationBloc
+    extends Bloc<NewConversationEvent, NewConversationState> {
   NewConversationBloc() : super(NewConversationState()) {
     on<NewConversationInitEvent>(_onInit);
     on<NewConversationAddedEvent>(_onAdded);
@@ -23,7 +24,10 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
     on<RosterPushedEvent>(_onRosterPushed);
   }
 
-  Future<void> _onInit(NewConversationInitEvent event, Emitter<NewConversationState> emit) async {
+  Future<void> _onInit(
+    NewConversationInitEvent event,
+    Emitter<NewConversationState> emit,
+  ) async {
     return emit(
       state.copyWith(
         roster: event.roster,
@@ -31,31 +35,37 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
     );
   }
 
-  Future<void> _onAdded(NewConversationAddedEvent event, Emitter<NewConversationState> emit) async {
+  Future<void> _onAdded(
+    NewConversationAddedEvent event,
+    Emitter<NewConversationState> emit,
+  ) async {
     final conversations = GetIt.I.get<ConversationsBloc>();
 
     // Guard against an unneccessary roundtrip
-    if (listContains(conversations.state.conversations, (Conversation c) => c.jid == event.jid)) {
+    if (listContains(
+      conversations.state.conversations,
+      (Conversation c) => c.jid == event.jid,
+    )) {
       GetIt.I.get<conversation.ConversationBloc>().add(
-        conversation.RequestedConversationEvent(
-          event.jid,
-          event.title,
-          event.avatarUrl,
-          removeUntilConversations: true,
-        ),
-      );
+            conversation.RequestedConversationEvent(
+              event.jid,
+              event.title,
+              event.avatarUrl,
+              removeUntilConversations: true,
+            ),
+          );
       return;
     }
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      AddConversationCommand(
-        title: event.title,
-        jid: event.jid,
-        avatarUrl: event.avatarUrl,
-        lastMessageBody: '',
-      ),
-    );
-    
+          AddConversationCommand(
+            title: event.title,
+            jid: event.jid,
+            avatarUrl: event.avatarUrl,
+            lastMessageBody: '',
+          ),
+        );
+
     if (result is NoConversationModifiedEvent) {
       // Fall through
     } else if (result is ConversationUpdatedEvent) {
@@ -65,33 +75,41 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
     }
 
     GetIt.I.get<conversation.ConversationBloc>().add(
-      conversation.RequestedConversationEvent(
-        event.jid,
-        event.title,
-        event.avatarUrl,
-        removeUntilConversations: true,
-      ),
-    );
+          conversation.RequestedConversationEvent(
+            event.jid,
+            event.title,
+            event.avatarUrl,
+            removeUntilConversations: true,
+          ),
+        );
   }
 
-  Future<void> _onRosterItemRemoved(NewConversationRosterItemRemovedEvent event, Emitter<NewConversationState> emit) async {
+  Future<void> _onRosterItemRemoved(
+    NewConversationRosterItemRemovedEvent event,
+    Emitter<NewConversationState> emit,
+  ) async {
     emit(
       state.copyWith(
-        roster: state.roster.where(
-          (item) => item.jid != event.jid,
-        ).toList(),
+        roster: state.roster
+            .where(
+              (item) => item.jid != event.jid,
+            )
+            .toList(),
       ),
     );
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      RemoveContactCommand(
-        jid: event.jid,
-      ),
-      awaitable: false,
-    );
+          RemoveContactCommand(
+            jid: event.jid,
+          ),
+          awaitable: false,
+        );
   }
 
-  Future<void> _onRosterPushed(RosterPushedEvent event, Emitter<NewConversationState> emit) async {
+  Future<void> _onRosterPushed(
+    RosterPushedEvent event,
+    Emitter<NewConversationState> emit,
+  ) async {
     // TODO(Unknown): Should we guard against adding the same entries multiple times?
     final roster = List<RosterItem>.from(event.added);
 
@@ -113,9 +131,9 @@ class NewConversationBloc extends Bloc<NewConversationEvent, NewConversationStat
 
     // TODO(Unknown): Doing it from here feels absolutely not clean. Maybe change that.
     GetIt.I.get<ShareSelectionBloc>().add(
-      RosterModifiedEvent(roster),
-    );
-    
+          RosterModifiedEvent(roster),
+        );
+
     emit(state.copyWith(roster: roster));
   }
 }

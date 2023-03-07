@@ -14,21 +14,24 @@ class RedirectSettingsTile extends StatelessWidget {
     this.getProxy,
     this.setProxy,
     this.getEnabled,
-    this.setEnabled,
-    { super.key, }
-  );
+    this.setEnabled, {
+    super.key,
+  });
   final String serviceName;
   final String exampleProxy;
   final String Function(PreferencesState state) getProxy;
-  final PreferencesState Function(PreferencesState state, String value) setProxy;
+  final PreferencesState Function(PreferencesState state, String value)
+      setProxy;
   final bool Function(PreferencesState state) getEnabled;
-  final PreferencesState Function(PreferencesState state, bool value) setEnabled;
+  final PreferencesState Function(PreferencesState state, bool value)
+      setEnabled;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PreferencesBloc, PreferencesState>(
       builder: (context, state) => SettingsRow(
-        title: t.pages.settings.privacy.redirectsTitle(serviceName: serviceName),
+        title:
+            t.pages.settings.privacy.redirectsTitle(serviceName: serviceName),
         description: t.pages.settings.privacy.redirectText(
           serviceName: serviceName,
           exampleProxy: exampleProxy,
@@ -38,7 +41,9 @@ class RedirectSettingsTile extends StatelessWidget {
             context: context,
             builder: (BuildContext context) => RedirectDialog(
               (value) {
-                context.read<PreferencesBloc>().add(PreferencesChangedEvent(setProxy(state, value)));
+                context
+                    .read<PreferencesBloc>()
+                    .add(PreferencesChangedEvent(setProxy(state, value)));
               },
               serviceName,
               getProxy(state),
@@ -50,14 +55,17 @@ class RedirectSettingsTile extends StatelessWidget {
           onChanged: (value) {
             if (getProxy(state).isEmpty) {
               showInfoDialog(
-                t.pages.settings.privacy.cannotEnableRedirect(serviceName: serviceName),
+                t.pages.settings.privacy
+                    .cannotEnableRedirect(serviceName: serviceName),
                 t.pages.settings.privacy.cannotEnableRedirectSubtext,
                 context,
               );
               return;
             }
 
-            context.read<PreferencesBloc>().add(PreferencesChangedEvent(setEnabled(state, value)));
+            context
+                .read<PreferencesBloc>()
+                .add(PreferencesChangedEvent(setEnabled(state, value)));
           },
         ),
       ),

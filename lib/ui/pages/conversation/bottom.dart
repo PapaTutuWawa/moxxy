@@ -51,14 +51,14 @@ class _TextFieldRecordButton extends StatelessWidget {
       onDragStarted: () {
         Vibrate.feedback(FeedbackType.heavy);
         context.read<ConversationBloc>().add(
-          SendButtonDragStartedEvent(),
-        );
+              SendButtonDragStartedEvent(),
+            );
       },
       onDraggableCanceled: (_, __) {
         Vibrate.feedback(FeedbackType.heavy);
         context.read<ConversationBloc>().add(
-          SendButtonDragEndedEvent(),
-        );
+              SendButtonDragEndedEvent(),
+            );
       },
       childWhenDragging: const SizedBox(),
       feedback: SizedBox(
@@ -94,9 +94,8 @@ class ConversationBottomRow extends StatefulWidget {
     this.focusNode,
     this.conversationController,
     this.speedDialValueNotifier, {
-      super.key,
-    }
-  );
+    super.key,
+  });
   final TabController tabController;
   final FocusNode focusNode;
   final ValueNotifier<bool> speedDialValueNotifier;
@@ -109,9 +108,12 @@ class ConversationBottomRow extends StatefulWidget {
 class ConversationBottomRowState extends State<ConversationBottomRow> {
   IconData _getSendButtonIcon(SendButtonState state) {
     switch (state) {
-      case SendButtonState.multi: return Icons.add;
-      case SendButtonState.send: return Icons.send;
-      case SendButtonState.cancelCorrection: return Icons.clear;
+      case SendButtonState.multi:
+        return Icons.add;
+      case SendButtonState.send:
+        return Icons.send;
+      case SendButtonState.cancelCorrection:
+        return Icons.clear;
     }
   }
 
@@ -122,7 +124,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
 
     return PhosphorIcons.stickerBold;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -136,7 +138,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                 Padding(
                   padding: const EdgeInsets.all(8),
                   child: BlocBuilder<ConversationBloc, ConversationState>(
-                    buildWhen: (prev, next) => prev.isRecording != next.isRecording,
+                    buildWhen: (prev, next) =>
+                        prev.isRecording != next.isRecording,
                     builder: (context, state) => Row(
                       children: [
                         Expanded(
@@ -146,54 +149,56 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                               null,
                               false,
                             ),
-                            stream: widget.conversationController.textFieldDataStream,
+                            stream: widget
+                                .conversationController.textFieldDataStream,
                             builder: (context, snapshot) {
                               return CustomTextField(
-                                backgroundColor: Theme
-                                  .of(context)
-                                  .extension<MoxxyThemeData>()!
-                                  .conversationTextFieldColor,
-                                textColor: Theme
-                                  .of(context)
-                                  .extension<MoxxyThemeData>()!
-                                  .conversationTextFieldTextColor,
+                                backgroundColor: Theme.of(context)
+                                    .extension<MoxxyThemeData>()!
+                                    .conversationTextFieldColor,
+                                textColor: Theme.of(context)
+                                    .extension<MoxxyThemeData>()!
+                                    .conversationTextFieldTextColor,
                                 maxLines: 5,
                                 hintText: t.pages.conversation.messageHint,
-                                hintTextColor: Theme
-                                  .of(context)
-                                  .extension<MoxxyThemeData>()!
-                                  .conversationTextFieldHintTextColor,
+                                hintTextColor: Theme.of(context)
+                                    .extension<MoxxyThemeData>()!
+                                    .conversationTextFieldHintTextColor,
                                 isDense: true,
                                 contentPadding: textfieldPaddingConversation,
                                 fontSize: textFieldFontSizeConversation,
                                 cornerRadius: textfieldRadiusConversation,
-                                controller: widget.conversationController.textController,
-                                topWidget: snapshot.data!.quotedMessage != null ?
-                                  buildQuoteMessageWidget(
-                                    snapshot.data!.quotedMessage!,
-                                    isSent(
-                                      snapshot.data!.quotedMessage!,
-                                      GetIt.I.get<UIDataService>().ownJid!,
-                                    ),
-                                    resetQuote: widget.conversationController.removeQuote,
-                                  ) :
-                                  null,
+                                controller: widget
+                                    .conversationController.textController,
+                                topWidget: snapshot.data!.quotedMessage != null
+                                    ? buildQuoteMessageWidget(
+                                        snapshot.data!.quotedMessage!,
+                                        isSent(
+                                          snapshot.data!.quotedMessage!,
+                                          GetIt.I.get<UIDataService>().ownJid!,
+                                        ),
+                                        resetQuote: widget
+                                            .conversationController.removeQuote,
+                                      )
+                                    : null,
                                 focusNode: widget.focusNode,
-                                shouldSummonKeyboard: () => !snapshot.data!.pickerVisible,
+                                shouldSummonKeyboard: () =>
+                                    !snapshot.data!.pickerVisible,
                                 prefixIcon: IntrinsicWidth(
                                   child: Row(
                                     children: [
                                       Padding(
                                         padding: const EdgeInsets.only(left: 8),
                                         child: _TextFieldIconButton(
-                                          snapshot.data!.pickerVisible ? 
-                                            Icons.keyboard :
-                                            _getPickerIcon(),
+                                          snapshot.data!.pickerVisible
+                                              ? Icons.keyboard
+                                              : _getPickerIcon(),
                                           () {
-                                            widget.conversationController.togglePickerVisibility(true);
+                                            widget.conversationController
+                                                .togglePickerVisibility(true);
                                           },
                                         ),
-                                      ), 
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -201,18 +206,20 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                   minWidth: 24,
                                   minHeight: 24,
                                 ),
-                                suffixIcon: snapshot.data!.isBodyEmpty && snapshot.data!.quotedMessage == null ?
-                                  IntrinsicWidth(
-                                    child: Row(
-                                      children: const [
-                                        Padding(
-                                          padding: EdgeInsets.only(right: 8),
-                                          child: _TextFieldRecordButton(),
+                                suffixIcon: snapshot.data!.isBodyEmpty &&
+                                        snapshot.data!.quotedMessage == null
+                                    ? IntrinsicWidth(
+                                        child: Row(
+                                          children: const [
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(right: 8),
+                                              child: _TextFieldRecordButton(),
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ) :
-                                  null,
+                                      )
+                                    : null,
                                 suffixIconConstraints: const BoxConstraints(
                                   minWidth: 24,
                                   minHeight: 24,
@@ -233,7 +240,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                 width: 45,
                                 child: StreamBuilder<SendButtonState>(
                                   initialData: defaultSendButtonState,
-                                  stream: widget.conversationController.sendButtonStream,
+                                  stream: widget
+                                      .conversationController.sendButtonStream,
                                   builder: (context, snapshot) {
                                     return SpeedDial(
                                       icon: _getSendButtonIcon(snapshot.data!),
@@ -243,20 +251,25 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                         SpeedDialChild(
                                           child: const Icon(Icons.image),
                                           onTap: () {
-                                            context.read<ConversationBloc>().add(
-                                              ImagePickerRequestedEvent(),
-                                            );
+                                            context
+                                                .read<ConversationBloc>()
+                                                .add(
+                                                  ImagePickerRequestedEvent(),
+                                                );
                                           },
                                           backgroundColor: primaryColor,
                                           foregroundColor: Colors.white,
-                                          label: t.pages.conversation.sendImages,
+                                          label:
+                                              t.pages.conversation.sendImages,
                                         ),
                                         SpeedDialChild(
                                           child: const Icon(Icons.file_present),
                                           onTap: () {
-                                            context.read<ConversationBloc>().add(
-                                              FilePickerRequestedEvent(),
-                                            );
+                                            context
+                                                .read<ConversationBloc>()
+                                                .add(
+                                                  FilePickerRequestedEvent(),
+                                                );
                                           },
                                           backgroundColor: primaryColor,
                                           foregroundColor: Colors.white,
@@ -265,27 +278,37 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                         SpeedDialChild(
                                           child: const Icon(Icons.photo_camera),
                                           onTap: () {
-                                            showNotImplementedDialog('taking photos', context);
+                                            showNotImplementedDialog(
+                                              'taking photos',
+                                              context,
+                                            );
                                           },
                                           backgroundColor: primaryColor,
                                           foregroundColor: Colors.white,
-                                          label: t.pages.conversation.takePhotos,
+                                          label:
+                                              t.pages.conversation.takePhotos,
                                         ),
                                       ],
-                                      openCloseDial: widget.speedDialValueNotifier,
+                                      openCloseDial:
+                                          widget.speedDialValueNotifier,
                                       onPress: () {
                                         switch (snapshot.data!) {
                                           case SendButtonState.cancelCorrection:
-                                          widget.conversationController.endMessageEditing();
-                                          return;
+                                            widget.conversationController
+                                                .endMessageEditing();
+                                            return;
                                           case SendButtonState.send:
-                                          widget.conversationController.sendMessage(
-                                            state.conversation!.encrypted,
-                                          );
-                                          return;
+                                            widget.conversationController
+                                                .sendMessage(
+                                              state.conversation!.encrypted,
+                                            );
+                                            return;
                                           case SendButtonState.multi:
-                                          widget.speedDialValueNotifier.value = !widget.speedDialValueNotifier.value;
-                                          return;
+                                            widget.speedDialValueNotifier
+                                                    .value =
+                                                !widget.speedDialValueNotifier
+                                                    .value;
+                                            return;
                                         }
                                       },
                                     );
@@ -299,7 +322,6 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     ),
                   ),
                 ),
-
                 StreamBuilder<bool>(
                   initialData: false,
                   stream: widget.conversationController.pickerVisibleStream,
@@ -308,13 +330,17 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     child: CombinedPicker(
                       tabController: widget.tabController,
                       onEmojiTapped: (emoji) {
-                        final selection = widget.conversationController.textController.selection;
+                        final selection = widget
+                            .conversationController.textController.selection;
                         final baseOffset = max(selection.baseOffset, 0);
                         final extentOffset = max(selection.extentOffset, 0);
-                        final prefix = widget.conversationController.messageBody.substring(0, baseOffset);
-                        final suffix = widget.conversationController.messageBody.substring(extentOffset);
+                        final prefix = widget.conversationController.messageBody
+                            .substring(0, baseOffset);
+                        final suffix = widget.conversationController.messageBody
+                            .substring(extentOffset);
                         final newText = '$prefix${emoji.emoji}$suffix';
-                        final newValue = baseOffset + emoji.emoji.codeUnits.length;
+                        final newValue =
+                            baseOffset + emoji.emoji.codeUnits.length;
                         widget.conversationController.textController
                           ..text = newText
                           ..selection = TextSelection(
@@ -325,18 +351,21 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       onBackspaceTapped: () {
                         // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
                         final text = widget.conversationController.messageBody;
-                        final selection = widget.conversationController.textController.selection;
-                        final cursorPosition = widget.conversationController.textController.selection.base.offset;
- 
+                        final selection = widget
+                            .conversationController.textController.selection;
+                        final cursorPosition = widget.conversationController
+                            .textController.selection.base.offset;
+
                         if (cursorPosition < 0) {
                           return;
                         }
- 
+
                         final newTextBeforeCursor = selection
-                          .textBefore(text).characters
-                          .skipLast(1)
-                          .toString();
- 
+                            .textBefore(text)
+                            .characters
+                            .skipLast(1)
+                            .toString();
+
                         widget.conversationController.textController
                           ..text = newTextBeforeCursor
                           ..selection = TextSelection.fromPosition(
@@ -356,7 +385,6 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
             ),
           ),
         ),
-        
         Positioned(
           left: 8,
           bottom: 8,
@@ -373,21 +401,22 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                     height: textFieldFontSizeConversation + 2 * 12 + 2,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(textfieldRadiusConversation),
+                        borderRadius:
+                            BorderRadius.circular(textfieldRadiusConversation),
                         color: Theme.of(context).scaffoldBackgroundColor,
                       ),
                       // NOTE: We use a comprehension here so that the widget gets
                       //       created and destroyed to prevent the timer from running
                       //       until the user closes the page.
-                      child: state.isRecording ?
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: EdgeInsets.only(left: 16),
-                            child: TimerWidget(),
-                          ),
-                        ) :
-                        null,
+                      child: state.isRecording
+                          ? const Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 16),
+                                child: TimerWidget(),
+                              ),
+                            )
+                          : null,
                     ),
                   ),
                 ),

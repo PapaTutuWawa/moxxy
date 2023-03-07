@@ -13,29 +13,40 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
     final rs = GetIt.I.get<RosterService>();
     return RosterCacheLoadResult(
       (await GetIt.I.get<XmppStateService>().getXmppState()).lastRosterVersion,
-      (await rs.getRoster()).map((item) => XmppRosterItem(
-        jid: item.jid,
-        name: item.title,
-        subscription: item.subscription,
-        ask: item.ask.isEmpty ? null : item.ask,
-        groups: item.groups,
-      ),).toList(),
+      (await rs.getRoster())
+          .map(
+            (item) => XmppRosterItem(
+              jid: item.jid,
+              name: item.title,
+              subscription: item.subscription,
+              ask: item.ask.isEmpty ? null : item.ask,
+              groups: item.groups,
+            ),
+          )
+          .toList(),
     );
   }
 
   @override
-  Future<void> commitRoster(String? version, List<String> removed, List<XmppRosterItem> modified, List<XmppRosterItem> added) async {
+  Future<void> commitRoster(
+    String? version,
+    List<String> removed,
+    List<XmppRosterItem> modified,
+    List<XmppRosterItem> added,
+  ) async {
     final rs = GetIt.I.get<RosterService>();
     final xss = GetIt.I.get<XmppStateService>();
-    await xss.modifyXmppState((state) => state.copyWith(
-      lastRosterVersion: version,
-    ),);
+    await xss.modifyXmppState(
+      (state) => state.copyWith(
+        lastRosterVersion: version,
+      ),
+    );
 
     // Remove stale items
     for (final jid in removed) {
       await rs.removeRosterItemByJid(jid);
     }
-    
+
     // Create new roster items
     final rosterAdded = List<RosterItem>.empty(growable: true);
     for (final item in added) {

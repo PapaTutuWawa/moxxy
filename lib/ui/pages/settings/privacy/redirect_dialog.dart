@@ -4,7 +4,12 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 
 class RedirectDialog extends StatefulWidget {
-  const RedirectDialog(this.callback, this.serviceName, this.initialText, { super.key });
+  const RedirectDialog(
+    this.callback,
+    this.serviceName,
+    this.initialText, {
+    super.key,
+  });
   final void Function(String url) callback;
   final String serviceName;
   final String initialText;
@@ -45,7 +50,7 @@ class RedirectDialogState extends State<RedirectDialog> {
 
     _controller.text = widget.initialText;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -53,7 +58,8 @@ class RedirectDialogState extends State<RedirectDialog> {
         borderRadius: BorderRadius.all(radiusLarge),
       ),
       title: Text(
-        t.pages.settings.privacy.redirectDialogTitle(serviceName: widget.serviceName),
+        t.pages.settings.privacy
+            .redirectDialogTitle(serviceName: widget.serviceName),
       ),
       content: Padding(
         padding: const EdgeInsets.all(16),

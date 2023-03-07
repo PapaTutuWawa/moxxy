@@ -23,16 +23,21 @@ Widget _deleteIconWithShadow() {
 }
 
 class SendFilesPage extends StatelessWidget {
-  const SendFilesPage({ super.key });
+  const SendFilesPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (context) => const SendFilesPage(),
-    settings: const RouteSettings(
-      name: sendFilesRoute,
-    ),
-  );
+        builder: (context) => const SendFilesPage(),
+        settings: const RouteSettings(
+          name: sendFilesRoute,
+        ),
+      );
 
-  Widget _renderPreview(BuildContext context, String path, bool selected, int index) {
+  Widget _renderPreview(
+    BuildContext context,
+    String path,
+    bool selected,
+    int index,
+  ) {
     final mime = lookupMimeType(path) ?? '';
 
     if (mime.startsWith('image/')) {
@@ -45,13 +50,13 @@ class SendFilesPage extends StatelessWidget {
             if (selected) {
               // The trash can icon has been tapped
               context.read<SendFilesBloc>().add(
-                ItemRemovedEvent(index),
-              );
+                    ItemRemovedEvent(index),
+                  );
             } else {
               // Another item has been tapped
               context.read<SendFilesBloc>().add(
-                IndexSetEvent(index),
-              );
+                    IndexSetEvent(index),
+                  );
             }
           },
           borderColor: selected ? Colors.blue : null,
@@ -70,17 +75,17 @@ class SendFilesPage extends StatelessWidget {
             if (selected) {
               // The trash can icon has been tapped
               context.read<SendFilesBloc>().add(
-                ItemRemovedEvent(index),
-              );
+                    ItemRemovedEvent(index),
+                  );
             } else {
               // Another item has been tapped
               context.read<SendFilesBloc>().add(
-                IndexSetEvent(index),
-              );
+                    IndexSetEvent(index),
+                  );
             }
           },
           borderColor: selected ? Colors.blue : null,
-          child: selected ? _deleteIconWithShadow(): null,
+          child: selected ? _deleteIconWithShadow() : null,
         ),
       );
     } else {
@@ -92,27 +97,29 @@ class SendFilesPage extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               color: Colors.black,
-              border: selected ? Border.all(
-                color: Colors.blue,
-                width: 4,
-              ) : null,
+              border: selected
+                  ? Border.all(
+                      color: Colors.blue,
+                      width: 4,
+                    )
+                  : null,
             ),
             child: selected
-              ? const Icon(Icons.delete, size: 32)
-              : const Icon(Icons.file_present),
+                ? const Icon(Icons.delete, size: 32)
+                : const Icon(Icons.file_present),
           ),
           color: sharedMediaItemBackgroundColor,
           onTap: () {
             if (selected) {
               // The trash can icon has been tapped
               context.read<SendFilesBloc>().add(
-                ItemRemovedEvent(index),
-              );
+                    ItemRemovedEvent(index),
+                  );
             } else {
               // Another item has been tapped
               context.read<SendFilesBloc>().add(
-                IndexSetEvent(index),
-              );
+                    IndexSetEvent(index),
+                  );
             }
           },
         ),
@@ -135,7 +142,8 @@ class SendFilesPage extends StatelessWidget {
         path,
         Image.memory,
       );
-    }*/ else {
+    }*/
+    else {
       // Generic file
       final width = MediaQuery.of(context).size.width;
       return Center(
@@ -152,12 +160,12 @@ class SendFilesPage extends StatelessWidget {
       );
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     const barPadding = 8.0;
-    
+
     // TODO(Unknown): Fix the typography
     return SafeArea(
       child: Scaffold(
@@ -183,7 +191,7 @@ class SendFilesPage extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: 72,
-                  child: SizedBox(
+                child: SizedBox(
                   height: sharedMediaContainerDimension + 2 * barPadding,
                   child: ColoredBox(
                     color: const Color.fromRGBO(0, 0, 0, 0.7),
@@ -197,14 +205,19 @@ class SendFilesPage extends StatelessWidget {
                           if (index < state.files.length) {
                             final item = state.files[index];
 
-                            return _renderPreview(context, item, index == state.index, index);
+                            return _renderPreview(
+                              context,
+                              item,
+                              index == state.index,
+                              index,
+                            );
                           } else {
                             return SharedMediaContainer(
                               const Icon(Icons.attach_file),
                               color: sharedMediaItemBackgroundColor,
                               onTap: () => context.read<SendFilesBloc>().add(
-                                AddFilesRequestedEvent(),
-                              ),
+                                    AddFilesRequestedEvent(),
+                                  ),
                             );
                           }
                         },
@@ -232,7 +245,9 @@ class SendFilesPage extends StatelessWidget {
                         child: IconButton(
                           color: Colors.white,
                           icon: const Icon(Icons.send),
-                          onPressed: () => context.read<SendFilesBloc>().add(FileSendingRequestedEvent()),
+                          onPressed: () => context
+                              .read<SendFilesBloc>()
+                              .add(FileSendingRequestedEvent()),
                         ),
                       ),
                     ),
@@ -243,7 +258,8 @@ class SendFilesPage extends StatelessWidget {
                 top: 8,
                 left: 8,
                 child: CancelButton(
-                  onPressed: () => context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                  onPressed: () =>
+                      context.read<NavigationBloc>().add(PoppedRouteEvent()),
                 ),
               ),
             ],

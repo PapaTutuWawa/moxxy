@@ -21,7 +21,6 @@ class OverviewMenuItem extends StatelessWidget {
         child: Row(
           children: [
             Icon(icon),
-
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: Text(text),
@@ -36,16 +35,15 @@ class OverviewMenuItem extends StatelessWidget {
 class OverviewMenu extends StatelessWidget {
   const OverviewMenu(
     this._animation, {
-      required this.highlight,
-      required this.children,
-      this.highlightMaterialBorder,
-      this.rightBorder = true,
-      this.left,
-      this.right,
-      this.materialColor,
-      super.key,
-    }
-  );
+    required this.highlight,
+    required this.children,
+    this.highlightMaterialBorder,
+    this.rightBorder = true,
+    this.left,
+    this.right,
+    this.materialColor,
+    super.key,
+  });
   final Animation<double> _animation;
   final Widget highlight;
   final List<Widget> children;
@@ -54,7 +52,7 @@ class OverviewMenu extends StatelessWidget {
   final double? right;
   final BorderRadius? highlightMaterialBorder;
   final Color? materialColor;
-  
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -74,7 +72,6 @@ class OverviewMenu extends StatelessWidget {
             );
           },
         ),
-
         Positioned(
           bottom: 50,
           right: rightBorder ? 8 : null,

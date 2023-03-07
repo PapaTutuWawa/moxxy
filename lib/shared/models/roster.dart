@@ -17,21 +17,20 @@ class RosterItem with _$RosterItem {
     // Indicates whether the "roster item" really exists on the roster and is not just there
     // for the contact integration
     bool pseudoRosterItem,
-    List<String> groups,
-    {
-      // The id of the contact in the device's phonebook, if it exists
-      String? contactId,
-      // The path to the profile picture of the contact, if it exists
-      String? contactAvatarPath,
-      // The contact's display name, if it exists
-      String? contactDisplayName,
-    }
-  ) = _RosterItem;
+    List<String> groups, {
+    // The id of the contact in the device's phonebook, if it exists
+    String? contactId,
+    // The path to the profile picture of the contact, if it exists
+    String? contactAvatarPath,
+    // The contact's display name, if it exists
+    String? contactDisplayName,
+  }) = _RosterItem;
 
   const RosterItem._();
-  
+
   /// JSON
-  factory RosterItem.fromJson(Map<String, dynamic> json) => _$RosterItemFromJson(json);
+  factory RosterItem.fromJson(Map<String, dynamic> json) =>
+      _$RosterItemFromJson(json);
 
   factory RosterItem.fromDatabaseJson(Map<String, dynamic> json) {
     return RosterItem.fromJson({

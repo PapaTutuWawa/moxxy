@@ -34,8 +34,10 @@ String formatConversationTimestamp(int timestamp, int now) {
     final hourDifference = (difference / Duration.millisecondsPerHour).floor();
     if (hourDifference >= 24) {
       final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      final suffix = difference >= 364.5 * Duration.millisecondsPerDay ? dt.year.toString() : '';
-      return '${dt.day}.${dt.month}.$suffix'; 
+      final suffix = difference >= 364.5 * Duration.millisecondsPerDay
+          ? dt.year.toString()
+          : '';
+      return '${dt.day}.${dt.month}.$suffix';
     } else {
       return '${hourDifference}h';
     }
@@ -175,13 +177,18 @@ JidFormatError validateJid(String jid) {
 /// appears okay.
 String? validateJidString(String jid) {
   switch (validateJid(jid)) {
-    case JidFormatError.empty: return 'XMPP-Address cannot be empty';
+    case JidFormatError.empty:
+      return 'XMPP-Address cannot be empty';
     case JidFormatError.noSeparator:
-    case JidFormatError.tooManySeparators: return 'XMPP-Address must contain exactly one @';
+    case JidFormatError.tooManySeparators:
+      return 'XMPP-Address must contain exactly one @';
     // TODO(Unknown): Find a better text
-    case JidFormatError.noDomain: return 'A domain must follow the @';
-    case JidFormatError.noLocalpart: return 'Your username must preceed the @';
-    case JidFormatError.none: return null;
+    case JidFormatError.noDomain:
+      return 'A domain must follow the @';
+    case JidFormatError.noLocalpart:
+      return 'Your username must preceed the @';
+    case JidFormatError.none:
+      return null;
   }
 }
 
@@ -198,11 +205,15 @@ T? firstNotNull<T>(List<T?> items) {
 /// Attempt to guess a mimetype from its file extension
 String? guessMimeTypeFromExtension(String ext) {
   switch (ext) {
-    case 'png': return 'image/png';
+    case 'png':
+      return 'image/png';
     case 'jpg':
-    case 'jpeg': return 'image/jpeg';
-    case 'webp': return 'image/webp';
-    case 'mp4': return 'video/mp4';
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'webp':
+      return 'image/webp';
+    case 'mp4':
+      return 'video/mp4';
   }
 
   return null;
@@ -259,10 +270,10 @@ String filenameFromUrl(String url) {
 /// make "../" not dangerous.
 String escapeFilename(String filename) {
   return filename
-    .replaceAll('/', '%2F')
-    // ignore: use_raw_strings
-    .replaceAll('\\', '%5C')
-    .replaceAll('../', '..%2F');
+      .replaceAll('/', '%2F')
+      // ignore: use_raw_strings
+      .replaceAll('\\', '%5C')
+      .replaceAll('../', '..%2F');
 }
 
 /// Return a version of the filename [filename] with [suffix] attached to the file's
@@ -275,9 +286,7 @@ String filenameWithSuffix(String filename, String suffix) {
     return '$filename$suffix';
   }
 
-  final filenameWithoutExtension = parts
-    .take(parts.length - 1)
-    .join('.');
+  final filenameWithoutExtension = parts.take(parts.length - 1).join('.');
   return '$filenameWithoutExtension$suffix.${parts.last}';
 }
 
@@ -287,7 +296,10 @@ extension ExceptionSafeLock on Lock {
   /// that it cannot deadlock everything depending on the lock. Throws the exception again
   /// after the lock has been released.
   /// With [log], one can control how the stack trace gets displayed. Defaults to print.
-  Future<void> safeSynchronized(Future<void> Function() criticalSection, { void Function(String) log = print }) async {
+  Future<void> safeSynchronized(
+    Future<void> Function() criticalSection, {
+    void Function(String) log = print,
+  }) async {
     Object? ex;
 
     await synchronized(() async {
@@ -357,7 +369,11 @@ Future<Size?> getImageSizeFromData(Uint8List bytes) async {
 /// to the JID of the conversation the file comes from.
 /// If the thumbnail already exists, then just its path is returned. If not, then
 /// it gets generated first.
-Future<String?> getVideoThumbnailPath(String path, String conversationJid, String mime) async {
+Future<String?> getVideoThumbnailPath(
+  String path,
+  String conversationJid,
+  String mime,
+) async {
   //print('getVideoThumbnailPath: Mime type: $mime');
 
   // Ignore mime types that may be wacky
@@ -386,8 +402,11 @@ Future<String?> getVideoThumbnailPath(String path, String conversationJid, Strin
     imageFormat: ImageFormat.JPEG,
     quality: 75,
   );
-  assert(r == thumbnailPath, 'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath');
-  
+  assert(
+    r == thumbnailPath,
+    'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath',
+  );
+
   return thumbnailPath;
 }
 

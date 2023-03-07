@@ -10,7 +10,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 Size getMediaSize(Message message, double maxWidth) {
   final mediaWidth = message.mediaWidth?.toDouble();
   final mediaHeight = message.mediaHeight?.toDouble();
-  
+
   var width = maxWidth;
   var height = maxWidth;
   if (mediaWidth != null && mediaHeight != null) {
@@ -24,7 +24,7 @@ Size getMediaSize(Message message, double maxWidth) {
 /// Request the media download from a message.
 void requestMediaDownload(Message message) {
   MoxplatformPlugin.handler.getDataSender().sendData(
-    RequestDownloadCommand(message: message),
-    awaitable: false,
-  );
+        RequestDownloadCommand(message: message),
+        awaitable: false,
+      );
 }

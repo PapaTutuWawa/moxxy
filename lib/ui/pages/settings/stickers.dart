@@ -13,15 +13,15 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class StickersSettingsPage extends StatelessWidget {
-  const StickersSettingsPage({ super.key });
-  
+  const StickersSettingsPage({super.key});
+
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const StickersSettingsPage(),
-    settings: const RouteSettings(
-      name: stickersRoute,
-    ),
-  );
-  
+        builder: (_) => const StickersSettingsPage(),
+        settings: const RouteSettings(
+          name: stickersRoute,
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
@@ -37,7 +37,8 @@ class StickersSettingsPage extends StatelessWidget {
               right: 0,
               bottom: 0,
               child: Scaffold(
-                appBar: BorderlessTopbar.simple(t.pages.settings.stickers.title),
+                appBar:
+                    BorderlessTopbar.simple(t.pages.settings.stickers.title),
                 body: BlocBuilder<PreferencesBloc, PreferencesState>(
                   builder: (_, prefs) => Padding(
                     padding: EdgeInsets.zero,
@@ -49,52 +50,59 @@ class StickersSettingsPage extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SectionTitle(t.pages.settings.stickers.displayStickers),
-                              
+                              SectionTitle(
+                                t.pages.settings.stickers.displayStickers,
+                              ),
                               SettingsRow(
-                                title: t.pages.settings.stickers.displayStickers,
+                                title:
+                                    t.pages.settings.stickers.displayStickers,
                                 suffix: Switch(
                                   value: prefs.enableStickers,
                                   onChanged: (value) {
                                     context.read<PreferencesBloc>().add(
-                                      PreferencesChangedEvent(
-                                        prefs.copyWith(enableStickers: value),
-                                      ),
-                                    );
+                                          PreferencesChangedEvent(
+                                            prefs.copyWith(
+                                              enableStickers: value,
+                                            ),
+                                          ),
+                                        );
                                   },
                                 ),
                               ),
-
                               SettingsRow(
                                 title: t.pages.settings.stickers.autoDownload,
-                                description: t.pages.settings.stickers.autoDownloadBody,
+                                description:
+                                    t.pages.settings.stickers.autoDownloadBody,
                                 suffix: Switch(
                                   value: prefs.autoDownloadStickersFromContacts,
                                   onChanged: (value) {
                                     context.read<PreferencesBloc>().add(
-                                      PreferencesChangedEvent(
-                                        prefs.copyWith(autoDownloadStickersFromContacts: value),
-                                      ),
-                                    );
+                                          PreferencesChangedEvent(
+                                            prefs.copyWith(
+                                              autoDownloadStickersFromContacts:
+                                                  value,
+                                            ),
+                                          ),
+                                        );
                                   },
                                 ),
                               ),
-
                               SettingsRow(
                                 onTap: () {
                                   GetIt.I.get<StickersBloc>().add(
-                                    StickerPackImportedEvent(),
-                                  );
+                                        StickerPackImportedEvent(),
+                                      );
                                 },
-
-                                title: t.pages.settings.stickers.importStickerPack,
+                                title:
+                                    t.pages.settings.stickers.importStickerPack,
                               ),
-
-                              SectionTitle(t.pages.settings.stickers.stickerPacksSection),
-
+                              SectionTitle(
+                                t.pages.settings.stickers.stickerPacksSection,
+                              ),
                               if (stickers.stickerPacks.isEmpty)
                                 SettingsRow(
-                                  title: t.pages.conversation.stickerPickerNoStickersLine1,
+                                  title: t.pages.conversation
+                                      .stickerPickerNoStickersLine1,
                                 ),
                             ],
                           );
@@ -102,7 +110,8 @@ class StickersSettingsPage extends StatelessWidget {
 
                         return SettingsRow(
                           title: stickers.stickerPacks[index - 1].name,
-                          description: stickers.stickerPacks[index - 1].description,
+                          description:
+                              stickers.stickerPacks[index - 1].description,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           prefix: const Padding(
                             padding: EdgeInsets.only(right: 16),
@@ -124,10 +133,10 @@ class StickersSettingsPage extends StatelessWidget {
                           ),
                           onTap: () {
                             GetIt.I.get<StickerPackBloc>().add(
-                              LocallyAvailableStickerPackRequested(
-                                stickers.stickerPacks[index - 1].id,
-                              ),
-                            );
+                                  LocallyAvailableStickerPackRequested(
+                                    stickers.stickerPacks[index - 1].id,
+                                  ),
+                                );
                           },
                         );
                       },
@@ -136,7 +145,6 @@ class StickersSettingsPage extends StatelessWidget {
                 ),
               ),
             ),
-
             Positioned(
               top: 0,
               left: 0,

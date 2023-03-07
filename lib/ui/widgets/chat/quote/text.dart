@@ -8,10 +8,9 @@ class QuotedTextWidget extends StatelessWidget {
   const QuotedTextWidget(
     this.message,
     this.sent, {
-      this.resetQuote,
-      super.key,
-    }
-  );
+    this.resetQuote,
+    super.key,
+  });
 
   /// The quoted text message to render.
   final Message message;
@@ -21,7 +20,7 @@ class QuotedTextWidget extends StatelessWidget {
 
   /// Optional function to reset the quote display.
   final void Function()? resetQuote;
- 
+
   @override
   Widget build(BuildContext context) {
     return QuoteBaseWidget(
@@ -35,7 +34,6 @@ class QuotedTextWidget extends StatelessWidget {
             resetQuoteNotNull: resetQuote != null,
             sent: sent,
           ),
-
           Text(
             message.body,
             style: TextStyle(

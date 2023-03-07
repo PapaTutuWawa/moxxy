@@ -4,7 +4,7 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 
 class PreferencesService {
   PreferencesState? _preferences;
-  
+
   Future<void> _loadPreferences() async {
     _preferences = await GetIt.I.get<DatabaseService>().getPreferences();
   }
@@ -15,7 +15,9 @@ class PreferencesService {
     return _preferences!;
   }
 
-  Future<void> modifyPreferences(PreferencesState Function(PreferencesState) func) async {
+  Future<void> modifyPreferences(
+    PreferencesState Function(PreferencesState) func,
+  ) async {
     if (_preferences == null) await _loadPreferences();
 
     _preferences = func(_preferences!);

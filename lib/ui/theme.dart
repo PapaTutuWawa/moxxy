@@ -38,18 +38,35 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
 
   /// The text color of the buttons in the overlay of the ConversationPage
   final Color conversationOverlayTextColor;
-  
+
   @override
-  MoxxyThemeData copyWith({Color? conversationTextFieldColor, Color? profileFallbackBackgroundColor, Color? profileFallbackTextColor, Color? bubbleQuoteInTextFieldColor, Color? bubbleQuoteInTextFieldTextColor, Color? conversationTextFieldHintTextColor, Color? conversationTextFieldTextColor, Color? conversationOverlayTextColor}) {
+  MoxxyThemeData copyWith({
+    Color? conversationTextFieldColor,
+    Color? profileFallbackBackgroundColor,
+    Color? profileFallbackTextColor,
+    Color? bubbleQuoteInTextFieldColor,
+    Color? bubbleQuoteInTextFieldTextColor,
+    Color? conversationTextFieldHintTextColor,
+    Color? conversationTextFieldTextColor,
+    Color? conversationOverlayTextColor,
+  }) {
     return MoxxyThemeData(
-      conversationTextFieldColor: conversationTextFieldColor ?? this.conversationTextFieldColor,
-      profileFallbackBackgroundColor: profileFallbackBackgroundColor ?? this.profileFallbackBackgroundColor,
-      profileFallbackTextColor: profileFallbackTextColor ?? this.profileFallbackTextColor,
-      bubbleQuoteInTextFieldColor: bubbleQuoteInTextFieldColor ?? this.bubbleQuoteInTextFieldColor,
-      bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColor ?? this.bubbleQuoteInTextFieldTextColor,
-      conversationTextFieldHintTextColor: conversationTextFieldHintTextColor ?? this.conversationTextFieldHintTextColor,
-      conversationTextFieldTextColor: conversationTextFieldTextColor ?? this.conversationTextFieldTextColor,
-      conversationOverlayTextColor: conversationOverlayTextColor ?? this.conversationOverlayTextColor,
+      conversationTextFieldColor:
+          conversationTextFieldColor ?? this.conversationTextFieldColor,
+      profileFallbackBackgroundColor:
+          profileFallbackBackgroundColor ?? this.profileFallbackBackgroundColor,
+      profileFallbackTextColor:
+          profileFallbackTextColor ?? this.profileFallbackTextColor,
+      bubbleQuoteInTextFieldColor:
+          bubbleQuoteInTextFieldColor ?? this.bubbleQuoteInTextFieldColor,
+      bubbleQuoteInTextFieldTextColor: bubbleQuoteInTextFieldTextColor ??
+          this.bubbleQuoteInTextFieldTextColor,
+      conversationTextFieldHintTextColor: conversationTextFieldHintTextColor ??
+          this.conversationTextFieldHintTextColor,
+      conversationTextFieldTextColor:
+          conversationTextFieldTextColor ?? this.conversationTextFieldTextColor,
+      conversationOverlayTextColor:
+          conversationOverlayTextColor ?? this.conversationOverlayTextColor,
     );
   }
 
@@ -62,7 +79,10 @@ class MoxxyThemeData extends ThemeExtension<MoxxyThemeData> {
 /// Helper function for quickly generating MaterialStateProperty instances that
 /// only differentiate between a color for the element's disabled state and for all
 /// other states.
-MaterialStateProperty<Color> _makeEnabledDisabledProperty(Color enabled, Color disabled) {
+MaterialStateProperty<Color> _makeEnabledDisabledProperty(
+  Color enabled,
+  Color disabled,
+) {
   return MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
     if (states.contains(MaterialState.disabled)) return disabled;
     return enabled;
@@ -75,28 +95,31 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
     brightness: brightness,
 
     // NOTE: Mainly for the SettingsSection
-    colorScheme: brightness == Brightness.dark ?
-      const ColorScheme.dark(
-        secondary: primaryColor,
-        background: Color(0xff303030),
-      ) :
-      const ColorScheme.light(
-        secondary: primaryColor,
-        background: Color(0xff303030),
-      ),
+    colorScheme: brightness == Brightness.dark
+        ? const ColorScheme.dark(
+            secondary: primaryColor,
+            background: Color(0xff303030),
+          )
+        : const ColorScheme.light(
+            secondary: primaryColor,
+            background: Color(0xff303030),
+          ),
 
     // UI elements
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        foregroundColor: _makeEnabledDisabledProperty(Colors.white, textColorDisabled),
-        backgroundColor: _makeEnabledDisabledProperty(primaryColor, primaryColorDisabled),
+        foregroundColor:
+            _makeEnabledDisabledProperty(Colors.white, textColorDisabled),
+        backgroundColor:
+            _makeEnabledDisabledProperty(primaryColor, primaryColorDisabled),
       ),
     ),
     checkboxTheme: CheckboxTheme.of(context).copyWith(
       fillColor: MaterialStateProperty.all(primaryColor),
     ),
     switchTheme: SwitchTheme.of(context).copyWith(
-      trackColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+      trackColor:
+          MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
         if (states.contains(MaterialState.disabled)) {
           return primaryColorDisabled;
         } else if (!states.contains(MaterialState.selected)) {
@@ -105,7 +128,8 @@ ThemeData getThemeData(BuildContext context, Brightness brightness) {
 
         return primaryColorAlt;
       }),
-      thumbColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+      thumbColor:
+          MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
         if (states.contains(MaterialState.disabled)) {
           return Colors.white;
         } else if (!states.contains(MaterialState.selected)) {

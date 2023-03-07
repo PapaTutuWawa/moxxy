@@ -24,8 +24,8 @@ class NewDeviceBubble extends StatelessWidget {
           child: InkWell(
             onTap: () {
               context.read<DevicesBloc>().add(
-                DevicesRequestedEvent(data['jid']! as String),
-              );
+                    DevicesRequestedEvent(data['jid']! as String),
+                  );
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(

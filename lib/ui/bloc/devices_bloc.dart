@@ -21,22 +21,25 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     on<DeviceVerifiedEvent>(_onDeviceVerified);
   }
 
-  Future<void> _onRequested(DevicesRequestedEvent event, Emitter<DevicesState> emit) async {
+  Future<void> _onRequested(
+    DevicesRequestedEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     emit(state.copyWith(working: true, jid: event.jid));
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedEvent(
-        const NavigationDestination(devicesRoute),
-      ),
-    );
+          PushedNamedEvent(
+            const NavigationDestination(devicesRoute),
+          ),
+        );
 
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      GetConversationOmemoFingerprintsCommand(
-        jid: event.jid,
-      ),
-    ) as GetConversationOmemoFingerprintsResult;
-    
+          GetConversationOmemoFingerprintsCommand(
+            jid: event.jid,
+          ),
+        ) as GetConversationOmemoFingerprintsResult;
+
     emit(
       state.copyWith(
         working: false,
@@ -45,30 +48,39 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     );
   }
 
-  Future<void> _onDeviceEnabledSet(DeviceEnabledSetEvent event, Emitter<DevicesState> emit) async {
+  Future<void> _onDeviceEnabledSet(
+    DeviceEnabledSetEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetOmemoDeviceEnabledCommand(
-        jid: state.jid,
-        deviceId: event.deviceId,
-        enabled: event.enabled,
-      ),
-    ) as GetConversationOmemoFingerprintsResult;
-    emit(state.copyWith(devices: result.fingerprints));  
+          SetOmemoDeviceEnabledCommand(
+            jid: state.jid,
+            deviceId: event.deviceId,
+            enabled: event.enabled,
+          ),
+        ) as GetConversationOmemoFingerprintsResult;
+    emit(state.copyWith(devices: result.fingerprints));
   }
 
-  Future<void> _onSessionsRecreated(SessionsRecreatedEvent event, Emitter<DevicesState> emit) async {
+  Future<void> _onSessionsRecreated(
+    SessionsRecreatedEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     // ignore: cast_nullable_to_non_nullable
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      RecreateSessionsCommand(jid: state.jid),
-      awaitable: false,
-    );
+          RecreateSessionsCommand(jid: state.jid),
+          awaitable: false,
+        );
     emit(state.copyWith(devices: <OmemoDevice>[]));
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }
 
-  Future<void> _onDeviceVerified(DeviceVerifiedEvent event, Emitter<DevicesState> emit) async {
+  Future<void> _onDeviceVerified(
+    DeviceVerifiedEvent event,
+    Emitter<DevicesState> emit,
+  ) async {
     final result = isVerificationUriValid(
       state.devices,
       event.uri,
@@ -82,13 +94,13 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
       verified: true,
     );
     emit(state.copyWith(devices: devices));
-    
+
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      MarkOmemoDeviceAsVerifiedCommand(
-        jid: state.jid,
-        deviceId: event.deviceId,
-      ),
-      awaitable: false,
-    );
+          MarkOmemoDeviceAsVerifiedCommand(
+            jid: state.jid,
+            deviceId: event.deviceId,
+          ),
+          awaitable: false,
+        );
   }
 }

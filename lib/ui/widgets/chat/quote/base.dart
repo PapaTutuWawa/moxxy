@@ -10,12 +10,10 @@ class QuoteBaseWidget extends StatelessWidget {
   const QuoteBaseWidget(
     this.message,
     this.child,
-    this.sent,
-    {
-      this.resetQuotedMessage,
-      super.key,
-    }
-  );
+    this.sent, {
+    this.resetQuotedMessage,
+    super.key,
+  });
   final Message message;
   final Widget child;
   final bool sent;
@@ -23,7 +21,9 @@ class QuoteBaseWidget extends StatelessWidget {
 
   Color _getColor(BuildContext context) {
     if (resetQuotedMessage != null) {
-      return Theme.of(context).extension<MoxxyThemeData>()!.bubbleQuoteInTextFieldColor;
+      return Theme.of(context)
+          .extension<MoxxyThemeData>()!
+          .bubbleQuoteInTextFieldColor;
     }
 
     if (sent) {
@@ -32,7 +32,7 @@ class QuoteBaseWidget extends StatelessWidget {
       return bubbleColorReceivedQuoted;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     EdgeInsetsGeometry padding = const EdgeInsets.only(
@@ -46,7 +46,7 @@ class QuoteBaseWidget extends StatelessWidget {
     if (resetQuotedMessage != null) {
       padding = padding.add(const EdgeInsets.only(right: 26));
     }
-    
+
     return Padding(
       padding: const EdgeInsets.all(8),
       child: ClipRRect(
@@ -70,7 +70,6 @@ class QuoteBaseWidget extends StatelessWidget {
                     child: child,
                   ),
                 ),
-
                 if (resetQuotedMessage != null)
                   Align(
                     alignment: Alignment.topRight,

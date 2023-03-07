@@ -48,7 +48,8 @@ class ShareListItem {
   final String? contactDisplayName;
 }
 
-class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> {
+class ShareSelectionBloc
+    extends Bloc<ShareSelectionEvent, ShareSelectionState> {
   ShareSelectionBloc() : super(ShareSelectionState()) {
     on<ShareSelectionInitEvent>(_onShareSelectionInit);
     on<ConversationsModified>(_onConversationsModified);
@@ -66,12 +67,14 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
 
   /// Returns the list of JIDs that are selected.
   List<String> _getRecipients() {
-    return state.selection
-      .map((i) => state.items[i].jid)
-      .toList();
+    return state.selection.map((i) => state.items[i].jid).toList();
   }
 
-  void _updateItems(List<Conversation> conversations, List<RosterItem> rosterItems, Emitter<ShareSelectionState> emit) {
+  void _updateItems(
+    List<Conversation> conversations,
+    List<RosterItem> rosterItems,
+    Emitter<ShareSelectionState> emit,
+  ) {
     // Use all conversations as a base
     final items = List<ShareListItem>.from(
       conversations.map((c) {
@@ -92,7 +95,8 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
     // Only add roster items with a JID which we don't already have in items.
     for (final rosterItem in rosterItems) {
       // We look for the index because this way we can update the roster items
-      final index = items.lastIndexWhere((ShareListItem e) => e.jid == rosterItem.jid);
+      final index =
+          items.lastIndexWhere((ShareListItem e) => e.jid == rosterItem.jid);
       if (index == -1) {
         items.add(
           ShareListItem(
@@ -124,12 +128,18 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
 
     emit(state.copyWith(items: items));
   }
-  
-  Future<void> _onShareSelectionInit(ShareSelectionInitEvent event, Emitter<ShareSelectionState> emit) async {
+
+  Future<void> _onShareSelectionInit(
+    ShareSelectionInitEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _updateItems(event.conversations, event.rosterItems, emit);
   }
-  
-  Future<void> _onRequested(ShareSelectionRequestedEvent event, Emitter<ShareSelectionState> emit) async {
+
+  Future<void> _onRequested(
+    ShareSelectionRequestedEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     emit(
       state.copyWith(
         paths: event.paths,
@@ -139,14 +149,17 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
     );
 
     GetIt.I.get<NavigationBloc>().add(
-      PushedNamedAndRemoveUntilEvent(
-        const NavigationDestination(shareSelectionRoute),
-        (_) => false,
-      ),
-    );
+          PushedNamedAndRemoveUntilEvent(
+            const NavigationDestination(shareSelectionRoute),
+            (_) => false,
+          ),
+        );
   }
 
-  Future<void> _onConversationsModified(ConversationsModified event, Emitter<ShareSelectionState> emit) async {
+  Future<void> _onConversationsModified(
+    ConversationsModified event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _updateItems(
       event.conversations,
       GetIt.I.get<NewConversationBloc>().state.roster,
@@ -154,60 +167,65 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
     );
   }
 
-  Future<void> _onRosterModified(RosterModifiedEvent event, Emitter<ShareSelectionState> emit) async {
+  Future<void> _onRosterModified(
+    RosterModifiedEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _updateItems(
       GetIt.I.get<ConversationsBloc>().state.conversations,
       event.rosterItems,
       emit,
     );
   }
-  
-  Future<void> _onSubmit(SubmittedEvent event, Emitter<ShareSelectionState> emit) async {
+
+  Future<void> _onSubmit(
+    SubmittedEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     if (state.type == ShareSelectionType.text) {
       await MoxplatformPlugin.handler.getDataSender().sendData(
-        SendMessageCommand(
-          recipients: _getRecipients(),
-          body: state.text!,
-          chatState: chatStateToString(ChatState.gone),
-        ),
-      );
+            SendMessageCommand(
+              recipients: _getRecipients(),
+              body: state.text!,
+              chatState: chatStateToString(ChatState.gone),
+            ),
+          );
 
       // Navigate to the conversations page...
       GetIt.I.get<NavigationBloc>().add(
-        PushedNamedAndRemoveUntilEvent(
-          const NavigationDestination(conversationsRoute),
-          (_) => false,
-        ),
-      );
+            PushedNamedAndRemoveUntilEvent(
+              const NavigationDestination(conversationsRoute),
+              (_) => false,
+            ),
+          );
       // ...reset the state...
       _resetState(emit);
       // ...and put the app back into the background
       await MoveToBackground.moveTaskToBack();
     } else {
       GetIt.I.get<SendFilesBloc>().add(
-        SendFilesPageRequestedEvent(
-          state.selection
-            .map((i) => state.items[i].jid)
-            .toList(),
-          // TODO(PapaTutuWawa): Fix
-          SendFilesType.image,
-          paths: state.paths,
-          popEntireStack: true,
-        ),
-      );
+            SendFilesPageRequestedEvent(
+              state.selection.map((i) => state.items[i].jid).toList(),
+              // TODO(PapaTutuWawa): Fix
+              SendFilesType.image,
+              paths: state.paths,
+              popEntireStack: true,
+            ),
+          );
 
       _resetState(emit);
     }
   }
-  
-  Future<void> _onSelectionToggled(SelectionToggledEvent event, Emitter<ShareSelectionState> emit) async {
+
+  Future<void> _onSelectionToggled(
+    SelectionToggledEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     if (state.selection.contains(event.index)) {
       emit(
         state.copyWith(
           selection: List.from(
-            state.selection
-              .where((s) => s != event.index)
-              .toList(),
+            state.selection.where((s) => s != event.index).toList(),
           ),
         ),
       );
@@ -220,9 +238,12 @@ class ShareSelectionBloc extends Bloc<ShareSelectionEvent, ShareSelectionState> 
         ),
       );
     }
-  } 
-  
-  Future<void> _onReset(ResetEvent event, Emitter<ShareSelectionState> emit) async {
+  }
+
+  Future<void> _onReset(
+    ResetEvent event,
+    Emitter<ShareSelectionState> emit,
+  ) async {
     _resetState(emit);
   }
 }

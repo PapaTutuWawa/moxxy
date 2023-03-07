@@ -19,7 +19,7 @@ class BidirectionalController<T> {
 
   /// The amount of pages to keep in the cache before evicting items
   final int maxPageAmount;
-  
+
   /// The controller that deals with scrolling
   final ScrollController _controller = ScrollController();
   ScrollController get scrollController => _controller;
@@ -28,7 +28,8 @@ class BidirectionalController<T> {
   /// 0: The oldest data item we know about
   /// _cache.length - 1: The newest data item we know about
   final List<T> _cache = List<T>.empty(growable: true);
-  final StreamController<List<T>> _dataStreamController = StreamController<List<T>>();
+  final StreamController<List<T>> _dataStreamController =
+      StreamController<List<T>>();
   Stream<List<T>> get dataStream => _dataStreamController.stream;
 
   @protected
@@ -36,10 +37,11 @@ class BidirectionalController<T> {
 
   /// True if the cache has exceeded the size limit of pageSize * maxPageAmount.
   bool get _isCacheTooBig => _cache.length >= pageSize * maxPageAmount;
-  
+
   /// Flag indicating whether we are currently fetching data
   bool _isFetching = false;
-  final StreamController<bool> _isFetchingStreamController = StreamController<bool>();
+  final StreamController<bool> _isFetchingStreamController =
+      StreamController<bool>();
   Stream<bool> get isFetchingStream => _isFetchingStreamController.stream;
 
   /// Flag indicating whether we are able to request newer data
@@ -58,8 +60,10 @@ class BidirectionalController<T> {
   bool get isScrolledToBottom => _controller.offset <= scrollActivationOffset;
 
   /// True if we are scrolled to the top of the viwe. False, otherwise.
-  bool get isScrolledToTop => _controller.offset >= _controller.position.maxScrollExtent - scrollActivationOffset;
-  
+  bool get isScrolledToTop =>
+      _controller.offset >=
+      _controller.position.maxScrollExtent - scrollActivationOffset;
+
   @visibleForOverriding
   void handleScroll() {
     if (!_controller.hasClients) return;
@@ -79,17 +83,15 @@ class BidirectionalController<T> {
     _isFetching = state;
     _isFetchingStreamController.add(state);
   }
-  
+
   Future<void> fetchOlderData() async {
     if (_isFetching || _cache.isEmpty && hasFetchedOnce) return;
     if (!hasOlderData) return;
-    
+
     _setIsFetching(true);
 
     final data = await fetchOlderDataImpl(
-      _cache.isEmpty ?
-        null :
-        _cache.first,
+      _cache.isEmpty ? null : _cache.first,
     );
 
     hasFetchedOnce = true;
@@ -117,13 +119,11 @@ class BidirectionalController<T> {
   Future<void> _fetchNewerData() async {
     if (_isFetching || _cache.isEmpty && hasFetchedOnce) return;
     if (!hasNewerData) return;
-    
+
     _setIsFetching(true);
 
     final data = await fetchNewerDataImpl(
-      _cache.isEmpty ?
-        null :
-        _cache.last,
+      _cache.isEmpty ? null : _cache.last,
     );
 
     hasFetchedOnce = true;
@@ -147,7 +147,7 @@ class BidirectionalController<T> {
     _setIsFetching(false);
     _dataStreamController.add(_cache);
   }
-  
+
   @visibleForOverriding
   Future<List<T>> fetchOlderDataImpl(T? oldestElement) async {
     return [];
@@ -175,9 +175,7 @@ class BidirectionalController<T> {
   bool addItemWhereFirst(bool Function(T, T?) test, T item) {
     var foundPlace = false;
     for (var i = 0; i < _cache.length; i++) {
-      final nextItem = i + 1 < _cache.length ?
-        _cache[i + 1] :
-        null;
+      final nextItem = i + 1 < _cache.length ? _cache[i + 1] : null;
       if (test(_cache[i], nextItem)) {
         foundPlace = true;
         _cache.insert(i, item);
@@ -218,7 +216,7 @@ class BidirectionalController<T> {
 
     return found;
   }
-  
+
   /// Animate to the bottom of the view.
   void animateToBottom() {
     _controller.animateTo(
@@ -227,7 +225,7 @@ class BidirectionalController<T> {
       duration: const Duration(milliseconds: 300),
     );
   }
-  
+
   /// Dispose of the backing controller
   void dispose() {
     _controller.dispose();

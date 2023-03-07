@@ -11,14 +11,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 // TODO(PapaTutuWawa): Include license text
 class SettingsAboutPage extends StatefulWidget {
-  const SettingsAboutPage({ super.key });
+  const SettingsAboutPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-    builder: (_) => const SettingsAboutPage(),
-    settings: const RouteSettings(
-      name: aboutRoute,
-    ),
-  );
+        builder: (_) => const SettingsAboutPage(),
+        settings: const RouteSettings(
+          name: aboutRoute,
+        ),
+      );
 
   @override
   SettingsAboutPageState createState() => SettingsAboutPageState();
@@ -32,7 +32,10 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
   bool _alreadyShownNotificationShown = false;
 
   Future<void> _openUrl(String url) async {
-    if (!await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication)) {
+    if (!(await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    ))) {
       // TODO(Unknown): Show a popup to copy the url
     }
   }
@@ -46,7 +49,8 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
         child: Column(
           children: [
             BlocBuilder<PreferencesBloc, PreferencesState>(
-              buildWhen: (prev, next) => prev.showDebugMenu != next.showDebugMenu,
+              buildWhen: (prev, next) =>
+                  prev.showDebugMenu != next.showDebugMenu,
               builder: (context, state) => InkWell(
                 onTap: () async {
                   if (state.showDebugMenu) {
@@ -65,12 +69,12 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
                   _counter++;
                   if (_counter == 10) {
                     context.read<PreferencesBloc>().add(
-                      PreferencesChangedEvent(
-                        state.copyWith(
-                          showDebugMenu: true,
-                        ),
-                      ),
-                    );
+                          PreferencesChangedEvent(
+                            state.copyWith(
+                              showDebugMenu: true,
+                            ),
+                          ),
+                        );
 
                     await Fluttertoast.showToast(
                       msg: t.pages.settings.about.debugMenuShown,
@@ -79,9 +83,10 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
                     );
                   }
                 },
-                child:Image.asset(
+                child: Image.asset(
                   'assets/images/logo.png',
-                  width: 200, height: 200,
+                  width: 200,
+                  height: 200,
                 ),
               ),
             ),
@@ -101,7 +106,6 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
                 ),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
@@ -114,15 +118,15 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
                 ),
               ),
             ),
-
             Text(t.pages.settings.about.licensed),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: ElevatedButton(
                 child: Text(t.pages.settings.about.viewSourceCode),
-                onPressed: () => _openUrl('https://github.com/PapaTutuWawa/moxxyv2'),
+                onPressed: () =>
+                    _openUrl('https://github.com/PapaTutuWawa/moxxyv2'),
               ),
-            ) 
+            )
           ],
         ),
       ),

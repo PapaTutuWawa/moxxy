@@ -51,45 +51,44 @@ class Message with _$Message {
     bool isFileUploadNotification,
     bool encrypted,
     // True if the message contains a <no-store> Message Processing Hint. False if not
-    bool containsNoStore,
-    {
-      int? errorType,
-      int? warningType,
-      String? mediaUrl,
-      @Default(false) bool isDownloading,
-      @Default(false) bool isUploading,
-      String? mediaType,
-      String? thumbnailData,
-      int? mediaWidth,
-      int? mediaHeight,
-      // If non-null: Indicates where some media entry originated/originates from
-      String? srcUrl,
-      String? key,
-      String? iv,
-      String? encryptionScheme,
-      @Default(false) bool received,
-      @Default(false) bool displayed,
-      @Default(false) bool acked,
-      @Default(false) bool isRetracted,
-      @Default(false) bool isEdited,
-      String? originId,
-      Message? quotes,
-      String? filename,
-      Map<String, String>? plaintextHashes,
-      Map<String, String>? ciphertextHashes,
-      int? mediaSize,
-      @Default([]) List<Reaction> reactions,
-      String? stickerPackId,
-      String? stickerHashKey,
-      int? pseudoMessageType,
-      Map<String, dynamic>? pseudoMessageData,
-    }
-  ) = _Message;
+    bool containsNoStore, {
+    int? errorType,
+    int? warningType,
+    String? mediaUrl,
+    @Default(false) bool isDownloading,
+    @Default(false) bool isUploading,
+    String? mediaType,
+    String? thumbnailData,
+    int? mediaWidth,
+    int? mediaHeight,
+    // If non-null: Indicates where some media entry originated/originates from
+    String? srcUrl,
+    String? key,
+    String? iv,
+    String? encryptionScheme,
+    @Default(false) bool received,
+    @Default(false) bool displayed,
+    @Default(false) bool acked,
+    @Default(false) bool isRetracted,
+    @Default(false) bool isEdited,
+    String? originId,
+    Message? quotes,
+    String? filename,
+    Map<String, String>? plaintextHashes,
+    Map<String, String>? ciphertextHashes,
+    int? mediaSize,
+    @Default([]) List<Reaction> reactions,
+    String? stickerPackId,
+    String? stickerHashKey,
+    int? pseudoMessageType,
+    Map<String, dynamic>? pseudoMessageData,
+  }) = _Message;
 
   const Message._();
 
   /// JSON
-  factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
+  factory Message.fromJson(Map<String, dynamic> json) =>
+      _$MessageFromJson(json);
 
   factory Message.fromDatabaseJson(Map<String, dynamic> json, Message? quotes) {
     return Message.fromJson({
@@ -98,26 +97,30 @@ class Message with _$Message {
       'displayed': intToBool(json['displayed']! as int),
       'acked': intToBool(json['acked']! as int),
       'isMedia': intToBool(json['isMedia']! as int),
-      'isFileUploadNotification': intToBool(json['isFileUploadNotification']! as int),
+      'isFileUploadNotification':
+          intToBool(json['isFileUploadNotification']! as int),
       'encrypted': intToBool(json['encrypted']! as int),
-      'plaintextHashes': _optionalJsonDecode(json['plaintextHashes'] as String?),
-      'ciphertextHashes': _optionalJsonDecode(json['ciphertextHashes'] as String?),
+      'plaintextHashes':
+          _optionalJsonDecode(json['plaintextHashes'] as String?),
+      'ciphertextHashes':
+          _optionalJsonDecode(json['ciphertextHashes'] as String?),
       'isDownloading': intToBool(json['isDownloading']! as int),
       'isUploading': intToBool(json['isUploading']! as int),
       'isRetracted': intToBool(json['isRetracted']! as int),
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
       'reactions': <Map<String, dynamic>>[],
-      'pseudoMessageData': _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
+      'pseudoMessageData':
+          _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
     }).copyWith(
       quotes: quotes,
       reactions: (jsonDecode(json['reactions']! as String) as List<dynamic>)
-        .cast<Map<String, dynamic>>()
-        .map<Reaction>(Reaction.fromJson)
-        .toList(),
+          .cast<Map<String, dynamic>>()
+          .map<Reaction>(Reaction.fromJson)
+          .toList(),
     );
   }
-  
+
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
       ..remove('id')
@@ -143,9 +146,7 @@ class Message with _$Message {
       'isEdited': boolToInt(isEdited),
       'containsNoStore': boolToInt(containsNoStore),
       'reactions': jsonEncode(
-        reactions
-          .map((r) => r.toJson())
-          .toList(),
+        reactions.map((r) => r.toJson()).toList(),
       ),
       'pseudoMessageData': _optionalJsonEncodeWithFallback(pseudoMessageData),
     };
@@ -164,24 +165,49 @@ class Message with _$Message {
   }
 
   /// True if the message is a pseudo message.
-  bool get isPseudoMessage => pseudoMessageType != null && pseudoMessageData != null;
-  
+  bool get isPseudoMessage =>
+      pseudoMessageType != null && pseudoMessageData != null;
+
   /// Returns true if the message can be quoted. False if not.
-  bool get isQuotable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
+  bool get isQuotable =>
+      !hasError &&
+      !isRetracted &&
+      !isFileUploadNotification &&
+      !isUploading &&
+      !isDownloading &&
+      !isPseudoMessage;
 
   /// Returns true if the message can be retracted. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
   bool canRetract(bool sentBySelf) {
-    return !hasError && originId != null && sentBySelf && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
+    return !hasError &&
+        originId != null &&
+        sentBySelf &&
+        !isFileUploadNotification &&
+        !isUploading &&
+        !isDownloading &&
+        !isPseudoMessage;
   }
 
   /// Returns true if we can send a reaction for this message.
-  bool get isReactable => !hasError && !isRetracted && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
+  bool get isReactable =>
+      !hasError &&
+      !isRetracted &&
+      !isFileUploadNotification &&
+      !isUploading &&
+      !isDownloading &&
+      !isPseudoMessage;
 
   /// Returns true if the message can be edited. False if not.
   /// [sentBySelf] asks whether or not the message was sent by us (the current Jid).
   bool canEdit(bool sentBySelf) {
-    return !hasError && sentBySelf && !isMedia && !isFileUploadNotification && !isUploading && !isDownloading && !isPseudoMessage;
+    return !hasError &&
+        sentBySelf &&
+        !isMedia &&
+        !isFileUploadNotification &&
+        !isUploading &&
+        !isDownloading &&
+        !isPseudoMessage;
   }
 
   /// Returns true if the message can open the selection menu by longpressing. False if
@@ -191,22 +217,26 @@ class Message with _$Message {
   /// Returns true if the menu item to show the error should be shown in the
   /// longpress menu.
   bool get errorMenuVisible {
-    return hasError && (
-      errorType! < messageNotEncryptedForDevice ||
-      errorType! > messageInvalidAffixElements
-    );
+    return hasError &&
+        (errorType! < messageNotEncryptedForDevice ||
+            errorType! > messageInvalidAffixElements);
   }
 
   /// Returns true if the message contains media that can be thumbnailed, i.e. videos or
   /// images.
-  bool get isThumbnailable => !isPseudoMessage && isMedia && mediaType != null && (
-    mediaType!.startsWith('image/') ||
-    mediaType!.startsWith('video/')
-  );
+  bool get isThumbnailable =>
+      !isPseudoMessage &&
+      isMedia &&
+      mediaType != null &&
+      (mediaType!.startsWith('image/') || mediaType!.startsWith('video/'));
 
   /// Returns true if the message can be copied to the clipboard.
   bool get isCopyable => !isMedia && body.isNotEmpty && !isPseudoMessage;
 
   /// Returns true if the message is a sticker
-  bool get isSticker => isMedia && stickerPackId != null && stickerHashKey != null && !isPseudoMessage;
+  bool get isSticker =>
+      isMedia &&
+      stickerPackId != null &&
+      stickerHashKey != null &&
+      !isPseudoMessage;
 }

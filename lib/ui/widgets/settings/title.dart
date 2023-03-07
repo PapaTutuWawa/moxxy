@@ -3,7 +3,7 @@ import 'package:moxxyv2/ui/constants.dart';
 
 /// A section title similar to what settings_ui provides.
 class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.title, { super.key });
+  const SectionTitle(this.title, {super.key});
   final String title;
 
   @override
@@ -17,8 +17,8 @@ class SectionTitle extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall!.copyWith(
-          color: settingsSectionTitleColor,
-        ),
+              color: settingsSectionTitleColor,
+            ),
       ),
     );
   }

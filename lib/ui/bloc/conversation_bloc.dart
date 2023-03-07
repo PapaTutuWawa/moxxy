@@ -48,16 +48,22 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   /// The audio recorder
   late Record _audioRecorder;
   DateTime? _recordingStart;
-  
+
   bool _isSameConversation(String jid) => jid == state.conversation?.jid;
-  
-  Future<void> _onInit(InitConversationEvent event, Emitter<ConversationState> emit) async {
+
+  Future<void> _onInit(
+    InitConversationEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     emit(
       state.copyWith(backgroundPath: event.backgroundPath),
     );
   }
-  
-  Future<void> _onRequestedConversation(RequestedConversationEvent event, Emitter<ConversationState> emit) async {
+
+  Future<void> _onRequestedConversation(
+    RequestedConversationEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     final cb = GetIt.I.get<ConversationsBloc>();
     await cb.waitUntilInitialized();
     final conversation = firstWhereOrNull(
@@ -73,39 +79,43 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
-    final navEvent = event.removeUntilConversations ? (
-      PushedNamedAndRemoveUntilEvent(
-        NavigationDestination(
-          conversationRoute,
-          arguments: event.jid,
-        ),
-        ModalRoute.withName(conversationsRoute),
-      )
-    ) : (
-      PushedNamedEvent(
-        NavigationDestination(
-          conversationRoute,
-          arguments: event.jid,
-        ),
-      )
-    );
+    final navEvent = event.removeUntilConversations
+        ? (PushedNamedAndRemoveUntilEvent(
+            NavigationDestination(
+              conversationRoute,
+              arguments: event.jid,
+            ),
+            ModalRoute.withName(conversationsRoute),
+          ))
+        : (PushedNamedEvent(
+            NavigationDestination(
+              conversationRoute,
+              arguments: event.jid,
+            ),
+          ));
 
     GetIt.I.get<NavigationBloc>().add(navEvent);
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetOpenConversationCommand(jid: event.jid),
-      awaitable: false,
-    );
+          SetOpenConversationCommand(jid: event.jid),
+          awaitable: false,
+        );
   }
 
-  Future<void> _onJidBlocked(JidBlockedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onJidBlocked(
+    JidBlockedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     // TODO(Unknown): Maybe have some state here
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      BlockJidCommand(jid: state.conversation!.jid),
-    );
+          BlockJidCommand(jid: state.conversation!.jid),
+        );
   }
 
-  Future<void> _onJidAdded(JidAddedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onJidAdded(
+    JidAddedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     // Just update the state here. If it does not work, then the next conversation
     // update will fix it.
     emit(
@@ -117,11 +127,14 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      AddContactCommand(jid: state.conversation!.jid),
-    );
+          AddContactCommand(jid: state.conversation!.jid),
+        );
   }
 
-  Future<void> _onCurrentConversationReset(CurrentConversationResetEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onCurrentConversationReset(
+    CurrentConversationResetEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     // Reset conversation so that we don't accidentally send chat states to chats
     // that are not currently focused.
     emit(
@@ -131,34 +144,55 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetOpenConversationCommand(),
-      awaitable: false,
-    );
+          SetOpenConversationCommand(),
+          awaitable: false,
+        );
   }
 
-  Future<void> _onConversationUpdated(ConversationUpdatedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onConversationUpdated(
+    ConversationUpdatedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     if (!_isSameConversation(event.conversation.jid)) return;
 
     emit(state.copyWith(conversation: event.conversation));
   }
 
-  Future<void> _onBackgroundChanged(BackgroundChangedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onBackgroundChanged(
+    BackgroundChangedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     return emit(state.copyWith(backgroundPath: event.backgroundPath));
   }
 
-  Future<void> _onImagePickerRequested(ImagePickerRequestedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onImagePickerRequested(
+    ImagePickerRequestedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     GetIt.I.get<SendFilesBloc>().add(
-      SendFilesPageRequestedEvent([state.conversation!.jid], SendFilesType.image),
-    );
+          SendFilesPageRequestedEvent(
+            [state.conversation!.jid],
+            SendFilesType.image,
+          ),
+        );
   }
 
-  Future<void> _onFilePickerRequested(FilePickerRequestedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onFilePickerRequested(
+    FilePickerRequestedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     GetIt.I.get<SendFilesBloc>().add(
-      SendFilesPageRequestedEvent([state.conversation!.jid], SendFilesType.generic),
-    );
+          SendFilesPageRequestedEvent(
+            [state.conversation!.jid],
+            SendFilesType.generic,
+          ),
+        );
   }
 
-  Future<void> _onOmemoSet(OmemoSetEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onOmemoSet(
+    OmemoSetEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     emit(
       state.copyWith(
         conversation: state.conversation!.copyWith(
@@ -168,12 +202,18 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     );
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SetOmemoEnabledCommand(enabled: event.enabled, jid: state.conversation!.jid),
-      awaitable: false,
-    );
+          SetOmemoEnabledCommand(
+            enabled: event.enabled,
+            jid: state.conversation!.jid,
+          ),
+          awaitable: false,
+        );
   }
 
-  Future<void> _onDragStarted(SendButtonDragStartedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onDragStarted(
+    SendButtonDragStartedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     final status = await Permission.speech.status;
     if (status.isDenied) {
       await Permission.speech.request();
@@ -186,11 +226,12 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
         isRecording: true,
       ),
     );
-    
+
     final now = DateTime.now();
     _recordingStart = now;
     final tempDir = await getTemporaryDirectory();
-    final timestamp = '${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}';
+    final timestamp =
+        '${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}';
     final tempFile = path.join(tempDir.path, 'audio_$timestamp.aac');
     await _audioRecorder.start(
       path: tempFile,
@@ -222,15 +263,18 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
 
     // Send the file
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SendFilesCommand(
-        paths: [recordingPath],
-        recipients: [state.conversation!.jid],
-      ),
-      awaitable: false,
-    );
+          SendFilesCommand(
+            paths: [recordingPath],
+            recipients: [state.conversation!.jid],
+          ),
+          awaitable: false,
+        );
   }
-  
-  Future<void> _onDragEnded(SendButtonDragEndedEvent event, Emitter<ConversationState> emit) async {
+
+  Future<void> _onDragEnded(
+    SendButtonDragEndedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     final recording = state.isRecording;
     emit(
       state.copyWith(
@@ -245,13 +289,19 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  Future<void> _onSendButtonLocked(SendButtonLockedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onSendButtonLocked(
+    SendButtonLockedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     Vibrate.feedback(FeedbackType.light);
 
     emit(state.copyWith(isLocked: true));
   }
 
-  Future<void> _onSendButtonLockPressed(SendButtonLockPressedEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onSendButtonLockPressed(
+    SendButtonLockPressedEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     final recording = state.isRecording;
     emit(
       state.copyWith(
@@ -266,7 +316,10 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     }
   }
 
-  Future<void> _onRecordingCanceled(RecordingCanceledEvent event, Emitter<ConversationState> emit) async {
+  Future<void> _onRecordingCanceled(
+    RecordingCanceledEvent event,
+    Emitter<ConversationState> emit,
+  ) async {
     Vibrate.feedback(FeedbackType.heavy);
 
     emit(

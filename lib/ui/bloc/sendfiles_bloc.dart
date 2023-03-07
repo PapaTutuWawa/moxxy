@@ -24,15 +24,20 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   /// Pick files. Returns either a list of paths to attach or null if the process has
   /// been cancelled.
   Future<List<String>?> _pickFiles(SendFilesType type) async {
-    final fileType = type == SendFilesType.image ? FileType.image : FileType.any;
-    final result = await FilePicker.platform.pickFiles(type: fileType, allowMultiple: true);
+    final fileType =
+        type == SendFilesType.image ? FileType.image : FileType.any;
+    final result = await FilePicker.platform
+        .pickFiles(type: fileType, allowMultiple: true);
 
     if (result == null) return null;
 
     return result.files.map((PlatformFile file) => file.path!).toList();
   }
-  
-  Future<void> _sendFilesRequested(SendFilesPageRequestedEvent event, Emitter<SendFilesState> emit) async {
+
+  Future<void> _sendFilesRequested(
+    SendFilesPageRequestedEvent event,
+    Emitter<SendFilesState> emit,
+  ) async {
     List<String> files;
     if (event.paths != null) {
       files = event.paths!;
@@ -64,15 +69,21 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
         ),
       );
     }
-    
+
     GetIt.I.get<NavigationBloc>().add(navEvent);
   }
 
-  Future<void> _onIndexSet(IndexSetEvent event, Emitter<SendFilesState> emit) async {
+  Future<void> _onIndexSet(
+    IndexSetEvent event,
+    Emitter<SendFilesState> emit,
+  ) async {
     emit(state.copyWith(index: event.index));
   }
 
-  Future<void> _onAddFilesRequested(AddFilesRequestedEvent event, Emitter<SendFilesState> emit) async {
+  Future<void> _onAddFilesRequested(
+    AddFilesRequestedEvent event,
+    Emitter<SendFilesState> emit,
+  ) async {
     final files = await _pickFiles(SendFilesType.generic);
     if (files == null) return;
 
@@ -83,14 +94,17 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     );
   }
 
-  Future<void> _onFileSendingRequested(FileSendingRequestedEvent event, Emitter<SendFilesState> emitter) async {
+  Future<void> _onFileSendingRequested(
+    FileSendingRequestedEvent event,
+    Emitter<SendFilesState> emitter,
+  ) async {
     await MoxplatformPlugin.handler.getDataSender().sendData(
-      SendFilesCommand(
-        paths: state.files,
-        recipients: state.recipients,
-      ),
-      awaitable: false,
-    );
+          SendFilesCommand(
+            paths: state.files,
+            recipients: state.recipients,
+          ),
+          awaitable: false,
+        );
 
     // Return to the last page
     final bloc = GetIt.I.get<NavigationBloc>();
@@ -109,15 +123,17 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     if (!canPop) await MoveToBackground.moveTaskToBack();
   }
 
-  Future<void> _onItemRemoved(ItemRemovedEvent event, Emitter<SendFilesState> emit) async {
-    // Go to the last page if we would otherwise remove the last item on the 
+  Future<void> _onItemRemoved(
+    ItemRemovedEvent event,
+    Emitter<SendFilesState> emit,
+  ) async {
+    // Go to the last page if we would otherwise remove the last item on the
     if (state.files.length == 1) {
       GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
       return;
     }
 
-    final files = List<String>.from(state.files)
-      ..removeAt(event.index);
+    final files = List<String>.from(state.files)..removeAt(event.index);
 
     var index = state.index;
     if (index == 0 || index != state.files.length - 1) {

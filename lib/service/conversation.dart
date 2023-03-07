@@ -9,7 +9,9 @@ import 'package:synchronized/synchronized.dart';
 
 typedef CreateConversationCallback = Future<Conversation> Function();
 
-typedef UpdateConversationCallback = Future<Conversation> Function(Conversation);
+typedef UpdateConversationCallback = Future<Conversation> Function(
+  Conversation,
+);
 
 typedef PreRunConversationCallback = Future<void> Function(Conversation?);
 
@@ -27,9 +29,9 @@ class ConversationService {
   /// Returns either the result of [create], [update] or null.
   Future<Conversation?> createOrUpdateConversation(
     String jid, {
-      CreateConversationCallback? create,
-      UpdateConversationCallback? update,
-      PreRunConversationCallback? preRun,
+    CreateConversationCallback? create,
+    UpdateConversationCallback? update,
+    PreRunConversationCallback? preRun,
   }) async {
     return _lock.synchronized(() async {
       final conversation = await _getConversationByJid(jid);
@@ -54,18 +56,19 @@ class ConversationService {
       return null;
     });
   }
-  
+
   /// Wrapper around DatabaseService's loadConversations that adds the loaded
   /// to the cache.
   Future<void> _loadConversationsIfNeeded() async {
     if (_conversationCache != null) return;
 
-    final conversations = await GetIt.I.get<DatabaseService>().loadConversations();
+    final conversations =
+        await GetIt.I.get<DatabaseService>().loadConversations();
     _conversationCache = Map<String, Conversation>.fromEntries(
       conversations.map((c) => MapEntry(c.jid, c)),
     );
   }
-      
+
   /// Returns the conversation with jid [jid] or null if not found.
   Future<Conversation?> _getConversationByJid(String jid) async {
     await _loadConversationsIfNeeded();
@@ -77,17 +80,18 @@ class ConversationService {
   Future<Conversation?> getConversationByJid(String jid) async {
     return _lock.synchronized(() async => _getConversationByJid(jid));
   }
-  
+
   /// For modifying the cache without writing it to disk. Useful, for example, when
   /// changing the chat state.
   void setConversation(Conversation conversation) {
     _conversationCache![conversation.jid] = conversation;
   }
-  
+
   /// Wrapper around [DatabaseService]'s [updateConversation] that modifies the cache.
   /// To prevent issues with the cache, only call from within
   /// [ConversationService.createOrUpdateConversation].
-  Future<Conversation> updateConversation(String jid, {
+  Future<Conversation> updateConversation(
+    String jid, {
     int? lastChangeTimestamp,
     Message? lastMessage,
     bool? open,
@@ -102,27 +106,29 @@ class ConversationService {
     int? sharedMediaAmount,
   }) async {
     final conversation = (await _getConversationByJid(jid))!;
-    var newConversation = await GetIt.I.get<DatabaseService>().updateConversation(
-      jid,
-      lastMessage: lastMessage,
-      lastChangeTimestamp: lastChangeTimestamp,
-      open: open,
-      unreadCounter: unreadCounter,
-      avatarUrl: avatarUrl,
-      chatState: conversation.chatState,
-      muted: muted,
-      encrypted: encrypted,
-      contactId: contactId,
-      contactAvatarPath: contactAvatarPath,
-      contactDisplayName: contactDisplayName,
-      sharedMediaAmount: sharedMediaAmount,
-    );
+    var newConversation =
+        await GetIt.I.get<DatabaseService>().updateConversation(
+              jid,
+              lastMessage: lastMessage,
+              lastChangeTimestamp: lastChangeTimestamp,
+              open: open,
+              unreadCounter: unreadCounter,
+              avatarUrl: avatarUrl,
+              chatState: conversation.chatState,
+              muted: muted,
+              encrypted: encrypted,
+              contactId: contactId,
+              contactAvatarPath: contactAvatarPath,
+              contactDisplayName: contactDisplayName,
+              sharedMediaAmount: sharedMediaAmount,
+            );
 
     // Copy over the old lastMessage if a new one was not set
     if (conversation.lastMessage != null && lastMessage == null) {
-      newConversation = newConversation.copyWith(lastMessage: conversation.lastMessage);
+      newConversation =
+          newConversation.copyWith(lastMessage: conversation.lastMessage);
     }
-    
+
     _conversationCache![jid] = newConversation;
     return newConversation;
   }
@@ -146,21 +152,22 @@ class ConversationService {
     String? contactAvatarPath,
     String? contactDisplayName,
   ) async {
-    final newConversation = await GetIt.I.get<DatabaseService>().addConversationFromData(
-      title,
-      lastMessage,
-      avatarUrl,
-      jid,
-      unreadCounter,
-      lastChangeTimestamp,
-      open,
-      muted,
-      encrypted,
-      sharedMediaAmount,
-      contactId,
-      contactAvatarPath,
-      contactDisplayName,
-    );
+    final newConversation =
+        await GetIt.I.get<DatabaseService>().addConversationFromData(
+              title,
+              lastMessage,
+              avatarUrl,
+              jid,
+              unreadCounter,
+              lastChangeTimestamp,
+              open,
+              muted,
+              encrypted,
+              sharedMediaAmount,
+              contactId,
+              contactAvatarPath,
+              contactDisplayName,
+            );
 
     if (_conversationCache != null) {
       _conversationCache![newConversation.jid] = newConversation;
