@@ -92,7 +92,7 @@ class CustomTextField extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ...topWidget != null ? [topWidget!] : [],
+              if (topWidget != null) topWidget!,
               TextField(
                 maxLines: maxLines,
                 minLines: minLines,

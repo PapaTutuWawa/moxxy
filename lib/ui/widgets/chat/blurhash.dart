@@ -34,7 +34,7 @@ class BlurhashChatWidget extends StatelessWidget {
               ),
             ),
           ),
-          ...child != null ? [child!] : []
+          if (child != null) child!,
         ],
       ),
     );

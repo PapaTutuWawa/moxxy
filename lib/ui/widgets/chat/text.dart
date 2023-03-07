@@ -50,7 +50,7 @@ class TextChatWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ...topWidget != null ? [topWidget!] : [],
+          if (topWidget != null) topWidget!,
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: ParsedText(

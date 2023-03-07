@@ -79,25 +79,22 @@ class OwnDevicesPage extends StatelessWidget {
                   );
                 },
               ),
-              ...state.keys.isNotEmpty
-                  ? [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: 32,
-                            left: 16,
-                          ),
-                          child: Text(
-                            t.pages.profile.owndevices.otherDevices,
-                            style: const TextStyle(
-                              fontSize: fontsizeSubtitle,
-                            ),
-                          ),
-                        ),
+              if (state.keys.isNotEmpty)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      top: 32,
+                      left: 16,
+                    ),
+                    child: Text(
+                      t.pages.profile.owndevices.otherDevices,
+                      style: const TextStyle(
+                        fontSize: fontsizeSubtitle,
                       ),
-                    ]
-                  : [],
+                    ),
+                  ),
+                ),
             ],
           );
         }

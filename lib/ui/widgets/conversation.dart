@@ -301,18 +301,14 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      ...widget.titleSuffixIcon != null
-                          ? [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 6),
-                                child: Icon(
-                                  widget.titleSuffixIcon,
-                                  size: 17,
-                                ),
-                              ),
-                            ]
-                          : [],
+                      if (widget.titleSuffixIcon != null)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Icon(
+                            widget.titleSuffixIcon,
+                            size: 17,
+                          ),
+                        ),
                       Visibility(
                         visible: showTimestamp,
                         child: const Spacer(),
@@ -328,28 +324,24 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ...(widget.conversation.lastMessage?.isThumbnailable ??
-                                    false) &&
-                                !widget.conversation.isTyping
-                            ? [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 5),
-                                  child:
-                                      BlocBuilder<StickersBloc, StickersState>(
-                                    buildWhen: (prev, next) =>
-                                        prev.stickerPacks.length !=
-                                            next.stickerPacks.length &&
-                                        widget.conversation.lastMessage
-                                                ?.stickerPackId !=
-                                            null,
-                                    builder: (_, state) =>
-                                        _buildLastMessagePreview(state),
-                                  ),
-                                ),
-                              ]
-                            : [
-                                const SizedBox(height: 30),
-                              ],
+                        if ((widget.conversation.lastMessage?.isThumbnailable ??
+                                false) &&
+                            !widget.conversation.isTyping)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 5),
+                            child: BlocBuilder<StickersBloc, StickersState>(
+                              buildWhen: (prev, next) =>
+                                  prev.stickerPacks.length !=
+                                      next.stickerPacks.length &&
+                                  widget.conversation.lastMessage
+                                          ?.stickerPackId !=
+                                      null,
+                              builder: (_, state) =>
+                                  _buildLastMessagePreview(state),
+                            ),
+                          )
+                        else
+                          const SizedBox(height: 30),
                         LimitedBox(
                           maxWidth: textWidth,
                           child: _buildLastMessageBody(),
