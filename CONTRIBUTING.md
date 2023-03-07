@@ -11,8 +11,8 @@ is currently only supported for Android.
 
 ### Android Studio
 
-If you use Android Studio, make sure that you use version "Flamingo Canary 3", as that one comes with
-JDK 17 bundled, instead of JDK 11 ([See here](https://codeberg.org/moxxy/moxxy/issues/252)). If that is
+If you use Android Studio, make sure that you use version "Flamingo Canary 3", as that one comes bundled with
+JDK 17, instead of JDK 11 ([See here](https://codeberg.org/moxxy/moxxy/issues/252)). If that is
 not an option, you can manually add a JDK 17 installation in Android Studio and tell the Flutter addon
 to use that installation instead.
 
