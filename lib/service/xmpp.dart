@@ -34,6 +34,7 @@ import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
@@ -578,6 +579,7 @@ class XmppService {
             // TODO(Unknown): Should we use the JID parser?
             rosterItem?.title ?? recipient.split('@').first,
             lastMessages[recipient],
+            ConversationType.chat,
             rosterItem?.avatarUrl ?? '',
             recipient,
             0,
@@ -1412,6 +1414,7 @@ class XmppService {
         final newConversation = await cs.addConversationFromData(
           rosterItem?.title ?? conversationJid.split('@')[0],
           message,
+          ConversationType.chat,
           rosterItem?.avatarUrl ?? '',
           conversationJid,
           sent ? 0 : 1,

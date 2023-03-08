@@ -291,10 +291,10 @@ class ConversationsPageState extends State<ConversationsPage>
               onTap: () {
                 context.read<NewConversationBloc>().add(
                       NewConversationAddedEvent(
-                        "",
-                        t.pages.conversations.speeddialAddNoteToSelf,
-                        "",
-                      ),
+                          "",
+                          t.pages.conversations.speeddialAddNoteToSelf,
+                          "",
+                          ConversationType.note),
                     );
               },
               backgroundColor: primaryColor,

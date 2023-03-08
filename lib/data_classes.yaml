@@ -303,6 +303,7 @@ files:
           lastMessageBody: String
           avatarUrl: String
           jid: String
+          conversationType: int
       - name: SetOpenConversationCommand
         extends: BackgroundCommand
         implements:

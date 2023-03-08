@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -30,6 +31,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
@@ -233,6 +235,7 @@ Future<void> performAddConversation(
       final newConversation = await cs.addConversationFromData(
         command.title,
         null,
+        intToConversationType(command.conversationType),
         command.avatarUrl,
         command.jid,
         0,
@@ -462,6 +465,7 @@ Future<void> performAddContact(
       final newConversation = await cs.addConversationFromData(
         jid.split('@')[0],
         null,
+        ConversationType.chat,
         '',
         jid,
         0,

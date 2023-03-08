@@ -89,11 +89,8 @@ class NewConversationPage extends StatelessWidget {
                   ),
                   child: InkWell(
                     onTap: () => context.read<NewConversationBloc>().add(
-                          NewConversationAddedEvent(
-                            item.jid,
-                            item.title,
-                            item.avatarUrl,
-                          ),
+                          NewConversationAddedEvent(item.jid, item.title,
+                              item.avatarUrl, ConversationType.chat),
                         ),
                     child: ConversationsListRow(
                       maxTextWidth,
@@ -114,6 +111,9 @@ class NewConversationPage extends StatelessWidget {
                         item.avatarUrl,
                         item.jid,
                         0,
+                        item.jid == ''
+                            ? ConversationType.note
+                            : ConversationType.chat,
                         0,
                         [],
                         true,

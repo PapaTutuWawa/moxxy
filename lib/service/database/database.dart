@@ -472,6 +472,7 @@ class DatabaseService {
   Future<Conversation> addConversationFromData(
     String title,
     Message? lastMessage,
+    ConversationType type,
     String avatarUrl,
     String jid,
     int unreadCounter,
@@ -492,6 +493,7 @@ class DatabaseService {
       avatarUrl,
       jid,
       unreadCounter,
+      type,
       lastChangeTimestamp,
       <SharedMedium>[],
       open,

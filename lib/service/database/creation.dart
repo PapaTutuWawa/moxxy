@@ -71,6 +71,7 @@ Future<void> createDatabase(Database db, int version) async {
       jid TEXT NOT NULL PRIMARY KEY,
       title TEXT NOT NULL,
       avatarUrl TEXT NOT NULL,
+      type INTEGER NOT NULL,
       lastChangeTimestamp INTEGER NOT NULL,
       unreadCounter INTEGER NOT NULL,
       open INTEGER NOT NULL,
