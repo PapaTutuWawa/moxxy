@@ -64,7 +64,7 @@ class NewConversationBloc
               jid: event.jid,
               avatarUrl: event.avatarUrl,
               lastMessageBody: '',
-              conversationType: conversationTypeToInt(event.type)),
+              conversationType: conversationTypeToString(event.type)),
         );
 
     if (result is NoConversationModifiedEvent) {

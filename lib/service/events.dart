@@ -235,7 +235,7 @@ Future<void> performAddConversation(
       final newConversation = await cs.addConversationFromData(
         command.title,
         null,
-        intToConversationType(command.conversationType),
+        stringToConversationType(command.conversationType),
         command.avatarUrl,
         command.jid,
         0,

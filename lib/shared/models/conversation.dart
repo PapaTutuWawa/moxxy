@@ -23,20 +23,6 @@ class ConversationChatStateConverter
       };
 }
 
-class ConversationTypeConverter
-    implements JsonConverter<ConversationType, Map<String, dynamic>> {
-  const ConversationTypeConverter();
-
-  @override
-  ConversationType fromJson(Map<String, dynamic> json) =>
-      intToConversationType(json['type'] as int);
-
-  @override
-  Map<String, dynamic> toJson(ConversationType type) => <String, int>{
-        'type': conversationTypeToInt(type),
-      };
-}
-
 class ConversationMessageConverter
     implements JsonConverter<Message?, Map<String, dynamic>> {
   const ConversationMessageConverter();
@@ -54,7 +40,12 @@ class ConversationMessageConverter
       };
 }
 
-enum ConversationType { chat, note }
+enum ConversationType {
+  @JsonValue('chat')
+  chat,
+  @JsonValue('note')
+  note
+}
 
 @freezed
 class Conversation with _$Conversation {
@@ -64,7 +55,7 @@ class Conversation with _$Conversation {
     String avatarUrl,
     String jid,
     int unreadCounter,
-    @ConversationTypeConverter() ConversationType type,
+    ConversationType type,
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
     int lastChangeTimestamp,
     List<SharedMedium> sharedMedia,
@@ -108,7 +99,6 @@ class Conversation with _$Conversation {
       'sharedMedia': <Map<String, dynamic>>[],
       'muted': intToBool(json['muted']! as int),
       'open': intToBool(json['open']! as int),
-      'type': intToConversationType(json['type']! as int),
       'inRoster': inRoster,
       'subscription': subscription,
       'encrypted': intToBool(json['encrypted']! as int),
@@ -127,13 +117,11 @@ class Conversation with _$Conversation {
       ..remove('sharedMedia')
       ..remove('inRoster')
       ..remove('subscription')
-      ..remove('lastMessage')
-      ..remove('type');
+      ..remove('lastMessage');
 
     return {
       ...map,
       'open': boolToInt(open),
-      'type': conversationTypeToInt(type),
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
       'lastMessageId': lastMessage?.id,

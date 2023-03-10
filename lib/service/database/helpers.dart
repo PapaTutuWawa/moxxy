@@ -10,8 +10,8 @@ bool stringToBool(String s) => s == 'true' ? true : false;
 String intToString(int i) => '$i';
 int stringToInt(String s) => int.parse(s);
 
-int conversationTypeToInt(ConversationType type) =>
-    type == ConversationType.chat ? 0 : 1;
+String conversationTypeToString(ConversationType type) =>
+    type == ConversationType.chat ? 'chat' : 'note';
 
-ConversationType intToConversationType(int type) =>
-    type == 0 ? ConversationType.chat : ConversationType.note;
+ConversationType stringToConversationType(String type) =>
+    type == 'chat' ? ConversationType.chat : ConversationType.note;
