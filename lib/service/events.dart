@@ -292,7 +292,8 @@ Future<void> performSetOpenConversation(
   await GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? '');
 
   // Null just means that the chat has been closed
-  if (command.jid != null) {
+  // Empty string JID for notes to self
+  if (command.jid != null && command.jid != '') {
     await GetIt.I
         .get<NotificationsService>()
         .dismissNotificationsByJid(command.jid!);
