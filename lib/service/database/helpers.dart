@@ -13,5 +13,15 @@ int stringToInt(String s) => int.parse(s);
 String conversationTypeToString(ConversationType type) =>
     type == ConversationType.chat ? 'chat' : 'note';
 
-ConversationType stringToConversationType(String type) =>
-    type == 'chat' ? ConversationType.chat : ConversationType.note;
+ConversationType stringToConversationType(String type) {
+  switch (type) {
+    case 'chat':
+      {
+        return ConversationType.chat;
+      }
+    default:
+      {
+        return ConversationType.note;
+      }
+  }
+}

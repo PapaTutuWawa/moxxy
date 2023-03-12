@@ -10,6 +10,7 @@ import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -479,9 +480,7 @@ class ConversationPageState extends State<ConversationPage>
             child: Scaffold(
               // TODO(Unknown): Maybe replace the scaffold itself to prevent transparency
               backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
-              appBar: ConversationTopbar(
-                isNoteConversation: widget.conversationJid == '',
-              ),
+              appBar: const ConversationTopbar(),
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -491,7 +490,7 @@ class ConversationPageState extends State<ConversationPage>
                         next.conversation?.inRoster,
                     builder: (context, state) {
                       if ((state.conversation?.inRoster ?? false) ||
-                          state.conversation?.jid == '') {
+                          state.conversation?.type == ConversationType.note) {
                         return Container();
                       }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
@@ -42,8 +43,8 @@ PopupMenuItem<dynamic> popupItemWithIcon(
 // TODO(Unknown): Maybe merge with BorderlessTopbar
 class ConversationTopbar extends StatelessWidget
     implements PreferredSizeWidget {
-  const ConversationTopbar({required this.isNoteConversation, super.key});
-  final bool isNoteConversation;
+  const ConversationTopbar({super.key});
+
   @override
   Size get preferredSize => const Size.fromHeight(60);
 
@@ -171,7 +172,7 @@ class ConversationTopbar extends StatelessWidget
                         ),
                       ),
                     ),
-                    if (!isNoteConversation)
+                    if (state.conversation?.type != ConversationType.note)
                       // ignore: implicit_dynamic_type
                       PopupMenuButton(
                         onSelected: (result) {
@@ -245,7 +246,7 @@ class ConversationTopbar extends StatelessWidget
                           t.pages.conversation.closeChat,
                           Icons.close,
                         ),
-                        if (!isNoteConversation)
+                        if (state.conversation?.type != ConversationType.note)
                           popupItemWithIcon(
                             ConversationOption.block,
                             t.pages.conversation.blockUser,
