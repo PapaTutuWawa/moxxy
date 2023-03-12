@@ -10,8 +10,18 @@ bool stringToBool(String s) => s == 'true' ? true : false;
 String intToString(int i) => '$i';
 int stringToInt(String s) => int.parse(s);
 
-String conversationTypeToString(ConversationType type) =>
-    type == ConversationType.chat ? 'chat' : 'note';
+String conversationTypeToString(ConversationType type) {
+  switch (type) {
+    case ConversationType.chat:
+      {
+        return 'chat';
+      }
+    case ConversationType.note:
+      {
+        return 'note';
+      }
+  }
+}
 
 ConversationType stringToConversationType(String type) {
   switch (type) {
