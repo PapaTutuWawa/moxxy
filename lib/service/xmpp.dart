@@ -257,42 +257,44 @@ class XmppService {
         );
       }
 
-      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-            MessageDetails(
-              to: recipient,
-              body: body,
-              requestDeliveryReceipt: true,
-              id: sid,
-              originId: originId,
-              quoteBody: createFallbackBodyForQuotedMessage(quotedMessage),
-              quoteFrom: quotedMessage?.sender,
-              quoteId: quotedMessage?.sid,
-              chatState: chatState,
-              shouldEncrypt: conversation!.encrypted,
-              stickerPackId: sticker?.stickerPackId,
-              sfs: sticker == null
-                  ? null
-                  : StatelessFileSharingData(
-                      FileMetadataData(
-                        mediaType: sticker.mediaType,
-                        width: sticker.width,
-                        height: sticker.height,
-                        desc: sticker.desc,
-                        size: sticker.size,
-                        thumbnails: [],
-                        hashes: sticker.hashes,
+      if (recipient != '') {
+        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+              MessageDetails(
+                to: recipient,
+                body: body,
+                requestDeliveryReceipt: true,
+                id: sid,
+                originId: originId,
+                quoteBody: createFallbackBodyForQuotedMessage(quotedMessage),
+                quoteFrom: quotedMessage?.sender,
+                quoteId: quotedMessage?.sid,
+                chatState: chatState,
+                shouldEncrypt: conversation!.encrypted,
+                stickerPackId: sticker?.stickerPackId,
+                sfs: sticker == null
+                    ? null
+                    : StatelessFileSharingData(
+                        FileMetadataData(
+                          mediaType: sticker.mediaType,
+                          width: sticker.width,
+                          height: sticker.height,
+                          desc: sticker.desc,
+                          size: sticker.size,
+                          thumbnails: [],
+                          hashes: sticker.hashes,
+                        ),
+                        sticker.urlSources
+                            // ignore: unnecessary_lambdas
+                            .map((s) => StatelessFileSharingUrlSource(s))
+                            .toList(),
                       ),
-                      sticker.urlSources
-                          // ignore: unnecessary_lambdas
-                          .map((s) => StatelessFileSharingUrlSource(s))
-                          .toList(),
-                    ),
-              setOOBFallbackBody: sticker != null ? false : true,
-            ),
-          );
+                setOOBFallbackBody: sticker != null ? false : true,
+              ),
+            );
+      }
 
       sendEvent(
-        ConversationUpdatedEvent(conversation: conversation),
+        ConversationUpdatedEvent(conversation: conversation!),
       );
     }
   }
