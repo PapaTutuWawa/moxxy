@@ -479,7 +479,9 @@ class ConversationPageState extends State<ConversationPage>
             child: Scaffold(
               // TODO(Unknown): Maybe replace the scaffold itself to prevent transparency
               backgroundColor: const Color.fromRGBO(0, 0, 0, 0),
-              appBar: const ConversationTopbar(),
+              appBar: ConversationTopbar(
+                isNoteConversation: widget.conversationJid == '',
+              ),
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -488,7 +490,8 @@ class ConversationPageState extends State<ConversationPage>
                         prev.conversation?.inRoster !=
                         next.conversation?.inRoster,
                     builder: (context, state) {
-                      if (state.conversation?.inRoster ?? false) {
+                      if ((state.conversation?.inRoster ?? false) ||
+                          state.conversation?.jid == '') {
                         return Container();
                       }
 
