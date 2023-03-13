@@ -549,7 +549,7 @@ class XmppService {
           mediaWidth: dimensions[path]?.width.toInt(),
           mediaHeight: dimensions[path]?.height.toInt(),
           filename: pathlib.basename(path),
-          isUploading: true,
+          isUploading: recipient != '' ? true : false,
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
@@ -669,22 +669,26 @@ class XmppService {
             }
           }
         }
-
-        // Send an upload notification
-        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-              MessageDetails(
-                to: recipient,
-                id: messages[path]![recipient]!.sid,
-                fun: FileMetadataData(
-                  // TODO(Unknown): Maybe add media type specific metadata
-                  mediaType: lookupMimeType(path),
-                  name: pathlib.basename(path),
-                  size: File(path).statSync().size,
-                  thumbnails: thumbnails[path] ?? [],
+        if (recipient != '') {
+          conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+                MessageDetails(
+                  to: recipient,
+                  id: messages[path]![recipient]!.sid,
+                  fun: FileMetadataData(
+                    // TODO(Unknown): Maybe add media type specific metadata
+                    mediaType: lookupMimeType(path),
+                    name: pathlib.basename(path),
+                    size: File(path).statSync().size,
+                    thumbnails: thumbnails[path] ?? [],
+                  ),
+                  shouldEncrypt: encrypt[recipient]!,
                 ),
-                shouldEncrypt: encrypt[recipient]!,
-              ),
-            );
+              );
+        }
+      }
+
+      if (recipients.contains('')) {
+        recipients.remove('');
       }
 
       await hfts.uploadFile(
