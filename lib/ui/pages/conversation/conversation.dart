@@ -323,7 +323,7 @@ class ConversationPageState extends State<ConversationPage>
                   },
                 ),
 
-              if (item.isQuotable)
+              if (item.isQuotable && item.conversationJid != '')
                 OverviewMenuItem(
                   icon: Icons.forward,
                   text: t.pages.conversation.forward,
