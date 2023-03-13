@@ -183,15 +183,17 @@ class XmppService {
       sendEvent(ConversationUpdatedEvent(conversation: conversation));
     }
 
-    // Send the correction
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-          MessageDetails(
-            to: recipient,
-            body: newBody,
-            lastMessageCorrectionId: oldId,
-            chatState: chatState,
-          ),
-        );
+    if (conversation?.type != ConversationType.note) {
+      // Send the correction
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+            MessageDetails(
+              to: recipient,
+              body: newBody,
+              lastMessageCorrectionId: oldId,
+              chatState: chatState,
+            ),
+          );
+    }
   }
 
   /// Sends a message to JIDs in [recipients] with the body of [body].
@@ -257,7 +259,7 @@ class XmppService {
         );
       }
 
-      if (recipient != '') {
+      if (conversation?.type != ConversationType.note) {
         conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
               MessageDetails(
                 to: recipient,
@@ -549,7 +551,8 @@ class XmppService {
           mediaWidth: dimensions[path]?.width.toInt(),
           mediaHeight: dimensions[path]?.height.toInt(),
           filename: pathlib.basename(path),
-          isUploading: recipient != '' ? true : false,
+          isUploading:
+              conversation?.type != ConversationType.note ? true : false,
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
