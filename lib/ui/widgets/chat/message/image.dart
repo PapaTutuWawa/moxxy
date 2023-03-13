@@ -9,14 +9,12 @@ import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/helpers.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
-import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
-import 'package:moxxyv2/ui/widgets/chat/video_thumbnail.dart';
 
-class VideoChatWidget extends StatelessWidget {
-  const VideoChatWidget(
+class ImageChatWidget extends StatelessWidget {
+  const ImageChatWidget(
     this.message,
     this.radius,
     this.maxWidth,
@@ -24,22 +22,13 @@ class VideoChatWidget extends StatelessWidget {
     super.key,
   });
   final Message message;
-  final double maxWidth;
   final BorderRadius radius;
+  final double maxWidth;
   final bool sent;
 
   Widget _buildUploading() {
     return MediaBaseChatWidget(
-      VideoThumbnail(
-        path: message.mediaUrl!,
-        conversationJid: message.conversationJid,
-        mime: message.mediaType!,
-        size: Size(
-          maxWidth,
-          0.6 * maxWidth,
-        ),
-        borderRadius: radius,
-      ),
+      Image.file(File(message.mediaUrl!)),
       MessageBubbleBottom(message, sent),
       radius,
       extra: ProgressWidget(id: message.id),
@@ -79,23 +68,34 @@ class VideoChatWidget extends StatelessWidget {
     }
   }
 
-  /// The video exists locally
-  Widget _buildVideo() {
-    return MediaBaseChatWidget(
-      VideoThumbnail(
-        path: message.mediaUrl!,
-        conversationJid: message.conversationJid,
-        mime: message.mediaType!,
-        size: Size(
-          maxWidth,
-          0.6 * maxWidth,
+  /// The image exists locally
+  Widget _buildImage() {
+    final size = getMediaSize(message, maxWidth);
+
+    Widget image;
+    if (message.mediaWidth != null && message.mediaHeight != null) {
+      image = SizedBox(
+        width: size.width,
+        height: size.height,
+        child: Image.file(
+          File(message.mediaUrl!),
+          cacheWidth: size.width.toInt(),
+          cacheHeight: size.height.toInt(),
         ),
-        borderRadius: radius,
-      ),
+      );
+    } else {
+      image = Image.file(
+        File(message.mediaUrl!),
+        cacheWidth: size.width.toInt(),
+        cacheHeight: size.height.toInt(),
+      );
+    }
+
+    return MediaBaseChatWidget(
+      image,
       MessageBubbleBottom(message, sent),
       radius,
       onTap: () => openFile(message.mediaUrl!),
-      extra: const PlayButton(),
     );
   }
 
@@ -152,7 +152,7 @@ class VideoChatWidget extends StatelessWidget {
 
     // TODO(PapaTutuWawa): Maybe use an async builder
     if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) {
-      return _buildVideo();
+      return _buildImage();
     }
 
     return _buildDownloadable();

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/audio.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/image.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/sticker.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/video.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/audio.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/image.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/sticker.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/text.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/video.dart';
 import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/file.dart';
@@ -18,7 +19,6 @@ import 'package:moxxyv2/ui/widgets/chat/shared/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
-import 'package:moxxyv2/ui/widgets/chat/text.dart';
 
 enum MessageType {
   text,
