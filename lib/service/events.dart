@@ -852,19 +852,19 @@ Future<void> performMessageRetraction(
         '',
         true,
       );
-
-  // Send the retraction
-  (GetIt.I.get<XmppConnection>().getManagerById(messageManager)!
-          as MessageManager)
-      .sendMessage(
-    MessageDetails(
-      to: command.conversationJid,
-      messageRetraction: MessageRetractionData(
-        command.originId,
-        t.messages.retractedFallback,
+  if (command.conversationJid != '') {
+    (GetIt.I.get<XmppConnection>().getManagerById(messageManager)!
+            as MessageManager)
+        .sendMessage(
+      MessageDetails(
+        to: command.conversationJid,
+        messageRetraction: MessageRetractionData(
+          command.originId,
+          t.messages.retractedFallback,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 Future<void> performMarkConversationAsRead(
