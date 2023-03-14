@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
@@ -67,9 +66,7 @@ class VideoChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.isFileUploadNotification
-            ? (message.filename ?? '')
-            : filenameFromUrl(message.srcUrl!),
+        message.filename!,
         radius,
         maxWidth,
         sent,
@@ -122,9 +119,7 @@ class VideoChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.isFileUploadNotification
-            ? (message.filename ?? '')
-            : filenameFromUrl(message.srcUrl!),
+        message.filename!,
         radius,
         maxWidth,
         sent,

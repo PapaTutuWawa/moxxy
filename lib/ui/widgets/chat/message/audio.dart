@@ -248,9 +248,7 @@ class AudioChatState extends State<AudioChatWidget> {
   Widget _buildDownloadable() {
     return FileChatBaseWidget(
       widget.message,
-      widget.message.isFileUploadNotification
-          ? (widget.message.filename ?? '')
-          : filenameFromUrl(widget.message.srcUrl!),
+      widget.message.filename!,
       widget.radius,
       widget.maxWidth,
       widget.sent,

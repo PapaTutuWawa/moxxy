@@ -120,9 +120,7 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildNonDownloaded() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification
-          ? (message.filename ?? '')
-          : filenameFromUrl(message.srcUrl!),
+      message.filename!,
       radius,
       maxWidth,
       sent,
@@ -141,9 +139,7 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildDownloading() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification
-          ? (message.filename ?? '')
-          : filenameFromUrl(message.srcUrl ?? ''),
+      message.filename!,
       radius,
       maxWidth,
       sent,
@@ -155,9 +151,7 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildInner() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification
-          ? (message.filename ?? '')
-          : filenameFromUrl(message.srcUrl!),
+      message.filename!,
       radius,
       maxWidth,
       sent,
