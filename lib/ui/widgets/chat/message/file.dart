@@ -7,7 +7,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 
 /// A base widget for sent/received files that cannot be displayed otherwise.
@@ -120,9 +120,7 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildNonDownloaded() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification
-          ? (message.filename ?? '')
-          : filenameFromUrl(message.srcUrl!),
+      message.filename!,
       radius,
       maxWidth,
       sent,
@@ -141,9 +139,7 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildDownloading() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification
-          ? (message.filename ?? '')
-          : filenameFromUrl(message.srcUrl ?? ''),
+      message.filename!,
       radius,
       maxWidth,
       sent,
@@ -155,9 +151,7 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildInner() {
     return FileChatBaseWidget(
       message,
-      message.isFileUploadNotification
-          ? (message.filename ?? '')
-          : filenameFromUrl(message.srcUrl!),
+      message.filename!,
       radius,
       maxWidth,
       sent,

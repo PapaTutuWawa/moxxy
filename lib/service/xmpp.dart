@@ -1265,6 +1265,14 @@ class XmppService {
         event.other['encryption_error'] == null) return;
     if (event.other['encryption_error'] is InvalidKeyExchangeException) return;
 
+    // Ignore File Upload Notifications where we don't have a filename.
+    if (event.fun != null && event.fun!.name == null) {
+      _log.finest(
+        'Ignoring File Upload Notification as it does not specify a filename',
+      );
+      return;
+    }
+
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     // The (portential) roster item of the chat partner

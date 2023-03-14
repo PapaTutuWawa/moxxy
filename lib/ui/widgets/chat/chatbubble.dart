@@ -5,7 +5,7 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/media.dart';
+import 'package:moxxyv2/ui/widgets/chat/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactionbubble.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 

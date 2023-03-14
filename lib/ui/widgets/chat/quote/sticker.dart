@@ -5,7 +5,6 @@ import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
-import 'package:moxxyv2/ui/widgets/chat/quote/media.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 

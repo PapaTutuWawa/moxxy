@@ -8,8 +8,8 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/bottom.dart';
 import 'package:moxxyv2/ui/widgets/chat/downloadbutton.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/base.dart';
-import 'package:moxxyv2/ui/widgets/chat/media/file.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/base.dart';
+import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/progress.dart';
 
 String doubleToTimestamp(double p) {
@@ -248,9 +248,7 @@ class AudioChatState extends State<AudioChatWidget> {
   Widget _buildDownloadable() {
     return FileChatBaseWidget(
       widget.message,
-      widget.message.isFileUploadNotification
-          ? (widget.message.filename ?? '')
-          : filenameFromUrl(widget.message.srcUrl!),
+      widget.message.filename!,
       widget.radius,
       widget.maxWidth,
       widget.sent,

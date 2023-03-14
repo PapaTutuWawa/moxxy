@@ -6,7 +6,7 @@ import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
 import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
-import 'package:moxxyv2/ui/widgets/chat/shared/media.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});

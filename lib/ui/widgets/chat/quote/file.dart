@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/ui/widgets/chat/quote/media.dart';
+import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
 
 class QuotedFileWidget extends StatelessWidget {
