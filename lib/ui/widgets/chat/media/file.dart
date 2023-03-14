@@ -155,11 +155,9 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildInner() {
     return FileChatBaseWidget(
       message,
-      message.conversationJid == ''
+      message.isFileUploadNotification
           ? (message.filename ?? '')
-          : message.isFileUploadNotification
-              ? (message.filename ?? '')
-              : filenameFromUrl(message.srcUrl!),
+          : filenameFromUrl(message.srcUrl!),
       radius,
       maxWidth,
       sent,

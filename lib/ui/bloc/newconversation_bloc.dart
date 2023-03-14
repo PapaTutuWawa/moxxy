@@ -60,11 +60,12 @@ class NewConversationBloc
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
           AddConversationCommand(
-              title: event.title,
-              jid: event.jid,
-              avatarUrl: event.avatarUrl,
-              lastMessageBody: '',
-              conversationType: conversationTypeToString(event.type)),
+            title: event.title,
+            jid: event.jid,
+            avatarUrl: event.avatarUrl,
+            lastMessageBody: '',
+            conversationType: conversationTypeToString(event.type),
+          ),
         );
 
     if (result is NoConversationModifiedEvent) {

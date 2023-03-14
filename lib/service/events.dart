@@ -853,8 +853,9 @@ Future<void> performMessageRetraction(
         true,
       );
   if (command.conversationJid != '') {
-    (GetIt.I.get<XmppConnection>().getManagerById(messageManager)!
-            as MessageManager)
+    (GetIt.I
+            .get<XmppConnection>()
+            .getManagerById<MessageManager>(messageManager)!)
         .sendMessage(
       MessageDetails(
         to: command.conversationJid,

@@ -4,5 +4,6 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV30ToV31(Database db) async {
   await db.execute(
-      'ALTER TABLE $conversationsTable ADD COLUMN type TEXT NOT NULL DEFAULT "chat";');
+    'ALTER TABLE $conversationsTable ADD COLUMN type TEXT NOT NULL DEFAULT "chat";',
+  );
 }
