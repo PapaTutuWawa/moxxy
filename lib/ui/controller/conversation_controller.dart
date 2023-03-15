@@ -385,6 +385,9 @@ class BidirectionalConversationController
           awaitable: true,
         ) as MessageAddedEvent;
 
+    // Reset the quote
+    removeQuote();
+
     var foundMessage = false;
     if (!hasNewerData) {
       if (wasEditing) {
