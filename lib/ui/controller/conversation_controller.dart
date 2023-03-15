@@ -370,9 +370,6 @@ class BidirectionalConversationController
     final wasEditing = _messageEditingState != null;
     _messageEditingState = null;
 
-    // Reset the quote when sending
-    removeQuote();
-
     // Add message to the database and send it
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -387,6 +384,9 @@ class BidirectionalConversationController
           ),
           awaitable: true,
         ) as MessageAddedEvent;
+
+    // Reset the quote
+    removeQuote();
 
     var foundMessage = false;
     if (!hasNewerData) {
