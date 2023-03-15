@@ -89,7 +89,10 @@ class VideoChatWidget extends StatelessWidget {
         ),
         borderRadius: radius,
       ),
-      MessageBubbleBottom(message, sent),
+      MessageBubbleBottom(
+        message,
+        message.conversationJid == '' ? true : sent,
+      ),
       radius,
       onTap: () => openFile(message.mediaUrl!),
       extra: const PlayButton(),

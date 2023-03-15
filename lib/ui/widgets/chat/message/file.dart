@@ -90,7 +90,10 @@ class FileChatBaseWidget extends StatelessWidget {
             ],
           ),
         ),
-        MessageBubbleBottom(message, sent),
+        MessageBubbleBottom(
+          message,
+          message.conversationJid == '' ? true : sent,
+        ),
         radius,
         gradient: false,
         //extra: extra,

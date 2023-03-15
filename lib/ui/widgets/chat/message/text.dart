@@ -77,7 +77,10 @@ class TextChatWidget extends StatelessWidget {
             padding: topWidget != null
                 ? const EdgeInsets.only(left: 8, right: 8, bottom: 8)
                 : EdgeInsets.zero,
-            child: MessageBubbleBottom(message, sent),
+            child: MessageBubbleBottom(
+              message,
+              message.conversationJid == '' ? true : sent,
+            ),
           )
         ],
       ),
