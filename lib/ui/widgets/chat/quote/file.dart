@@ -24,7 +24,7 @@ class QuotedFileWidget extends StatelessWidget {
         size: 48,
         borderRadius: 8,
       ),
-      filenameFromUrl(message.srcUrl!),
+      message.filename!,
       sent,
       resetQuote: resetQuote,
     );
