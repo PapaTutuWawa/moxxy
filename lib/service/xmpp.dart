@@ -227,7 +227,7 @@ class XmppService {
             sticker != null,
             sid,
             false,
-            c.encrypted,
+            recipient == '' ? true : c.encrypted,
             // TODO(Unknown): Maybe make this depend on some setting
             false,
             originId: originId,
@@ -694,16 +694,18 @@ class XmppService {
         recipients.remove('');
       }
 
-      await hfts.uploadFile(
-        FileUploadJob(
-          recipients,
-          path,
-          pathMime,
-          encrypt,
-          messages[path]!,
-          thumbnails[path] ?? [],
-        ),
-      );
+      if (recipients.isNotEmpty) {
+        await hfts.uploadFile(
+          FileUploadJob(
+            recipients,
+            path,
+            pathMime,
+            encrypt,
+            messages[path]!,
+            thumbnails[path] ?? [],
+          ),
+        );
+      }
     }
 
     _log.finest('File upload submitted');

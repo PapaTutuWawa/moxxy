@@ -659,9 +659,12 @@ Future<void> performSendChatState(
   if (!prefs.sendChatMarkers) return;
 
   final conn = GetIt.I.get<XmppConnection>();
-  conn
-      .getManagerById<ChatStateManager>(chatStateManager)!
-      .sendChatState(chatStateFromString(command.state), command.jid);
+
+  if (command.jid != '') {
+    conn
+        .getManagerById<ChatStateManager>(chatStateManager)!
+        .sendChatState(chatStateFromString(command.state), command.jid);
+  }
 }
 
 Future<void> performGetFeatures(
