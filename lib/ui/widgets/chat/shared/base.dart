@@ -118,17 +118,21 @@ class SharedMediaDisplay extends StatelessWidget {
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
               ),
-              children: preview.sublist(0, 8).map((el) {
-                if (el == preview.last && sharedMediaAmount >= 8) {
-                  return SharedSummaryWidget(
-                    notShown: sharedMediaAmount - 7,
-                    conversationJid: jid,
-                    conversationTitle: title,
-                  );
-                }
+              children: preview.length < 8
+                  ? preview
+                      .map((el) => buildSharedMediaWidget(el, jid))
+                      .toList()
+                  : preview.sublist(0, 8).map((el) {
+                      if (el == preview.last && sharedMediaAmount >= 8) {
+                        return SharedSummaryWidget(
+                          notShown: sharedMediaAmount - 7,
+                          conversationJid: jid,
+                          conversationTitle: title,
+                        );
+                      }
 
-                return buildSharedMediaWidget(el, jid);
-              }).toList(),
+                      return buildSharedMediaWidget(el, jid);
+                    }).toList(),
             ),
           ),
         ),
