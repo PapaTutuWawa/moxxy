@@ -91,7 +91,7 @@ class VideoChatWidget extends StatelessWidget {
       ),
       MessageBubbleBottom(
         message,
-        message.conversationJid == '' ? true : sent,
+        sent,
       ),
       radius,
       onTap: () => openFile(message.mediaUrl!),

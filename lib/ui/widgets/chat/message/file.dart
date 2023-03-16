@@ -92,7 +92,7 @@ class FileChatBaseWidget extends StatelessWidget {
         ),
         MessageBubbleBottom(
           message,
-          message.conversationJid == '' ? true : sent,
+          sent,
         ),
         radius,
         gradient: false,
@@ -157,7 +157,7 @@ class FileChatWidget extends StatelessWidget {
       message.filename!,
       radius,
       maxWidth,
-      sent,
+      message.conversationJid == '' ? true : sent,
       mimeType: message.mediaType,
       onTap: () {
         openFile(message.mediaUrl!);

@@ -707,9 +707,7 @@ class XmppService {
         }
       }
 
-      if (recipients.contains('')) {
-        recipients.remove('');
-      }
+      recipients.remove('');
 
       if (recipients.isNotEmpty) {
         await hfts.uploadFile(

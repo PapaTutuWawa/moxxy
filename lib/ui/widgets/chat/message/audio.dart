@@ -241,7 +241,7 @@ class AudioChatState extends State<AudioChatWidget> {
       ),
       MessageBubbleBottom(
         widget.message,
-        widget.message.conversationJid == '' ? true : widget.sent,
+        widget.sent,
       ),
       widget.radius,
       gradient: false,

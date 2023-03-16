@@ -79,7 +79,7 @@ class TextChatWidget extends StatelessWidget {
                 : EdgeInsets.zero,
             child: MessageBubbleBottom(
               message,
-              message.conversationJid == '' ? true : sent,
+              sent,
             ),
           )
         ],

@@ -113,7 +113,7 @@ class StickerChatWidget extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       child: MessageBubbleBottom(
                         message,
-                        message.conversationJid == '' ? true : sent,
+                        sent,
                         shrink: true,
                       ),
                     ),

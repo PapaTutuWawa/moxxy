@@ -92,7 +92,7 @@ class ImageChatWidget extends StatelessWidget {
       image,
       MessageBubbleBottom(
         message,
-        message.conversationJid == '' ? true : sent,
+        sent,
       ),
       radius,
       onTap: () => openFile(message.mediaUrl!),
@@ -150,7 +150,6 @@ class ImageChatWidget extends StatelessWidget {
 
     // TODO(PapaTutuWawa): Maybe use an async builder
     if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) {
-      print("HAHAHHA");
       return _buildImage();
     }
 
