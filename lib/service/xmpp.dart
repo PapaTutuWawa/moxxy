@@ -196,17 +196,6 @@ class XmppService {
     }
   }
 
-  /// Updates and sets chat markers to "read" for note-type [message].
-  Future<void> updateChatMarkersForNotes(Message message) async {
-    final ms = GetIt.I.get<MessageService>();
-    final msg = await ms.updateMessage(
-      message.id,
-      received: true,
-      displayed: true,
-    );
-    sendEvent(MessageUpdatedEvent(message: msg));
-  }
-
   /// Sends a message to JIDs in [recipients] with the body of [body].
   Future<void> sendMessage({
     required String body,
@@ -247,6 +236,8 @@ class XmppService {
             stickerHashKey: sticker?.hashKey,
             srcUrl: sticker?.urlSources.first,
             mediaType: sticker?.mediaType,
+            received: recipient == '' ? true : false,
+            displayed: recipient == '' ? true : false,
           );
 
           final newConversation = await cs.updateConversation(
@@ -304,12 +295,10 @@ class XmppService {
                 setOOBFallbackBody: sticker != null ? false : true,
               ),
             );
-      } else if (conversation!.type == ConversationType.note) {
-        await updateChatMarkersForNotes(message!);
       }
 
       sendEvent(
-        ConversationUpdatedEvent(conversation: conversation),
+        ConversationUpdatedEvent(conversation: conversation!),
       );
     }
   }
@@ -568,6 +557,8 @@ class XmppService {
           filename: pathlib.basename(path),
           isUploading:
               conversation?.type != ConversationType.note ? true : false,
+          received: recipient == '' ? true : false,
+          displayed: recipient == '' ? true : false,
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
@@ -702,8 +693,6 @@ class XmppService {
                   shouldEncrypt: encrypt[recipient]!,
                 ),
               );
-        } else {
-          await updateChatMarkersForNotes(messages[path]![recipient]!);
         }
       }
 

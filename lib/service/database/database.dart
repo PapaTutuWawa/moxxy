@@ -583,6 +583,8 @@ class DatabaseService {
     String? stickerHashKey,
     int? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
+    bool received = false,
+    bool displayed = false,
   }) async {
     var m = Message(
       sender,
@@ -606,8 +608,8 @@ class DatabaseService {
       mediaWidth: mediaWidth,
       mediaHeight: mediaHeight,
       srcUrl: srcUrl,
-      received: false,
-      displayed: false,
+      received: received,
+      displayed: displayed,
       acked: false,
       originId: originId,
       filename: filename,

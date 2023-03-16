@@ -91,6 +91,8 @@ class MessageService {
     String? stickerHashKey,
     int? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
+    bool received = false,
+    bool displayed = false,
   }) async {
     final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
           body,
@@ -125,6 +127,8 @@ class MessageService {
           stickerHashKey: stickerHashKey,
           pseudoMessageType: pseudoMessageType,
           pseudoMessageData: pseudoMessageData,
+          received: received,
+          displayed: displayed,
         );
 
     await _cacheLock.synchronized(() {
