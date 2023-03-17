@@ -113,24 +113,27 @@ class QuotedMediaBaseWidget extends StatelessWidget {
       Row(
         children: [
           child,
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                QuoteSenderText(
-                  sender: message.sender,
-                  resetQuoteNotNull: resetQuote != null,
-                  sent: sent,
-                ),
-                Text(
-                  text,
-                  style: TextStyle(
-                    color: getQuoteTextColor(context, resetQuote != null),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  QuoteSenderText(
+                    sender: message.sender,
+                    resetQuoteNotNull: resetQuote != null,
+                    sent: sent,
                   ),
-                ),
-              ],
+                  Text(
+                    text,
+                    style: TextStyle(
+                      color: getQuoteTextColor(context, resetQuote != null),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
