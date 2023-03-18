@@ -557,8 +557,8 @@ class XmppService {
           filename: pathlib.basename(path),
           isUploading:
               conversation?.type != ConversationType.note ? true : false,
-          received: recipient == '' ? true : false,
-          displayed: recipient == '' ? true : false,
+          received: conversation?.type == ConversationType.note ? true : false,
+          displayed: conversation?.type == ConversationType.note ? true : false,
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
@@ -709,10 +709,9 @@ class XmppService {
             thumbnails[path] ?? [],
           ),
         );
+        _log.finest('File upload submitted');
       }
     }
-
-    _log.finest('File upload submitted');
   }
 
   Future<void> _initializeOmemoService(String jid) async {
