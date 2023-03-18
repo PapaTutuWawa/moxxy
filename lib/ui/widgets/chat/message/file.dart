@@ -157,7 +157,7 @@ class FileChatWidget extends StatelessWidget {
       message.filename!,
       radius,
       maxWidth,
-      message.conversationJid == '' ? true : sent,
+      sent,
       mimeType: message.mediaType,
       onTap: () {
         openFile(message.mediaUrl!);

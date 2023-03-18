@@ -227,7 +227,7 @@ class XmppService {
             sticker != null,
             sid,
             false,
-            recipient == '' ? true : c.encrypted,
+            c.type == ConversationType.note ? true : c.encrypted,
             // TODO(Unknown): Maybe make this depend on some setting
             false,
             originId: originId,
@@ -236,8 +236,8 @@ class XmppService {
             stickerHashKey: sticker?.hashKey,
             srcUrl: sticker?.urlSources.first,
             mediaType: sticker?.mediaType,
-            received: recipient == '' ? true : false,
-            displayed: recipient == '' ? true : false,
+            received: c.type == ConversationType.note ? true : false,
+            displayed: c.type == ConversationType.note ? true : false,
           );
 
           final newConversation = await cs.updateConversation(
