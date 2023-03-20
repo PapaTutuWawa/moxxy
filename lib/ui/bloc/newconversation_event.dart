@@ -11,10 +11,11 @@ class NewConversationInitEvent extends NewConversationEvent {
 
 /// Triggered when a new conversation has been added by the UI
 class NewConversationAddedEvent extends NewConversationEvent {
-  NewConversationAddedEvent(this.jid, this.title, this.avatarUrl);
+  NewConversationAddedEvent(this.jid, this.title, this.avatarUrl, this.type);
   final String jid;
   final String title;
   final String avatarUrl;
+  final ConversationType type;
 }
 
 /// Triggered when a roster item has been removed by the UI

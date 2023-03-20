@@ -34,6 +34,7 @@ import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
@@ -182,15 +183,17 @@ class XmppService {
       sendEvent(ConversationUpdatedEvent(conversation: conversation));
     }
 
-    // Send the correction
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-          MessageDetails(
-            to: recipient,
-            body: newBody,
-            lastMessageCorrectionId: oldId,
-            chatState: chatState,
-          ),
-        );
+    if (conversation?.type != ConversationType.note) {
+      // Send the correction
+      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+            MessageDetails(
+              to: recipient,
+              body: newBody,
+              lastMessageCorrectionId: oldId,
+              chatState: chatState,
+            ),
+          );
+    }
   }
 
   /// Sends a message to JIDs in [recipients] with the body of [body].
@@ -224,7 +227,7 @@ class XmppService {
             sticker != null,
             sid,
             false,
-            c.encrypted,
+            c.type == ConversationType.note ? true : c.encrypted,
             // TODO(Unknown): Maybe make this depend on some setting
             false,
             originId: originId,
@@ -233,6 +236,8 @@ class XmppService {
             stickerHashKey: sticker?.hashKey,
             srcUrl: sticker?.urlSources.first,
             mediaType: sticker?.mediaType,
+            received: c.type == ConversationType.note ? true : false,
+            displayed: c.type == ConversationType.note ? true : false,
           );
 
           final newConversation = await cs.updateConversation(
@@ -256,42 +261,44 @@ class XmppService {
         );
       }
 
-      conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-            MessageDetails(
-              to: recipient,
-              body: body,
-              requestDeliveryReceipt: true,
-              id: sid,
-              originId: originId,
-              quoteBody: createFallbackBodyForQuotedMessage(quotedMessage),
-              quoteFrom: quotedMessage?.sender,
-              quoteId: quotedMessage?.sid,
-              chatState: chatState,
-              shouldEncrypt: conversation!.encrypted,
-              stickerPackId: sticker?.stickerPackId,
-              sfs: sticker == null
-                  ? null
-                  : StatelessFileSharingData(
-                      FileMetadataData(
-                        mediaType: sticker.mediaType,
-                        width: sticker.width,
-                        height: sticker.height,
-                        desc: sticker.desc,
-                        size: sticker.size,
-                        thumbnails: [],
-                        hashes: sticker.hashes,
+      if (conversation?.type == ConversationType.chat) {
+        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+              MessageDetails(
+                to: recipient,
+                body: body,
+                requestDeliveryReceipt: true,
+                id: sid,
+                originId: originId,
+                quoteBody: createFallbackBodyForQuotedMessage(quotedMessage),
+                quoteFrom: quotedMessage?.sender,
+                quoteId: quotedMessage?.sid,
+                chatState: chatState,
+                shouldEncrypt: conversation!.encrypted,
+                stickerPackId: sticker?.stickerPackId,
+                sfs: sticker == null
+                    ? null
+                    : StatelessFileSharingData(
+                        FileMetadataData(
+                          mediaType: sticker.mediaType,
+                          width: sticker.width,
+                          height: sticker.height,
+                          desc: sticker.desc,
+                          size: sticker.size,
+                          thumbnails: [],
+                          hashes: sticker.hashes,
+                        ),
+                        sticker.urlSources
+                            // ignore: unnecessary_lambdas
+                            .map((s) => StatelessFileSharingUrlSource(s))
+                            .toList(),
                       ),
-                      sticker.urlSources
-                          // ignore: unnecessary_lambdas
-                          .map((s) => StatelessFileSharingUrlSource(s))
-                          .toList(),
-                    ),
-              setOOBFallbackBody: sticker != null ? false : true,
-            ),
-          );
+                setOOBFallbackBody: sticker != null ? false : true,
+              ),
+            );
+      }
 
       sendEvent(
-        ConversationUpdatedEvent(conversation: conversation),
+        ConversationUpdatedEvent(conversation: conversation!),
       );
     }
   }
@@ -537,7 +544,9 @@ class XmppService {
           true,
           conn.generateId(),
           false,
-          encrypt[recipient]!,
+          conversation?.type == ConversationType.note
+              ? true
+              : encrypt[recipient]!,
           // TODO(Unknown): Maybe make this depend on some setting
           false,
           mediaUrl: path,
@@ -546,7 +555,10 @@ class XmppService {
           mediaWidth: dimensions[path]?.width.toInt(),
           mediaHeight: dimensions[path]?.height.toInt(),
           filename: pathlib.basename(path),
-          isUploading: true,
+          isUploading:
+              conversation?.type != ConversationType.note ? true : false,
+          received: conversation?.type == ConversationType.note ? true : false,
+          displayed: conversation?.type == ConversationType.note ? true : false,
         );
         if (messages.containsKey(path)) {
           messages[path]![recipient] = msg;
@@ -578,6 +590,7 @@ class XmppService {
             // TODO(Unknown): Should we use the JID parser?
             rosterItem?.title ?? recipient.split('@').first,
             lastMessages[recipient],
+            ConversationType.chat,
             rosterItem?.avatarUrl ?? '',
             recipient,
             0,
@@ -665,37 +678,40 @@ class XmppService {
             }
           }
         }
-
-        // Send an upload notification
-        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-              MessageDetails(
-                to: recipient,
-                id: messages[path]![recipient]!.sid,
-                fun: FileMetadataData(
-                  // TODO(Unknown): Maybe add media type specific metadata
-                  mediaType: lookupMimeType(path),
-                  name: pathlib.basename(path),
-                  size: File(path).statSync().size,
-                  thumbnails: thumbnails[path] ?? [],
+        if (recipient != '') {
+          conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+                MessageDetails(
+                  to: recipient,
+                  id: messages[path]![recipient]!.sid,
+                  fun: FileMetadataData(
+                    // TODO(Unknown): Maybe add media type specific metadata
+                    mediaType: lookupMimeType(path),
+                    name: pathlib.basename(path),
+                    size: File(path).statSync().size,
+                    thumbnails: thumbnails[path] ?? [],
+                  ),
+                  shouldEncrypt: encrypt[recipient]!,
                 ),
-                shouldEncrypt: encrypt[recipient]!,
-              ),
-            );
+              );
+        }
       }
 
-      await hfts.uploadFile(
-        FileUploadJob(
-          recipients,
-          path,
-          pathMime,
-          encrypt,
-          messages[path]!,
-          thumbnails[path] ?? [],
-        ),
-      );
-    }
+      recipients.remove('');
 
-    _log.finest('File upload submitted');
+      if (recipients.isNotEmpty) {
+        await hfts.uploadFile(
+          FileUploadJob(
+            recipients,
+            path,
+            pathMime,
+            encrypt,
+            messages[path]!,
+            thumbnails[path] ?? [],
+          ),
+        );
+        _log.finest('File upload submitted');
+      }
+    }
   }
 
   Future<void> _initializeOmemoService(String jid) async {
@@ -1420,6 +1436,7 @@ class XmppService {
         final newConversation = await cs.addConversationFromData(
           rosterItem?.title ?? conversationJid.split('@')[0],
           message,
+          ConversationType.chat,
           rosterItem?.avatarUrl ?? '',
           conversationJid,
           sent ? 0 : 1,

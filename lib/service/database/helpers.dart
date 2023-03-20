@@ -1,3 +1,5 @@
+import 'package:moxxyv2/shared/models/conversation.dart';
+
 /// Conversion helpers for bool <-> int as sqlite has no "real" booleans
 int boolToInt(bool b) => b ? 1 : 0;
 bool intToBool(int i) => i == 0 ? false : true;
@@ -7,3 +9,29 @@ bool stringToBool(String s) => s == 'true' ? true : false;
 
 String intToString(int i) => '$i';
 int stringToInt(String s) => int.parse(s);
+
+String conversationTypeToString(ConversationType type) {
+  switch (type) {
+    case ConversationType.chat:
+      {
+        return 'chat';
+      }
+    case ConversationType.note:
+      {
+        return 'note';
+      }
+  }
+}
+
+ConversationType stringToConversationType(String type) {
+  switch (type) {
+    case 'chat':
+      {
+        return ConversationType.chat;
+      }
+    default:
+      {
+        return ConversationType.note;
+      }
+  }
+}

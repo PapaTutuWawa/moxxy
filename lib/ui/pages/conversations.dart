@@ -7,6 +7,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -285,6 +286,23 @@ class ConversationsPageState extends State<ConversationsPage>
           backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           children: [
+            SpeedDialChild(
+              child: const Icon(Icons.notes),
+              onTap: () {
+                context.read<NewConversationBloc>().add(
+                      NewConversationAddedEvent(
+                        '',
+                        t.pages.conversations.speeddialAddNoteToSelf,
+                        '',
+                        ConversationType.note,
+                      ),
+                    );
+              },
+              backgroundColor: primaryColor,
+              // TODO(Unknown): Theme dependent?
+              foregroundColor: Colors.white,
+              label: t.pages.conversations.speeddialAddNoteToSelf,
+            ),
             SpeedDialChild(
               child: const Icon(Icons.group),
               onTap: () => showNotImplementedDialog('groupchat', context),

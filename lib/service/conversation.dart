@@ -140,6 +140,7 @@ class ConversationService {
   Future<Conversation> addConversationFromData(
     String title,
     Message? lastMessage,
+    ConversationType type,
     String avatarUrl,
     String jid,
     int unreadCounter,
@@ -156,6 +157,7 @@ class ConversationService {
         await GetIt.I.get<DatabaseService>().addConversationFromData(
               title,
               lastMessage,
+              type,
               avatarUrl,
               jid,
               unreadCounter,

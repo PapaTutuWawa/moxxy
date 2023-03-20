@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
@@ -171,37 +172,38 @@ class ConversationTopbar extends StatelessWidget
                         ),
                       ),
                     ),
-                    // ignore: implicit_dynamic_type
-                    PopupMenuButton(
-                      onSelected: (result) {
-                        if (result == EncryptionOption.omemo &&
-                            state.conversation!.encrypted == false) {
-                          context
-                              .read<ConversationBloc>()
-                              .add(OmemoSetEvent(true));
-                        } else if (result == EncryptionOption.none &&
-                            state.conversation!.encrypted == true) {
-                          context
-                              .read<ConversationBloc>()
-                              .add(OmemoSetEvent(false));
-                        }
-                      },
-                      icon: (state.conversation?.encrypted ?? false)
-                          ? const Icon(Icons.lock)
-                          : const Icon(Icons.lock_open),
-                      itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(
-                          EncryptionOption.none,
-                          t.pages.conversation.unencrypted,
-                          Icons.lock_open,
-                        ),
-                        popupItemWithIcon(
-                          EncryptionOption.omemo,
-                          t.pages.conversation.encrypted,
-                          Icons.lock,
-                        ),
-                      ],
-                    ),
+                    if (state.conversation?.type != ConversationType.note)
+                      // ignore: implicit_dynamic_type
+                      PopupMenuButton(
+                        onSelected: (result) {
+                          if (result == EncryptionOption.omemo &&
+                              state.conversation!.encrypted == false) {
+                            context
+                                .read<ConversationBloc>()
+                                .add(OmemoSetEvent(true));
+                          } else if (result == EncryptionOption.none &&
+                              state.conversation!.encrypted == true) {
+                            context
+                                .read<ConversationBloc>()
+                                .add(OmemoSetEvent(false));
+                          }
+                        },
+                        icon: (state.conversation?.encrypted ?? false)
+                            ? const Icon(Icons.lock)
+                            : const Icon(Icons.lock_open),
+                        itemBuilder: (BuildContext c) => [
+                          popupItemWithIcon(
+                            EncryptionOption.none,
+                            t.pages.conversation.unencrypted,
+                            Icons.lock_open,
+                          ),
+                          popupItemWithIcon(
+                            EncryptionOption.omemo,
+                            t.pages.conversation.encrypted,
+                            Icons.lock,
+                          ),
+                        ],
+                      ),
                     // ignore: implicit_dynamic_type
                     PopupMenuButton(
                       onSelected: (result) async {
@@ -244,11 +246,12 @@ class ConversationTopbar extends StatelessWidget
                           t.pages.conversation.closeChat,
                           Icons.close,
                         ),
-                        popupItemWithIcon(
-                          ConversationOption.block,
-                          t.pages.conversation.blockUser,
-                          Icons.block,
-                        )
+                        if (state.conversation?.type != ConversationType.note)
+                          popupItemWithIcon(
+                            ConversationOption.block,
+                            t.pages.conversation.blockUser,
+                            Icons.block,
+                          )
                       ],
                     ),
                   ],

@@ -90,7 +90,10 @@ class ImageChatWidget extends StatelessWidget {
 
     return MediaBaseChatWidget(
       image,
-      MessageBubbleBottom(message, sent),
+      MessageBubbleBottom(
+        message,
+        sent,
+      ),
       radius,
       onTap: () => openFile(message.mediaUrl!),
     );

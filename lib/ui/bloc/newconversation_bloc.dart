@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -63,6 +64,7 @@ class NewConversationBloc
             jid: event.jid,
             avatarUrl: event.avatarUrl,
             lastMessageBody: '',
+            conversationType: conversationTypeToString(event.type),
           ),
         );
 

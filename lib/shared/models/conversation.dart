@@ -40,6 +40,13 @@ class ConversationMessageConverter
       };
 }
 
+enum ConversationType {
+  @JsonValue('chat')
+  chat,
+  @JsonValue('note')
+  note
+}
+
 @freezed
 class Conversation with _$Conversation {
   factory Conversation(
@@ -48,6 +55,7 @@ class Conversation with _$Conversation {
     String avatarUrl,
     String jid,
     int unreadCounter,
+    ConversationType type,
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
     int lastChangeTimestamp,
     List<SharedMedium> sharedMedia,

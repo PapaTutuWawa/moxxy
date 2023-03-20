@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -30,6 +31,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
@@ -233,6 +235,7 @@ Future<void> performAddConversation(
       final newConversation = await cs.addConversationFromData(
         command.title,
         null,
+        stringToConversationType(command.conversationType),
         command.avatarUrl,
         command.jid,
         0,
@@ -289,7 +292,8 @@ Future<void> performSetOpenConversation(
   await GetIt.I.get<XmppService>().setCurrentlyOpenedChatJid(command.jid ?? '');
 
   // Null just means that the chat has been closed
-  if (command.jid != null) {
+  // Empty string JID for notes to self
+  if (command.jid != null && command.jid != '') {
     await GetIt.I
         .get<NotificationsService>()
         .dismissNotificationsByJid(command.jid!);
@@ -462,6 +466,7 @@ Future<void> performAddContact(
       final newConversation = await cs.addConversationFromData(
         jid.split('@')[0],
         null,
+        ConversationType.chat,
         '',
         jid,
         0,
@@ -654,9 +659,12 @@ Future<void> performSendChatState(
   if (!prefs.sendChatMarkers) return;
 
   final conn = GetIt.I.get<XmppConnection>();
-  conn
-      .getManagerById<ChatStateManager>(chatStateManager)!
-      .sendChatState(chatStateFromString(command.state), command.jid);
+
+  if (command.jid != '') {
+    conn
+        .getManagerById<ChatStateManager>(chatStateManager)!
+        .sendChatState(chatStateFromString(command.state), command.jid);
+  }
 }
 
 Future<void> performGetFeatures(
@@ -847,19 +855,20 @@ Future<void> performMessageRetraction(
         '',
         true,
       );
-
-  // Send the retraction
-  (GetIt.I.get<XmppConnection>().getManagerById(messageManager)!
-          as MessageManager)
-      .sendMessage(
-    MessageDetails(
-      to: command.conversationJid,
-      messageRetraction: MessageRetractionData(
-        command.originId,
-        t.messages.retractedFallback,
+  if (command.conversationJid != '') {
+    (GetIt.I
+            .get<XmppConnection>()
+            .getManagerById<MessageManager>(messageManager)!)
+        .sendMessage(
+      MessageDetails(
+        to: command.conversationJid,
+        messageRetraction: MessageRetractionData(
+          command.originId,
+          t.messages.retractedFallback,
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 Future<void> performMarkConversationAsRead(
@@ -945,19 +954,21 @@ Future<void> performAddMessageReaction(
   final ownReactions =
       reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
-  // Send the reaction
-  conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-        MessageDetails(
-          to: command.conversationJid,
-          messageReactions: MessageReactions(
-            msg.originId ?? msg.sid,
-            ownReactions,
+  if (command.conversationJid != '') {
+    // Send the reaction
+    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+          MessageDetails(
+            to: command.conversationJid,
+            messageReactions: MessageReactions(
+              msg.originId ?? msg.sid,
+              ownReactions,
+            ),
+            requestChatMarkers: false,
+            messageProcessingHints:
+                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
           ),
-          requestChatMarkers: false,
-          messageProcessingHints:
-              !msg.containsNoStore ? [MessageProcessingHint.store] : null,
-        ),
-      );
+        );
+  }
 }
 
 Future<void> performRemoveMessageReaction(
@@ -985,19 +996,21 @@ Future<void> performRemoveMessageReaction(
   final ownReactions =
       reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
-  // Send the reaction
-  conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-        MessageDetails(
-          to: command.conversationJid,
-          messageReactions: MessageReactions(
-            msg.originId ?? msg.sid,
-            ownReactions,
+  if (command.conversationJid != '') {
+    // Send the reaction
+    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+          MessageDetails(
+            to: command.conversationJid,
+            messageReactions: MessageReactions(
+              msg.originId ?? msg.sid,
+              ownReactions,
+            ),
+            requestChatMarkers: false,
+            messageProcessingHints:
+                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
           ),
-          requestChatMarkers: false,
-          messageProcessingHints:
-              !msg.containsNoStore ? [MessageProcessingHint.store] : null,
-        ),
-      );
+        );
+  }
 }
 
 Future<void> performMarkDeviceVerified(

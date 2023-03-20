@@ -93,6 +93,7 @@ class NewConversationPage extends StatelessWidget {
                             item.jid,
                             item.title,
                             item.avatarUrl,
+                            ConversationType.chat,
                           ),
                         ),
                     child: ConversationsListRow(
@@ -114,6 +115,7 @@ class NewConversationPage extends StatelessWidget {
                         item.avatarUrl,
                         item.jid,
                         0,
+                        ConversationType.chat,
                         0,
                         [],
                         true,
