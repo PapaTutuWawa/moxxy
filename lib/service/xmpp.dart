@@ -102,7 +102,6 @@ class XmppService {
       jid: JID.fromString(state.jid!),
       password: state.password!,
       useDirectTLS: true,
-      allowPlainAuth: true,
     );
   }
 
@@ -446,12 +445,13 @@ class XmppService {
       GetIt.I.get<XmppConnection>().connect(
             lastResource: lastResource,
             waitForConnection: true,
+            shouldReconnect: true,
           ),
     );
     installEventHandlers();
   }
 
-  Future<XmppConnectionResult> connectAwaitable(
+  Future<Result<bool, XmppError>> connectAwaitable(
     ConnectionSettings settings,
     bool triggeredFromUI,
   ) async {
@@ -461,9 +461,10 @@ class XmppService {
     _loginTriggeredFromUI = triggeredFromUI;
     GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
     installEventHandlers();
-    return GetIt.I.get<XmppConnection>().connectAwaitable(
+    return GetIt.I.get<XmppConnection>().connect(
           lastResource: lastResource,
           waitForConnection: true,
+          waitUntilLogin: true,
         );
   }
 

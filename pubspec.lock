@@ -949,10 +949,10 @@ packages:
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: "902b49752655bec83305612504e812c299191947"
+      resolved-ref: "70d4d6c56f05ae75b407242bf1b062b99230b58c"
       url: "https://codeberg.org/moxxy/moxxmpp.git"
     source: git
-    version: "0.2.0"
+    version: "0.3.0"
   moxxmpp_socket_tcp:
     dependency: "direct main"
     description:

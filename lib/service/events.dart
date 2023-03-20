@@ -114,7 +114,6 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
           jid: JID.fromString(command.jid),
           password: command.password,
           useDirectTLS: command.useDirectTLS,
-          allowPlainAuth: true,
         ),
         true,
       );
@@ -122,8 +121,7 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
 
   // ignore: avoid_dynamic_calls
   final xc = GetIt.I.get<XmppConnection>();
-  if (result.success) {
-    await xc.reconnectionPolicy.setShouldReconnect(true);
+  if (result.isType<bool>() && result.get<bool>()) {
     final preferences =
         await GetIt.I.get<PreferencesService>().getPreferences();
     final settings = xc.getConnectionSettings();
@@ -138,7 +136,7 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
     await xc.reconnectionPolicy.setShouldReconnect(false);
     sendEvent(
       LoginFailureEvent(
-        reason: xmppErrorToTranslatableString(result.error!),
+        reason: xmppErrorToTranslatableString(result.get<XmppError>()),
       ),
       id: id,
     );
