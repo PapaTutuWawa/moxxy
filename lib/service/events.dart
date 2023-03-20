@@ -954,19 +954,21 @@ Future<void> performAddMessageReaction(
   final ownReactions =
       reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
-  // Send the reaction
-  conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-        MessageDetails(
-          to: command.conversationJid,
-          messageReactions: MessageReactions(
-            msg.originId ?? msg.sid,
-            ownReactions,
+  if (command.conversationJid != '') {
+    // Send the reaction
+    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+          MessageDetails(
+            to: command.conversationJid,
+            messageReactions: MessageReactions(
+              msg.originId ?? msg.sid,
+              ownReactions,
+            ),
+            requestChatMarkers: false,
+            messageProcessingHints:
+                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
           ),
-          requestChatMarkers: false,
-          messageProcessingHints:
-              !msg.containsNoStore ? [MessageProcessingHint.store] : null,
-        ),
-      );
+        );
+  }
 }
 
 Future<void> performRemoveMessageReaction(
@@ -994,19 +996,21 @@ Future<void> performRemoveMessageReaction(
   final ownReactions =
       reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
-  // Send the reaction
-  conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-        MessageDetails(
-          to: command.conversationJid,
-          messageReactions: MessageReactions(
-            msg.originId ?? msg.sid,
-            ownReactions,
+  if (command.conversationJid != '') {
+    // Send the reaction
+    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+          MessageDetails(
+            to: command.conversationJid,
+            messageReactions: MessageReactions(
+              msg.originId ?? msg.sid,
+              ownReactions,
+            ),
+            requestChatMarkers: false,
+            messageProcessingHints:
+                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
           ),
-          requestChatMarkers: false,
-          messageProcessingHints:
-              !msg.containsNoStore ? [MessageProcessingHint.store] : null,
-        ),
-      );
+        );
+  }
 }
 
 Future<void> performMarkDeviceVerified(
