@@ -26,14 +26,16 @@ Future<void> upgradeFromV8ToV9(Database db) async {
 
   // Step 5
   await db.execute(
-      'INSERT INTO ${conversationsTable}_new SELECT * from $conversationsTable',);
+    'INSERT INTO ${conversationsTable}_new SELECT * from $conversationsTable',
+  );
 
   // Step 6
   await db.execute('DROP TABLE $conversationsTable;');
 
   // Step 7
   await db.execute(
-      'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;',);
+    'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;',
+  );
 
   // Step 10
   //await db.execute('PRAGMA foreign_key_check;');

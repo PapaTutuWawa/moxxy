@@ -31,14 +31,17 @@ Future<void> upgradeFromV27ToV28(Database db) async {
     )''',
   );
   await db.execute(
-      'INSERT INTO ${conversationsTable}_new SELECT jid, title, avatarUrl, lastChangeTimestamp, unreadCounter, open, muted, encrypted, lastMessageId, contactid, contactAvatarPath, contactDisplayName from $conversationsTable',);
+    'INSERT INTO ${conversationsTable}_new SELECT jid, title, avatarUrl, lastChangeTimestamp, unreadCounter, open, muted, encrypted, lastMessageId, contactid, contactAvatarPath, contactDisplayName from $conversationsTable',
+  );
   await db.execute('DROP TABLE $conversationsTable;');
   await db.execute(
-      'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;',);
+    'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;',
+  );
 
   // Add the jid column to shared media
   await db.execute(
-      "ALTER TABLE $mediaTable ADD COLUMN conversation_jid TEXT NOT NULL DEFAULT '';",);
+    "ALTER TABLE $mediaTable ADD COLUMN conversation_jid TEXT NOT NULL DEFAULT '';",
+  );
 
   // Update all shared media items
   for (final entry in idMap.entries) {
@@ -67,7 +70,8 @@ Future<void> upgradeFromV27ToV28(Database db) async {
     )''',
   );
   await db.execute(
-      'INSERT INTO ${mediaTable}_new SELECT id, path, mime, timestamp, message_id, conversation_jid from $mediaTable',);
+    'INSERT INTO ${mediaTable}_new SELECT id, path, mime, timestamp, message_id, conversation_jid from $mediaTable',
+  );
   await db.execute('DROP TABLE $mediaTable;');
   await db.execute('ALTER TABLE ${mediaTable}_new RENAME TO $mediaTable;');
 }
