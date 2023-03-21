@@ -227,7 +227,7 @@ class HttpFileTransferService {
 
     final ms = GetIt.I.get<MessageService>();
     if (!isRequestOkay(uploadStatusCode)) {
-      _log.severe('Upload failed');
+      _log.severe('Upload failed due to status code $uploadStatusCode');
       await _fileUploadFailed(job, fileUploadFailedError);
       return;
     } else {
