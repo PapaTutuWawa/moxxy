@@ -373,7 +373,7 @@ class ConversationPageState extends State<ConversationPage>
                   style: TextStyle(
                     color: Theme.of(context)
                         .extension<MoxxyThemeData>()!
-                        .conversationTextFieldColor,
+                        .conversationTextFieldTextColor,
                   ),
                 ),
                 onPressed: () async {
@@ -400,7 +400,7 @@ class ConversationPageState extends State<ConversationPage>
                   style: TextStyle(
                     color: Theme.of(context)
                         .extension<MoxxyThemeData>()!
-                        .conversationTextFieldColor,
+                        .conversationTextFieldTextColor,
                   ),
                 ),
                 onPressed: () => blockJid(state.conversation!.jid, context),
