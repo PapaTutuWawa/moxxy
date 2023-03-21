@@ -4,7 +4,8 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV29ToV30(Database db) async {
   await db.execute(
-      "ALTER TABLE $conversationsTable ADD COLUMN sharedMediaAmount INTEGER NOT NULL DEFAULT 0;");
+    "ALTER TABLE $conversationsTable ADD COLUMN sharedMediaAmount INTEGER NOT NULL DEFAULT 0;",
+  );
 
   // Get all conversations
   final conversations = await db.query(
@@ -22,10 +23,12 @@ Future<void> upgradeFromV29ToV30(Database db) async {
         ) ??
         0;
 
+    final c = Map.from(conversation)
+      ..remove('id');
     await db.update(
       conversationsTable,
       {
-        ...conversation,
+        ...c,
         'sharedMediaAmount': result,
       },
       where: 'jid = ?',
