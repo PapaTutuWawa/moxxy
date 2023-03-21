@@ -246,13 +246,19 @@ class StickersService {
       return null;
     }
 
-    final content = utf8.decode(metadata.content as List<int>);
-    final node = moxxmpp.XMLNode.fromString(content);
-    final packRaw = moxxmpp.StickerPack.fromXML(
-      '',
-      node,
-      hashAvailable: false,
-    );
+    moxxmpp.StickerPack packRaw;
+    try {
+      final content = utf8.decode(metadata.content as List<int>);
+      final node = moxxmpp.XMLNode.fromString(content);
+      packRaw = moxxmpp.StickerPack.fromXML(
+        '',
+        node,
+        hashAvailable: false,
+      );
+    } catch (ex) {
+      _log.severe('Invalid sticker pack description: $ex');
+      return null;
+    }
 
     if (packRaw.restricted) {
       _log.severe('Invalid sticker pack: Restricted');
