@@ -1,5 +1,4 @@
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxmpp/moxxmpp.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -173,8 +172,10 @@ void main() {
 
   group('validateJid', () {
     test('Valid JIDs', () {
-      expect(validateJid('polynomdivision@someserver.example'),
-          JidFormatError.none);
+      expect(
+        validateJid('polynomdivision@someserver.example'),
+        JidFormatError.none,
+      );
       expect(validateJid('a@b.c'), JidFormatError.none);
       expect(validateJid('a@192.168.178.1'), JidFormatError.none);
       expect(validateJid('a@local'), JidFormatError.none);
@@ -192,8 +193,10 @@ void main() {
     test('Test simple filenames', () {
       expect(filenameWithSuffix('test.jpg', '(1)'), 'test(1).jpg');
       expect(filenameWithSuffix('test.welt.jpg', '(1)'), 'test.welt(1).jpg');
-      expect(filenameWithSuffix('file-without-extension', '(1)'),
-          'file-without-extension(1)');
+      expect(
+        filenameWithSuffix('file-without-extension', '(1)'),
+        'file-without-extension(1)',
+      );
     });
 
     test('Test edge cases', () {

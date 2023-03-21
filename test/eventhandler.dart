@@ -9,14 +9,14 @@ class BarEvent {}
 void main() {
   test('Test simple callbacks', () {
     var handled = 0;
-    final handler = EventHandler();
-    handler.addMatchers([
-      EventTypeMatcher<FooEvent>((event, {extra}) async {
-        handled++;
-      }),
-    ]);
-    handler.run(FooEvent());
-    handler.run(BarEvent());
+    EventHandler()
+      ..addMatchers([
+        EventTypeMatcher<FooEvent>((event, {extra}) async {
+          handled++;
+        }),
+      ])
+      ..run(FooEvent())
+      ..run(BarEvent());
 
     expect(handled, 1);
   });

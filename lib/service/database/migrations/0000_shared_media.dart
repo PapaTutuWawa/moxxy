@@ -1,5 +1,4 @@
 import 'package:moxxyv2/service/database/constants.dart';
-import 'package:moxxyv2/shared/models/preference.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV5ToV6(Database db) async {

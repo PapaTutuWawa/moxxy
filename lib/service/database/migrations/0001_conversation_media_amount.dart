@@ -1,10 +1,9 @@
 import 'package:moxxyv2/service/database/constants.dart';
-import 'package:moxxyv2/shared/models/preference.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV29ToV30(Database db) async {
   await db.execute(
-    "ALTER TABLE $conversationsTable ADD COLUMN sharedMediaAmount INTEGER NOT NULL DEFAULT 0;",
+    'ALTER TABLE $conversationsTable ADD COLUMN sharedMediaAmount INTEGER NOT NULL DEFAULT 0;',
   );
 
   // Get all conversations
@@ -23,8 +22,7 @@ Future<void> upgradeFromV29ToV30(Database db) async {
         ) ??
         0;
 
-    final c = Map.from(conversation)
-      ..remove('id');
+    final c = Map<String, Object?>.from(conversation)..remove('id');
     await db.update(
       conversationsTable,
       {

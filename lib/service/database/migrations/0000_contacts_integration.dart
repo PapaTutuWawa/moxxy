@@ -31,10 +31,12 @@ Future<void> upgradeFromV13ToV14(Database db) async {
     )''',
   );
   await db.execute(
-      'INSERT INTO ${conversationsTable}_new SELECT *, NULL from $conversationsTable');
+    'INSERT INTO ${conversationsTable}_new SELECT *, NULL from $conversationsTable',
+  );
   await db.execute('DROP TABLE $conversationsTable;');
   await db.execute(
-      'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;');
+    'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable;',
+  );
 
   // Migrate the roster items
   await db.execute(
@@ -53,7 +55,8 @@ Future<void> upgradeFromV13ToV14(Database db) async {
     )''',
   );
   await db.execute(
-      'INSERT INTO ${rosterTable}_new SELECT *, NULL from $rosterTable');
+    'INSERT INTO ${rosterTable}_new SELECT *, NULL from $rosterTable',
+  );
   await db.execute('DROP TABLE $rosterTable;');
   await db.execute('ALTER TABLE ${rosterTable}_new RENAME TO $rosterTable;');
 

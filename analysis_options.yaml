@@ -6,13 +6,11 @@ linter:
     use_setters_to_change_properties: false
     avoid_positional_boolean_parameters: false
     avoid_bool_literals_in_conditional_expressions: false
+    file_names: false
 
 analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "**/*.moxxy.dart"
-    - "test/"
-    - "integration_test/"
-    - "lib/service/database/migrations/*.dart"
     - "lib/i18n/*.dart"
