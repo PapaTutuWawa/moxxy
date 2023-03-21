@@ -50,3 +50,32 @@ Before creating a pull request, please make sure you checked every item on the f
 
 If you think that your code is ready for a pull request, but you are not sure if it is ready, prefix the PR's title with "WIP: ", so that discussion
 can happen there. If you think your PR is ready for review, remove the "WIP: " prefix.
+
+### Code Guidelines
+#### Commit messages
+
+Commit messages should be uniformly formatted. `gitlint` is a linter for commit messages that enforces those guidelines. They are defined in the `.gitlint` file
+at the root of the repository. `gitlint` can be installed as a pre-commit hook using
+`gitlint install-hook`. That way, `gitlint` runs on every commit and warns you if the
+commit message violates any of the defined rules.
+
+Commit messages always follow the following format:
+
+```
+<type>(<areas>): <summary>
+
+<full message>
+```
+
+`<type>` is the type of action that was performed in the commit and is one of the following: `feat` (Addition of a feature), `fix` (Fix a bug or other issue), `chore` (Bump dependency versions, fix formatter issues), `refactor` (A bigger "moving around" or rewriting of code), `docs` (Commits that just touch the documentation, be it code or, for example, the README).
+
+`<areas>` are the areas inside the code that are touched by the change. They are a comma-separated list of one or more of the following: `service` (Everything inside `lib/service`), `ui` (Everything inside `lib/ui`), `shared` (Everything inside `lib/shared`), `all` (A bit of everything is involved), `tests` (Everyting inside `test` or `integration_test`), `i18n` (The translation files have been modified), `docs` (Documentation of any kind), `flake` (The NixOS flake has been modified).
+
+`<summary>` is the summary of the entire commit in a few words. Make that that the entire
+first line is not longer than 72 characters. `<summary>` also must start with an uppercase
+letter or a number.
+
+The `<full message>` is optional. In case your commit requires more explanation, write it
+there. Make sure that there is an empty line between the full message and the summary line.
+
+The exception to these rules is a commit message of the format `release: Release version x.y.z`, as it touches everything and is thus implicitly using `(all)` as an area code.
