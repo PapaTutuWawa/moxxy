@@ -33,9 +33,13 @@ class SharedImageWidget extends StatelessWidget {
               : null,
           image: DecorationImage(
             fit: BoxFit.cover,
-            image: FileImage(
-              File(path),
-              scale: 4,
+            // Decode the image at a lower size if we can
+            image: ResizeImage.resizeIfNeeded(
+              (size * MediaQuery.of(context).devicePixelRatio).toInt(),
+              null,
+              FileImage(
+                File(path),
+              ),
             ),
           ),
         ),
