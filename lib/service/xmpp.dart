@@ -47,7 +47,7 @@ class XmppService {
   XmppService() {
     _eventHandler.addMatchers([
       EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
-      EventTypeMatcher<ResourceBindingSuccessEvent>(_onResourceBindingSuccess),
+      EventTypeMatcher<ResourceBoundEvent>(_onResourceBound),
       EventTypeMatcher<SubscriptionRequestReceivedEvent>(
         _onSubscriptionRequestReceived,
       ),
@@ -101,7 +101,6 @@ class XmppService {
     return ConnectionSettings(
       jid: JID.fromString(state.jid!),
       password: state.password!,
-      useDirectTLS: true,
     );
   }
 
@@ -221,7 +220,7 @@ class XmppService {
           message = await ms.addMessageFromData(
             body,
             timestamp,
-            conn.getConnectionSettings().jid.toString(),
+            conn.connectionSettings.jid.toString(),
             recipient,
             sticker != null,
             sid,
@@ -355,7 +354,7 @@ class XmppService {
   Future<void> _acknowledgeMessage(MessageEvent event) async {
     final result = await GetIt.I
         .get<XmppConnection>()
-        .getDiscoManager()
+        .getDiscoManager()!
         .discoInfoQuery(event.fromJid.toString());
     if (result.isType<DiscoError>()) return;
 
@@ -440,7 +439,7 @@ class XmppService {
     final lastResource = state.resource;
 
     _loginTriggeredFromUI = triggeredFromUI;
-    GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
+    GetIt.I.get<XmppConnection>().connectionSettings = settings;
     unawaited(
       GetIt.I.get<XmppConnection>().connect(
             lastResource: lastResource,
@@ -459,7 +458,7 @@ class XmppService {
     final lastResource = state.resource;
 
     _loginTriggeredFromUI = triggeredFromUI;
-    GetIt.I.get<XmppConnection>().setConnectionSettings(settings);
+    GetIt.I.get<XmppConnection>().connectionSettings = settings;
     installEventHandlers();
     return GetIt.I.get<XmppConnection>().connect(
           lastResource: lastResource,
@@ -540,7 +539,7 @@ class XmppService {
         final msg = await ms.addMessageFromData(
           '',
           DateTime.now().millisecondsSinceEpoch,
-          conn.getConnectionSettings().jid.toString(),
+          conn.connectionSettings.jid.toString(),
           recipient,
           true,
           conn.generateId(),
@@ -775,7 +774,7 @@ class XmppService {
       final connection = GetIt.I.get<XmppConnection>();
 
       // TODO(Unknown): Maybe have something better
-      final settings = connection.getConnectionSettings();
+      final settings = connection.connectionSettings;
       await GetIt.I.get<XmppStateService>().modifyXmppState(
             (state) => state.copyWith(
               jid: settings.jid.toString(),
@@ -827,8 +826,8 @@ class XmppService {
         // TODO(Unknown): Trigger another event so the UI can see this aswell
         await GetIt.I.get<XmppStateService>().modifyXmppState(
               (state) => state.copyWith(
-                jid: connection.getConnectionSettings().jid.toString(),
-                displayName: connection.getConnectionSettings().jid.local,
+                jid: connection.connectionSettings.jid.toString(),
+                displayName: connection.connectionSettings.jid.local,
                 avatarUrl: '',
                 avatarHash: '',
               ),
@@ -837,8 +836,8 @@ class XmppService {
     }
   }
 
-  Future<void> _onResourceBindingSuccess(
-    ResourceBindingSuccessEvent event, {
+  Future<void> _onResourceBound(
+    ResourceBoundEvent event, {
     dynamic extra,
   }) async {
     await GetIt.I.get<XmppStateService>().modifyXmppState(

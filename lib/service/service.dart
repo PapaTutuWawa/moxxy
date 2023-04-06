@@ -198,18 +198,20 @@ Future<void> entrypoint() async {
   final connection = XmppConnection(
     RandomBackoffReconnectionPolicy(1, 6),
     connectivityManager,
+    ClientToServerNegotiator(),
     MoxxyTCPSocketWrapper(),
-  )..registerFeatureNegotiators([
-      ResourceBindingNegotiator(),
-      StartTlsNegotiator(),
-      StreamManagementNegotiator(),
-      CSINegotiator(),
-      RosterFeatureNegotiator(),
-      SaslScramNegotiator(10, '', '', ScramHashType.sha512),
-      SaslScramNegotiator(9, '', '', ScramHashType.sha256),
-      SaslScramNegotiator(8, '', '', ScramHashType.sha1),
-      SaslPlainNegotiator(),
-    ]);
+  );
+  await connection.registerFeatureNegotiators([
+    ResourceBindingNegotiator(),
+    StartTlsNegotiator(),
+    StreamManagementNegotiator(),
+    CSINegotiator(),
+    RosterFeatureNegotiator(),
+    SaslScramNegotiator(10, '', '', ScramHashType.sha512),
+    SaslScramNegotiator(9, '', '', ScramHashType.sha256),
+    SaslScramNegotiator(8, '', '', ScramHashType.sha1),
+    SaslPlainNegotiator(),
+  ]);
   await connection.registerManagers([
     MoxxyStreamManagementManager(),
     DiscoManager([
@@ -217,7 +219,7 @@ Future<void> entrypoint() async {
     ]),
     RosterManager(MoxxyRosterStateManager()),
     MoxxyOmemoManager(),
-    PingManager(),
+    PingManager(const Duration(minutes: 3)),
     MessageManager(),
     PresenceManager(),
     EntityCapabilitiesManager('http://moxxy.im'),

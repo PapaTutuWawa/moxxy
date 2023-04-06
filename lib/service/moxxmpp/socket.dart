@@ -2,7 +2,7 @@ import 'package:moxdns/moxdns.dart';
 import 'package:moxxmpp_socket_tcp/moxxmpp_socket_tcp.dart';
 
 class MoxxyTCPSocketWrapper extends TCPSocketWrapper {
-  MoxxyTCPSocketWrapper() : super(false);
+  MoxxyTCPSocketWrapper() : super();
 
   @override
   Future<List<MoxSrvRecord>> srvQuery(String domain, bool dnssec) async {

@@ -246,7 +246,7 @@ class OmemoService {
     final omemo =
         conn.getManagerById<moxxmpp.BaseOmemoManager>(moxxmpp.omemoManager)!;
     final dm = conn.getManagerById<moxxmpp.DiscoManager>(moxxmpp.discoManager)!;
-    final bareJid = conn.getConnectionSettings().jid.toBare();
+    final bareJid = conn.connectionSettings.jid.toBare();
     final device = await omemoManager.getDevice();
 
     final bundlesRaw = await dm.discoItemsQuery(

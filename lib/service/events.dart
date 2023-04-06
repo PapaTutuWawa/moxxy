@@ -113,7 +113,6 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
         ConnectionSettings(
           jid: JID.fromString(command.jid),
           password: command.password,
-          useDirectTLS: command.useDirectTLS,
         ),
         true,
       );
@@ -124,7 +123,7 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
   if (result.isType<bool>() && result.get<bool>()) {
     final preferences =
         await GetIt.I.get<PreferencesService>().getPreferences();
-    final settings = xc.getConnectionSettings();
+    final settings = xc.connectionSettings;
     sendEvent(
       LoginSuccessfulEvent(
         jid: settings.jid.toString(),
@@ -829,12 +828,8 @@ Future<void> performRegenerateOwnDevice(
   dynamic extra,
 }) async {
   final id = extra as String;
-  final jid = GetIt.I
-      .get<XmppConnection>()
-      .getConnectionSettings()
-      .jid
-      .toBare()
-      .toString();
+  final jid =
+      GetIt.I.get<XmppConnection>().connectionSettings.jid.toBare().toString();
   final device = await GetIt.I.get<OmemoService>().regenerateDevice(jid);
 
   sendEvent(

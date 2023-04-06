@@ -54,7 +54,7 @@ class SubscriptionRequestService {
   }
 
   PresenceManager get _presence =>
-      GetIt.I.get<XmppConnection>().getPresenceManager();
+      GetIt.I.get<XmppConnection>().getPresenceManager()!;
 
   /// Accept a subscription request from [jid].
   Future<void> acceptSubscriptionRequest(String jid) async {

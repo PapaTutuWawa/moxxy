@@ -171,7 +171,7 @@ class RosterService {
     );
     final result = await GetIt.I
         .get<XmppConnection>()
-        .getRosterManager()
+        .getRosterManager()!
         .addToRoster(jid, title);
     if (!result) {
       // TODO(Unknown): Signal error?
@@ -188,7 +188,7 @@ class RosterService {
     String jid, {
     bool unsubscribe = true,
   }) async {
-    final roster = GetIt.I.get<XmppConnection>().getRosterManager();
+    final roster = GetIt.I.get<XmppConnection>().getRosterManager()!;
     final result = await roster.removeFromRoster(jid);
     if (result == RosterRemovalResult.okay ||
         result == RosterRemovalResult.itemNotFound) {
