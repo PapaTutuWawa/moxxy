@@ -436,13 +436,15 @@ class XmppService {
     bool triggeredFromUI,
   ) async {
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
-    final lastResource = state.resource;
+    final conn = GetIt.I.get<XmppConnection>();
+    final lastResource = state.resource ?? '';
 
     _loginTriggeredFromUI = triggeredFromUI;
-    GetIt.I.get<XmppConnection>().connectionSettings = settings;
+    conn
+      ..connectionSettings = settings
+      ..getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!.resource = lastResource;
     unawaited(
-      GetIt.I.get<XmppConnection>().connect(
-            lastResource: lastResource,
+      conn.connect(
             waitForConnection: true,
             shouldReconnect: true,
           ),
@@ -455,13 +457,15 @@ class XmppService {
     bool triggeredFromUI,
   ) async {
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
-    final lastResource = state.resource;
+    final conn = GetIt.I.get<XmppConnection>();
+    final lastResource = state.resource ?? '';
 
     _loginTriggeredFromUI = triggeredFromUI;
-    GetIt.I.get<XmppConnection>().connectionSettings = settings;
+    conn
+      ..connectionSettings = settings
+      ..getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!.resource = lastResource;
     installEventHandlers();
-    return GetIt.I.get<XmppConnection>().connect(
-          lastResource: lastResource,
+    return conn.connect(
           waitForConnection: true,
           waitUntilLogin: true,
         );

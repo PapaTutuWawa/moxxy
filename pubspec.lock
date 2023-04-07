@@ -947,11 +947,12 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      name: moxxmpp
-      sha256: "409c93ddbb4a3a58ad27aba2d3f37ead64758266b212faee093f7fcd7395c10a"
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
-    version: "0.3.1"
+      path: "packages/moxxmpp"
+      ref: HEAD
+      resolved-ref: "4d312b21000731ab80ce655890546ac54bc2d878"
+      url: "https://codeberg.org/moxxy/moxxmpp.git"
+    source: git
+    version: "0.3.2"
   moxxmpp_socket_tcp:
     dependency: "direct main"
     description:
