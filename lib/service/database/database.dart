@@ -264,7 +264,7 @@ class DatabaseService {
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<List<Conversation>> loadConversations() async {
     final conversationsRaw = await _db.query(
-      'Conversations',
+      conversationsTable,
       orderBy: 'lastChangeTimestamp DESC',
     );
 
@@ -272,7 +272,7 @@ class DatabaseService {
     for (final c in conversationsRaw) {
       final jid = c['jid']! as String;
       final sharedMediaRaw = await _db.query(
-        'SharedMedia',
+        mediaTable,
         where: 'conversation_jid = ?',
         whereArgs: [jid],
         orderBy: 'timestamp DESC',
@@ -306,7 +306,7 @@ class DatabaseService {
   /// Load messages for [jid] from the database.
   Future<List<Message>> loadMessagesForJid(String jid) async {
     final rawMessages = await _db.query(
-      'Messages',
+      messagesTable,
       where: 'conversationJid = ?',
       whereArgs: [jid],
       orderBy: 'timestamp ASC',
@@ -317,7 +317,7 @@ class DatabaseService {
       Message? quotes;
       if (m['quote_id'] != null) {
         final rawQuote = (await _db.query(
-          'Messages',
+          messagesTable,
           where: 'conversationJid = ? AND id = ?',
           whereArgs: [jid, m['quote_id']! as int],
         ))
@@ -345,7 +345,7 @@ class DatabaseService {
         : 'conversationJid = ?';
     final args = oldestTimestamp != null ? [jid, oldestTimestamp] : [jid];
     final rawMessages = await _db.query(
-      'Messages',
+      messagesTable,
       where: query,
       whereArgs: args,
       orderBy: 'timestamp DESC',
@@ -357,7 +357,7 @@ class DatabaseService {
       Message? quotes;
       if (m['quote_id'] != null) {
         final rawQuote = (await _db.query(
-          'Messages',
+          messagesTable,
           where: 'conversationJid = ? AND id = ?',
           whereArgs: [jid, m['quote_id']! as int],
         ))
@@ -453,7 +453,7 @@ class DatabaseService {
 
     // TODO(Unknown): Maybe either don't do this or do this only when we need to.
     final sharedMedia = (await _db.query(
-      'SharedMedia',
+      mediaTable,
       where: 'conversation_jid = ?',
       whereArgs: [jid],
       orderBy: 'timestamp DESC',
@@ -513,7 +513,7 @@ class DatabaseService {
       contactDisplayName: contactDisplayName,
     );
 
-    await _db.insert('Conversations', conversation.toDatabaseJson());
+    await _db.insert(conversationsTable, conversation.toDatabaseJson());
     return conversation;
   }
 
@@ -535,7 +535,7 @@ class DatabaseService {
     );
 
     return s.copyWith(
-      id: await _db.insert('SharedMedia', s.toDatabaseJson()),
+      id: await _db.insert(mediaTable, s.toDatabaseJson()),
     );
   }
 
@@ -634,13 +634,13 @@ class DatabaseService {
     }
 
     return m.copyWith(
-      id: await _db.insert('Messages', m.toDatabaseJson()),
+      id: await _db.insert(messagesTable, m.toDatabaseJson()),
     );
   }
 
   Future<Message?> getMessageById(int id, String conversationJid) async {
     final messagesRaw = await _db.query(
-      'Messages',
+      messagesTable,
       where: 'id = ? AND conversationJid = ?',
       whereArgs: [id, conversationJid],
       limit: 1,
@@ -660,7 +660,7 @@ class DatabaseService {
   }) async {
     final idQuery = includeOriginId ? '(sid = ? OR originId = ?)' : 'sid = ?';
     final messagesRaw = await _db.query(
-      'Messages',
+      messagesTable,
       where: 'conversationJid = ? AND $idQuery',
       whereArgs:
           includeOriginId ? [conversationJid, id, id] : [conversationJid, id],
@@ -679,7 +679,7 @@ class DatabaseService {
     String conversationJid,
   ) async {
     final messagesRaw = await _db.query(
-      'Messages',
+      messagesTable,
       where: 'conversationJid = ? AND originId = ?',
       whereArgs: [conversationJid, id],
       limit: 1,
@@ -822,7 +822,7 @@ class DatabaseService {
 
   /// Loads roster items from the database
   Future<List<RosterItem>> loadRosterItems() async {
-    final items = await _db.query('RosterItems');
+    final items = await _db.query(rosterTable);
 
     return items.map(RosterItem.fromDatabaseJson).toList();
   }
@@ -830,7 +830,7 @@ class DatabaseService {
   /// Removes a roster item from the database and cache
   Future<void> removeRosterItem(int id) async {
     await _db.delete(
-      'RosterItems',
+      rosterTable,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -867,7 +867,7 @@ class DatabaseService {
     );
 
     return i.copyWith(
-      id: await _db.insert('RosterItems', i.toDatabaseJson()),
+      id: await _db.insert(rosterTable, i.toDatabaseJson()),
     );
   }
 
