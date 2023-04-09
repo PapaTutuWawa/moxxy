@@ -69,7 +69,7 @@ String xmppErrorToTranslatableString(XmppError error) {
     return t.errors.login.startTlsFailed;
   } else if (error is SaslError) {
     return t.errors.login.saslFailed;
-  } else if (error is NoConnectionError) {
+  } else if (error is NoConnectionPossibleError) {
     return t.errors.login.noConnection;
   }
 
