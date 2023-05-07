@@ -22,7 +22,7 @@ class FileUploadJob {
   final Map<String, bool> encryptMap;
   // Recipient -> Message
   final Map<String, Message> messageMap;
-  final int metadataId;
+  final String metadataId;
   final List<Thumbnail> thumbnails;
 
   @override
@@ -61,7 +61,7 @@ class FileDownloadJob {
   });
   final MediaFileLocation location;
   final int mId;
-  final int metadataId;
+  final String metadataId;
   final String conversationJid;
   final String? mimeGuess;
   final bool shouldShowNotification;

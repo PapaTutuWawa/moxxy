@@ -520,7 +520,7 @@ class XmppService {
     // Recipient -> Last message Id
     final lastMessages = <String, Message>{};
     // Path -> Metadata Id
-    final metadataMap = <String, int>{};
+    final metadataMap = <String, String>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -541,7 +541,8 @@ class XmppService {
 
       final metadata = await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
         FileMetadata(
-          -1,
+          // TODO
+          DateTime.now().millisecondsSinceEpoch.toString(),
           path,
           null,
           pathMime,

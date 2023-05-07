@@ -156,26 +156,26 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           size: 30,
         );
       }
-    } else if (widget.conversation.lastMessage!.mediaType!
+    } else if (widget.conversation.lastMessage!.fileMetadata!.mimeType!
         .startsWith('image/')) {
-      if (widget.conversation.lastMessage!.mediaUrl == null) {
+      if (widget.conversation.lastMessage!.fileMetadata!.path == null) {
         preview = const SizedBox();
       } else {
         preview = SharedImageWidget(
-          widget.conversation.lastMessage!.mediaUrl!,
+          widget.conversation.lastMessage!.fileMetadata!.path!,
           borderRadius: 5,
           size: 30,
         );
       }
-    } else if (widget.conversation.lastMessage!.mediaType!
+    } else if (widget.conversation.lastMessage!.fileMetadata!.mimeType!
         .startsWith('video/')) {
-      if (widget.conversation.lastMessage!.mediaUrl == null) {
+      if (widget.conversation.lastMessage!.fileMetadata!.path == null) {
         preview = const SizedBox();
       } else {
         preview = SharedVideoWidget(
-          widget.conversation.lastMessage!.mediaUrl!,
+          widget.conversation.lastMessage!.fileMetadata!.path!,
           widget.conversation.jid,
-          widget.conversation.lastMessage!.mediaType!,
+          widget.conversation.lastMessage!.fileMetadata!.mimeType!,
           borderRadius: 5,
           size: 30,
         );
@@ -206,9 +206,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         if (lastMessage.stickerPackId != null) {
           body = t.messages.sticker;
         } else if (lastMessage.isThumbnailable) {
-          body = mimeTypeToName(lastMessage.mediaType);
+          body = mimeTypeToName(lastMessage.fileMetadata!.mimeType);
         } else {
-          body = mimeTypeToEmoji(lastMessage.mediaType);
+          body = mimeTypeToEmoji(lastMessage.fileMetadata!.mimeType);
         }
       } else {
         body = widget.conversation.lastMessage!.body;

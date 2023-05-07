@@ -19,11 +19,11 @@ class QuotedFileWidget extends StatelessWidget {
     return QuotedMediaBaseWidget(
       message,
       SharedFileWidget(
-        message.mediaUrl!,
+        message.fileMetadata!.path!,
         size: 48,
         borderRadius: 8,
       ),
-      message.filename!,
+      message.fileMetadata!.filename,
       sent,
       resetQuote: resetQuote,
     );

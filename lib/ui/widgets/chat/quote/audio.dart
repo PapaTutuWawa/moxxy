@@ -20,7 +20,7 @@ class QuotedAudioWidget extends StatelessWidget {
     return QuotedMediaBaseWidget(
       message,
       SharedAudioWidget(
-        message.mediaUrl!,
+        message.fileMetadata!.path!,
         size: 48,
         borderRadius: 8,
       ),

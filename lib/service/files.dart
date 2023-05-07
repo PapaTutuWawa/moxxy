@@ -21,7 +21,7 @@ class FilesService {
   // Logging.
   final Logger _log = Logger('FilesService');
 
-  Future<void> createMetadataHashEntries(Map<String, String> plaintextHashes, int metadataId) async {
+  Future<void> createMetadataHashEntries(Map<String, String> plaintextHashes, String metadataId) async {
     final db = GetIt.I.get<DatabaseService>().database;
     for (final hash in plaintextHashes.entries) {
       await db.insert(
@@ -110,8 +110,8 @@ class FilesService {
     }
 
     final db = GetIt.I.get<DatabaseService>().database;
-    var fm = FileMetadata(
-      -1,
+    final fm = FileMetadata(
+      getStrongestHashFromMap(location.plaintextHashes) ?? DateTime.now().millisecondsSinceEpoch.toString(),
       null,
       location.url,
       mimeType,
@@ -129,9 +129,7 @@ class FilesService {
       location.ciphertextHashes,
       location.filename,
     );
-    fm = fm.copyWith(
-      id: await db.insert(fileMetadataTable, fm.toDatabaseJson()),
-    );
+    await db.insert(fileMetadataTable, fm.toDatabaseJson());
 
     if (location.plaintextHashes?.isNotEmpty ?? false) {
       await createMetadataHashEntries(
@@ -143,7 +141,7 @@ class FilesService {
     return fm;
   }
 
-  Future<void> removeFileMetadata(int id) async {
+  Future<void> removeFileMetadata(String id) async {
     await GetIt.I.get<DatabaseService>().database.delete(
       fileMetadataTable,
       where: 'id = ?',
@@ -151,7 +149,7 @@ class FilesService {
     );
   }
   
-  Future<FileMetadata> updateFileMetadata(int id, {
+  Future<FileMetadata> updateFileMetadata(String id, {
       String? path,
       int? size,
       String? encryptionScheme,

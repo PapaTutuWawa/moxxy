@@ -37,7 +37,7 @@ MessageType getMessageType(Message message) {
       return MessageType.sticker;
     }
 
-    final mime = message.mediaType;
+    final mime = message.fileMetadata!.mimeType;
     if (mime == null) return MessageType.file;
 
     if (mime.startsWith('image/')) {

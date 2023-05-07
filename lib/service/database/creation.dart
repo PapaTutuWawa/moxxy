@@ -36,7 +36,7 @@ Future<void> createDatabase(Database db, int version) async {
       acked INTEGER,
       originId TEXT,
       quote_id INTEGER,
-      file_metadata_id INTEGER,
+      file_metadata_id TEXT,
       isDownloading INTEGER NOT NULL,
       isUploading INTEGER NOT NULL,
       isRetracted INTEGER,
@@ -47,14 +47,14 @@ Future<void> createDatabase(Database db, int version) async {
       stickerHashKey  TEXT,
       pseudoMessageType INTEGER,
       pseudoMessageData TEXT,
-      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id),
+      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
       CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
-    )''',
-  );
+    )''');
 
+  // File metadata
   await db.execute('''
     CREATE TABLE $fileMetadataTable (
-      id               INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      id               TEXT NOT NULL PRIMARY KEY,
       path             TEXT,
       sourceUrl        TEXT,
       mimeType         TEXT,
@@ -70,12 +70,11 @@ Future<void> createDatabase(Database db, int version) async {
       filename         TEXT NOT NULL,
       size             INTEGER
     )''');
-
   await db.execute('''
     CREATE TABLE $fileMetadataHashesTable (
       algorithm TEXT NOT NULL,
       value     TEXT NOT NULL,
-      id        INTEGER NOT NULL,
+      id        TEXT NOT NULL,
       CONSTRAINT f_primarykey PRIMARY KEY (algorithm, value),
       CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES $fileMetadataTable (id)
         ON DELETE CASCADE

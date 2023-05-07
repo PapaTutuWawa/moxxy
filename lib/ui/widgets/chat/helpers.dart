@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'dart:ui';
-
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
@@ -8,8 +7,8 @@ import 'package:moxxyv2/shared/models/message.dart';
 /// Calculate the transformed size of a media message based on its stored
 /// dimensions.
 Size getMediaSize(Message message, double maxWidth) {
-  final mediaWidth = message.mediaWidth?.toDouble();
-  final mediaHeight = message.mediaHeight?.toDouble();
+  final mediaWidth = message.fileMetadata?.width?.toDouble();
+  final mediaHeight = message.fileMetadata?.height?.toDouble();
 
   var width = maxWidth;
   var height = maxWidth;

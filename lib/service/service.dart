@@ -18,6 +18,7 @@ import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/events.dart';
+import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
@@ -176,6 +177,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<SubscriptionRequestService>(
     SubscriptionRequestService(),
   );
+  GetIt.I.registerSingleton<FilesService>(FilesService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 

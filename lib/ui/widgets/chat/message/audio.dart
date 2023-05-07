@@ -139,7 +139,7 @@ class AudioChatState extends State<AudioChatWidget> {
 
   Future<void> _init() async {
     _audioFile = Audio.loadFromAbsolutePath(
-      widget.message.mediaUrl!,
+      widget.message.fileMetadata!.path!,
       onDuration: (double seconds) {
         setState(() {
           _duration = seconds;
@@ -251,11 +251,11 @@ class AudioChatState extends State<AudioChatWidget> {
   Widget _buildDownloadable() {
     return FileChatBaseWidget(
       widget.message,
-      widget.message.filename!,
+      widget.message.fileMetadata!.filename,
       widget.radius,
       widget.maxWidth,
       widget.sent,
-      mimeType: widget.message.mediaType,
+      mimeType: widget.message.fileMetadata!.mimeType,
       downloadButton: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
@@ -276,8 +276,8 @@ class AudioChatState extends State<AudioChatWidget> {
     }
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (widget.message.mediaUrl != null &&
-        File(widget.message.mediaUrl!).existsSync()) {
+    if (widget.message.fileMetadata!.path != null &&
+        File(widget.message.fileMetadata!.path!).existsSync()) {
       return _buildAudio();
     }
 

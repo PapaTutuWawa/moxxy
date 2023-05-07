@@ -29,7 +29,8 @@ class MessageService {
   final Lock _cacheLock = Lock();
 
   Future<Message?> getMessageById(int id, String conversationJid) async {
-    final messagesRaw = await GetIt.I.get<DatabaseService>().database.query(
+    final db = GetIt.I.get<DatabaseService>().database;
+    final messagesRaw = await db.query(
       messagesTable,
       where: 'id = ? AND conversationJid = ?',
       whereArgs: [id, conversationJid],
@@ -40,70 +41,20 @@ class MessageService {
     
     // TODO(PapaTutuWawa): Load the quoted message
     final msg = messagesRaw.first;
-    return Message.fromDatabaseJson(msg, null);
-  }
-  
-  /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
-  /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
-  /// than [oldestTimestamp], or the newest messages are returned if null.
-  Future<List<Message>> getPaginatedMessagesForJid(
-    String jid,
-    bool olderThan,
-    int? oldestTimestamp,
-  ) async {
-    if (olderThan && oldestTimestamp == null) {
-      final result = await _cacheLock.synchronized<List<Message>?>(() {
-        return _messageCache.getValue(jid);
-      });
-      if (result != null) return result;
+
+    // Load the file metadata, if available
+    FileMetadata? fm;
+    if (msg['file_metadata_id'] != null) {
+      final rawFm = (await db.query(
+        fileMetadataTable,
+        where: 'id = ?',
+        whereArgs: [msg['file_metadata_id']],
+        limit: 1,
+      )).first;
+      fm = FileMetadata.fromDatabaseJson(rawFm);
     }
 
-    final db = GetIt.I.get<DatabaseService>().database;
-    final comparator = olderThan ? '<' : '>';
-    final query = oldestTimestamp != null
-        ? 'conversationJid = ? AND timestamp $comparator ?'
-        : 'conversationJid = ?';
-    final rawMessages = await db.rawQuery(
-      '''
-SELECT * FROM $messagesTable
-  LEFT JOIN $messagesTable AS quote ON quote_id = quote.id
-WHERE $query
-ORDER BY timestamp DESC
-LIMIT $messagePaginationSize;
-      ''',
-      [
-        jid,
-
-        if (oldestTimestamp != null)
-          oldestTimestamp,
-      ],
-    );
-
-    final page = List<Message>.empty(growable: true);
-    for (final m in rawMessages) {
-      Message? quotes;
-      
-      if (m['quote_id'] != null) {
-        final rawQuote = Map<String, dynamic>.fromEntries(
-          m.entries.where((entry) => entry.key.startsWith('quote.'))
-            .map((entry) => MapEntry<String, dynamic>(entry.key.substring(6), entry.value)),
-        );
-        quotes = Message.fromDatabaseJson(rawQuote, null);
-      }
-
-      page.add(Message.fromDatabaseJson(m, quotes));
-    }
-
-    if (olderThan && oldestTimestamp == null) {
-      await _cacheLock.synchronized(() {
-        _messageCache.cache(
-          jid,
-          page,
-        );
-      });
-    }
-
-    return page;
+    return Message.fromDatabaseJson(msg, null, fm);
   }
 
   Future<Message?> getMessageByXmppId(
@@ -129,7 +80,148 @@ LIMIT $messagePaginationSize;
 
     // TODO(PapaTutuWawa): Load the quoted message
     final msg = messagesRaw.first;
-    return Message.fromDatabaseJson(msg, null);
+
+    FileMetadata? fm;
+    if (msg['file_metadata_id'] != null) {
+      final rawFm = (await db.query(
+        fileMetadataTable,
+        where: 'id = ?',
+        whereArgs: [msg['file_metadata_id']],
+        limit: 1,
+      )).first;
+      fm = FileMetadata.fromDatabaseJson(rawFm);
+    }
+    
+    return Message.fromDatabaseJson(msg, null, fm);
+  }
+  
+  /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
+  /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
+  /// than [oldestTimestamp], or the newest messages are returned if null.
+  Future<List<Message>> getPaginatedMessagesForJid(
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
+    if (olderThan && oldestTimestamp == null) {
+      final result = await _cacheLock.synchronized<List<Message>?>(() {
+        return _messageCache.getValue(jid);
+      });
+      if (result != null) return result;
+    }
+
+    final db = GetIt.I.get<DatabaseService>().database;
+    final comparator = olderThan ? '<' : '>';
+    final query = oldestTimestamp != null
+        ? 'conversationJid = ? AND timestamp $comparator ?'
+        : 'conversationJid = ?';
+    final rawMessages = await db.rawQuery(
+      // LEFT JOIN $messagesTable quote ON msg.quote_id = quote.id
+      '''
+SELECT
+  msg.*,
+  quote.id AS quote_id,
+  quote.sender AS quote_sender,
+  quote.body AS quote_body,
+  quote.timestamp AS quote_timestamp,
+  quote.sid AS quote_sid,
+  quote.conversationJid AS quote_conversationJid,
+  quote.isFileUploadNotification AS quote_isFileUploadNotification,
+  quote.encrypted AS quote_encrypted,
+  quote.errorType AS quote_errorType,
+  quote.warningType AS quote_warningType,
+  quote.received AS quote_received,
+  quote.displayed AS quote_displayed,
+  quote.acked AS quote_acked,
+  quote.originId AS quote_originId,
+  quote.quote_id AS quote_quote_id,
+  quote.file_metadata_id AS quote_file_metadata_id,
+  quote.isDownloading AS quote_isDownloading,
+  quote.isUploading AS quote_isUploading,
+  quote.isRetracted AS quote_isRetracted,
+  quote.isEdited AS quote_isEdited,
+  quote.reactions AS quote_reactions,
+  quote.containsNoStore AS quote_containsNoStore,
+  quote.stickerPackId AS quote_stickerPackId,
+  quote.stickerHashKey AS quote_stickerHashKey,
+  quote.pseudoMessageType AS quote_pseudoMessageType,
+  quote.pseudoMessageData AS quote_pseudoMessageData,
+  fm.id as fm_id,
+  fm.path as fm_path,
+  fm.sourceUrl as fm_sourceUrl,
+  fm.mimeType as fm_mimeType,
+  fm.thumbnailType as fm_thumbnailType,
+  fm.thumbnailData as fm_thumbnailData,
+  fm.width as fm_width,
+  fm.height as fm_height,
+  fm.plaintextHashes as fm_plaintextHashes,
+  fm.encryptionKey as fm_encryptionKey,
+  fm.encryptionIv as fm_encryptionIv,
+  fm.encryptionScheme as fm_encryptionScheme,
+  fm.cipherTextHashes as fm_cipherTextHashes,
+  fm.filename as fm_filename,
+  fm.size as fm_size
+FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $messagePaginationSize) AS msg
+  LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id
+  LEFT JOIN $messagesTable quote ON msg.quote_id = quote.id;
+      ''',
+      [
+        jid,
+
+        if (oldestTimestamp != null)
+          oldestTimestamp,
+      ],
+    );
+
+    final page = List<Message>.empty(growable: true);
+    for (final m in rawMessages) {
+      if (m.isEmpty) {
+        continue;
+      }
+
+      Message? quotes;
+      if (m['quote_id'] != null) {
+        final rawQuote = Map<String, dynamic>.fromEntries(
+          m.entries.where((entry) => entry.key.startsWith('quote_'))
+            .map((entry) => MapEntry<String, dynamic>(entry.key.substring(6), entry.value)),
+        );
+
+        FileMetadata? quoteFm;
+        if (rawQuote['file_metadata_id'] != null) {
+          final rawQuoteFm = (await db.query(
+            fileMetadataTable,
+            where: 'id = ?',
+            whereArgs: [rawQuote['file_metadata_id']],
+            limit: 1,
+          )).first;
+          quoteFm = FileMetadata.fromDatabaseJson(rawQuoteFm);
+        }
+
+        quotes = Message.fromDatabaseJson(rawQuote, null, quoteFm);
+      }
+
+      FileMetadata? fm;
+      if (m['file_metadata_id'] != null) {
+        fm = FileMetadata.fromDatabaseJson(
+          Map<String, Object?>.fromEntries(
+          m.entries.where((entry) => entry.key.startsWith('fm_')).map((entry) => MapEntry<String, Object?>(entry.key.substring(3), entry.value)),
+          ),
+        );
+      }
+
+      page.add(Message.fromDatabaseJson(m, quotes, fm));
+    }
+
+    if (olderThan && oldestTimestamp == null) {
+      await _cacheLock.synchronized(() {
+        _messageCache.cache(
+          jid,
+          page,
+        );
+      });
+    }
+
+    return page;
   }
   
   /// Wrapper around [DatabaseService]'s addMessageFromData that updates the cache.
@@ -320,7 +412,20 @@ LIMIT $messagePaginationSize;
       );
     }
 
-    final msg = Message.fromDatabaseJson(updatedMessage, quotes);
+    FileMetadata? metadata;
+    if (fileMetadata != notSpecified) {
+      metadata = fileMetadata as FileMetadata?;
+    } else if (updatedMessage['file_metadata_id'] != null) {
+      final metadataRaw = (await db.query(
+        fileMetadataTable,
+        where: 'id = ?',
+        whereArgs: [updatedMessage['file_metadata_id']],
+        limit: 1,
+      )).first;
+      metadata = FileMetadata.fromDatabaseJson(metadataRaw);
+    }
+
+    final msg = Message.fromDatabaseJson(updatedMessage, quotes, metadata);
 
     await _cacheLock.synchronized(() {
       final page = _messageCache.getValue(msg.conversationJid);

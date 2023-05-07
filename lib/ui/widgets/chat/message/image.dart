@@ -27,7 +27,7 @@ class ImageChatWidget extends StatelessWidget {
 
   Widget _buildUploading() {
     return MediaBaseChatWidget(
-      Image.file(File(message.mediaUrl!)),
+      Image.file(File(message.fileMetadata!.path!)),
       MessageBubbleBottom(message, sent),
       radius,
       extra: ProgressWidget(id: message.id),
@@ -35,7 +35,7 @@ class ImageChatWidget extends StatelessWidget {
   }
 
   Widget _buildDownloading() {
-    if (message.thumbnailData != null) {
+    if (message.fileMetadata!.thumbnailData != null) {
       final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
@@ -43,7 +43,7 @@ class ImageChatWidget extends StatelessWidget {
           width: size.width,
           height: size.height,
           child: BlurHash(
-            hash: message.thumbnailData!,
+            hash: message.fileMetadata!.thumbnailData!,
             decodingWidth: size.width.toInt(),
             decodingHeight: size.height.toInt(),
           ),
@@ -55,11 +55,11 @@ class ImageChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.filename!,
+        message.fileMetadata!.filename,
         radius,
         maxWidth,
         sent,
-        mimeType: message.mediaType,
+        mimeType: message.fileMetadata!.mimeType,
         downloadButton: ProgressWidget(id: message.id),
       );
     }
@@ -70,19 +70,19 @@ class ImageChatWidget extends StatelessWidget {
     final size = getMediaSize(message, maxWidth);
 
     Widget image;
-    if (message.mediaWidth != null && message.mediaHeight != null) {
+    if (message.fileMetadata!.width != null && message.fileMetadata!.height != null) {
       image = SizedBox(
         width: size.width,
         height: size.height,
         child: Image.file(
-          File(message.mediaUrl!),
+          File(message.fileMetadata!.path!),
           cacheWidth: size.width.toInt(),
           cacheHeight: size.height.toInt(),
         ),
       );
     } else {
       image = Image.file(
-        File(message.mediaUrl!),
+        File(message.fileMetadata!.path!),
         cacheWidth: size.width.toInt(),
         cacheHeight: size.height.toInt(),
       );
@@ -95,12 +95,12 @@ class ImageChatWidget extends StatelessWidget {
         sent,
       ),
       radius,
-      onTap: () => openFile(message.mediaUrl!),
+      onTap: () => openFile(message.fileMetadata!.path!),
     );
   }
 
   Widget _buildDownloadable() {
-    if (message.thumbnailData != null) {
+    if (message.fileMetadata!.thumbnailData != null) {
       final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
@@ -108,7 +108,7 @@ class ImageChatWidget extends StatelessWidget {
           width: size.width,
           height: size.height,
           child: BlurHash(
-            hash: message.thumbnailData!,
+            hash: message.fileMetadata!.thumbnailData!,
             decodingWidth: size.width.toInt(),
             decodingHeight: size.height.toInt(),
           ),
@@ -122,11 +122,11 @@ class ImageChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.filename!,
+        message.fileMetadata!.filename,
         radius,
         maxWidth,
         sent,
-        mimeType: message.mediaType,
+        mimeType: message.fileMetadata!.mimeType,
         downloadButton: DownloadButton(
           onPressed: () {
             MoxplatformPlugin.handler.getDataSender().sendData(
@@ -149,7 +149,7 @@ class ImageChatWidget extends StatelessWidget {
     }
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) {
+    if (message.fileMetadata!.path != null && File(message.fileMetadata!.path!).existsSync()) {
       return _buildImage();
     }
 

@@ -20,9 +20,9 @@ class QuotedVideoWidget extends StatelessWidget {
     return QuotedMediaBaseWidget(
       message,
       SharedVideoWidget(
-        message.mediaUrl!,
+        message.fileMetadata!.path!,
         message.conversationJid,
-        message.mediaType!,
+        message.fileMetadata!.mimeType!,
         size: 48,
         borderRadius: 8,
       ),

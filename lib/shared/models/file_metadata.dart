@@ -7,7 +7,7 @@ part 'file_metadata.g.dart';
 class FileMetadata with _$FileMetadata {
   factory FileMetadata(
     /// A unique ID
-    int id,
+    String id,
     /// The path where the file can be found.
     String? path,
     /// The source where the file came from.
@@ -38,7 +38,7 @@ class FileMetadata with _$FileMetadata {
     String filename,
   ) = _FileMetadata;
   const FileMetadata._();
-
+  
   /// JSON
   factory FileMetadata.fromJson(Map<String, dynamic> json) =>
       _$FileMetadataFromJson(json);

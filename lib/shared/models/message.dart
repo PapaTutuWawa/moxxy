@@ -66,7 +66,7 @@ class Message with _$Message {
   factory Message.fromJson(Map<String, dynamic> json) =>
       _$MessageFromJson(json);
 
-  factory Message.fromDatabaseJson(Map<String, dynamic> json, Message? quotes) {
+  factory Message.fromDatabaseJson(Map<String, dynamic> json, Message? quotes, FileMetadata? fileMetadata) {
     return Message.fromJson({
       ...json,
       'received': intToBool(json['received']! as int),
@@ -89,6 +89,7 @@ class Message with _$Message {
           .cast<Map<String, dynamic>>()
           .map<Reaction>(Reaction.fromJson)
           .toList(),
+      fileMetadata: fileMetadata,
     );
   }
 
@@ -107,9 +108,7 @@ class Message with _$Message {
       'displayed': boolToInt(displayed),
       'acked': boolToInt(acked),
       'encrypted': boolToInt(encrypted),
-      'file_metadata_id': fileMetadata?.id == -1 ?
-      null :
-      fileMetadata?.id,
+      'file_metadata_id': fileMetadata?.id,
       // NOTE: Message.quote_id is a foreign-key
       'quote_id': quotes?.id,
       'isDownloading': boolToInt(isDownloading),
