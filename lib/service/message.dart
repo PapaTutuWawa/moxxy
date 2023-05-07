@@ -1,18 +1,23 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:synchronized/synchronized.dart';
 
 class MessageService {
@@ -23,6 +28,21 @@ class MessageService {
       LRUCache(conversationMessagePageCacheSize);
   final Lock _cacheLock = Lock();
 
+  Future<Message?> getMessageById(int id, String conversationJid) async {
+    final messagesRaw = await GetIt.I.get<DatabaseService>().database.query(
+      messagesTable,
+      where: 'id = ? AND conversationJid = ?',
+      whereArgs: [id, conversationJid],
+      limit: 1,
+    );
+
+    if (messagesRaw.isEmpty) return null;
+    
+    // TODO(PapaTutuWawa): Load the quoted message
+    final msg = messagesRaw.first;
+    return Message.fromDatabaseJson(msg, null);
+  }
+  
   /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
   /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
   /// than [oldestTimestamp], or the newest messages are returned if null.
@@ -38,12 +58,41 @@ class MessageService {
       if (result != null) return result;
     }
 
-    final page =
-        await GetIt.I.get<DatabaseService>().getPaginatedMessagesForJid(
-              jid,
-              olderThan,
-              oldestTimestamp,
-            );
+    final db = GetIt.I.get<DatabaseService>().database;
+    final comparator = olderThan ? '<' : '>';
+    final query = oldestTimestamp != null
+        ? 'conversationJid = ? AND timestamp $comparator ?'
+        : 'conversationJid = ?';
+    final rawMessages = await db.rawQuery(
+      '''
+SELECT * FROM $messagesTable
+  LEFT JOIN $messagesTable AS quote ON quote_id = quote.id
+WHERE $query
+ORDER BY timestamp DESC
+LIMIT $messagePaginationSize;
+      ''',
+      [
+        jid,
+
+        if (oldestTimestamp != null)
+          oldestTimestamp,
+      ],
+    );
+
+    final page = List<Message>.empty(growable: true);
+    for (final m in rawMessages) {
+      Message? quotes;
+      
+      if (m['quote_id'] != null) {
+        final rawQuote = Map<String, dynamic>.fromEntries(
+          m.entries.where((entry) => entry.key.startsWith('quote.'))
+            .map((entry) => MapEntry<String, dynamic>(entry.key.substring(6), entry.value)),
+        );
+        quotes = Message.fromDatabaseJson(rawQuote, null);
+      }
+
+      page.add(Message.fromDatabaseJson(m, quotes));
+    }
 
     if (olderThan && oldestTimestamp == null) {
       await _cacheLock.synchronized(() {
@@ -57,36 +106,49 @@ class MessageService {
     return page;
   }
 
+  Future<Message?> getMessageByXmppId(
+    String id,
+    String conversationJid, {
+    bool includeOriginId = true,
+  }) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final idQuery = includeOriginId ? '(sid = ? OR originId = ?)' : 'sid = ?';
+    final messagesRaw = await db.query(
+      messagesTable,
+      where: 'conversationJid = ? AND $idQuery',
+      whereArgs: [
+        conversationJid,
+        if (includeOriginId)
+          id,
+        id,
+      ],
+      limit: 1,
+    );
+
+    if (messagesRaw.isEmpty) return null;
+
+    // TODO(PapaTutuWawa): Load the quoted message
+    final msg = messagesRaw.first;
+    return Message.fromDatabaseJson(msg, null);
+  }
+  
   /// Wrapper around [DatabaseService]'s addMessageFromData that updates the cache.
   Future<Message> addMessageFromData(
     String body,
     int timestamp,
     String sender,
     String conversationJid,
-    bool isMedia,
     String sid,
     bool isFileUploadNotification,
     bool encrypted,
     bool containsNoStore, {
-    String? srcUrl,
-    String? key,
-    String? iv,
-    String? encryptionScheme,
-    String? mediaUrl,
-    String? mediaType,
-    String? thumbnailData,
-    int? mediaWidth,
-    int? mediaHeight,
     String? originId,
     String? quoteId,
-    String? filename,
+    FileMetadata? fileMetadata,
     int? errorType,
     int? warningType,
-    Map<String, String>? plaintextHashes,
-    Map<String, String>? ciphertextHashes,
     bool isDownloading = false,
     bool isUploading = false,
-    int? mediaSize,
     String? stickerPackId,
     String? stickerHashKey,
     int? pseudoMessageType,
@@ -94,42 +156,44 @@ class MessageService {
     bool received = false,
     bool displayed = false,
   }) async {
-    final msg = await GetIt.I.get<DatabaseService>().addMessageFromData(
-          body,
-          timestamp,
-          sender,
-          conversationJid,
-          isMedia,
-          sid,
-          isFileUploadNotification,
-          encrypted,
-          containsNoStore,
-          srcUrl: srcUrl,
-          key: key,
-          iv: iv,
-          encryptionScheme: encryptionScheme,
-          mediaUrl: mediaUrl,
-          mediaType: mediaType,
-          thumbnailData: thumbnailData,
-          mediaWidth: mediaWidth,
-          mediaHeight: mediaHeight,
-          originId: originId,
-          quoteId: quoteId,
-          filename: filename,
-          errorType: errorType,
-          warningType: warningType,
-          plaintextHashes: plaintextHashes,
-          ciphertextHashes: ciphertextHashes,
-          isUploading: isUploading,
-          isDownloading: isDownloading,
-          mediaSize: mediaSize,
-          stickerPackId: stickerPackId,
-          stickerHashKey: stickerHashKey,
-          pseudoMessageType: pseudoMessageType,
-          pseudoMessageData: pseudoMessageData,
-          received: received,
-          displayed: displayed,
-        );
+    final db = GetIt.I.get<DatabaseService>().database;
+    var m = Message(
+      sender,
+      body,
+      timestamp,
+      sid,
+      -1,
+      conversationJid,
+      isFileUploadNotification,
+      encrypted,
+      containsNoStore,
+      errorType: errorType,
+      warningType: warningType,
+      fileMetadata: fileMetadata,
+      received: received,
+      displayed: displayed,
+      acked: false,
+      originId: originId,
+      isUploading: isUploading,
+      isDownloading: isDownloading,
+      stickerPackId: stickerPackId,
+      stickerHashKey: stickerHashKey,
+      pseudoMessageType: pseudoMessageType,
+      pseudoMessageData: pseudoMessageData,
+    );
+
+    if (quoteId != null) {
+      final quotes = await getMessageByXmppId(quoteId, conversationJid);
+      if (quotes == null) {
+        _log.warning('Failed to add quote for message with id $quoteId');
+      } else {
+        m = m.copyWith(quotes: quotes);
+      }
+    }
+
+    m = m.copyWith(
+      id: await db.insert(messagesTable, m.toDatabaseJson()),
+    );
 
     await _cacheLock.synchronized(() {
       final cachedList = _messageCache.getValue(conversationJid);
@@ -138,21 +202,21 @@ class MessageService {
           conversationJid,
           clampedListPrepend(
             cachedList,
-            msg,
+            m,
             messagePaginationSize,
           ),
         );
       }
     });
 
-    return msg;
+    return m;
   }
 
   Future<Message?> getMessageByStanzaId(
     String conversationJid,
     String stanzaId,
   ) async {
-    return GetIt.I.get<DatabaseService>().getMessageByXmppId(
+    return getMessageByXmppId(
           stanzaId,
           conversationJid,
           includeOriginId: false,
@@ -163,14 +227,7 @@ class MessageService {
     String conversationJid,
     String id,
   ) async {
-    return GetIt.I.get<DatabaseService>().getMessageByXmppId(
-          id,
-          conversationJid,
-        );
-  }
-
-  Future<Message?> getMessageById(String conversationJid, int id) async {
-    return GetIt.I.get<DatabaseService>().getMessageById(
+    return getMessageByXmppId(
           id,
           conversationJid,
         );
@@ -180,59 +237,90 @@ class MessageService {
   Future<Message> updateMessage(
     int id, {
     Object? body = notSpecified,
-    Object? mediaUrl = notSpecified,
-    Object? mediaType = notSpecified,
-    bool? isMedia,
     bool? received,
     bool? displayed,
     bool? acked,
+    Object? fileMetadata = notSpecified,
     Object? errorType = notSpecified,
     Object? warningType = notSpecified,
     bool? isFileUploadNotification,
-    Object? srcUrl = notSpecified,
-    Object? key = notSpecified,
-    Object? iv = notSpecified,
-    Object? encryptionScheme = notSpecified,
-    Object? mediaWidth = notSpecified,
-    Object? mediaHeight = notSpecified,
-    Object? mediaSize = notSpecified,
     bool? isUploading,
     bool? isDownloading,
     Object? originId = notSpecified,
     Object? sid = notSpecified,
-    Object? thumbnailData = notSpecified,
     bool? isRetracted,
     bool? isEdited,
     Object? reactions = notSpecified,
   }) async {
-    final msg = await GetIt.I.get<DatabaseService>().updateMessage(
-          id,
-          body: body,
-          mediaUrl: mediaUrl,
-          mediaType: mediaType,
-          received: received,
-          displayed: displayed,
-          acked: acked,
-          errorType: errorType,
-          warningType: warningType,
-          isFileUploadNotification: isFileUploadNotification,
-          srcUrl: srcUrl,
-          key: key,
-          iv: iv,
-          encryptionScheme: encryptionScheme,
-          mediaWidth: mediaWidth,
-          mediaHeight: mediaHeight,
-          mediaSize: mediaSize,
-          isUploading: isUploading,
-          isDownloading: isDownloading,
-          originId: originId,
-          sid: sid,
-          isRetracted: isRetracted,
-          isMedia: isMedia,
-          thumbnailData: thumbnailData,
-          isEdited: isEdited,
-          reactions: reactions,
-        );
+    final db = GetIt.I.get<DatabaseService>().database;
+    final m = <String, dynamic>{};
+
+    if (body != notSpecified) {
+      m['body'] = body as String?;
+    }
+    if (received != null) {
+      m['received'] = boolToInt(received);
+    }
+    if (displayed != null) {
+      m['displayed'] = boolToInt(displayed);
+    }
+    if (acked != null) {
+      m['acked'] = boolToInt(acked);
+    }
+    if (errorType != notSpecified) {
+      m['errorType'] = errorType as int?;
+    }
+    if (warningType != notSpecified) {
+      m['warningType'] = warningType as int?;
+    }
+    if (isFileUploadNotification != null) {
+      m['isFileUploadNotification'] = boolToInt(isFileUploadNotification);
+    }
+    if (isDownloading != null) {
+      m['isDownloading'] = boolToInt(isDownloading);
+    }
+    if (isUploading != null) {
+      m['isUploading'] = boolToInt(isUploading);
+    }
+    if (sid != notSpecified) {
+      m['sid'] = sid as String?;
+    }
+    if (originId != notSpecified) {
+      m['originId'] = originId as String?;
+    }
+    if (isRetracted != null) {
+      m['isRetracted'] = boolToInt(isRetracted);
+    }
+    if (fileMetadata != notSpecified) {
+      m['file_metadata_id'] = (fileMetadata as FileMetadata?)?.id;
+    }
+    if (isEdited != null) {
+      m['isEdited'] = boolToInt(isEdited);
+    }
+    if (reactions != notSpecified) {
+      assert(reactions != null, 'Cannot set reactions to null');
+      // TODO(PapaTutuWawa): Replace with a new table
+      m['reactions'] = jsonEncode(
+        (reactions! as List<Reaction>).map((r) => r.toJson()).toList(),
+      );
+    }
+
+    final updatedMessage = await db.updateAndReturn(
+      messagesTable,
+      m,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    Message? quotes;
+    if (updatedMessage['quote_id'] != null) {
+      quotes = await getMessageById(
+        updatedMessage['quote_id']! as int,
+        updatedMessage['conversationJid']! as String,
+      );
+    }
+
+    final msg = Message.fromDatabaseJson(updatedMessage, quotes);
 
     await _cacheLock.synchronized(() {
       final page = _messageCache.getValue(msg.conversationJid);
@@ -271,7 +359,7 @@ class MessageService {
     String bareSender,
     bool selfRetract,
   ) async {
-    final msg = await GetIt.I.get<DatabaseService>().getMessageByOriginId(
+    final msg = await getMessageByXmppId(
           originId,
           conversationJid,
         );
@@ -294,24 +382,15 @@ class MessageService {
     }
 
     final isMedia = msg.isMedia;
-    final mediaUrl = msg.mediaUrl;
+    final mediaUrl = msg.fileMetadata?.path;
     final retractedMessage = await updateMessage(
       msg.id,
-      isMedia: false,
-      mediaUrl: null,
-      mediaType: null,
       warningType: null,
       errorType: null,
-      srcUrl: null,
-      key: null,
-      iv: null,
-      encryptionScheme: null,
-      mediaWidth: null,
-      mediaHeight: null,
-      mediaSize: null,
       isRetracted: true,
-      thumbnailData: null,
       body: '',
+      // TODO(Unknown): Can we delete the file?
+      fileMetadata: null,
     );
     sendEvent(MessageUpdatedEvent(message: retractedMessage));
 

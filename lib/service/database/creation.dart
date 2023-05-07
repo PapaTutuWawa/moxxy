@@ -27,31 +27,18 @@ Future<void> createDatabase(Database db, int version) async {
       timestamp INTEGER NOT NULL,
       sid TEXT NOT NULL,
       conversationJid TEXT NOT NULL,
-      isMedia INTEGER NOT NULL,
       isFileUploadNotification INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       errorType INTEGER,
       warningType INTEGER,
-      mediaUrl TEXT,
-      mediaType TEXT,
-      thumbnailData TEXT,
-      mediaWidth INTEGER,
-      mediaHeight INTEGER,
-      srcUrl TEXT,
-      key TEXT,
-      iv TEXT,
-      encryptionScheme TEXT,
       received INTEGER,
       displayed INTEGER,
       acked INTEGER,
       originId TEXT,
       quote_id INTEGER,
-      filename TEXT,
-      plaintextHashes TEXT,
-      ciphertextHashes TEXT,
+      file_metadata_id INTEGER,
       isDownloading INTEGER NOT NULL,
       isUploading INTEGER NOT NULL,
-      mediaSize INTEGER,
       isRetracted INTEGER,
       isEdited INTEGER NOT NULL,
       reactions TEXT NOT NULL,
@@ -60,10 +47,40 @@ Future<void> createDatabase(Database db, int version) async {
       stickerHashKey  TEXT,
       pseudoMessageType INTEGER,
       pseudoMessageData TEXT,
-      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
+      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id),
+      CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
     )''',
   );
 
+  await db.execute('''
+    CREATE TABLE $fileMetadataTable (
+      id               INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+      path             TEXT,
+      sourceUrl        TEXT,
+      mimeType         TEXT,
+      thumbnailType    TEXT,
+      thumbnailData    TEXT,
+      width            INTEGER,
+      height           INTEGER,
+      plaintextHashes  TEXT,
+      encryptionKey    TEXT,
+      encryptionIv     TEXT,
+      encryptionScheme TEXT,
+      cipherTextHashes TEXT,
+      filename         TEXT NOT NULL,
+      size             INTEGER
+    )''');
+
+  await db.execute('''
+    CREATE TABLE $fileMetadataHashesTable (
+      algorithm TEXT NOT NULL,
+      value     TEXT NOT NULL,
+      id        INTEGER NOT NULL,
+      CONSTRAINT f_primarykey PRIMARY KEY (algorithm, value),
+      CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES $fileMetadataTable (id)
+        ON DELETE CASCADE
+    )''');
+  
   // Conversations
   await db.execute(
     '''

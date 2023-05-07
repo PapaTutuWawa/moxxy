@@ -14,6 +14,7 @@ import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/cryptography/types.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/httpfiletransfer/client.dart' as client;
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
@@ -122,23 +123,30 @@ class HttpFileTransferService {
     });
   }
 
-  Future<void> _copyFile(FileUploadJob job) async {
-    for (final recipient in job.recipients) {
-      final newPath = await getDownloadPath(
-        pathlib.basename(job.path),
-        recipient,
-        job.mime,
-      );
-
+  Future<void> _copyFile(FileUploadJob job, Map<String, String> plaintextHashes) async {
+    final newPath = await getDownloadPath(
+      pathlib.basename(job.path),
+      plaintextHashes,
+    );
+    if (!File(newPath).existsSync()) {
       await File(job.path).copy(newPath);
 
       // Let the media scanner index the file
       MoxplatformPlugin.media.scanFile(newPath);
+    } else {
+      _log.finest('Skipping file copy on upload as file is already at media location');
+    }
 
+    final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
+      job.metadataId,
+      path: newPath,
+    );
+
+    for (final recipient in job.recipients) {
       // Update the message
       await GetIt.I.get<MessageService>().updateMessage(
             job.messageMap[recipient]!.id,
-            mediaUrl: newPath,
+            fileMetadata: metadata,
           );
     }
   }
@@ -233,20 +241,26 @@ class HttpFileTransferService {
     } else {
       _log.fine('Upload was successful');
 
+      // Update the metadata
+      final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
+        job.metadataId,
+        size: stat.size,
+        encryptionScheme: encryption != null
+           ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
+           : null,
+        encryptionKey: encryption != null ? base64Encode(encryption.key) : null,
+        encryptionIv: encryption != null ? base64Encode(encryption.iv) : null,
+        sourceUrl: slot.getUrl,
+      );
+      
       const uuid = Uuid();
       for (final recipient in job.recipients) {
         // Notify UI of upload completion
         var msg = await ms.updateMessage(
           job.messageMap[recipient]!.id,
-          mediaSize: stat.size,
           errorType: noError,
-          encryptionScheme: encryption != null
-              ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
-              : null,
-          key: encryption != null ? base64Encode(encryption.key) : null,
-          iv: encryption != null ? base64Encode(encryption.iv) : null,
           isUploading: false,
-          srcUrl: slot.getUrl,
+          fileMetadata: metadata,
         );
         // TODO(Unknown): Maybe batch those two together?
         final oldSid = msg.sid;
@@ -312,7 +326,7 @@ class HttpFileTransferService {
           _log.finest(
             'File appears to be either an image or a video. Copying it to the correct directory...',
           );
-          unawaited(_copyFile(job));
+          unawaited(_copyFile(job, plaintextHashes));
         }
       }
     }
@@ -351,8 +365,7 @@ class HttpFileTransferService {
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
     final filename = job.location.filename;
-    final downloadedPath =
-        await getDownloadPath(filename, job.conversationJid, job.mimeGuess);
+    final downloadedPath = await getDownloadPath(job.location.filename, job.location.plaintextHashes,);
 
     var downloadPath = downloadedPath;
     if (job.location.key != null && job.location.iv != null) {
@@ -480,13 +493,17 @@ class HttpFileTransferService {
       }
     }
 
+    final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
+      job.metadataId,
+      path: downloadedPath,
+      size: File(downloadedPath).lengthSync(),
+      width: mediaWidth,
+      height: mediaHeight,
+      mimeType: mime,
+    );
     final msg = await GetIt.I.get<MessageService>().updateMessage(
           job.mId,
-          mediaUrl: downloadedPath,
-          mediaType: mime,
-          mediaWidth: mediaWidth,
-          mediaHeight: mediaHeight,
-          mediaSize: File(downloadedPath).lengthSync(),
+          fileMetadata: metadata,
           isFileUploadNotification: false,
           warningType:
               integrityCheckPassed ? null : warningFileIntegrityCheckFailed,

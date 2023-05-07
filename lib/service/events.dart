@@ -171,7 +171,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
     avatarHash: state.avatarHash,
     permissionsToRequest: permissions,
     preferences: preferences,
-    conversations: (await GetIt.I.get<DatabaseService>().loadConversations())
+    conversations: (await GetIt.I.get<ConversationService>().loadConversations())
         .where((c) => c.open)
         .toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
@@ -562,26 +562,29 @@ Future<void> performRequestDownload(
   );
   sendEvent(MessageUpdatedEvent(message: message));
 
-  final metadata = await peekFile(command.message.srcUrl!);
+  final fileMetadata = command.message.fileMetadata!;
+  final metadata = await peekFile(fileMetadata.sourceUrl!);
 
   // TODO(Unknown): Maybe deduplicate with the code in the xmpp service
   // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
   //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-  final ext = message.srcUrl!.split('.').last;
+  final ext = fileMetadata.sourceUrl!.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
-
+  
   await srv.downloadFile(
     FileDownloadJob(
       MediaFileLocation(
-        message.srcUrl!,
-        message.filename ?? filenameFromUrl(message.srcUrl!),
-        message.encryptionScheme,
-        message.key != null ? base64Decode(message.key!) : null,
-        message.iv != null ? base64Decode(message.iv!) : null,
-        message.plaintextHashes,
-        message.ciphertextHashes,
+        fileMetadata.sourceUrl!,
+        fileMetadata.filename,
+        fileMetadata.encryptionScheme,
+        fileMetadata.encryptionKey != null ? base64Decode(fileMetadata.encryptionKey!) : null,
+        fileMetadata.encryptionIv != null ? base64Decode(fileMetadata.encryptionIv!) : null,
+        fileMetadata.plaintextHashes,
+        fileMetadata.ciphertextHashes,
+        null,
       ),
       message.id,
+      message.fileMetadata!.id,
       message.conversationJid,
       mimeGuess,
     ),
@@ -930,7 +933,7 @@ Future<void> performAddMessageReaction(
   final ms = GetIt.I.get<MessageService>();
   final conn = GetIt.I.get<XmppConnection>();
   final msg =
-      await ms.getMessageById(command.conversationJid, command.messageId);
+      await ms.getMessageById(command.messageId, command.conversationJid);
   assert(msg != null, 'The message must be found');
 
   // Update the state
@@ -971,7 +974,7 @@ Future<void> performRemoveMessageReaction(
   final ms = GetIt.I.get<MessageService>();
   final conn = GetIt.I.get<XmppConnection>();
   final msg =
-      await ms.getMessageById(command.conversationJid, command.messageId);
+      await ms.getMessageById(command.messageId, command.conversationJid);
   assert(msg != null, 'The message must be found');
 
   // Update the state

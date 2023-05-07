@@ -38,6 +38,7 @@ import 'package:moxxyv2/service/database/migrations/0001_conversations_type.dart
 import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
 import 'package:moxxyv2/service/database/migrations/0001_remove_auto_accept_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0001_subscriptions.dart';
+import 'package:moxxyv2/service/database/migrations/0002_file_metadata_table.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -45,10 +46,10 @@ import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
@@ -84,6 +85,24 @@ extension DatabaseUpdateAndReturn on Database {
     assert(result.length == 1, 'Only one row must be returned');
     return result.first;
   }
+
+  /// Like insert but returns the affected row.
+  Future<Map<String, Object?>> insertAndReturn(
+    String table,
+    Map<String, Object?> values,
+  ) async {
+    final q = SqlBuilder.insert(
+      table,
+      values,
+    );
+
+    final result = await rawQuery(
+      '${q.sql} RETURNING *',
+      q.arguments,
+    );
+    assert(result.length == 1, 'Only one row must be returned');
+    return result.first;
+  }
 }
 
 class DatabaseService {
@@ -99,6 +118,10 @@ class DatabaseService {
   /// The database.
   late Database _db;
 
+  /// Public getter for the database
+  // TODO(PapaTutuWawa): Remove this getter and just make _db the new database
+  Database get database => _db;
+  
   Future<void> initialize() async {
     final dbPath = path.join(
       await getDatabasesPath(),
@@ -122,7 +145,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 31,
+      version: 32,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -255,120 +278,14 @@ class DatabaseService {
           _log.finest('Running migration for database version 31');
           await upgradeFromV30ToV31(db);
         }
+        if (oldVersion < 32) {
+          _log.finest('Running migration for database version 32');
+          await upgradeFromV31ToV32(db);
+        }
       },
     );
 
     _log.finest('Database setup done');
-  }
-
-  /// Loads all conversations from the database and adds them to the state and cache.
-  Future<List<Conversation>> loadConversations() async {
-    final conversationsRaw = await _db.query(
-      conversationsTable,
-      orderBy: 'lastChangeTimestamp DESC',
-    );
-
-    final tmp = List<Conversation>.empty(growable: true);
-    for (final c in conversationsRaw) {
-      final jid = c['jid']! as String;
-      final sharedMediaRaw = await _db.query(
-        mediaTable,
-        where: 'conversation_jid = ?',
-        whereArgs: [jid],
-        orderBy: 'timestamp DESC',
-        limit: 8,
-      );
-      final rosterItem =
-          await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
-
-      Message? lastMessage;
-      if (c['lastMessageId'] != null) {
-        lastMessage = await getMessageById(
-          c['lastMessageId']! as int,
-          jid,
-        );
-      }
-
-      tmp.add(
-        Conversation.fromDatabaseJson(
-          c,
-          rosterItem != null && !rosterItem.pseudoRosterItem,
-          rosterItem?.subscription ?? 'none',
-          sharedMediaRaw.map(SharedMedium.fromDatabaseJson).toList(),
-          lastMessage,
-        ),
-      );
-    }
-
-    return tmp;
-  }
-
-  /// Load messages for [jid] from the database.
-  Future<List<Message>> loadMessagesForJid(String jid) async {
-    final rawMessages = await _db.query(
-      messagesTable,
-      where: 'conversationJid = ?',
-      whereArgs: [jid],
-      orderBy: 'timestamp ASC',
-    );
-
-    final messages = List<Message>.empty(growable: true);
-    for (final m in rawMessages) {
-      Message? quotes;
-      if (m['quote_id'] != null) {
-        final rawQuote = (await _db.query(
-          messagesTable,
-          where: 'conversationJid = ? AND id = ?',
-          whereArgs: [jid, m['quote_id']! as int],
-        ))
-            .first;
-        quotes = Message.fromDatabaseJson(rawQuote, null);
-      }
-
-      messages.add(Message.fromDatabaseJson(m, quotes));
-    }
-
-    return messages;
-  }
-
-  /// Query at max [messagePaginationSize] messages for the conversation [jid] from the database.
-  /// [olderThan] specified whether the messages must be older (true) or newer (false) than [oldestTimestamp].
-  /// If [oldestTimestamp] is null, then use the oldest/newest message.
-  Future<List<Message>> getPaginatedMessagesForJid(
-    String jid,
-    bool olderThan,
-    int? oldestTimestamp,
-  ) async {
-    final comparator = olderThan ? '<' : '>';
-    final query = oldestTimestamp != null
-        ? 'conversationJid = ? AND timestamp $comparator ?'
-        : 'conversationJid = ?';
-    final args = oldestTimestamp != null ? [jid, oldestTimestamp] : [jid];
-    final rawMessages = await _db.query(
-      messagesTable,
-      where: query,
-      whereArgs: args,
-      orderBy: 'timestamp DESC',
-      limit: messagePaginationSize,
-    );
-
-    final messages = List<Message>.empty(growable: true);
-    for (final m in rawMessages) {
-      Message? quotes;
-      if (m['quote_id'] != null) {
-        final rawQuote = (await _db.query(
-          messagesTable,
-          where: 'conversationJid = ? AND id = ?',
-          whereArgs: [jid, m['quote_id']! as int],
-        ))
-            .first;
-        quotes = Message.fromDatabaseJson(rawQuote, null);
-      }
-
-      messages.add(Message.fromDatabaseJson(m, quotes));
-    }
-
-    return messages;
   }
 
   Future<List<SharedMedium>> getPaginatedSharedMediaForJid(
@@ -547,277 +464,6 @@ class DatabaseService {
       where: 'message_id = ?',
       whereArgs: [messageId],
     );
-  }
-
-  /// Same as [addConversationFromData] but for a [Message].
-  Future<Message> addMessageFromData(
-    String body,
-    int timestamp,
-    String sender,
-    String conversationJid,
-    bool isMedia,
-    String sid,
-    bool isFileUploadNotification,
-    bool encrypted,
-    bool containsNoStore, {
-    String? srcUrl,
-    String? key,
-    String? iv,
-    String? encryptionScheme,
-    String? mediaUrl,
-    String? mediaType,
-    String? thumbnailData,
-    int? mediaWidth,
-    int? mediaHeight,
-    String? originId,
-    String? quoteId,
-    String? filename,
-    int? errorType,
-    int? warningType,
-    Map<String, String>? plaintextHashes,
-    Map<String, String>? ciphertextHashes,
-    bool isDownloading = false,
-    bool isUploading = false,
-    int? mediaSize,
-    String? stickerPackId,
-    String? stickerHashKey,
-    int? pseudoMessageType,
-    Map<String, dynamic>? pseudoMessageData,
-    bool received = false,
-    bool displayed = false,
-  }) async {
-    var m = Message(
-      sender,
-      body,
-      timestamp,
-      sid,
-      -1,
-      conversationJid,
-      isMedia,
-      isFileUploadNotification,
-      encrypted,
-      containsNoStore,
-      errorType: errorType,
-      warningType: warningType,
-      mediaUrl: mediaUrl,
-      key: key,
-      iv: iv,
-      encryptionScheme: encryptionScheme,
-      mediaType: mediaType,
-      thumbnailData: thumbnailData,
-      mediaWidth: mediaWidth,
-      mediaHeight: mediaHeight,
-      srcUrl: srcUrl,
-      received: received,
-      displayed: displayed,
-      acked: false,
-      originId: originId,
-      filename: filename,
-      plaintextHashes: plaintextHashes,
-      ciphertextHashes: ciphertextHashes,
-      isUploading: isUploading,
-      isDownloading: isDownloading,
-      mediaSize: mediaSize,
-      stickerPackId: stickerPackId,
-      stickerHashKey: stickerHashKey,
-      pseudoMessageType: pseudoMessageType,
-      pseudoMessageData: pseudoMessageData,
-    );
-
-    if (quoteId != null) {
-      final quotes = await getMessageByXmppId(quoteId, conversationJid);
-      if (quotes == null) {
-        _log.warning('Failed to add quote for message with id $quoteId');
-      } else {
-        m = m.copyWith(quotes: quotes);
-      }
-    }
-
-    return m.copyWith(
-      id: await _db.insert(messagesTable, m.toDatabaseJson()),
-    );
-  }
-
-  Future<Message?> getMessageById(int id, String conversationJid) async {
-    final messagesRaw = await _db.query(
-      messagesTable,
-      where: 'id = ? AND conversationJid = ?',
-      whereArgs: [id, conversationJid],
-      limit: 1,
-    );
-
-    if (messagesRaw.isEmpty) return null;
-
-    // TODO(PapaTutuWawa): Load the quoted message
-    final msg = messagesRaw.first;
-    return Message.fromDatabaseJson(msg, null);
-  }
-
-  Future<Message?> getMessageByXmppId(
-    String id,
-    String conversationJid, {
-    bool includeOriginId = true,
-  }) async {
-    final idQuery = includeOriginId ? '(sid = ? OR originId = ?)' : 'sid = ?';
-    final messagesRaw = await _db.query(
-      messagesTable,
-      where: 'conversationJid = ? AND $idQuery',
-      whereArgs:
-          includeOriginId ? [conversationJid, id, id] : [conversationJid, id],
-      limit: 1,
-    );
-
-    if (messagesRaw.isEmpty) return null;
-
-    // TODO(PapaTutuWawa): Load the quoted message
-    final msg = messagesRaw.first;
-    return Message.fromDatabaseJson(msg, null);
-  }
-
-  Future<Message?> getMessageByOriginId(
-    String id,
-    String conversationJid,
-  ) async {
-    final messagesRaw = await _db.query(
-      messagesTable,
-      where: 'conversationJid = ? AND originId = ?',
-      whereArgs: [conversationJid, id],
-      limit: 1,
-    );
-
-    if (messagesRaw.isEmpty) return null;
-
-    // TODO(PapaTutuWawa): Load the quoted message
-    final msg = messagesRaw.first;
-    return Message.fromDatabaseJson(msg, null);
-  }
-
-  /// Updates the message item with id [id] inside the database.
-  Future<Message> updateMessage(
-    int id, {
-    Object? body = notSpecified,
-    Object? mediaUrl = notSpecified,
-    Object? mediaType = notSpecified,
-    bool? isMedia,
-    bool? received,
-    bool? displayed,
-    bool? acked,
-    Object? errorType = notSpecified,
-    Object? warningType = notSpecified,
-    bool? isFileUploadNotification,
-    Object? srcUrl = notSpecified,
-    Object? key = notSpecified,
-    Object? iv = notSpecified,
-    Object? encryptionScheme = notSpecified,
-    Object? mediaWidth = notSpecified,
-    Object? mediaHeight = notSpecified,
-    bool? isDownloading,
-    bool? isUploading,
-    Object? mediaSize = notSpecified,
-    Object? originId = notSpecified,
-    Object? sid = notSpecified,
-    bool? isRetracted,
-    Object? thumbnailData = notSpecified,
-    bool? isEdited,
-    Object? reactions = notSpecified,
-  }) async {
-    final m = <String, dynamic>{};
-
-    if (body != notSpecified) {
-      m['body'] = body as String?;
-    }
-    if (mediaUrl != notSpecified) {
-      m['mediaUrl'] = mediaUrl as String?;
-    }
-    if (mediaType != notSpecified) {
-      m['mediaType'] = mediaType as String?;
-    }
-    if (isMedia != null) {
-      m['isMedia'] = boolToInt(isMedia);
-    }
-    if (received != null) {
-      m['received'] = boolToInt(received);
-    }
-    if (displayed != null) {
-      m['displayed'] = boolToInt(displayed);
-    }
-    if (acked != null) {
-      m['acked'] = boolToInt(acked);
-    }
-    if (errorType != notSpecified) {
-      m['errorType'] = errorType as int?;
-    }
-    if (warningType != notSpecified) {
-      m['warningType'] = warningType as int?;
-    }
-    if (isFileUploadNotification != null) {
-      m['isFileUploadNotification'] = boolToInt(isFileUploadNotification);
-    }
-    if (srcUrl != notSpecified) {
-      m['srcUrl'] = srcUrl as String?;
-    }
-    if (mediaWidth != notSpecified) {
-      m['mediaWidth'] = mediaWidth as int?;
-    }
-    if (mediaHeight != notSpecified) {
-      m['mediaHeight'] = mediaHeight as int?;
-    }
-    if (mediaSize != notSpecified) {
-      m['mediaSize'] = mediaSize as int?;
-    }
-    if (key != notSpecified) {
-      m['key'] = key as String?;
-    }
-    if (iv != notSpecified) {
-      m['iv'] = iv as String?;
-    }
-    if (encryptionScheme != notSpecified) {
-      m['encryptionScheme'] = encryptionScheme as String?;
-    }
-    if (isDownloading != null) {
-      m['isDownloading'] = boolToInt(isDownloading);
-    }
-    if (isUploading != null) {
-      m['isUploading'] = boolToInt(isUploading);
-    }
-    if (sid != notSpecified) {
-      m['sid'] = sid as String?;
-    }
-    if (originId != notSpecified) {
-      m['originId'] = originId as String?;
-    }
-    if (isRetracted != null) {
-      m['isRetracted'] = boolToInt(isRetracted);
-    }
-    if (thumbnailData != notSpecified) {
-      m['thumbnailData'] = thumbnailData as String?;
-    }
-    if (isEdited != null) {
-      m['isEdited'] = boolToInt(isEdited);
-    }
-    if (reactions != notSpecified) {
-      assert(reactions != null, 'Cannot set reactions to null');
-      m['reactions'] = jsonEncode(
-        (reactions! as List<Reaction>).map((r) => r.toJson()).toList(),
-      );
-    }
-
-    final msg = await _db.updateAndReturn(
-      messagesTable,
-      m,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    Message? quotes;
-    if (msg['quote_id'] != null) {
-      quotes = await getMessageById(
-        msg['quote_id']! as int,
-        msg['conversationJid']! as String,
-      );
-    }
-
-    return Message.fromDatabaseJson(msg, quotes);
   }
 
   /// Loads roster items from the database
@@ -1467,4 +1113,14 @@ class DatabaseService {
       whereArgs: [jid],
     );
   }
+
+  Future<FileMetadata> addFileMetadataFromData(
+    FileMetadata metadata,
+  ) async {
+    final result = await _db.insertAndReturn(
+      fileMetadataTable,
+      metadata.toDatabaseJson(),
+    );
+    return FileMetadata.fromDatabaseJson(result);
+  }  
 }

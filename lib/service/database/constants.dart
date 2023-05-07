@@ -16,6 +16,8 @@ const stickersTable = 'Stickers';
 const stickerPacksTable = 'StickerPacks';
 const blocklistTable = 'Blocklist';
 const subscriptionsTable = 'SubscriptionRequests';
+const fileMetadataTable = 'FileMetadata';
+const fileMetadataHashesTable = 'FileMetadataHashes';
 
 const typeString = 0;
 const typeInt = 1;

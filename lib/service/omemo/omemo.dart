@@ -143,7 +143,6 @@ class OmemoService {
       DateTime.now().millisecondsSinceEpoch,
       '',
       jid,
-      false,
       '',
       false,
       false,

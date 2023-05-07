@@ -1,9 +1,13 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -57,13 +61,55 @@ class ConversationService {
     });
   }
 
+  /// Loads all conversations from the database and adds them to the state and cache.
+  Future<List<Conversation>> loadConversations() async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final conversationsRaw = await db.query(
+      conversationsTable,
+      orderBy: 'lastChangeTimestamp DESC',
+    );
+
+    final tmp = List<Conversation>.empty(growable: true);
+    for (final c in conversationsRaw) {
+      final jid = c['jid']! as String;
+      final sharedMediaRaw = await db.query(
+        mediaTable,
+        where: 'conversation_jid = ?',
+        whereArgs: [jid],
+        orderBy: 'timestamp DESC',
+        limit: 8,
+      );
+      final rosterItem =
+          await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
+
+      Message? lastMessage;
+      if (c['lastMessageId'] != null) {
+        lastMessage = await GetIt.I.get<MessageService>().getMessageById(
+          c['lastMessageId']! as int,
+          jid,
+        );
+      }
+
+      tmp.add(
+        Conversation.fromDatabaseJson(
+          c,
+          rosterItem != null && !rosterItem.pseudoRosterItem,
+          rosterItem?.subscription ?? 'none',
+          sharedMediaRaw.map(SharedMedium.fromDatabaseJson).toList(),
+          lastMessage,
+        ),
+      );
+    }
+
+    return tmp;
+  }
+  
   /// Wrapper around DatabaseService's loadConversations that adds the loaded
   /// to the cache.
   Future<void> _loadConversationsIfNeeded() async {
     if (_conversationCache != null) return;
 
-    final conversations =
-        await GetIt.I.get<DatabaseService>().loadConversations();
+    final conversations = await loadConversations();
     _conversationCache = Map<String, Conversation>.fromEntries(
       conversations.map((c) => MapEntry(c.jid, c)),
     );

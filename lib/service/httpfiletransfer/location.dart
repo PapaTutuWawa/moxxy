@@ -11,6 +11,7 @@ class MediaFileLocation {
     this.iv,
     this.plaintextHashes,
     this.ciphertextHashes,
+    this.size,
   );
   final String url;
   final String filename;
@@ -19,6 +20,7 @@ class MediaFileLocation {
   final List<int>? iv;
   final Map<String, String>? plaintextHashes;
   final Map<String, String>? ciphertextHashes;
+  final int? size;
 
   String? get keyBase64 {
     if (key != null) return base64Encode(key!);
@@ -40,7 +42,8 @@ class MediaFileLocation {
       key.hashCode ^
       iv.hashCode ^
       plaintextHashes.hashCode ^
-      ciphertextHashes.hashCode;
+      ciphertextHashes.hashCode ^
+      size.hashCode;
 
   @override
   bool operator ==(Object other) {
@@ -50,6 +53,7 @@ class MediaFileLocation {
         filename == other.filename &&
         encryptionScheme == other.encryptionScheme &&
         key == other.key &&
-        iv == other.iv;
+        iv == other.iv &&
+        size == other.size;
   }
 }

@@ -16,12 +16,14 @@ import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/message.dart';
+import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -35,6 +37,7 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
@@ -222,7 +225,6 @@ class XmppService {
             timestamp,
             conn.connectionSettings.jid.toString(),
             recipient,
-            sticker != null,
             sid,
             false,
             c.type == ConversationType.note ? true : c.encrypted,
@@ -232,8 +234,6 @@ class XmppService {
             quoteId: quotedMessage?.sid,
             stickerPackId: sticker?.stickerPackId,
             stickerHashKey: sticker?.hashKey,
-            srcUrl: sticker?.urlSources.first,
-            mediaType: sticker?.mediaType,
             received: c.type == ConversationType.note ? true : false,
             displayed: c.type == ConversationType.note ? true : false,
           );
@@ -301,7 +301,7 @@ class XmppService {
     }
   }
 
-  MediaFileLocation? _getMessageSrcUrl(MessageEvent event) {
+  MediaFileLocation? _getEmbeddedFile(MessageEvent event) {
     if (event.sfs != null) {
       final source = firstWhereOrNull(
         event.sfs!.sources,
@@ -311,7 +311,7 @@ class XmppService {
         },
       );
 
-      final name = event.sfs?.metadata.name;
+      final name = event.sfs!.metadata.name;
       if (source is StatelessFileSharingUrlSource) {
         return MediaFileLocation(
           source.url,
@@ -319,8 +319,9 @@ class XmppService {
           null,
           null,
           null,
-          event.sfs?.metadata.hashes,
+          event.sfs!.metadata.hashes,
           null,
+          event.sfs!.metadata.size,
         );
       } else {
         final esource = source! as StatelessFileSharingEncryptedSource;
@@ -334,12 +335,14 @@ class XmppService {
           esource.iv,
           event.sfs?.metadata.hashes,
           esource.hashes,
+          event.sfs!.metadata.size,
         );
       }
     } else if (event.oob != null) {
       return MediaFileLocation(
         event.oob!.url!,
         filenameFromUrl(event.oob!.url!),
+        null,
         null,
         null,
         null,
@@ -516,49 +519,66 @@ class XmppService {
     final encrypt = <String, bool>{};
     // Recipient -> Last message Id
     final lastMessages = <String, Message>{};
+    // Path -> Metadata Id
+    final metadataMap = <String, int>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
     for (final path in paths) {
       final pathMime = lookupMimeType(path);
+      // TODO(Unknown): Do the same for videos
+      if (pathMime != null && pathMime.startsWith('image/')) {
+        final imageSize = await getImageSizeFromPath(path);
+        if (imageSize != null) {
+          dimensions[path] = Size(
+            imageSize.width,
+            imageSize.height,
+          );
+        } else {
+          _log.warning('Failed to get image dimensions for $path');
+        }
+      }
+
+      final metadata = await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
+        FileMetadata(
+          -1,
+          path,
+          null,
+          pathMime,
+          File(path).lengthSync(),
+          null,
+          null,
+          dimensions[path]!.width.toInt(),
+          dimensions[path]!.height.toInt(),
+          null,
+          null,
+          null,
+          null,
+          null,
+          pathlib.basename(path),
+        ),
+      );
+      metadataMap[path] = metadata.id;
 
       for (final recipient in recipients) {
         final conversation = await cs.getConversationByJid(recipient);
         encrypt[recipient] =
             conversation?.encrypted ?? prefs.enableOmemoByDefault;
 
-        // TODO(Unknown): Do the same for videos
-        if (pathMime != null && pathMime.startsWith('image/')) {
-          final imageSize = await getImageSizeFromPath(path);
-          if (imageSize != null) {
-            dimensions[path] = Size(
-              imageSize.width,
-              imageSize.height,
-            );
-          } else {
-            _log.warning('Failed to get image dimensions for $path');
-          }
-        }
-
         final msg = await ms.addMessageFromData(
           '',
           DateTime.now().millisecondsSinceEpoch,
           conn.connectionSettings.jid.toString(),
           recipient,
-          true,
           conn.generateId(),
-          false,
           conversation?.type == ConversationType.note
               ? true
               : encrypt[recipient]!,
           // TODO(Unknown): Maybe make this depend on some setting
           false,
-          mediaUrl: path,
-          mediaType: pathMime,
+          false,
+          fileMetadata: metadata,
           originId: conn.generateId(),
-          mediaWidth: dimensions[path]?.width.toInt(),
-          mediaHeight: dimensions[path]?.height.toInt(),
-          filename: pathlib.basename(path),
           isUploading:
               conversation?.type != ConversationType.note ? true : false,
           received: conversation?.type == ConversationType.note ? true : false,
@@ -710,6 +730,7 @@ class XmppService {
             pathMime,
             encrypt,
             messages[path]!,
+            metadataMap[path]!,
             thumbnails[path] ?? [],
           ),
         );
@@ -876,11 +897,10 @@ class XmppService {
     dynamic extra,
   }) async {
     _log.finest('Received delivery receipt from ${event.from}');
-    final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final sender = event.from.toBare().toString();
-    final dbMsg = await db.getMessageByXmppId(event.id, sender);
+    final dbMsg = await ms.getMessageByXmppId(event.id, sender);
     if (dbMsg == null) {
       _log.warning(
         'Did not find the message with id ${event.id} in the database!',
@@ -907,11 +927,10 @@ class XmppService {
   Future<void> _onChatMarker(ChatMarkerEvent event, {dynamic extra}) async {
     _log.finest('Chat marker from ${event.from}');
 
-    final db = GetIt.I.get<DatabaseService>();
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final sender = event.from.toBare().toString();
-    final dbMsg = await db.getMessageByXmppId(event.id, sender);
+    final dbMsg = await ms.getMessageByXmppId(event.id, sender);
     if (dbMsg == null) {
       _log.warning('Did not find the message in the database!');
       return;
@@ -1313,14 +1332,14 @@ class XmppService {
     }
 
     // The Url of the file embedded in the message, if there is one.
-    final embeddedFile = _getMessageSrcUrl(event);
+    final embeddedFile = _getEmbeddedFile(event);
     // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
     // that the message body and the OOB url are the same if the OOB url is not null.
     final isFileEmbedded = _isFileEmbedded(event, embeddedFile);
+    // The dimensions of the file, if available.
+    final dimensions = _getDimensions(event);
     // Indicates if we should auto-download the file, if a file is specified in the message
     final shouldDownload = await _shouldDownloadFile(conversationJid);
-    // The thumbnail for the embedded file.
-    final thumbnailData = _getThumbnailData(event);
     // Indicates if a notification should be created for the message.
     // The way this variable works is that if we can download the file, then the
     // notification will be created later by the [DownloadService]. If we don't want the
@@ -1356,39 +1375,42 @@ class XmppService {
       );
     }
 
+    FileMetadata? fileMetadata;
+    if (isFileEmbedded) {
+      final thumbnail = _getThumbnailData(event);
+      fileMetadata = await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
+        embeddedFile!,
+        mimeGuess,
+        embeddedFile.size,
+        dimensions,
+        // TODO(Unknown): Maybe we switch to something else?
+        thumbnail != null ? 'blurhash' : null,
+        thumbnail,
+      );
+    }
+    
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
-    final dimensions = _getDimensions(event);
     var message = await ms.addMessageFromData(
       messageBody,
       messageTimestamp,
       event.fromJid.toString(),
       conversationJid,
-      isFileEmbedded || event.fun != null || event.stickerPackId != null,
       event.sid,
       event.fun != null,
       event.encrypted,
       event.messageProcessingHints?.contains(MessageProcessingHint.noStore) ??
           false,
-      srcUrl: embeddedFile?.url,
-      filename: event.fun?.name ?? embeddedFile?.filename,
-      key: embeddedFile?.keyBase64,
-      iv: embeddedFile?.ivBase64,
-      encryptionScheme: embeddedFile?.encryptionScheme,
-      mediaType: mimeGuess,
-      thumbnailData: thumbnailData,
-      mediaWidth: dimensions?.width.toInt(),
-      mediaHeight: dimensions?.height.toInt(),
+      fileMetadata: fileMetadata,
       quoteId: replyId,
       originId: event.stanzaId.originId,
       errorType: errorTypeFromException(event.other['encryption_error']),
-      plaintextHashes: event.sfs?.metadata.hashes,
       stickerPackId: event.stickerPackId,
       stickerHashKey: stickerHashKey,
     );
 
     // Attempt to auto-download the embedded file
-    if (isFileEmbedded && shouldDownload) {
+    if (isFileEmbedded && shouldDownload && fileMetadata?.path == null) {
       final fts = GetIt.I.get<HttpFileTransferService>();
       final metadata = await peekFile(embeddedFile!.url);
 
@@ -1408,6 +1430,7 @@ class XmppService {
           FileDownloadJob(
             embeddedFile,
             message.id,
+            message.fileMetadata!.id,
             conversationJid,
             mimeGuess,
           ),
@@ -1544,22 +1567,30 @@ class XmppService {
     }
 
     // The Url of the file embedded in the message, if there is one.
-    final embeddedFile = _getMessageSrcUrl(event);
+    final embeddedFile = _getEmbeddedFile(event);
     // Is there even a file we can download?
     final isFileEmbedded = _isFileEmbedded(event, embeddedFile);
 
     if (isFileEmbedded) {
-      final shouldDownload = await _shouldDownloadFile(conversationJid);
+      final fileMetadata = await GetIt.I.get<FilesService>().getFileMetadataFromHash(
+        embeddedFile!.plaintextHashes,
+      );
+      final shouldDownload = await _shouldDownloadFile(conversationJid) && fileMetadata == null;
+
+      final oldFileMetadata = message.fileMetadata;
       message = await ms.updateMessage(
         message.id,
-        srcUrl: embeddedFile!.url,
-        key: embeddedFile.keyBase64,
-        iv: embeddedFile.ivBase64,
+        fileMetadata: fileMetadata ?? notSpecified,
         isFileUploadNotification: false,
         isDownloading: shouldDownload,
         sid: event.sid,
         originId: event.stanzaId.originId,
       );
+
+      // Remove the old entry
+      if (fileMetadata != null) {
+        await GetIt.I.get<FilesService>().removeFileMetadata(oldFileMetadata!.id);
+      }
 
       // Tell the UI
       sendEvent(MessageUpdatedEvent(message: message));
@@ -1570,6 +1601,7 @@ class XmppService {
               FileDownloadJob(
                 embeddedFile,
                 message.id,
+                oldFileMetadata!.id,
                 conversationJid,
                 _getMimeGuess(event),
                 shouldShowNotification: false,

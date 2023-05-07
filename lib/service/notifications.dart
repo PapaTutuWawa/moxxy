@@ -100,7 +100,7 @@ class NotificationsService {
     if (m.stickerPackId != null) {
       body = t.messages.sticker;
     } else if (m.isMedia) {
-      body = mimeTypeToEmoji(m.mediaType);
+      body = mimeTypeToEmoji(m.fileMetadata!.mimeType);
     } else {
       body = m.body;
     }
@@ -126,7 +126,7 @@ class NotificationsService {
             ? NotificationLayout.BigPicture
             : NotificationLayout.Messaging,
         category: NotificationCategory.Message,
-        bigPicture: m.isThumbnailable ? 'file://${m.mediaUrl}' : null,
+        bigPicture: m.isThumbnailable ? 'file://${m.fileMetadata!.path}' : null,
         payload: <String, String>{
           'conversationJid': c.jid,
           'sid': m.sid,
