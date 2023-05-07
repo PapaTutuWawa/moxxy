@@ -19,10 +19,15 @@ Future<String> getDownloadPath(
     await baseDir.create(recursive: true);
   }
 
+  // Keep the extension of the file. Otherwise Android will be really confused
+  // as to what it should open the file with.
+  final ext = path.extension(filename);
   final hash = getStrongestHashFromMap(plaintextHashes);
   return path.join(
     basePath,
-    hash ?? '$filename.${DateTime.now().millisecondsSinceEpoch}',
+    hash != null ?
+      '$hash.$ext' :
+      '$filename.${DateTime.now().millisecondsSinceEpoch}.$ext',
   );
 }
 
