@@ -38,7 +38,7 @@ class MessageService {
     );
 
     if (messagesRaw.isEmpty) return null;
-    
+
     // TODO(PapaTutuWawa): Load the quoted message
     final msg = messagesRaw.first;
 
@@ -50,7 +50,8 @@ class MessageService {
         where: 'id = ?',
         whereArgs: [msg['file_metadata_id']],
         limit: 1,
-      )).first;
+      ))
+          .first;
       fm = FileMetadata.fromDatabaseJson(rawFm);
     }
 
@@ -69,8 +70,7 @@ class MessageService {
       where: 'conversationJid = ? AND $idQuery',
       whereArgs: [
         conversationJid,
-        if (includeOriginId)
-          id,
+        if (includeOriginId) id,
         id,
       ],
       limit: 1,
@@ -88,13 +88,14 @@ class MessageService {
         where: 'id = ?',
         whereArgs: [msg['file_metadata_id']],
         limit: 1,
-      )).first;
+      ))
+          .first;
       fm = FileMetadata.fromDatabaseJson(rawFm);
     }
-    
+
     return Message.fromDatabaseJson(msg, null, fm);
   }
-  
+
   /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
   /// specified, or the oldest messages are returned if null. If [olderThan] is false, then message must be newer
   /// than [oldestTimestamp], or the newest messages are returned if null.
@@ -167,9 +168,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
       ''',
       [
         jid,
-
-        if (oldestTimestamp != null)
-          oldestTimestamp,
+        if (oldestTimestamp != null) oldestTimestamp,
       ],
     );
 
@@ -182,8 +181,12 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
       Message? quotes;
       if (m['quote_id'] != null) {
         final rawQuote = Map<String, dynamic>.fromEntries(
-          m.entries.where((entry) => entry.key.startsWith('quote_'))
-            .map((entry) => MapEntry<String, dynamic>(entry.key.substring(6), entry.value)),
+          m.entries.where((entry) => entry.key.startsWith('quote_')).map(
+                (entry) => MapEntry<String, dynamic>(
+                  entry.key.substring(6),
+                  entry.value,
+                ),
+              ),
         );
 
         FileMetadata? quoteFm;
@@ -193,7 +196,8 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
             where: 'id = ?',
             whereArgs: [rawQuote['file_metadata_id']],
             limit: 1,
-          )).first;
+          ))
+              .first;
           quoteFm = FileMetadata.fromDatabaseJson(rawQuoteFm);
         }
 
@@ -204,7 +208,12 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
       if (m['file_metadata_id'] != null) {
         fm = FileMetadata.fromDatabaseJson(
           Map<String, Object?>.fromEntries(
-          m.entries.where((entry) => entry.key.startsWith('fm_')).map((entry) => MapEntry<String, Object?>(entry.key.substring(3), entry.value)),
+            m.entries.where((entry) => entry.key.startsWith('fm_')).map(
+                  (entry) => MapEntry<String, Object?>(
+                    entry.key.substring(3),
+                    entry.value,
+                  ),
+                ),
           ),
         );
       }
@@ -223,7 +232,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
 
     return page;
   }
-  
+
   /// Wrapper around [DatabaseService]'s addMessageFromData that updates the cache.
   Future<Message> addMessageFromData(
     String body,
@@ -309,10 +318,10 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
     String stanzaId,
   ) async {
     return getMessageByXmppId(
-          stanzaId,
-          conversationJid,
-          includeOriginId: false,
-        );
+      stanzaId,
+      conversationJid,
+      includeOriginId: false,
+    );
   }
 
   Future<Message?> getMessageByStanzaOrOriginId(
@@ -320,9 +329,9 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
     String id,
   ) async {
     return getMessageByXmppId(
-          id,
-          conversationJid,
-        );
+      id,
+      conversationJid,
+    );
   }
 
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
@@ -421,7 +430,8 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
         where: 'id = ?',
         whereArgs: [updatedMessage['file_metadata_id']],
         limit: 1,
-      )).first;
+      ))
+          .first;
       metadata = FileMetadata.fromDatabaseJson(metadataRaw);
     }
 
@@ -465,9 +475,9 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
     bool selfRetract,
   ) async {
     final msg = await getMessageByXmppId(
-          originId,
-          conversationJid,
-        );
+      originId,
+      conversationJid,
+    );
 
     if (msg == null) {
       _log.finest(

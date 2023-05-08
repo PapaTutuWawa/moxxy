@@ -25,9 +25,9 @@ Future<String> getDownloadPath(
   final hash = getStrongestHashFromMap(plaintextHashes);
   return path.join(
     basePath,
-    hash != null ?
-      '$hash.$ext' :
-      '$filename.${DateTime.now().millisecondsSinceEpoch}.$ext',
+    hash != null
+        ? '$hash.$ext'
+        : '$filename.${DateTime.now().millisecondsSinceEpoch}.$ext',
   );
 }
 

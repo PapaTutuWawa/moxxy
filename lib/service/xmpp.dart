@@ -445,12 +445,15 @@ class XmppService {
     _loginTriggeredFromUI = triggeredFromUI;
     conn
       ..connectionSettings = settings
-      ..getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!.resource = lastResource;
+      ..getNegotiatorById<StreamManagementNegotiator>(
+        streamManagementNegotiator,
+      )!
+          .resource = lastResource;
     unawaited(
       conn.connect(
-            waitForConnection: true,
-            shouldReconnect: true,
-          ),
+        waitForConnection: true,
+        shouldReconnect: true,
+      ),
     );
     installEventHandlers();
   }
@@ -466,12 +469,15 @@ class XmppService {
     _loginTriggeredFromUI = triggeredFromUI;
     conn
       ..connectionSettings = settings
-      ..getNegotiatorById<StreamManagementNegotiator>(streamManagementNegotiator)!.resource = lastResource;
+      ..getNegotiatorById<StreamManagementNegotiator>(
+        streamManagementNegotiator,
+      )!
+          .resource = lastResource;
     installEventHandlers();
     return conn.connect(
-          waitForConnection: true,
-          waitUntilLogin: true,
-        );
+      waitForConnection: true,
+      waitUntilLogin: true,
+    );
   }
 
   /// Wrapper function for creating shared media entries for the given paths.
@@ -539,26 +545,27 @@ class XmppService {
         }
       }
 
-      final metadata = await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
-        FileMetadata(
-          // TODO
-          DateTime.now().millisecondsSinceEpoch.toString(),
-          path,
-          null,
-          pathMime,
-          File(path).lengthSync(),
-          null,
-          null,
-          dimensions[path]!.width.toInt(),
-          dimensions[path]!.height.toInt(),
-          null,
-          null,
-          null,
-          null,
-          null,
-          pathlib.basename(path),
-        ),
-      );
+      final metadata =
+          await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
+                FileMetadata(
+                  // TODO
+                  DateTime.now().millisecondsSinceEpoch.toString(),
+                  path,
+                  null,
+                  pathMime,
+                  File(path).lengthSync(),
+                  null,
+                  null,
+                  dimensions[path]!.width.toInt(),
+                  dimensions[path]!.height.toInt(),
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  pathlib.basename(path),
+                ),
+              );
       metadataMap[path] = metadata.id;
 
       for (final recipient in recipients) {
@@ -1379,18 +1386,19 @@ class XmppService {
     FileMetadata? fileMetadata;
     if (isFileEmbedded) {
       final thumbnail = _getThumbnailData(event);
-      fileMetadata = await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
-        embeddedFile!,
-        mimeGuess,
-        embeddedFile.size,
-        dimensions,
-        // TODO(Unknown): Maybe we switch to something else?
-        thumbnail != null ? 'blurhash' : null,
-        thumbnail,
-        createHashPointers: false,
-      );
+      fileMetadata =
+          await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
+                embeddedFile!,
+                mimeGuess,
+                embeddedFile.size,
+                dimensions,
+                // TODO(Unknown): Maybe we switch to something else?
+                thumbnail != null ? 'blurhash' : null,
+                thumbnail,
+                createHashPointers: false,
+              );
     }
-    
+
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
     var message = await ms.addMessageFromData(
@@ -1578,10 +1586,12 @@ class XmppService {
     final isFileEmbedded = _isFileEmbedded(event, embeddedFile);
 
     if (isFileEmbedded) {
-      final fileMetadata = await GetIt.I.get<FilesService>().getFileMetadataFromHash(
-        embeddedFile!.plaintextHashes,
-      );
-      final shouldDownload = await _shouldDownloadFile(conversationJid) && fileMetadata == null;
+      final fileMetadata =
+          await GetIt.I.get<FilesService>().getFileMetadataFromHash(
+                embeddedFile!.plaintextHashes,
+              );
+      final shouldDownload =
+          await _shouldDownloadFile(conversationJid) && fileMetadata == null;
 
       final oldFileMetadata = message.fileMetadata;
       message = await ms.updateMessage(
@@ -1595,7 +1605,9 @@ class XmppService {
 
       // Remove the old entry
       if (fileMetadata != null) {
-        await GetIt.I.get<FilesService>().removeFileMetadata(oldFileMetadata!.id);
+        await GetIt.I
+            .get<FilesService>()
+            .removeFileMetadata(oldFileMetadata!.id);
       }
 
       // Tell the UI

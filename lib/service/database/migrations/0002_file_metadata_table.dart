@@ -37,8 +37,10 @@ Future<void> upgradeFromV31ToV32(Database db) async {
     )''');
 
   // Add the file_metadata_id column
-  await db.execute('ALTER TABLE $messagesTable ADD COLUMN file_metadata_id TEXT DEFAULT NULL;');
-      
+  await db.execute(
+    'ALTER TABLE $messagesTable ADD COLUMN file_metadata_id TEXT DEFAULT NULL;',
+  );
+
   // Migrate the media messages' attributes to new table
   final messages = await db.query(
     messagesTable,
@@ -49,7 +51,9 @@ Future<void> upgradeFromV31ToV32(Database db) async {
     String id;
     if (message['plaintextHashes'] != null) {
       // Plaintext hashes available (SFS)
-      final plaintextHashes = (jsonDecode(message['plaintextHashes']! as String) as Map<dynamic, dynamic>).cast<String, String>();
+      final plaintextHashes = (jsonDecode(message['plaintextHashes']! as String)
+              as Map<dynamic, dynamic>)
+          .cast<String, String>();
       final result = await db.query(
         fileMetadataHashesTable,
         where: 'algorithm = ? AND value = ?',
@@ -62,14 +66,13 @@ Future<void> upgradeFromV31ToV32(Database db) async {
 
       if (result.isEmpty) {
         final metadata = FileMetadata(
-          getStrongestHashFromMap(plaintextHashes) ?? DateTime.now().millisecondsSinceEpoch.toString(),
+          getStrongestHashFromMap(plaintextHashes) ??
+              DateTime.now().millisecondsSinceEpoch.toString(),
           message['mediaUrl'] as String?,
           message['srcUrl'] as String?,
           message['mediaType'] as String?,
           message['mediaSize'] as int?,
-          message['thumbnailData'] != null ?
-          'blurhash' :
-          null,
+          message['thumbnailData'] != null ? 'blurhash' : null,
           message['thumbnailData'] as String?,
           message['mediaWidth'] as int?,
           message['mediaHeight'] as int?,
@@ -77,9 +80,11 @@ Future<void> upgradeFromV31ToV32(Database db) async {
           message['key'] as String?,
           message['iv'] as String?,
           message['encryptionScheme'] as String?,
-          message['plaintextHashes'] == null ?
-          null :
-          (jsonDecode(message['ciphertextHashes']! as String) as Map<dynamic, dynamic>).cast<String, String>(),
+          message['plaintextHashes'] == null
+              ? null
+              : (jsonDecode(message['ciphertextHashes']! as String)
+                      as Map<dynamic, dynamic>)
+                  .cast<String, String>(),
           message['filename']! as String,
         );
 
@@ -104,20 +109,32 @@ Future<void> upgradeFromV31ToV32(Database db) async {
       String? filename;
       if (message['filename'] == null) {
         // We are dealing with a sticker
-        assert(message['stickerPackId'] != null, 'The message must contain a sticker');
-        assert(message['stickerHashKey'] != null, 'The message must contain a sticker');
+        assert(
+          message['stickerPackId'] != null,
+          'The message must contain a sticker',
+        );
+        assert(
+          message['stickerHashKey'] != null,
+          'The message must contain a sticker',
+        );
         final sticker = (await db.query(
           stickersTable,
           where: 'stickerPackId = ? AND hashKey = ?',
           whereArgs: [message['stickerPackId'], message['stickerHashKey']],
           limit: 1,
-        )).first;
+        ))
+            .first;
         size = sticker['size']! as int;
         width = sticker['width'] as int?;
         height = sticker['height'] as int?;
-        hashes = (jsonDecode(sticker['hashes']! as String) as Map<String, dynamic>).cast<String, String>();
+        hashes =
+            (jsonDecode(sticker['hashes']! as String) as Map<String, dynamic>)
+                .cast<String, String>();
         filePath = sticker['path']! as String;
-        urlSource = ((jsonDecode(sticker['urlSources']! as String) as List<dynamic>).cast<String>()).first;
+        urlSource =
+            ((jsonDecode(sticker['urlSources']! as String) as List<dynamic>)
+                    .cast<String>())
+                .first;
         mediaType = sticker['mediaType']! as String;
         filename = path.basename(sticker['path']! as String);
       } else {
@@ -136,9 +153,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
         urlSource,
         mediaType,
         size,
-        message['thumbnailData'] != null ?
-        'blurhash' :
-        null,
+        message['thumbnailData'] != null ? 'blurhash' : null,
         message['thumbnailData'] as String?,
         width,
         height,
@@ -166,7 +181,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
       },
     );
   }
-  
+
   // Remove columns and add foreign key
   await db.execute(
     '''
@@ -201,8 +216,10 @@ Future<void> upgradeFromV31ToV32(Database db) async {
       CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
     )''',
   );
-  
-  await db.execute('INSERT INTO ${messagesTable}_new SELECT id, sender, body, timestamp, sid, conversationJid, isFileUploadNotification, encrypted, errorType, warningType, received, displayed, acked, originId, quote_id, file_metadata_id, isDownloading, isUploading, isRetracted, isEdited, reactions, containsNoStore, stickerPackId, stickerHashKey, pseudoMessageType, pseudoMessageData FROM $messagesTable');
+
+  await db.execute(
+    'INSERT INTO ${messagesTable}_new SELECT id, sender, body, timestamp, sid, conversationJid, isFileUploadNotification, encrypted, errorType, warningType, received, displayed, acked, originId, quote_id, file_metadata_id, isDownloading, isUploading, isRetracted, isEdited, reactions, containsNoStore, stickerPackId, stickerHashKey, pseudoMessageType, pseudoMessageData FROM $messagesTable',
+  );
   await db.execute('DROP TABLE $messagesTable');
   await db.execute(
     'ALTER TABLE ${messagesTable}_new RENAME TO $messagesTable;',

@@ -21,7 +21,10 @@ class FilesService {
   // Logging.
   final Logger _log = Logger('FilesService');
 
-  Future<void> createMetadataHashEntries(Map<String, String> plaintextHashes, String metadataId) async {
+  Future<void> createMetadataHashEntries(
+    Map<String, String> plaintextHashes,
+    String metadataId,
+  ) async {
     final db = GetIt.I.get<DatabaseService>().database;
     for (final hash in plaintextHashes.entries) {
       await db.insert(
@@ -34,9 +37,12 @@ class FilesService {
       );
     }
   }
-  
+
   Future<FileMetadata?> getFileMetadataFromFile(FileMetadata metadata) async {
-    final hash = metadata.plaintextHashes?['SHA-256'] ?? await GetIt.I.get<CryptographyService>().hashFile(metadata.path!, HashFunction.sha256);
+    final hash = metadata.plaintextHashes?['SHA-256'] ??
+        await GetIt.I
+            .get<CryptographyService>()
+            .hashFile(metadata.path!, HashFunction.sha256);
     final fm = await getFileMetadataFromHash({
       'SHA-256': hash,
     });
@@ -46,18 +52,20 @@ class FilesService {
     }
 
     final result = await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
-      metadata.copyWith(
-        plaintextHashes: {
-          ...metadata.plaintextHashes ?? {},
-          'SHA-256': hash,
-        },
-      ),
-    );
+          metadata.copyWith(
+            plaintextHashes: {
+              ...metadata.plaintextHashes ?? {},
+              'SHA-256': hash,
+            },
+          ),
+        );
     await createMetadataHashEntries(result.plaintextHashes!, result.id);
     return result;
   }
-  
-  Future<FileMetadata?> getFileMetadataFromHash(Map<String, String>? plaintextHashes) async {
+
+  Future<FileMetadata?> getFileMetadataFromHash(
+    Map<String, String>? plaintextHashes,
+  ) async {
     if (plaintextHashes?.isEmpty ?? true) {
       return null;
     }
@@ -108,9 +116,8 @@ class FilesService {
     Size? dimensions,
     String? thubnailType,
     String? thumbnailData, {
-      bool createHashPointers = true,
-    }
-  ) async {
+    bool createHashPointers = true,
+  }) async {
     if (location.plaintextHashes?.isNotEmpty ?? false) {
       final result = await getFileMetadataFromHash(location.plaintextHashes);
       if (result != null) {
@@ -121,7 +128,8 @@ class FilesService {
 
     final db = GetIt.I.get<DatabaseService>().database;
     final fm = FileMetadata(
-      getStrongestHashFromMap(location.plaintextHashes) ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      getStrongestHashFromMap(location.plaintextHashes) ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       null,
       location.url,
       mimeType,
@@ -131,10 +139,8 @@ class FilesService {
       dimensions?.width.toInt(),
       dimensions?.height.toInt(),
       location.plaintextHashes,
-      location.key != null ?
-        base64Encode(location.key!) : null,
-      location.iv != null ?
-        base64Encode(location.iv!) : null,
+      location.key != null ? base64Encode(location.key!) : null,
+      location.iv != null ? base64Encode(location.iv!) : null,
       location.encryptionScheme,
       location.ciphertextHashes,
       location.filename,
@@ -158,17 +164,18 @@ class FilesService {
       whereArgs: [id],
     );
   }
-  
-  Future<FileMetadata> updateFileMetadata(String id, {
-      String? path,
-      int? size,
-      String? encryptionScheme,
-      String? encryptionKey,
-      String? encryptionIv,
-      String? sourceUrl,
-      int? width,
-      int? height,
-      String? mimeType,
+
+  Future<FileMetadata> updateFileMetadata(
+    String id, {
+    String? path,
+    int? size,
+    String? encryptionScheme,
+    String? encryptionKey,
+    String? encryptionIv,
+    String? sourceUrl,
+    int? width,
+    int? height,
+    String? mimeType,
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final m = <String, dynamic>{};

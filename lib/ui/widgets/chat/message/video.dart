@@ -149,7 +149,8 @@ class VideoChatWidget extends StatelessWidget {
     }
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (message.fileMetadata!.path != null && File(message.fileMetadata!.path!).existsSync()) {
+    if (message.fileMetadata!.path != null &&
+        File(message.fileMetadata!.path!).existsSync()) {
       return _buildVideo();
     }
 

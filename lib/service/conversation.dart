@@ -85,9 +85,9 @@ class ConversationService {
       Message? lastMessage;
       if (c['lastMessageId'] != null) {
         lastMessage = await GetIt.I.get<MessageService>().getMessageById(
-          c['lastMessageId']! as int,
-          jid,
-        );
+              c['lastMessageId']! as int,
+              jid,
+            );
       }
 
       tmp.add(
@@ -103,7 +103,7 @@ class ConversationService {
 
     return tmp;
   }
-  
+
   /// Wrapper around DatabaseService's loadConversations that adds the loaded
   /// to the cache.
   Future<void> _loadConversationsIfNeeded() async {

@@ -121,7 +121,7 @@ class DatabaseService {
   /// Public getter for the database
   // TODO(PapaTutuWawa): Remove this getter and just make _db the new database
   Database get database => _db;
-  
+
   Future<void> initialize() async {
     final dbPath = path.join(
       await getDatabasesPath(),
@@ -1122,5 +1122,5 @@ class DatabaseService {
       metadata.toDatabaseJson(),
     );
     return FileMetadata.fromDatabaseJson(result);
-  }  
+  }
 }

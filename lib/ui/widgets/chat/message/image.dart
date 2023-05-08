@@ -70,7 +70,8 @@ class ImageChatWidget extends StatelessWidget {
     final size = getMediaSize(message, maxWidth);
 
     Widget image;
-    if (message.fileMetadata!.width != null && message.fileMetadata!.height != null) {
+    if (message.fileMetadata!.width != null &&
+        message.fileMetadata!.height != null) {
       image = SizedBox(
         width: size.width,
         height: size.height,
@@ -149,7 +150,8 @@ class ImageChatWidget extends StatelessWidget {
     }
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (message.fileMetadata!.path != null && File(message.fileMetadata!.path!).existsSync()) {
+    if (message.fileMetadata!.path != null &&
+        File(message.fileMetadata!.path!).existsSync()) {
       return _buildImage();
     }
 

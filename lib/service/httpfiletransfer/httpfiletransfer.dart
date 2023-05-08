@@ -123,7 +123,10 @@ class HttpFileTransferService {
     });
   }
 
-  Future<void> _copyFile(FileUploadJob job, Map<String, String> plaintextHashes) async {
+  Future<void> _copyFile(
+    FileUploadJob job,
+    Map<String, String> plaintextHashes,
+  ) async {
     final newPath = await getDownloadPath(
       pathlib.basename(job.path),
       plaintextHashes,
@@ -134,13 +137,15 @@ class HttpFileTransferService {
       // Let the media scanner index the file
       MoxplatformPlugin.media.scanFile(newPath);
     } else {
-      _log.finest('Skipping file copy on upload as file is already at media location');
+      _log.finest(
+        'Skipping file copy on upload as file is already at media location',
+      );
     }
 
     final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
-      job.metadataId,
-      path: newPath,
-    );
+          job.metadataId,
+          path: newPath,
+        );
 
     for (final recipient in job.recipients) {
       // Update the message
@@ -243,16 +248,18 @@ class HttpFileTransferService {
 
       // Update the metadata
       final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
-        job.metadataId,
-        size: stat.size,
-        encryptionScheme: encryption != null
-           ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
-           : null,
-        encryptionKey: encryption != null ? base64Encode(encryption.key) : null,
-        encryptionIv: encryption != null ? base64Encode(encryption.iv) : null,
-        sourceUrl: slot.getUrl,
-      );
-      
+            job.metadataId,
+            size: stat.size,
+            encryptionScheme: encryption != null
+                ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
+                : null,
+            encryptionKey:
+                encryption != null ? base64Encode(encryption.key) : null,
+            encryptionIv:
+                encryption != null ? base64Encode(encryption.iv) : null,
+            sourceUrl: slot.getUrl,
+          );
+
       const uuid = Uuid();
       for (final recipient in job.recipients) {
         // Notify UI of upload completion
@@ -365,7 +372,10 @@ class HttpFileTransferService {
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
     final filename = job.location.filename;
-    final downloadedPath = await getDownloadPath(job.location.filename, job.location.plaintextHashes,);
+    final downloadedPath = await getDownloadPath(
+      job.location.filename,
+      job.location.plaintextHashes,
+    );
 
     var downloadPath = downloadedPath;
     if (job.location.key != null && job.location.iv != null) {
@@ -424,14 +434,14 @@ class HttpFileTransferService {
 
       try {
         final result = await crypto.decryptFile(
-              downloadPath,
-              downloadedPath,
-              encryptionTypeFromNamespace(job.location.encryptionScheme!),
-              job.location.key!,
-              job.location.iv!,
-              job.location.plaintextHashes ?? {},
-              job.location.ciphertextHashes ?? {},
-            );
+          downloadPath,
+          downloadedPath,
+          encryptionTypeFromNamespace(job.location.encryptionScheme!),
+          job.location.key!,
+          job.location.iv!,
+          job.location.plaintextHashes ?? {},
+          job.location.ciphertextHashes ?? {},
+        );
 
         if (!result.decryptionOkay) {
           _log.warning('Failed to decrypt $downloadPath');
@@ -456,18 +466,20 @@ class HttpFileTransferService {
       // TODO(Unknown): Allow verification of other hash functions
       if (job.location.plaintextHashes!['sha-256'] != null) {
         final hash = await crypto.hashFile(
-          downloadPath ,
+          downloadPath,
           HashFunction.sha256,
         );
         integrityCheckPassed = hash == job.location.plaintextHashes!['sha-256'];
       } else if (job.location.plaintextHashes!['sha-512'] != null) {
         final hash = await crypto.hashFile(
-          downloadPath ,
+          downloadPath,
           HashFunction.sha512,
         );
         integrityCheckPassed = hash == job.location.plaintextHashes!['sha-512'];
       } else {
-        _log.warning('Could not verify file integrity as no accelerated hash function is available (${job.location.plaintextHashes!.keys})');
+        _log.warning(
+          'Could not verify file integrity as no accelerated hash function is available (${job.location.plaintextHashes!.keys})',
+        );
       }
     }
 

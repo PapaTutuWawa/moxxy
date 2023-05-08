@@ -171,9 +171,10 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
     avatarHash: state.avatarHash,
     permissionsToRequest: permissions,
     preferences: preferences,
-    conversations: (await GetIt.I.get<ConversationService>().loadConversations())
-        .where((c) => c.open)
-        .toList(),
+    conversations:
+        (await GetIt.I.get<ConversationService>().loadConversations())
+            .where((c) => c.open)
+            .toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
     stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
@@ -570,15 +571,19 @@ Future<void> performRequestDownload(
   //       for ".../aaaaaaaaa", in which case we would've failed anyways.
   final ext = fileMetadata.sourceUrl!.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
-  
+
   await srv.downloadFile(
     FileDownloadJob(
       MediaFileLocation(
         fileMetadata.sourceUrl!,
         fileMetadata.filename,
         fileMetadata.encryptionScheme,
-        fileMetadata.encryptionKey != null ? base64Decode(fileMetadata.encryptionKey!) : null,
-        fileMetadata.encryptionIv != null ? base64Decode(fileMetadata.encryptionIv!) : null,
+        fileMetadata.encryptionKey != null
+            ? base64Decode(fileMetadata.encryptionKey!)
+            : null,
+        fileMetadata.encryptionIv != null
+            ? base64Decode(fileMetadata.encryptionIv!)
+            : null,
         fileMetadata.plaintextHashes,
         fileMetadata.ciphertextHashes,
         null,

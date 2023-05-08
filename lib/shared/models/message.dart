@@ -12,7 +12,6 @@ part 'message.g.dart';
 
 const pseudoMessageTypeNewDevice = 1;
 
-
 Map<String, dynamic> _optionalJsonDecodeWithFallback(String? data) {
   if (data == null) return <String, dynamic>{};
 
@@ -25,7 +24,6 @@ String? _optionalJsonEncodeWithFallback(Map<String, dynamic>? data) {
 
   return jsonEncode(data);
 }
-
 
 @freezed
 class Message with _$Message {
@@ -66,7 +64,11 @@ class Message with _$Message {
   factory Message.fromJson(Map<String, dynamic> json) =>
       _$MessageFromJson(json);
 
-  factory Message.fromDatabaseJson(Map<String, dynamic> json, Message? quotes, FileMetadata? fileMetadata) {
+  factory Message.fromDatabaseJson(
+    Map<String, dynamic> json,
+    Message? quotes,
+    FileMetadata? fileMetadata,
+  ) {
     return Message.fromJson({
       ...json,
       'received': intToBool(json['received']! as int),

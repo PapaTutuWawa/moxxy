@@ -18,8 +18,7 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Messages
-  await db.execute(
-    '''
+  await db.execute('''
     CREATE TABLE $messagesTable (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sender TEXT NOT NULL,
@@ -79,7 +78,7 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES $fileMetadataTable (id)
         ON DELETE CASCADE
     )''');
-  
+
   // Conversations
   await db.execute(
     '''
