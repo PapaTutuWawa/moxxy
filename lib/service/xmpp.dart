@@ -1439,6 +1439,10 @@ class XmppService {
       } else {
         // Make sure we create the notification
         shouldNotify = true;
+
+        if (fileMetadata?.path != null) {
+          _log.info('Not downloading file as we already have it locally');
+        }
       }
     }
 
@@ -1608,6 +1612,10 @@ class XmppService {
                 shouldShowNotification: false,
               ),
             );
+      } else {
+        if (fileMetadata != null) {
+          _log.info('Not downloading file as we already have it locally');
+        }
       }
     } else {
       _log.warning(

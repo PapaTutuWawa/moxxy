@@ -83,7 +83,7 @@ class FilesService {
     final result = await db.query(
       fileMetadataTable,
       where: 'id = ?',
-      whereArgs: [hashes[0]['id']! as int],
+      whereArgs: [hashes[0]['id']! as String],
       limit: 1,
     );
     if (result.isEmpty) {
