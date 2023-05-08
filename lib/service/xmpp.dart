@@ -302,7 +302,7 @@ class XmppService {
   }
 
   MediaFileLocation? _getEmbeddedFile(MessageEvent event) {
-    if (event.sfs != null) {
+    if (event.sfs?.sources.isNotEmpty ?? false) {
       final source = firstWhereOrNull(
         event.sfs!.sources,
         (StatelessFileSharingSource source) {
