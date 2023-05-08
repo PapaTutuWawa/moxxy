@@ -413,6 +413,7 @@ class HttpFileTransferService {
         .getConversationByJid(job.conversationJid))!;
     final decryptionKeysAvailable =
         job.location.key != null && job.location.iv != null;
+    final crypto = GetIt.I.get<CryptographyService>();
     if (decryptionKeysAvailable) {
       // The file was downloaded and is now being decrypted
       sendEvent(
@@ -422,7 +423,7 @@ class HttpFileTransferService {
       );
 
       try {
-        final result = await GetIt.I.get<CryptographyService>().decryptFile(
+        final result = await crypto.decryptFile(
               downloadPath,
               downloadedPath,
               encryptionTypeFromNamespace(job.location.encryptionScheme!),
@@ -450,8 +451,24 @@ class HttpFileTransferService {
       unawaited(
         Directory(pathlib.dirname(downloadPath)).delete(recursive: true),
       );
-    } else {
-      // TODO(PapaTutuWawa): Hash the file and compare it to one of the specified hashes
+    } else if (job.location.plaintextHashes?.isNotEmpty ?? false) {
+      // Verify only the plaintext hash
+      // TODO(Unknown): Allow verification of other hash functions
+      if (job.location.plaintextHashes!['sha-256'] != null) {
+        final hash = await crypto.hashFile(
+          downloadPath ,
+          HashFunction.sha256,
+        );
+        integrityCheckPassed = hash == job.location.plaintextHashes!['sha-256'];
+      } else if (job.location.plaintextHashes!['sha-512'] != null) {
+        final hash = await crypto.hashFile(
+          downloadPath ,
+          HashFunction.sha512,
+        );
+        integrityCheckPassed = hash == job.location.plaintextHashes!['sha-512'];
+      } else {
+        _log.warning('Could not verify file integrity as no accelerated hash function is available (${job.location.plaintextHashes!.keys})');
+      }
     }
 
     // Check the MIME type
@@ -506,11 +523,15 @@ class HttpFileTransferService {
     );
 
     // Only add the hash pointers if the file hashes match what was sent
-    if ((job.location.plaintextHashes?.isNotEmpty ?? false) && integrityCheckPassed) {
-      await fs.createMetadataHashEntries(
-        job.location.plaintextHashes!,
-        job.metadataId,
-      );
+    if (job.location.plaintextHashes?.isNotEmpty ?? false) {
+      if (integrityCheckPassed) {
+        await fs.createMetadataHashEntries(
+          job.location.plaintextHashes!,
+          job.metadataId,
+        );
+      } else {
+        _log.warning('Integrity check failed for file');
+      }
     }
 
     final msg = await GetIt.I.get<MessageService>().updateMessage(
