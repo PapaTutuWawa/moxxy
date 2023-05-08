@@ -93,13 +93,23 @@ class FilesService {
     return FileMetadata.fromDatabaseJson(result[0]);
   }
 
+  /// Create a FileMetadata entry if we do not know the plaintext hashes described in
+  /// [location].
+  /// If we know of at least one hash, return that FileMetadata element.
+  ///
+  /// If [createHashPointers] is true and we have to create a new FileMetadata element,
+  /// then also create the hash pointers, if plaintext hashes are specified. If no
+  /// plaintext hashes are specified or [createHashPointers] is false, no pointers will be
+  /// created.
   Future<FileMetadata> createFileMetadataIfRequired(
     MediaFileLocation location,
     String? mimeType,
     int? size,
     Size? dimensions,
     String? thubnailType,
-    String? thumbnailData,
+    String? thumbnailData, {
+      bool createHashPointers = true,
+    }
   ) async {
     if (location.plaintextHashes?.isNotEmpty ?? false) {
       final result = await getFileMetadataFromHash(location.plaintextHashes);
@@ -131,7 +141,7 @@ class FilesService {
     );
     await db.insert(fileMetadataTable, fm.toDatabaseJson());
 
-    if (location.plaintextHashes?.isNotEmpty ?? false) {
+    if ((location.plaintextHashes?.isNotEmpty ?? false) && createHashPointers) {
       await createMetadataHashEntries(
         location.plaintextHashes!,
         fm.id,

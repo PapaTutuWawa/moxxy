@@ -379,6 +379,7 @@ class HttpFileTransferService {
     );
 
     int? downloadStatusCode;
+    var integrityCheckPassed = true;
     try {
       _log.finest('Beginning download...');
       downloadStatusCode = await client.downloadFile(
@@ -407,7 +408,6 @@ class HttpFileTransferService {
       return;
     }
 
-    var integrityCheckPassed = true;
     final conv = (await GetIt.I
         .get<ConversationService>()
         .getConversationByJid(job.conversationJid))!;
@@ -450,6 +450,8 @@ class HttpFileTransferService {
       unawaited(
         Directory(pathlib.dirname(downloadPath)).delete(recursive: true),
       );
+    } else {
+      // TODO(PapaTutuWawa): Hash the file and compare it to one of the specified hashes
     }
 
     // Check the MIME type
@@ -493,7 +495,8 @@ class HttpFileTransferService {
       }
     }
 
-    final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
+    final fs = GetIt.I.get<FilesService>();
+    final metadata = await fs.updateFileMetadata(
       job.metadataId,
       path: downloadedPath,
       size: File(downloadedPath).lengthSync(),
@@ -501,6 +504,15 @@ class HttpFileTransferService {
       height: mediaHeight,
       mimeType: mime,
     );
+
+    // Only add the hash pointers if the file hashes match what was sent
+    if ((job.location.plaintextHashes?.isNotEmpty ?? false) && integrityCheckPassed) {
+      await fs.createMetadataHashEntries(
+        job.location.plaintextHashes!,
+        job.metadataId,
+      );
+    }
+
     final msg = await GetIt.I.get<MessageService>().updateMessage(
           job.mId,
           fileMetadata: metadata,

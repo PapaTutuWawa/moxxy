@@ -1387,6 +1387,7 @@ class XmppService {
         // TODO(Unknown): Maybe we switch to something else?
         thumbnail != null ? 'blurhash' : null,
         thumbnail,
+        createHashPointers: false,
       );
     }
     
