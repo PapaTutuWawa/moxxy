@@ -54,7 +54,8 @@ class RawChatBubble extends StatelessWidget {
   bool _shouldNotColorBubble() {
     var isInlinedWidget = false;
     if (message.isMedia) {
-      isInlinedWidget = message.fileMetadata!.mimeType?.startsWith('image/') ?? false;
+      isInlinedWidget =
+          message.fileMetadata!.mimeType?.startsWith('image/') ?? false;
     }
 
     // Check if it is a pseudo message
@@ -63,7 +64,9 @@ class RawChatBubble extends StatelessWidget {
     }
 
     // Check if it is an embedded file
-    if (message.isMedia && message.fileMetadata!.sourceUrl != null && isInlinedWidget) {
+    if (message.isMedia &&
+        message.fileMetadata!.path != null &&
+        isInlinedWidget) {
       return true;
     }
 
