@@ -1348,30 +1348,30 @@ class XmppService {
     // The dimensions of the file, if available.
     final dimensions = _getDimensions(event);
     // Indicates if we should auto-download the file, if a file is specified in the message
-    final shouldDownload = await _shouldDownloadFile(conversationJid);
+    final shouldDownload =
+        isFileEmbedded && await _shouldDownloadFile(conversationJid);
     // Indicates if a notification should be created for the message.
     // The way this variable works is that if we can download the file, then the
     // notification will be created later by the [DownloadService]. If we don't want the
     // download to happen automatically, then the notification should happen immediately.
-    var shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
+    var shouldNotify = !(isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
     var mimeGuess = _getMimeGuess(event);
 
-    FileMetadata? fileMetadata;
+    FileMetadataWrapper? fileMetadata;
     if (isFileEmbedded) {
       final thumbnail = _getThumbnailData(event);
       fileMetadata =
-          (await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
-                    embeddedFile!,
-                    mimeGuess,
-                    embeddedFile.size,
-                    dimensions,
-                    // TODO(Unknown): Maybe we switch to something else?
-                    thumbnail != null ? 'blurhash' : null,
-                    thumbnail,
-                    createHashPointers: false,
-                  ))
-              .fileMetadata;
+          await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
+                embeddedFile!,
+                mimeGuess,
+                embeddedFile.size,
+                dimensions,
+                // TODO(Unknown): Maybe we switch to something else?
+                thumbnail != null ? 'blurhash' : null,
+                thumbnail,
+                createHashPointers: false,
+              );
     }
 
     // Create the message in the database
@@ -1386,15 +1386,17 @@ class XmppService {
       event.encrypted,
       event.messageProcessingHints?.contains(MessageProcessingHint.noStore) ??
           false,
-      fileMetadata: fileMetadata,
+      fileMetadata: fileMetadata?.fileMetadata,
       quoteId: replyId,
       originId: event.stanzaId.originId,
       errorType: errorTypeFromException(event.other['encryption_error']),
       stickerPackId: event.stickerPackId,
     );
 
-    // Attempt to auto-download the embedded file
-    if (isFileEmbedded && shouldDownload && fileMetadata?.path == null) {
+    // Attempt to auto-download the embedded file, if
+    // - there is a file attached and
+    // - we have not retrieved the file metadata
+    if (shouldDownload && !(fileMetadata?.retrieved ?? false)) {
       final fts = GetIt.I.get<HttpFileTransferService>();
       final metadata = await peekFile(embeddedFile!.urls.first);
 
@@ -1422,10 +1424,10 @@ class XmppService {
       } else {
         // Make sure we create the notification
         shouldNotify = true;
-
-        if (fileMetadata?.path != null) {
-          _log.info('Not downloading file as we already have it locally');
-        }
+      }
+    } else {
+      if (fileMetadata?.retrieved ?? false) {
+        _log.info('Not downloading file as we already have it locally');
       }
     }
 
