@@ -144,7 +144,6 @@ SELECT
   quote.reactions AS quote_reactions,
   quote.containsNoStore AS quote_containsNoStore,
   quote.stickerPackId AS quote_stickerPackId,
-  quote.stickerHashKey AS quote_stickerHashKey,
   quote.pseudoMessageType AS quote_pseudoMessageType,
   quote.pseudoMessageData AS quote_pseudoMessageData,
   fm.id as fm_id,
@@ -251,7 +250,6 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
     bool isDownloading = false,
     bool isUploading = false,
     String? stickerPackId,
-    String? stickerHashKey,
     int? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
     bool received = false,
@@ -278,7 +276,6 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
       isUploading: isUploading,
       isDownloading: isDownloading,
       stickerPackId: stickerPackId,
-      stickerHashKey: stickerHashKey,
       pseudoMessageType: pseudoMessageType,
       pseudoMessageData: pseudoMessageData,
     );

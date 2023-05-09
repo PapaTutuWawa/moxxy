@@ -43,7 +43,6 @@ Future<void> createDatabase(Database db, int version) async {
       reactions TEXT NOT NULL,
       containsNoStore INTEGER NOT NULL,
       stickerPackId   TEXT,
-      stickerHashKey  TEXT,
       pseudoMessageType INTEGER,
       pseudoMessageData TEXT,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
@@ -55,7 +54,7 @@ Future<void> createDatabase(Database db, int version) async {
     CREATE TABLE $fileMetadataTable (
       id               TEXT NOT NULL PRIMARY KEY,
       path             TEXT,
-      sourceUrl        TEXT,
+      sourceUrls       TEXT,
       mimeType         TEXT,
       thumbnailType    TEXT,
       thumbnailData    TEXT,
@@ -149,20 +148,16 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $stickersTable (
-      hashKey       TEXT PRIMARY KEY,
-      mediaType     TEXT NOT NULL,
-      desc          TEXT NOT NULL,
-      size          INTEGER NOT NULL,
-      width         INTEGER,
-      height        INTEGER,
-      hashes        TEXT NOT NULL,
-      urlSources    TEXT NOT NULL,
-      path          TEXT NOT NULL,
-      stickerPackId TEXT NOT NULL,
-      suggests      TEXT NOT NULL,
+      id               TEXT PRIMARY KEY,
+      desc             TEXT NOT NULL,
+      suggests         TEXT NOT NULL,
+      file_metadata_id TEXT NOT NULL,
+      stickerPackId  TEXT NOT NULL,
       CONSTRAINT fk_sticker_pack FOREIGN KEY (stickerPackId) REFERENCES $stickerPacksTable (id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+      CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
     )''',
+
   );
   await db.execute(
     '''

@@ -9,6 +9,7 @@ import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 
@@ -342,12 +343,11 @@ class BidirectionalConversationController
         );
   }
 
-  /// Send the sticker identified by the Sticker pack [packId] and [hashKey].
-  void sendSticker(String packId, String hashKey) {
+  /// Send the sticker [sticker].
+  void sendSticker(sticker.Sticker sticker) {
     MoxplatformPlugin.handler.getDataSender().sendData(
           SendStickerCommand(
-            stickerPackId: packId,
-            stickerHashKey: hashKey,
+            sticker: sticker,
             recipient: conversationJid,
           ),
           awaitable: false,

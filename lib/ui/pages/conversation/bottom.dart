@@ -374,8 +374,7 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                       },
                       onStickerTapped: (sticker, pack) {
                         widget.conversationController.sendSticker(
-                          pack.id,
-                          sticker.hashKey,
+                          sticker,
                         );
                       },
                     ),

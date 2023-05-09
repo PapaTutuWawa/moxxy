@@ -22,14 +22,14 @@ class StickerWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (sticker.path.isNotEmpty) {
+    if (sticker.fileMetadata.path != null) {
       return Image.file(
-        File(sticker.path),
+        File(sticker.fileMetadata.path!),
         fit: cover ? BoxFit.contain : null,
       );
     } else {
       return Image.network(
-        sticker.urlSources.first,
+        sticker.fileMetadata.sourceUrls!.first,
         fit: cover ? BoxFit.contain : null,
         loadingBuilder: (_, child, event) {
           if (event == null) return child;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -7,14 +8,56 @@ import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/httpfiletransfer/location.dart';
+import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+class FileMetadataWrapper {
+  FileMetadataWrapper(
+    this.fileMetadata,
+    this.retrieved,
+  );
+  
+  /// The file metadata.
+  FileMetadata fileMetadata;
+  
+  /// Indicates whether the file metadata already exists (true) or
+  /// if it has been created (false).
+  bool retrieved;
+}
 
 String? getStrongestHashFromMap(Map<String, String>? map) {
   if (map == null) {
     return null;
   }
 
-  return map['SHA-512'] ?? map['SHA-256'];
+  return map['blake2b-512'] ?? map['blake2b-256'] ?? map['sha3-512'] ?? map['sha3-256'] ?? map['sha-512'] ?? map['sha-256'];
+}
+
+/// Calculates the path for a given file with filename [filename] and the optional
+/// plaintext hashes [hashes].
+Future<String> computeCachedPathForFile(String filename, Map<String, String>? hashes) async {
+  final basePath = path.join(
+    (await getApplicationDocumentsDirectory()).path,
+    'media',
+  );
+  final baseDir = Directory(basePath);
+
+  if (!baseDir.existsSync()) {
+    await baseDir.create(recursive: true);
+  }
+
+  // Keep the extension of the file. Otherwise Android will be really confused
+  // as to what it should open the file with.
+  final ext = path.extension(filename);
+  final hash = getStrongestHashFromMap(hashes);
+  return path.join(
+    basePath,
+    hash != null
+        ? '$hash.$ext'
+        : '$filename.${DateTime.now().millisecondsSinceEpoch}.$ext',
+  );
 }
 
 class FilesService {
@@ -109,7 +152,7 @@ class FilesService {
   /// then also create the hash pointers, if plaintext hashes are specified. If no
   /// plaintext hashes are specified or [createHashPointers] is false, no pointers will be
   /// created.
-  Future<FileMetadata> createFileMetadataIfRequired(
+  Future<FileMetadataWrapper> createFileMetadataIfRequired(
     MediaFileLocation location,
     String? mimeType,
     int? size,
@@ -117,12 +160,16 @@ class FilesService {
     String? thubnailType,
     String? thumbnailData, {
     bool createHashPointers = true,
+    String? path,
   }) async {
     if (location.plaintextHashes?.isNotEmpty ?? false) {
       final result = await getFileMetadataFromHash(location.plaintextHashes);
       if (result != null) {
         _log.finest('Not creating new metadata as we found the hash');
-        return result;
+        return FileMetadataWrapper(
+          result,
+          true,
+        );
       }
     }
 
@@ -130,8 +177,8 @@ class FilesService {
     final fm = FileMetadata(
       getStrongestHashFromMap(location.plaintextHashes) ??
           DateTime.now().millisecondsSinceEpoch.toString(),
-      null,
-      location.url,
+      path,
+      location.urls,
       mimeType,
       size,
       thubnailType,
@@ -154,7 +201,10 @@ class FilesService {
       );
     }
 
-    return fm;
+    return FileMetadataWrapper(
+      fm,
+      false,
+    );
   }
 
   Future<void> removeFileMetadata(String id) async {
@@ -167,7 +217,7 @@ class FilesService {
 
   Future<FileMetadata> updateFileMetadata(
     String id, {
-    String? path,
+    Object? path = notSpecified,
     int? size,
     String? encryptionScheme,
     String? encryptionKey,
@@ -180,8 +230,8 @@ class FilesService {
     final db = GetIt.I.get<DatabaseService>().database;
     final m = <String, dynamic>{};
 
-    if (path != null) {
-      m['path'] = path;
+    if (path != notSpecified) {
+      m['path'] = path as String?;
     }
     if (encryptionScheme != null) {
       m['encryptionScheme'] = encryptionScheme;

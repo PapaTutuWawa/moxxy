@@ -36,7 +36,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
       for (final sticker in pack.stickers) {
         if (!sticker.isImage) continue;
 
-        map[StickerKey(pack.id, sticker.hashKey)] = sticker;
+        map[StickerKey(pack.id, sticker.id)] = sticker;
       }
     }
 
@@ -58,10 +58,10 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     )!;
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
     for (final sticker in stickerPack.stickers) {
-      sm.remove(StickerKey(stickerPack.id, sticker.hashKey));
+      sm.remove(StickerKey(stickerPack.id, sticker.id));
 
       // Evict stickers from the cache
-      unawaited(FileImage(File(sticker.path)).evict());
+      unawaited(FileImage(File(sticker.fileMetadata.path!)).evict());
     }
 
     emit(
@@ -105,7 +105,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
       for (final sticker in result.stickerPack.stickers) {
         if (!sticker.isImage) continue;
 
-        sm[StickerKey(result.stickerPack.id, sticker.hashKey)] = sticker;
+        sm[StickerKey(result.stickerPack.id, sticker.id)] = sticker;
       }
       emit(
         state.copyWith(
@@ -146,7 +146,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     for (final sticker in event.stickerPack.stickers) {
       if (!sticker.isImage) continue;
 
-      sm[StickerKey(event.stickerPack.id, sticker.hashKey)] = sticker;
+      sm[StickerKey(event.stickerPack.id, sticker.id)] = sticker;
     }
 
     emit(

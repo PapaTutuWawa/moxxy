@@ -29,7 +29,6 @@ import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/stickers.dart';
 import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
@@ -233,7 +232,7 @@ class XmppService {
             originId: originId,
             quoteId: quotedMessage?.sid,
             stickerPackId: sticker?.stickerPackId,
-            stickerHashKey: sticker?.hashKey,
+            fileMetadata: sticker?.fileMetadata,
             received: c.type == ConversationType.note ? true : false,
             displayed: c.type == ConversationType.note ? true : false,
           );
@@ -260,6 +259,7 @@ class XmppService {
       }
 
       if (conversation?.type == ConversationType.chat) {
+        final moxxmppSticker = sticker?.toMoxxmpp();
         conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
               MessageDetails(
                 to: recipient,
@@ -273,23 +273,11 @@ class XmppService {
                 chatState: chatState,
                 shouldEncrypt: conversation!.encrypted,
                 stickerPackId: sticker?.stickerPackId,
-                sfs: sticker == null
-                    ? null
-                    : StatelessFileSharingData(
-                        FileMetadataData(
-                          mediaType: sticker.mediaType,
-                          width: sticker.width,
-                          height: sticker.height,
-                          desc: sticker.desc,
-                          size: sticker.size,
-                          thumbnails: [],
-                          hashes: sticker.hashes,
-                        ),
-                        sticker.urlSources
-                            // ignore: unnecessary_lambdas
-                            .map((s) => StatelessFileSharingUrlSource(s))
-                            .toList(),
-                      ),
+                sfs: moxxmppSticker != null
+                    ? StatelessFileSharingData(
+                        moxxmppSticker.metadata,
+                        moxxmppSticker.sources,
+                      ) : null,
                 setOOBFallbackBody: sticker != null ? false : true,
               ),
             );
@@ -303,19 +291,25 @@ class XmppService {
 
   MediaFileLocation? _getEmbeddedFile(MessageEvent event) {
     if (event.sfs?.sources.isNotEmpty ?? false) {
-      final source = firstWhereOrNull(
-        event.sfs!.sources,
-        (StatelessFileSharingSource source) {
-          return source is StatelessFileSharingUrlSource ||
-              source is StatelessFileSharingEncryptedSource;
-        },
-      );
+      // final source = firstWhereOrNull(
+      //   event.sfs!.sources,
+      //   (StatelessFileSharingSource source) {
+      //     return source is StatelessFileSharingUrlSource ||
+      //         source is StatelessFileSharingEncryptedSource;
+      //   },
+      // );
 
+      final hasUrlSource = firstWhereOrNull(
+        event.sfs!.sources,
+        (src) => src is StatelessFileSharingUrlSource,
+      ) != null;
+      
       final name = event.sfs!.metadata.name;
-      if (source is StatelessFileSharingUrlSource) {
+      if (hasUrlSource) {
+        final sources = event.sfs!.sources.whereType<StatelessFileSharingUrlSource>().map((src) => src.url).toList();
         return MediaFileLocation(
-          source.url,
-          name != null ? escapeFilename(name) : filenameFromUrl(source.url),
+          sources,
+          name != null ? escapeFilename(name) : filenameFromUrl(sources.first),
           null,
           null,
           null,
@@ -324,23 +318,27 @@ class XmppService {
           event.sfs!.metadata.size,
         );
       } else {
-        final esource = source! as StatelessFileSharingEncryptedSource;
+        final encryptedSource = firstWhereOrNull(
+          event.sfs!.sources,
+          (src) => src is StatelessFileSharingEncryptedSource,
+        )! as StatelessFileSharingEncryptedSource;
+
         return MediaFileLocation(
-          esource.source.url,
+          [encryptedSource.source.url],
           name != null
               ? escapeFilename(name)
-              : filenameFromUrl(esource.source.url),
-          esource.encryption.toNamespace(),
-          esource.key,
-          esource.iv,
+              : filenameFromUrl(encryptedSource.source.url),
+          encryptedSource.encryption.toNamespace(),
+          encryptedSource.key,
+          encryptedSource.iv,
           event.sfs?.metadata.hashes,
-          esource.hashes,
+          encryptedSource.hashes,
           event.sfs!.metadata.size,
         );
       }
     } else if (event.oob != null) {
       return MediaFileLocation(
-        event.oob!.url!,
+        [event.oob!.url!],
         filenameFromUrl(event.oob!.url!),
         null,
         null,
@@ -548,7 +546,6 @@ class XmppService {
       final metadata =
           await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
                 FileMetadata(
-                  // TODO
                   DateTime.now().millisecondsSinceEpoch.toString(),
                   path,
                   null,
@@ -1037,9 +1034,8 @@ class XmppService {
     // True if we determine a file to be embedded. Checks if the Url is using HTTPS and
     // that the message body and the OOB url are the same if the OOB url is not null.
     return embeddedFile != null &&
-        Uri.parse(embeddedFile.url).scheme == 'https' &&
-        implies(event.oob != null, event.body == event.oob?.url) &&
-        event.stickerPackId == null;
+        Uri.parse(embeddedFile.urls.first).scheme == 'https' &&
+        implies(event.oob != null, event.body == event.oob?.url);
   }
 
   /// Handle a message retraction given the MessageEvent [event].
@@ -1355,39 +1351,12 @@ class XmppService {
     var shouldNotify = !(isFileEmbedded && isInRoster && shouldDownload);
     // A guess for the Mime type of the embedded file.
     var mimeGuess = _getMimeGuess(event);
-    // Guess a sticker hash key, if the message is a sticker
-    final stickerHashKey = event.stickerPackId != null
-        ? getStickerHashKey(event.sfs!.metadata.hashes)
-        : null;
-    // The potential sticker pack
-    final stickerPack = event.stickerPackId != null
-        ? await GetIt.I.get<StickersService>().getStickerPackById(
-              event.stickerPackId!,
-            )
-        : null;
-
-    // Automatically download the sticker pack, if
-    // - a sticker was received,
-    // - the sender is in the roster,
-    // - we don't have the sticker pack locally,
-    // - and it is enabled in the settings
-    if (event.stickerPackId != null &&
-        stickerPack == null &&
-        prefs.autoDownloadStickersFromContacts &&
-        isInRoster) {
-      unawaited(
-        GetIt.I.get<StickersService>().importFromPubSubWithEvent(
-              event.fromJid,
-              event.stickerPackId!,
-            ),
-      );
-    }
 
     FileMetadata? fileMetadata;
     if (isFileEmbedded) {
       final thumbnail = _getThumbnailData(event);
       fileMetadata =
-          await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
+          (await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
                 embeddedFile!,
                 mimeGuess,
                 embeddedFile.size,
@@ -1396,7 +1365,7 @@ class XmppService {
                 thumbnail != null ? 'blurhash' : null,
                 thumbnail,
                 createHashPointers: false,
-              );
+              )).fileMetadata;
     }
 
     // Create the message in the database
@@ -1416,13 +1385,12 @@ class XmppService {
       originId: event.stanzaId.originId,
       errorType: errorTypeFromException(event.other['encryption_error']),
       stickerPackId: event.stickerPackId,
-      stickerHashKey: stickerHashKey,
     );
 
     // Attempt to auto-download the embedded file
     if (isFileEmbedded && shouldDownload && fileMetadata?.path == null) {
       final fts = GetIt.I.get<HttpFileTransferService>();
-      final metadata = await peekFile(embeddedFile!.url);
+      final metadata = await peekFile(embeddedFile!.urls.first);
 
       _log.finest('Advertised file MIME: ${metadata.mime}');
       if (metadata.mime != null) mimeGuess = metadata.mime;

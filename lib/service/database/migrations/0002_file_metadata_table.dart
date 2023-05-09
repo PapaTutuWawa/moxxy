@@ -69,7 +69,9 @@ Future<void> upgradeFromV31ToV32(Database db) async {
           getStrongestHashFromMap(plaintextHashes) ??
               DateTime.now().millisecondsSinceEpoch.toString(),
           message['mediaUrl'] as String?,
-          message['srcUrl'] as String?,
+          message['srcUrl'] != null
+            ? [message['srcUrl']! as String]
+            : null,
           message['mediaType'] as String?,
           message['mediaSize'] as int?,
           message['thumbnailData'] != null ? 'blurhash' : null,
@@ -150,7 +152,9 @@ Future<void> upgradeFromV31ToV32(Database db) async {
       final metadata = FileMetadata(
         DateTime.now().millisecondsSinceEpoch.toString(),
         filePath,
-        urlSource,
+        urlSource != null
+          ? [urlSource]
+          : null,
         mediaType,
         size,
         message['thumbnailData'] != null ? 'blurhash' : null,

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'file_metadata.freezed.dart';
@@ -13,7 +14,7 @@ class FileMetadata with _$FileMetadata {
     String? path,
 
     /// The source where the file came from.
-    String? sourceUrl,
+    List<String>? sourceUrls,
 
     /// The MIME type of the media, if available.
     String? mimeType,
@@ -81,18 +82,24 @@ class FileMetadata with _$FileMetadata {
               );
             }),
           );
+    final sourceUrlsRaw = json['sourceUrls'] as String?;
+    final sourceUrls = sourceUrlsRaw == null
+      ? null
+      : (jsonDecode(sourceUrlsRaw) as List<dynamic>).cast<String>();
 
     return FileMetadata.fromJson({
       ...json,
       'plaintextHashes': plaintextHashes,
       'ciphertextHashes': ciphertextHashes,
+      'sourceUrls': sourceUrls,
     });
   }
 
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
       ..remove('plaintextHashes')
-      ..remove('ciphertextHashes');
+      ..remove('ciphertextHashes')
+      ..remove('sourceUrls');
     return {
       ...map,
       'plaintextHashes': plaintextHashes?.entries
@@ -101,6 +108,9 @@ class FileMetadata with _$FileMetadata {
       'ciphertextHashes': ciphertextHashes?.entries
           .map((entry) => '${entry.key}-${entry.value}')
           .join(';'),
+      'sourceUrls': sourceUrls != null
+        ? jsonEncode(sourceUrls)
+        : null,
     };
   }
 }

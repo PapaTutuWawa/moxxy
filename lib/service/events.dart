@@ -32,6 +32,7 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
@@ -564,18 +565,18 @@ Future<void> performRequestDownload(
   sendEvent(MessageUpdatedEvent(message: message));
 
   final fileMetadata = command.message.fileMetadata!;
-  final metadata = await peekFile(fileMetadata.sourceUrl!);
+  final metadata = await peekFile(fileMetadata.sourceUrls!.first);
 
   // TODO(Unknown): Maybe deduplicate with the code in the xmpp service
   // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
   //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-  final ext = fileMetadata.sourceUrl!.split('.').last;
+  final ext = fileMetadata.sourceUrls!.first.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
 
   await srv.downloadFile(
     FileDownloadJob(
       MediaFileLocation(
-        fileMetadata.sourceUrl!,
+        fileMetadata.sourceUrls!,
         fileMetadata.filename,
         fileMetadata.encryptionScheme,
         fileMetadata.encryptionKey != null
@@ -1050,19 +1051,10 @@ Future<void> performSendSticker(
   SendStickerCommand command, {
   dynamic extra,
 }) async {
-  final xs = GetIt.I.get<XmppService>();
-  final ss = GetIt.I.get<StickersService>();
-
-  final sticker = await ss.getStickerByHashKey(
-    command.stickerPackId,
-    command.stickerHashKey,
-  );
-  assert(sticker != null, 'Sticker not found');
-
-  await xs.sendMessage(
-    body: sticker!.desc,
+  await GetIt.I.get<XmppService>().sendMessage(
+    body: command.sticker.desc,
     recipients: [command.recipient],
-    sticker: sticker,
+    sticker: command.sticker,
     currentConversationJid: command.recipient,
   );
 }
@@ -1104,19 +1096,30 @@ Future<void> performFetchStickerPack(
               .map(
                 (s) => sticker.Sticker(
                   '',
-                  s.metadata.mediaType!,
+                  command.stickerPackId,
                   s.metadata.desc!,
-                  s.metadata.size!,
-                  s.metadata.width,
-                  s.metadata.height,
-                  s.metadata.hashes,
-                  s.sources
+                  s.suggests,
+                  FileMetadata(
+                    '',
+                    null,
+                    s.sources
                       .whereType<StatelessFileSharingUrlSource>()
                       .map((src) => src.url)
                       .toList(),
-                  '',
-                  command.stickerPackId,
-                  s.suggests,
+                    s.metadata.mediaType,
+                    s.metadata.size,
+                    // TODO(Unknown): One day
+                    null,
+                    null,
+                    s.metadata.width,
+                    s.metadata.height,
+                    s.metadata.hashes,
+                    null,
+                    null,
+                    null,
+                    null,
+                    s.metadata.name ?? '',
+                  ),
                 ),
               )
               .toList(),

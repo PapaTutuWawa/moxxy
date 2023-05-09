@@ -105,7 +105,7 @@ class StickerPicker extends StatelessWidget {
                 },
                 child: Image.file(
                   File(
-                    stickerPacks[sindex].stickers[index].path,
+                    stickerPacks[sindex].stickers[index].fileMetadata.path!,
                   ),
                   key: ValueKey('${state.stickerPacks[sindex].id}_$index'),
                   fit: BoxFit.contain,

@@ -39,7 +39,7 @@ import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
 import 'package:moxxyv2/service/database/migrations/0001_remove_auto_accept_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0001_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0002_file_metadata_table.dart';
-import 'package:moxxyv2/service/helpers.dart';
+import 'package:moxxyv2/service/database/migrations/0002_sticker_metadata.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
@@ -51,8 +51,6 @@ import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
-import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
-import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:path/path.dart' as path;
@@ -145,7 +143,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 32,
+      version: 33,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -281,6 +279,10 @@ class DatabaseService {
         if (oldVersion < 32) {
           _log.finest('Running migration for database version 32');
           await upgradeFromV31ToV32(db);
+        }
+        if (oldVersion < 33) {
+          _log.finest('Running migration for database version 33');
+          await migrateFromV32ToV33(db);
         }
       },
     );
@@ -970,94 +972,6 @@ class DatabaseService {
       contactsTable,
       where: 'id = ?',
       whereArgs: [id],
-    );
-  }
-
-  Future<void> addStickerPackFromData(sticker_pack.StickerPack pack) async {
-    await _db.insert(
-      stickerPacksTable,
-      pack.toDatabaseJson(),
-    );
-  }
-
-  Future<sticker.Sticker> addStickerFromData(
-    String mediaType,
-    String desc,
-    int size,
-    int? width,
-    int? height,
-    Map<String, String> hashes,
-    List<String> urlSources,
-    String path,
-    String stickerPackId,
-    Map<String, String> suggests,
-  ) async {
-    final s = sticker.Sticker(
-      getStickerHashKey(hashes),
-      mediaType,
-      desc,
-      size,
-      width,
-      height,
-      hashes,
-      urlSources,
-      path,
-      stickerPackId,
-      suggests,
-    );
-
-    await _db.insert(stickersTable, s.toDatabaseJson());
-    return s;
-  }
-
-  Future<List<sticker_pack.StickerPack>> loadStickerPacks() async {
-    final rawPacks = await _db.query(stickerPacksTable);
-    final stickerPacks = List<sticker_pack.StickerPack>.empty(growable: true);
-    for (final pack in rawPacks) {
-      final rawStickers = await _db.query(
-        stickersTable,
-        where: 'stickerPackId = ?',
-        whereArgs: [pack['id']! as String],
-      );
-
-      stickerPacks.add(
-        sticker_pack.StickerPack.fromDatabaseJson(
-          pack,
-          rawStickers.map(sticker.Sticker.fromDatabaseJson).toList(),
-        ),
-      );
-    }
-
-    return stickerPacks;
-  }
-
-  Future<void> removeStickerPackById(String id) async {
-    await _db.delete(
-      stickerPacksTable,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<sticker_pack.StickerPack?> getStickerPackById(String id) async {
-    final rawPack = await _db.query(
-      stickerPacksTable,
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-
-    if (rawPack.isEmpty) return null;
-
-    final rawStickers = await _db.query(
-      stickersTable,
-      where: 'stickerPackId = ?',
-      whereArgs: [id],
-    );
-
-    return sticker_pack.StickerPack.fromDatabaseJson(
-      rawPack.first,
-      rawStickers.map(sticker.Sticker.fromDatabaseJson).toList(),
     );
   }
 

@@ -141,9 +141,9 @@ String? createFallbackBodyForQuotedMessage(Message? quotedMessage) {
 
     // Create media url string, or use body if no srcUrl is stored
     String quotedMediaUrl;
-    if (quotedMessage.fileMetadata!.sourceUrl != null &&
-        quotedMessage.fileMetadata!.sourceUrl!.isNotEmpty) {
-      quotedMediaUrl = '• ${quotedMessage.fileMetadata!.sourceUrl!}';
+    if (quotedMessage.fileMetadata!.sourceUrls != null &&
+        quotedMessage.fileMetadata!.sourceUrls!.first.isNotEmpty) {
+      quotedMediaUrl = '• ${quotedMessage.fileMetadata!.sourceUrls!.first}';
     } else if (quotedMessage.body.isNotEmpty) {
       quotedMediaUrl = '• ${quotedMessage.body}';
     } else {

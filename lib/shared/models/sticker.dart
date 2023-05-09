@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/helpers.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:path/path.dart' as path;
 
 part 'sticker.freezed.dart';
 part 'sticker.g.dart';
@@ -9,90 +12,84 @@ part 'sticker.g.dart';
 @freezed
 class Sticker with _$Sticker {
   factory Sticker(
-    String hashKey,
-    String mediaType,
-    String desc,
-    int size,
-    int? width,
-    int? height,
-
-    /// Hash algorithm (algo attribute) -> Base64 encoded hash
-    Map<String, String> hashes,
-    List<String> urlSources,
-    String path,
+    String id,
     String stickerPackId,
+    String desc,
     Map<String, String> suggests,
+    FileMetadata fileMetadata,
   ) = _Sticker;
 
   const Sticker._();
 
   /// Moxxmpp
-  factory Sticker.fromMoxxmpp(moxxmpp.Sticker sticker, String stickerPackId) =>
-      Sticker(
-        getStickerHashKey(sticker.metadata.hashes),
-        sticker.metadata.mediaType!,
-        sticker.metadata.desc!,
-        sticker.metadata.size!,
+  factory Sticker.fromMoxxmpp(moxxmpp.Sticker sticker, String stickerPackId) {
+    final hashKey = getStickerHashKey(sticker.metadata.hashes);
+    final firstUrl = (sticker.sources.firstWhereOrNull((src) => src is moxxmpp.StatelessFileSharingUrlSource)! as moxxmpp.StatelessFileSharingUrlSource).url;
+    return Sticker(
+      hashKey,
+      stickerPackId,
+      sticker.metadata.desc!,
+      sticker.suggests,
+      FileMetadata(
+        hashKey,
+        null,
+        sticker.sources.whereType<moxxmpp.StatelessFileSharingUrlSource>().map((src) => src.url).toList(),
+        sticker.metadata.mediaType,
+        sticker.metadata.size,
+        null,
+        null,
         sticker.metadata.width,
         sticker.metadata.height,
         sticker.metadata.hashes,
-        sticker.sources
-            .whereType<moxxmpp.StatelessFileSharingUrlSource>()
-            .map((src) => src.url)
-            .toList(),
-        '',
-        stickerPackId,
-        sticker.suggests,
-      );
+        null,
+        null,
+        null,
+        null,
+        sticker.metadata.name ?? path.basename(firstUrl),
+      ),
+    );
+  }
 
   /// JSON
   factory Sticker.fromJson(Map<String, dynamic> json) =>
       _$StickerFromJson(json);
 
-  factory Sticker.fromDatabaseJson(Map<String, dynamic> json) {
+  factory Sticker.fromDatabaseJson(Map<String, dynamic> json, FileMetadata fileMetadata) {
     return Sticker.fromJson({
       ...json,
-      'hashes': (jsonDecode(json['hashes']! as String) as Map<dynamic, dynamic>)
-          .cast<String, String>(),
-      'urlSources': (jsonDecode(json['urlSources']! as String) as List<dynamic>)
-          .cast<String>(),
       'suggests':
           (jsonDecode(json['suggests']! as String) as Map<dynamic, dynamic>)
               .cast<String, String>(),
+      'fileMetadata': fileMetadata.toJson(),
     });
   }
 
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
-      ..remove('hashes')
-      ..remove('urlSources')
-      ..remove('suggests');
+      ..remove('fileMetadata');
 
     return {
       ...map,
-      'hashes': jsonEncode(hashes),
-      'urlSources': jsonEncode(urlSources),
       'suggests': jsonEncode(suggests),
+      'file_metadata_id': fileMetadata.id,
     };
   }
 
   moxxmpp.Sticker toMoxxmpp() => moxxmpp.Sticker(
         moxxmpp.FileMetadataData(
-          mediaType: mediaType,
+          mediaType: fileMetadata.mimeType,
           desc: desc,
-          size: size,
-          width: width,
-          height: height,
+          size: fileMetadata.size,
+          width: fileMetadata.width,
+          height: fileMetadata.height,
           thumbnails: [],
-          hashes: hashes,
+          hashes: fileMetadata.plaintextHashes,
         ),
-        urlSources
-            // ignore: unnecessary_lambdas
-            .map((src) => moxxmpp.StatelessFileSharingUrlSource(src))
-            .toList(),
+        // ignore: unnecessary_lambdas
+        fileMetadata.sourceUrls!.map((src) => moxxmpp.StatelessFileSharingUrlSource(src)).toList(),
         suggests,
       );
 
   /// True, if the sticker is backed by an image with MIME type image/*.
-  bool get isImage => mediaType.startsWith('image/');
+  bool get isImage => fileMetadata.mimeType?.startsWith('image/') ?? false;
 }

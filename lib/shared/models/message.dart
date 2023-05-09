@@ -53,7 +53,6 @@ class Message with _$Message {
     Message? quotes,
     @Default([]) List<Reaction> reactions,
     String? stickerPackId,
-    String? stickerHashKey,
     int? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
   }) = _Message;
@@ -213,7 +212,6 @@ class Message with _$Message {
   bool get isSticker =>
       isMedia &&
       stickerPackId != null &&
-      stickerHashKey != null &&
       !isPseudoMessage;
 
   /// True if the message is a media message

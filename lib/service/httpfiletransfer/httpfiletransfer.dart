@@ -127,7 +127,7 @@ class HttpFileTransferService {
     FileUploadJob job,
     Map<String, String> plaintextHashes,
   ) async {
-    final newPath = await getDownloadPath(
+    final newPath = await computeCachedPathForFile(
       pathlib.basename(job.path),
       plaintextHashes,
     );
@@ -372,7 +372,7 @@ class HttpFileTransferService {
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
     final filename = job.location.filename;
-    final downloadedPath = await getDownloadPath(
+    final downloadedPath = await computeCachedPathForFile(
       job.location.filename,
       job.location.plaintextHashes,
     );
@@ -384,8 +384,10 @@ class HttpFileTransferService {
       downloadPath = pathlib.join(tempDir.path, filename);
     }
 
+    // TODO(Unknown): Maybe try other URLs?
+    final downloadUrl = job.location.urls.first;
     _log.finest(
-      'Downloading ${job.location.url} as $filename (MIME guess ${job.mimeGuess}) to $downloadPath (-> $downloadedPath)',
+      'Downloading $downloadUrl as $filename (MIME guess ${job.mimeGuess}) to $downloadPath (-> $downloadedPath)',
     );
 
     int? downloadStatusCode;
@@ -393,7 +395,7 @@ class HttpFileTransferService {
     try {
       _log.finest('Beginning download...');
       downloadStatusCode = await client.downloadFile(
-        Uri.parse(job.location.url),
+        Uri.parse(downloadUrl),
         downloadPath,
         (total, current) {
           final progress = current.toDouble() / total.toDouble();
@@ -412,7 +414,7 @@ class HttpFileTransferService {
 
     if (!isRequestOkay(downloadStatusCode)) {
       _log.warning(
-        'HTTP GET of ${job.location.url} returned $downloadStatusCode',
+        'HTTP GET of $downloadUrl returned $downloadStatusCode',
       );
       await _fileDownloadFailed(job, fileDownloadFailedError);
       return;

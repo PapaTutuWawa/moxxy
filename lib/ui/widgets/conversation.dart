@@ -8,8 +8,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/shared/models/sticker.dart';
-import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
@@ -132,21 +130,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   Widget _buildLastMessagePreview(StickersState state) {
     Widget? preview;
     if (widget.conversation.lastMessage!.stickerPackId != null) {
-      Sticker? sticker;
-      if (widget.conversation.lastMessage!.stickerPackId != null &&
-          widget.conversation.lastMessage!.stickerHashKey != null &&
-          GetIt.I.get<PreferencesBloc>().state.enableStickers) {
-        final stickerKey = StickerKey(
-          widget.conversation.lastMessage!.stickerPackId!,
-          widget.conversation.lastMessage!.stickerHashKey!,
-        );
-
-        sticker = state.stickerMap[stickerKey];
-      }
-
-      if (sticker != null) {
+      if (widget.conversation.lastMessage!.fileMetadata!.path != null) {
         preview = SharedImageWidget(
-          sticker.path,
+          widget.conversation.lastMessage!.fileMetadata!.path!,
           borderRadius: 5,
           size: 30,
         );

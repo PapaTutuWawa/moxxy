@@ -71,7 +71,7 @@ class RawChatBubble extends StatelessWidget {
     }
 
     // Stickers are also not colored
-    return message.stickerPackId != null && message.stickerHashKey != null;
+    return message.stickerPackId != null;
   }
 
   Color _getBubbleColor(BuildContext context) {
