@@ -148,7 +148,7 @@ SELECT
   quote.pseudoMessageData AS quote_pseudoMessageData,
   fm.id as fm_id,
   fm.path as fm_path,
-  fm.sourceUrl as fm_sourceUrl,
+  fm.sourceUrls as fm_sourceUrls,
   fm.mimeType as fm_mimeType,
   fm.thumbnailType as fm_thumbnailType,
   fm.thumbnailData as fm_thumbnailData,
@@ -179,14 +179,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
 
       Message? quotes;
       if (m['quote_id'] != null) {
-        final rawQuote = Map<String, dynamic>.fromEntries(
-          m.entries.where((entry) => entry.key.startsWith('quote_')).map(
-                (entry) => MapEntry<String, dynamic>(
-                  entry.key.substring(6),
-                  entry.value,
-                ),
-              ),
-        );
+        final rawQuote = getPrefixedSubMap(m, 'quote_');
 
         FileMetadata? quoteFm;
         if (rawQuote['file_metadata_id'] != null) {

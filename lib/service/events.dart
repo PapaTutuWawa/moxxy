@@ -1052,11 +1052,11 @@ Future<void> performSendSticker(
   dynamic extra,
 }) async {
   await GetIt.I.get<XmppService>().sendMessage(
-    body: command.sticker.desc,
-    recipients: [command.recipient],
-    sticker: command.sticker,
-    currentConversationJid: command.recipient,
-  );
+        body: command.sticker.desc,
+        recipients: [command.recipient],
+        sticker: command.sticker,
+        currentConversationJid: command.recipient,
+      );
 }
 
 Future<void> performRemoveStickerPack(
@@ -1103,9 +1103,9 @@ Future<void> performFetchStickerPack(
                     '',
                     null,
                     s.sources
-                      .whereType<StatelessFileSharingUrlSource>()
-                      .map((src) => src.url)
-                      .toList(),
+                        .whereType<StatelessFileSharingUrlSource>()
+                        .map((src) => src.url)
+                        .toList(),
                     s.metadata.mediaType,
                     s.metadata.size,
                     // TODO(Unknown): One day

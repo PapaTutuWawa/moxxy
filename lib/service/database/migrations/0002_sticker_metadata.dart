@@ -24,7 +24,9 @@ Future<void> migrateFromV32ToV33(Database db) async {
   // Mapping stickerHashKey -> fileMetadataId
   final stickerHashMap = <String, String>{};
   for (final sticker in stickers) {
-    final hashes = (jsonDecode(sticker['hashes']! as String) as Map<String, dynamic>).cast<String, String>();
+    final hashes =
+        (jsonDecode(sticker['hashes']! as String) as Map<String, dynamic>)
+            .cast<String, String>();
 
     final buffer = StringBuffer();
     for (var i = 0; i < hashes.length; i++) {
@@ -35,7 +37,10 @@ Future<void> migrateFromV32ToV33(Database db) async {
     final rawFm = await db.query(
       fileMetadataHashesTable,
       where: query.substring(0, query.length - 1 - 3),
-      whereArgs: hashes.entries.map<List<String>>((entry) => [entry.key, entry.value]).flattened.toList(),
+      whereArgs: hashes.entries
+          .map<List<String>>((entry) => [entry.key, entry.value])
+          .flattened
+          .toList(),
       limit: 1,
     );
 
@@ -102,7 +107,7 @@ Future<void> migrateFromV32ToV33(Database db) async {
       whereArgs: [stickerEntry.key],
     );
   }
-  
+
   // Remove the hash key from messages
   await db.execute('ALTER TABLE $messagesTable DROP COLUMN stickerHashKey');
 }

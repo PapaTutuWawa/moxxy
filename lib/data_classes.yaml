@@ -527,7 +527,9 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          sticker: Sticker
+          sticker:
+            type: Sticker
+            deserialise: true
           recipient: String
       - name: FetchStickerPackCommand
         extends: BackgroundCommand

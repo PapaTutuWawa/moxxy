@@ -209,10 +209,7 @@ class Message with _$Message {
   bool get isCopyable => !isMedia && body.isNotEmpty && !isPseudoMessage;
 
   /// Returns true if the message is a sticker
-  bool get isSticker =>
-      isMedia &&
-      stickerPackId != null &&
-      !isPseudoMessage;
+  bool get isSticker => isMedia && stickerPackId != null && !isPseudoMessage;
 
   /// True if the message is a media message
   bool get isMedia => fileMetadata != null;

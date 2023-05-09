@@ -157,7 +157,6 @@ Future<void> createDatabase(Database db, int version) async {
         ON DELETE CASCADE,
       CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
     )''',
-
   );
   await db.execute(
     '''

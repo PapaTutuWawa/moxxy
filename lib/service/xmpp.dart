@@ -277,7 +277,8 @@ class XmppService {
                     ? StatelessFileSharingData(
                         moxxmppSticker.metadata,
                         moxxmppSticker.sources,
-                      ) : null,
+                      )
+                    : null,
                 setOOBFallbackBody: sticker != null ? false : true,
               ),
             );
@@ -300,13 +301,17 @@ class XmppService {
       // );
 
       final hasUrlSource = firstWhereOrNull(
-        event.sfs!.sources,
-        (src) => src is StatelessFileSharingUrlSource,
-      ) != null;
-      
+            event.sfs!.sources,
+            (src) => src is StatelessFileSharingUrlSource,
+          ) !=
+          null;
+
       final name = event.sfs!.metadata.name;
       if (hasUrlSource) {
-        final sources = event.sfs!.sources.whereType<StatelessFileSharingUrlSource>().map((src) => src.url).toList();
+        final sources = event.sfs!.sources
+            .whereType<StatelessFileSharingUrlSource>()
+            .map((src) => src.url)
+            .toList();
         return MediaFileLocation(
           sources,
           name != null ? escapeFilename(name) : filenameFromUrl(sources.first),
@@ -1357,15 +1362,16 @@ class XmppService {
       final thumbnail = _getThumbnailData(event);
       fileMetadata =
           (await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
-                embeddedFile!,
-                mimeGuess,
-                embeddedFile.size,
-                dimensions,
-                // TODO(Unknown): Maybe we switch to something else?
-                thumbnail != null ? 'blurhash' : null,
-                thumbnail,
-                createHashPointers: false,
-              )).fileMetadata;
+                    embeddedFile!,
+                    mimeGuess,
+                    embeddedFile.size,
+                    dimensions,
+                    // TODO(Unknown): Maybe we switch to something else?
+                    thumbnail != null ? 'blurhash' : null,
+                    thumbnail,
+                    createHashPointers: false,
+                  ))
+              .fileMetadata;
     }
 
     // Create the message in the database

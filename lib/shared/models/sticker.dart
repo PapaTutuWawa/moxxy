@@ -24,7 +24,10 @@ class Sticker with _$Sticker {
   /// Moxxmpp
   factory Sticker.fromMoxxmpp(moxxmpp.Sticker sticker, String stickerPackId) {
     final hashKey = getStickerHashKey(sticker.metadata.hashes);
-    final firstUrl = (sticker.sources.firstWhereOrNull((src) => src is moxxmpp.StatelessFileSharingUrlSource)! as moxxmpp.StatelessFileSharingUrlSource).url;
+    final firstUrl = (sticker.sources.firstWhereOrNull(
+      (src) => src is moxxmpp.StatelessFileSharingUrlSource,
+    )! as moxxmpp.StatelessFileSharingUrlSource)
+        .url;
     return Sticker(
       hashKey,
       stickerPackId,
@@ -33,7 +36,10 @@ class Sticker with _$Sticker {
       FileMetadata(
         hashKey,
         null,
-        sticker.sources.whereType<moxxmpp.StatelessFileSharingUrlSource>().map((src) => src.url).toList(),
+        sticker.sources
+            .whereType<moxxmpp.StatelessFileSharingUrlSource>()
+            .map((src) => src.url)
+            .toList(),
         sticker.metadata.mediaType,
         sticker.metadata.size,
         null,
@@ -54,7 +60,10 @@ class Sticker with _$Sticker {
   factory Sticker.fromJson(Map<String, dynamic> json) =>
       _$StickerFromJson(json);
 
-  factory Sticker.fromDatabaseJson(Map<String, dynamic> json, FileMetadata fileMetadata) {
+  factory Sticker.fromDatabaseJson(
+    Map<String, dynamic> json,
+    FileMetadata fileMetadata,
+  ) {
     return Sticker.fromJson({
       ...json,
       'suggests':
@@ -65,8 +74,7 @@ class Sticker with _$Sticker {
   }
 
   Map<String, dynamic> toDatabaseJson() {
-    final map = toJson()
-      ..remove('fileMetadata');
+    final map = toJson()..remove('fileMetadata');
 
     return {
       ...map,
@@ -85,8 +93,11 @@ class Sticker with _$Sticker {
           thumbnails: [],
           hashes: fileMetadata.plaintextHashes,
         ),
-        // ignore: unnecessary_lambdas
-        fileMetadata.sourceUrls!.map((src) => moxxmpp.StatelessFileSharingUrlSource(src)).toList(),
+        fileMetadata.sourceUrls!
+            // Dart has some issues with using a constructor in a map
+            // ignore: unnecessary_lambdas
+            .map((src) => moxxmpp.StatelessFileSharingUrlSource(src))
+            .toList(),
         suggests,
       );
 

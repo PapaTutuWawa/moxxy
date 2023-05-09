@@ -13,31 +13,43 @@ import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
+/// A class for returning whether a file metadata element was just created or retrieved.
 class FileMetadataWrapper {
   FileMetadataWrapper(
     this.fileMetadata,
     this.retrieved,
   );
-  
+
   /// The file metadata.
   FileMetadata fileMetadata;
-  
+
   /// Indicates whether the file metadata already exists (true) or
   /// if it has been created (false).
   bool retrieved;
 }
 
+/// Returns the strongest hash from [map], if [map] is not null. If no known hash is found
+/// or [map] is null, returns null.
 String? getStrongestHashFromMap(Map<String, String>? map) {
   if (map == null) {
     return null;
   }
 
-  return map['blake2b-512'] ?? map['blake2b-256'] ?? map['sha3-512'] ?? map['sha3-256'] ?? map['sha-512'] ?? map['sha-256'];
+  return map['blake2b-512'] ??
+      map['blake2b-256'] ??
+      map['sha3-512'] ??
+      map['sha3-256'] ??
+      map['sha-512'] ??
+      map['sha-256'];
 }
 
 /// Calculates the path for a given file with filename [filename] and the optional
-/// plaintext hashes [hashes].
-Future<String> computeCachedPathForFile(String filename, Map<String, String>? hashes) async {
+/// plaintext hashes [hashes]. If the base directory for the file does not exist, then it
+/// will be created.
+Future<String> computeCachedPathForFile(
+  String filename,
+  Map<String, String>? hashes,
+) async {
   final basePath = path.join(
     (await getApplicationDocumentsDirectory()).path,
     'media',
@@ -51,7 +63,7 @@ Future<String> computeCachedPathForFile(String filename, Map<String, String>? ha
   // Keep the extension of the file. Otherwise Android will be really confused
   // as to what it should open the file with.
   final ext = path.extension(filename);
-  final hash = getStrongestHashFromMap(hashes);
+  final hash = getStrongestHashFromMap(hashes)?.replaceAll('/', '_');
   return path.join(
     basePath,
     hash != null

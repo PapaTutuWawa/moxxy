@@ -12,7 +12,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
     CREATE TABLE $fileMetadataTable (
       id               TEXT NOT NULL PRIMARY KEY,
       path             TEXT,
-      sourceUrl        TEXT,
+      sourceUrls       TEXT,
       mimeType         TEXT,
       thumbnailType    TEXT,
       thumbnailData    TEXT,
@@ -69,9 +69,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
           getStrongestHashFromMap(plaintextHashes) ??
               DateTime.now().millisecondsSinceEpoch.toString(),
           message['mediaUrl'] as String?,
-          message['srcUrl'] != null
-            ? [message['srcUrl']! as String]
-            : null,
+          message['srcUrl'] != null ? [message['srcUrl']! as String] : null,
           message['mediaType'] as String?,
           message['mediaSize'] as int?,
           message['thumbnailData'] != null ? 'blurhash' : null,
@@ -152,9 +150,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
       final metadata = FileMetadata(
         DateTime.now().millisecondsSinceEpoch.toString(),
         filePath,
-        urlSource != null
-          ? [urlSource]
-          : null,
+        urlSource != null ? [urlSource] : null,
         mediaType,
         size,
         message['thumbnailData'] != null ? 'blurhash' : null,

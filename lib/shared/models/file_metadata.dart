@@ -84,8 +84,8 @@ class FileMetadata with _$FileMetadata {
           );
     final sourceUrlsRaw = json['sourceUrls'] as String?;
     final sourceUrls = sourceUrlsRaw == null
-      ? null
-      : (jsonDecode(sourceUrlsRaw) as List<dynamic>).cast<String>();
+        ? null
+        : (jsonDecode(sourceUrlsRaw) as List<dynamic>).cast<String>();
 
     return FileMetadata.fromJson({
       ...json,
@@ -108,9 +108,7 @@ class FileMetadata with _$FileMetadata {
       'ciphertextHashes': ciphertextHashes?.entries
           .map((entry) => '${entry.key}-${entry.value}')
           .join(';'),
-      'sourceUrls': sourceUrls != null
-        ? jsonEncode(sourceUrls)
-        : null,
+      'sourceUrls': sourceUrls != null ? jsonEncode(sourceUrls) : null,
     };
   }
 }
