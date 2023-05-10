@@ -82,10 +82,11 @@ class ImageChatWidget extends StatelessWidget {
         ),
       );
     } else {
+      // TODO(Unknown): Somehow have sensible defaults here
       image = Image.file(
         File(message.fileMetadata!.path!),
-        cacheWidth: size.width.toInt(),
-        cacheHeight: size.height.toInt(),
+        // cacheWidth: size.width.toInt(),
+        // cacheHeight: size.height.toInt(),
       );
     }
 
