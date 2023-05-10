@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -18,6 +17,7 @@ import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/httpfiletransfer/client.dart' as client;
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
+import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
@@ -125,34 +125,17 @@ class HttpFileTransferService {
 
   Future<void> _copyFile(
     FileUploadJob job,
-    Map<String, String> plaintextHashes,
+    String to,
   ) async {
-    final newPath = await computeCachedPathForFile(
-      pathlib.basename(job.path),
-      plaintextHashes,
-    );
-    if (!File(newPath).existsSync()) {
-      await File(job.path).copy(newPath);
+    if (!File(to).existsSync()) {
+      await File(job.path).copy(to);
 
       // Let the media scanner index the file
-      MoxplatformPlugin.media.scanFile(newPath);
+      MoxplatformPlugin.media.scanFile(to);
     } else {
       _log.finest(
         'Skipping file copy on upload as file is already at media location',
       );
-    }
-
-    final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
-          job.metadataId,
-          path: newPath,
-        );
-
-    for (final recipient in job.recipients) {
-      // Update the message
-      await GetIt.I.get<MessageService>().updateMessage(
-            job.messageMap[recipient]!.id,
-            fileMetadata: metadata,
-          );
     }
   }
 
@@ -246,19 +229,86 @@ class HttpFileTransferService {
     } else {
       _log.fine('Upload was successful');
 
+      // Get hashes
+      StatelessFileSharingSource source;
+      final plaintextHashes = <String, String>{};
+      Map<String, String>? ciphertextHashes;
+      if (encryption != null) {
+        source = StatelessFileSharingEncryptedSource(
+          SFSEncryptionType.aes256GcmNoPadding,
+          encryption.key,
+          encryption.iv,
+          encryption.ciphertextHashes,
+          StatelessFileSharingUrlSource(slot.getUrl),
+        );
+
+        plaintextHashes.addAll(encryption.plaintextHashes);
+        ciphertextHashes = encryption.ciphertextHashes;
+      } else {
+        source = StatelessFileSharingUrlSource(slot.getUrl);
+        try {
+          plaintextHashes[hashSha256] = await GetIt.I
+              .get<CryptographyService>()
+              .hashFile(job.path, HashFunction.sha256);
+        } catch (ex) {
+          _log.warning('Failed to hash file ${job.path} using SHA-256: $ex');
+        }
+      }
+
       // Update the metadata
-      final metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
-            job.metadataId,
-            size: stat.size,
-            encryptionScheme: encryption != null
-                ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
-                : null,
-            encryptionKey:
-                encryption != null ? base64Encode(encryption.key) : null,
-            encryptionIv:
-                encryption != null ? base64Encode(encryption.iv) : null,
-            sourceUrl: slot.getUrl,
+      final filename = pathlib.basename(job.path);
+      final filePath = await computeCachedPathForFile(
+        filename,
+        plaintextHashes,
+      );
+      final metadataWrapper =
+          await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
+                MediaFileLocation(
+                  [slot.getUrl],
+                  filename,
+                  encryption != null
+                      ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
+                      : null,
+                  encryption?.key,
+                  encryption?.iv,
+                  plaintextHashes,
+                  ciphertextHashes,
+                  stat.size,
+                ),
+                job.mime,
+                stat.size,
+                null,
+                // TODO(Unknown): job.thumbnails.first
+                null,
+                null,
+                path: filePath,
+              );
+      var metadata = metadataWrapper.fileMetadata;
+
+      // Remove the tempoary metadata if we already know the file
+      if (metadataWrapper.retrieved) {
+        if (metadataWrapper.fileMetadata.path != null) {
+          _log.fine(
+            'Uploaded file $filename is already tracked. Skipping copy',
           );
+        } else {
+          _log.fine(
+            'Uploaded file $filename is already tracked but has no path. Copying',
+          );
+          await _copyFile(job, filePath);
+          metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
+                metadata.id,
+                path: filePath,
+              );
+        }
+
+        await GetIt.I.get<FilesService>().removeFileMetadata(
+              job.metadataId,
+            );
+      } else {
+        _log.fine('Uploaded file $filename not tracked. Copying');
+        await _copyFile(job, metadataWrapper.fileMetadata.path!);
+      }
 
       const uuid = Uuid();
       for (final recipient in job.recipients) {
@@ -278,29 +328,6 @@ class HttpFileTransferService {
         );
         sendEvent(MessageUpdatedEvent(message: msg));
 
-        StatelessFileSharingSource source;
-        final plaintextHashes = <String, String>{};
-        if (encryption != null) {
-          source = StatelessFileSharingEncryptedSource(
-            SFSEncryptionType.aes256GcmNoPadding,
-            encryption.key,
-            encryption.iv,
-            encryption.ciphertextHashes,
-            StatelessFileSharingUrlSource(slot.getUrl),
-          );
-
-          plaintextHashes.addAll(encryption.plaintextHashes);
-        } else {
-          source = StatelessFileSharingUrlSource(slot.getUrl);
-          try {
-            plaintextHashes[hashSha256] = await GetIt.I
-                .get<CryptographyService>()
-                .hashFile(job.path, HashFunction.sha256);
-          } catch (ex) {
-            _log.warning('Failed to hash file ${job.path} using SHA-256: $ex');
-          }
-        }
-
         // Send the message to the recipient
         conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
               MessageDetails(
@@ -313,7 +340,7 @@ class HttpFileTransferService {
                   FileMetadataData(
                     mediaType: job.mime,
                     size: stat.size,
-                    name: pathlib.basename(job.path),
+                    name: filename,
                     thumbnails: job.thumbnails,
                     hashes: plaintextHashes,
                   ),
@@ -326,15 +353,6 @@ class HttpFileTransferService {
         _log.finest(
           'Sent message with file upload for ${job.path} to $recipient',
         );
-
-        final isMultiMedia = (job.mime?.startsWith('image/') ?? false) ||
-            (job.mime?.startsWith('video/') ?? false);
-        if (isMultiMedia) {
-          _log.finest(
-            'File appears to be either an image or a video. Copying it to the correct directory...',
-          );
-          unawaited(_copyFile(job, plaintextHashes));
-        }
       }
     }
 

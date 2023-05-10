@@ -234,10 +234,12 @@ class FilesService {
     String? encryptionScheme,
     String? encryptionKey,
     String? encryptionIv,
-    String? sourceUrl,
+    List<String>? sourceUrls,
     int? width,
     int? height,
     String? mimeType,
+    Map<String, String>? plaintextHashes,
+    Map<String, String>? ciphertextHashes,
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final m = <String, dynamic>{};
@@ -257,8 +259,8 @@ class FilesService {
     if (encryptionIv != null) {
       m['encryptionIv'] = encryptionIv;
     }
-    if (sourceUrl != null) {
-      m['sourceUrl'] = sourceUrl;
+    if (sourceUrls != null) {
+      m['sourceUrl'] = jsonEncode(sourceUrls);
     }
     if (width != null) {
       m['width'] = width;
@@ -268,6 +270,12 @@ class FilesService {
     }
     if (mimeType != null) {
       m['mimeType'] = mimeType;
+    }
+    if (plaintextHashes != null) {
+      m['plaintextHashes'] = jsonEncode(plaintextHashes);
+    }
+    if (ciphertextHashes != null) {
+      m['cipherTextHashes'] = jsonEncode(ciphertextHashes);
     }
 
     final result = await db.updateAndReturn(
