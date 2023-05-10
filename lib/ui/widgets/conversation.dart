@@ -223,6 +223,11 @@ class ConversationsListRowState extends State<ConversationsListRow> {
         icon = const Icon(Icons.done_all);
       } else if (lastMessage.acked) {
         icon = const Icon(Icons.done);
+      } else if (lastMessage.hasError) {
+        icon = const Icon(
+          Icons.info_outline,
+          color: Colors.red,
+        );
       }
     } else {
       if (lastMessage.isEdited) {
