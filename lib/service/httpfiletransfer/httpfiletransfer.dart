@@ -287,13 +287,14 @@ class HttpFileTransferService {
 
       // Remove the tempoary metadata if we already know the file
       if (metadataWrapper.retrieved) {
+        // Only skip the copy if the existing file metadata has a path associated with it
         if (metadataWrapper.fileMetadata.path != null) {
           _log.fine(
-            'Uploaded file $filename is already tracked. Skipping copy',
+            'Uploaded file $filename is already tracked. Skipping copy.',
           );
         } else {
           _log.fine(
-            'Uploaded file $filename is already tracked but has no path. Copying',
+            'Uploaded file $filename is already tracked but has no path. Copying...',
           );
           await _copyFile(job, filePath);
           metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
@@ -301,12 +302,8 @@ class HttpFileTransferService {
                 path: filePath,
               );
         }
-
-        await GetIt.I.get<FilesService>().removeFileMetadata(
-              job.metadataId,
-            );
       } else {
-        _log.fine('Uploaded file $filename not tracked. Copying');
+        _log.fine('Uploaded file $filename not tracked. Copying...');
         await _copyFile(job, metadataWrapper.fileMetadata.path!);
       }
 
@@ -353,6 +350,14 @@ class HttpFileTransferService {
         _log.finest(
           'Sent message with file upload for ${job.path} to $recipient',
         );
+      }
+
+      // Remove the old metadata only here because we would otherwise violate a foreign key
+      // constraint.
+      if (metadataWrapper.retrieved) {
+        await GetIt.I.get<FilesService>().removeFileMetadata(
+              job.metadataId,
+            );
       }
     }
 
