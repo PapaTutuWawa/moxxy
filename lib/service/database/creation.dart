@@ -92,7 +92,6 @@ Future<void> createDatabase(Database db, int version) async {
       muted INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       lastMessageId INTEGER,
-      sharedMediaAmount INTEGER NOT NULL,
       contactId TEXT,
       contactAvatarPath TEXT,
       contactDisplayName TEXT,
@@ -108,21 +107,6 @@ Future<void> createDatabase(Database db, int version) async {
       id TEXT PRIMARY KEY,
       jid TEXT NOT NULL
     )''');
-
-  // Shared media
-  await db.execute(
-    '''
-    CREATE TABLE $mediaTable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      path TEXT NOT NULL,
-      mime TEXT,
-      timestamp INTEGER NOT NULL,
-      conversation_jid TEXT NOT NULL,
-      message_id INTEGER,
-      FOREIGN KEY (conversation_jid) REFERENCES $conversationsTable (jid),
-      FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
-    )''',
-  );
 
   // Roster
   await db.execute(

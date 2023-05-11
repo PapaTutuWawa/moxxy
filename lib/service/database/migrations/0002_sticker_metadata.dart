@@ -4,7 +4,7 @@ import 'package:moxxyv2/service/database/constants.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
-Future<void> migrateFromV32ToV33(Database db) async {
+Future<void> upgradeFromV32ToV33(Database db) async {
   final stickers = await db.query(stickersTable);
 
   await db.execute(

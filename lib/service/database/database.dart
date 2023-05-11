@@ -39,6 +39,7 @@ import 'package:moxxyv2/service/database/migrations/0001_debug_menu.dart';
 import 'package:moxxyv2/service/database/migrations/0001_remove_auto_accept_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0001_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0002_file_metadata_table.dart';
+import 'package:moxxyv2/service/database/migrations/0002_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0002_sticker_metadata.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
@@ -152,7 +153,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 33,
+      version: 34,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -291,7 +292,11 @@ class DatabaseService {
         }
         if (oldVersion < 33) {
           _log.finest('Running migration for database version 33');
-          await migrateFromV32ToV33(db);
+          await upgradeFromV32ToV33(db);
+        }
+        if (oldVersion < 34) {
+          _log.finest('Running migration for database version 34');
+          await upgradeFromV33ToV34(db);
         }
       },
     );
