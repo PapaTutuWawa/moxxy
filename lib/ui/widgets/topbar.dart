@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const topbarPreferredHeight = 60.0;
+
 class TopbarTitleText extends StatelessWidget {
   const TopbarTitleText(this.text, {super.key});
   final String text;
@@ -62,7 +64,7 @@ class TopbarAvatarAndName extends StatelessWidget {
 /// Provides a Signal-like topbar without borders or anything else
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   const BorderlessTopbar(this.child, {super.key})
-      : preferredSize = const Size.fromHeight(60);
+      : preferredSize = const Size.fromHeight(topbarPreferredHeight);
 
   factory BorderlessTopbar.justBackButton({Key? key}) {
     return BorderlessTopbar(

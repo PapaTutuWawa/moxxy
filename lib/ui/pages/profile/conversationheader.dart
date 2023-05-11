@@ -11,8 +11,7 @@ import 'package:moxxyv2/ui/widgets/profile/options.dart';
 //import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConversationProfileHeader extends StatelessWidget {
-  const ConversationProfileHeader(this.conversation, {super.key});
-  final Conversation conversation;
+  const ConversationProfileHeader({super.key});
 
   Future<void> _showAvatarFullsize(BuildContext context, String path) async {
     await showDialog<void>(
@@ -25,7 +24,7 @@ class ConversationProfileHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(BuildContext context) {
+  Widget _buildAvatar(BuildContext context, Conversation conversation) {
     return RebuildOnContactIntegrationChange(
       builder: () {
         final path = conversation.avatarPathWithOptionalContact;
@@ -49,77 +48,83 @@ class ConversationProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Hero(
-          tag: 'conversation_profile_picture',
-          child: Material(
-            child: _buildAvatar(
-              context,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8),
-          child: RebuildOnContactIntegrationChange(
-            builder: () => Text(
-              conversation.titleWithOptionalContact,
-              style: const TextStyle(
-                fontSize: 30,
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        final conversation = state.conversation!;
+        return Column(
+          children: [
+            Hero(
+              tag: 'conversation_profile_picture',
+              child: Material(
+                child: _buildAvatar(
+                  context,
+                  conversation,
+                ),
               ),
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 3),
-          child: Text(
-            conversation.jid,
-            style: const TextStyle(
-              fontSize: 15,
-            ),
-          ),
-        ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 16,
-              left: 64,
-              right: 64,
-            ),
-            child: ProfileOptions(
-              options: [
-                ProfileOption(
-                  icon: Icons.security_outlined,
-                  title: t.pages.profile.general.omemo,
-                  onTap: () {
-                    context.read<DevicesBloc>().add(
-                          DevicesRequestedEvent(conversation.jid),
-                        );
-                  },
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: RebuildOnContactIntegrationChange(
+                builder: () => Text(
+                  conversation.titleWithOptionalContact,
+                  style: const TextStyle(
+                    fontSize: 30,
+                  ),
                 ),
-                ProfileOption(
-                  icon: conversation.muted
-                      ? Icons.notifications_off
-                      : Icons.notifications,
-                  title: t.pages.profile.conversation.notifications,
-                  description: conversation.muted
-                      ? t.pages.profile.conversation.notificationsMuted
-                      : t.pages.profile.conversation.notificationsEnabled,
-                  onTap: () {
-                    context.read<ProfileBloc>().add(
-                          MuteStateSetEvent(
-                            conversation.jid,
-                            !conversation.muted,
-                          ),
-                        );
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ],
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: Text(
+                conversation.jid,
+                style: const TextStyle(
+                  fontSize: 15,
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 16,
+                  left: 64,
+                  right: 64,
+                ),
+                child: ProfileOptions(
+                  options: [
+                    ProfileOption(
+                      icon: Icons.security_outlined,
+                      title: t.pages.profile.general.omemo,
+                      onTap: () {
+                        context.read<DevicesBloc>().add(
+                              DevicesRequestedEvent(conversation.jid),
+                            );
+                      },
+                    ),
+                    ProfileOption(
+                      icon: conversation.muted
+                          ? Icons.notifications_off
+                          : Icons.notifications,
+                      title: t.pages.profile.conversation.notifications,
+                      description: conversation.muted
+                          ? t.pages.profile.conversation.notificationsMuted
+                          : t.pages.profile.conversation.notificationsEnabled,
+                      onTap: () {
+                        context.read<ProfileBloc>().add(
+                              MuteStateSetEvent(
+                                conversation.jid,
+                                !conversation.muted,
+                              ),
+                            );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

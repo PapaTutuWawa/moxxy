@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
-import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
-import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
-import 'package:moxxyv2/ui/pages/profile/conversationheader.dart';
-import 'package:moxxyv2/ui/pages/profile/selfheader.dart';
+import 'package:moxxyv2/ui/pages/profile/profile_view.dart';
 import 'package:moxxyv2/ui/pages/profile/shared_media_view.dart';
 
 class ProfileArguments {
@@ -74,103 +71,66 @@ class ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Widget _buildHeader(BuildContext context, ProfileState state) {
-    if (widget.arguments.isSelfProfile) {
-      return SelfProfileHeader(
-        state.jid,
-        state.avatarUrl,
-        state.displayName,
-        (path, hash) => context.read<ProfileBloc>().add(
-              AvatarSetEvent(path, hash),
-            ),
-      );
-    }
-
-    return ConversationProfileHeader(state.conversation!);
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Scaffold(
-        bottomNavigationBar: !widget.arguments.isSelfProfile
-            ? BottomNavigationBar(
-                currentIndex: _pageIndex,
-                onTap: (index) {
-                  _pageController.animateToPage(
-                    index,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOutQuint,
-                  );
-                  setState(() {
-                    _pageIndex = index;
-                  });
-                },
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person),
-                    label: 'Profile',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.perm_media),
-                    label: 'Media',
-                  ),
-                ],
-              )
-            : null,
-        body: PageView(
-          controller: _pageController,
-          physics: widget.arguments.isSelfProfile
-              ? const NeverScrollableScrollPhysics()
-              : null,
-          children: [
-            BlocBuilder<ProfileBloc, ProfileState>(
-              builder: (context, state) => Stack(
-                alignment: Alignment.center,
-                children: [
-                  ListView(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: _buildHeader(context, state),
+      child: Stack(
+        children: [
+          Scaffold(
+            bottomNavigationBar: !widget.arguments.isSelfProfile
+                ? BottomNavigationBar(
+                    currentIndex: _pageIndex,
+                    onTap: (index) {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutQuint,
+                      );
+                      setState(() {
+                        _pageIndex = index;
+                      });
+                    },
+                    items: const [
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.person),
+                        label: 'Profile',
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.perm_media),
+                        label: 'Media',
                       ),
                     ],
-                  ),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => context
-                          .read<NavigationBloc>()
-                          .add(PoppedRouteEvent()),
-                    ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Visibility(
-                      visible: widget.arguments.isSelfProfile,
-                      child: IconButton(
-                        color: Colors.white,
-                        icon: const Icon(Icons.info_outline),
-                        onPressed: () {
-                          context
-                              .read<ServerInfoBloc>()
-                              .add(ServerInfoPageRequested());
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+                  )
+                : null,
+            body: PageView(
+              controller: _pageController,
+              physics: widget.arguments.isSelfProfile
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
+              children: [
+                ProfileView(
+                  widget.arguments,
+                ),
+                SharedMediaView(
+                  _mediaController,
+                  key: const PageStorageKey('shared_media_view'),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 8,
+            left: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () =>
+                    context.read<NavigationBloc>().add(PoppedRouteEvent()),
               ),
             ),
-            SharedMediaView(
-              _mediaController,
-              key: const PageStorageKey('shared_media_view'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
