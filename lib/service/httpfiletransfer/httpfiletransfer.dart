@@ -583,7 +583,9 @@ class HttpFileTransferService {
     sendEvent(MessageUpdatedEvent(message: msg));
 
     final updatedConversation = conversation.copyWith(
-      lastMessage: conversation.lastMessage?.id == job.mId ? msg : conversation.lastMessage,
+      lastMessage: conversation.lastMessage?.id == job.mId
+          ? msg
+          : conversation.lastMessage,
     );
     cs.setConversation(updatedConversation);
 

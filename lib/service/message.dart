@@ -564,12 +564,11 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
           ),
         );
 
-        
         if (isMedia) {
           // Remove the file
           await GetIt.I.get<FilesService>().removeFileIfNotReferenced(
-            msg.fileMetadata!,
-          );
+                msg.fileMetadata!,
+              );
         }
       }
     } else {

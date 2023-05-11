@@ -293,11 +293,15 @@ class FilesService {
   /// or a sticker, does nothing.
   Future<void> removeFileIfNotReferenced(FileMetadata metadata) async {
     final db = GetIt.I.get<DatabaseService>().database;
-    final messagesCount = await db.count(messagesTable, 'file_metadata_id = ${metadata.id}');
-    final stickersCount = await db.count(stickersTable, 'file_metadata_id = ${metadata.id}');
+    final messagesCount =
+        await db.count(messagesTable, 'file_metadata_id = ${metadata.id}');
+    final stickersCount =
+        await db.count(stickersTable, 'file_metadata_id = ${metadata.id}');
 
     if (messagesCount == 0 && stickersCount == 0) {
-      _log.finest('Removing file metadata as no stickers and no messages reference it');
+      _log.finest(
+        'Removing file metadata as no stickers and no messages reference it',
+      );
       await removeFileMetadata(metadata.id);
 
       // Only remove the file if we have a path
@@ -311,7 +315,9 @@ class FilesService {
         _log.info('Not removing file as there is no path associated with it');
       }
     } else {
-      _log.info('Not removing file as $messagesCount messages and $stickersCount stickers reference this file');
+      _log.info(
+        'Not removing file as $messagesCount messages and $stickersCount stickers reference this file',
+      );
     }
   }
 }

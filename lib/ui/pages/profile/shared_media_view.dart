@@ -10,7 +10,7 @@ class SharedMediaView extends StatelessWidget {
 
   /// The controller used for requesting shared media messages.
   final BidirectionalSharedMediaController mediaController;
-  
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
@@ -25,12 +25,11 @@ class SharedMediaView extends StatelessWidget {
             initialData: mediaController.isFetching,
             builder: (context, snapshot) {
               return snapshot.data!
-                ? const LinearProgressIndicator()
-                : const SizedBox();
+                  ? const LinearProgressIndicator()
+                  : const SizedBox();
             },
           ),
         ),
-
         Positioned(
           top: 0,
           bottom: 0,

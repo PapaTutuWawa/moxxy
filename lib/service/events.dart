@@ -1195,12 +1195,13 @@ Future<void> performGetPagedSharedMedia(
 }) async {
   final id = extra as String;
 
-  final result = await GetIt.I.get<MessageService>().getPaginatedSharedMediaMessagesForJid(
-        command.conversationJid,
-        command.olderThan,
-        command.timestamp,   
-      );
-  
+  final result =
+      await GetIt.I.get<MessageService>().getPaginatedSharedMediaMessagesForJid(
+            command.conversationJid,
+            command.olderThan,
+            command.timestamp,
+          );
+
   sendEvent(
     PagedMessagesResultEvent(
       messages: result,

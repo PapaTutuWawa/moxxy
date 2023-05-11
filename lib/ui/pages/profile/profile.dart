@@ -23,8 +23,9 @@ class ProfilePage extends StatefulWidget {
 
   /// The arguments passed to the page
   final ProfileArguments arguments;
-  
-  static MaterialPageRoute<dynamic> getRoute(ProfileArguments arguments) => MaterialPageRoute<dynamic>(
+
+  static MaterialPageRoute<dynamic> getRoute(ProfileArguments arguments) =>
+      MaterialPageRoute<dynamic>(
         builder: (_) => ProfilePage(arguments),
         settings: const RouteSettings(
           name: profileRoute,
@@ -41,13 +42,12 @@ class ProfilePageState extends State<ProfilePage> {
   int _pageIndex = 0;
 
   late final BidirectionalSharedMediaController _mediaController;
-  
+
   @override
   void initState() {
     super.initState();
 
-    _pageController = PageController()
-      ..addListener(_onPageControllerUpdate);
+    _pageController = PageController()..addListener(_onPageControllerUpdate);
     _mediaController = BidirectionalSharedMediaController(
       widget.arguments.jid,
     );
@@ -67,7 +67,8 @@ class ProfilePageState extends State<ProfilePage> {
         setState(() {
           _pageIndex = page;
         });
-      } else if (_pageController.page! >= 0.5 && !_mediaController.hasFetchedOnce) {
+      } else if (_pageController.page! >= 0.5 &&
+          !_mediaController.hasFetchedOnce) {
         _mediaController.fetchOlderData();
       }
     }
@@ -93,35 +94,35 @@ class ProfilePageState extends State<ProfilePage> {
     return SafeArea(
       child: Scaffold(
         bottomNavigationBar: !widget.arguments.isSelfProfile
-          ? BottomNavigationBar(
-              currentIndex: _pageIndex,
-              onTap: (index) {
-                _pageController.animateToPage(
-                  index,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOutQuint,
-                );
-                setState(() {
-                  _pageIndex = index;
-                });
-              },
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.perm_media),
-                  label: 'Media',
-                ),
-              ],
-            )
+            ? BottomNavigationBar(
+                currentIndex: _pageIndex,
+                onTap: (index) {
+                  _pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutQuint,
+                  );
+                  setState(() {
+                    _pageIndex = index;
+                  });
+                },
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: 'Profile',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.perm_media),
+                    label: 'Media',
+                  ),
+                ],
+              )
             : null,
         body: PageView(
           controller: _pageController,
           physics: widget.arguments.isSelfProfile
-            ? const NeverScrollableScrollPhysics()
-            : null,
+              ? const NeverScrollableScrollPhysics()
+              : null,
           children: [
             BlocBuilder<ProfileBloc, ProfileState>(
               builder: (context, state) => Stack(
@@ -140,8 +141,9 @@ class ProfilePageState extends State<ProfilePage> {
                     left: 8,
                     child: IconButton(
                       icon: const Icon(Icons.close),
-                      onPressed: () =>
-                      context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                      onPressed: () => context
+                          .read<NavigationBloc>()
+                          .add(PoppedRouteEvent()),
                     ),
                   ),
                   Positioned(
@@ -154,8 +156,8 @@ class ProfilePageState extends State<ProfilePage> {
                         icon: const Icon(Icons.info_outline),
                         onPressed: () {
                           context
-                          .read<ServerInfoBloc>()
-                          .add(ServerInfoPageRequested());
+                              .read<ServerInfoBloc>()
+                              .add(ServerInfoPageRequested());
                         },
                       ),
                     ),
@@ -163,13 +165,12 @@ class ProfilePageState extends State<ProfilePage> {
                 ],
               ),
             ),
-
             SharedMediaView(
               _mediaController,
               key: const PageStorageKey('shared_media_view'),
             ),
           ],
-        ),  
+        ),
       ),
     );
   }

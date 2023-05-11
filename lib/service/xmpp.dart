@@ -614,7 +614,7 @@ class XmppService {
         },
         update: (c) async {
           // Update
-          var newConversation = await cs.updateConversation(
+          final newConversation = await cs.updateConversation(
             c.jid,
             lastMessage: lastMessages[recipient],
             lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
