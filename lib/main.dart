@@ -59,7 +59,7 @@ import 'package:moxxyv2/ui/pages/settings/privacy/privacy.dart';
 import 'package:moxxyv2/ui/pages/settings/settings.dart';
 import 'package:moxxyv2/ui/pages/settings/stickers.dart';
 import 'package:moxxyv2/ui/pages/share_selection.dart';
-import 'package:moxxyv2/ui/pages/sharedmedia.dart';
+//import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
 import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
@@ -275,14 +275,16 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 conversationJid: settings.arguments! as String,
               ),
             );
-          case sharedMediaRoute:
-            return SharedMediaPage.getRoute(
-              settings.arguments! as SharedMediaPageArguments,
-            );
+          // case sharedMediaRoute:
+          //   return SharedMediaPage.getRoute(
+          //     settings.arguments! as SharedMediaPageArguments,
+          //   );
           case blocklistRoute:
             return BlocklistPage.route;
           case profileRoute:
-            return ProfilePage.route;
+            return ProfilePage.getRoute(
+              settings.arguments! as ProfileArguments,
+            );
           case settingsRoute:
             return SettingsPage.route;
           case aboutRoute:

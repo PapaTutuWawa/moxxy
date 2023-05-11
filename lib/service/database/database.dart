@@ -44,10 +44,8 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/roster.dart';
-import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
@@ -61,7 +59,18 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 
 const databasePasswordKey = 'database_encryption_password';
 
-extension DatabaseUpdateAndReturn on Database {
+extension DatabaseHelpers on Database {
+  Future<int> count(
+    String table,
+    String where,
+  ) async {
+    return Sqflite.firstIntValue(
+      await rawQuery(
+        'SELECT COUNT(*) FROM $table WHERE $where',
+      ),
+    )!;
+  }
+
   /// Like update but returns the affected row.
   Future<Map<String, Object?>> updateAndReturn(
     String table,
@@ -290,27 +299,6 @@ class DatabaseService {
     _log.finest('Database setup done');
   }
 
-  Future<List<SharedMedium>> getPaginatedSharedMediaForJid(
-    String jid,
-    bool olderThan,
-    int? oldestTimestamp,
-  ) async {
-    final comparator = olderThan ? '<' : '>';
-    final query = oldestTimestamp != null
-        ? 'conversation_jid = ? AND timestamp $comparator ?'
-        : 'conversation_jid = ?';
-    final args = oldestTimestamp != null ? [jid, oldestTimestamp] : [jid];
-    final rawMedia = await _db.query(
-      mediaTable,
-      where: query,
-      whereArgs: args,
-      orderBy: 'timestamp DESC',
-      limit: sharedMediaPaginationSize,
-    );
-
-    return rawMedia.map(SharedMedium.fromDatabaseJson).toList();
-  }
-
   /// Updates the conversation with JID [jid] inside the database.
   Future<Conversation> updateConversation(
     String jid, {
@@ -325,7 +313,6 @@ class DatabaseService {
     Object? contactId = notSpecified,
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
-    int? sharedMediaAmount,
   }) async {
     final c = <String, dynamic>{};
 
@@ -359,9 +346,6 @@ class DatabaseService {
     if (contactDisplayName != notSpecified) {
       c['contactDisplayName'] = contactDisplayName as String?;
     }
-    if (sharedMediaAmount != null) {
-      c['sharedMediaAmount'] = sharedMediaAmount;
-    }
 
     final result = await _db.updateAndReturn(
       conversationsTable,
@@ -370,23 +354,12 @@ class DatabaseService {
       whereArgs: [jid],
     );
 
-    // TODO(Unknown): Maybe either don't do this or do this only when we need to.
-    final sharedMedia = (await _db.query(
-      mediaTable,
-      where: 'conversation_jid = ?',
-      whereArgs: [jid],
-      orderBy: 'timestamp DESC',
-      limit: 8,
-    ))
-        .map(SharedMedium.fromDatabaseJson);
-
     final rosterItem =
         await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     return Conversation.fromDatabaseJson(
       result,
       rosterItem != null,
       rosterItem?.subscription ?? 'none',
-      sharedMedia.toList(),
       lastMessage,
     );
   }
@@ -404,7 +377,6 @@ class DatabaseService {
     bool open,
     bool muted,
     bool encrypted,
-    int sharedMediaAmount,
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
@@ -419,14 +391,12 @@ class DatabaseService {
       unreadCounter,
       type,
       lastChangeTimestamp,
-      <SharedMedium>[],
       open,
       rosterItem != null && !rosterItem.pseudoRosterItem,
       rosterItem?.subscription ?? 'none',
       muted,
       encrypted,
       ChatState.gone,
-      sharedMediaAmount,
       contactId: contactId,
       contactAvatarPath: contactAvatarPath,
       contactDisplayName: contactDisplayName,
@@ -434,38 +404,6 @@ class DatabaseService {
 
     await _db.insert(conversationsTable, conversation.toDatabaseJson());
     return conversation;
-  }
-
-  /// Like [addConversationFromData] but for [SharedMedium].
-  Future<SharedMedium> addSharedMediumFromData(
-    String path,
-    int timestamp,
-    String conversationJid,
-    int messageId, {
-    String? mime,
-  }) async {
-    final s = SharedMedium(
-      -1,
-      path,
-      timestamp,
-      conversationJid,
-      mime: mime,
-      messageId: messageId,
-    );
-
-    return s.copyWith(
-      id: await _db.insert(mediaTable, s.toDatabaseJson()),
-    );
-  }
-
-  /// Remove a SharedMedium from the database based on the message it
-  /// references [messageId].
-  Future<void> removeSharedMediumByMessageId(int messageId) async {
-    await _db.delete(
-      mediaTable,
-      where: 'message_id = ?',
-      whereArgs: [messageId],
-    );
   }
 
   /// Loads roster items from the database

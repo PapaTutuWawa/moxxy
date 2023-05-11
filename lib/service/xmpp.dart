@@ -37,7 +37,6 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
@@ -483,34 +482,6 @@ class XmppService {
     );
   }
 
-  /// Wrapper function for creating shared media entries for the given paths.
-  /// [messages] is the mapping of "File path -> Recipient -> Message" required for
-  /// setting the single shared medium's message Id attribute.
-  /// [paths] is the list of paths to create shared media entries for.
-  /// [recipient] is the bare string JID that the messages will be sent to.
-  /// [conversationJid] is the JID of the conversation these shared media entries
-  /// belong to.
-  Future<List<SharedMedium>> _createSharedMedia(
-    Map<String, Map<String, Message>> messages,
-    List<String> paths,
-    String recipient,
-    String conversationJid,
-  ) async {
-    final sharedMedia = List<SharedMedium>.empty(growable: true);
-    for (final path in paths) {
-      sharedMedia.add(
-        await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
-              path,
-              DateTime.now().millisecondsSinceEpoch,
-              conversationJid,
-              messages[path]![recipient]!.id,
-              mime: lookupMimeType(path),
-            ),
-      );
-    }
-    return sharedMedia;
-  }
-
   Future<void> sendFiles(List<String> paths, List<String> recipients) async {
     // Create a new message
     final ms = GetIt.I.get<MessageService>();
@@ -608,11 +579,7 @@ class XmppService {
       }
     }
 
-    // Create the shared media entries
-    // Recipient -> [Shared Medium]
-    final sharedMediaMap = <String, List<SharedMedium>>{};
     final rs = GetIt.I.get<RosterService>();
-
     for (final recipient in recipients) {
       await cs.createOrUpdateConversation(
         recipient,
@@ -620,7 +587,7 @@ class XmppService {
           // Create
           final rosterItem = await rs.getRosterItemByJid(recipient);
           final contactId = await css.getContactIdForJid(recipient);
-          var newConversation = await cs.addConversationFromData(
+          final newConversation = await cs.addConversationFromData(
             // TODO(Unknown): Should we use the JID parser?
             rosterItem?.title ?? recipient.split('@').first,
             lastMessages[recipient],
@@ -632,20 +599,9 @@ class XmppService {
             true,
             prefs.defaultMuteState,
             prefs.enableOmemoByDefault,
-            paths.length,
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
-          );
-
-          final sharedMedia = await _createSharedMedia(
-            messages,
-            paths,
-            recipient,
-            newConversation.jid,
-          );
-          newConversation = newConversation.copyWith(
-            sharedMedia: sharedMedia.sublist(0, 8),
           );
 
           // Update the cache
@@ -663,23 +619,6 @@ class XmppService {
             lastMessage: lastMessages[recipient],
             lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
             open: true,
-            sharedMediaAmount: c.sharedMediaAmount + paths.length,
-          );
-
-          sharedMediaMap[recipient] = await _createSharedMedia(
-            messages,
-            paths,
-            recipient,
-            // TODO(Unknown): Remove since recipient and c.jid are now the same
-            c.jid,
-          );
-
-          newConversation = newConversation.copyWith(
-            sharedMedia: clampedListPrependAll(
-              c.sharedMedia,
-              sharedMediaMap[recipient]!,
-              8,
-            ),
           );
 
           // Update the cache
@@ -1461,9 +1400,6 @@ class XmppService {
           true,
           prefs.defaultMuteState,
           message.encrypted,
-          // Always use 0 here, since a possible shared media item only is created
-          // afterwards.
-          0,
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),

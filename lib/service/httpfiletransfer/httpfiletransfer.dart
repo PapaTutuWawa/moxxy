@@ -12,7 +12,6 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/cryptography/types.dart';
-import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/httpfiletransfer/client.dart' as client;
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -24,7 +23,6 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -585,47 +583,41 @@ class HttpFileTransferService {
 
     sendEvent(MessageUpdatedEvent(message: msg));
 
-    final sharedMedium =
-        await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
-              downloadedPath,
-              msg.timestamp,
-              conv.jid,
-              job.mId,
-              mime: mime,
-            );
+    // TODO
+    // final cs = GetIt.I.get<ConversationService>();
+    // final updatedConv = await cs.createOrUpdateConversation(
+    //   conv.jid,
+    //   update: (c) {
+    //     return cs.updateConversation(
+    //       c.jid,
+    //       sharedMediaAmount: c.sharedMediaAmount + 1,
+    //     );
+    //   },
+    // );
+    // final newConv = updatedConv!.copyWith(
+    //   lastMessage: conv.lastMessage?.id == job.mId ? msg : conv.lastMessage,
+    //   sharedMedia: clampedListPrepend<SharedMedium>(
+    //     conv.sharedMedia,
+    //     sharedMedium,
+    //     8,
+    //   ),
+    // );
 
-    final cs = GetIt.I.get<ConversationService>();
-    final updatedConv = await cs.createOrUpdateConversation(
-      conv.jid,
-      update: (c) {
-        return cs.updateConversation(
-          c.jid,
-          sharedMediaAmount: c.sharedMediaAmount + 1,
-        );
-      },
-    );
-    final newConv = updatedConv!.copyWith(
-      lastMessage: conv.lastMessage?.id == job.mId ? msg : conv.lastMessage,
-      sharedMedia: clampedListPrepend<SharedMedium>(
-        conv.sharedMedia,
-        sharedMedium,
-        8,
-      ),
-    );
-
-    _log.finest(
-      'Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}',
-    );
-    GetIt.I.get<ConversationService>().setConversation(newConv);
+    // _log.finest(
+    //   'Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}',
+    // );
+    //cs.setConversation(newConv);
 
     // Show a notification
     if (notification.shouldShowNotification(msg.conversationJid) &&
         job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      await notification.showNotification(newConv, msg, '');
+      // TODO
+      //await notification.showNotification(newConv, msg, '');
     }
 
-    sendEvent(ConversationUpdatedEvent(conversation: newConv));
+    // TODO
+    //sendEvent(ConversationUpdatedEvent(conversation: newConv));
 
     // Free the download resources for the next one
     await _pickNextDownloadTask();

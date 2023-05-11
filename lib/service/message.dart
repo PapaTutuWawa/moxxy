@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
@@ -8,6 +7,7 @@ import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/cache.dart';
@@ -15,7 +15,6 @@ import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:synchronized/synchronized.dart';
@@ -199,14 +198,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
       FileMetadata? fm;
       if (m['file_metadata_id'] != null) {
         fm = FileMetadata.fromDatabaseJson(
-          Map<String, Object?>.fromEntries(
-            m.entries.where((entry) => entry.key.startsWith('fm_')).map(
-                  (entry) => MapEntry<String, Object?>(
-                    entry.key.substring(3),
-                    entry.value,
-                  ),
-                ),
-          ),
+          getPrefixedSubMap(m, 'fm_'),
         );
       }
 
@@ -220,6 +212,67 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
           page,
         );
       });
+    }
+
+    return page;
+  }
+
+  /// Like getPaginatedMessagesForJid, but instead only returns messages that have file
+  /// metadata attached. This method bypasses the cache and does not load the message's
+  /// quoted message, if it exists.
+  Future<List<Message>> getPaginatedSharedMediaMessagesForJid(
+    String jid,
+    bool olderThan,
+    int? oldestTimestamp,
+  ) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final comparator = olderThan ? '<' : '>';
+    final query = oldestTimestamp != null
+        ? 'conversationJid = ? AND file_metadata_id IS NOT NULL AND timestamp $comparator ?'
+        : 'conversationJid = ? AND file_metadata_id IS NOT NULL';
+    final rawMessages = await db.rawQuery(
+      '''
+SELECT
+  msg.*,
+  fm.id as fm_id,
+  fm.path as fm_path,
+  fm.sourceUrls as fm_sourceUrls,
+  fm.mimeType as fm_mimeType,
+  fm.thumbnailType as fm_thumbnailType,
+  fm.thumbnailData as fm_thumbnailData,
+  fm.width as fm_width,
+  fm.height as fm_height,
+  fm.plaintextHashes as fm_plaintextHashes,
+  fm.encryptionKey as fm_encryptionKey,
+  fm.encryptionIv as fm_encryptionIv,
+  fm.encryptionScheme as fm_encryptionScheme,
+  fm.cipherTextHashes as fm_cipherTextHashes,
+  fm.filename as fm_filename,
+  fm.size as fm_size
+FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $sharedMediaPaginationSize) AS msg
+  LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id;
+      ''',
+      [
+        jid,
+        if (oldestTimestamp != null) oldestTimestamp,
+      ],
+    );
+
+    final page = List<Message>.empty(growable: true);
+    for (final m in rawMessages) {
+      if (m.isEmpty) {
+        continue;
+      }
+
+      page.add(
+        Message.fromDatabaseJson(
+          m,
+          null,
+          FileMetadata.fromDatabaseJson(
+            getPrefixedSubMap(m, 'fm_'),
+          ),
+        ),
+      );
     }
 
     return page;
@@ -449,7 +502,6 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
   /// Helper function that manages everything related to retracting a message. It
   /// - Replaces all metadata of the message with null values and marks it as retracted
   /// - Modified the conversation, if the retracted message was the newest message
-  /// - Remove the SharedMedium from the database, if one referenced the retracted message
   /// - Update the UI
   ///
   /// [conversationJid] is the bare JID of the conversation this message belongs to.
@@ -487,14 +539,12 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
     }
 
     final isMedia = msg.isMedia;
-    final mediaUrl = msg.fileMetadata?.path;
     final retractedMessage = await updateMessage(
       msg.id,
       warningType: null,
       errorType: null,
       isRetracted: true,
       body: '',
-      // TODO(Unknown): Can we delete the file?
       fileMetadata: null,
     );
     sendEvent(MessageUpdatedEvent(message: retractedMessage));
@@ -503,33 +553,9 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
     final conversation = await cs.getConversationByJid(conversationJid);
     if (conversation != null) {
       if (conversation.lastMessage?.id == msg.id) {
-        var newConversation = conversation.copyWith(
+        final newConversation = conversation.copyWith(
           lastMessage: retractedMessage,
         );
-
-        if (isMedia) {
-          await GetIt.I
-              .get<DatabaseService>()
-              .removeSharedMediumByMessageId(msg.id);
-
-          // TODO(Unknown): Technically, we would have to then load 1 shared media
-          //                item from the database to, if possible, fill the list
-          //                back up to 8 items.
-          newConversation = newConversation.copyWith(
-            sharedMedia:
-                newConversation.sharedMedia.where((SharedMedium medium) {
-              return medium.messageId != msg.id;
-            }).toList(),
-          );
-
-          // Delete the file if we downloaded it
-          if (mediaUrl != null) {
-            final file = File(mediaUrl);
-            if (file.existsSync()) {
-              unawaited(file.delete());
-            }
-          }
-        }
 
         cs.setConversation(newConversation);
         sendEvent(
@@ -537,6 +563,14 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
             conversation: newConversation,
           ),
         );
+
+        
+        if (isMedia) {
+          // Remove the file
+          await GetIt.I.get<FilesService>().removeFileIfNotReferenced(
+            msg.fileMetadata!,
+          );
+        }
       }
     } else {
       _log.warning(

@@ -9,7 +9,6 @@ import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -242,7 +241,6 @@ Future<void> performAddConversation(
         true,
         preferences.defaultMuteState,
         preferences.enableOmemoByDefault,
-        0,
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
@@ -473,7 +471,6 @@ Future<void> performAddContact(
         true,
         prefs.defaultMuteState,
         prefs.enableOmemoByDefault,
-        0,
         contactId,
         await css.getProfilePicturePathForJid(jid),
         await css.getContactDisplayName(contactId),
@@ -1198,16 +1195,15 @@ Future<void> performGetPagedSharedMedia(
 }) async {
   final id = extra as String;
 
-  final result =
-      await GetIt.I.get<DatabaseService>().getPaginatedSharedMediaForJid(
-            command.conversationJid,
-            command.olderThan,
-            command.timestamp,
-          );
-
+  final result = await GetIt.I.get<MessageService>().getPaginatedSharedMediaMessagesForJid(
+        command.conversationJid,
+        command.olderThan,
+        command.timestamp,   
+      );
+  
   sendEvent(
-    PagedSharedMediaResultEvent(
-      media: result,
+    PagedMessagesResultEvent(
+      messages: result,
     ),
     id: id,
   );

@@ -7,7 +7,6 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -72,13 +71,6 @@ class ConversationService {
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
       final jid = c['jid']! as String;
-      final sharedMediaRaw = await db.query(
-        mediaTable,
-        where: 'conversation_jid = ?',
-        whereArgs: [jid],
-        orderBy: 'timestamp DESC',
-        limit: 8,
-      );
       final rosterItem =
           await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
 
@@ -95,7 +87,6 @@ class ConversationService {
           c,
           rosterItem != null && !rosterItem.pseudoRosterItem,
           rosterItem?.subscription ?? 'none',
-          sharedMediaRaw.map(SharedMedium.fromDatabaseJson).toList(),
           lastMessage,
         ),
       );
@@ -149,7 +140,6 @@ class ConversationService {
     Object? contactId = notSpecified,
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
-    int? sharedMediaAmount,
   }) async {
     final conversation = (await _getConversationByJid(jid))!;
     var newConversation =
@@ -166,7 +156,6 @@ class ConversationService {
               contactId: contactId,
               contactAvatarPath: contactAvatarPath,
               contactDisplayName: contactDisplayName,
-              sharedMediaAmount: sharedMediaAmount,
             );
 
     // Copy over the old lastMessage if a new one was not set
@@ -194,7 +183,6 @@ class ConversationService {
     bool open,
     bool muted,
     bool encrypted,
-    int sharedMediaAmount,
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
@@ -211,7 +199,6 @@ class ConversationService {
               open,
               muted,
               encrypted,
-              sharedMediaAmount,
               contactId,
               contactAvatarPath,
               contactDisplayName,

@@ -7,6 +7,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/pages/profile/profile.dart';
 
 part 'profile_bloc.freezed.dart';
 part 'profile_event.dart';
@@ -28,7 +29,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     if (event.isSelfProfile) {
       emit(
         state.copyWith(
-          isSelfProfile: true,
           jid: event.jid!,
           avatarUrl: event.avatarUrl!,
           displayName: event.displayName!,
@@ -37,7 +37,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } else {
       emit(
         state.copyWith(
-          isSelfProfile: false,
           conversation: event.conversation,
         ),
       );
@@ -45,8 +44,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     GetIt.I.get<NavigationBloc>().add(
           PushedNamedEvent(
-            const NavigationDestination(
+            NavigationDestination(
               profileRoute,
+              arguments: ProfileArguments(
+                event.isSelfProfile,
+                event.jid ?? event.conversation!.jid,
+              ),
             ),
           ),
         );

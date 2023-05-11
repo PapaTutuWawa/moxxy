@@ -29,10 +29,10 @@ class BidirectionalController<T> {
   /// _cache.length - 1: The newest data item we know about
   final List<T> _cache = List<T>.empty(growable: true);
   final StreamController<List<T>> _dataStreamController =
-      StreamController<List<T>>();
+      StreamController<List<T>>.broadcast();
   Stream<List<T>> get dataStream => _dataStreamController.stream;
 
-  @protected
+  //@protected
   List<T> get cache => _cache;
 
   /// True if the cache has exceeded the size limit of pageSize * maxPageAmount.
@@ -40,8 +40,9 @@ class BidirectionalController<T> {
 
   /// Flag indicating whether we are currently fetching data
   bool _isFetching = false;
+  bool get isFetching => _isFetching;
   final StreamController<bool> _isFetchingStreamController =
-      StreamController<bool>();
+      StreamController<bool>.broadcast();
   Stream<bool> get isFetchingStream => _isFetchingStreamController.stream;
 
   /// Flag indicating whether we are able to request newer data
@@ -53,7 +54,6 @@ class BidirectionalController<T> {
   bool hasOlderData = true;
 
   /// Flag indicating whether data has been loaded at least once
-  @protected
   bool hasFetchedOnce = false;
 
   /// True if we are scrolled to the bottom of the view. False, otherwise.

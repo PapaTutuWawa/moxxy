@@ -287,4 +287,31 @@ class FilesService {
 
     return FileMetadata.fromDatabaseJson(result);
   }
+
+  /// Removes the file metadata described by [metadata] if it is referenced by exactly 0
+  /// messages and no stickers use this file. If the file is referenced by > 1 messages
+  /// or a sticker, does nothing.
+  Future<void> removeFileIfNotReferenced(FileMetadata metadata) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final messagesCount = await db.count(messagesTable, 'file_metadata_id = ${metadata.id}');
+    final stickersCount = await db.count(stickersTable, 'file_metadata_id = ${metadata.id}');
+
+    if (messagesCount == 0 && stickersCount == 0) {
+      _log.finest('Removing file metadata as no stickers and no messages reference it');
+      await removeFileMetadata(metadata.id);
+
+      // Only remove the file if we have a path
+      if (metadata.path != null) {
+        try {
+          await File(metadata.path!).delete();
+        } catch (ex) {
+          _log.warning('Failed to remove file ${metadata.path!}: $ex');
+        }
+      } else {
+        _log.info('Not removing file as there is no path associated with it');
+      }
+    } else {
+      _log.info('Not removing file as $messagesCount messages and $stickersCount stickers reference this file');
+    }
+  }
 }
