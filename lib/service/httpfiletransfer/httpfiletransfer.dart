@@ -441,9 +441,6 @@ class HttpFileTransferService {
       return;
     }
 
-    final conv = (await GetIt.I
-        .get<ConversationService>()
-        .getConversationByJid(job.conversationJid))!;
     final decryptionKeysAvailable =
         job.location.key != null && job.location.iv != null;
     final crypto = GetIt.I.get<CryptographyService>();
@@ -569,13 +566,15 @@ class HttpFileTransferService {
       }
     }
 
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = (await cs.getConversationByJid(job.conversationJid))!;
     final msg = await GetIt.I.get<MessageService>().updateMessage(
           job.mId,
           fileMetadata: metadata,
           isFileUploadNotification: false,
           warningType:
               integrityCheckPassed ? null : warningFileIntegrityCheckFailed,
-          errorType: conv.encrypted && !decryptionKeysAvailable
+          errorType: conversation.encrypted && !decryptionKeysAvailable
               ? messageChatEncryptedButFileNot
               : null,
           isDownloading: false,
@@ -583,41 +582,19 @@ class HttpFileTransferService {
 
     sendEvent(MessageUpdatedEvent(message: msg));
 
-    // TODO
-    // final cs = GetIt.I.get<ConversationService>();
-    // final updatedConv = await cs.createOrUpdateConversation(
-    //   conv.jid,
-    //   update: (c) {
-    //     return cs.updateConversation(
-    //       c.jid,
-    //       sharedMediaAmount: c.sharedMediaAmount + 1,
-    //     );
-    //   },
-    // );
-    // final newConv = updatedConv!.copyWith(
-    //   lastMessage: conv.lastMessage?.id == job.mId ? msg : conv.lastMessage,
-    //   sharedMedia: clampedListPrepend<SharedMedium>(
-    //     conv.sharedMedia,
-    //     sharedMedium,
-    //     8,
-    //   ),
-    // );
-
-    // _log.finest(
-    //   'Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}',
-    // );
-    //cs.setConversation(newConv);
+    final updatedConversation = conversation.copyWith(
+      lastMessage: conversation.lastMessage?.id == job.mId ? msg : conversation.lastMessage,
+    );
+    cs.setConversation(updatedConversation);
 
     // Show a notification
     if (notification.shouldShowNotification(msg.conversationJid) &&
         job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      // TODO
-      //await notification.showNotification(newConv, msg, '');
+      await notification.showNotification(updatedConversation, msg, '');
     }
 
-    // TODO
-    //sendEvent(ConversationUpdatedEvent(conversation: newConv));
+    sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
 
     // Free the download resources for the next one
     await _pickNextDownloadTask();
