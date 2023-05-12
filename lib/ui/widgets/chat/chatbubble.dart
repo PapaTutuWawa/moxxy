@@ -132,7 +132,6 @@ class ChatBubble extends StatefulWidget {
     required this.onSwipedCallback,
     required this.bubble,
     this.onLongPressed,
-    this.onReactionTap,
     super.key,
   });
   final Message message;
@@ -145,8 +144,6 @@ class ChatBubble extends StatefulWidget {
   final GestureLongPressStartCallback? onLongPressed;
   // The actual message bubble
   final RawChatBubble bubble;
-  // For acting on reaction taps
-  final void Function(Reaction)? onReactionTap;
 
   @override
   ChatBubbleState createState() => ChatBubbleState();
@@ -169,28 +166,48 @@ class ChatBubbleState extends State<ChatBubble>
   }
 
   Widget _buildReactions() {
-    if (widget.message.reactions.isEmpty) {
+    if (widget.message.reactionsPreview.isEmpty) {
       return const SizedBox();
     }
 
     return Padding(
       padding: const EdgeInsets.only(top: 1),
-      child: Wrap(
-        spacing: 1,
-        runSpacing: 2,
-        children: widget.message.reactions
-            .map(
-              (reaction) => ReactionBubble(
-                emoji: reaction.emoji,
-                reactions: reaction.reactions,
-                reactedTo: reaction.reactedBySelf,
-                sentBySelf: widget.sentBySelf,
-                onTap: widget.onReactionTap != null
-                    ? () => widget.onReactionTap!(reaction)
-                    : null,
-              ),
-            )
-            .toList(),
+      // TODO
+      child: InkWell(
+        onTap: () {},
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Color(0xff757575).withOpacity(0.57),
+            borderRadius: BorderRadius.all(Radius.circular(40))
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 4,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  // Only show 5 reactions. The last one is just for indicating that
+                  // there are more reactions.
+                  widget.message.reactionsPreview.length == 6
+                    ? widget.message.reactionsPreview.sublist(0, 6).join(' ')
+                    : widget.message.reactionsPreview.join(' '),
+                  style: TextStyle(
+                    fontSize: 25,
+                  ),
+                ),
+
+                if (widget.message.reactionsPreview.length == 6)
+                  Icon(
+                    Icons.more_horiz,
+                    size: 25,
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

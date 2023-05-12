@@ -174,19 +174,6 @@ class ConversationPageState extends State<ConversationPage>
       sentBySelf: sentBySelf,
       maxWidth: maxWidth,
       onSwipedCallback: _conversationController.quoteMessage,
-      onReactionTap: (reaction) {
-        if (reaction.reactedBySelf) {
-          _conversationController.removeReaction(
-            index,
-            reaction.emoji,
-          );
-        } else {
-          _conversationController.addReaction(
-            index,
-            reaction.emoji,
-          );
-        }
-      },
       onLongPressed: (event) async {
         if (!message.isLongpressable) {
           return;

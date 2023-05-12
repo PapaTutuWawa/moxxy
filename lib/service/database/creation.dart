@@ -49,6 +49,17 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
     )''');
 
+  // Reactions
+  await db.execute('''
+    CREATE TABLE $reactionsTable (
+      senderJid  TEXT NOT NULL,
+      emoji      TEXT NOT NULL,
+      message_id INTEGER NOT NULL,
+      CONSTRAINT pk_sender PRIMARY KEY (senderJid, emoji, message_id),
+      CONSTRAINT fk_message FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
+        ON DELETE CASCADE
+    )''');
+
   // File metadata
   await db.execute('''
     CREATE TABLE $fileMetadataTable (

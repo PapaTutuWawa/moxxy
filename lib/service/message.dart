@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
@@ -9,6 +8,7 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/not_specified.dart';
+import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/constants.dart';
@@ -16,7 +16,6 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:synchronized/synchronized.dart';
 
 class MessageService {
@@ -27,7 +26,7 @@ class MessageService {
       LRUCache(conversationMessagePageCacheSize);
   final Lock _cacheLock = Lock();
 
-  Future<Message?> getMessageById(int id, String conversationJid) async {
+  Future<Message?> getMessageById(int id, String conversationJid, { bool queryReactionPreview = true }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final messagesRaw = await db.query(
       messagesTable,
@@ -54,13 +53,21 @@ class MessageService {
       fm = FileMetadata.fromDatabaseJson(rawFm);
     }
 
-    return Message.fromDatabaseJson(msg, null, fm);
+    return Message.fromDatabaseJson(
+      msg,
+      null,
+      fm,
+      queryReactionPreview
+        ? await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(msg['id']! as int)
+        : [],
+    );
   }
 
   Future<Message?> getMessageByXmppId(
     String id,
     String conversationJid, {
     bool includeOriginId = true,
+    bool queryReactionPreview = true,
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final idQuery = includeOriginId ? '(sid = ? OR originId = ?)' : 'sid = ?';
@@ -92,7 +99,14 @@ class MessageService {
       fm = FileMetadata.fromDatabaseJson(rawFm);
     }
 
-    return Message.fromDatabaseJson(msg, null, fm);
+    return Message.fromDatabaseJson(
+      msg,
+      null,
+      fm,
+      queryReactionPreview
+        ? await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(msg['id']! as int)
+        : [],
+    );
   }
 
   /// Return a list of messages for [jid]. If [olderThan] is true, then all messages are older than [oldestTimestamp], if
@@ -140,7 +154,6 @@ SELECT
   quote.isUploading AS quote_isUploading,
   quote.isRetracted AS quote_isRetracted,
   quote.isEdited AS quote_isEdited,
-  quote.reactions AS quote_reactions,
   quote.containsNoStore AS quote_containsNoStore,
   quote.stickerPackId AS quote_stickerPackId,
   quote.pseudoMessageType AS quote_pseudoMessageType,
@@ -192,7 +205,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
           quoteFm = FileMetadata.fromDatabaseJson(rawQuoteFm);
         }
 
-        quotes = Message.fromDatabaseJson(rawQuote, null, quoteFm);
+        quotes = Message.fromDatabaseJson(rawQuote, null, quoteFm, []);
       }
 
       FileMetadata? fm;
@@ -202,7 +215,14 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
         );
       }
 
-      page.add(Message.fromDatabaseJson(m, quotes, fm));
+      page.add(
+        Message.fromDatabaseJson(
+          m,
+          quotes,
+          fm,
+          await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(m['id']! as int),
+        ),
+      );
     }
 
     if (olderThan && oldestTimestamp == null) {
@@ -263,7 +283,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
       if (m.isEmpty) {
         continue;
       }
-
+      
       page.add(
         Message.fromDatabaseJson(
           m,
@@ -271,6 +291,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
           FileMetadata.fromDatabaseJson(
             getPrefixedSubMap(m, 'fm_'),
           ),
+          await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(m['id']! as int),
         ),
       );
     }
@@ -394,7 +415,6 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
     Object? sid = notSpecified,
     bool? isRetracted,
     bool? isEdited,
-    Object? reactions = notSpecified,
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final m = <String, dynamic>{};
@@ -441,13 +461,6 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
     if (isEdited != null) {
       m['isEdited'] = boolToInt(isEdited);
     }
-    if (reactions != notSpecified) {
-      assert(reactions != null, 'Cannot set reactions to null');
-      // TODO(PapaTutuWawa): Replace with a new table
-      m['reactions'] = jsonEncode(
-        (reactions! as List<Reaction>).map((r) => r.toJson()).toList(),
-      );
-    }
 
     final updatedMessage = await db.updateAndReturn(
       messagesTable,
@@ -461,6 +474,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
       quotes = await getMessageById(
         updatedMessage['quote_id']! as int,
         updatedMessage['conversationJid']! as String,
+        queryReactionPreview: false,
       );
     }
 
@@ -478,7 +492,12 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
       metadata = FileMetadata.fromDatabaseJson(metadataRaw);
     }
 
-    final msg = Message.fromDatabaseJson(updatedMessage, quotes, metadata);
+    final msg = Message.fromDatabaseJson(
+      updatedMessage,
+      quotes,
+      metadata,
+      await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(id),
+    );
 
     await _cacheLock.synchronized(() {
       final page = _messageCache.getValue(msg.conversationJid);
@@ -576,5 +595,23 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
         'Failed to find conversation with conversationJid $conversationJid',
       );
     }
+  }
+
+  Future<void> replaceMessageInCache(Message message) async {
+    await _cacheLock.synchronized(() {
+      final cachedList = _messageCache.getValue(message.conversationJid);
+      if (cachedList != null) {
+        _messageCache.replaceValue(
+          message.conversationJid,
+          cachedList.map((m) {
+            if (m.id == message.id) {
+              return message;
+            }
+
+            return m;
+          }).toList(),
+        );
+      }
+    });
   }
 }

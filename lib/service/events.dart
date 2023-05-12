@@ -20,6 +20,7 @@ import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
@@ -933,34 +934,25 @@ Future<void> performAddMessageReaction(
   AddReactionToMessageCommand command, {
   dynamic extra,
 }) async {
-  final ms = GetIt.I.get<MessageService>();
-  final conn = GetIt.I.get<XmppConnection>();
-  final msg =
-      await ms.getMessageById(command.messageId, command.conversationJid);
-  assert(msg != null, 'The message must be found');
-
-  // Update the state
-  final reactions = List<Reaction>.from(msg!.reactions);
-  final i = reactions.indexWhere((r) => r.emoji == command.emoji);
-  if (i == -1) {
-    reactions.add(Reaction([], command.emoji, true));
-  } else {
-    reactions[i] = reactions[i].copyWith(reactedBySelf: true);
+  final rs = GetIt.I.get<ReactionsService>();
+  final msg = await rs.addNewReaction(command.messageId, command.emoji);
+  if (msg == null) {
+    return;
   }
-  await ms.updateMessage(msg.id, reactions: reactions);
-
-  // Collect all our reactions
-  final ownReactions =
-      reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
   if (command.conversationJid != '') {
+    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
+
     // Send the reaction
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+    GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!.sendMessage(
           MessageDetails(
             to: command.conversationJid,
             messageReactions: MessageReactions(
               msg.originId ?? msg.sid,
-              ownReactions,
+              await rs.getReactionsForMessageByJid(
+                command.messageId,
+                jid,
+              ),
             ),
             requestChatMarkers: false,
             messageProcessingHints:
@@ -974,35 +966,25 @@ Future<void> performRemoveMessageReaction(
   RemoveReactionFromMessageCommand command, {
   dynamic extra,
 }) async {
-  final ms = GetIt.I.get<MessageService>();
-  final conn = GetIt.I.get<XmppConnection>();
-  final msg =
-      await ms.getMessageById(command.messageId, command.conversationJid);
-  assert(msg != null, 'The message must be found');
-
-  // Update the state
-  final reactions = List<Reaction>.from(msg!.reactions);
-  final i = reactions.indexWhere((r) => r.emoji == command.emoji);
-  assert(i >= -1, 'The reaction must be found');
-  if (reactions[i].senders.isEmpty) {
-    reactions.removeAt(i);
-  } else {
-    reactions[i] = reactions[i].copyWith(reactedBySelf: false);
+  final rs = GetIt.I.get<ReactionsService>();
+  final msg = await rs.removeReaction(command.messageId, command.emoji);
+  if (msg == null) {
+    return;
   }
-  await ms.updateMessage(msg.id, reactions: reactions);
-
-  // Collect all our reactions
-  final ownReactions =
-      reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
   if (command.conversationJid != '') {
+    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
+
     // Send the reaction
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+    GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!.sendMessage(
           MessageDetails(
             to: command.conversationJid,
             messageReactions: MessageReactions(
               msg.originId ?? msg.sid,
-              ownReactions,
+              await rs.getReactionsForMessageByJid(
+                command.messageId,
+                jid,
+              ),
             ),
             requestChatMarkers: false,
             messageProcessingHints:

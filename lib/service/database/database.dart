@@ -41,6 +41,8 @@ import 'package:moxxyv2/service/database/migrations/0001_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0002_file_metadata_table.dart';
 import 'package:moxxyv2/service/database/migrations/0002_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0002_sticker_metadata.dart';
+import 'package:moxxyv2/service/database/migrations/0002_reactions.dart';
+import 'package:moxxyv2/service/database/migrations/0002_reactions_2.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/omemo/types.dart';
@@ -61,6 +63,7 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 const databasePasswordKey = 'database_encryption_password';
 
 extension DatabaseHelpers on Database {
+  // TODO: Implement whereArgs
   Future<int> count(
     String table,
     String where,
@@ -153,7 +156,7 @@ class DatabaseService {
     _db = await openDatabase(
       dbPath,
       password: key,
-      version: 34,
+      version: 36,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign
@@ -297,6 +300,14 @@ class DatabaseService {
         if (oldVersion < 34) {
           _log.finest('Running migration for database version 34');
           await upgradeFromV33ToV34(db);
+        }
+        if (oldVersion < 35) {
+          _log.finest('Running migration for database version 35');
+          await upgradeFromV34ToV35(db);
+        }
+        if (oldVersion < 36) {
+          _log.finest('Running migration for database version 36');
+          await upgradeFromV35ToV36(db);
         }
       },
     );

@@ -27,6 +27,7 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/subscription.dart';
@@ -1108,9 +1109,10 @@ class XmppService {
   ) async {
     final ms = GetIt.I.get<MessageService>();
     // TODO(Unknown): Once we support groupchats, we need to instead query by the stanza-id
-    final msg = await ms.getMessageByStanzaOrOriginId(
-      conversationJid,
+    final msg = await ms.getMessageByXmppId(
       event.messageReactions!.messageId,
+      conversationJid,
+      queryReactionPreview: false,
     );
     if (msg == null) {
       _log.warning(
@@ -1119,80 +1121,10 @@ class XmppService {
       return;
     }
 
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
-    final sender = event.fromJid.toBare().toString();
-    final isCarbon = sender == state.jid;
-    final reactions = List<Reaction>.from(msg.reactions);
-    final emojis = event.messageReactions!.emojis;
-
-    // Find out what emojis the sender has already sent
-    final sentEmojis = msg.reactions
-        .where((r) {
-          return isCarbon ? r.reactedBySelf : r.senders.contains(sender);
-        })
-        .map((r) => r.emoji)
-        .toList();
-    // Find out what reactions were removed
-    final removedEmojis = sentEmojis.where((e) => !emojis.contains(e));
-
-    for (final emoji in emojis) {
-      final i = reactions.indexWhere((r) => r.emoji == emoji);
-      if (i == -1) {
-        reactions.add(
-          Reaction(
-            isCarbon ? [] : [sender],
-            emoji,
-            isCarbon,
-          ),
-        );
-      } else {
-        List<String> senders;
-        if (isCarbon) {
-          senders = reactions[i].senders;
-        } else {
-          // Ensure that we don't add a sender multiple times to the same reaction
-          if (reactions[i].senders.contains(sender)) {
-            senders = reactions[i].senders;
-          } else {
-            senders = [
-              ...reactions[i].senders,
-              sender,
-            ];
-          }
-        }
-
-        reactions[i] = reactions[i].copyWith(
-          senders: senders,
-          reactedBySelf: isCarbon ? true : reactions[i].reactedBySelf,
-        );
-      }
-    }
-
-    for (final emoji in removedEmojis) {
-      final i = reactions.indexWhere((r) => r.emoji == emoji);
-      assert(i >= -1, 'The reaction must exist');
-
-      if (isCarbon && reactions[i].senders.isEmpty ||
-          !isCarbon &&
-              reactions[i].senders.length == 1 &&
-              !reactions[i].reactedBySelf) {
-        reactions.removeAt(i);
-      } else {
-        reactions[i] = reactions[i].copyWith(
-          senders: isCarbon
-              ? reactions[i].senders
-              : reactions[i].senders.where((s) => s != sender).toList(),
-          reactedBySelf: isCarbon ? false : reactions[i].reactedBySelf,
-        );
-      }
-    }
-
-    final newMessage = await ms.updateMessage(
-      msg.id,
-      reactions: reactions,
-    );
-    sendEvent(
-      MessageUpdatedEvent(message: newMessage),
+    await GetIt.I.get<ReactionsService>().processNewReactions(
+      msg,
+      event.fromJid.toBare().toString(),
+      event.messageReactions!.emojis,
     );
   }
 

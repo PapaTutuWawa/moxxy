@@ -4,7 +4,6 @@ import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 
 part 'message.freezed.dart';
@@ -51,7 +50,7 @@ class Message with _$Message {
     @Default(false) bool isEdited,
     String? originId,
     Message? quotes,
-    @Default([]) List<Reaction> reactions,
+    @Default([]) List<String> reactionsPreview,
     String? stickerPackId,
     int? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
@@ -67,6 +66,7 @@ class Message with _$Message {
     Map<String, dynamic> json,
     Message? quotes,
     FileMetadata? fileMetadata,
+    List<String> reactionsPreview,
   ) {
     return Message.fromJson({
       ...json,
@@ -81,15 +81,11 @@ class Message with _$Message {
       'isRetracted': intToBool(json['isRetracted']! as int),
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
-      'reactions': <Map<String, dynamic>>[],
+      'reactionsPreview': reactionsPreview,
       'pseudoMessageData':
           _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
     }).copyWith(
       quotes: quotes,
-      reactions: (jsonDecode(json['reactions']! as String) as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .map<Reaction>(Reaction.fromJson)
-          .toList(),
       fileMetadata: fileMetadata,
     );
   }
@@ -98,7 +94,7 @@ class Message with _$Message {
     final map = toJson()
       ..remove('id')
       ..remove('quotes')
-      ..remove('reactions')
+      ..remove('reactionsPreview')
       ..remove('fileMetadata')
       ..remove('pseudoMessageData');
 
@@ -117,9 +113,6 @@ class Message with _$Message {
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
       'containsNoStore': boolToInt(containsNoStore),
-      'reactions': jsonEncode(
-        reactions.map((r) => r.toJson()).toList(),
-      ),
       'pseudoMessageData': _optionalJsonEncodeWithFallback(pseudoMessageData),
     };
   }
