@@ -59,7 +59,8 @@ class ReactionsService {
   Future<int> _countReactions(int messageId, String emoji) async {
     return GetIt.I.get<DatabaseService>().database.count(
       reactionsTable,
-      'message_id = $messageId AND emoji = $emoji',
+      'message_id = ? AND emoji = ?',
+      [messageId, emoji],
     );
   }
   

@@ -63,14 +63,17 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 const databasePasswordKey = 'database_encryption_password';
 
 extension DatabaseHelpers on Database {
-  // TODO: Implement whereArgs
+  /// Count the number of rows in [table] where [where] with the arguments [whereArgs]
+  /// matches.
   Future<int> count(
     String table,
     String where,
+    List<Object?> whereArgs,
   ) async {
     return Sqflite.firstIntValue(
       await rawQuery(
         'SELECT COUNT(*) FROM $table WHERE $where',
+        whereArgs,
       ),
     )!;
   }

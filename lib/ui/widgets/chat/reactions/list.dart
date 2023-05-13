@@ -92,6 +92,9 @@ class ReactionList extends StatelessWidget {
                         ),
                         awaitable: false,
                       );
+
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pop();
                 }
                 : null,
             );
