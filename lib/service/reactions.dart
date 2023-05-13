@@ -65,10 +65,9 @@ class ReactionsService {
   
   /// Adds a new reaction [emoji], if possible, to [messageId] and returns the
   /// new message reaction preview.
-  Future<Message?> addNewReaction(int messageId, String emoji) async {
+  Future<Message?> addNewReaction(int messageId, String conversationJid, String emoji) async {
     final ms = GetIt.I.get<MessageService>();
-    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
-    final msg = await ms.getMessageById(messageId, jid);
+    final msg = await ms.getMessageById(messageId, conversationJid);
     if (msg == null) {
       _log.warning('Failed to get message $messageId');
       return null;
@@ -81,6 +80,7 @@ class ReactionsService {
       ];
 
       try {
+        final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
         await GetIt.I.get<DatabaseService>().database.insert(
           reactionsTable,
           Reaction(
@@ -96,6 +96,12 @@ class ReactionsService {
         );
         await ms.replaceMessageInCache(newMsg);
 
+        sendEvent(
+          MessageUpdatedEvent(
+            message: newMsg,
+          ),
+        );
+
         return newMsg;
       } catch (ex) {
         // The reaction already exists
@@ -106,10 +112,9 @@ class ReactionsService {
     return msg;
   }
 
-  Future<Message?> removeReaction(int messageId, String emoji) async {
+  Future<Message?> removeReaction(int messageId, String conversationJid, String emoji) async {
     final ms = GetIt.I.get<MessageService>();
-    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
-    final msg = await ms.getMessageById(messageId, jid);
+    final msg = await ms.getMessageById(messageId, conversationJid);
     if (msg == null) {
       _log.warning('Failed to get message $messageId');
       return null;
@@ -121,7 +126,7 @@ class ReactionsService {
       whereArgs: [
         messageId,
         emoji,
-        jid,
+        (await GetIt.I.get<XmppStateService>().getXmppState()).jid,
       ],
     );
     final count = await _countReactions(messageId, emoji);
@@ -135,6 +140,11 @@ class ReactionsService {
       reactionsPreview: newPreview,
     );
     await ms.replaceMessageInCache(newMsg);
+    sendEvent(
+      MessageUpdatedEvent(
+        message: newMsg,
+      ),
+    );
     return newMsg;
   }
   

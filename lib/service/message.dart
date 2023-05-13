@@ -27,6 +27,8 @@ class MessageService {
   final Lock _cacheLock = Lock();
 
   Future<Message?> getMessageById(int id, String conversationJid, { bool queryReactionPreview = true }) async {
+    _log.finest('[getMessageById] Query: id = $id AND conversationJid = $conversationJid');
+
     final db = GetIt.I.get<DatabaseService>().database;
     final messagesRaw = await db.query(
       messagesTable,

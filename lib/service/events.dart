@@ -936,7 +936,7 @@ Future<void> performAddMessageReaction(
   dynamic extra,
 }) async {
   final rs = GetIt.I.get<ReactionsService>();
-  final msg = await rs.addNewReaction(command.messageId, command.emoji);
+  final msg = await rs.addNewReaction(command.messageId, command.conversationJid, command.emoji);
   if (msg == null) {
     return;
   }
@@ -968,7 +968,7 @@ Future<void> performRemoveMessageReaction(
   dynamic extra,
 }) async {
   final rs = GetIt.I.get<ReactionsService>();
-  final msg = await rs.removeReaction(command.messageId, command.emoji);
+  final msg = await rs.removeReaction(command.messageId, command.conversationJid, command.emoji);
   if (msg == null) {
     return;
   }
