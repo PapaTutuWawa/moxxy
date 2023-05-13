@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
+/// Callback for when a reaction has been tapped. The parameter is the emoji of the
+/// reaction that was tapped.
 typedef ReactionTappedCallback = void Function(String);
 
+/// A single row in the reaction overview. This widget displays an avatar,
+/// the display name, and the user's reactions to the message.
 class ReactionsRow extends StatelessWidget {
   const ReactionsRow({
     required this.avatar,

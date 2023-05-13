@@ -9,16 +9,19 @@ import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactions/row.dart';
 
+/// Displays the reactions to a message and allows modifying the reactions.
+/// When created, fetches the reactions from the ReactionService.
 class ReactionList extends StatelessWidget {
   const ReactionList(this.messageId, this.conversationJid, {super.key});
 
+  /// The database identifier of the message to fetch reactions of.
   final int messageId;
 
+  /// The conversation the message is part of.
   final String conversationJid;
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<BackgroundEvent?>(
+  Widget build(BuildContext context) {return FutureBuilder<BackgroundEvent?>(
       future: MoxplatformPlugin.handler.getDataSender().sendData(
             GetReactionsForMessageCommand(
               messageId: messageId,

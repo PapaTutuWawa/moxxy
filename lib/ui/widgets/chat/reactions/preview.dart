@@ -3,11 +3,16 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactions/list.dart';
 
+/// When the corresponding message contains more than one reaction, this widget will display
+/// the preview and open the reaction overview when tapped. If the message has no reactions
+/// attached to it, then this widget is equal to a SizedBox.
 class ReactionsPreview extends StatelessWidget {
   const ReactionsPreview(this.message, this.sentBySelf, {super.key});
 
+  /// The message to display the reactions of.
   final Message message;
 
+  /// True if [message] was sent by one self. False, if not.
   final bool sentBySelf;
 
   @override
