@@ -6,12 +6,12 @@ part 'reaction.g.dart';
 @freezed
 class Reaction with _$Reaction {
   factory Reaction(
-    int message_id,
+    // This is valid in combination with freezed
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'message_id') int messageId,
     String senderJid,
     String emoji,
   ) = _Reaction;
-
-  const Reaction._();
 
   /// JSON
   factory Reaction.fromJson(Map<String, dynamic> json) =>
