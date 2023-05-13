@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactions/row.dart';
 
@@ -26,6 +28,7 @@ class ReactionList extends StatelessWidget {
         }
 
         final reactions = (snapshot.data! as ReactionsForMessageResult).reactions;
+        final ownJid = GetIt.I.get<UIDataService>().ownJid!;
         return ListView.builder(
           shrinkWrap: true,
           itemCount: reactions.length,
@@ -41,8 +44,12 @@ class ReactionList extends StatelessWidget {
               displayName: reaction.jid,
               emojis: reaction.emojis,
               // TODO
-              onAddPressed: () {},
-              onReactionPressed: (_) {},
+              onAddPressed: reaction.jid == ownJid
+                ? () {}
+                : null,
+              onReactionPressed: reaction.jid == ownJid
+                ? (_) {}
+                : null,
             );
           },
         );
