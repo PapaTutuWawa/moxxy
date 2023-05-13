@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
@@ -71,7 +72,8 @@ class ReactionList extends StatelessWidget {
                 altIcon: Icons.person,
               ),
               // TODO
-              displayName: reaction.jid,
+              displayName:
+                  reaction.jid == ownJid ? t.messages.you : reaction.jid,
               emojis: reaction.emojis,
               onAddPressed: reaction.jid == ownJid
                   ? () async {

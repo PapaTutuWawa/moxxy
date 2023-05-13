@@ -63,16 +63,21 @@ class ReactionsPreview extends StatelessWidget {
                 // Only show 5 reactions. The last one is just for indicating that
                 // there are more reactions.
                 message.reactionsPreview.length == 6
-                    ? message.reactionsPreview.sublist(0, 6).join(' ')
+                    ? message.reactionsPreview.sublist(0, 5).join(' ')
                     : message.reactionsPreview.join(' '),
                 style: const TextStyle(
                   fontSize: 20,
                 ),
               ),
               if (message.reactionsPreview.length == 6)
-                const Icon(
-                  Icons.more_horiz,
-                  size: 20,
+                const Padding(
+                  padding: EdgeInsets.only(
+                    left: 8,
+                  ),
+                  child: Icon(
+                    Icons.more_horiz,
+                    size: 20,
+                  ),
                 ),
             ],
           ),

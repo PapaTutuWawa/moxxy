@@ -70,39 +70,42 @@ class ReactionsRow extends StatelessWidget {
                 ),
             ],
           ),
-          Wrap(
-            alignment: WrapAlignment.end,
-            spacing: 8,
-            runSpacing: 4,
-            children: emojis
-                .map(
-                  (e) => ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(40)),
-                    child: Material(
-                      color: onReactionPressed != null
-                          ? reactionColorSent
-                          : reactionColorReceived,
-                      child: InkWell(
-                        onTap: onReactionPressed != null
-                            ? () => onReactionPressed!(e)
-                            : null,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          child: Text(
-                            e,
-                            style: const TextStyle(
-                              fontSize: 25,
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 4,
+              children: emojis
+                  .map(
+                    (e) => ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(40)),
+                      child: Material(
+                        color: onReactionPressed != null
+                            ? reactionColorSent
+                            : reactionColorReceived,
+                        child: InkWell(
+                          onTap: onReactionPressed != null
+                              ? () => onReactionPressed!(e)
+                              : null,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            child: Text(
+                              e,
+                              style: const TextStyle(
+                                fontSize: 25,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                )
-                .toList(),
+                  )
+                  .toList(),
+            ),
           ),
         ],
       ),
