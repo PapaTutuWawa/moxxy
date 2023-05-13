@@ -5,7 +5,7 @@ import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
-import 'package:moxxyv2/ui/widgets/chat/reactions/list.dart';
+import 'package:moxxyv2/ui/widgets/chat/reactions/preview.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
 class RawChatBubble extends StatelessWidget {
@@ -164,68 +164,6 @@ class ChatBubbleState extends State<ChatBubble>
         : SwipeDirection.startToEnd;
   }
 
-  Widget _buildReactions() {
-    if (widget.message.reactionsPreview.isEmpty) {
-      return const SizedBox();
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 1),
-      child: InkWell(
-        onTap: () {
-          showModalBottomSheet<void>(
-            context: context,
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(textfieldRadiusRegular),
-              ),
-            ),
-            builder: (context) {
-              return ReactionList(
-                widget.message.id,
-                widget.message.conversationJid,
-              );
-            },
-          );
-        },
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            // TODO: Move to ui/constants.dart
-            color: const Color(0xff757575).withOpacity(0.57),
-            borderRadius: const BorderRadius.all(Radius.circular(40)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 4,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  // Only show 5 reactions. The last one is just for indicating that
-                  // there are more reactions.
-                  widget.message.reactionsPreview.length == 6
-                      ? widget.message.reactionsPreview.sublist(0, 6).join(' ')
-                      : widget.message.reactionsPreview.join(' '),
-                  style: const TextStyle(
-                    fontSize: 25,
-                  ),
-                ),
-                if (widget.message.reactionsPreview.length == 6)
-                  const Icon(
-                    Icons.more_horiz,
-                    size: 25,
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -301,17 +239,42 @@ class ChatBubbleState extends State<ChatBubble>
         child: Align(
           alignment:
               widget.sentBySelf ? Alignment.centerRight : Alignment.centerLeft,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: widget.sentBySelf
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              GestureDetector(
-                onLongPressStart: widget.onLongPressed,
-                child: widget.bubble,
+              Positioned(
+                bottom: 10,
+                right: widget.sentBySelf
+                  ? 0
+                  : null,
+                left: widget.sentBySelf
+                  ? null
+                  : 0,
+                child: ReactionsPreview(widget.message, widget.sentBySelf),
               ),
-              _buildReactions(),
+              
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: widget.sentBySelf
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onLongPressStart: widget.onLongPressed,
+                    child: widget.bubble,
+                  ),
+
+                  if (widget.message.reactionsPreview.isNotEmpty)
+                    // This SizedBox ensures that we have a proper bottom padding for the
+                    // reaction preview, but also ensure that the Stack is wide enough
+                    // so that the preview is not clipped by the Stack, since the overflow
+                    // does not receive input events.
+                    // See https://github.com/flutter/flutter/issues/19445
+                    SizedBox(
+                      height: 40,
+                      width: MediaQuery.of(context).size.width,
+                    ),
+                ],
+              ),
             ],
           ),
         ),
