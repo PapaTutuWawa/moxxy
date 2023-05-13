@@ -207,13 +207,12 @@ class ChatBubbleState extends State<ChatBubble>
                   // Only show 5 reactions. The last one is just for indicating that
                   // there are more reactions.
                   widget.message.reactionsPreview.length == 6
-                    ? widget.message.reactionsPreview.sublist(0, 6).join(' ')
-                    : widget.message.reactionsPreview.join(' '),
+                      ? widget.message.reactionsPreview.sublist(0, 6).join(' ')
+                      : widget.message.reactionsPreview.join(' '),
                   style: const TextStyle(
                     fontSize: 25,
                   ),
                 ),
-
                 if (widget.message.reactionsPreview.length == 6)
                   const Icon(
                     Icons.more_horiz,

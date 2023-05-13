@@ -32,14 +32,14 @@ Future<void> upgradeFromV34ToV35(Database db) async {
     where: "reactions IS NOT '[]'",
   );
   for (final message in messages) {
-    final reactions = (jsonDecode(message['reactions']! as String) as List<dynamic>).cast<Map<String, Object?>>();
+    final reactions =
+        (jsonDecode(message['reactions']! as String) as List<dynamic>)
+            .cast<Map<String, Object?>>();
 
     for (final reaction in reactions) {
       final senders = [
         ...reaction['senders']! as List<String>,
-
-        if (intToBool(reaction['reactedBySelf']! as int) && jid != null)
-          jid,
+        if (intToBool(reaction['reactedBySelf']! as int) && jid != null) jid,
       ];
 
       for (final sender in senders) {

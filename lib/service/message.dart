@@ -26,9 +26,11 @@ class MessageService {
       LRUCache(conversationMessagePageCacheSize);
   final Lock _cacheLock = Lock();
 
-  Future<Message?> getMessageById(int id, String conversationJid, { bool queryReactionPreview = true }) async {
-    _log.finest('[getMessageById] Query: id = $id AND conversationJid = $conversationJid');
-
+  Future<Message?> getMessageById(
+    int id,
+    String conversationJid, {
+    bool queryReactionPreview = true,
+  }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final messagesRaw = await db.query(
       messagesTable,
@@ -60,8 +62,10 @@ class MessageService {
       null,
       fm,
       queryReactionPreview
-        ? await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(msg['id']! as int)
-        : [],
+          ? await GetIt.I
+              .get<ReactionsService>()
+              .getPreviewReactionsForMessage(msg['id']! as int)
+          : [],
     );
   }
 
@@ -106,8 +110,10 @@ class MessageService {
       null,
       fm,
       queryReactionPreview
-        ? await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(msg['id']! as int)
-        : [],
+          ? await GetIt.I
+              .get<ReactionsService>()
+              .getPreviewReactionsForMessage(msg['id']! as int)
+          : [],
     );
   }
 
@@ -222,7 +228,9 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
           m,
           quotes,
           fm,
-          await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(m['id']! as int),
+          await GetIt.I
+              .get<ReactionsService>()
+              .getPreviewReactionsForMessage(m['id']! as int),
         ),
       );
     }
@@ -285,7 +293,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
       if (m.isEmpty) {
         continue;
       }
-      
+
       page.add(
         Message.fromDatabaseJson(
           m,
@@ -293,7 +301,9 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
           FileMetadata.fromDatabaseJson(
             getPrefixedSubMap(m, 'fm_'),
           ),
-          await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(m['id']! as int),
+          await GetIt.I
+              .get<ReactionsService>()
+              .getPreviewReactionsForMessage(m['id']! as int),
         ),
       );
     }

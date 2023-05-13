@@ -223,13 +223,13 @@ class ConversationPageState extends State<ConversationPage>
                     final emoji = await pickEmoji(context);
                     if (emoji != null) {
                       await MoxplatformPlugin.handler.getDataSender().sendData(
-                          AddReactionToMessageCommand(
-                            messageId: item.id,
-                            emoji: emoji,
-                            conversationJid: item.conversationJid,
-                          ),
-                          awaitable: false,
-                        );
+                            AddReactionToMessageCommand(
+                              messageId: item.id,
+                              emoji: emoji,
+                              conversationJid: item.conversationJid,
+                            ),
+                            awaitable: false,
+                          );
                     }
                   },
                 ),

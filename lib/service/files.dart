@@ -293,18 +293,16 @@ class FilesService {
   /// or a sticker, does nothing.
   Future<void> removeFileIfNotReferenced(FileMetadata metadata) async {
     final db = GetIt.I.get<DatabaseService>().database;
-    final messagesCount =
-        await db.count(
-          messagesTable,
-          'file_metadata_id = ?',
-          [metadata.id],
-        );
-    final stickersCount =
-        await db.count(
-          stickersTable,
-          'file_metadata_id = ?',
-          [metadata.id],
-        );
+    final messagesCount = await db.count(
+      messagesTable,
+      'file_metadata_id = ?',
+      [metadata.id],
+    );
+    final stickersCount = await db.count(
+      stickersTable,
+      'file_metadata_id = ?',
+      [metadata.id],
+    );
 
     if (messagesCount == 0 && stickersCount == 0) {
       _log.finest(

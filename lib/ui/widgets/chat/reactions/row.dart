@@ -3,23 +3,21 @@ import 'package:flutter/material.dart';
 typedef ReactionTappedCallback = void Function(String);
 
 class ReactionsRow extends StatelessWidget {
-  const ReactionsRow(
-    {
-      required this.avatar,
-      required this.displayName,
-      required this.emojis,
-      this.onAddPressed,
-      this.onReactionPressed,
-      super.key,
-    }
-  );
+  const ReactionsRow({
+    required this.avatar,
+    required this.displayName,
+    required this.emojis,
+    this.onAddPressed,
+    this.onReactionPressed,
+    super.key,
+  });
 
   /// The avatar shown on the left size.
   final Widget avatar;
 
   /// The name to show next to the avatar.
   final String displayName;
-  
+
   /// The list of emojis that are used as a reaction.
   final List<String> emojis;
 
@@ -43,7 +41,6 @@ class ReactionsRow extends StatelessWidget {
           Row(
             children: [
               avatar,
-
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 16),
@@ -57,7 +54,6 @@ class ReactionsRow extends StatelessWidget {
                   ),
                 ),
               ),
-
               if (onAddPressed != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -69,38 +65,40 @@ class ReactionsRow extends StatelessWidget {
                 ),
             ],
           ),
-
           Wrap(
             alignment: WrapAlignment.end,
             spacing: 8,
             runSpacing: 4,
-            children: emojis.map((e) => ClipRRect(
-                borderRadius: const BorderRadius.all(Radius.circular(40)),
-                child: Material(
-                  color: onReactionPressed != null
-                    // TODO: Move to ui/constants.dart
-                    ? const Color(0xff2993FB)
-                    : const Color(0xff757575),
-                  child: InkWell(
-                    onTap: onReactionPressed != null
-                      ? () => onReactionPressed!(e)
-                      : null,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      child: Text(
-                        e,
-                        style: const TextStyle(
-                          fontSize: 25,
+            children: emojis
+                .map(
+                  (e) => ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(40)),
+                    child: Material(
+                      color: onReactionPressed != null
+                          // TODO: Move to ui/constants.dart
+                          ? const Color(0xff2993FB)
+                          : const Color(0xff757575),
+                      child: InkWell(
+                        onTap: onReactionPressed != null
+                            ? () => onReactionPressed!(e)
+                            : null,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          child: Text(
+                            e,
+                            style: const TextStyle(
+                              fontSize: 25,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ).toList(),
+                )
+                .toList(),
           ),
         ],
       ),

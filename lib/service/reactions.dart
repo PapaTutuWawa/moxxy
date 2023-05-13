@@ -25,17 +25,17 @@ class ReactionsService {
   /// [id].
   Future<List<String>> getPreviewReactionsForMessage(int id) async {
     final reactions = await GetIt.I.get<DatabaseService>().database.query(
-      reactionsTable,
-      where: 'message_id = ?',
-      whereArgs: [id],
-      columns: ['emoji'],
-      distinct: true,
-      limit: 6,
-    );
+          reactionsTable,
+          where: 'message_id = ?',
+          whereArgs: [id],
+          columns: ['emoji'],
+          distinct: true,
+          limit: 6,
+        );
 
     return reactions.map((r) => r['emoji']! as String).toList();
   }
-  
+
   Future<List<Reaction>> getReactionsForMessage(int id) async {
     final reactions = await GetIt.I.get<DatabaseService>().database.query(
       reactionsTable,
@@ -55,7 +55,7 @@ class ReactionsService {
 
     return reactions.map((r) => r['emoji']! as String).toList();
   }
-  
+
   Future<int> _countReactions(int messageId, String emoji) async {
     return GetIt.I.get<DatabaseService>().database.count(
       reactionsTable,
@@ -63,10 +63,14 @@ class ReactionsService {
       [messageId, emoji],
     );
   }
-  
+
   /// Adds a new reaction [emoji], if possible, to [messageId] and returns the
   /// new message reaction preview.
-  Future<Message?> addNewReaction(int messageId, String conversationJid, String emoji) async {
+  Future<Message?> addNewReaction(
+    int messageId,
+    String conversationJid,
+    String emoji,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
     final msg = await ms.getMessageById(messageId, conversationJid);
     if (msg == null) {
@@ -74,7 +78,8 @@ class ReactionsService {
       return null;
     }
 
-    if (!msg.reactionsPreview.contains(emoji) && msg.reactionsPreview.length < 6) {
+    if (!msg.reactionsPreview.contains(emoji) &&
+        msg.reactionsPreview.length < 6) {
       final newPreview = [
         ...msg.reactionsPreview,
         emoji,
@@ -83,14 +88,14 @@ class ReactionsService {
       try {
         final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
         await GetIt.I.get<DatabaseService>().database.insert(
-          reactionsTable,
-          Reaction(
-            messageId,
-            jid,
-            emoji,
-          ).toJson(),
-          conflictAlgorithm: ConflictAlgorithm.fail,
-        );
+              reactionsTable,
+              Reaction(
+                messageId,
+                jid,
+                emoji,
+              ).toJson(),
+              conflictAlgorithm: ConflictAlgorithm.fail,
+            );
 
         final newMsg = msg.copyWith(
           reactionsPreview: newPreview,
@@ -113,7 +118,11 @@ class ReactionsService {
     return msg;
   }
 
-  Future<Message?> removeReaction(int messageId, String conversationJid, String emoji) async {
+  Future<Message?> removeReaction(
+    int messageId,
+    String conversationJid,
+    String emoji,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
     final msg = await ms.getMessageById(messageId, conversationJid);
     if (msg == null) {
@@ -148,11 +157,16 @@ class ReactionsService {
     );
     return newMsg;
   }
-  
-  Future<void> processNewReactions(Message msg, String senderJid, List<String> emojis) async {
+
+  Future<void> processNewReactions(
+    Message msg,
+    String senderJid,
+    List<String> emojis,
+  ) async {
     // Get all reactions know for this message
     final allReactions = await getReactionsForMessage(msg.id);
-    final userEmojis = allReactions.where((r) => r.senderJid == senderJid).map((r) => r.emoji);
+    final userEmojis =
+        allReactions.where((r) => r.senderJid == senderJid).map((r) => r.emoji);
     final removedReactions = userEmojis.where((e) => !emojis.contains(e));
     final addedReactions = emojis.where((e) => !userEmojis.contains(e));
 
@@ -182,8 +196,8 @@ class ReactionsService {
       reactionsPreview: await getPreviewReactionsForMessage(msg.id),
     );
     await GetIt.I.get<MessageService>().replaceMessageInCache(
-      newMessage,
-    );
+          newMessage,
+        );
     sendEvent(MessageUpdatedEvent(message: newMessage));
   }
 }

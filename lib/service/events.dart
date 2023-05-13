@@ -936,7 +936,11 @@ Future<void> performAddMessageReaction(
   dynamic extra,
 }) async {
   final rs = GetIt.I.get<ReactionsService>();
-  final msg = await rs.addNewReaction(command.messageId, command.conversationJid, command.emoji);
+  final msg = await rs.addNewReaction(
+    command.messageId,
+    command.conversationJid,
+    command.emoji,
+  );
   if (msg == null) {
     return;
   }
@@ -945,7 +949,10 @@ Future<void> performAddMessageReaction(
     final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
 
     // Send the reaction
-    GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!.sendMessage(
+    GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!
+        .sendMessage(
           MessageDetails(
             to: command.conversationJid,
             messageReactions: MessageReactions(
@@ -968,7 +975,11 @@ Future<void> performRemoveMessageReaction(
   dynamic extra,
 }) async {
   final rs = GetIt.I.get<ReactionsService>();
-  final msg = await rs.removeReaction(command.messageId, command.conversationJid, command.emoji);
+  final msg = await rs.removeReaction(
+    command.messageId,
+    command.conversationJid,
+    command.emoji,
+  );
   if (msg == null) {
     return;
   }
@@ -977,7 +988,10 @@ Future<void> performRemoveMessageReaction(
     final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
 
     // Send the reaction
-    GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!.sendMessage(
+    GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!
+        .sendMessage(
           MessageDetails(
             to: command.conversationJid,
             messageReactions: MessageReactions(
@@ -1199,9 +1213,10 @@ Future<void> performGetReactions(
 }) async {
   final id = extra as String;
 
-  final reactionsRaw = await GetIt.I.get<ReactionsService>().getReactionsForMessage(
-    command.messageId,
-  );
+  final reactionsRaw =
+      await GetIt.I.get<ReactionsService>().getReactionsForMessage(
+            command.messageId,
+          );
   final reactionsMap = <String, List<String>>{};
   for (final reaction in reactionsRaw) {
     if (reactionsMap.containsKey(reaction.senderJid)) {
@@ -1213,10 +1228,14 @@ Future<void> performGetReactions(
 
   sendEvent(
     ReactionsForMessageResult(
-      reactions: reactionsMap.entries.map((entry) => ReactionGroup(
-          entry.key,
-          entry.value,
-      ),).toList(),
+      reactions: reactionsMap.entries
+          .map(
+            (entry) => ReactionGroup(
+              entry.key,
+              entry.value,
+            ),
+          )
+          .toList(),
     ),
     id: id,
   );

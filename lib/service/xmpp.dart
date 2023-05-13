@@ -1121,10 +1121,10 @@ class XmppService {
     }
 
     await GetIt.I.get<ReactionsService>().processNewReactions(
-      msg,
-      event.fromJid.toBare().toString(),
-      event.messageReactions!.emojis,
-    );
+          msg,
+          event.fromJid.toBare().toString(),
+          event.messageReactions!.emojis,
+        );
   }
 
   Future<void> _onMessage(MessageEvent event, {dynamic extra}) async {
