@@ -7,7 +7,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -219,38 +221,17 @@ class ConversationPageState extends State<ConversationPage>
                   icon: Icons.add_reaction,
                   text: t.pages.conversation.addReaction,
                   onPressed: () async {
-                    final emoji = await showModalBottomSheet<String>(
-                      context: context,
-                      // TODO(PapaTutuWawa): Move this to the theme
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: radiusLarge,
-                          topRight: radiusLarge,
-                        ),
-                      ),
-                      builder: (context) => Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: EmojiPicker(
-                          onEmojiSelected: (_, emoji) {
-                            // ignore: use_build_context_synchronously
-                            Navigator.of(context).pop(emoji.emoji);
-                          },
-                          //height: pickerHeight,
-                          config: Config(
-                            bgColor: Theme.of(context).scaffoldBackgroundColor,
-                          ),
-                        ),
-                      ),
-                    );
+                    final emoji = await pickEmoji(context);
                     if (emoji != null) {
-                      _conversationController.addReaction(
-                        index,
-                        emoji,
-                      );
+                      MoxplatformPlugin.handler.getDataSender().sendData(
+                          AddReactionToMessageCommand(
+                            messageId: item.id,
+                            emoji: emoji,
+                            conversationJid: item.conversationJid,
+                          ),
+                          awaitable: false,
+                        );
                     }
-
-                    // ignore: use_build_context_synchronously
-                    Navigator.of(context).pop();
                   },
                 ),
               if (item.canRetract(sentBySelf))

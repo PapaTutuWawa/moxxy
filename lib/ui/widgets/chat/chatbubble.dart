@@ -188,6 +188,7 @@ class ChatBubbleState extends State<ChatBubble>
             builder: (context) {
               return ReactionList(
                 widget.message.id,
+                widget.message.conversationJid,
               );
             },
           );
