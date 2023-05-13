@@ -400,6 +400,8 @@ Future<void> openFile(String path) async {
   }
 }
 
+/// Opens a modal bottom sheet with an emoji picker. Resolves to the picked emoji,
+/// if one was picked. If the picker was dismissed, resolves to null.
 Future<String?> pickEmoji(BuildContext context) async {
   final emoji = await showModalBottomSheet<String>(
     context: context,

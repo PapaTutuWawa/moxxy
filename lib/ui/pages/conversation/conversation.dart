@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -223,7 +222,7 @@ class ConversationPageState extends State<ConversationPage>
                   onPressed: () async {
                     final emoji = await pickEmoji(context);
                     if (emoji != null) {
-                      MoxplatformPlugin.handler.getDataSender().sendData(
+                      await MoxplatformPlugin.handler.getDataSender().sendData(
                           AddReactionToMessageCommand(
                             messageId: item.id,
                             emoji: emoji,

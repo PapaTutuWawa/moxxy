@@ -157,7 +157,7 @@ class ReactionsService {
     }
 
     for (final emoji in addedReactions) {
-      final rows = await db.insert(
+      await db.insert(
         reactionsTable,
         Reaction(
           msg.id,

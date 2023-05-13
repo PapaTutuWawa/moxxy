@@ -34,7 +34,6 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
@@ -1217,7 +1216,7 @@ Future<void> performGetReactions(
       reactions: reactionsMap.entries.map((entry) => ReactionGroup(
           entry.key,
           entry.value,
-      )).toList(),
+      ),).toList(),
     ),
     id: id,
   );

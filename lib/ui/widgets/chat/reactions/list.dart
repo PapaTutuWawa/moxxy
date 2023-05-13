@@ -4,8 +4,6 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
-import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -28,8 +26,8 @@ class ReactionList extends StatelessWidget {
         ) as Future<BackgroundEvent?>,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return Center(
-            child: const CircularProgressIndicator(),
+          return const Center(
+            child: CircularProgressIndicator(),
           );
         }
 
@@ -62,7 +60,7 @@ class ReactionList extends StatelessWidget {
             final reaction = reactions[index];
             return ReactionsRow(
               // TODO
-              avatar: AvatarWrapper(
+              avatar: const AvatarWrapper(
                 radius: 35,
                 altIcon: Icons.person,
               ),
@@ -73,7 +71,7 @@ class ReactionList extends StatelessWidget {
                 ? () async {
                   final emoji = await pickEmoji(context);
                   if (emoji != null) {
-                    MoxplatformPlugin.handler.getDataSender().sendData(
+                    await MoxplatformPlugin.handler.getDataSender().sendData(
                         AddReactionToMessageCommand(
                           messageId: messageId,
                           emoji: emoji,
@@ -85,8 +83,8 @@ class ReactionList extends StatelessWidget {
                 }
                 : null,
               onReactionPressed: reaction.jid == ownJid
-                ? (emoji) {
-                  MoxplatformPlugin.handler.getDataSender().sendData(
+                ? (emoji) async {
+                  await MoxplatformPlugin.handler.getDataSender().sendData(
                         RemoveReactionFromMessageCommand(
                           messageId: messageId,
                           emoji: emoji,

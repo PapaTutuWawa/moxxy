@@ -8,7 +8,6 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
@@ -263,33 +262,6 @@ class BidirectionalConversationController
           ),
           awaitable: false,
         );
-  }
-
-  /// Add [emoji] as a reaction to the message at index [index].
-  void addReaction(int index, String emoji) {
-    // TODO
-    // final message = cache[index];
-
-    // // Only modify the message here if the new reaction would break the preview
-    // if (!message.reactionsPreview.contains(emoji) && message.reactionsPreview.length < 6) {
-    //   cache[index] = message.copyWith(
-    //     reactionsPreview: [
-    //       ...message.reactionsPreview,
-    //       emoji,
-    //     ],
-    //   );
-
-    //   forceUpdateUI();
-    // }
-
-    // MoxplatformPlugin.handler.getDataSender().sendData(
-    //       AddReactionToMessageCommand(
-    //         messageId: message.id,
-    //         emoji: emoji,
-    //         conversationJid: conversationJid,
-    //       ),
-    //       awaitable: false,
-    //     );
   }
 
   /// Send the sticker [sticker].

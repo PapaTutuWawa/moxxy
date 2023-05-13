@@ -50,7 +50,7 @@ class ReactionsRow extends StatelessWidget {
                   child: Text(
                     displayName,
                     maxLines: 1,
-                    style: TextStyle(
+                    style: const TextStyle(
                       overflow: TextOverflow.ellipsis,
                       fontSize: 20,
                     ),
@@ -63,7 +63,7 @@ class ReactionsRow extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: IconButton(
                     iconSize: 35,
-                    icon: Icon(Icons.add),
+                    icon: const Icon(Icons.add),
                     onPressed: onAddPressed,
                   ),
                 ),
@@ -75,11 +75,12 @@ class ReactionsRow extends StatelessWidget {
             spacing: 8,
             runSpacing: 4,
             children: emojis.map((e) => ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(40)),
+                borderRadius: const BorderRadius.all(Radius.circular(40)),
                 child: Material(
                   color: onReactionPressed != null
-                    ? Color(0xff2993FB)
-                    : Color(0xff757575),
+                    // TODO: Move to ui/constants.dart
+                    ? const Color(0xff2993FB)
+                    : const Color(0xff757575),
                   child: InkWell(
                     onTap: onReactionPressed != null
                       ? () => onReactionPressed!(e)
@@ -91,7 +92,7 @@ class ReactionsRow extends StatelessWidget {
                       ),
                       child: Text(
                         e,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 25,
                         ),
                       ),

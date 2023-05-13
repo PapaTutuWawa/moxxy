@@ -2,13 +2,9 @@
 // TODO(Unknown): The timestamp is too small
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
-import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
-import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
-import 'package:moxxyv2/ui/widgets/chat/reactionbubble.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactions/list.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
@@ -177,10 +173,10 @@ class ChatBubbleState extends State<ChatBubble>
       padding: const EdgeInsets.only(top: 1),
       child: InkWell(
         onTap: () {
-          showModalBottomSheet(
+          showModalBottomSheet<void>(
             context: context,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(textfieldRadiusRegular),
               ),
@@ -195,8 +191,9 @@ class ChatBubbleState extends State<ChatBubble>
         },
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Color(0xff757575).withOpacity(0.57),
-            borderRadius: BorderRadius.all(Radius.circular(40)),
+            // TODO: Move to ui/constants.dart
+            color: const Color(0xff757575).withOpacity(0.57),
+            borderRadius: const BorderRadius.all(Radius.circular(40)),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -212,13 +209,13 @@ class ChatBubbleState extends State<ChatBubble>
                   widget.message.reactionsPreview.length == 6
                     ? widget.message.reactionsPreview.sublist(0, 6).join(' ')
                     : widget.message.reactionsPreview.join(' '),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 25,
                   ),
                 ),
 
                 if (widget.message.reactionsPreview.length == 6)
-                  Icon(
+                  const Icon(
                     Icons.more_horiz,
                     size: 25,
                   ),
