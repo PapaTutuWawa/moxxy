@@ -265,6 +265,15 @@ files:
           messages:
             type: List<Message>
             deserialise: true
+      # Returned by [GetReactionsForMessageCommand]
+      - name: ReactionsForMessageResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          reactions:
+            type: List<ReactionGroup>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -558,6 +567,12 @@ files:
           conversationJid: String
           olderThan: bool
           timestamp: int?
+      - name: GetReactionsForMessageCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          messageId: int
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

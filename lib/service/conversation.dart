@@ -79,6 +79,7 @@ class ConversationService {
         lastMessage = await GetIt.I.get<MessageService>().getMessageById(
               c['lastMessageId']! as int,
               jid,
+              queryReactionPreview: false,
             );
       }
 

@@ -35,6 +35,7 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
@@ -98,6 +99,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
       EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
+      EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1187,6 +1189,35 @@ Future<void> performGetPagedSharedMedia(
   sendEvent(
     PagedMessagesResultEvent(
       messages: result,
+    ),
+    id: id,
+  );
+}
+
+Future<void> performGetReactions(
+  GetReactionsForMessageCommand command, {
+  dynamic extra,
+}) async {
+  final id = extra as String;
+
+  final reactionsRaw = await GetIt.I.get<ReactionsService>().getReactionsForMessage(
+    command.messageId,
+  );
+  final reactionsMap = <String, List<String>>{};
+  for (final reaction in reactionsRaw) {
+    if (reactionsMap.containsKey(reaction.senderJid)) {
+      reactionsMap[reaction.senderJid]!.add(reaction.emoji);
+    } else {
+      reactionsMap[reaction.senderJid] = List<String>.from([reaction.emoji]);
+    }
+  }
+
+  sendEvent(
+    ReactionsForMessageResult(
+      reactions: reactionsMap.entries.map((entry) => ReactionGroup(
+          entry.key,
+          entry.value,
+      )).toList(),
     ),
     id: id,
   );
