@@ -21,7 +21,8 @@ class ReactionList extends StatelessWidget {
   final String conversationJid;
 
   @override
-  Widget build(BuildContext context) {return FutureBuilder<BackgroundEvent?>(
+  Widget build(BuildContext context) {
+    return FutureBuilder<BackgroundEvent?>(
       future: MoxplatformPlugin.handler.getDataSender().sendData(
             GetReactionsForMessageCommand(
               messageId: messageId,

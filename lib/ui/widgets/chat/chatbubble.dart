@@ -243,15 +243,10 @@ class ChatBubbleState extends State<ChatBubble>
             children: [
               Positioned(
                 bottom: 10,
-                right: widget.sentBySelf
-                  ? 0
-                  : null,
-                left: widget.sentBySelf
-                  ? null
-                  : 0,
+                right: widget.sentBySelf ? 0 : null,
+                left: widget.sentBySelf ? null : 0,
                 child: ReactionsPreview(widget.message, widget.sentBySelf),
               ),
-              
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: widget.sentBySelf
@@ -262,7 +257,6 @@ class ChatBubbleState extends State<ChatBubble>
                     onLongPressStart: widget.onLongPressed,
                     child: widget.bubble,
                   ),
-
                   if (widget.message.reactionsPreview.isNotEmpty)
                     // This SizedBox ensures that we have a proper bottom padding for the
                     // reaction preview, but also ensure that the Stack is wide enough

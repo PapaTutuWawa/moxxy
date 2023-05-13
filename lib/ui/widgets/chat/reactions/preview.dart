@@ -41,17 +41,12 @@ class ReactionsPreview extends StatelessWidget {
       },
       child: DecoratedBox(
         decoration: BoxDecoration(
-          // TODO: Move to ui/constants.dart
-          color: const Color(0xff757575),
+          color: reactionColorReceived,
           borderRadius: BorderRadius.only(
-            topLeft: sentBySelf
-              ? Radius.circular(40)
-              : Radius.zero,
-            topRight: sentBySelf
-              ? Radius.zero
-              : Radius.circular(40),
-            bottomLeft: Radius.circular(40),
-            bottomRight: Radius.circular(40),
+            topLeft: sentBySelf ? const Radius.circular(40) : Radius.zero,
+            topRight: sentBySelf ? Radius.zero : const Radius.circular(40),
+            bottomLeft: const Radius.circular(40),
+            bottomRight: const Radius.circular(40),
           ),
         ),
         child: Padding(
@@ -68,17 +63,17 @@ class ReactionsPreview extends StatelessWidget {
                 // Only show 5 reactions. The last one is just for indicating that
                 // there are more reactions.
                 message.reactionsPreview.length == 6
-                  ? message.reactionsPreview.sublist(0, 6).join(' ')
-                  : message.reactionsPreview.join(' '),
+                    ? message.reactionsPreview.sublist(0, 6).join(' ')
+                    : message.reactionsPreview.join(' '),
                 style: const TextStyle(
                   fontSize: 20,
                 ),
               ),
               if (message.reactionsPreview.length == 6)
-              const Icon(
-                Icons.more_horiz,
-                size: 20,
-              ),
+                const Icon(
+                  Icons.more_horiz,
+                  size: 20,
+                ),
             ],
           ),
         ),

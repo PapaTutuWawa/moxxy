@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
 /// Callback for when a reaction has been tapped. The parameter is the emoji of the
 /// reaction that was tapped.
@@ -79,9 +80,8 @@ class ReactionsRow extends StatelessWidget {
                     borderRadius: const BorderRadius.all(Radius.circular(40)),
                     child: Material(
                       color: onReactionPressed != null
-                          // TODO: Move to ui/constants.dart
-                          ? const Color(0xff2993FB)
-                          : const Color(0xff757575),
+                          ? reactionColorSent
+                          : reactionColorReceived,
                       child: InkWell(
                         onTap: onReactionPressed != null
                             ? () => onReactionPressed!(e)
