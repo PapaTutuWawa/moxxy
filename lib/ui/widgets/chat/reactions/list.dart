@@ -15,21 +15,24 @@ import 'package:moxxyv2/ui/widgets/chat/reactions/row.dart';
 /// that reaction group is at index 0. If no reactions from our JID are included, insert
 /// a new group with an empty emoji list at index 0.
 @visibleForTesting
-List<ReactionGroup> ensureReactionGroupOrder(List<ReactionGroup> group, String ownJid) {
+List<ReactionGroup> ensureReactionGroupOrder(
+  List<ReactionGroup> group,
+  String ownJid,
+) {
   final ownReactionIndex = group.indexWhere((r) => r.jid == ownJid);
   return ownReactionIndex == -1
-    ? [
-        ReactionGroup(
-        ownJid,
-        [],
-        ),
-        ...group,
-    ]
-    : [
-        group[ownReactionIndex],
-        ...group.sublist(0, ownReactionIndex),
-        ...group.sublist(ownReactionIndex + 1),
-    ];
+      ? [
+          ReactionGroup(
+            ownJid,
+            [],
+          ),
+          ...group,
+        ]
+      : [
+          group[ownReactionIndex],
+          ...group.sublist(0, ownReactionIndex),
+          ...group.sublist(ownReactionIndex + 1),
+        ];
 }
 
 /// Displays the reactions to a message and allows modifying the reactions.
@@ -73,23 +76,23 @@ class ReactionList extends StatelessWidget {
           itemBuilder: (context, index) {
             final reaction = reactions[index];
             final ownReaction = reaction.jid == ownJid;
-            final conversation = ownReaction ? null : bloc.getConversationByJid(reaction.jid);
+            final conversation =
+                ownReaction ? null : bloc.getConversationByJid(reaction.jid);
             return ReactionsRow(
               avatar: ownReaction
-                ? AvatarWrapper(
-                  avatarUrl: bloc.state.avatarUrl,
-                  radius: 35,
-                  altIcon: Icons.person,
-                )
-                : AvatarWrapper(
-                  avatarUrl: conversation?.avatarUrl,
-                  radius: 35,
-                  altIcon: Icons.person,
-                ),
-              displayName:
-                  reaction.jid == ownJid
-                    ? t.messages.you
-                    : conversation?.title ?? reaction.jid,
+                  ? AvatarWrapper(
+                      avatarUrl: bloc.state.avatarUrl,
+                      radius: 35,
+                      altIcon: Icons.person,
+                    )
+                  : AvatarWrapper(
+                      avatarUrl: conversation?.avatarUrl,
+                      radius: 35,
+                      altIcon: Icons.person,
+                    ),
+              displayName: reaction.jid == ownJid
+                  ? t.messages.you
+                  : conversation?.title ?? reaction.jid,
               emojis: reaction.emojis,
               onAddPressed: reaction.jid == ownJid
                   ? () async {
