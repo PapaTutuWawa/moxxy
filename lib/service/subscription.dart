@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
 
 class SubscriptionRequestService {
@@ -8,15 +10,18 @@ class SubscriptionRequestService {
 
   final Lock _lock = Lock();
 
-  DatabaseService get _db => GetIt.I.get<DatabaseService>();
-
   /// Only load data from the database into
   /// [SubscriptionRequestService._subscriptionRequests] when the cache has not yet
   /// been loaded.
   Future<void> _loadSubscriptionRequestsIfNeeded() async {
     await _lock.synchronized(() async {
       _subscriptionRequests ??= List<String>.from(
-        await _db.getSubscriptionRequests(),
+        (await GetIt.I
+                .get<DatabaseService>()
+                .database
+                .query(subscriptionsTable))
+            .map((m) => m['jid']! as String)
+            .toList(),
       );
     });
   }
@@ -33,7 +38,13 @@ class SubscriptionRequestService {
       if (!_subscriptionRequests!.contains(jid)) {
         _subscriptionRequests!.add(jid);
 
-        await _db.addSubscriptionRequest(jid);
+        await GetIt.I.get<DatabaseService>().database.insert(
+              subscriptionsTable,
+              {
+                'jid': jid,
+              },
+              conflictAlgorithm: ConflictAlgorithm.ignore,
+            );
       }
     });
   }
@@ -44,7 +55,11 @@ class SubscriptionRequestService {
     await _lock.synchronized(() async {
       if (_subscriptionRequests!.contains(jid)) {
         _subscriptionRequests!.remove(jid);
-        await _db.removeSubscriptionRequest(jid);
+        await GetIt.I.get<DatabaseService>().database.delete(
+          subscriptionsTable,
+          where: 'jid = ?',
+          whereArgs: [jid],
+        );
       }
     });
   }

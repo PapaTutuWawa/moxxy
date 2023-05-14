@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/preferences.dart';
@@ -125,7 +126,8 @@ class ConversationService {
     _conversationCache![conversation.jid] = conversation;
   }
 
-  /// Wrapper around [DatabaseService]'s [updateConversation] that modifies the cache.
+  /// Updates the conversation with JID [jid] inside the database.
+  ///
   /// To prevent issues with the cache, only call from within
   /// [ConversationService.createOrUpdateConversation].
   Future<Conversation> updateConversation(
@@ -143,21 +145,56 @@ class ConversationService {
     Object? contactDisplayName = notSpecified,
   }) async {
     final conversation = (await _getConversationByJid(jid))!;
-    var newConversation =
-        await GetIt.I.get<DatabaseService>().updateConversation(
-              jid,
-              lastMessage: lastMessage,
-              lastChangeTimestamp: lastChangeTimestamp,
-              open: open,
-              unreadCounter: unreadCounter,
-              avatarUrl: avatarUrl,
-              chatState: conversation.chatState,
-              muted: muted,
-              encrypted: encrypted,
-              contactId: contactId,
-              contactAvatarPath: contactAvatarPath,
-              contactDisplayName: contactDisplayName,
-            );
+
+    final c = <String, dynamic>{};
+
+    if (lastMessage != null) {
+      c['lastMessageId'] = lastMessage.id;
+    }
+    if (lastChangeTimestamp != null) {
+      c['lastChangeTimestamp'] = lastChangeTimestamp;
+    }
+    if (open != null) {
+      c['open'] = boolToInt(open);
+    }
+    if (unreadCounter != null) {
+      c['unreadCounter'] = unreadCounter;
+    }
+    if (avatarUrl != null) {
+      c['avatarUrl'] = avatarUrl;
+    }
+    if (muted != null) {
+      c['muted'] = boolToInt(muted);
+    }
+    if (encrypted != null) {
+      c['encrypted'] = boolToInt(encrypted);
+    }
+    if (contactId != notSpecified) {
+      c['contactId'] = contactId as String?;
+    }
+    if (contactAvatarPath != notSpecified) {
+      c['contactAvatarPath'] = contactAvatarPath as String?;
+    }
+    if (contactDisplayName != notSpecified) {
+      c['contactDisplayName'] = contactDisplayName as String?;
+    }
+
+    final result =
+        await GetIt.I.get<DatabaseService>().database.updateAndReturn(
+      conversationsTable,
+      c,
+      where: 'jid = ?',
+      whereArgs: [jid],
+    );
+
+    final rosterItem =
+        await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
+    var newConversation = Conversation.fromDatabaseJson(
+      result,
+      rosterItem != null,
+      rosterItem?.subscription ?? 'none',
+      lastMessage,
+    );
 
     // Copy over the old lastMessage if a new one was not set
     if (conversation.lastMessage != null && lastMessage == null) {
@@ -169,8 +206,9 @@ class ConversationService {
     return newConversation;
   }
 
-  /// Wrapper around [DatabaseService]'s [addConversationFromData] that updates the
-  /// cache.
+  /// Creates a [Conversation] inside the database given the data. This is so that the
+  /// [Conversation] object can carry its database id.
+  ///
   /// To prevent issues with the cache, only call from within
   /// [ConversationService.createOrUpdateConversation].
   Future<Conversation> addConversationFromData(
@@ -188,22 +226,30 @@ class ConversationService {
     String? contactAvatarPath,
     String? contactDisplayName,
   ) async {
-    final newConversation =
-        await GetIt.I.get<DatabaseService>().addConversationFromData(
-              title,
-              lastMessage,
-              type,
-              avatarUrl,
-              jid,
-              unreadCounter,
-              lastChangeTimestamp,
-              open,
-              muted,
-              encrypted,
-              contactId,
-              contactAvatarPath,
-              contactDisplayName,
-            );
+    final rosterItem =
+        await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
+    final newConversation = Conversation(
+      title,
+      lastMessage,
+      avatarUrl,
+      jid,
+      unreadCounter,
+      type,
+      lastChangeTimestamp,
+      open,
+      rosterItem != null && !rosterItem.pseudoRosterItem,
+      rosterItem?.subscription ?? 'none',
+      muted,
+      encrypted,
+      ChatState.gone,
+      contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
+    );
+    await GetIt.I.get<DatabaseService>().database.insert(
+          conversationsTable,
+          newConversation.toDatabaseJson(),
+        );
 
     if (_conversationCache != null) {
       _conversationCache![newConversation.jid] = newConversation;

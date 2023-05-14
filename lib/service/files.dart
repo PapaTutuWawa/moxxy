@@ -106,14 +106,14 @@ class FilesService {
       return fm;
     }
 
-    final result = await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
-          metadata.copyWith(
-            plaintextHashes: {
-              ...metadata.plaintextHashes ?? {},
-              'SHA-256': hash,
-            },
-          ),
-        );
+    final result = await addFileMetadataFromData(
+      metadata.copyWith(
+        plaintextHashes: {
+          ...metadata.plaintextHashes ?? {},
+          'SHA-256': hash,
+        },
+      ),
+    );
     await createMetadataHashEntries(result.plaintextHashes!, result.id);
     return result;
   }
@@ -325,5 +325,16 @@ class FilesService {
         'Not removing file as $messagesCount messages and $stickersCount stickers reference this file',
       );
     }
+  }
+
+  Future<FileMetadata> addFileMetadataFromData(
+    FileMetadata metadata,
+  ) async {
+    final result =
+        await GetIt.I.get<DatabaseService>().database.insertAndReturn(
+              fileMetadataTable,
+              metadata.toDatabaseJson(),
+            );
+    return FileMetadata.fromDatabaseJson(result);
   }
 }

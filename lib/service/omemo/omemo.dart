@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
@@ -16,6 +19,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart' as model;
 import 'package:omemo_dart/omemo_dart.dart';
+import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
 
 class OmemoDoubleRatchetWrapper {
@@ -40,21 +44,19 @@ class OmemoService {
     final done = await _lock.synchronized(() => _initialized);
     if (done) return;
 
-    final db = GetIt.I.get<DatabaseService>();
-    final device = await db.loadOmemoDevice(jid);
+    final device = await _loadOmemoDevice(jid);
     final ratchetMap = <RatchetMapKey, OmemoDoubleRatchet>{};
     final deviceList = <String, List<int>>{};
     if (device == null) {
       _log.info('No OMEMO marker found. Generating OMEMO identity...');
     } else {
       _log.info('OMEMO marker found. Restoring OMEMO state...');
-      for (final ratchet
-          in await GetIt.I.get<DatabaseService>().loadRatchets()) {
+      for (final ratchet in await _loadRatchets()) {
         final key = RatchetMapKey(ratchet.jid, ratchet.id);
         ratchetMap[key] = ratchet.ratchet;
       }
 
-      deviceList.addAll(await db.loadOmemoDeviceList());
+      deviceList.addAll(await _loadOmemoDeviceList());
     }
 
     final om = GetIt.I
@@ -82,18 +84,18 @@ class OmemoService {
 
     omemoManager.eventStream.listen((event) async {
       if (event is RatchetModifiedEvent) {
-        await GetIt.I.get<DatabaseService>().saveRatchet(
-              OmemoDoubleRatchetWrapper(
-                event.ratchet,
-                event.deviceId,
-                event.jid,
-              ),
-            );
+        await _saveRatchet(
+          OmemoDoubleRatchetWrapper(
+            event.ratchet,
+            event.deviceId,
+            event.jid,
+          ),
+        );
 
         if (event.added) {
           // Cache the fingerprint
           final fingerprint = await event.ratchet.getOmemoFingerprint();
-          await GetIt.I.get<DatabaseService>().addFingerprintsToCache([
+          await _addFingerprintsToCache([
             OmemoCacheTriple(
               event.jid,
               event.deviceId,
@@ -170,7 +172,7 @@ class OmemoService {
     final oldId = await omemoManager.getDeviceId();
 
     // Clear the database
-    await GetIt.I.get<DatabaseService>().emptyOmemoSessionTables();
+    await _emptyOmemoSessionTables();
 
     // Regenerate the identity in the background
     final device = await compute(generateNewIdentityImpl, jid);
@@ -227,11 +229,11 @@ class OmemoService {
   }
 
   Future<void> commitDeviceMap(Map<String, List<int>> deviceMap) async {
-    await GetIt.I.get<DatabaseService>().saveOmemoDeviceList(deviceMap);
+    await _saveOmemoDeviceList(deviceMap);
   }
 
   Future<void> commitDevice(OmemoDevice device) async {
-    await GetIt.I.get<DatabaseService>().saveOmemoDevice(device);
+    await _saveOmemoDevice(device);
   }
 
   /// Requests our device list and checks if the current device is in it. If not, then
@@ -304,7 +306,7 @@ class OmemoService {
       _fingerprintCache[bareJid] = map;
 
       // Cache them in the database
-      await GetIt.I.get<DatabaseService>().addFingerprintsToCache(items);
+      await _addFingerprintsToCache(items);
     }
   }
 
@@ -312,9 +314,7 @@ class OmemoService {
     final bareJid = jid.toBare().toString();
     if (!_fingerprintCache.containsKey(bareJid)) {
       // First try to load it from the database
-      final triples = await GetIt.I
-          .get<DatabaseService>()
-          .getFingerprintsFromCache(bareJid);
+      final triples = await _getFingerprintsFromCache(bareJid);
       if (triples.isEmpty) {
         // We found no fingerprints in the database, so try to fetch them
         await _fetchFingerprintsAndCache(jid);
@@ -360,23 +360,22 @@ class OmemoService {
   }
 
   Future<void> commitTrustManager(Map<String, dynamic> json) async {
-    await GetIt.I.get<DatabaseService>().saveTrustCache(
-          json['trust']! as Map<String, int>,
-        );
-    await GetIt.I.get<DatabaseService>().saveTrustEnablementList(
-          json['enable']! as Map<String, bool>,
-        );
-    await GetIt.I.get<DatabaseService>().saveTrustDeviceList(
-          json['devices']! as Map<String, List<int>>,
-        );
+    await _saveTrustCache(
+      json['trust']! as Map<String, int>,
+    );
+    await _saveTrustEnablementList(
+      json['enable']! as Map<String, bool>,
+    );
+    await _saveTrustDeviceList(
+      json['devices']! as Map<String, List<int>>,
+    );
   }
 
   Future<MoxxyBTBVTrustManager> loadTrustManager() async {
-    final db = GetIt.I.get<DatabaseService>();
     return MoxxyBTBVTrustManager(
-      await db.loadTrustCache(),
-      await db.loadTrustEnablementList(),
-      await db.loadTrustDeviceList(),
+      await _loadTrustCache(),
+      await _loadTrustEnablementList(),
+      await _loadTrustDeviceList(),
     );
   }
 
@@ -453,5 +452,302 @@ class OmemoService {
     if (_initialized) {
       omemoManager.onNewConnection();
     }
+  }
+
+  /// Database methods
+
+  Future<List<OmemoDoubleRatchetWrapper>> _loadRatchets() async {
+    final results =
+        await GetIt.I.get<DatabaseService>().database.query(omemoRatchetsTable);
+
+    return results.map((ratchet) {
+      final json = jsonDecode(ratchet['mkskipped']! as String) as List<dynamic>;
+      final mkskipped = List<Map<String, dynamic>>.empty(growable: true);
+      for (final i in json) {
+        final element = i as Map<String, dynamic>;
+        mkskipped.add({
+          'key': element['key']! as String,
+          'public': element['public']! as String,
+          'n': element['n']! as int,
+        });
+      }
+
+      return OmemoDoubleRatchetWrapper(
+        OmemoDoubleRatchet.fromJson(
+          {
+            ...ratchet,
+            'acknowledged': intToBool(ratchet['acknowledged']! as int),
+            'mkskipped': mkskipped,
+          },
+        ),
+        ratchet['id']! as int,
+        ratchet['jid']! as String,
+      );
+    }).toList();
+  }
+
+  Future<void> _saveRatchet(OmemoDoubleRatchetWrapper ratchet) async {
+    final json = await ratchet.ratchet.toJson();
+    await GetIt.I.get<DatabaseService>().database.insert(
+          omemoRatchetsTable,
+          {
+            ...json,
+            'mkskipped': jsonEncode(json['mkskipped']),
+            'acknowledged': boolToInt(json['acknowledged']! as bool),
+            'jid': ratchet.jid,
+            'id': ratchet.id,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+  }
+
+  Future<Map<RatchetMapKey, BTBVTrustState>> _loadTrustCache() async {
+    final entries = await GetIt.I
+        .get<DatabaseService>()
+        .database
+        .query(omemoTrustCacheTable);
+
+    final mapEntries =
+        entries.map<MapEntry<RatchetMapKey, BTBVTrustState>>((entry) {
+      // TODO(PapaTutuWawa): Expose this from omemo_dart
+      BTBVTrustState state;
+      final value = entry['trust']! as int;
+      if (value == 1) {
+        state = BTBVTrustState.notTrusted;
+      } else if (value == 2) {
+        state = BTBVTrustState.blindTrust;
+      } else if (value == 3) {
+        state = BTBVTrustState.verified;
+      } else {
+        state = BTBVTrustState.notTrusted;
+      }
+
+      return MapEntry(
+        RatchetMapKey.fromJsonKey(entry['key']! as String),
+        state,
+      );
+    });
+
+    return Map.fromEntries(mapEntries);
+  }
+
+  Future<void> _saveTrustCache(Map<String, int> cache) async {
+    final batch = GetIt.I.get<DatabaseService>().database.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustCacheTable);
+    for (final entry in cache.entries) {
+      batch.insert(
+        omemoTrustCacheTable,
+        {
+          'key': entry.key,
+          'trust': entry.value,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit();
+  }
+
+  Future<Map<RatchetMapKey, bool>> _loadTrustEnablementList() async {
+    final entries = await GetIt.I
+        .get<DatabaseService>()
+        .database
+        .query(omemoTrustEnableListTable);
+
+    final mapEntries = entries.map<MapEntry<RatchetMapKey, bool>>((entry) {
+      return MapEntry(
+        RatchetMapKey.fromJsonKey(entry['key']! as String),
+        intToBool(entry['enabled']! as int),
+      );
+    });
+
+    return Map.fromEntries(mapEntries);
+  }
+
+  Future<void> _saveTrustEnablementList(Map<String, bool> list) async {
+    final batch = GetIt.I.get<DatabaseService>().database.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustEnableListTable);
+    for (final entry in list.entries) {
+      batch.insert(
+        omemoTrustEnableListTable,
+        {
+          'key': entry.key,
+          'enabled': boolToInt(entry.value),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await batch.commit();
+  }
+
+  Future<Map<String, List<int>>> _loadTrustDeviceList() async {
+    final entries = await GetIt.I
+        .get<DatabaseService>()
+        .database
+        .query(omemoTrustDeviceListTable);
+
+    final map = <String, List<int>>{};
+    for (final entry in entries) {
+      final key = entry['jid']! as String;
+      final device = entry['device']! as int;
+
+      if (map.containsKey(key)) {
+        map[key]!.add(device);
+      } else {
+        map[key] = [device];
+      }
+    }
+
+    return map;
+  }
+
+  Future<void> _saveTrustDeviceList(Map<String, List<int>> list) async {
+    final batch = GetIt.I.get<DatabaseService>().database.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoTrustDeviceListTable);
+    for (final entry in list.entries) {
+      for (final device in entry.value) {
+        batch.insert(
+          omemoTrustDeviceListTable,
+          {
+            'jid': entry.key,
+            'device': device,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    }
+
+    await batch.commit();
+  }
+
+  Future<void> _saveOmemoDevice(OmemoDevice device) async {
+    await GetIt.I.get<DatabaseService>().database.insert(
+          omemoDeviceTable,
+          {
+            'jid': device.jid,
+            'id': device.id,
+            'data': jsonEncode(await device.toJson()),
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+  }
+
+  Future<OmemoDevice?> _loadOmemoDevice(String jid) async {
+    final data = await GetIt.I.get<DatabaseService>().database.query(
+          omemoDeviceTable,
+          where: 'jid = ?',
+          whereArgs: [jid],
+          limit: 1,
+        );
+    if (data.isEmpty) return null;
+
+    final deviceJson =
+        jsonDecode(data.first['data']! as String) as Map<String, dynamic>;
+    // NOTE: We need to do this because Dart otherwise complains about not being able
+    //       to cast dynamic to List<int>.
+    final opks = List<Map<String, dynamic>>.empty(growable: true);
+    final opksIter = deviceJson['opks']! as List<dynamic>;
+    for (final tmpOpk in opksIter) {
+      final opk = tmpOpk as Map<String, dynamic>;
+      opks.add(<String, dynamic>{
+        'id': opk['id']! as int,
+        'public': opk['public']! as String,
+        'private': opk['private']! as String,
+      });
+    }
+    deviceJson['opks'] = opks;
+    return OmemoDevice.fromJson(deviceJson);
+  }
+
+  Future<Map<String, List<int>>> _loadOmemoDeviceList() async {
+    final list = await GetIt.I
+        .get<DatabaseService>()
+        .database
+        .query(omemoDeviceListTable);
+    final map = <String, List<int>>{};
+    for (final entry in list) {
+      final key = entry['jid']! as String;
+      final id = entry['id']! as int;
+
+      if (map.containsKey(key)) {
+        map[key]!.add(id);
+      } else {
+        map[key] = [id];
+      }
+    }
+
+    return map;
+  }
+
+  Future<void> _saveOmemoDeviceList(Map<String, List<int>> list) async {
+    final batch = GetIt.I.get<DatabaseService>().database.batch();
+
+    // ignore: cascade_invocations
+    batch.delete(omemoDeviceListTable);
+    for (final entry in list.entries) {
+      for (final id in entry.value) {
+        batch.insert(
+          omemoDeviceListTable,
+          {
+            'jid': entry.key,
+            'id': id,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+    }
+
+    await batch.commit();
+  }
+
+  Future<void> _emptyOmemoSessionTables() async {
+    final batch = GetIt.I.get<DatabaseService>().database.batch();
+
+    // ignore: cascade_invocations
+    batch
+      ..delete(omemoRatchetsTable)
+      ..delete(omemoTrustCacheTable)
+      ..delete(omemoTrustEnableListTable);
+
+    await batch.commit();
+  }
+
+  Future<void> _addFingerprintsToCache(List<OmemoCacheTriple> items) async {
+    final batch = GetIt.I.get<DatabaseService>().database.batch();
+    for (final item in items) {
+      batch.insert(
+        omemoFingerprintCache,
+        <String, dynamic>{
+          'jid': item.jid,
+          'id': item.deviceId,
+          'fingerprint': item.fingerprint,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit();
+  }
+
+  Future<List<OmemoCacheTriple>> _getFingerprintsFromCache(String jid) async {
+    final rawItems = await GetIt.I.get<DatabaseService>().database.query(
+      omemoFingerprintCache,
+      where: 'jid = ?',
+      whereArgs: [jid],
+    );
+
+    return rawItems.map((item) {
+      return OmemoCacheTriple(
+        jid,
+        item['id']! as int,
+        item['fingerprint']! as String,
+      );
+    }).toList();
   }
 }

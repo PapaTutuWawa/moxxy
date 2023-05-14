@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -14,6 +15,23 @@ class BlocklistService {
   bool _requested = false;
   bool? _supported;
   final Logger _log = Logger('BlocklistService');
+
+  Future<void> _removeBlocklistEntry(String jid) async {
+    await GetIt.I.get<DatabaseService>().database.delete(
+      blocklistTable,
+      where: 'jid = ?',
+      whereArgs: [jid],
+    );
+  }
+
+  Future<void> _addBlocklistEntry(String jid) async {
+    await GetIt.I.get<DatabaseService>().database.insert(
+      blocklistTable,
+      {
+        'jid': jid,
+      },
+    );
+  }
 
   void onNewConnection() {
     // Invalidate the caches
@@ -49,10 +67,9 @@ class BlocklistService {
     // Diff the received blocklist with the cache
     final newItems = List<String>.empty(growable: true);
     final removedItems = List<String>.empty(growable: true);
-    final db = GetIt.I.get<DatabaseService>();
     for (final item in blocklist) {
       if (!_blocklist!.contains(item)) {
-        await db.addBlocklistEntry(item);
+        await _addBlocklistEntry(item);
         _blocklist!.add(item);
         newItems.add(item);
       }
@@ -61,7 +78,7 @@ class BlocklistService {
     // Diff the cache with the received blocklist
     for (final item in _blocklist!) {
       if (!blocklist.contains(item)) {
-        await db.removeBlocklistEntry(item);
+        await _removeBlocklistEntry(item);
         _blocklist!.remove(item);
         removedItems.add(item);
       }
@@ -83,7 +100,9 @@ class BlocklistService {
   /// Returns the blocklist from the database
   Future<List<String>> getBlocklist() async {
     if (_blocklist == null) {
-      _blocklist = await GetIt.I.get<DatabaseService>().getBlocklistEntries();
+      final blocklistRaw =
+          await GetIt.I.get<DatabaseService>().database.query(blocklistTable);
+      _blocklist = blocklistRaw.map((m) => m['jid']! as String).toList();
 
       if (!_requested) {
         unawaited(_requestBlocklist());
@@ -120,7 +139,7 @@ class BlocklistService {
             _blocklist!.add(item);
             newBlocks.add(item);
 
-            await GetIt.I.get<DatabaseService>().addBlocklistEntry(item);
+            await _addBlocklistEntry(item);
           }
           break;
         case BlockPushType.unblock:
@@ -128,7 +147,7 @@ class BlocklistService {
             _blocklist!.removeWhere((i) => i == item);
             removedBlocks.add(item);
 
-            await GetIt.I.get<DatabaseService>().removeBlocklistEntry(item);
+            await _removeBlocklistEntry(item);
           }
           break;
       }
@@ -150,7 +169,7 @@ class BlocklistService {
     }
 
     _blocklist!.add(jid);
-    await GetIt.I.get<DatabaseService>().addBlocklistEntry(jid);
+    await _addBlocklistEntry(jid);
     return GetIt.I
         .get<XmppConnection>()
         .getManagerById<BlockingManager>(blockingManager)!
@@ -165,7 +184,7 @@ class BlocklistService {
     }
 
     _blocklist!.remove(jid);
-    await GetIt.I.get<DatabaseService>().removeBlocklistEntry(jid);
+    await _removeBlocklistEntry(jid);
     return GetIt.I
         .get<XmppConnection>()
         .getManagerById<BlockingManager>(blockingManager)!
@@ -182,7 +201,8 @@ class BlocklistService {
     }
 
     _blocklist!.clear();
-    await GetIt.I.get<DatabaseService>().removeAllBlocklistEntries();
+    await GetIt.I.get<DatabaseService>().database.delete(blocklistTable);
+
     return GetIt.I
         .get<XmppConnection>()
         .getManagerById<BlockingManager>(blockingManager)!

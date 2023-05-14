@@ -15,7 +15,6 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -520,7 +519,7 @@ class XmppService {
       }
 
       final metadata =
-          await GetIt.I.get<DatabaseService>().addFileMetadataFromData(
+          await GetIt.I.get<FilesService>().addFileMetadataFromData(
                 FileMetadata(
                   DateTime.now().millisecondsSinceEpoch.toString(),
                   path,

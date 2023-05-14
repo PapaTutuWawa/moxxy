@@ -3,7 +3,9 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/contacts.dart';
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/subscription.dart';
@@ -42,19 +44,28 @@ class RosterService {
     String? contactDisplayName, {
     List<String> groups = const [],
   }) async {
-    final item = await GetIt.I.get<DatabaseService>().addRosterItemFromData(
-          avatarUrl,
-          avatarHash,
-          jid,
-          title,
-          subscription,
-          ask,
-          pseudoRosterItem,
-          contactId,
-          contactAvatarPath,
-          contactDisplayName,
-          groups: groups,
-        );
+    // TODO(PapaTutuWawa): Handle groups
+    final i = RosterItem(
+      -1,
+      avatarUrl,
+      avatarHash,
+      jid,
+      title,
+      subscription,
+      ask,
+      pseudoRosterItem,
+      <String>[],
+      contactId: contactId,
+      contactAvatarPath: contactAvatarPath,
+      contactDisplayName: contactDisplayName,
+    );
+
+    final item = i.copyWith(
+      id: await GetIt.I
+          .get<DatabaseService>()
+          .database
+          .insert(rosterTable, i.toDatabaseJson()),
+    );
 
     // Update the cache
     _rosterCache![item.jid] = item;
@@ -76,19 +87,49 @@ class RosterService {
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
   }) async {
-    final newItem = await GetIt.I.get<DatabaseService>().updateRosterItem(
-          id,
-          avatarUrl: avatarUrl,
-          avatarHash: avatarHash,
-          title: title,
-          subscription: subscription,
-          ask: ask,
-          pseudoRosterItem: pseudoRosterItem,
-          groups: groups,
-          contactId: contactId,
-          contactAvatarPath: contactAvatarPath,
-          contactDisplayName: contactDisplayName,
-        );
+    final i = <String, dynamic>{};
+
+    if (avatarUrl != null) {
+      i['avatarUrl'] = avatarUrl;
+    }
+    if (avatarHash != null) {
+      i['avatarHash'] = avatarHash;
+    }
+    if (title != null) {
+      i['title'] = title;
+    }
+    /*
+    if (groups != null) {
+      i.groups = groups;
+    }
+    */
+    if (subscription != null) {
+      i['subscription'] = subscription;
+    }
+    if (ask != null) {
+      i['ask'] = ask;
+    }
+    if (contactId != notSpecified) {
+      i['contactId'] = contactId as String?;
+    }
+    if (contactAvatarPath != notSpecified) {
+      i['contactAvatarPath'] = contactAvatarPath as String?;
+    }
+    if (contactDisplayName != notSpecified) {
+      i['contactDisplayName'] = contactDisplayName as String?;
+    }
+    if (pseudoRosterItem != notSpecified) {
+      i['pseudoRosterItem'] = boolToInt(pseudoRosterItem as bool);
+    }
+
+    final result =
+        await GetIt.I.get<DatabaseService>().database.updateAndReturn(
+      rosterTable,
+      i,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    final newItem = RosterItem.fromDatabaseJson(result);
 
     // Update cache
     _rosterCache![newItem.jid] = newItem;
@@ -96,10 +137,14 @@ class RosterService {
     return newItem;
   }
 
-  /// Wrapper around [DatabaseService]'s removeRosterItem.
+  /// Removes a roster item from the database and cache
   Future<void> removeRosterItem(int id) async {
     // NOTE: This call ensures that _rosterCache != null
-    await GetIt.I.get<DatabaseService>().removeRosterItem(id);
+    await GetIt.I.get<DatabaseService>().database.delete(
+      rosterTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     assert(_rosterCache != null, '_rosterCache must be non-null');
 
     /// Update cache
@@ -136,14 +181,16 @@ class RosterService {
   /// Load the roster from the database. This function is guarded against loading the
   /// roster multiple times and thus creating too many "RosterDiff" actions.
   Future<List<RosterItem>> loadRosterFromDatabase() async {
-    final items = await GetIt.I.get<DatabaseService>().loadRosterItems();
+    final itemsRaw =
+        await GetIt.I.get<DatabaseService>().database.query(rosterTable);
+    final items = itemsRaw.map(RosterItem.fromDatabaseJson);
 
     _rosterCache = <String, RosterItem>{};
     for (final item in items) {
       _rosterCache![item.jid] = item;
     }
 
-    return items;
+    return items.toList();
   }
 
   /// Attempts to add an item to the roster by first performing the roster set
@@ -169,6 +216,7 @@ class RosterService {
       await css.getProfilePicturePathForJid(jid),
       await css.getContactDisplayName(contactId),
     );
+
     final result = await GetIt.I
         .get<XmppConnection>()
         .getRosterManager()!
