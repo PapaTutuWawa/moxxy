@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -31,7 +32,7 @@ class QuotedStickerWidget extends StatelessWidget {
           size: 48,
           borderRadius: 8,
         ),
-        message.body,
+        t.messages.sticker,
         sent,
         topLeftRadius,
         topRightRadius,
