@@ -41,7 +41,7 @@ class ReactionsPreview extends StatelessWidget {
       },
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: reactionColorReceived,
+          color: reactionColorReceived.withOpacity(0.65),
           borderRadius: BorderRadius.only(
             topLeft: sentBySelf ? const Radius.circular(40) : Radius.zero,
             topRight: sentBySelf ? Radius.zero : const Radius.circular(40),
