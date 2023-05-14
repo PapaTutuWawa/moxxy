@@ -11,6 +11,27 @@ import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactions/row.dart';
 
+/// If a reaction group from our own JID [ownJid] is included in [group], ensure that
+/// that reaction group is at index 0. If no reactions from our JID are included, insert
+/// a new group with an empty emoji list at index 0.
+@visibleForTesting
+List<ReactionGroup> ensureReactionGroupOrder(List<ReactionGroup> group, String ownJid) {
+  final ownReactionIndex = group.indexWhere((r) => r.jid == ownJid);
+  return ownReactionIndex == -1
+    ? [
+        ReactionGroup(
+        ownJid,
+        [],
+        ),
+        ...group,
+    ]
+    : [
+        group[ownReactionIndex],
+        ...group.sublist(0, ownReactionIndex),
+        ...group.sublist(ownReactionIndex + 1),
+    ];
+}
+
 /// Displays the reactions to a message and allows modifying the reactions.
 /// When created, fetches the reactions from the ReactionService.
 class ReactionList extends StatelessWidget {
@@ -40,26 +61,10 @@ class ReactionList extends StatelessWidget {
         final reactionsRaw =
             (snapshot.data! as ReactionsForMessageResult).reactions;
         final ownJid = GetIt.I.get<UIDataService>().ownJid!;
-        final ownReactionIndex =
-            reactionsRaw.indexWhere((r) => r.jid == ownJid);
 
         // Ensure that our own reaction is always at index 0. If we have no reactions,
         // insert a "pseudo" entry so that we can add new reactions.
-        // TODO: Check if this correctly handles our own reaction at index 0 and at
-        //       the last index.
-        final reactions = ownReactionIndex == -1
-            ? [
-                ReactionGroup(
-                  ownJid,
-                  [],
-                ),
-                ...reactionsRaw,
-              ]
-            : [
-                reactionsRaw[ownReactionIndex],
-                ...reactionsRaw.sublist(0, ownReactionIndex),
-                ...reactionsRaw.sublist(ownReactionIndex + 1),
-              ];
+        final reactions = ensureReactionGroupOrder(reactionsRaw, ownJid);
 
         final bloc = GetIt.I.get<ConversationsBloc>();
         return ListView.builder(
