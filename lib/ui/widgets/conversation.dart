@@ -315,6 +315,18 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (sentBySelf && !widget.conversation.isTyping)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              right: 8,
+                            ),
+                            child: Text(
+                              '${t.messages.you}:',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         if ((widget.conversation.lastMessage?.isThumbnailable ??
                                 false) &&
                             !widget.conversation.isTyping)
