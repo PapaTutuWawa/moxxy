@@ -7,12 +7,19 @@ import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 class QuotedVideoWidget extends StatelessWidget {
   const QuotedVideoWidget(
     this.message,
-    this.sent, {
+    this.sent,
+    this.topLeftRadius,
+    this.topRightRadius, {
     this.resetQuote,
     super.key,
   });
   final Message message;
   final bool sent;
+
+  /// Top corner roundings.
+  final double topLeftRadius;
+  final double topRightRadius;
+
   final void Function()? resetQuote;
 
   @override
@@ -28,6 +35,8 @@ class QuotedVideoWidget extends StatelessWidget {
       ),
       t.messages.video,
       sent,
+      topLeftRadius,
+      topRightRadius,
       resetQuote: resetQuote,
     );
   }

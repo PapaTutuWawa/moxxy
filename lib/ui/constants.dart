@@ -5,6 +5,7 @@ const Radius radiusSmall = Radius.circular(4);
 
 const double textfieldRadiusRegular = 15;
 const double textfieldRadiusConversation = 25;
+const double textfieldQuotedMessageRadius = 25 - 10;
 const EdgeInsetsGeometry textfieldPaddingRegular = EdgeInsets.only(
   top: 4,
   bottom: 4,

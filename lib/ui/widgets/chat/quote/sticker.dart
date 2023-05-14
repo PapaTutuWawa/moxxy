@@ -7,13 +7,19 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 class QuotedStickerWidget extends StatelessWidget {
   const QuotedStickerWidget(
     this.message,
-    this.sent, {
+    this.sent,
+    this.topLeftRadius,
+    this.topRightRadius, {
     this.resetQuote,
     super.key,
   });
   final Message message;
   final bool sent;
   final void Function()? resetQuote;
+
+  /// The Radii of upper corners
+  final double topLeftRadius;
+  final double topRightRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +33,8 @@ class QuotedStickerWidget extends StatelessWidget {
         ),
         message.body,
         sent,
+        topLeftRadius,
+        topRightRadius,
         resetQuote: resetQuote,
       );
     } else {
@@ -47,6 +55,8 @@ class QuotedStickerWidget extends StatelessWidget {
           ],
         ),
         sent,
+        topLeftRadius,
+        topRightRadius,
         resetQuotedMessage: resetQuote,
       );
     }

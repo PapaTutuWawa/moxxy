@@ -7,7 +7,9 @@ import 'package:moxxyv2/ui/widgets/chat/quote/helpers.dart';
 class QuotedTextWidget extends StatelessWidget {
   const QuotedTextWidget(
     this.message,
-    this.sent, {
+    this.sent,
+    this.topLeftRadius,
+    this.topRightRadius, {
     this.resetQuote,
     super.key,
   });
@@ -17,6 +19,10 @@ class QuotedTextWidget extends StatelessWidget {
 
   /// Flag indicating whether the message was sent by us or not.
   final bool sent;
+
+  /// The top corner roundings
+  final double topLeftRadius;
+  final double topRightRadius;
 
   /// Optional function to reset the quote display.
   final void Function()? resetQuote;
@@ -45,6 +51,8 @@ class QuotedTextWidget extends StatelessWidget {
         ],
       ),
       sent,
+      topLeftRadius,
+      topRightRadius,
       resetQuotedMessage: resetQuote,
     );
   }

@@ -60,6 +60,8 @@ Widget buildMessageWidget(
   double maxWidth,
   BorderRadius radius,
   bool sent,
+  double topLeftRadius,
+  double topRightRadius,
 ) {
   // Retracted messages are always rendered as a text message
   if (message.isRetracted) {
@@ -67,7 +69,12 @@ Widget buildMessageWidget(
       message,
       sent,
       topWidget: message.quotes != null
-          ? buildQuoteMessageWidget(message.quotes!, sent)
+          ? buildQuoteMessageWidget(
+              message.quotes!,
+              sent,
+              topLeftRadius,
+              topRightRadius,
+            )
           : null,
     );
   }
@@ -79,7 +86,12 @@ Widget buildMessageWidget(
           message,
           sent,
           topWidget: message.quotes != null
-              ? buildQuoteMessageWidget(message.quotes!, sent)
+              ? buildQuoteMessageWidget(
+                  message.quotes!,
+                  sent,
+                  topLeftRadius,
+                  topRightRadius,
+                )
               : null,
         );
       }
@@ -99,22 +111,60 @@ Widget buildMessageWidget(
 /// Build a widget that represents a quoted message within another bubble.
 Widget buildQuoteMessageWidget(
   Message message,
-  bool sent, {
+  bool sent,
+  double topLeftRadius,
+  double topRightRadius, {
   void Function()? resetQuote,
 }) {
   switch (getMessageType(message)) {
     case MessageType.sticker:
-      return QuotedStickerWidget(message, sent, resetQuote: resetQuote);
+      return QuotedStickerWidget(
+        message,
+        sent,
+        topLeftRadius,
+        topRightRadius,
+        resetQuote: resetQuote,
+      );
     case MessageType.text:
-      return QuotedTextWidget(message, sent, resetQuote: resetQuote);
+      return QuotedTextWidget(
+        message,
+        sent,
+        topLeftRadius,
+        topRightRadius,
+        resetQuote: resetQuote,
+      );
     case MessageType.image:
-      return QuotedImageWidget(message, sent, resetQuote: resetQuote);
+      return QuotedImageWidget(
+        message,
+        sent,
+        topLeftRadius,
+        topRightRadius,
+        resetQuote: resetQuote,
+      );
     case MessageType.video:
-      return QuotedVideoWidget(message, sent, resetQuote: resetQuote);
+      return QuotedVideoWidget(
+        message,
+        sent,
+        topLeftRadius,
+        topRightRadius,
+        resetQuote: resetQuote,
+      );
     case MessageType.audio:
-      return QuotedAudioWidget(message, sent, resetQuote: resetQuote);
+      return QuotedAudioWidget(
+        message,
+        sent,
+        topLeftRadius,
+        topRightRadius,
+        resetQuote: resetQuote,
+      );
     case MessageType.file:
-      return QuotedFileWidget(message, sent, resetQuote: resetQuote);
+      return QuotedFileWidget(
+        message,
+        sent,
+        topLeftRadius,
+        topRightRadius,
+        resetQuote: resetQuote,
+      );
   }
 }
 

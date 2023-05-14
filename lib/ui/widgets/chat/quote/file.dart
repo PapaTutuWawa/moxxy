@@ -6,12 +6,19 @@ import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
 class QuotedFileWidget extends StatelessWidget {
   const QuotedFileWidget(
     this.message,
-    this.sent, {
+    this.sent,
+    this.topLeftRadius,
+    this.topRightRadius, {
     this.resetQuote,
     super.key,
   });
   final Message message;
   final bool sent;
+
+  /// Top corner roundings.
+  final double topLeftRadius;
+  final double topRightRadius;
+
   final void Function()? resetQuote;
 
   @override
@@ -25,6 +32,8 @@ class QuotedFileWidget extends StatelessWidget {
       ),
       message.fileMetadata!.filename,
       sent,
+      topLeftRadius,
+      topRightRadius,
       resetQuote: resetQuote,
     );
   }

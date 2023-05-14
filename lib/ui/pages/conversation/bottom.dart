@@ -177,6 +177,8 @@ class ConversationBottomRowState extends State<ConversationBottomRow> {
                                           snapshot.data!.quotedMessage!,
                                           GetIt.I.get<UIDataService>().ownJid!,
                                         ),
+                                        textfieldQuotedMessageRadius,
+                                        textfieldQuotedMessageRadius,
                                         resetQuote: widget
                                             .conversationController.removeQuote,
                                       )

@@ -116,6 +116,8 @@ class RawChatBubble extends StatelessWidget {
             maxWidth,
             borderRadius,
             sentBySelf,
+            borderRadius.topLeft.x,
+            borderRadius.topRight.x,
           ),
         ),
       ),

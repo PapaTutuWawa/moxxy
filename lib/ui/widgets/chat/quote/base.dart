@@ -11,7 +11,9 @@ class QuoteBaseWidget extends StatelessWidget {
   const QuoteBaseWidget(
     this.message,
     this.child,
-    this.sent, {
+    this.sent,
+    this.topLeftRadius,
+    this.topRightRadius, {
     this.resetQuotedMessage,
     super.key,
   });
@@ -19,6 +21,10 @@ class QuoteBaseWidget extends StatelessWidget {
   final Widget child;
   final bool sent;
   final void Function()? resetQuotedMessage;
+
+  /// Top corner roundings.
+  final double topLeftRadius;
+  final double topRightRadius;
 
   Color _getColor(BuildContext context) {
     if (resetQuotedMessage != null) {
@@ -51,7 +57,12 @@ class QuoteBaseWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: ClipRRect(
-        borderRadius: const BorderRadius.all(radiusLarge),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(topLeftRadius),
+          topRight: Radius.circular(topRightRadius),
+          bottomLeft: radiusLarge,
+          bottomRight: radiusLarge,
+        ),
         child: Material(
           color: _getColor(context),
           child: DecoratedBox(
@@ -96,7 +107,9 @@ class QuotedMediaBaseWidget extends StatelessWidget {
     this.message,
     this.child,
     this.text,
-    this.sent, {
+    this.sent,
+    this.topLeftRadius,
+    this.topRightRadius, {
     this.resetQuote,
     super.key,
   });
@@ -105,6 +118,10 @@ class QuotedMediaBaseWidget extends StatelessWidget {
   final String text;
   final bool sent;
   final void Function()? resetQuote;
+
+  /// Top corner roundings.
+  final double topLeftRadius;
+  final double topRightRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -139,6 +156,8 @@ class QuotedMediaBaseWidget extends StatelessWidget {
         ],
       ),
       sent,
+      topLeftRadius,
+      topRightRadius,
       resetQuotedMessage: resetQuote,
     );
   }
