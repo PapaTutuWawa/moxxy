@@ -179,6 +179,8 @@ Future<void> upgradeFromV31ToV32(Database db) async {
       {
         'file_metadata_id': id,
       },
+      where: 'id = ?',
+      whereArgs: [message['id']],
     );
   }
 
