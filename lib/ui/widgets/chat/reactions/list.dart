@@ -5,6 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -60,20 +61,30 @@ class ReactionList extends StatelessWidget {
                 ...reactionsRaw.sublist(ownReactionIndex + 1),
               ];
 
+        final bloc = GetIt.I.get<ConversationsBloc>();
         return ListView.builder(
           shrinkWrap: true,
           itemCount: reactions.length,
           itemBuilder: (context, index) {
             final reaction = reactions[index];
+            final ownReaction = reaction.jid == ownJid;
+            final conversation = ownReaction ? null : bloc.getConversationByJid(reaction.jid);
             return ReactionsRow(
-              // TODO
-              avatar: const AvatarWrapper(
-                radius: 35,
-                altIcon: Icons.person,
-              ),
-              // TODO
+              avatar: ownReaction
+                ? AvatarWrapper(
+                  avatarUrl: bloc.state.avatarUrl,
+                  radius: 35,
+                  altIcon: Icons.person,
+                )
+                : AvatarWrapper(
+                  avatarUrl: conversation?.avatarUrl,
+                  radius: 35,
+                  altIcon: Icons.person,
+                ),
               displayName:
-                  reaction.jid == ownJid ? t.messages.you : reaction.jid,
+                  reaction.jid == ownJid
+                    ? t.messages.you
+                    : conversation?.title ?? reaction.jid,
               emojis: reaction.emojis,
               onAddPressed: reaction.jid == ownJid
                   ? () async {
