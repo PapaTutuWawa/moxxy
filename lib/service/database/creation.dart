@@ -48,6 +48,9 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
       CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
     )''');
+  await db.execute(
+    'CREATE INDEX idx_messages_id ON $messagesTable (id, sid, originId)',
+  );
 
   // Reactions
   await db.execute('''
@@ -59,6 +62,9 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT fk_message FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
         ON DELETE CASCADE
     )''');
+  await db.execute(
+    'CREATE INDEX idx_reactions_message_id ON $reactionsTable (message_id, senderJid)',
+  );
 
   // File metadata
   await db.execute('''
@@ -88,6 +94,9 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES $fileMetadataTable (id)
         ON DELETE CASCADE
     )''');
+  await db.execute(
+    'CREATE INDEX idx_file_metadata_message_id ON $fileMetadataTable (id)',
+  );
 
   // Conversations
   await db.execute(
@@ -110,6 +119,9 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
         ON DELETE SET NULL
     )''',
+  );
+  await db.execute(
+    'CREATE INDEX idx_conversation_id ON $conversationsTable (jid)',
   );
 
   // Contacts
