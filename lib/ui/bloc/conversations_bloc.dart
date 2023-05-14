@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -146,5 +147,11 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
           MarkConversationAsReadCommand(conversationJid: event.jid),
           awaitable: false,
         );
+  }
+
+  /// Return, if existent, the conversation from the state with a JID equal to [jid].
+  /// Returns null, if the conversation does not exist.
+  Conversation? getConversationByJid(String jid) {
+    return state.conversations.firstWhereOrNull((c) => c.jid == jid);
   }
 }

@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 
@@ -58,7 +57,6 @@ class Conversation with _$Conversation {
     ConversationType type,
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
     int lastChangeTimestamp,
-    List<SharedMedium> sharedMedia,
     // Indicates if the conversation should be shown on the homescreen
     bool open,
     // Indicates, if [jid] is a regular user, if the user is in the roster.
@@ -70,9 +68,7 @@ class Conversation with _$Conversation {
     // Whether the conversation is encrypted or not (true = encrypted, false = unencrypted)
     bool encrypted,
     // The current chat state
-    @ConversationChatStateConverter() ChatState chatState,
-    // The amount of shared media items that are in the database
-    int sharedMediaAmount, {
+    @ConversationChatStateConverter() ChatState chatState, {
     // The id of the contact in the device's phonebook if it exists
     String? contactId,
     // The path to the contact avatar, if available
@@ -91,12 +87,10 @@ class Conversation with _$Conversation {
     Map<String, dynamic> json,
     bool inRoster,
     String subscription,
-    List<SharedMedium> sharedMedia,
     Message? lastMessage,
   ) {
     return Conversation.fromJson({
       ...json,
-      'sharedMedia': <Map<String, dynamic>>[],
       'muted': intToBool(json['muted']! as int),
       'open': intToBool(json['open']! as int),
       'inRoster': inRoster,
@@ -106,7 +100,6 @@ class Conversation with _$Conversation {
           const ConversationChatStateConverter().toJson(ChatState.gone),
     }).copyWith(
       lastMessage: lastMessage,
-      sharedMedia: sharedMedia,
     );
   }
 
@@ -114,7 +107,6 @@ class Conversation with _$Conversation {
     final map = toJson()
       ..remove('id')
       ..remove('chatState')
-      ..remove('sharedMedia')
       ..remove('inRoster')
       ..remove('subscription')
       ..remove('lastMessage');

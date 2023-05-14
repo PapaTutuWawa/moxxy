@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moxxyv2/shared/models/media.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/audio.dart';
@@ -37,7 +37,7 @@ MessageType getMessageType(Message message) {
       return MessageType.sticker;
     }
 
-    final mime = message.mediaType;
+    final mime = message.fileMetadata!.mimeType;
     if (mime == null) return MessageType.file;
 
     if (mime.startsWith('image/')) {
@@ -118,29 +118,29 @@ Widget buildQuoteMessageWidget(
   }
 }
 
-Widget buildSharedMediaWidget(SharedMedium medium, String conversationJid) {
-  if (medium.mime!.startsWith('image/')) {
+Widget buildSharedMediaWidget(FileMetadata metadata, String conversationJid) {
+  if (metadata.mimeType!.startsWith('image/')) {
     return SharedImageWidget(
-      medium.path,
-      onTap: () => openFile(medium.path),
+      metadata.path!,
+      onTap: () => openFile(metadata.path!),
     );
-  } else if (medium.mime!.startsWith('video/')) {
+  } else if (metadata.mimeType!.startsWith('video/')) {
     return SharedVideoWidget(
-      medium.path,
+      metadata.path!,
       conversationJid,
-      medium.mime!,
-      onTap: () => openFile(medium.path),
+      metadata.mimeType!,
+      onTap: () => openFile(metadata.path!),
       child: const PlayButton(size: 32),
     );
-  } else if (medium.mime!.startsWith('audio/')) {
+  } else if (metadata.mimeType!.startsWith('audio/')) {
     return SharedAudioWidget(
-      medium.path,
-      onTap: () => openFile(medium.path),
+      metadata.path!,
+      onTap: () => openFile(metadata.path!),
     );
   }
 
   return SharedFileWidget(
-    medium.path,
-    onTap: () => openFile(medium.path),
+    metadata.path!,
+    onTap: () => openFile(metadata.path!),
   );
 }

@@ -123,11 +123,11 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildNonDownloaded() {
     return FileChatBaseWidget(
       message,
-      message.filename!,
+      message.fileMetadata!.filename,
       radius,
       maxWidth,
       sent,
-      mimeType: message.mediaType,
+      mimeType: message.fileMetadata!.mimeType,
       downloadButton: DownloadButton(
         onPressed: () {
           MoxplatformPlugin.handler.getDataSender().sendData(
@@ -142,11 +142,11 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildDownloading() {
     return FileChatBaseWidget(
       message,
-      message.filename!,
+      message.fileMetadata!.filename,
       radius,
       maxWidth,
       sent,
-      mimeType: message.mediaType,
+      mimeType: message.fileMetadata!.filename,
       downloadButton: ProgressWidget(id: message.id),
     );
   }
@@ -154,20 +154,20 @@ class FileChatWidget extends StatelessWidget {
   Widget _buildInner() {
     return FileChatBaseWidget(
       message,
-      message.filename!,
+      message.fileMetadata!.filename,
       radius,
       maxWidth,
       sent,
-      mimeType: message.mediaType,
+      mimeType: message.fileMetadata!.mimeType,
       onTap: () {
-        openFile(message.mediaUrl!);
+        openFile(message.fileMetadata!.path!);
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!message.isDownloading && message.mediaUrl != null) {
+    if (!message.isDownloading && message.fileMetadata!.path != null) {
       return _buildInner();
     }
     if (message.isFileUploadNotification || message.isDownloading) {

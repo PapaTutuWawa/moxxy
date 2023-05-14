@@ -18,8 +18,7 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Messages
-  await db.execute(
-    '''
+  await db.execute('''
     CREATE TABLE $messagesTable (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sender TEXT NOT NULL,
@@ -27,41 +26,75 @@ Future<void> createDatabase(Database db, int version) async {
       timestamp INTEGER NOT NULL,
       sid TEXT NOT NULL,
       conversationJid TEXT NOT NULL,
-      isMedia INTEGER NOT NULL,
       isFileUploadNotification INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       errorType INTEGER,
       warningType INTEGER,
-      mediaUrl TEXT,
-      mediaType TEXT,
-      thumbnailData TEXT,
-      mediaWidth INTEGER,
-      mediaHeight INTEGER,
-      srcUrl TEXT,
-      key TEXT,
-      iv TEXT,
-      encryptionScheme TEXT,
       received INTEGER,
       displayed INTEGER,
       acked INTEGER,
       originId TEXT,
       quote_id INTEGER,
-      filename TEXT,
-      plaintextHashes TEXT,
-      ciphertextHashes TEXT,
+      file_metadata_id TEXT,
       isDownloading INTEGER NOT NULL,
       isUploading INTEGER NOT NULL,
-      mediaSize INTEGER,
       isRetracted INTEGER,
       isEdited INTEGER NOT NULL,
-      reactions TEXT NOT NULL,
       containsNoStore INTEGER NOT NULL,
       stickerPackId   TEXT,
-      stickerHashKey  TEXT,
       pseudoMessageType INTEGER,
       pseudoMessageData TEXT,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
-    )''',
+      CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
+    )''');
+  await db.execute(
+    'CREATE INDEX idx_messages_id ON $messagesTable (id, sid, originId)',
+  );
+
+  // Reactions
+  await db.execute('''
+    CREATE TABLE $reactionsTable (
+      senderJid  TEXT NOT NULL,
+      emoji      TEXT NOT NULL,
+      message_id INTEGER NOT NULL,
+      CONSTRAINT pk_sender PRIMARY KEY (senderJid, emoji, message_id),
+      CONSTRAINT fk_message FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
+        ON DELETE CASCADE
+    )''');
+  await db.execute(
+    'CREATE INDEX idx_reactions_message_id ON $reactionsTable (message_id, senderJid)',
+  );
+
+  // File metadata
+  await db.execute('''
+    CREATE TABLE $fileMetadataTable (
+      id               TEXT NOT NULL PRIMARY KEY,
+      path             TEXT,
+      sourceUrls       TEXT,
+      mimeType         TEXT,
+      thumbnailType    TEXT,
+      thumbnailData    TEXT,
+      width            INTEGER,
+      height           INTEGER,
+      plaintextHashes  TEXT,
+      encryptionKey    TEXT,
+      encryptionIv     TEXT,
+      encryptionScheme TEXT,
+      cipherTextHashes TEXT,
+      filename         TEXT NOT NULL,
+      size             INTEGER
+    )''');
+  await db.execute('''
+    CREATE TABLE $fileMetadataHashesTable (
+      algorithm TEXT NOT NULL,
+      value     TEXT NOT NULL,
+      id        TEXT NOT NULL,
+      CONSTRAINT f_primarykey PRIMARY KEY (algorithm, value),
+      CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES $fileMetadataTable (id)
+        ON DELETE CASCADE
+    )''');
+  await db.execute(
+    'CREATE INDEX idx_file_metadata_message_id ON $fileMetadataTable (id)',
   );
 
   // Conversations
@@ -78,7 +111,6 @@ Future<void> createDatabase(Database db, int version) async {
       muted INTEGER NOT NULL,
       encrypted INTEGER NOT NULL,
       lastMessageId INTEGER,
-      sharedMediaAmount INTEGER NOT NULL,
       contactId TEXT,
       contactAvatarPath TEXT,
       contactDisplayName TEXT,
@@ -87,6 +119,9 @@ Future<void> createDatabase(Database db, int version) async {
         ON DELETE SET NULL
     )''',
   );
+  await db.execute(
+    'CREATE INDEX idx_conversation_id ON $conversationsTable (jid)',
+  );
 
   // Contacts
   await db.execute('''
@@ -94,21 +129,6 @@ Future<void> createDatabase(Database db, int version) async {
       id TEXT PRIMARY KEY,
       jid TEXT NOT NULL
     )''');
-
-  // Shared media
-  await db.execute(
-    '''
-    CREATE TABLE $mediaTable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      path TEXT NOT NULL,
-      mime TEXT,
-      timestamp INTEGER NOT NULL,
-      conversation_jid TEXT NOT NULL,
-      message_id INTEGER,
-      FOREIGN KEY (conversation_jid) REFERENCES $conversationsTable (jid),
-      FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
-    )''',
-  );
 
   // Roster
   await db.execute(
@@ -134,19 +154,14 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $stickersTable (
-      hashKey       TEXT PRIMARY KEY,
-      mediaType     TEXT NOT NULL,
-      desc          TEXT NOT NULL,
-      size          INTEGER NOT NULL,
-      width         INTEGER,
-      height        INTEGER,
-      hashes        TEXT NOT NULL,
-      urlSources    TEXT NOT NULL,
-      path          TEXT NOT NULL,
-      stickerPackId TEXT NOT NULL,
-      suggests      TEXT NOT NULL,
+      id               TEXT PRIMARY KEY,
+      desc             TEXT NOT NULL,
+      suggests         TEXT NOT NULL,
+      file_metadata_id TEXT NOT NULL,
+      stickerPackId  TEXT NOT NULL,
       CONSTRAINT fk_sticker_pack FOREIGN KEY (stickerPackId) REFERENCES $stickerPacksTable (id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+      CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
     )''',
   );
   await db.execute(

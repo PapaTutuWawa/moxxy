@@ -131,16 +131,19 @@ String? createFallbackBodyForQuotedMessage(Message? quotedMessage) {
   if (quotedMessage.isMedia) {
     // Create formatted size string, if size is stored
     String quoteMessageSize;
-    if (quotedMessage.mediaSize != null && quotedMessage.mediaSize! > 0) {
-      quoteMessageSize = '(${fileSizeToString(quotedMessage.mediaSize!)}) ';
+    if (quotedMessage.fileMetadata!.size != null &&
+        quotedMessage.fileMetadata!.size! > 0) {
+      quoteMessageSize =
+          '(${fileSizeToString(quotedMessage.fileMetadata!.size!)}) ';
     } else {
       quoteMessageSize = '';
     }
 
     // Create media url string, or use body if no srcUrl is stored
     String quotedMediaUrl;
-    if (quotedMessage.srcUrl != null && quotedMessage.srcUrl!.isNotEmpty) {
-      quotedMediaUrl = '• ${quotedMessage.srcUrl!}';
+    if (quotedMessage.fileMetadata!.sourceUrls != null &&
+        quotedMessage.fileMetadata!.sourceUrls!.first.isNotEmpty) {
+      quotedMediaUrl = '• ${quotedMessage.fileMetadata!.sourceUrls!.first}';
     } else if (quotedMessage.body.isNotEmpty) {
       quotedMediaUrl = '• ${quotedMessage.body}';
     } else {

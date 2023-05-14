@@ -3,10 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
-import 'package:moxxyv2/ui/widgets/chat/reactionbubble.dart';
+import 'package:moxxyv2/ui/widgets/chat/reactions/preview.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 
 class RawChatBubble extends StatelessWidget {
@@ -53,8 +52,9 @@ class RawChatBubble extends StatelessWidget {
   /// Specified when the message bubble should not have color
   bool _shouldNotColorBubble() {
     var isInlinedWidget = false;
-    if (message.mediaType != null) {
-      isInlinedWidget = message.mediaType!.startsWith('image/');
+    if (message.isMedia) {
+      isInlinedWidget =
+          message.fileMetadata!.mimeType?.startsWith('image/') ?? false;
     }
 
     // Check if it is a pseudo message
@@ -63,12 +63,14 @@ class RawChatBubble extends StatelessWidget {
     }
 
     // Check if it is an embedded file
-    if (message.isMedia && message.mediaUrl != null && isInlinedWidget) {
+    if (message.isMedia &&
+        message.fileMetadata!.path != null &&
+        isInlinedWidget) {
       return true;
     }
 
     // Stickers are also not colored
-    return message.stickerPackId != null && message.stickerHashKey != null;
+    return message.stickerPackId != null;
   }
 
   Color _getBubbleColor(BuildContext context) {
@@ -129,7 +131,6 @@ class ChatBubble extends StatefulWidget {
     required this.onSwipedCallback,
     required this.bubble,
     this.onLongPressed,
-    this.onReactionTap,
     super.key,
   });
   final Message message;
@@ -142,8 +143,6 @@ class ChatBubble extends StatefulWidget {
   final GestureLongPressStartCallback? onLongPressed;
   // The actual message bubble
   final RawChatBubble bubble;
-  // For acting on reaction taps
-  final void Function(Reaction)? onReactionTap;
 
   @override
   ChatBubbleState createState() => ChatBubbleState();
@@ -163,33 +162,6 @@ class ChatBubbleState extends State<ChatBubble>
     return widget.sentBySelf
         ? SwipeDirection.endToStart
         : SwipeDirection.startToEnd;
-  }
-
-  Widget _buildReactions() {
-    if (widget.message.reactions.isEmpty) {
-      return const SizedBox();
-    }
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 1),
-      child: Wrap(
-        spacing: 1,
-        runSpacing: 2,
-        children: widget.message.reactions
-            .map(
-              (reaction) => ReactionBubble(
-                emoji: reaction.emoji,
-                reactions: reaction.reactions,
-                reactedTo: reaction.reactedBySelf,
-                sentBySelf: widget.sentBySelf,
-                onTap: widget.onReactionTap != null
-                    ? () => widget.onReactionTap!(reaction)
-                    : null,
-              ),
-            )
-            .toList(),
-      ),
-    );
   }
 
   @override
@@ -267,17 +239,36 @@ class ChatBubbleState extends State<ChatBubble>
         child: Align(
           alignment:
               widget.sentBySelf ? Alignment.centerRight : Alignment.centerLeft,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: widget.sentBySelf
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              GestureDetector(
-                onLongPressStart: widget.onLongPressed,
-                child: widget.bubble,
+              Positioned(
+                bottom: 10,
+                right: widget.sentBySelf ? 0 : null,
+                left: widget.sentBySelf ? null : 0,
+                child: ReactionsPreview(widget.message, widget.sentBySelf),
               ),
-              _buildReactions(),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: widget.sentBySelf
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onLongPressStart: widget.onLongPressed,
+                    child: widget.bubble,
+                  ),
+                  if (widget.message.reactionsPreview.isNotEmpty)
+                    // This SizedBox ensures that we have a proper bottom padding for the
+                    // reaction preview, but also ensure that the Stack is wide enough
+                    // so that the preview is not clipped by the Stack, since the overflow
+                    // does not receive input events.
+                    // See https://github.com/flutter/flutter/issues/19445
+                    SizedBox(
+                      height: 40,
+                      width: MediaQuery.of(context).size.width,
+                    ),
+                ],
+              ),
             ],
           ),
         ),

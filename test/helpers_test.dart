@@ -1,3 +1,4 @@
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:test/test.dart';
 
@@ -266,5 +267,29 @@ void main() {
       clampedListPrependAll([1, 2, 3, 4, 5], [6, 7], 4),
       [6, 7, 1, 2],
     );
+  });
+
+  group('getPrefixedSubMap', () {
+    test('Unknown prefix', () {
+      final map = {
+        'hello': 1,
+        'world': 2,
+      };
+      final result = getPrefixedSubMap(map, 'data_');
+      expect(result.isEmpty, true);
+    });
+    test('Known prefix', () {
+      final map = {
+        'hello': 1,
+        'world': 2,
+        'data_suletta': 4,
+        'data_miorine': 3,
+      };
+      final result = getPrefixedSubMap(map, 'data_');
+      expect(result.isNotEmpty, true);
+      expect(result.length, 2);
+      expect(result['suletta'], 4);
+      expect(result['miorine'], 3);
+    });
   });
 }

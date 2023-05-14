@@ -8,7 +8,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 
@@ -264,90 +264,11 @@ class BidirectionalConversationController
         );
   }
 
-  /// Add [emoji] as a reaction to the message at index [index].
-  void addReaction(int index, String emoji) {
-    final message = cache[index];
-    final reactionIndex = message.reactions.indexWhere(
-      (Reaction r) => r.emoji == emoji,
-    );
-
-    if (reactionIndex != -1) {
-      // Ignore the request when the reaction would be invalid
-      final reaction = message.reactions[reactionIndex];
-      if (reaction.reactedBySelf) return;
-
-      final reactions = List<Reaction>.from(message.reactions);
-      reactions[reactionIndex] = reaction.copyWith(
-        reactedBySelf: true,
-      );
-      cache[index] = cache[index].copyWith(
-        reactions: reactions,
-      );
-    } else {
-      // The reaction is new
-      cache[index] = message.copyWith(
-        reactions: [
-          ...message.reactions,
-          Reaction(
-            [],
-            emoji,
-            true,
-          ),
-        ],
-      );
-    }
-
-    forceUpdateUI();
-
-    MoxplatformPlugin.handler.getDataSender().sendData(
-          AddReactionToMessageCommand(
-            messageId: message.id,
-            emoji: emoji,
-            conversationJid: conversationJid,
-          ),
-          awaitable: false,
-        );
-  }
-
-  /// Remove the reaction [emoji] from the message at index [index].
-  void removeReaction(int index, String emoji) {
-    final message = cache[index];
-    final reactionIndex = message.reactions.indexWhere(
-      (Reaction r) => r.emoji == emoji,
-    );
-
-    assert(reactionIndex >= 0, 'The reaction must be found');
-
-    final reactions = List<Reaction>.from(message.reactions);
-    if (message.reactions[reactionIndex].senders.isEmpty) {
-      reactions.removeAt(reactionIndex);
-    } else {
-      reactions[reactionIndex] = reactions[reactionIndex].copyWith(
-        reactedBySelf: false,
-      );
-    }
-    cache[index] = cache[index].copyWith(
-      reactions: reactions,
-    );
-
-    forceUpdateUI();
-
-    MoxplatformPlugin.handler.getDataSender().sendData(
-          RemoveReactionFromMessageCommand(
-            messageId: message.id,
-            emoji: emoji,
-            conversationJid: conversationJid,
-          ),
-          awaitable: false,
-        );
-  }
-
-  /// Send the sticker identified by the Sticker pack [packId] and [hashKey].
-  void sendSticker(String packId, String hashKey) {
+  /// Send the sticker [sticker].
+  void sendSticker(sticker.Sticker sticker) {
     MoxplatformPlugin.handler.getDataSender().sendData(
           SendStickerCommand(
-            stickerPackId: packId,
-            stickerHashKey: hashKey,
+            sticker: sticker,
             recipient: conversationJid,
           ),
           awaitable: false,

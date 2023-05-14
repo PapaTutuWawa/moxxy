@@ -12,6 +12,7 @@ class FileUploadJob {
     this.mime,
     this.encryptMap,
     this.messageMap,
+    this.metadataId,
     this.thumbnails,
   );
   final List<String> recipients;
@@ -21,6 +22,7 @@ class FileUploadJob {
   final Map<String, bool> encryptMap;
   // Recipient -> Message
   final Map<String, Message> messageMap;
+  final String metadataId;
   final List<Thumbnail> thumbnails;
 
   @override
@@ -31,7 +33,8 @@ class FileUploadJob {
         messageMap == other.messageMap &&
         mime == other.mime &&
         thumbnails == other.thumbnails &&
-        encryptMap == other.encryptMap;
+        encryptMap == other.encryptMap &&
+        metadataId == other.metadataId;
   }
 
   @override
@@ -41,7 +44,8 @@ class FileUploadJob {
       messageMap.hashCode ^
       mime.hashCode ^
       thumbnails.hashCode ^
-      encryptMap.hashCode;
+      encryptMap.hashCode ^
+      metadataId.hashCode;
 }
 
 /// A job describing the upload of a file.
@@ -50,12 +54,14 @@ class FileDownloadJob {
   const FileDownloadJob(
     this.location,
     this.mId,
+    this.metadataId,
     this.conversationJid,
     this.mimeGuess, {
     this.shouldShowNotification = true,
   });
   final MediaFileLocation location;
   final int mId;
+  final String metadataId;
   final String conversationJid;
   final String? mimeGuess;
   final bool shouldShowNotification;
@@ -65,6 +71,7 @@ class FileDownloadJob {
     return other is FileDownloadJob &&
         location == other.location &&
         mId == other.mId &&
+        metadataId == other.metadataId &&
         conversationJid == other.conversationJid &&
         mimeGuess == other.mimeGuess &&
         shouldShowNotification == other.shouldShowNotification;
@@ -74,6 +81,7 @@ class FileDownloadJob {
   int get hashCode =>
       location.hashCode ^
       mId.hashCode ^
+      metadataId.hashCode ^
       conversationJid.hashCode ^
       mimeGuess.hashCode ^
       shouldShowNotification.hashCode;

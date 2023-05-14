@@ -9,7 +9,6 @@ import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -21,6 +20,7 @@ import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
@@ -32,8 +32,9 @@ import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
@@ -97,6 +98,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetBlocklistCommand>(performGetBlocklist),
       EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
+      EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -171,9 +173,10 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
     avatarHash: state.avatarHash,
     permissionsToRequest: permissions,
     preferences: preferences,
-    conversations: (await GetIt.I.get<DatabaseService>().loadConversations())
-        .where((c) => c.open)
-        .toList(),
+    conversations:
+        (await GetIt.I.get<ConversationService>().loadConversations())
+            .where((c) => c.open)
+            .toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
     stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
@@ -240,7 +243,6 @@ Future<void> performAddConversation(
         true,
         preferences.defaultMuteState,
         preferences.enableOmemoByDefault,
-        0,
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
@@ -471,7 +473,6 @@ Future<void> performAddContact(
         true,
         prefs.defaultMuteState,
         prefs.enableOmemoByDefault,
-        0,
         contactId,
         await css.getProfilePicturePathForJid(jid),
         await css.getContactDisplayName(contactId),
@@ -562,26 +563,33 @@ Future<void> performRequestDownload(
   );
   sendEvent(MessageUpdatedEvent(message: message));
 
-  final metadata = await peekFile(command.message.srcUrl!);
+  final fileMetadata = command.message.fileMetadata!;
+  final metadata = await peekFile(fileMetadata.sourceUrls!.first);
 
   // TODO(Unknown): Maybe deduplicate with the code in the xmpp service
   // NOTE: This either works by returing "jpg" for ".../hallo.jpg" or fails
   //       for ".../aaaaaaaaa", in which case we would've failed anyways.
-  final ext = message.srcUrl!.split('.').last;
+  final ext = fileMetadata.sourceUrls!.first.split('.').last;
   final mimeGuess = metadata.mime ?? guessMimeTypeFromExtension(ext);
 
   await srv.downloadFile(
     FileDownloadJob(
       MediaFileLocation(
-        message.srcUrl!,
-        message.filename ?? filenameFromUrl(message.srcUrl!),
-        message.encryptionScheme,
-        message.key != null ? base64Decode(message.key!) : null,
-        message.iv != null ? base64Decode(message.iv!) : null,
-        message.plaintextHashes,
-        message.ciphertextHashes,
+        fileMetadata.sourceUrls!,
+        fileMetadata.filename,
+        fileMetadata.encryptionScheme,
+        fileMetadata.encryptionKey != null
+            ? base64Decode(fileMetadata.encryptionKey!)
+            : null,
+        fileMetadata.encryptionIv != null
+            ? base64Decode(fileMetadata.encryptionIv!)
+            : null,
+        fileMetadata.plaintextHashes,
+        fileMetadata.ciphertextHashes,
+        null,
       ),
       message.id,
+      message.fileMetadata!.id,
       message.conversationJid,
       mimeGuess,
     ),
@@ -927,34 +935,32 @@ Future<void> performAddMessageReaction(
   AddReactionToMessageCommand command, {
   dynamic extra,
 }) async {
-  final ms = GetIt.I.get<MessageService>();
-  final conn = GetIt.I.get<XmppConnection>();
-  final msg =
-      await ms.getMessageById(command.conversationJid, command.messageId);
-  assert(msg != null, 'The message must be found');
-
-  // Update the state
-  final reactions = List<Reaction>.from(msg!.reactions);
-  final i = reactions.indexWhere((r) => r.emoji == command.emoji);
-  if (i == -1) {
-    reactions.add(Reaction([], command.emoji, true));
-  } else {
-    reactions[i] = reactions[i].copyWith(reactedBySelf: true);
+  final rs = GetIt.I.get<ReactionsService>();
+  final msg = await rs.addNewReaction(
+    command.messageId,
+    command.conversationJid,
+    command.emoji,
+  );
+  if (msg == null) {
+    return;
   }
-  await ms.updateMessage(msg.id, reactions: reactions);
-
-  // Collect all our reactions
-  final ownReactions =
-      reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
   if (command.conversationJid != '') {
+    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
+
     // Send the reaction
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+    GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!
+        .sendMessage(
           MessageDetails(
             to: command.conversationJid,
             messageReactions: MessageReactions(
               msg.originId ?? msg.sid,
-              ownReactions,
+              await rs.getReactionsForMessageByJid(
+                command.messageId,
+                jid,
+              ),
             ),
             requestChatMarkers: false,
             messageProcessingHints:
@@ -968,35 +974,32 @@ Future<void> performRemoveMessageReaction(
   RemoveReactionFromMessageCommand command, {
   dynamic extra,
 }) async {
-  final ms = GetIt.I.get<MessageService>();
-  final conn = GetIt.I.get<XmppConnection>();
-  final msg =
-      await ms.getMessageById(command.conversationJid, command.messageId);
-  assert(msg != null, 'The message must be found');
-
-  // Update the state
-  final reactions = List<Reaction>.from(msg!.reactions);
-  final i = reactions.indexWhere((r) => r.emoji == command.emoji);
-  assert(i >= -1, 'The reaction must be found');
-  if (reactions[i].senders.isEmpty) {
-    reactions.removeAt(i);
-  } else {
-    reactions[i] = reactions[i].copyWith(reactedBySelf: false);
+  final rs = GetIt.I.get<ReactionsService>();
+  final msg = await rs.removeReaction(
+    command.messageId,
+    command.conversationJid,
+    command.emoji,
+  );
+  if (msg == null) {
+    return;
   }
-  await ms.updateMessage(msg.id, reactions: reactions);
-
-  // Collect all our reactions
-  final ownReactions =
-      reactions.where((r) => r.reactedBySelf).map((r) => r.emoji).toList();
 
   if (command.conversationJid != '') {
+    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
+
     // Send the reaction
-    conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+    GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!
+        .sendMessage(
           MessageDetails(
             to: command.conversationJid,
             messageReactions: MessageReactions(
               msg.originId ?? msg.sid,
-              ownReactions,
+              await rs.getReactionsForMessageByJid(
+                command.messageId,
+                jid,
+              ),
             ),
             requestChatMarkers: false,
             messageProcessingHints:
@@ -1042,21 +1045,12 @@ Future<void> performSendSticker(
   SendStickerCommand command, {
   dynamic extra,
 }) async {
-  final xs = GetIt.I.get<XmppService>();
-  final ss = GetIt.I.get<StickersService>();
-
-  final sticker = await ss.getStickerByHashKey(
-    command.stickerPackId,
-    command.stickerHashKey,
-  );
-  assert(sticker != null, 'Sticker not found');
-
-  await xs.sendMessage(
-    body: sticker!.desc,
-    recipients: [command.recipient],
-    sticker: sticker,
-    currentConversationJid: command.recipient,
-  );
+  await GetIt.I.get<XmppService>().sendMessage(
+        body: command.sticker.desc,
+        recipients: [command.recipient],
+        sticker: command.sticker,
+        currentConversationJid: command.recipient,
+      );
 }
 
 Future<void> performRemoveStickerPack(
@@ -1096,19 +1090,30 @@ Future<void> performFetchStickerPack(
               .map(
                 (s) => sticker.Sticker(
                   '',
-                  s.metadata.mediaType!,
-                  s.metadata.desc!,
-                  s.metadata.size!,
-                  s.metadata.width,
-                  s.metadata.height,
-                  s.metadata.hashes,
-                  s.sources
-                      .whereType<StatelessFileSharingUrlSource>()
-                      .map((src) => src.url)
-                      .toList(),
-                  '',
                   command.stickerPackId,
+                  s.metadata.desc!,
                   s.suggests,
+                  FileMetadata(
+                    '',
+                    null,
+                    s.sources
+                        .whereType<StatelessFileSharingUrlSource>()
+                        .map((src) => src.url)
+                        .toList(),
+                    s.metadata.mediaType,
+                    s.metadata.size,
+                    // TODO(Unknown): One day
+                    null,
+                    null,
+                    s.metadata.width,
+                    s.metadata.height,
+                    s.metadata.hashes,
+                    null,
+                    null,
+                    null,
+                    null,
+                    s.metadata.name ?? '',
+                  ),
                 ),
               )
               .toList(),
@@ -1188,15 +1193,49 @@ Future<void> performGetPagedSharedMedia(
   final id = extra as String;
 
   final result =
-      await GetIt.I.get<DatabaseService>().getPaginatedSharedMediaForJid(
+      await GetIt.I.get<MessageService>().getPaginatedSharedMediaMessagesForJid(
             command.conversationJid,
             command.olderThan,
             command.timestamp,
           );
 
   sendEvent(
-    PagedSharedMediaResultEvent(
-      media: result,
+    PagedMessagesResultEvent(
+      messages: result,
+    ),
+    id: id,
+  );
+}
+
+Future<void> performGetReactions(
+  GetReactionsForMessageCommand command, {
+  dynamic extra,
+}) async {
+  final id = extra as String;
+
+  final reactionsRaw =
+      await GetIt.I.get<ReactionsService>().getReactionsForMessage(
+            command.messageId,
+          );
+  final reactionsMap = <String, List<String>>{};
+  for (final reaction in reactionsRaw) {
+    if (reactionsMap.containsKey(reaction.senderJid)) {
+      reactionsMap[reaction.senderJid]!.add(reaction.emoji);
+    } else {
+      reactionsMap[reaction.senderJid] = List<String>.from([reaction.emoji]);
+    }
+  }
+
+  sendEvent(
+    ReactionsForMessageResult(
+      reactions: reactionsMap.entries
+          .map(
+            (entry) => ReactionGroup(
+              entry.key,
+              entry.value,
+            ),
+          )
+          .toList(),
     ),
     id: id,
   );

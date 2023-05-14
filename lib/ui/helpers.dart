@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:better_open_file/better_open_file.dart';
 import 'package:cryptography/cryptography.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -397,4 +398,37 @@ Future<void> openFile(String path) async {
       gravity: ToastGravity.SNACKBAR,
     );
   }
+}
+
+/// Opens a modal bottom sheet with an emoji picker. Resolves to the picked emoji,
+/// if one was picked. If the picker was dismissed, resolves to null.
+Future<String?> pickEmoji(BuildContext context) async {
+  final emoji = await showModalBottomSheet<String>(
+    context: context,
+    // TODO(PapaTutuWawa): Move this to the theme
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.only(
+        topLeft: radiusLarge,
+        topRight: radiusLarge,
+      ),
+    ),
+    builder: (context) => Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: EmojiPicker(
+        onEmojiSelected: (_, emoji) {
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pop(emoji.emoji);
+        },
+        //height: pickerHeight,
+        config: Config(
+          bgColor: Theme.of(context).scaffoldBackgroundColor,
+        ),
+      ),
+    ),
+  );
+
+  // ignore: use_build_context_synchronously
+  Navigator.of(context).pop();
+
+  return emoji;
 }

@@ -117,8 +117,14 @@ final Color sharedMediaSummaryBackgroundColor = Colors.grey.shade500;
 /// displaying the download progress indicator.
 final backdropBlack = Colors.black.withAlpha(150);
 
-/// The height of the emoji/sticker picker
+/// The height of the emoji/sticker picker.
 const double pickerHeight = 300;
+
+/// The color of a reaction that is not from ourselves.
+const Color reactionColorReceived = Color(0xff757575);
+
+/// The color of a reaction that is sent by ourselves.
+const Color reactionColorSent = Color(0xff2993FB);
 
 /// Navigation constants
 const String cropRoute = '/crop';

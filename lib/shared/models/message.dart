@@ -3,7 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/shared/models/reaction.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 
 part 'message.freezed.dart';
@@ -11,22 +11,10 @@ part 'message.g.dart';
 
 const pseudoMessageTypeNewDevice = 1;
 
-Map<String, String>? _optionalJsonDecode(String? data) {
-  if (data == null) return null;
-
-  return (jsonDecode(data) as Map<dynamic, dynamic>).cast<String, String>();
-}
-
 Map<String, dynamic> _optionalJsonDecodeWithFallback(String? data) {
   if (data == null) return <String, dynamic>{};
 
   return (jsonDecode(data) as Map<dynamic, dynamic>).cast<String, dynamic>();
-}
-
-String? _optionalJsonEncode(Map<String, dynamic>? data) {
-  if (data == null) return null;
-
-  return jsonEncode(data);
 }
 
 String? _optionalJsonEncodeWithFallback(Map<String, dynamic>? data) {
@@ -46,26 +34,15 @@ class Message with _$Message {
     // The database-internal identifier of the message
     int id,
     String conversationJid,
-    // True if the message contains some embedded media
-    bool isMedia,
     bool isFileUploadNotification,
     bool encrypted,
     // True if the message contains a <no-store> Message Processing Hint. False if not
     bool containsNoStore, {
     int? errorType,
     int? warningType,
-    String? mediaUrl,
+    FileMetadata? fileMetadata,
     @Default(false) bool isDownloading,
     @Default(false) bool isUploading,
-    String? mediaType,
-    String? thumbnailData,
-    int? mediaWidth,
-    int? mediaHeight,
-    // If non-null: Indicates where some media entry originated/originates from
-    String? srcUrl,
-    String? key,
-    String? iv,
-    String? encryptionScheme,
     @Default(false) bool received,
     @Default(false) bool displayed,
     @Default(false) bool acked,
@@ -73,13 +50,8 @@ class Message with _$Message {
     @Default(false) bool isEdited,
     String? originId,
     Message? quotes,
-    String? filename,
-    Map<String, String>? plaintextHashes,
-    Map<String, String>? ciphertextHashes,
-    int? mediaSize,
-    @Default([]) List<Reaction> reactions,
+    @Default([]) List<String> reactionsPreview,
     String? stickerPackId,
-    String? stickerHashKey,
     int? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
   }) = _Message;
@@ -90,34 +62,31 @@ class Message with _$Message {
   factory Message.fromJson(Map<String, dynamic> json) =>
       _$MessageFromJson(json);
 
-  factory Message.fromDatabaseJson(Map<String, dynamic> json, Message? quotes) {
+  factory Message.fromDatabaseJson(
+    Map<String, dynamic> json,
+    Message? quotes,
+    FileMetadata? fileMetadata,
+    List<String> reactionsPreview,
+  ) {
     return Message.fromJson({
       ...json,
       'received': intToBool(json['received']! as int),
       'displayed': intToBool(json['displayed']! as int),
       'acked': intToBool(json['acked']! as int),
-      'isMedia': intToBool(json['isMedia']! as int),
       'isFileUploadNotification':
           intToBool(json['isFileUploadNotification']! as int),
       'encrypted': intToBool(json['encrypted']! as int),
-      'plaintextHashes':
-          _optionalJsonDecode(json['plaintextHashes'] as String?),
-      'ciphertextHashes':
-          _optionalJsonDecode(json['ciphertextHashes'] as String?),
       'isDownloading': intToBool(json['isDownloading']! as int),
       'isUploading': intToBool(json['isUploading']! as int),
       'isRetracted': intToBool(json['isRetracted']! as int),
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
-      'reactions': <Map<String, dynamic>>[],
+      'reactionsPreview': reactionsPreview,
       'pseudoMessageData':
           _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
     }).copyWith(
       quotes: quotes,
-      reactions: (jsonDecode(json['reactions']! as String) as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .map<Reaction>(Reaction.fromJson)
-          .toList(),
+      fileMetadata: fileMetadata,
     );
   }
 
@@ -125,29 +94,25 @@ class Message with _$Message {
     final map = toJson()
       ..remove('id')
       ..remove('quotes')
-      ..remove('reactions')
+      ..remove('reactionsPreview')
+      ..remove('fileMetadata')
       ..remove('pseudoMessageData');
 
     return {
       ...map,
-      'isMedia': boolToInt(isMedia),
       'isFileUploadNotification': boolToInt(isFileUploadNotification),
       'received': boolToInt(received),
       'displayed': boolToInt(displayed),
       'acked': boolToInt(acked),
       'encrypted': boolToInt(encrypted),
+      'file_metadata_id': fileMetadata?.id,
       // NOTE: Message.quote_id is a foreign-key
       'quote_id': quotes?.id,
-      'plaintextHashes': _optionalJsonEncode(plaintextHashes),
-      'ciphertextHashes': _optionalJsonEncode(ciphertextHashes),
       'isDownloading': boolToInt(isDownloading),
       'isUploading': boolToInt(isUploading),
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
       'containsNoStore': boolToInt(containsNoStore),
-      'reactions': jsonEncode(
-        reactions.map((r) => r.toJson()).toList(),
-      ),
       'pseudoMessageData': _optionalJsonEncodeWithFallback(pseudoMessageData),
     };
   }
@@ -161,7 +126,7 @@ class Message with _$Message {
   /// Returns a representative emoji for a message. Its primary purpose is
   /// to provide a universal fallback for quoted media messages.
   String get messageEmoji {
-    return mimeTypeToEmoji(mediaType, addTypeName: false);
+    return mimeTypeToEmoji(fileMetadata?.mimeType, addTypeName: false);
   }
 
   /// True if the message is a pseudo message.
@@ -224,19 +189,21 @@ class Message with _$Message {
 
   /// Returns true if the message contains media that can be thumbnailed, i.e. videos or
   /// images.
-  bool get isThumbnailable =>
-      !isPseudoMessage &&
-      isMedia &&
-      mediaType != null &&
-      (mediaType!.startsWith('image/') || mediaType!.startsWith('video/'));
+  bool get isThumbnailable {
+    if (isPseudoMessage || !isMedia || fileMetadata?.mimeType == null) {
+      return false;
+    }
+
+    final mimeType = fileMetadata!.mimeType!;
+    return mimeType.startsWith('image/') || mimeType.startsWith('video/');
+  }
 
   /// Returns true if the message can be copied to the clipboard.
   bool get isCopyable => !isMedia && body.isNotEmpty && !isPseudoMessage;
 
   /// Returns true if the message is a sticker
-  bool get isSticker =>
-      isMedia &&
-      stickerPackId != null &&
-      stickerHashKey != null &&
-      !isPseudoMessage;
+  bool get isSticker => isMedia && stickerPackId != null && !isPseudoMessage;
+
+  /// True if the message is a media message
+  bool get isMedia => fileMetadata != null;
 }

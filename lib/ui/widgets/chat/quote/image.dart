@@ -20,7 +20,7 @@ class QuotedImageWidget extends StatelessWidget {
     return QuotedMediaBaseWidget(
       message,
       SharedImageWidget(
-        message.mediaUrl!,
+        message.fileMetadata!.path!,
         size: 48,
         borderRadius: 8,
       ),

@@ -30,9 +30,9 @@ class VideoChatWidget extends StatelessWidget {
   Widget _buildUploading() {
     return MediaBaseChatWidget(
       VideoThumbnail(
-        path: message.mediaUrl!,
+        path: message.fileMetadata!.path!,
         conversationJid: message.conversationJid,
-        mime: message.mediaType!,
+        mime: message.fileMetadata!.mimeType!,
         size: Size(
           maxWidth,
           0.6 * maxWidth,
@@ -46,7 +46,7 @@ class VideoChatWidget extends StatelessWidget {
   }
 
   Widget _buildDownloading() {
-    if (message.thumbnailData != null) {
+    if (message.fileMetadata!.thumbnailData != null) {
       final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
@@ -54,7 +54,7 @@ class VideoChatWidget extends StatelessWidget {
           width: size.width,
           height: size.height,
           child: BlurHash(
-            hash: message.thumbnailData!,
+            hash: message.fileMetadata!.thumbnailData!,
             decodingWidth: size.width.toInt(),
             decodingHeight: size.height.toInt(),
           ),
@@ -66,11 +66,11 @@ class VideoChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.filename!,
+        message.fileMetadata!.filename,
         radius,
         maxWidth,
         sent,
-        mimeType: message.mediaType,
+        mimeType: message.fileMetadata!.mimeType,
         downloadButton: ProgressWidget(id: message.id),
       );
     }
@@ -80,9 +80,9 @@ class VideoChatWidget extends StatelessWidget {
   Widget _buildVideo() {
     return MediaBaseChatWidget(
       VideoThumbnail(
-        path: message.mediaUrl!,
+        path: message.fileMetadata!.path!,
         conversationJid: message.conversationJid,
-        mime: message.mediaType!,
+        mime: message.fileMetadata!.mimeType!,
         size: Size(
           maxWidth,
           0.6 * maxWidth,
@@ -94,13 +94,13 @@ class VideoChatWidget extends StatelessWidget {
         sent,
       ),
       radius,
-      onTap: () => openFile(message.mediaUrl!),
+      onTap: () => openFile(message.fileMetadata!.path!),
       extra: const PlayButton(),
     );
   }
 
   Widget _buildDownloadable() {
-    if (message.thumbnailData != null) {
+    if (message.fileMetadata!.thumbnailData != null) {
       final size = getMediaSize(message, maxWidth);
 
       return MediaBaseChatWidget(
@@ -108,7 +108,7 @@ class VideoChatWidget extends StatelessWidget {
           width: size.width,
           height: size.height,
           child: BlurHash(
-            hash: message.thumbnailData!,
+            hash: message.fileMetadata!.thumbnailData!,
             decodingWidth: size.width.toInt(),
             decodingHeight: size.height.toInt(),
           ),
@@ -122,11 +122,11 @@ class VideoChatWidget extends StatelessWidget {
     } else {
       return FileChatBaseWidget(
         message,
-        message.filename!,
+        message.fileMetadata!.filename,
         radius,
         maxWidth,
         sent,
-        mimeType: message.mediaType,
+        mimeType: message.fileMetadata!.mimeType,
         downloadButton: DownloadButton(
           onPressed: () {
             MoxplatformPlugin.handler.getDataSender().sendData(
@@ -149,7 +149,8 @@ class VideoChatWidget extends StatelessWidget {
     }
 
     // TODO(PapaTutuWawa): Maybe use an async builder
-    if (message.mediaUrl != null && File(message.mediaUrl!).existsSync()) {
+    if (message.fileMetadata!.path != null &&
+        File(message.fileMetadata!.path!).existsSync()) {
       return _buildVideo();
     }
 

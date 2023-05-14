@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -13,17 +12,17 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/cryptography/types.dart';
-import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/httpfiletransfer/client.dart' as client;
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/jobs.dart';
+import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
-import 'package:moxxyv2/shared/models/media.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:path/path.dart' as pathlib;
 import 'package:path_provider/path_provider.dart';
@@ -122,24 +121,19 @@ class HttpFileTransferService {
     });
   }
 
-  Future<void> _copyFile(FileUploadJob job) async {
-    for (final recipient in job.recipients) {
-      final newPath = await getDownloadPath(
-        pathlib.basename(job.path),
-        recipient,
-        job.mime,
-      );
-
-      await File(job.path).copy(newPath);
+  Future<void> _copyFile(
+    FileUploadJob job,
+    String to,
+  ) async {
+    if (!File(to).existsSync()) {
+      await File(job.path).copy(to);
 
       // Let the media scanner index the file
-      MoxplatformPlugin.media.scanFile(newPath);
-
-      // Update the message
-      await GetIt.I.get<MessageService>().updateMessage(
-            job.messageMap[recipient]!.id,
-            mediaUrl: newPath,
-          );
+      MoxplatformPlugin.media.scanFile(to);
+    } else {
+      _log.finest(
+        'Skipping file copy on upload as file is already at media location',
+      );
     }
   }
 
@@ -233,20 +227,92 @@ class HttpFileTransferService {
     } else {
       _log.fine('Upload was successful');
 
+      // Get hashes
+      StatelessFileSharingSource source;
+      final plaintextHashes = <String, String>{};
+      Map<String, String>? ciphertextHashes;
+      if (encryption != null) {
+        source = StatelessFileSharingEncryptedSource(
+          SFSEncryptionType.aes256GcmNoPadding,
+          encryption.key,
+          encryption.iv,
+          encryption.ciphertextHashes,
+          StatelessFileSharingUrlSource(slot.getUrl),
+        );
+
+        plaintextHashes.addAll(encryption.plaintextHashes);
+        ciphertextHashes = encryption.ciphertextHashes;
+      } else {
+        source = StatelessFileSharingUrlSource(slot.getUrl);
+        try {
+          plaintextHashes[hashSha256] = await GetIt.I
+              .get<CryptographyService>()
+              .hashFile(job.path, HashFunction.sha256);
+        } catch (ex) {
+          _log.warning('Failed to hash file ${job.path} using SHA-256: $ex');
+        }
+      }
+
+      // Update the metadata
+      final filename = pathlib.basename(job.path);
+      final filePath = await computeCachedPathForFile(
+        filename,
+        plaintextHashes,
+      );
+      final metadataWrapper =
+          await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
+                MediaFileLocation(
+                  [slot.getUrl],
+                  filename,
+                  encryption != null
+                      ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
+                      : null,
+                  encryption?.key,
+                  encryption?.iv,
+                  plaintextHashes,
+                  ciphertextHashes,
+                  stat.size,
+                ),
+                job.mime,
+                stat.size,
+                null,
+                // TODO(Unknown): job.thumbnails.first
+                null,
+                null,
+                path: filePath,
+              );
+      var metadata = metadataWrapper.fileMetadata;
+
+      // Remove the tempoary metadata if we already know the file
+      if (metadataWrapper.retrieved) {
+        // Only skip the copy if the existing file metadata has a path associated with it
+        if (metadataWrapper.fileMetadata.path != null) {
+          _log.fine(
+            'Uploaded file $filename is already tracked. Skipping copy.',
+          );
+        } else {
+          _log.fine(
+            'Uploaded file $filename is already tracked but has no path. Copying...',
+          );
+          await _copyFile(job, filePath);
+          metadata = await GetIt.I.get<FilesService>().updateFileMetadata(
+                metadata.id,
+                path: filePath,
+              );
+        }
+      } else {
+        _log.fine('Uploaded file $filename not tracked. Copying...');
+        await _copyFile(job, metadataWrapper.fileMetadata.path!);
+      }
+
       const uuid = Uuid();
       for (final recipient in job.recipients) {
         // Notify UI of upload completion
         var msg = await ms.updateMessage(
           job.messageMap[recipient]!.id,
-          mediaSize: stat.size,
           errorType: noError,
-          encryptionScheme: encryption != null
-              ? SFSEncryptionType.aes256GcmNoPadding.toNamespace()
-              : null,
-          key: encryption != null ? base64Encode(encryption.key) : null,
-          iv: encryption != null ? base64Encode(encryption.iv) : null,
           isUploading: false,
-          srcUrl: slot.getUrl,
+          fileMetadata: metadata,
         );
         // TODO(Unknown): Maybe batch those two together?
         final oldSid = msg.sid;
@@ -256,29 +322,6 @@ class HttpFileTransferService {
           originId: uuid.v4(),
         );
         sendEvent(MessageUpdatedEvent(message: msg));
-
-        StatelessFileSharingSource source;
-        final plaintextHashes = <String, String>{};
-        if (encryption != null) {
-          source = StatelessFileSharingEncryptedSource(
-            SFSEncryptionType.aes256GcmNoPadding,
-            encryption.key,
-            encryption.iv,
-            encryption.ciphertextHashes,
-            StatelessFileSharingUrlSource(slot.getUrl),
-          );
-
-          plaintextHashes.addAll(encryption.plaintextHashes);
-        } else {
-          source = StatelessFileSharingUrlSource(slot.getUrl);
-          try {
-            plaintextHashes[hashSha256] = await GetIt.I
-                .get<CryptographyService>()
-                .hashFile(job.path, HashFunction.sha256);
-          } catch (ex) {
-            _log.warning('Failed to hash file ${job.path} using SHA-256: $ex');
-          }
-        }
 
         // Send the message to the recipient
         conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
@@ -292,7 +335,7 @@ class HttpFileTransferService {
                   FileMetadataData(
                     mediaType: job.mime,
                     size: stat.size,
-                    name: pathlib.basename(job.path),
+                    name: filename,
                     thumbnails: job.thumbnails,
                     hashes: plaintextHashes,
                   ),
@@ -305,15 +348,14 @@ class HttpFileTransferService {
         _log.finest(
           'Sent message with file upload for ${job.path} to $recipient',
         );
+      }
 
-        final isMultiMedia = (job.mime?.startsWith('image/') ?? false) ||
-            (job.mime?.startsWith('video/') ?? false);
-        if (isMultiMedia) {
-          _log.finest(
-            'File appears to be either an image or a video. Copying it to the correct directory...',
-          );
-          unawaited(_copyFile(job));
-        }
+      // Remove the old metadata only here because we would otherwise violate a foreign key
+      // constraint.
+      if (metadataWrapper.retrieved) {
+        await GetIt.I.get<FilesService>().removeFileMetadata(
+              job.metadataId,
+            );
       }
     }
 
@@ -351,8 +393,10 @@ class HttpFileTransferService {
   /// Actually attempt to download the file described by the job [job].
   Future<void> _performFileDownload(FileDownloadJob job) async {
     final filename = job.location.filename;
-    final downloadedPath =
-        await getDownloadPath(filename, job.conversationJid, job.mimeGuess);
+    final downloadedPath = await computeCachedPathForFile(
+      job.location.filename,
+      job.location.plaintextHashes,
+    );
 
     var downloadPath = downloadedPath;
     if (job.location.key != null && job.location.iv != null) {
@@ -361,15 +405,18 @@ class HttpFileTransferService {
       downloadPath = pathlib.join(tempDir.path, filename);
     }
 
+    // TODO(Unknown): Maybe try other URLs?
+    final downloadUrl = job.location.urls.first;
     _log.finest(
-      'Downloading ${job.location.url} as $filename (MIME guess ${job.mimeGuess}) to $downloadPath (-> $downloadedPath)',
+      'Downloading $downloadUrl as $filename (MIME guess ${job.mimeGuess}) to $downloadPath (-> $downloadedPath)',
     );
 
     int? downloadStatusCode;
+    var integrityCheckPassed = true;
     try {
       _log.finest('Beginning download...');
       downloadStatusCode = await client.downloadFile(
-        Uri.parse(job.location.url),
+        Uri.parse(downloadUrl),
         downloadPath,
         (total, current) {
           final progress = current.toDouble() / total.toDouble();
@@ -388,18 +435,15 @@ class HttpFileTransferService {
 
     if (!isRequestOkay(downloadStatusCode)) {
       _log.warning(
-        'HTTP GET of ${job.location.url} returned $downloadStatusCode',
+        'HTTP GET of $downloadUrl returned $downloadStatusCode',
       );
       await _fileDownloadFailed(job, fileDownloadFailedError);
       return;
     }
 
-    var integrityCheckPassed = true;
-    final conv = (await GetIt.I
-        .get<ConversationService>()
-        .getConversationByJid(job.conversationJid))!;
     final decryptionKeysAvailable =
         job.location.key != null && job.location.iv != null;
+    final crypto = GetIt.I.get<CryptographyService>();
     if (decryptionKeysAvailable) {
       // The file was downloaded and is now being decrypted
       sendEvent(
@@ -409,15 +453,15 @@ class HttpFileTransferService {
       );
 
       try {
-        final result = await GetIt.I.get<CryptographyService>().decryptFile(
-              downloadPath,
-              downloadedPath,
-              encryptionTypeFromNamespace(job.location.encryptionScheme!),
-              job.location.key!,
-              job.location.iv!,
-              job.location.plaintextHashes ?? {},
-              job.location.ciphertextHashes ?? {},
-            );
+        final result = await crypto.decryptFile(
+          downloadPath,
+          downloadedPath,
+          encryptionTypeFromNamespace(job.location.encryptionScheme!),
+          job.location.key!,
+          job.location.iv!,
+          job.location.plaintextHashes ?? {},
+          job.location.ciphertextHashes ?? {},
+        );
 
         if (!result.decryptionOkay) {
           _log.warning('Failed to decrypt $downloadPath');
@@ -437,6 +481,26 @@ class HttpFileTransferService {
       unawaited(
         Directory(pathlib.dirname(downloadPath)).delete(recursive: true),
       );
+    } else if (job.location.plaintextHashes?.isNotEmpty ?? false) {
+      // Verify only the plaintext hash
+      // TODO(Unknown): Allow verification of other hash functions
+      if (job.location.plaintextHashes!['sha-256'] != null) {
+        final hash = await crypto.hashFile(
+          downloadPath,
+          HashFunction.sha256,
+        );
+        integrityCheckPassed = hash == job.location.plaintextHashes!['sha-256'];
+      } else if (job.location.plaintextHashes!['sha-512'] != null) {
+        final hash = await crypto.hashFile(
+          downloadPath,
+          HashFunction.sha512,
+        );
+        integrityCheckPassed = hash == job.location.plaintextHashes!['sha-512'];
+      } else {
+        _log.warning(
+          'Could not verify file integrity as no accelerated hash function is available (${job.location.plaintextHashes!.keys})',
+        );
+      }
     }
 
     // Check the MIME type
@@ -480,17 +544,37 @@ class HttpFileTransferService {
       }
     }
 
+    final fs = GetIt.I.get<FilesService>();
+    final metadata = await fs.updateFileMetadata(
+      job.metadataId,
+      path: downloadedPath,
+      size: File(downloadedPath).lengthSync(),
+      width: mediaWidth,
+      height: mediaHeight,
+      mimeType: mime,
+    );
+
+    // Only add the hash pointers if the file hashes match what was sent
+    if (job.location.plaintextHashes?.isNotEmpty ?? false) {
+      if (integrityCheckPassed) {
+        await fs.createMetadataHashEntries(
+          job.location.plaintextHashes!,
+          job.metadataId,
+        );
+      } else {
+        _log.warning('Integrity check failed for file');
+      }
+    }
+
+    final cs = GetIt.I.get<ConversationService>();
+    final conversation = (await cs.getConversationByJid(job.conversationJid))!;
     final msg = await GetIt.I.get<MessageService>().updateMessage(
           job.mId,
-          mediaUrl: downloadedPath,
-          mediaType: mime,
-          mediaWidth: mediaWidth,
-          mediaHeight: mediaHeight,
-          mediaSize: File(downloadedPath).lengthSync(),
+          fileMetadata: metadata,
           isFileUploadNotification: false,
           warningType:
               integrityCheckPassed ? null : warningFileIntegrityCheckFailed,
-          errorType: conv.encrypted && !decryptionKeysAvailable
+          errorType: conversation.encrypted && !decryptionKeysAvailable
               ? messageChatEncryptedButFileNot
               : null,
           isDownloading: false,
@@ -498,47 +582,21 @@ class HttpFileTransferService {
 
     sendEvent(MessageUpdatedEvent(message: msg));
 
-    final sharedMedium =
-        await GetIt.I.get<DatabaseService>().addSharedMediumFromData(
-              downloadedPath,
-              msg.timestamp,
-              conv.jid,
-              job.mId,
-              mime: mime,
-            );
-
-    final cs = GetIt.I.get<ConversationService>();
-    final updatedConv = await cs.createOrUpdateConversation(
-      conv.jid,
-      update: (c) {
-        return cs.updateConversation(
-          c.jid,
-          sharedMediaAmount: c.sharedMediaAmount + 1,
-        );
-      },
+    final updatedConversation = conversation.copyWith(
+      lastMessage: conversation.lastMessage?.id == job.mId
+          ? msg
+          : conversation.lastMessage,
     );
-    final newConv = updatedConv!.copyWith(
-      lastMessage: conv.lastMessage?.id == job.mId ? msg : conv.lastMessage,
-      sharedMedia: clampedListPrepend<SharedMedium>(
-        conv.sharedMedia,
-        sharedMedium,
-        8,
-      ),
-    );
-
-    _log.finest(
-      'Amount of media before: ${conv.sharedMedia.length}, after: ${newConv.sharedMedia.length}',
-    );
-    GetIt.I.get<ConversationService>().setConversation(newConv);
+    cs.setConversation(updatedConversation);
 
     // Show a notification
     if (notification.shouldShowNotification(msg.conversationJid) &&
         job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      await notification.showNotification(newConv, msg, '');
+      await notification.showNotification(updatedConversation, msg, '');
     }
 
-    sendEvent(ConversationUpdatedEvent(conversation: newConv));
+    sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
 
     // Free the download resources for the next one
     await _pickNextDownloadTask();

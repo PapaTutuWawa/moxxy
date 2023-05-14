@@ -1,20 +1,24 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:archive/archive.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
-import 'package:moxxyv2/service/helpers.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/httpfiletransfer/client.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
+import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
+import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:path/path.dart' as p;
@@ -26,31 +30,69 @@ class StickersService {
   Future<StickerPack?> getStickerPackById(String id) async {
     if (_stickerPacks.containsKey(id)) return _stickerPacks[id];
 
-    final pack = await GetIt.I.get<DatabaseService>().getStickerPackById(id);
-    if (pack == null) return null;
-
-    _stickerPacks[id] = pack;
-    return _stickerPacks[id];
-  }
-
-  Future<Sticker?> getStickerByHashKey(String packId, String hashKey) async {
-    final pack = await getStickerPackById(packId);
-    if (pack == null) return null;
-
-    return firstWhereOrNull<Sticker>(
-      pack.stickers,
-      (sticker) => sticker.hashKey == hashKey,
+    final db = GetIt.I.get<DatabaseService>().database;
+    final rawPack = await db.query(
+      stickerPacksTable,
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
     );
+
+    if (rawPack.isEmpty) return null;
+
+    final rawStickers = await db.rawQuery(
+      '''
+SELECT
+  sticker.*,
+  fm.id AS fm_id,
+  fm.path AS fm_path,
+  fm.sourceUrls AS fm_sourceUrls,
+  fm.mimeType AS fm_mimeType,
+  fm.thumbnailType AS fm_thumbnailType,
+  fm.thumbnailData AS fm_thumbnailData,
+  fm.width AS fm_width,
+  fm.height AS fm_height,
+  fm.plaintextHashes AS fm_plaintextHashes,
+  fm.encryptionKey AS fm_encryptionKey,
+  fm.encryptionIv AS fm_encryptionIv,
+  fm.encryptionScheme AS fm_encryptionScheme,
+  fm.cipherTextHashes AS fm_cipherTextHashes,
+  fm.filename AS fm_filename,
+  fm.size AS fm_size
+FROM (SELECT * FROM $stickersTable WHERE stickerPackId = ?) AS sticker
+  JOIN $fileMetadataTable fm ON sticker.file_metadata_id = fm.id;
+      ''',
+      [id],
+    );
+
+    _stickerPacks[id] = StickerPack.fromDatabaseJson(
+      rawPack.first,
+      rawStickers.map((sticker) {
+        return Sticker.fromDatabaseJson(
+          sticker,
+          FileMetadata.fromDatabaseJson(
+            getPrefixedSubMap(sticker, 'fm_'),
+          ),
+        );
+      }).toList(),
+    );
+
+    return _stickerPacks[id]!;
   }
 
   Future<List<StickerPack>> getStickerPacks() async {
     if (_stickerPacks.isEmpty) {
-      final packs = await GetIt.I.get<DatabaseService>().loadStickerPacks();
-      for (final pack in packs) {
-        _stickerPacks[pack.id] = pack;
+      final rawPackIds = await GetIt.I.get<DatabaseService>().database.query(
+        stickerPacksTable,
+        columns: ['id'],
+      );
+      for (final rawPack in rawPackIds) {
+        final id = rawPack['id']! as String;
+        await getStickerPackById(id);
       }
     }
 
+    _log.finest('Got ${_stickerPacks.length} sticker packs');
     return _stickerPacks.values.toList();
   }
 
@@ -59,21 +101,27 @@ class StickersService {
     assert(pack != null, 'The sticker pack must exist');
 
     // Delete the files
-    final stickerPackPath = await getStickerPackPath(
-      pack!.hashAlgorithm,
-      pack.hashValue,
-    );
-    final stickerPackDir = Directory(stickerPackPath);
-    if (stickerPackDir.existsSync()) {
-      unawaited(
-        stickerPackDir.delete(
-          recursive: true,
-        ),
-      );
+    for (final sticker in pack!.stickers) {
+      if (sticker.fileMetadata.path == null) {
+        continue;
+      }
+
+      await GetIt.I.get<FilesService>().updateFileMetadata(
+            sticker.fileMetadata.id,
+            path: null,
+          );
+      final file = File(sticker.fileMetadata.path!);
+      if (file.existsSync()) {
+        await file.delete();
+      }
     }
 
     // Remove from the database
-    await GetIt.I.get<DatabaseService>().removeStickerPackById(id);
+    await GetIt.I.get<DatabaseService>().database.delete(
+      stickerPacksTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
 
     // Remove from the cache
     _stickerPacks.remove(id);
@@ -105,16 +153,6 @@ class StickersService {
     if (result.isType<moxxmpp.PubSubError>()) {
       _log.severe('Failed to publish sticker pack');
     }
-  }
-
-  /// Returns the path to the sticker pack with hash algorithm [algo] and hash [hash].
-  /// Ensures that the directory exists before returning.
-  Future<String> _getStickerPackPath(String algo, String hash) async {
-    final stickerDirPath = await getStickerPackPath(algo, hash);
-    final stickerDir = Directory(stickerDirPath);
-    if (!stickerDir.existsSync()) await stickerDir.create(recursive: true);
-
-    return stickerDirPath;
   }
 
   Future<void> importFromPubSubWithEvent(
@@ -158,36 +196,96 @@ class StickersService {
     return installFromPubSub(stickerPackRaw);
   }
 
+  Future<void> _addStickerPackFromData(StickerPack pack) async {
+    await GetIt.I.get<DatabaseService>().database.insert(
+          stickerPacksTable,
+          pack.toDatabaseJson(),
+        );
+  }
+
+  Future<Sticker> _addStickerFromData(
+    String id,
+    String stickerPackId,
+    String desc,
+    Map<String, String> suggests,
+    FileMetadata fileMetadata,
+  ) async {
+    final s = Sticker(
+      id,
+      stickerPackId,
+      desc,
+      suggests,
+      fileMetadata,
+    );
+
+    await GetIt.I.get<DatabaseService>().database.insert(
+          stickersTable,
+          s.toDatabaseJson(),
+        );
+    return s;
+  }
+
   Future<StickerPack?> installFromPubSub(StickerPack remotePack) async {
     assert(!remotePack.local, 'Sticker pack must be remote');
-
-    final stickerPackPath = await _getStickerPackPath(
-      remotePack.hashAlgorithm,
-      remotePack.hashValue,
-    );
 
     var success = true;
     final stickers = List<Sticker>.from(remotePack.stickers);
     for (var i = 0; i < stickers.length; i++) {
       final sticker = stickers[i];
-      final stickerPath = p.join(
-        stickerPackPath,
-        sticker.hashes.values.first,
-      );
-      final downloadStatusCode = await downloadFile(
-        Uri.parse(sticker.urlSources.first),
-        stickerPath,
-        (_, __) {},
+      final stickerPath = await computeCachedPathForFile(
+        sticker.fileMetadata.filename,
+        sticker.fileMetadata.plaintextHashes,
       );
 
-      if (!isRequestOkay(downloadStatusCode)) {
-        _log.severe('Request not okay: $downloadStatusCode');
-        success = false;
-        break;
+      // Get file metadata
+      final fileMetadataRaw =
+          await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
+                MediaFileLocation(
+                  sticker.fileMetadata.sourceUrls!,
+                  p.basename(stickerPath),
+                  null,
+                  null,
+                  null,
+                  sticker.fileMetadata.plaintextHashes,
+                  null,
+                  sticker.fileMetadata.size,
+                ),
+                sticker.fileMetadata.mimeType,
+                sticker.fileMetadata.size,
+                sticker.fileMetadata.width != null &&
+                        sticker.fileMetadata.height != null
+                    ? Size(
+                        sticker.fileMetadata.width!.toDouble(),
+                        sticker.fileMetadata.height!.toDouble(),
+                      )
+                    : null,
+                // TODO(Unknown): Maybe consider the thumbnails one day
+                null,
+                null,
+                path: stickerPath,
+              );
+
+      if (!fileMetadataRaw.retrieved) {
+        final downloadStatusCode = await downloadFile(
+          Uri.parse(sticker.fileMetadata.sourceUrls!.first),
+          stickerPath,
+          (_, __) {},
+        );
+
+        if (!isRequestOkay(downloadStatusCode)) {
+          _log.severe('Request not okay: $downloadStatusCode');
+          success = false;
+          break;
+        }
       }
-      stickers[i] = sticker.copyWith(
-        path: stickerPath,
-        hashKey: getStickerHashKey(sticker.hashes),
+
+      stickers[i] = await _addStickerFromData(
+        getStrongestHashFromMap(sticker.fileMetadata.plaintextHashes) ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
+        remotePack.hashValue,
+        sticker.desc,
+        sticker.suggests,
+        fileMetadataRaw.fileMetadata,
       );
     }
 
@@ -197,27 +295,7 @@ class StickersService {
     }
 
     // Add the sticker pack to the database
-    final db = GetIt.I.get<DatabaseService>();
-    await db.addStickerPackFromData(remotePack);
-
-    // Add the stickers to the database
-    final stickersDb = List<Sticker>.empty(growable: true);
-    for (final sticker in stickers) {
-      stickersDb.add(
-        await db.addStickerFromData(
-          sticker.mediaType,
-          sticker.desc,
-          sticker.size,
-          sticker.width,
-          sticker.height,
-          sticker.hashes,
-          sticker.urlSources,
-          sticker.path,
-          remotePack.hashValue,
-          sticker.suggests,
-        ),
-      );
-    }
+    await _addStickerPackFromData(remotePack);
 
     // Publish but don't block
     unawaited(
@@ -225,7 +303,7 @@ class StickersService {
     );
 
     return remotePack.copyWith(
-      stickers: stickersDb,
+      stickers: stickers,
       local: true,
     );
   }
@@ -299,8 +377,6 @@ class StickersService {
     final stickerDir = Directory(stickerDirPath);
     if (!stickerDir.existsSync()) await stickerDir.create(recursive: true);
 
-    final db = GetIt.I.get<DatabaseService>();
-
     // Create the sticker pack first
     final stickerPack = StickerPack(
       pack.hashValue,
@@ -312,33 +388,65 @@ class StickersService {
       pack.restricted,
       true,
     );
-    await db.addStickerPackFromData(stickerPack);
+    await _addStickerPackFromData(stickerPack);
 
     // Add all stickers
     final stickers = List<Sticker>.empty(growable: true);
     for (final sticker in pack.stickers) {
-      final filename = sticker.metadata.name!;
-      final stickerFile = archive.findFile(filename)!;
-      final stickerPath = p.join(stickerDirPath, filename);
-      await File(stickerPath).writeAsBytes(
-        stickerFile.content as List<int>,
+      // Get the "path" to the sticker
+      final stickerPath = await computeCachedPathForFile(
+        sticker.metadata.name!,
+        sticker.metadata.hashes,
       );
 
+      // Get metadata
+      final urlSources = sticker.sources
+          .whereType<moxxmpp.StatelessFileSharingUrlSource>()
+          .map((src) => src.url)
+          .toList();
+      final fileMetadataRaw = await GetIt.I
+          .get<FilesService>()
+          .createFileMetadataIfRequired(
+            MediaFileLocation(
+              urlSources,
+              p.basename(stickerPath),
+              null,
+              null,
+              null,
+              sticker.metadata.hashes,
+              null,
+              sticker.metadata.size,
+            ),
+            sticker.metadata.mediaType,
+            sticker.metadata.size,
+            sticker.metadata.width != null && sticker.metadata.height != null
+                ? Size(
+                    sticker.metadata.width!.toDouble(),
+                    sticker.metadata.height!.toDouble(),
+                  )
+                : null,
+            // TODO(Unknown): Maybe consider the thumbnails one day
+            null,
+            null,
+            path: stickerPath,
+          );
+
+      // Only copy the sticker to storage if we don't already have it
+      if (!fileMetadataRaw.retrieved) {
+        final stickerFile = archive.findFile(sticker.metadata.name!)!;
+        await File(stickerPath).writeAsBytes(
+          stickerFile.content as List<int>,
+        );
+      }
+
       stickers.add(
-        await db.addStickerFromData(
-          sticker.metadata.mediaType!,
-          sticker.metadata.desc!,
-          sticker.metadata.size!,
-          null,
-          null,
-          sticker.metadata.hashes,
-          sticker.sources
-              .whereType<moxxmpp.StatelessFileSharingUrlSource>()
-              .map((moxxmpp.StatelessFileSharingUrlSource source) => source.url)
-              .toList(),
-          stickerPath,
+        await _addStickerFromData(
+          getStrongestHashFromMap(sticker.metadata.hashes) ??
+              DateTime.now().millisecondsSinceEpoch.toString(),
           pack.hashValue,
+          sticker.metadata.desc!,
           sticker.suggests,
+          fileMetadataRaw.fileMetadata,
         ),
       );
     }

@@ -1,0 +1,135 @@
+import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/reaction_group.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/service/data.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/ui/widgets/chat/reactions/row.dart';
+
+/// If a reaction group from our own JID [ownJid] is included in [group], ensure that
+/// that reaction group is at index 0. If no reactions from our JID are included, insert
+/// a new group with an empty emoji list at index 0.
+@visibleForTesting
+List<ReactionGroup> ensureReactionGroupOrder(
+  List<ReactionGroup> group,
+  String ownJid,
+) {
+  final ownReactionIndex = group.indexWhere((r) => r.jid == ownJid);
+  return ownReactionIndex == -1
+      ? [
+          ReactionGroup(
+            ownJid,
+            [],
+          ),
+          ...group,
+        ]
+      : [
+          group[ownReactionIndex],
+          ...group.sublist(0, ownReactionIndex),
+          ...group.sublist(ownReactionIndex + 1),
+        ];
+}
+
+/// Displays the reactions to a message and allows modifying the reactions.
+/// When created, fetches the reactions from the ReactionService.
+class ReactionList extends StatelessWidget {
+  const ReactionList(this.messageId, this.conversationJid, {super.key});
+
+  /// The database identifier of the message to fetch reactions of.
+  final int messageId;
+
+  /// The conversation the message is part of.
+  final String conversationJid;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<BackgroundEvent?>(
+      future: MoxplatformPlugin.handler.getDataSender().sendData(
+            GetReactionsForMessageCommand(
+              messageId: messageId,
+            ),
+          ) as Future<BackgroundEvent?>,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final reactionsRaw =
+            (snapshot.data! as ReactionsForMessageResult).reactions;
+        final ownJid = GetIt.I.get<UIDataService>().ownJid!;
+
+        // Ensure that our own reaction is always at index 0. If we have no reactions,
+        // insert a "pseudo" entry so that we can add new reactions.
+        final reactions = ensureReactionGroupOrder(reactionsRaw, ownJid);
+
+        final bloc = GetIt.I.get<ConversationsBloc>();
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: reactions.length,
+          itemBuilder: (context, index) {
+            final reaction = reactions[index];
+            final ownReaction = reaction.jid == ownJid;
+            final conversation =
+                ownReaction ? null : bloc.getConversationByJid(reaction.jid);
+            return ReactionsRow(
+              avatar: ownReaction
+                  ? AvatarWrapper(
+                      avatarUrl: bloc.state.avatarUrl,
+                      radius: 35,
+                      altIcon: Icons.person,
+                    )
+                  : AvatarWrapper(
+                      avatarUrl: conversation?.avatarUrl,
+                      radius: 35,
+                      altIcon: Icons.person,
+                    ),
+              displayName: reaction.jid == ownJid
+                  ? t.messages.you
+                  : conversation?.title ?? reaction.jid,
+              emojis: reaction.emojis,
+              onAddPressed: reaction.jid == ownJid
+                  ? () async {
+                      final emoji = await pickEmoji(context);
+                      if (emoji != null) {
+                        await MoxplatformPlugin.handler
+                            .getDataSender()
+                            .sendData(
+                              AddReactionToMessageCommand(
+                                messageId: messageId,
+                                emoji: emoji,
+                                conversationJid: conversationJid,
+                              ),
+                              awaitable: false,
+                            );
+                      }
+                    }
+                  : null,
+              onReactionPressed: reaction.jid == ownJid
+                  ? (emoji) async {
+                      await MoxplatformPlugin.handler.getDataSender().sendData(
+                            RemoveReactionFromMessageCommand(
+                              messageId: messageId,
+                              emoji: emoji,
+                              conversationJid: conversationJid,
+                            ),
+                            awaitable: false,
+                          );
+
+                      // ignore: use_build_context_synchronously
+                      Navigator.of(context).pop();
+                    }
+                  : null,
+            );
+          },
+        );
+      },
+    );
+  }
+}

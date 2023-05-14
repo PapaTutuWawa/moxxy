@@ -17,6 +17,7 @@ dependencies:
   badges: 2.0.3
   better_open_file: 3.6.3
   bloc: 8.1.0
+  collection: ^1.16.0
   connectivity_plus: 2.3.6
   cropperx: 1.1.1
   cryptography: 2.0.5

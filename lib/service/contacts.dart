@@ -5,6 +5,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -122,7 +123,15 @@ class ContactsService {
   Future<Map<String, String>> _getContactIds() async {
     if (_contactIds != null) return _contactIds!;
 
-    _contactIds = await GetIt.I.get<DatabaseService>().getContactIds();
+    // TODO(Unknown): Can we just .cast<String, String>() here?
+    _contactIds = Map<String, String>.fromEntries(
+      (await GetIt.I.get<DatabaseService>().database.query(contactsTable)).map(
+        (item) => MapEntry(
+          item['jid']! as String,
+          item['id']! as String,
+        ),
+      ),
+    );
     return _contactIds!;
   }
 
@@ -165,7 +174,6 @@ class ContactsService {
   }
 
   Future<void> scanContacts() async {
-    final db = GetIt.I.get<DatabaseService>();
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
     final contacts = await _fetchContactsWithJabber();
@@ -183,7 +191,12 @@ class ContactsService {
       if (index != -1) continue;
 
       final jid = knownContactIdsReverse[id]!;
-      await db.removeContactId(id);
+      await GetIt.I.get<DatabaseService>().database.delete(
+        contactsTable,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+
       _contactIds!.remove(knownContactIdsReverse[id]);
 
       // Remove the avatar file, if it existed
@@ -235,7 +248,13 @@ class ContactsService {
     for (final contact in contacts) {
       // Add the ID to the cache and the database if it does not already exist
       if (!knownContactIds.containsKey(contact.jid)) {
-        await db.addContactId(contact.id, contact.jid);
+        await GetIt.I.get<DatabaseService>().database.insert(
+          contactsTable,
+          <String, String>{
+            'id': contact.id,
+            'jid': contact.jid,
+          },
+        );
         _contactIds![contact.jid] = contact.id;
       }
 

@@ -3,11 +3,11 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/media.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 
 class BidirectionalSharedMediaController
-    extends BidirectionalController<SharedMedium> {
+    extends BidirectionalController<Message> {
   BidirectionalSharedMediaController(this.conversationJid)
       : assert(
           BidirectionalSharedMediaController.currentController == null,
@@ -24,11 +24,12 @@ class BidirectionalSharedMediaController
   /// BidirectionalConversationController at a time.
   static BidirectionalSharedMediaController? currentController;
 
+  /// The JID of the conversation we want to get shared media of.
   final String conversationJid;
 
   @override
-  Future<List<SharedMedium>> fetchOlderDataImpl(
-    SharedMedium? oldestElement,
+  Future<List<Message>> fetchOlderDataImpl(
+    Message? oldestElement,
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -37,14 +38,14 @@ class BidirectionalSharedMediaController
             timestamp: oldestElement?.timestamp,
             olderThan: true,
           ),
-        ) as PagedSharedMediaResultEvent;
+        ) as PagedMessagesResultEvent;
 
-    return result.media;
+    return result.messages;
   }
 
   @override
-  Future<List<SharedMedium>> fetchNewerDataImpl(
-    SharedMedium? newestElement,
+  Future<List<Message>> fetchNewerDataImpl(
+    Message? newestElement,
   ) async {
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -53,9 +54,9 @@ class BidirectionalSharedMediaController
             timestamp: newestElement?.timestamp,
             olderThan: false,
           ),
-        ) as PagedSharedMediaResultEvent;
+        ) as PagedMessagesResultEvent;
 
-    return result.media;
+    return result.messages;
   }
 
   @override
