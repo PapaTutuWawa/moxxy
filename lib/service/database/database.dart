@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
+import 'package:meta/meta.dart';
 import 'package:moxxyv2/service/database/creation.dart';
+import 'package:moxxyv2/service/database/migration.dart';
 import 'package:moxxyv2/service/database/migrations/0000_blocklist.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration.dart';
 import 'package:moxxyv2/service/database/migrations/0000_contacts_integration_avatar.dart';
@@ -104,6 +106,46 @@ extension DatabaseHelpers on Database {
   }
 }
 
+@internal
+const List<DatabaseMigration<Database>> migrations = [
+  DatabaseMigration(2, upgradeFromV1ToV2),
+  DatabaseMigration(3, upgradeFromV2ToV3),
+  DatabaseMigration(4, upgradeFromV3ToV4),
+  DatabaseMigration(5, upgradeFromV4ToV5),
+  DatabaseMigration(6, upgradeFromV5ToV6),
+  DatabaseMigration(7, upgradeFromV6ToV7),
+  DatabaseMigration(8, upgradeFromV7ToV8),
+  DatabaseMigration(9, upgradeFromV8ToV9),
+  DatabaseMigration(10, upgradeFromV9ToV10),
+  DatabaseMigration(11, upgradeFromV10ToV11),
+  DatabaseMigration(12, upgradeFromV11ToV12),
+  DatabaseMigration(13, upgradeFromV12ToV13),
+  DatabaseMigration(14, upgradeFromV13ToV14),
+  DatabaseMigration(15, upgradeFromV14ToV15),
+  DatabaseMigration(16, upgradeFromV15ToV16),
+  DatabaseMigration(17, upgradeFromV16ToV17),
+  DatabaseMigration(18, upgradeFromV17ToV18),
+  DatabaseMigration(19, upgradeFromV18ToV19),
+  DatabaseMigration(20, upgradeFromV19ToV20),
+  DatabaseMigration(21, upgradeFromV20ToV21),
+  DatabaseMigration(22, upgradeFromV21ToV22),
+  DatabaseMigration(23, upgradeFromV22ToV23),
+  DatabaseMigration(24, upgradeFromV23ToV24),
+  DatabaseMigration(25, upgradeFromV24ToV25),
+  DatabaseMigration(26, upgradeFromV25ToV26),
+  DatabaseMigration(27, upgradeFromV26ToV27),
+  DatabaseMigration(28, upgradeFromV27ToV28),
+  DatabaseMigration(29, upgradeFromV28ToV29),
+  DatabaseMigration(30, upgradeFromV29ToV30),
+  DatabaseMigration(31, upgradeFromV30ToV31),
+  DatabaseMigration(32, upgradeFromV31ToV32),
+  DatabaseMigration(33, upgradeFromV32ToV33),
+  DatabaseMigration(34, upgradeFromV33ToV34),
+  DatabaseMigration(35, upgradeFromV34ToV35),
+  DatabaseMigration(36, upgradeFromV35ToV36),
+  DatabaseMigration(37, upgradeFromV36ToV37),
+];
+
 class DatabaseService {
   /// Secure storage for accesing the database encryption key.
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
@@ -115,11 +157,7 @@ class DatabaseService {
   final Logger _log = Logger('DatabaseService');
 
   /// The database.
-  late Database _db;
-
-  /// Public getter for the database
-  // TODO(PapaTutuWawa): Remove this getter and just make _db the new database
-  Database get database => _db;
+  late Database database;
 
   Future<void> initialize() async {
     final dbPath = path.join(
@@ -141,7 +179,7 @@ class DatabaseService {
       _log.finest('Key generation done...');
     }
 
-    _db = await openDatabase(
+    database = await openDatabase(
       dbPath,
       password: key,
       version: 37,
@@ -157,150 +195,7 @@ class DatabaseService {
         await db.execute('PRAGMA foreign_keys = ON');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          _log.finest('Running migration for database version 2');
-          await upgradeFromV1ToV2(db);
-        }
-        if (oldVersion < 3) {
-          _log.finest('Running migration for database version 3');
-          await upgradeFromV2ToV3(db);
-        }
-        if (oldVersion < 4) {
-          _log.finest('Running migration for database version 4');
-          await upgradeFromV3ToV4(db);
-        }
-        if (oldVersion < 5) {
-          _log.finest('Running migration for database version 5');
-          await upgradeFromV4ToV5(db);
-        }
-        if (oldVersion < 6) {
-          _log.finest('Running migration for database version 6');
-          await upgradeFromV5ToV6(db);
-        }
-        if (oldVersion < 7) {
-          _log.finest('Running migration for database version 7');
-          await upgradeFromV6ToV7(db);
-        }
-        if (oldVersion < 8) {
-          _log.finest('Running migration for database version 8');
-          await upgradeFromV7ToV8(db);
-        }
-        if (oldVersion < 9) {
-          _log.finest('Running migration for database version 9');
-          await upgradeFromV8ToV9(db);
-        }
-        if (oldVersion < 10) {
-          _log.finest('Running migration for database version 10');
-          await upgradeFromV9ToV10(db);
-        }
-        if (oldVersion < 11) {
-          _log.finest('Running migration for database version 11');
-          await upgradeFromV10ToV11(db);
-        }
-        if (oldVersion < 12) {
-          _log.finest('Running migration for database version 12');
-          await upgradeFromV11ToV12(db);
-        }
-        if (oldVersion < 13) {
-          _log.finest('Running migration for database version 13');
-          await upgradeFromV12ToV13(db);
-        }
-        if (oldVersion < 14) {
-          _log.finest('Running migration for database version 14');
-          await upgradeFromV13ToV14(db);
-        }
-        if (oldVersion < 15) {
-          _log.finest('Running migration for database version 15');
-          await upgradeFromV14ToV15(db);
-        }
-        if (oldVersion < 16) {
-          _log.finest('Running migration for database version 16');
-          await upgradeFromV15ToV16(db);
-        }
-        if (oldVersion < 17) {
-          _log.finest('Running migration for database version 17');
-          await upgradeFromV16ToV17(db);
-        }
-        if (oldVersion < 18) {
-          _log.finest('Running migration for database version 18');
-          await upgradeFromV17ToV18(db);
-        }
-        if (oldVersion < 19) {
-          _log.finest('Running migration for database version 19');
-          await upgradeFromV18ToV19(db);
-        }
-        if (oldVersion < 20) {
-          _log.finest('Running migration for database version 20');
-          await upgradeFromV19ToV20(db);
-        }
-        if (oldVersion < 21) {
-          _log.finest('Running migration for database version 21');
-          await upgradeFromV20ToV21(db);
-        }
-        if (oldVersion < 22) {
-          _log.finest('Running migration for database version 22');
-          await upgradeFromV21ToV22(db);
-        }
-        if (oldVersion < 23) {
-          _log.finest('Running migration for database version 23');
-          await upgradeFromV22ToV23(db);
-        }
-        if (oldVersion < 24) {
-          _log.finest('Running migration for database version 24');
-          await upgradeFromV23ToV24(db);
-        }
-        if (oldVersion < 25) {
-          _log.finest('Running migration for database version 25');
-          await upgradeFromV24ToV25(db);
-        }
-        if (oldVersion < 26) {
-          _log.finest('Running migration for database version 26');
-          await upgradeFromV25ToV26(db);
-        }
-        if (oldVersion < 27) {
-          _log.finest('Running migration for database version 27');
-          await upgradeFromV26ToV27(db);
-        }
-        if (oldVersion < 28) {
-          _log.finest('Running migration for database version 28');
-          await upgradeFromV27ToV28(db);
-        }
-        if (oldVersion < 29) {
-          _log.finest('Running migration for database version 29');
-          await upgradeFromV28ToV29(db);
-        }
-        if (oldVersion < 30) {
-          _log.finest('Running migration for database version 30');
-          await upgradeFromV29ToV30(db);
-        }
-        if (oldVersion < 31) {
-          _log.finest('Running migration for database version 31');
-          await upgradeFromV30ToV31(db);
-        }
-        if (oldVersion < 32) {
-          _log.finest('Running migration for database version 32');
-          await upgradeFromV31ToV32(db);
-        }
-        if (oldVersion < 33) {
-          _log.finest('Running migration for database version 33');
-          await upgradeFromV32ToV33(db);
-        }
-        if (oldVersion < 34) {
-          _log.finest('Running migration for database version 34');
-          await upgradeFromV33ToV34(db);
-        }
-        if (oldVersion < 35) {
-          _log.finest('Running migration for database version 35');
-          await upgradeFromV34ToV35(db);
-        }
-        if (oldVersion < 36) {
-          _log.finest('Running migration for database version 36');
-          await upgradeFromV35ToV36(db);
-        }
-        if (oldVersion < 37) {
-          _log.finest('Running migration for database version 37');
-          await upgradeFromV36ToV37(db);
-        }
+        await runMigrations(_log, db, migrations, oldVersion);
       },
     );
 
