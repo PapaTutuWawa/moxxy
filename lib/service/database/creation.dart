@@ -40,7 +40,6 @@ Future<void> createDatabase(Database db, int version) async {
       isUploading INTEGER NOT NULL,
       isRetracted INTEGER,
       isEdited INTEGER NOT NULL,
-      reactions TEXT NOT NULL,
       containsNoStore INTEGER NOT NULL,
       stickerPackId   TEXT,
       pseudoMessageType INTEGER,
