@@ -37,8 +37,7 @@ class StickersSettingsPage extends StatelessWidget {
               right: 0,
               bottom: 0,
               child: Scaffold(
-                appBar:
-                    BorderlessTopbar.simple(t.pages.settings.stickers.title),
+                appBar: BorderlessTopbar.title(t.pages.settings.stickers.title),
                 body: BlocBuilder<PreferencesBloc, PreferencesState>(
                   builder: (_, prefs) => Padding(
                     padding: EdgeInsets.zero,

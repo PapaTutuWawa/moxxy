@@ -1,118 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:moxxyv2/ui/constants.dart';
 
+/// The preferred height of the borderless topbar.
 const topbarPreferredHeight = 60.0;
 
-class TopbarTitleText extends StatelessWidget {
-  const TopbarTitleText(this.text, {super.key});
-  final String text;
-
-  static const double fontSize = 20;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: fontSize,
-      ),
-    );
-  }
-}
-
-class TopbarAvatarAndName extends StatelessWidget {
-  const TopbarAvatarAndName(
-    this.title,
-    this.avatar,
-    this.onTap, {
-    this.showBackButton = true,
-    this.extra = const [],
-    super.key,
-  });
-  final Widget title;
-  final Widget avatar;
-  final List<Widget> extra;
-  final bool showBackButton;
-  final void Function() onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Visibility(
-          visible: showBackButton,
-          child: const BackButton(),
-        ),
-        InkWell(
-          onTap: onTap,
-          child: Row(
-            children: [
-              avatar,
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: title,
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-        ...extra,
-      ],
-    );
-  }
-}
-
-/// Provides a Signal-like topbar without borders or anything else
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
-  const BorderlessTopbar(this.child, {super.key})
-      : preferredSize = const Size.fromHeight(topbarPreferredHeight);
+  const BorderlessTopbar({
+    required this.children,
+    this.showBackButton = true,
+    this.backButtonWidget = const BackButton(),
+    super.key,
+  }) : preferredSize = const Size.fromHeight(topbarPreferredHeight);
 
-  factory BorderlessTopbar.justBackButton({Key? key}) {
-    return BorderlessTopbar(
-      Row(children: const [BackButton()]),
-      key: key,
-    );
-  }
-
-  /// A simple borderless topbar that displays just the back button (if wanted) and a
-  /// Text() title.
-  factory BorderlessTopbar.simple(
+  /// A wrapper around the default constructor for situations where you only want to display
+  /// a title and maybe a trailing widget.
+  BorderlessTopbar.title(
     String title, {
-    List<Widget> extra = const [],
     bool showBackButton = true,
+    Widget? trailing,
+    Widget? backButtonWidget,
     Key? key,
-  }) {
-    return BorderlessTopbar(
-      Row(
-        children: [
-          Visibility(
-            visible: showBackButton,
-            child: const Material(
-              color: Colors.transparent,
-              child: BackButton(),
+  }) : this(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: fontsizeAppbar,
+                  ),
+                ),
+              ),
             ),
-          ),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-            ),
-          ),
-          ...extra,
-        ],
-      ),
-      key: key,
-    );
-  }
+            if (trailing != null) trailing,
+          ],
+          backButtonWidget: backButtonWidget ?? const BackButton(),
+          showBackButton: showBackButton,
+          key: key,
+        );
 
-  /// Displays a clickable avatar and title and a back button, if wanted
-  factory BorderlessTopbar.avatarAndName(
-    TopbarAvatarAndName child, {
-    Key? key,
-  }) {
-    return BorderlessTopbar(child, key: key);
-  }
+  /// Flag whether or not to show the backbutton.
+  final bool showBackButton;
 
-  final Widget child;
+  /// The widget that is the back button. Useful for disabling it in certain situations.
+  final Widget backButtonWidget;
+
+  /// The children to show in the row of the topbar.
+  final List<Widget> children;
 
   @override
   final Size preferredSize;
@@ -120,11 +55,17 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: ColoredBox(
+      child: Material(
         color: Theme.of(context).scaffoldBackgroundColor,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: child,
+        child: Row(
+          children: [
+            if (showBackButton)
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: backButtonWidget,
+              ),
+            ...children,
+          ],
         ),
       ),
     );

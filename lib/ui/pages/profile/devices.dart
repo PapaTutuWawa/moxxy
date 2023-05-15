@@ -100,26 +100,23 @@ class DevicesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<DevicesBloc, DevicesState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.simple(
+        appBar: BorderlessTopbar.title(
           t.pages.profile.devices.title,
-          extra: [
-            const Spacer(),
-            PopupMenuButton(
-              onSelected: (DevicesOptions result) {
-                if (result == DevicesOptions.recreateSessions) {
-                  _recreateSessions(context);
-                }
-              },
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (BuildContext context) => [
-                PopupMenuItem(
-                  value: DevicesOptions.recreateSessions,
-                  enabled: state.devices.isNotEmpty,
-                  child: Text(t.pages.profile.devices.recreateSessions),
-                )
-              ],
-            ),
-          ],
+          trailing: PopupMenuButton(
+            onSelected: (DevicesOptions result) {
+              if (result == DevicesOptions.recreateSessions) {
+                _recreateSessions(context);
+              }
+            },
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                value: DevicesOptions.recreateSessions,
+                enabled: state.devices.isNotEmpty,
+                child: Text(t.pages.profile.devices.recreateSessions),
+              )
+            ],
+          ),
         ),
         body: _buildBody(context, state),
       ),

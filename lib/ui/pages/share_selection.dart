@@ -67,7 +67,7 @@ class ShareSelectionPage extends StatelessWidget {
       child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
         buildWhen: _buildWhen,
         builder: (context, state) => Scaffold(
-          appBar: BorderlessTopbar.simple(t.pages.shareselection.shareWith),
+          appBar: BorderlessTopbar.title(t.pages.shareselection.shareWith),
           body: ListView.builder(
             itemCount: state.items.length,
             itemBuilder: (context, index) {

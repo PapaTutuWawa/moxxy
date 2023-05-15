@@ -26,7 +26,7 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(t.pages.settings.settings.title),
+      appBar: BorderlessTopbar.title(t.pages.settings.settings.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         buildWhen: (prev, next) => prev.showDebugMenu != next.showDebugMenu,
         builder: (context, state) => ListView(

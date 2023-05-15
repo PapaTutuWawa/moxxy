@@ -40,7 +40,7 @@ class AddContactPageState extends State<AddContactPage> {
           return true;
         },
         child: Scaffold(
-          appBar: BorderlessTopbar.simple(t.pages.addcontact.title),
+          appBar: BorderlessTopbar.title(t.pages.addcontact.title),
           body: Column(
             children: [
               Visibility(

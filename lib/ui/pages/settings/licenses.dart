@@ -52,7 +52,7 @@ class SettingsLicensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(t.pages.settings.licenses.title),
+      appBar: BorderlessTopbar.title(t.pages.settings.licenses.title),
       body: ListView.builder(
         itemCount: usedLibraryList.length,
         itemBuilder: (context, index) =>

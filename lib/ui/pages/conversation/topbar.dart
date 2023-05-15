@@ -7,6 +7,7 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -18,12 +19,12 @@ enum ConversationOption { close, block }
 
 enum EncryptionOption { omemo, none }
 
-PopupMenuItem<dynamic> popupItemWithIcon(
-  dynamic value,
+PopupMenuItem<T> popupItemWithIcon<T>(
+  T value,
   String text,
   IconData icon,
 ) {
-  return PopupMenuItem<dynamic>(
+  return PopupMenuItem<T>(
     value: value,
     child: Row(
       children: [
@@ -39,8 +40,6 @@ PopupMenuItem<dynamic> popupItemWithIcon(
 
 /// A custom version of the BorderlessTopbar to display the conversation topbar
 /// as it should
-// TODO(PapaTutuWawa): The conversation title may overflow the Topbar
-// TODO(Unknown): Maybe merge with BorderlessTopbar
 class ConversationTopbar extends StatelessWidget
     implements PreferredSizeWidget {
   const ConversationTopbar({super.key});
@@ -95,20 +94,16 @@ class ConversationTopbar extends StatelessWidget
       buildWhen: _shouldRebuild,
       builder: (context, state) {
         final chatState = state.conversation?.chatState ?? ChatState.gone;
-        return SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: SafeArea(
-            child: ColoredBox(
-              color: Theme.of(context).scaffoldBackgroundColor,
+        return BorderlessTopbar(
+          children: [
+            Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8),
-                child: Flex(
-                  direction: Axis.horizontal,
-                  children: [
-                    const BackButton(),
-                    InkWell(
-                      onTap: () => _openProfile(context, state),
-                      child: Hero(
+                child: InkWell(
+                  onTap: () => _openProfile(context, state),
+                  child: Stack(
+                    children: [
+                      Hero(
                         tag: 'conversation_profile_picture',
                         child: Material(
                           color: Colors.transparent,
@@ -125,139 +120,126 @@ class ConversationTopbar extends StatelessWidget
                           ),
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => _openProfile(context, state),
-                        child: Stack(
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 200),
+                        top: _isChatStateVisible(chatState) ? 0 : 10,
+                        left: 25,
+                        right: 0,
+                        curve: Curves.easeInOutCubic,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            AnimatedPositioned(
-                              duration: const Duration(milliseconds: 200),
-                              top: _isChatStateVisible(chatState) ? 0 : 10,
-                              left: 0,
-                              right: 0,
-                              curve: Curves.easeInOutCubic,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  RebuildOnContactIntegrationChange(
-                                    builder: () => TopbarTitleText(
-                                      state.conversation
-                                              ?.titleWithOptionalContact ??
-                                          '',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              child: AnimatedOpacity(
-                                opacity:
-                                    _isChatStateVisible(chatState) ? 1.0 : 0.0,
-                                curve: Curves.easeInOutCubic,
-                                duration: const Duration(milliseconds: 100),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    _buildChatState(chatState),
-                                  ],
+                            RebuildOnContactIntegrationChange(
+                              builder: () => Text(
+                                state.conversation?.titleWithOptionalContact ??
+                                    '',
+                                style: const TextStyle(
+                                  fontSize: fontsizeAppbar,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    if (state.conversation?.type != ConversationType.note)
-                      // ignore: implicit_dynamic_type
-                      PopupMenuButton(
-                        onSelected: (result) {
-                          if (result == EncryptionOption.omemo &&
-                              state.conversation!.encrypted == false) {
-                            context
-                                .read<ConversationBloc>()
-                                .add(OmemoSetEvent(true));
-                          } else if (result == EncryptionOption.none &&
-                              state.conversation!.encrypted == true) {
-                            context
-                                .read<ConversationBloc>()
-                                .add(OmemoSetEvent(false));
-                          }
-                        },
-                        icon: (state.conversation?.encrypted ?? false)
-                            ? const Icon(Icons.lock)
-                            : const Icon(Icons.lock_open),
-                        itemBuilder: (BuildContext c) => [
-                          popupItemWithIcon(
-                            EncryptionOption.none,
-                            t.pages.conversation.unencrypted,
-                            Icons.lock_open,
+                      Positioned(
+                        left: 25,
+                        right: 0,
+                        bottom: 0,
+                        child: AnimatedOpacity(
+                          opacity: _isChatStateVisible(chatState) ? 1.0 : 0.0,
+                          curve: Curves.easeInOutCubic,
+                          duration: const Duration(milliseconds: 100),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildChatState(chatState),
+                            ],
                           ),
-                          popupItemWithIcon(
-                            EncryptionOption.omemo,
-                            t.pages.conversation.encrypted,
-                            Icons.lock,
-                          ),
-                        ],
-                      ),
-                    // ignore: implicit_dynamic_type
-                    PopupMenuButton(
-                      onSelected: (result) async {
-                        switch (result) {
-                          case ConversationOption.close:
-                            {
-                              final result = await showConfirmationDialog(
-                                t.pages.conversation.closeChatConfirmTitle,
-                                t.pages.conversation.closeChatConfirmSubtext,
-                                context,
-                              );
-
-                              if (result) {
-                                // ignore: use_build_context_synchronously
-                                context.read<ConversationsBloc>().add(
-                                      ConversationClosedEvent(
-                                        state.conversation!.jid,
-                                      ),
-                                    );
-
-                                // Navigate back
-                                // ignore: use_build_context_synchronously
-                                context.read<NavigationBloc>().add(
-                                      PoppedRouteEvent(),
-                                    );
-                              }
-                            }
-                            break;
-                          case ConversationOption.block:
-                            {
-                              await blockJid(state.conversation!.jid, context);
-                            }
-                            break;
-                        }
-                      },
-                      icon: const Icon(Icons.more_vert),
-                      itemBuilder: (BuildContext c) => [
-                        popupItemWithIcon(
-                          ConversationOption.close,
-                          t.pages.conversation.closeChat,
-                          Icons.close,
                         ),
-                        if (state.conversation?.type != ConversationType.note)
-                          popupItemWithIcon(
-                            ConversationOption.block,
-                            t.pages.conversation.blockUser,
-                            Icons.block,
-                          )
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
+            if (state.conversation?.type != ConversationType.note)
+              PopupMenuButton<EncryptionOption>(
+                onSelected: (result) {
+                  if (result == EncryptionOption.omemo &&
+                      state.conversation!.encrypted == false) {
+                    context.read<ConversationBloc>().add(OmemoSetEvent(true));
+                  } else if (result == EncryptionOption.none &&
+                      state.conversation!.encrypted == true) {
+                    context.read<ConversationBloc>().add(OmemoSetEvent(false));
+                  }
+                },
+                icon: (state.conversation?.encrypted ?? false)
+                    ? const Icon(Icons.lock)
+                    : const Icon(Icons.lock_open),
+                itemBuilder: (BuildContext c) => [
+                  popupItemWithIcon<EncryptionOption>(
+                    EncryptionOption.none,
+                    t.pages.conversation.unencrypted,
+                    Icons.lock_open,
+                  ),
+                  popupItemWithIcon<EncryptionOption>(
+                    EncryptionOption.omemo,
+                    t.pages.conversation.encrypted,
+                    Icons.lock,
+                  ),
+                ],
+              ),
+            PopupMenuButton<ConversationOption>(
+              onSelected: (result) async {
+                switch (result) {
+                  case ConversationOption.close:
+                    {
+                      final result = await showConfirmationDialog(
+                        t.pages.conversation.closeChatConfirmTitle,
+                        t.pages.conversation.closeChatConfirmSubtext,
+                        context,
+                      );
+
+                      if (result) {
+                        // ignore: use_build_context_synchronously
+                        context.read<ConversationsBloc>().add(
+                              ConversationClosedEvent(
+                                state.conversation!.jid,
+                              ),
+                            );
+
+                        // Navigate back
+                        // ignore: use_build_context_synchronously
+                        context.read<NavigationBloc>().add(
+                              PoppedRouteEvent(),
+                            );
+                      }
+                    }
+                    break;
+                  case ConversationOption.block:
+                    {
+                      await blockJid(state.conversation!.jid, context);
+                    }
+                    break;
+                }
+              },
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (BuildContext c) => [
+                popupItemWithIcon<ConversationOption>(
+                  ConversationOption.close,
+                  t.pages.conversation.closeChat,
+                  Icons.close,
+                ),
+                if (state.conversation?.type != ConversationType.note)
+                  popupItemWithIcon<ConversationOption>(
+                    ConversationOption.block,
+                    t.pages.conversation.blockUser,
+                    Icons.block,
+                  )
+              ],
+            ),
+          ],
         );
       },
     );

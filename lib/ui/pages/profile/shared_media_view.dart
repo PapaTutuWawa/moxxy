@@ -17,10 +17,13 @@ class SharedMediaView extends StatelessWidget {
     final now = DateTime.now();
     return Scaffold(
       appBar: const BorderlessTopbar(
+        showBackButton: false,
         // Ensure the top bar has a height
-        SizedBox(
-          height: topbarPreferredHeight,
-        ),
+        children: [
+          SizedBox(
+            height: topbarPreferredHeight,
+          ),
+        ],
       ),
       body: Stack(
         children: [

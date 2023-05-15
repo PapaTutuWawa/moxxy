@@ -43,7 +43,7 @@ class SettingsAboutPageState extends State<SettingsAboutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(t.pages.settings.about.title),
+      appBar: BorderlessTopbar.title(t.pages.settings.about.title),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: paddingVeryLarge),
         child: Column(

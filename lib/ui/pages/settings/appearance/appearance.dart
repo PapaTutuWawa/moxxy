@@ -50,7 +50,7 @@ class AppearanceSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(t.pages.settings.appearance.title),
+      appBar: BorderlessTopbar.title(t.pages.settings.appearance.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [

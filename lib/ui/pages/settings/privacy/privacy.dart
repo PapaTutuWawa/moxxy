@@ -22,7 +22,7 @@ class PrivacyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple(t.pages.settings.privacy.title),
+      appBar: BorderlessTopbar.title(t.pages.settings.privacy.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [

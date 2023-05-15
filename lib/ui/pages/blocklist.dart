@@ -94,38 +94,35 @@ class BlocklistPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<BlocklistBloc, BlocklistState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.simple(
+        appBar: BorderlessTopbar.title(
           t.pages.blocklist.title,
-          extra: [
-            Expanded(child: Container()),
-            PopupMenuButton(
-              onSelected: (BlocklistOptions result) async {
-                if (result == BlocklistOptions.unblockAll) {
-                  final result = await showConfirmationDialog(
-                    t.pages.blocklist.unblockAllConfirmTitle,
-                    t.pages.blocklist.unblockAllConfirmBody,
-                    context,
-                  );
+          trailing: PopupMenuButton(
+            onSelected: (BlocklistOptions result) async {
+              if (result == BlocklistOptions.unblockAll) {
+                final result = await showConfirmationDialog(
+                  t.pages.blocklist.unblockAllConfirmTitle,
+                  t.pages.blocklist.unblockAllConfirmBody,
+                  context,
+                );
 
-                  if (result) {
-                    // ignore: use_build_context_synchronously
-                    context.read<BlocklistBloc>().add(UnblockedAllEvent());
+                if (result) {
+                  // ignore: use_build_context_synchronously
+                  context.read<BlocklistBloc>().add(UnblockedAllEvent());
 
-                    // ignore: use_build_context_synchronously
-                    Navigator.of(context).pop();
-                  }
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pop();
                 }
-              },
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (BuildContext context) => [
-                PopupMenuItem(
-                  enabled: state.blocklist.isNotEmpty,
-                  value: BlocklistOptions.unblockAll,
-                  child: Text(t.pages.blocklist.unblockAll),
-                ),
-              ],
-            )
-          ],
+              }
+            },
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                enabled: state.blocklist.isNotEmpty,
+                value: BlocklistOptions.unblockAll,
+                child: Text(t.pages.blocklist.unblockAll),
+              ),
+            ],
+          ),
         ),
         body: _buildListView(state),
       ),

@@ -236,31 +236,52 @@ class ConversationsPageState extends State<ConversationsPage>
   Widget build(BuildContext context) {
     return BlocBuilder<ConversationsBloc, ConversationsState>(
       builder: (BuildContext context, ConversationsState state) => Scaffold(
-        appBar: BorderlessTopbar.avatarAndName(
-          TopbarAvatarAndName(
-            TopbarTitleText(state.displayName),
-            Hero(
-              tag: 'self_profile_picture',
-              child: Material(
-                color: const Color.fromRGBO(0, 0, 0, 0),
-                child: AvatarWrapper(
-                  radius: 20,
-                  avatarUrl: state.avatarUrl,
-                  altIcon: Icons.person,
+        appBar: BorderlessTopbar(
+          showBackButton: false,
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () => GetIt.I.get<profile.ProfileBloc>().add(
+                      profile.ProfilePageRequestedEvent(
+                        true,
+                        jid: state.jid,
+                        avatarUrl: state.avatarUrl,
+                        displayName: state.displayName,
+                      ),
+                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Hero(
+                        tag: 'self_profile_picture',
+                        child: Material(
+                          color: const Color.fromRGBO(0, 0, 0, 0),
+                          child: AvatarWrapper(
+                            radius: 20,
+                            avatarUrl: state.avatarUrl,
+                            altIcon: Icons.person,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          state.displayName,
+                          style: const TextStyle(
+                            fontSize: fontsizeAppbar,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            () => GetIt.I.get<profile.ProfileBloc>().add(
-                  profile.ProfilePageRequestedEvent(
-                    true,
-                    jid: state.jid,
-                    avatarUrl: state.avatarUrl,
-                    displayName: state.displayName,
-                  ),
-                ),
-            showBackButton: false,
-            extra: [
-              PopupMenuButton(
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: PopupMenuButton(
                 onSelected: (ConversationsOptions result) {
                   switch (result) {
                     case ConversationsOptions.settings:
@@ -275,9 +296,9 @@ class ConversationsPageState extends State<ConversationsPage>
                     child: Text(t.pages.conversations.overlaySettings),
                   )
                 ],
-              )
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
         body: _listWrapper(context, state),
         floatingActionButton: SpeedDial(

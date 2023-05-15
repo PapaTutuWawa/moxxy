@@ -51,7 +51,7 @@ class NewConversationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
     return Scaffold(
-      appBar: BorderlessTopbar.simple(t.pages.newconversation.title),
+      appBar: BorderlessTopbar.title(t.pages.newconversation.title),
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
         builder: (BuildContext context, NewConversationState state) =>
             ListView.builder(

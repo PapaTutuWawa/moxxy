@@ -180,35 +180,32 @@ class OwnDevicesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<OwnDevicesBloc, OwnDevicesState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.simple(
+        appBar: BorderlessTopbar.title(
           t.pages.profile.owndevices.title,
-          extra: [
-            const Spacer(),
-            PopupMenuButton(
-              onSelected: (OwnDevicesOptions result) {
-                switch (result) {
-                  case OwnDevicesOptions.recreateSessions:
-                    _recreateSessions(context);
-                    break;
-                  case OwnDevicesOptions.recreateDevice:
-                    _recreateDevice(context);
-                    break;
-                }
-              },
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (BuildContext context) => [
-                PopupMenuItem(
-                  value: OwnDevicesOptions.recreateSessions,
-                  enabled: state.keys.isNotEmpty,
-                  child: Text(t.pages.profile.owndevices.recreateOwnSessions),
-                ),
-                PopupMenuItem(
-                  value: OwnDevicesOptions.recreateDevice,
-                  child: Text(t.pages.profile.owndevices.recreateOwnDevice),
-                ),
-              ],
-            ),
-          ],
+          trailing: PopupMenuButton(
+            onSelected: (OwnDevicesOptions result) {
+              switch (result) {
+                case OwnDevicesOptions.recreateSessions:
+                  _recreateSessions(context);
+                  break;
+                case OwnDevicesOptions.recreateDevice:
+                  _recreateDevice(context);
+                  break;
+              }
+            },
+            icon: const Icon(Icons.more_vert),
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem(
+                value: OwnDevicesOptions.recreateSessions,
+                enabled: state.keys.isNotEmpty,
+                child: Text(t.pages.profile.owndevices.recreateOwnSessions),
+              ),
+              PopupMenuItem(
+                value: OwnDevicesOptions.recreateDevice,
+                child: Text(t.pages.profile.owndevices.recreateOwnDevice),
+              ),
+            ],
+          ),
         ),
         body: _buildBody(context, state),
       ),

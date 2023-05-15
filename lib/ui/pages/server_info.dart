@@ -21,7 +21,8 @@ class ServerInfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: BorderlessTopbar.simple('Server Information'),
+      // TODO(PapaTutuWawa): Translate
+      appBar: BorderlessTopbar.title('Server Information'),
       body: BlocBuilder<ServerInfoBloc, ServerInfoState>(
         builder: (BuildContext context, ServerInfoState state) {
           if (state.working) {

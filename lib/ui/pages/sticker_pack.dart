@@ -214,9 +214,7 @@ class StickerPackPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<StickerPackBloc, StickerPackState>(
       builder: (context, state) => Scaffold(
-        appBar: BorderlessTopbar.simple(
-          state.stickerPack?.name ?? '...',
-        ),
+        appBar: BorderlessTopbar.title(state.stickerPack?.name ?? '...'),
         body: state.isWorking
             ? SizedBox(
                 width: MediaQuery.of(context).size.width,
