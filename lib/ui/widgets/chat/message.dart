@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
@@ -100,7 +101,19 @@ Widget buildMessageWidget(
     case MessageType.video:
       return VideoChatWidget(message, radius, maxWidth, sent);
     case MessageType.sticker:
-      return StickerChatWidget(message, radius, maxWidth, sent);
+      return StickerChatWidget(
+        message,
+        maxWidth,
+        sent,
+        quotedMessage: message.quotes != null
+            ? buildQuoteMessageWidget(
+                message.quotes!,
+                sent,
+                radiusLargeSize,
+                radiusLargeSize,
+              )
+            : null,
+      );
     case MessageType.audio:
       return AudioChatWidget(message, radius, maxWidth, sent);
     case MessageType.file:

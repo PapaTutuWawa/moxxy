@@ -12,15 +12,23 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 class StickerChatWidget extends StatelessWidget {
   const StickerChatWidget(
     this.message,
-    this.radius,
     this.maxWidth,
     this.sent, {
+    this.quotedMessage,
     super.key,
   });
+
+  /// The message containing the sticker.
   final Message message;
+
+  /// The maximum possible width of the message.
   final double maxWidth;
-  final BorderRadius radius;
+
+  /// True, if the sticker was sent by us. False, if not.
   final bool sent;
+
+  /// A built message quote, if [message] quotes another message.
+  final Widget? quotedMessage;
 
   Widget _buildNotAvailable(BuildContext context) {
     return Align(
@@ -56,6 +64,8 @@ class StickerChatWidget extends StatelessWidget {
     return IntrinsicHeight(
       child: Column(
         children: [
+          if (quotedMessage != null) quotedMessage!,
+
           // ignore: prefer_if_elements_to_conditional_expressions
           message.fileMetadata?.path != null &&
                   GetIt.I.get<PreferencesBloc>().state.enableStickers

@@ -270,9 +270,13 @@ class BidirectionalConversationController
           SendStickerCommand(
             sticker: sticker,
             recipient: conversationJid,
+            quotes: _quotedMessage,
           ),
           awaitable: false,
         );
+
+    // Remove a possible quote
+    removeQuote();
 
     // Close the picker
     togglePickerVisibility(false);

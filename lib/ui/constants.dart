@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-const Radius radiusLarge = Radius.circular(10);
+const double radiusLargeSize = 10;
+const Radius radiusLarge = Radius.circular(radiusLargeSize);
 const Radius radiusSmall = Radius.circular(4);
 
 const double textfieldRadiusRegular = 15;
 const double textfieldRadiusConversation = 25;
-const double textfieldQuotedMessageRadius = 25 - 10;
+const double textfieldQuotedMessageRadius = textfieldRadiusConversation - 10;
 const EdgeInsetsGeometry textfieldPaddingRegular = EdgeInsets.only(
   top: 4,
   bottom: 4,

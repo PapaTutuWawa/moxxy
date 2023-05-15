@@ -531,6 +531,9 @@ files:
             type: Sticker
             deserialise: true
           recipient: String
+          quotes:
+            type: Message?
+            deserialise: true
       - name: FetchStickerPackCommand
         extends: BackgroundCommand
         implements:

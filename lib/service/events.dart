@@ -1050,6 +1050,7 @@ Future<void> performSendSticker(
         recipients: [command.recipient],
         sticker: command.sticker,
         currentConversationJid: command.recipient,
+        quotedMessage: command.quotes,
       );
 }
 
