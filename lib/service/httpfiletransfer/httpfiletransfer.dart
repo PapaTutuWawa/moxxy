@@ -139,6 +139,7 @@ class HttpFileTransferService {
 
   Future<void> _fileUploadFailed(FileUploadJob job, int error) async {
     final ms = GetIt.I.get<MessageService>();
+    final cs = GetIt.I.get<ConversationService>();
 
     // Notify UI of upload failure
     for (final recipient in job.recipients) {
@@ -148,6 +149,19 @@ class HttpFileTransferService {
         isUploading: false,
       );
       sendEvent(MessageUpdatedEvent(message: msg));
+
+      // Update the conversation list
+      final conversation = await cs.getConversationByJid(recipient);
+      if (conversation?.lastMessage?.id == msg.id) {
+        final newConversation = conversation!.copyWith(
+          lastMessage: msg,
+        );
+
+        // Update the cache
+        cs.setConversation(newConversation);
+
+        sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+      }
     }
 
     await _pickNextUploadTask();
