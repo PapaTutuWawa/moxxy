@@ -76,26 +76,27 @@ String xmppErrorToTranslatableString(XmppError error) {
   return t.errors.login.unspecified;
 }
 
-String getStickerHashKeyType(Map<String, String> hashes) {
-  if (hashes.containsKey('blake2b-512')) {
-    return 'blake2b-512';
-  } else if (hashes.containsKey('blake2b-512')) {
-    return 'blake2b-256';
-  } else if (hashes.containsKey('sha3-512')) {
-    return 'sha3-512';
-  } else if (hashes.containsKey('sha3-256')) {
-    return 'sha3-256';
-  } else if (hashes.containsKey('sha3-256')) {
-    return 'sha-512';
-  } else if (hashes.containsKey('sha-256')) {
-    return 'sha-256';
+HashFunction getStickerHashKeyType(Map<HashFunction, String> hashes) {
+  if (hashes.containsKey(HashFunction.blake2b512)) {
+    return HashFunction.blake2b512;
+  } else if (hashes.containsKey(HashFunction.blake2b256)) {
+    return HashFunction.blake2b256;
+  } else if (hashes.containsKey(HashFunction.sha3_512)) {
+    return HashFunction.sha3_512;
+  } else if (hashes.containsKey(HashFunction.sha3_256)) {
+    return HashFunction.sha3_256;
+  } else if (hashes.containsKey(HashFunction.sha512)) {
+    return HashFunction.sha512;
+  } else if (hashes.containsKey(HashFunction.sha256)) {
+    return HashFunction.sha256;
   }
 
   assert(false, 'No valid hash found');
-  return '';
+  return HashFunction.sha256;
 }
 
-String getStickerHashKey(Map<String, String> hashes) {
+// TODO(PapaTutuWawa): Replace with getStrongestHash
+String getStickerHashKey(Map<HashFunction, String> hashes) {
   final key = getStickerHashKeyType(hashes);
   return '$key:${hashes[key]}';
 }

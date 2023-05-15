@@ -1,8 +1,27 @@
 import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 
 part 'file_metadata.freezed.dart';
 part 'file_metadata.g.dart';
+
+/// Wrapper for turning a map "Hash algorithm -> Hash value" [hashes] into a string
+/// for storage in the database.
+String serializeHashMap(Map<HashFunction, String> hashes) {
+  final rawMap =
+      hashes.map((key, value) => MapEntry<String, String>(key.toName(), value));
+  return jsonEncode(rawMap);
+}
+
+/// Wrapper for turning a string [hashString] into a map "Hash algorithm -> Hash value".
+Map<HashFunction, String> deserializeHashMap(String hashString) {
+  final rawMap =
+      (jsonDecode(hashString) as Map<dynamic, dynamic>).cast<String, String>();
+  return rawMap.map(
+    (key, value) =>
+        MapEntry<HashFunction, String>(HashFunction.fromName(key), value),
+  );
+}
 
 @freezed
 class FileMetadata with _$FileMetadata {
@@ -33,7 +52,7 @@ class FileMetadata with _$FileMetadata {
     int? height,
 
     /// A list of hashes for the original plaintext file.
-    Map<String, String>? plaintextHashes,
+    Map<HashFunction, String>? plaintextHashes,
 
     /// If non-null: The key the file was encrypted with.
     String? encryptionKey,
@@ -45,7 +64,7 @@ class FileMetadata with _$FileMetadata {
     String? encryptionScheme,
 
     /// A list of hashes for the encrypted file.
-    Map<String, String>? ciphertextHashes,
+    Map<HashFunction, String>? ciphertextHashes,
 
     /// The actual filename of the file. If the filename was obfuscated, e.g. due
     /// to encryption, this should be the original filename.
@@ -59,40 +78,29 @@ class FileMetadata with _$FileMetadata {
 
   factory FileMetadata.fromDatabaseJson(Map<String, dynamic> json) {
     final plaintextHashesRaw = json['plaintextHashes'] as String?;
-    final plaintextHashes = plaintextHashesRaw == null
-        ? null
-        : Map<String, String>.fromEntries(
-            plaintextHashesRaw.split(',').map((hash) {
-              final parts = hash.split('-');
-              return MapEntry<String, String>(
-                parts.first,
-                parts.last,
-              );
-            }),
-          );
+    final plaintextHashes = plaintextHashesRaw != null
+        ? deserializeHashMap(plaintextHashesRaw)
+        : null;
     final ciphertextHashesRaw = json['ciphertextHashes'] as String?;
-    final ciphertextHashes = ciphertextHashesRaw == null
-        ? null
-        : Map<String, String>.fromEntries(
-            ciphertextHashesRaw.split(',').map((hash) {
-              final parts = hash.split('-');
-              return MapEntry<String, String>(
-                parts.first,
-                parts.last,
-              );
-            }),
-          );
+    final ciphertextHashes = ciphertextHashesRaw != null
+        ? deserializeHashMap(ciphertextHashesRaw)
+        : null;
     final sourceUrlsRaw = json['sourceUrls'] as String?;
     final sourceUrls = sourceUrlsRaw == null
         ? null
         : (jsonDecode(sourceUrlsRaw) as List<dynamic>).cast<String>();
 
+    // Workaround for using enums as map keys
+    final modifiedJson = Map<String, dynamic>.from(json)
+      ..remove('plaintextHashes')
+      ..remove('ciphertextHashes');
     return FileMetadata.fromJson({
-      ...json,
-      'plaintextHashes': plaintextHashes,
-      'ciphertextHashes': ciphertextHashes,
+      ...modifiedJson,
       'sourceUrls': sourceUrls,
-    });
+    }).copyWith(
+      plaintextHashes: plaintextHashes,
+      ciphertextHashes: ciphertextHashes,
+    );
   }
 
   Map<String, dynamic> toDatabaseJson() {
@@ -102,12 +110,10 @@ class FileMetadata with _$FileMetadata {
       ..remove('sourceUrls');
     return {
       ...map,
-      'plaintextHashes': plaintextHashes?.entries
-          .map((entry) => '${entry.key}-${entry.value}')
-          .join(';'),
-      'ciphertextHashes': ciphertextHashes?.entries
-          .map((entry) => '${entry.key}-${entry.value}')
-          .join(';'),
+      'plaintextHashes':
+          plaintextHashes != null ? serializeHashMap(plaintextHashes!) : null,
+      'ciphertextHashes':
+          ciphertextHashes != null ? serializeHashMap(ciphertextHashes!) : null,
       'sourceUrls': sourceUrls != null ? jsonEncode(sourceUrls) : null,
     };
   }

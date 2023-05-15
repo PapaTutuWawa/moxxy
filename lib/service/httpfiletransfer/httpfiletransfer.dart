@@ -243,8 +243,8 @@ class HttpFileTransferService {
 
       // Get hashes
       StatelessFileSharingSource source;
-      final plaintextHashes = <String, String>{};
-      Map<String, String>? ciphertextHashes;
+      final plaintextHashes = <HashFunction, String>{};
+      Map<HashFunction, String>? ciphertextHashes;
       if (encryption != null) {
         source = StatelessFileSharingEncryptedSource(
           SFSEncryptionType.aes256GcmNoPadding,
@@ -259,7 +259,7 @@ class HttpFileTransferService {
       } else {
         source = StatelessFileSharingUrlSource(slot.getUrl);
         try {
-          plaintextHashes[hashSha256] = await GetIt.I
+          plaintextHashes[HashFunction.sha256] = await GetIt.I
               .get<CryptographyService>()
               .hashFile(job.path, HashFunction.sha256);
         } catch (ex) {
@@ -470,7 +470,7 @@ class HttpFileTransferService {
         final result = await crypto.decryptFile(
           downloadPath,
           downloadedPath,
-          encryptionTypeFromNamespace(job.location.encryptionScheme!),
+          SFSEncryptionType.fromNamespace(job.location.encryptionScheme!),
           job.location.key!,
           job.location.iv!,
           job.location.plaintextHashes ?? {},
@@ -498,18 +498,20 @@ class HttpFileTransferService {
     } else if (job.location.plaintextHashes?.isNotEmpty ?? false) {
       // Verify only the plaintext hash
       // TODO(Unknown): Allow verification of other hash functions
-      if (job.location.plaintextHashes!['sha-256'] != null) {
+      if (job.location.plaintextHashes![HashFunction.sha256] != null) {
         final hash = await crypto.hashFile(
           downloadPath,
           HashFunction.sha256,
         );
-        integrityCheckPassed = hash == job.location.plaintextHashes!['sha-256'];
-      } else if (job.location.plaintextHashes!['sha-512'] != null) {
+        integrityCheckPassed =
+            hash == job.location.plaintextHashes![HashFunction.sha256];
+      } else if (job.location.plaintextHashes![HashFunction.sha512] != null) {
         final hash = await crypto.hashFile(
           downloadPath,
           HashFunction.sha512,
         );
-        integrityCheckPassed = hash == job.location.plaintextHashes!['sha-512'];
+        integrityCheckPassed =
+            hash == job.location.plaintextHashes![HashFunction.sha512];
       } else {
         _log.warning(
           'Could not verify file integrity as no accelerated hash function is available (${job.location.plaintextHashes!.keys})',

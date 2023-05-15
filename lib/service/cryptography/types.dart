@@ -12,8 +12,8 @@ class EncryptionResult {
   final List<int> key;
   final List<int> iv;
 
-  final Map<String, String> plaintextHashes;
-  final Map<String, String> ciphertextHashes;
+  final Map<HashFunction, String> plaintextHashes;
+  final Map<HashFunction, String> ciphertextHashes;
 }
 
 @immutable
@@ -52,13 +52,6 @@ class DecryptionRequest {
   final SFSEncryptionType encryption;
   final List<int> key;
   final List<int> iv;
-  final Map<String, String> plaintextHashes;
-  final Map<String, String> ciphertextHashes;
-}
-
-@immutable
-class HashRequest {
-  const HashRequest(this.path, this.hash);
-  final String path;
-  final HashFunction hash;
+  final Map<HashFunction, String> plaintextHashes;
+  final Map<HashFunction, String> ciphertextHashes;
 }

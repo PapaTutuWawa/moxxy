@@ -58,11 +58,11 @@ class CryptographyService {
     return EncryptionResult(
       key,
       iv,
-      <String, String>{
-        hashSha256: base64Encode(result.plaintextHash),
+      <HashFunction, String>{
+        HashFunction.sha256: base64Encode(result.plaintextHash),
       },
-      <String, String>{
-        hashSha256: base64Encode(result.ciphertextHash),
+      <HashFunction, String>{
+        HashFunction.sha256: base64Encode(result.ciphertextHash),
       },
     );
   }
@@ -76,8 +76,8 @@ class CryptographyService {
     SFSEncryptionType encryption,
     List<int> key,
     List<int> iv,
-    Map<String, String> plaintextHashes,
-    Map<String, String> ciphertextHashes,
+    Map<HashFunction, String> plaintextHashes,
+    Map<HashFunction, String> ciphertextHashes,
   ) async {
     _log.finest('Beginning decryption for $source');
     final result = await MoxplatformPlugin.crypto.encryptFile(
@@ -94,7 +94,7 @@ class CryptographyService {
     var passedPlaintextIntegrityCheck = true;
     var passedCiphertextIntegrityCheck = true;
     for (final entry in plaintextHashes.entries) {
-      if (entry.key == hashSha256) {
+      if (entry.key == HashFunction.sha256) {
         if (base64Encode(result!.plaintextHash) != entry.value) {
           passedPlaintextIntegrityCheck = false;
         } else {
@@ -105,7 +105,7 @@ class CryptographyService {
       }
     }
     for (final entry in ciphertextHashes.entries) {
-      if (entry.key == hashSha256) {
+      if (entry.key == HashFunction.sha256) {
         if (base64Encode(result!.ciphertextHash) != entry.value) {
           passedCiphertextIntegrityCheck = false;
         } else {

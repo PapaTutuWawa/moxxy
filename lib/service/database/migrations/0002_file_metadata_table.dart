@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/files.dart';
@@ -51,9 +52,9 @@ Future<void> upgradeFromV31ToV32(Database db) async {
     String id;
     if (message['plaintextHashes'] != null) {
       // Plaintext hashes available (SFS)
-      final plaintextHashes = (jsonDecode(message['plaintextHashes']! as String)
-              as Map<dynamic, dynamic>)
-          .cast<String, String>();
+      final plaintextHashes = deserializeHashMap(
+        message['plaintextHashes']! as String,
+      );
       final result = await db.query(
         fileMetadataHashesTable,
         where: 'algorithm = ? AND value = ?',
@@ -82,9 +83,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
           message['encryptionScheme'] as String?,
           message['plaintextHashes'] == null
               ? null
-              : (jsonDecode(message['ciphertextHashes']! as String)
-                      as Map<dynamic, dynamic>)
-                  .cast<String, String>(),
+              : deserializeHashMap(message['ciphertextHashes']! as String),
           message['filename']! as String,
         );
 
@@ -102,7 +101,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
       int? size;
       int? height;
       int? width;
-      Map<String, String>? hashes;
+      Map<HashFunction, String>? hashes;
       String? filePath;
       String? urlSource;
       String? mediaType;
@@ -127,9 +126,7 @@ Future<void> upgradeFromV31ToV32(Database db) async {
         size = sticker['size']! as int;
         width = sticker['width'] as int?;
         height = sticker['height'] as int?;
-        hashes =
-            (jsonDecode(sticker['hashes']! as String) as Map<String, dynamic>)
-                .cast<String, String>();
+        hashes = deserializeHashMap(sticker['hashes']! as String);
         filePath = sticker['path']! as String;
         urlSource =
             ((jsonDecode(sticker['urlSources']! as String) as List<dynamic>)

@@ -27,7 +27,7 @@ Future<void> runMigrations<T>(
   List<DatabaseMigration<T>> migrations,
   int version,
 ) async {
-  final sortedMigrations = migrations
+  final sortedMigrations = List<DatabaseMigration<T>>.from(migrations)
     ..sort(
       (a, b) => a.version.compareTo(b.version),
     );

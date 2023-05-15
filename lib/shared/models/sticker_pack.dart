@@ -69,7 +69,7 @@ class StickerPack with _$StickerPack {
         id,
         name,
         description,
-        moxxmpp.hashFunctionFromName(hashAlgorithm),
+        moxxmpp.HashFunction.fromName(hashAlgorithm),
         hashValue,
         stickers.map((sticker) => sticker.toMoxxmpp()).toList(),
         restricted,

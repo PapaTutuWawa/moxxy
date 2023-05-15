@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:meta/meta.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 
 @immutable
 class MediaFileLocation {
@@ -18,8 +19,8 @@ class MediaFileLocation {
   final String? encryptionScheme;
   final List<int>? key;
   final List<int>? iv;
-  final Map<String, String>? plaintextHashes;
-  final Map<String, String>? ciphertextHashes;
+  final Map<HashFunction, String>? plaintextHashes;
+  final Map<HashFunction, String>? ciphertextHashes;
   final int? size;
 
   String? get keyBase64 {

@@ -30,17 +30,17 @@ class FileMetadataWrapper {
 
 /// Returns the strongest hash from [map], if [map] is not null. If no known hash is found
 /// or [map] is null, returns null.
-String? getStrongestHashFromMap(Map<String, String>? map) {
+String? getStrongestHashFromMap(Map<HashFunction, String>? map) {
   if (map == null) {
     return null;
   }
 
-  return map['blake2b-512'] ??
-      map['blake2b-256'] ??
-      map['sha3-512'] ??
-      map['sha3-256'] ??
-      map['sha-512'] ??
-      map['sha-256'];
+  return map[HashFunction.blake2b512] ??
+      map[HashFunction.blake2b256] ??
+      map[HashFunction.sha3_512] ??
+      map[HashFunction.sha3_256] ??
+      map[HashFunction.sha512] ??
+      map[HashFunction.sha256];
 }
 
 /// Calculates the path for a given file with filename [filename] and the optional
@@ -48,7 +48,7 @@ String? getStrongestHashFromMap(Map<String, String>? map) {
 /// will be created.
 Future<String> computeCachedPathForFile(
   String filename,
-  Map<String, String>? hashes,
+  Map<HashFunction, String>? hashes,
 ) async {
   final basePath = path.join(
     (await getApplicationDocumentsDirectory()).path,
@@ -77,7 +77,7 @@ class FilesService {
   final Logger _log = Logger('FilesService');
 
   Future<void> createMetadataHashEntries(
-    Map<String, String> plaintextHashes,
+    Map<HashFunction, String> plaintextHashes,
     String metadataId,
   ) async {
     final db = GetIt.I.get<DatabaseService>().database;
@@ -85,7 +85,7 @@ class FilesService {
       await db.insert(
         fileMetadataHashesTable,
         {
-          'algorithm': hash.key,
+          'algorithm': hash.key.toName(),
           'value': hash.value,
           'id': metadataId,
         },
@@ -94,12 +94,12 @@ class FilesService {
   }
 
   Future<FileMetadata?> getFileMetadataFromFile(FileMetadata metadata) async {
-    final hash = metadata.plaintextHashes?['SHA-256'] ??
+    final hash = metadata.plaintextHashes?[HashFunction.sha256] ??
         await GetIt.I
             .get<CryptographyService>()
             .hashFile(metadata.path!, HashFunction.sha256);
     final fm = await getFileMetadataFromHash({
-      'SHA-256': hash,
+      HashFunction.sha256: hash,
     });
 
     if (fm != null) {
@@ -110,7 +110,7 @@ class FilesService {
       metadata.copyWith(
         plaintextHashes: {
           ...metadata.plaintextHashes ?? {},
-          'SHA-256': hash,
+          HashFunction.sha256: hash,
         },
       ),
     );
@@ -119,7 +119,7 @@ class FilesService {
   }
 
   Future<FileMetadata?> getFileMetadataFromHash(
-    Map<String, String>? plaintextHashes,
+    Map<HashFunction, String>? plaintextHashes,
   ) async {
     if (plaintextHashes?.isEmpty ?? true) {
       return null;
@@ -129,7 +129,7 @@ class FilesService {
     final values = List<String>.empty(growable: true);
     final query = plaintextHashes!.entries.map((entry) {
       values
-        ..add(entry.key)
+        ..add(entry.key.toName())
         ..add(entry.value);
       return '(algorithm = ? AND value = ?)';
     }).join(' OR ');
