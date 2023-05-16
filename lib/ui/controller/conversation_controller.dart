@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:logging/logging.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -70,6 +71,9 @@ class BidirectionalConversationController
 
     _updateChatState(ChatState.active);
   }
+
+  /// Logging.
+  final Logger _log = Logger('BidirectionalConversationController');
 
   /// A singleton referring to the current instance as there can only be one
   /// BidirectionalConversationController at a time.
@@ -206,13 +210,28 @@ class BidirectionalConversationController
 
   Future<void> onMessageReceived(Message message) async {
     // Drop the message if we don't really care about it
-    if (message.conversationJid != conversationJid) return;
+    if (message.conversationJid != conversationJid) {
+      _log.finest(
+        "Not processing message as JIDs don't match: ${message.conversationJid} != $conversationJid",
+      );
+      return;
+    }
 
-    // TODO(Unknown): Guard against not being initialized yet, i.e. not having loaded the first
-    //                messages.
+    // TODO(Unknown): This is probably not the best solution
+    if (isFetching) {
+      _log.finest('Not processing message as we are currently fetching');
+      return;
+    }
 
     var shouldScrollToBottom = true;
-    if (message.timestamp < cache.last.timestamp) {
+    if (cache.isEmpty && hasFetchedOnce) {
+      // We do this check here to prevent a StateException being thrown because
+      // the cache is empty. So just add the message.
+      addItem(message);
+
+      // As this is the first message, we don't have to scroll to the bottom.
+      shouldScrollToBottom = false;
+    } else if (message.timestamp < cache.last.timestamp) {
       if (message.timestamp < cache.first.timestamp) {
         // The message is older than the oldest message we know about. Drop it.
         // It will be fetched when scrolling up.
