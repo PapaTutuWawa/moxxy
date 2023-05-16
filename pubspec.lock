@@ -815,6 +815,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.3.1"
+  keyboard_height_plugin:
+    dependency: "direct main"
+    description:
+      name: keyboard_height_plugin
+      sha256: ad8bff8e38b6cecf715e62f1ac518e553ef036eeb55cb6c06263060240be300f
+      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
+    source: hosted
+    version: "0.0.4"
   lints:
     dependency: transitive
     description:
@@ -947,11 +955,9 @@ packages:
   moxxmpp:
     dependency: "direct main"
     description:
-      path: "packages/moxxmpp"
-      ref: HEAD
-      resolved-ref: "47b679d168431fb8eda243adaea249932c7176c7"
-      url: "https://codeberg.org/moxxy/moxxmpp.git"
-    source: git
+      path: "../moxxmpp/packages/moxxmpp"
+      relative: true
+    source: path
     version: "0.3.2"
   moxxmpp_socket_tcp:
     dependency: "direct main"

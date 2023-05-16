@@ -49,6 +49,7 @@ dependencies:
   hex: 0.2.0
   image: 3.2.0
   json_annotation: 4.6.0
+  keyboard_height_plugin: 0.0.4
   logging: 1.0.2
   meta: ^1.7.0
   mime: 1.0.2
@@ -137,18 +138,23 @@ dependency_overrides:
     version: 3.7.3+1
 
   # NOTE: Leave here for development purposes
-  # moxxmpp:
-  #   path: ../moxxmpp/packages/moxxmpp
+  moxxmpp:
+    path: ../moxxmpp/packages/moxxmpp
   # moxxmpp_socket_tcp:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
 
-  moxxmpp:
-    git:
-      url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 47b679d168431fb8eda243adaea249932c7176c7
-      path: packages/moxxmpp
+  # moxxmpp:
+  #   git:
+  #     url: https://codeberg.org/moxxy/moxxmpp.git
+  #     rev: 47b679d168431fb8eda243adaea249932c7176c7
+  #     path: packages/moxxmpp
+
+  # A fork of keyboard_height_plugin that lowers the required Dart SDK version
+  keyboard_height_plugin:
+    hosted: https://git.polynom.me/api/packages/Moxxy/pub
+    version: 0.0.4
  
 extra_licenses:
   - name: undraw.co
