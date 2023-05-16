@@ -135,14 +135,6 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     CurrentConversationResetEvent event,
     Emitter<ConversationState> emit,
   ) async {
-    // Reset conversation so that we don't accidentally send chat states to chats
-    // that are not currently focused.
-    emit(
-      state.copyWith(
-        conversation: null,
-      ),
-    );
-
     await MoxplatformPlugin.handler.getDataSender().sendData(
           SetOpenConversationCommand(),
           awaitable: false,
