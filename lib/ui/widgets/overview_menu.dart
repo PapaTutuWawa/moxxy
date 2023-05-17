@@ -98,3 +98,31 @@ class OverviewMenu extends StatelessWidget {
     );
   }
 }
+
+// TODO: Replace the original widget.
+class OverviewMenu2 extends StatelessWidget {
+  const OverviewMenu2({
+    required this.children,
+    this.materialColor,
+    super.key,
+  });
+  final List<Widget> children;
+  final Color? materialColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.all(radiusLarge),
+      child: Material(
+        child: IntrinsicHeight(
+          child: IntrinsicWidth(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: children,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

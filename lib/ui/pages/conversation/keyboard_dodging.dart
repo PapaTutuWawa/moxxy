@@ -183,6 +183,7 @@ class KeyboardReplacerScaffold extends StatelessWidget {
     required this.children,
     required this.appbar,
     required this.keyboardWidget,
+    required this.background,
     super.key,
   });
 
@@ -198,23 +199,47 @@ class KeyboardReplacerScaffold extends StatelessWidget {
   /// The app bar.
   final Widget appbar;
 
+  /// The background of the "scaffold". Useful for displaying a background image.
+  final Widget background;
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Material(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: Column(
-          children: [
-            appbar,
-            ...children,
-            KeyboardReplacerWidget(
-              controller,
-              keyboardWidget,
+    final mq = MediaQuery.of(context);
+    final headerHeight = mq.viewPadding.top;
+    return Stack(
+      children: [
+        // The background should not move when we dodge the keyboard
+        Positioned(
+            // Do not leak under the system UI
+            top: headerHeight,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: background),
+
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: SafeArea(
+            bottom: false,
+            child: Material(
+              color: Colors.transparent,
+              child: Column(
+                children: [
+                  appbar,
+                  ...children,
+                  KeyboardReplacerWidget(
+                    controller,
+                    keyboardWidget,
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
