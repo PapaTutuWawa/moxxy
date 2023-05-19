@@ -1,109 +1,39 @@
-import 'dart:ui';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
-import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
-import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/bottom.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
+import 'package:moxxyv2/ui/pages/conversation/selected_message.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
-import 'package:moxxyv2/ui/widgets/chat/message.dart';
-import 'package:moxxyv2/ui/widgets/overview_menu.dart';
-import 'package:moxxyv2/ui/widgets/textfield.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
-class _TextFieldIconButton extends StatelessWidget {
-  const _TextFieldIconButton(this.icon, this.onTap);
-  final void Function() onTap;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Icon(
-          icon,
-          size: 24,
-          color: primaryColor,
-        ),
-      ),
-    );
-  }
-}
-
-/// A wrapper widget to easily obscure a widget with a skim when the highlight
-/// animation is playing.
-class HighlightHackWrapper extends StatelessWidget {
-  const HighlightHackWrapper({
-    required this.controller,
-    required this.animation,
-    required this.child,
-  });
-
-  /// The controller controlling the fade animation.
-  final AnimationController controller;
-
-  /// The fade animation.
-  final Animation<double> animation;
-
-  /// The child to show below.
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, c) => Stack(
-        children: [
-          c!,
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              ignoring: animation.value == 0,
-              child: GestureDetector(
-                onTap: () => controller.reverse(),
-                child: ColoredBox(
-                  color: animation.value != 0
-                      ? highlightSkimColor.withOpacity(
-                          animation.value,
-                        )
-                      : Colors.transparent,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
+int getMessageMenuOptionCount(Message message, Message? lastMessage, bool sentBySelf) {
+  return [
+    message.isReactable,
+    message.canRetract(sentBySelf),
+    message.canEdit(sentBySelf) && lastMessage?.id == message.id,
+    message.errorMenuVisible,
+    message.hasWarning,
+    message.isCopyable,
+    message.isQuotable && message.conversationJid != '',
+    message.isQuotable,
+  ].where((r) => r).length;
 }
 
 class ConversationPage extends StatefulWidget {
@@ -123,29 +53,23 @@ class ConversationPageState extends State<ConversationPage>
     with TickerProviderStateMixin {
   /// Controllers for the bottom input field
   late final BidirectionalConversationController _conversationController;
-  late final StreamSubscription<bool> _scrolledToBottomButtonSubscription;
   late final TabController _tabController;
   final KeyboardReplacerController _keyboardController =
       KeyboardReplacerController();
-  final FocusNode _textfieldFocusNode = FocusNode();
   final ValueNotifier<bool> _speedDialValueNotifier = ValueNotifier(false);
 
   /// Controllers, animation, and state for the selection animation
   late final AnimationController _selectionAnimationController;
-  late final Tween<double> _selectionTween;
   late final Animation<double> _selectionAnimation;
-  double _messageYBottom = 0;
-  double _messageYTop = 0;
-  double? _overviewLeft;
-  double? _overviewRight;
-  Message? _selectedMessage;
-  bool _sentBySelf = false;
+  late final SelectedMessageController _selectionController;
 
   /// Controllers and state for the "scroll to bottom" animation
   late final AnimationController _scrollToBottomAnimationController;
   late final Animation<double> _scrollToBottomAnimation;
   late final StreamSubscription<bool> _scrolledToBottomStateSubscription;
 
+  final Map<int, GlobalKey> _messageKeys = {};
+  
   @override
   void initState() {
     super.initState();
@@ -167,15 +91,18 @@ class ConversationPageState extends State<ConversationPage>
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    _selectionTween = Tween<double>(
+    _selectionAnimation = Tween<double>(
       begin: 0,
-      end: 0.6,
-    );
-    _selectionAnimation = _selectionTween.animate(
+      end: 1,
+    ).animate(
       CurvedAnimation(
         parent: _selectionAnimationController,
         curve: Curves.easeInOutCubic,
       ),
+    );
+    _selectionController = SelectedMessageController(
+      _selectionAnimationController,
+      _selectionAnimation,
     );
 
     // Animation for the "scroll to bottom" button
@@ -313,6 +240,15 @@ class ConversationPageState extends State<ConversationPage>
     final between = !start && !end;
     final sentBySelf = isSent(message, ownJid);
 
+    // Give each bubble its own animation and animation controller
+    GlobalKey key;
+    if (!_messageKeys.containsKey(item.id)) {
+      key = GlobalKey();
+      _messageKeys[item.id] = key;
+    } else {
+      key = _messageKeys[item.id]!;
+    }
+
     final bubble = RawChatBubble(
       item,
       maxWidth,
@@ -321,12 +257,10 @@ class ConversationPageState extends State<ConversationPage>
       start,
       between,
       end,
+      key: key,
     );
 
-    final key = GlobalKey();
-    return AnimatedBuilder(
-      animation: _selectionAnimation,
-      child: ChatBubble(
+    return ChatBubble(
         bubble: bubble,
         message: item,
         sentBySelf: sentBySelf,
@@ -339,51 +273,44 @@ class ConversationPageState extends State<ConversationPage>
 
           Vibrate.feedback(FeedbackType.medium);
 
-          final ro = key.currentContext!.findRenderObject()!;
-          final trans = ro.getTransformTo(null).getTranslation();
-          final off = Offset(trans.x, trans.y);
-          final r = ro.paintBounds.shift(off);
-          _messageYBottom = r.bottom - 90;
-          _messageYTop = r.top;
+          // Get the position of the message on screen
+          // (See https://stackoverflow.com/questions/50316219/how-to-get-widgets-absolute-coordinates-on-a-screen-in-flutter/58788092#58788092)
+          final renderObject = key.currentContext!.findRenderObject()!;
+          final translation = renderObject.getTransformTo(null).getTranslation();
+          final offset = Offset(translation.x, translation.y);
+          final widgetRect = renderObject.paintBounds.shift(offset);
 
-          _selectedMessage = item;
-          _sentBySelf = sentBySelf;
+          // Figure out how many overview items we'll be showing
+          final overviewMenuItemCount = getMessageMenuOptionCount(
+            item,
+            state.conversation?.lastMessage,
+            sentBySelf,
+          );
 
-          _overviewLeft = sentBySelf ? 20 : null;
-          _overviewRight = sentBySelf ? null : 20;
+          // Start the actual animation
+          _selectionController.selectMessage(
+            SelectedMessageData(
+              item,
+              state.conversation?.encrypted ?? false,
+              sentBySelf,
+              Offset(
+                widgetRect.topLeft.dx,
+                widgetRect.topLeft.dy,
+              ),
 
-          _selectionAnimationController.forward();
+              // Compute how much we have to move the widget in order to be 20 units above
+              // the overview menu, which is always 20 units + height away from the bottom.
+              MediaQuery.of(context).size.height - widgetRect.bottom - 20 - overviewMenuItemCount * 48 - 20,
+
+              start,
+              between,
+              end,
+            ),
+          );
         },
-        key: key,
-      ),
-      builder: (context, child) => ColoredBox(
-        color: _selectionAnimation.value != 0 && _selectedMessage?.id == item.id
-            ? highlightSkimColor.withOpacity(
-                _selectionAnimation.value,
-              )
-            : Colors.transparent,
-        child: GestureDetector(
-          onTap: _selectionAnimation.value != 0
-              ? () => _selectionAnimationController.reverse()
-              : null,
-          child: child,
-        ),
-      ),
-    );
+      );
   }
-
-  Future<void> _retractMessage(BuildContext context, String originId) async {
-    final result = await showConfirmationDialog(
-      t.pages.conversation.retract,
-      t.pages.conversation.retractBody,
-      context,
-    );
-
-    if (result) {
-      _conversationController.retractMessage(originId);
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
@@ -391,11 +318,40 @@ class ConversationPageState extends State<ConversationPage>
       controller: _keyboardController,
       // TODO
       keyboardWidget: const ColoredBox(color: Colors.pink),
-      appbar: HighlightHackWrapper(
-        animation: _selectionAnimation,
-        controller: _selectionAnimationController,
-        child: const ConversationTopbar(),
-      ),
+      appbar: const ConversationTopbar(),
+      extraStackChildren: [
+        // The skim behind the context menu items
+        AnimatedBuilder(
+          animation: _selectionAnimation,
+          builder: (context, _) => Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Visibility(
+              visible: _selectionAnimation.value != 0,
+              child: IgnorePointer(
+                ignoring: _selectionAnimation.value == 0,
+                child: GestureDetector(
+                  onTap: _selectionController.dismiss,
+                  child: Container(
+                    color: Colors.black.withOpacity(0.6 * _selectionAnimation.value),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // The selected message
+        SelectedMessage(_selectionController),
+
+        // The context menu
+        SelectedMessageContextMenu(
+          selectionController: _selectionController,
+          conversationController: _conversationController,
+        ),
+      ],
       background: BlocBuilder<ConversationBloc, ConversationState>(
         buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
         builder: (context, state) {
@@ -426,7 +382,7 @@ class ConversationPageState extends State<ConversationPage>
           builder: (context, state) {
             if ((state.conversation?.inRoster ?? false) ||
                 state.conversation?.type == ConversationType.note) {
-              return SizedBox();
+              return const SizedBox();
             }
 
             return _renderNotInRosterWidget(state, context);
@@ -481,199 +437,7 @@ class ConversationPageState extends State<ConversationPage>
                   return const LinearProgressIndicator();
                 },
               ),
-              AnimatedBuilder(
-                animation: _selectionAnimation,
-                builder: (context, _) => Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    ignoring: _selectionAnimation.value == 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        _selectionAnimationController.reverse();
-                      },
-                      child: SizedBox(
-                        height: _messageYTop == 0 ? 0 : _messageYTop - 60 - 30,
-                        child: ColoredBox(
-                          color: highlightSkimColor.withOpacity(
-                            _selectionAnimation.value,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              AnimatedBuilder(
-                animation: _selectionAnimation,
-                builder: (context, _) => Positioned(
-                  top: _messageYBottom,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: IgnorePointer(
-                    ignoring: _selectionAnimation.value == 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        _selectionAnimationController.reverse();
-                      },
-                      child: ColoredBox(
-                        color: highlightSkimColor.withOpacity(
-                          _selectionAnimation.value,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              AnimatedBuilder(
-                animation: _selectionAnimation,
-                builder: (context, _) => Positioned(
-                  left: _overviewLeft,
-                  right: _overviewRight,
-                  bottom: 20,
-                  child: IgnorePointer(
-                    ignoring: _selectionAnimation.value == 0,
-                    child: Opacity(
-                      opacity:
-                          (_selectionAnimation.value / _selectionTween.end!),
-                      child: OverviewMenu2(
-                        children: [
-                          if (_selectedMessage?.isReactable ?? false)
-                            OverviewMenuItem(
-                              icon: Icons.add_reaction,
-                              text: t.pages.conversation.addReaction,
-                              onPressed: () async {
-                                final emoji =
-                                    await pickEmoji(context, pop: false);
-                                if (emoji != null) {
-                                  await MoxplatformPlugin.handler
-                                      .getDataSender()
-                                      .sendData(
-                                        AddReactionToMessageCommand(
-                                          messageId: _selectedMessage!.id,
-                                          emoji: emoji,
-                                          conversationJid:
-                                              _conversationController
-                                                  .conversationJid,
-                                        ),
-                                        awaitable: false,
-                                      );
-                                }
 
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-
-                          if (_selectedMessage?.canRetract(_sentBySelf) ??
-                              false)
-                            OverviewMenuItem(
-                              icon: Icons.delete,
-                              text: t.pages.conversation.retract,
-                              onPressed: () {
-                                _retractMessage(
-                                    context, _selectedMessage!.originId!);
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-
-                          // TODO(Unknown): Also allow correcting older messages
-                          if ((_selectedMessage?.canEdit(_sentBySelf) ??
-                                  false) &&
-                              GetIt.I
-                                      .get<ConversationBloc>()
-                                      .state
-                                      .conversation
-                                      ?.lastMessage
-                                      ?.id ==
-                                  _selectedMessage?.id)
-                            OverviewMenuItem(
-                              icon: Icons.edit,
-                              text: t.pages.conversation.edit,
-                              onPressed: () {
-                                _conversationController.beginMessageEditing(
-                                  _selectedMessage!.body,
-                                  _selectedMessage!.quotes,
-                                  _selectedMessage!.id,
-                                  _selectedMessage!.sid,
-                                );
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-
-                          if (_selectedMessage?.errorMenuVisible ?? false)
-                            OverviewMenuItem(
-                              icon: Icons.info_outline,
-                              text: t.pages.conversation.showError,
-                              onPressed: () {
-                                showInfoDialog(
-                                  t.errors.conversation.messageErrorDialogTitle,
-                                  errorToTranslatableString(
-                                      _selectedMessage!.errorType!),
-                                  context,
-                                );
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-
-                          if (_selectedMessage?.hasWarning ?? false)
-                            OverviewMenuItem(
-                              icon: Icons.warning,
-                              text: t.pages.conversation.showWarning,
-                              onPressed: () {
-                                showInfoDialog(
-                                  'Warning',
-                                  warningToTranslatableString(
-                                      _selectedMessage!.warningType!),
-                                  context,
-                                );
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-
-                          if (_selectedMessage?.isCopyable ?? false)
-                            OverviewMenuItem(
-                              icon: Icons.content_copy,
-                              text: t.pages.conversation.copy,
-                              onPressed: () {
-                                // TODO(Unknown): Show a toast saying the message has been copied
-                                Clipboard.setData(ClipboardData(
-                                    text: _selectedMessage!.body));
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-
-                          if ((_selectedMessage?.isQuotable ?? false) &&
-                              _selectedMessage?.conversationJid != '')
-                            OverviewMenuItem(
-                              icon: Icons.forward,
-                              text: t.pages.conversation.forward,
-                              onPressed: () {
-                                showNotImplementedDialog(
-                                  'sharing',
-                                  context,
-                                );
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-
-                          if (_selectedMessage?.isQuotable ?? false)
-                            OverviewMenuItem(
-                              icon: Icons.reply,
-                              text: t.pages.conversation.quote,
-                              onPressed: () {
-                                _conversationController
-                                    .quoteMessage(_selectedMessage!);
-                                _selectionAnimationController.reverse();
-                              },
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
               Positioned(
                 right: 8,
                 bottom: 16,
@@ -707,17 +471,13 @@ class ConversationPageState extends State<ConversationPage>
             ],
           ),
         ),
-        HighlightHackWrapper(
-          animation: _selectionAnimation,
-          controller: _selectionAnimationController,
-          child: ConversationInput(
-            keyboardController: _keyboardController,
-            conversationController: _conversationController,
-            tabController: _tabController,
-            speedDialValueNotifier: _speedDialValueNotifier,
-            // TODO
-            isEncrypted: false,
-          ),
+        ConversationInput(
+          keyboardController: _keyboardController,
+          conversationController: _conversationController,
+          tabController: _tabController,
+          speedDialValueNotifier: _speedDialValueNotifier,
+          // TODO
+          isEncrypted: false,
         ),
       ],
     );

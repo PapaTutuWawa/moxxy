@@ -137,6 +137,11 @@ dependency_overrides:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 3.7.3+1
 
+  # A fork of keyboard_height_plugin that lowers the required Dart SDK version
+  keyboard_height_plugin:
+    hosted: https://git.polynom.me/api/packages/Moxxy/pub
+    version: 0.0.4
+    
   # NOTE: Leave here for development purposes
   moxxmpp:
     path: ../moxxmpp/packages/moxxmpp
@@ -150,11 +155,6 @@ dependency_overrides:
   #     url: https://codeberg.org/moxxy/moxxmpp.git
   #     rev: 47b679d168431fb8eda243adaea249932c7176c7
   #     path: packages/moxxmpp
-
-  # A fork of keyboard_height_plugin that lowers the required Dart SDK version
-  keyboard_height_plugin:
-    hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.0.4
  
 extra_licenses:
   - name: undraw.co

@@ -198,7 +198,7 @@ class ConversationInputState extends State<ConversationInput> {
                     ),
                     suffixIcon: snapshot.data!.isBodyEmpty &&
                             snapshot.data!.quotedMessage == null
-                        ? Padding(
+                        ? const Padding(
                             padding: EdgeInsets.only(right: 8),
                             child: _TextFieldRecordButton(),
                           )

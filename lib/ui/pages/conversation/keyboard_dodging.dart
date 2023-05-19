@@ -184,6 +184,7 @@ class KeyboardReplacerScaffold extends StatelessWidget {
     required this.appbar,
     required this.keyboardWidget,
     required this.background,
+    required this.extraStackChildren,
     super.key,
   });
 
@@ -202,6 +203,8 @@ class KeyboardReplacerScaffold extends StatelessWidget {
   /// The background of the "scaffold". Useful for displaying a background image.
   final Widget background;
 
+  final List<Widget>? extraStackChildren;
+
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
@@ -215,7 +218,8 @@ class KeyboardReplacerScaffold extends StatelessWidget {
             left: 0,
             right: 0,
             bottom: 0,
-            child: background),
+            child: background,
+          ),
 
         Positioned(
           top: 0,
@@ -239,6 +243,9 @@ class KeyboardReplacerScaffold extends StatelessWidget {
             ),
           ),
         ),
+
+        if (extraStackChildren != null)
+          ...extraStackChildren!,
       ],
     );
   }
