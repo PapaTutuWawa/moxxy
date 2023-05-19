@@ -16,7 +16,16 @@ import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 /// A data "packet" to describe the selected message.
 class SelectedMessageData {
-  const SelectedMessageData(this.message, this.isChatEncrypted, this.sentBySelf, this.originalPosition, this.requiredYOffset, this.start, this.between, this.end);
+  const SelectedMessageData(
+    this.message,
+    this.isChatEncrypted,
+    this.sentBySelf,
+    this.originalPosition,
+    this.requiredYOffset,
+    this.start,
+    this.between,
+    this.end,
+  );
 
   /// The message content.
   final Message? message;
@@ -46,7 +55,8 @@ class SelectedMessageController {
   }
 
   /// Provide the stream to the widget.
-  final StreamController<SelectedMessageData> _streamController = StreamController<SelectedMessageData>.broadcast();
+  final StreamController<SelectedMessageData> _streamController =
+      StreamController<SelectedMessageData>.broadcast();
   Stream<SelectedMessageData> get stream => _streamController.stream;
 
   /// The [AnimationController] and the animation. Used for detecting the end of the
@@ -69,7 +79,7 @@ class SelectedMessageController {
     false,
     false,
   );
-  
+
   void _onAnimationChanged() {
     if (_controller.value == 0 && _shouldClearMessage) {
       // Prevent the widget from constantly being rendered and layouted.
@@ -125,7 +135,8 @@ class SelectedMessage extends StatelessWidget {
           builder: (context, child) {
             return Positioned(
               left: snapshot.data!.originalPosition.dx,
-              top: snapshot.data!.originalPosition.dy + controller.animation.value * snapshot.data!.requiredYOffset,
+              top: snapshot.data!.originalPosition.dy +
+                  controller.animation.value * snapshot.data!.requiredYOffset,
               child: IgnorePointer(
                 child: child,
               ),
@@ -147,7 +158,11 @@ class SelectedMessage extends StatelessWidget {
 }
 
 class SelectedMessageContextMenu extends StatelessWidget {
-  const SelectedMessageContextMenu({required this.selectionController, required this.conversationController, super.key});
+  const SelectedMessageContextMenu({
+    required this.selectionController,
+    required this.conversationController,
+    super.key,
+  });
 
   final SelectedMessageController selectionController;
 
@@ -172,35 +187,34 @@ class SelectedMessageContextMenu extends StatelessWidget {
             right: sentBySelf ? 20 : null,
             bottom: 20,
             child: Opacity(
-                opacity: selectionController.animation.value,
-                child: OverviewMenu2(
-                  children: [
-                    if (message.isReactable)
+              opacity: selectionController.animation.value,
+              child: OverviewMenu2(
+                children: [
+                  if (message.isReactable)
                     OverviewMenuItem(
                       icon: Icons.add_reaction,
                       text: t.pages.conversation.addReaction,
                       onPressed: () async {
-                        final emoji =
-                        await pickEmoji(context, pop: false);
+                        final emoji = await pickEmoji(context, pop: false);
                         if (emoji != null) {
                           await MoxplatformPlugin.handler
-                          .getDataSender()
-                          .sendData(
-                            AddReactionToMessageCommand(
-                              messageId: message.id,
-                              emoji: emoji,
-                              conversationJid:
-                              conversationController.conversationJid,
-                            ),
-                            awaitable: false,
-                          );
+                              .getDataSender()
+                              .sendData(
+                                AddReactionToMessageCommand(
+                                  messageId: message.id,
+                                  emoji: emoji,
+                                  conversationJid:
+                                      conversationController.conversationJid,
+                                ),
+                                awaitable: false,
+                              );
                         }
 
                         selectionController.dismiss();
                       },
                     ),
 
-                    if (message.canRetract(sentBySelf))
+                  if (message.canRetract(sentBySelf))
                     OverviewMenuItem(
                       icon: Icons.delete,
                       text: t.pages.conversation.retract,
@@ -212,22 +226,23 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         );
 
                         if (result) {
-                          conversationController.retractMessage(message.originId!);
+                          conversationController
+                              .retractMessage(message.originId!);
                         }
 
                         selectionController.dismiss();
                       },
                     ),
 
-                    // TODO(Unknown): Also allow correcting older messages
-                    if (message.canEdit(sentBySelf) &&
+                  // TODO(Unknown): Also allow correcting older messages
+                  if (message.canEdit(sentBySelf) &&
                       GetIt.I
-                      .get<ConversationBloc>()
-                      .state
-                      .conversation
-                      ?.lastMessage
-                      ?.id ==
-                      message.id)
+                              .get<ConversationBloc>()
+                              .state
+                              .conversation
+                              ?.lastMessage
+                              ?.id ==
+                          message.id)
                     OverviewMenuItem(
                       icon: Icons.edit,
                       text: t.pages.conversation.edit,
@@ -242,7 +257,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                       },
                     ),
 
-                    if (message.errorMenuVisible)
+                  if (message.errorMenuVisible)
                     OverviewMenuItem(
                       icon: Icons.info_outline,
                       text: t.pages.conversation.showError,
@@ -250,14 +265,15 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         showInfoDialog(
                           t.errors.conversation.messageErrorDialogTitle,
                           errorToTranslatableString(
-                            message.errorType!,),
+                            message.errorType!,
+                          ),
                           context,
                         );
                         selectionController.dismiss();
                       },
                     ),
 
-                    if (message.hasWarning)
+                  if (message.hasWarning)
                     OverviewMenuItem(
                       icon: Icons.warning,
                       text: t.pages.conversation.showWarning,
@@ -265,27 +281,30 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         showInfoDialog(
                           'Warning',
                           warningToTranslatableString(
-                            message.warningType!,),
+                            message.warningType!,
+                          ),
                           context,
                         );
                         selectionController.dismiss();
                       },
                     ),
 
-                    if (message.isCopyable)
+                  if (message.isCopyable)
                     OverviewMenuItem(
                       icon: Icons.content_copy,
                       text: t.pages.conversation.copy,
                       onPressed: () {
                         // TODO(Unknown): Show a toast saying the message has been copied
-                        Clipboard.setData(ClipboardData(
-                            text: message.body,),);
+                        Clipboard.setData(
+                          ClipboardData(
+                            text: message.body,
+                          ),
+                        );
                         selectionController.dismiss();
                       },
                     ),
 
-                    if (message.isQuotable &&
-                      message.conversationJid != '')
+                  if (message.isQuotable && message.conversationJid != '')
                     OverviewMenuItem(
                       icon: Icons.forward,
                       text: t.pages.conversation.forward,
@@ -298,20 +317,19 @@ class SelectedMessageContextMenu extends StatelessWidget {
                       },
                     ),
 
-                    if (message.isQuotable)
+                  if (message.isQuotable)
                     OverviewMenuItem(
                       icon: Icons.reply,
                       text: t.pages.conversation.quote,
                       onPressed: () {
-                        conversationController
-                        .quoteMessage(message);
+                        conversationController.quoteMessage(message);
                         selectionController.dismiss();
                       },
                     ),
-                  ],
-                ),
+                ],
               ),
             ),
+          ),
         );
       },
     );

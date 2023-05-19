@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -22,8 +23,13 @@ import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
+import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 
-int getMessageMenuOptionCount(Message message, Message? lastMessage, bool sentBySelf) {
+int getMessageMenuOptionCount(
+  Message message,
+  Message? lastMessage,
+  bool sentBySelf,
+) {
   return [
     message.isReactable,
     message.canRetract(sentBySelf),
@@ -51,12 +57,13 @@ class ConversationPage extends StatefulWidget {
 
 class ConversationPageState extends State<ConversationPage>
     with TickerProviderStateMixin {
-  /// Controllers for the bottom input field
+  /// Controllers and data for the bottom input field
   late final BidirectionalConversationController _conversationController;
   late final TabController _tabController;
   final KeyboardReplacerController _keyboardController =
       KeyboardReplacerController();
   final ValueNotifier<bool> _speedDialValueNotifier = ValueNotifier(false);
+  final FocusNode _textfieldFocusNode = FocusNode();
 
   /// Controllers, animation, and state for the selection animation
   late final AnimationController _selectionAnimationController;
@@ -69,7 +76,7 @@ class ConversationPageState extends State<ConversationPage>
   late final StreamSubscription<bool> _scrolledToBottomStateSubscription;
 
   final Map<int, GlobalKey> _messageKeys = {};
-  
+
   @override
   void initState() {
     super.initState();
@@ -261,190 +268,249 @@ class ConversationPageState extends State<ConversationPage>
     );
 
     return ChatBubble(
-        bubble: bubble,
-        message: item,
-        sentBySelf: sentBySelf,
-        maxWidth: maxWidth,
-        onSwipedCallback: _conversationController.quoteMessage,
-        onLongPressed: (event) async {
-          if (!message.isLongpressable) {
-            return;
-          }
+      bubble: bubble,
+      message: item,
+      sentBySelf: sentBySelf,
+      maxWidth: maxWidth,
+      onSwipedCallback: _conversationController.quoteMessage,
+      onLongPressed: (event) async {
+        if (!message.isLongpressable) {
+          return;
+        }
 
-          Vibrate.feedback(FeedbackType.medium);
+        Vibrate.feedback(FeedbackType.medium);
 
-          // Get the position of the message on screen
-          // (See https://stackoverflow.com/questions/50316219/how-to-get-widgets-absolute-coordinates-on-a-screen-in-flutter/58788092#58788092)
-          final renderObject = key.currentContext!.findRenderObject()!;
-          final translation = renderObject.getTransformTo(null).getTranslation();
-          final offset = Offset(translation.x, translation.y);
-          final widgetRect = renderObject.paintBounds.shift(offset);
+        // Get the position of the message on screen
+        // (See https://stackoverflow.com/questions/50316219/how-to-get-widgets-absolute-coordinates-on-a-screen-in-flutter/58788092#58788092)
+        final renderObject = key.currentContext!.findRenderObject()!;
+        final translation = renderObject.getTransformTo(null).getTranslation();
+        final offset = Offset(translation.x, translation.y);
+        final widgetRect = renderObject.paintBounds.shift(offset);
 
-          // Figure out how many overview items we'll be showing
-          final overviewMenuItemCount = getMessageMenuOptionCount(
+        // Figure out how many overview items we'll be showing
+        final overviewMenuItemCount = getMessageMenuOptionCount(
+          item,
+          state.conversation?.lastMessage,
+          sentBySelf,
+        );
+
+        // Start the actual animation
+        _selectionController.selectMessage(
+          SelectedMessageData(
             item,
-            state.conversation?.lastMessage,
+            state.conversation?.encrypted ?? false,
             sentBySelf,
-          );
-
-          // Start the actual animation
-          _selectionController.selectMessage(
-            SelectedMessageData(
-              item,
-              state.conversation?.encrypted ?? false,
-              sentBySelf,
-              Offset(
-                widgetRect.topLeft.dx,
-                widgetRect.topLeft.dy,
-              ),
-
-              // Compute how much we have to move the widget in order to be 20 units above
-              // the overview menu, which is always 20 units + height away from the bottom.
-              MediaQuery.of(context).size.height - widgetRect.bottom - 20 - overviewMenuItemCount * 48 - 20,
-
-              start,
-              between,
-              end,
+            Offset(
+              widgetRect.topLeft.dx,
+              widgetRect.topLeft.dy,
             ),
-          );
-        },
-      );
+
+            // Compute how much we have to move the widget in order to be 20 units above
+            // the overview menu, which is always 20 units + height away from the bottom.
+            MediaQuery.of(context).size.height -
+                widgetRect.bottom -
+                20 -
+                overviewMenuItemCount * 48 -
+                20,
+
+            start,
+            between,
+            end,
+          ),
+        );
+      },
+    );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.6;
-    return KeyboardReplacerScaffold(
-      controller: _keyboardController,
-      // TODO
-      keyboardWidget: const ColoredBox(color: Colors.pink),
-      appbar: const ConversationTopbar(),
-      extraStackChildren: [
-        // The skim behind the context menu items
-        AnimatedBuilder(
-          animation: _selectionAnimation,
-          builder: (context, _) => Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Visibility(
-              visible: _selectionAnimation.value != 0,
-              child: IgnorePointer(
-                ignoring: _selectionAnimation.value == 0,
-                child: GestureDetector(
-                  onTap: _selectionController.dismiss,
-                  child: Container(
-                    color: Colors.black.withOpacity(0.6 * _selectionAnimation.value),
+    return WillPopScope(
+      onWillPop: () async {
+        // If the keyboard is open, dismiss it
+        if (_keyboardController.currentData.visible) {
+          dismissSoftKeyboard(context);
+          return false;
+        } else if (_keyboardController.currentData.showWidget) {
+          _keyboardController.hideWidget();
+          _textfieldFocusNode.unfocus();
+          return false;
+        }
+
+        return true;
+      },
+      child: KeyboardReplacerScaffold(
+        controller: _keyboardController,
+        keyboardWidget: CombinedPicker(
+          tabController: _tabController,
+          onEmojiTapped: (emoji) {
+            final selection = _conversationController.textController.selection;
+            final baseOffset = max(selection.baseOffset, 0);
+            final extentOffset = max(selection.extentOffset, 0);
+            final prefix =
+                _conversationController.messageBody.substring(0, baseOffset);
+            final suffix =
+                _conversationController.messageBody.substring(extentOffset);
+            final newText = '$prefix${emoji.emoji}$suffix';
+            final newValue = baseOffset + emoji.emoji.codeUnits.length;
+            _conversationController.textController
+              ..text = newText
+              ..selection = TextSelection(
+                baseOffset: newValue,
+                extentOffset: newValue,
+              );
+          },
+          onBackspaceTapped: () {
+            // Taken from https://github.com/Fintasys/emoji_picker_flutter/blob/master/lib/src/emoji_picker.dart#L183
+            final text = _conversationController.messageBody;
+            final selection = _conversationController.textController.selection;
+            final cursorPosition =
+                _conversationController.textController.selection.base.offset;
+
+            if (cursorPosition < 0) {
+              return;
+            }
+
+            final newTextBeforeCursor =
+                selection.textBefore(text).characters.skipLast(1).toString();
+
+            _conversationController.textController
+              ..text = newTextBeforeCursor
+              ..selection = TextSelection.fromPosition(
+                TextPosition(offset: newTextBeforeCursor.length),
+              );
+          },
+          onStickerTapped: (sticker) {
+            _conversationController.sendSticker(
+              sticker,
+            );
+            _keyboardController.hideWidget();
+          },
+        ),
+        appbar: const ConversationTopbar(),
+        extraStackChildren: [
+          // The skim behind the context menu items
+          AnimatedBuilder(
+            animation: _selectionAnimation,
+            builder: (context, _) => Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Visibility(
+                visible: _selectionAnimation.value != 0,
+                child: IgnorePointer(
+                  ignoring: _selectionAnimation.value == 0,
+                  child: GestureDetector(
+                    onTap: _selectionController.dismiss,
+                    child: Container(
+                      color: Colors.black
+                          .withOpacity(0.6 * _selectionAnimation.value),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
 
-        // The selected message
-        SelectedMessage(_selectionController),
+          // The selected message
+          SelectedMessage(_selectionController),
 
-        // The context menu
-        SelectedMessageContextMenu(
-          selectionController: _selectionController,
-          conversationController: _conversationController,
-        ),
-      ],
-      background: BlocBuilder<ConversationBloc, ConversationState>(
-        buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
-        builder: (context, state) {
-          final query = MediaQuery.of(context);
-
-          if (state.backgroundPath.isNotEmpty) {
-            return Image.file(
-              File(state.backgroundPath),
-              fit: BoxFit.cover,
-              width: query.size.width,
-              height: query.size.height - query.padding.top,
-            );
-          }
-
-          return SizedBox(
-            width: query.size.width,
-            height: query.size.height,
-            child: ColoredBox(
-              color: Theme.of(context).scaffoldBackgroundColor,
-            ),
-          );
-        },
-      ),
-      children: [
-        BlocBuilder<ConversationBloc, ConversationState>(
-          buildWhen: (prev, next) =>
-              prev.conversation?.inRoster != next.conversation?.inRoster,
+          // The context menu
+          SelectedMessageContextMenu(
+            selectionController: _selectionController,
+            conversationController: _conversationController,
+          ),
+        ],
+        background: BlocBuilder<ConversationBloc, ConversationState>(
+          buildWhen: (prev, next) => prev.backgroundPath != next.backgroundPath,
           builder: (context, state) {
-            if ((state.conversation?.inRoster ?? false) ||
-                state.conversation?.type == ConversationType.note) {
-              return const SizedBox();
+            final query = MediaQuery.of(context);
+
+            if (state.backgroundPath.isNotEmpty) {
+              return Image.file(
+                File(state.backgroundPath),
+                fit: BoxFit.cover,
+                width: query.size.width,
+                height: query.size.height - query.padding.top,
+              );
             }
 
-            return _renderNotInRosterWidget(state, context);
+            return SizedBox(
+              width: query.size.width,
+              height: query.size.height,
+              child: ColoredBox(
+                color: Theme.of(context).scaffoldBackgroundColor,
+              ),
+            );
           },
         ),
-        Expanded(
-          child: Stack(
-            children: [
-              StreamBuilder<List<Message>>(
-                initialData: const [],
-                stream: _conversationController.dataStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return SingleChildScrollView(
-                      reverse: true,
-                      controller: _conversationController.scrollController,
-                      child: GroupedListView<Message, DateTime>(
-                        elements: snapshot.data!,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        groupBy: (message) {
-                          final dt = DateTime.fromMillisecondsSinceEpoch(
-                            message.timestamp,
-                          );
-                          return DateTime(
-                            dt.year,
-                            dt.month,
-                            dt.day,
-                          );
-                        },
-                        groupSeparatorBuilder: (DateTime dt) => Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            DateBubble(
-                              formatDateBubble(dt, DateTime.now()),
-                            ),
-                          ],
-                        ),
-                        indexedItemBuilder: (context, message, index) =>
-                            _renderBubble(
-                          context.read<ConversationBloc>().state,
-                          message,
-                          snapshot.data!,
-                          index,
-                          maxWidth,
-                        ),
-                        sort: false,
-                      ),
-                    );
-                  }
+        children: [
+          BlocBuilder<ConversationBloc, ConversationState>(
+            buildWhen: (prev, next) =>
+                prev.conversation?.inRoster != next.conversation?.inRoster,
+            builder: (context, state) {
+              if ((state.conversation?.inRoster ?? false) ||
+                  state.conversation?.type == ConversationType.note) {
+                return const SizedBox();
+              }
 
-                  return const LinearProgressIndicator();
-                },
-              ),
+              return _renderNotInRosterWidget(state, context);
+            },
+          ),
+          Expanded(
+            child: Stack(
+              children: [
+                StreamBuilder<List<Message>>(
+                  initialData: const [],
+                  stream: _conversationController.dataStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return SingleChildScrollView(
+                        reverse: true,
+                        controller: _conversationController.scrollController,
+                        child: GroupedListView<Message, DateTime>(
+                          elements: snapshot.data!,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          groupBy: (message) {
+                            final dt = DateTime.fromMillisecondsSinceEpoch(
+                              message.timestamp,
+                            );
+                            return DateTime(
+                              dt.year,
+                              dt.month,
+                              dt.day,
+                            );
+                          },
+                          groupSeparatorBuilder: (DateTime dt) => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              DateBubble(
+                                formatDateBubble(dt, DateTime.now()),
+                              ),
+                            ],
+                          ),
+                          indexedItemBuilder: (context, message, index) =>
+                              _renderBubble(
+                            context.read<ConversationBloc>().state,
+                            message,
+                            snapshot.data!,
+                            index,
+                            maxWidth,
+                          ),
+                          sort: false,
+                        ),
+                      );
+                    }
 
-              Positioned(
-                right: 8,
-                bottom: 16,
-                child: StreamBuilder<bool>(
-                  initialData: false,
-                  stream: _conversationController.pickerVisibleStream,
-                  builder: (context, snapshot) => Material(
+                    return const LinearProgressIndicator();
+                  },
+                ),
+                Positioned(
+                  right: 8,
+                  bottom: 16,
+                  child: Material(
                     color: const Color.fromRGBO(0, 0, 0, 0),
                     child: ScaleTransition(
                       scale: _scrollToBottomAnimation,
@@ -467,19 +533,20 @@ class ConversationPageState extends State<ConversationPage>
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        ConversationInput(
-          keyboardController: _keyboardController,
-          conversationController: _conversationController,
-          tabController: _tabController,
-          speedDialValueNotifier: _speedDialValueNotifier,
-          // TODO
-          isEncrypted: false,
-        ),
-      ],
+          ConversationInput(
+            keyboardController: _keyboardController,
+            conversationController: _conversationController,
+            tabController: _tabController,
+            speedDialValueNotifier: _speedDialValueNotifier,
+            textfieldFocusNode: _textfieldFocusNode,
+            // TODO
+            isEncrypted: false,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -85,7 +85,7 @@ class KeyboardReplacerController {
 
   /// The stream for building the child widget wrapper.
   final StreamController<KeyboardReplacerData> _streamController =
-      StreamController<KeyboardReplacerData>();
+      StreamController<KeyboardReplacerData>.broadcast();
   Stream<KeyboardReplacerData> get stream => _streamController.stream;
 
   /// Get the currently tracked data.
@@ -213,13 +213,13 @@ class KeyboardReplacerScaffold extends StatelessWidget {
       children: [
         // The background should not move when we dodge the keyboard
         Positioned(
-            // Do not leak under the system UI
-            top: headerHeight,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: background,
-          ),
+          // Do not leak under the system UI
+          top: headerHeight,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: background,
+        ),
 
         Positioned(
           top: 0,
@@ -244,8 +244,7 @@ class KeyboardReplacerScaffold extends StatelessWidget {
           ),
         ),
 
-        if (extraStackChildren != null)
-          ...extraStackChildren!,
+        if (extraStackChildren != null) ...extraStackChildren!,
       ],
     );
   }
