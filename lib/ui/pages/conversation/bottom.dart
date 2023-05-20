@@ -11,6 +11,7 @@ import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/blink.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
+import 'package:moxxyv2/ui/pages/conversation/timer.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
@@ -56,7 +57,13 @@ class _TextFieldIconButton extends StatelessWidget {
 }
 
 class _TextFieldRecordButton extends StatelessWidget {
-  const _TextFieldRecordButton();
+  const _TextFieldRecordButton({
+    required this.conversationController,
+    required this.keyboardController,
+  });
+
+  final BidirectionalConversationController conversationController;
+  final KeyboardReplacerController keyboardController;
 
   @override
   Widget build(BuildContext context) {
@@ -65,15 +72,15 @@ class _TextFieldRecordButton extends StatelessWidget {
       axis: Axis.vertical,
       onDragStarted: () {
         Vibrate.feedback(FeedbackType.heavy);
-        context.read<ConversationBloc>().add(
-              SendButtonDragStartedEvent(),
-            );
+
+        conversationController.startAudioMessageRecording();
+        keyboardController.hideWidget();
+        dismissSoftKeyboard(context);
       },
       onDraggableCanceled: (_, __) {
         Vibrate.feedback(FeedbackType.heavy);
-        context.read<ConversationBloc>().add(
-              SendButtonDragEndedEvent(),
-            );
+
+        conversationController.endAudioMessageRecording();
       },
       childWhenDragging: const SizedBox(),
       feedback: SizedBox(
@@ -133,6 +140,7 @@ class ConversationInput extends StatefulWidget {
 class ConversationInputState extends State<ConversationInput> {
   IconData _getSendButtonIcon(SendButtonState state) {
     switch (state) {
+      case SendButtonState.hidden:
       case SendButtonState.multi:
         return Icons.add;
       case SendButtonState.send:
@@ -148,140 +156,199 @@ class ConversationInputState extends State<ConversationInput> {
       color: Colors.black45,
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Row(
+        child: Stack(
           children: [
-            Expanded(
-              child: StreamBuilder<TextFieldData>(
-                initialData: const TextFieldData(
-                  true,
-                  null,
-                ),
-                stream: widget.conversationController.textFieldDataStream,
-                builder: (context, snapshot) {
-                  return CustomTextField(
-                    backgroundColor: Theme.of(context)
-                        .extension<MoxxyThemeData>()!
-                        .conversationTextFieldColor,
-                    textColor: Theme.of(context)
-                        .extension<MoxxyThemeData>()!
-                        .conversationTextFieldTextColor,
-                    maxLines: 5,
-                    hintText: t.pages.conversation.messageHint,
-                    hintTextColor: Theme.of(context)
-                        .extension<MoxxyThemeData>()!
-                        .conversationTextFieldHintTextColor,
-                    isDense: true,
-                    contentPadding: textfieldPaddingConversation,
-                    fontSize: textFieldFontSizeConversation,
-                    cornerRadius: textfieldRadiusConversation,
-                    controller: widget.conversationController.textController,
-                    topWidget: snapshot.data!.quotedMessage != null
-                        ? buildQuoteMessageWidget(
-                            snapshot.data!.quotedMessage!,
-                            isSent(
-                              snapshot.data!.quotedMessage!,
-                              GetIt.I.get<UIDataService>().ownJid!,
-                            ),
-                            textfieldQuotedMessageRadius,
-                            textfieldQuotedMessageRadius,
-                            resetQuote:
-                                widget.conversationController.removeQuote,
-                          )
-                        : null,
-                    focusNode: widget.textfieldFocusNode,
-                    //shouldSummonKeyboard: () => !snapshot.data!.pickerVisible,
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: _TextFieldIconButton(
-                        keyboardController: widget.keyboardController,
-                        tabController: widget.tabController,
-                        textfieldFocusNode: widget.textfieldFocusNode,
-                      ),
+            Row(
+              children: [
+                Expanded(
+                  child: StreamBuilder<TextFieldData>(
+                    initialData: const TextFieldData(
+                      true,
+                      null,
                     ),
-                    prefixIconConstraints: const BoxConstraints(
-                      minWidth: 24,
-                      minHeight: 24,
-                    ),
-                    suffixIcon: snapshot.data!.isBodyEmpty &&
-                            snapshot.data!.quotedMessage == null
-                        ? const Padding(
-                            padding: EdgeInsets.only(right: 8),
-                            child: _TextFieldRecordButton(),
-                          )
-                        : null,
-                    suffixIconConstraints: const BoxConstraints(
-                      minWidth: 24,
-                      minHeight: 24,
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: SizedBox(
-                width: 45,
-                height: 45,
-                child: StreamBuilder<SendButtonState>(
-                  initialData: defaultSendButtonState,
-                  stream: widget.conversationController.sendButtonStream,
-                  builder: (context, snapshot) => SpeedDial(
-                    icon: _getSendButtonIcon(snapshot.data!),
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    children: [
-                      SpeedDialChild(
-                        child: const Icon(Icons.image),
-                        onTap: () {
-                          context.read<ConversationBloc>().add(
-                                ImagePickerRequestedEvent(),
-                              );
-                        },
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        label: t.pages.conversation.sendImages,
-                      ),
-                      SpeedDialChild(
-                        child: const Icon(Icons.file_present),
-                        onTap: () {
-                          context.read<ConversationBloc>().add(
-                                FilePickerRequestedEvent(),
-                              );
-                        },
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        label: t.pages.conversation.sendFiles,
-                      ),
-                      SpeedDialChild(
-                        child: const Icon(Icons.photo_camera),
-                        onTap: () {
-                          showNotImplementedDialog(
-                            'taking photos',
-                            context,
-                          );
-                        },
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        label: t.pages.conversation.takePhotos,
-                      ),
-                    ],
-                    openCloseDial: widget.speedDialValueNotifier,
-                    onPress: () {
-                      switch (snapshot.data!) {
-                        case SendButtonState.cancelCorrection:
-                          widget.conversationController.endMessageEditing();
-                          return;
-                        case SendButtonState.send:
-                          widget.conversationController.sendMessage(
-                            widget.isEncrypted,
-                          );
-                          return;
-                        case SendButtonState.multi:
-                          widget.speedDialValueNotifier.value =
-                              !widget.speedDialValueNotifier.value;
-                          return;
-                      }
+                    stream: widget.conversationController.textFieldDataStream,
+                    builder: (context, snapshot) {
+                      return CustomTextField(
+                        backgroundColor: Theme.of(context)
+                            .extension<MoxxyThemeData>()!
+                            .conversationTextFieldColor,
+                        textColor: Theme.of(context)
+                            .extension<MoxxyThemeData>()!
+                            .conversationTextFieldTextColor,
+                        maxLines: 5,
+                        hintText: t.pages.conversation.messageHint,
+                        hintTextColor: Theme.of(context)
+                            .extension<MoxxyThemeData>()!
+                            .conversationTextFieldHintTextColor,
+                        isDense: true,
+                        contentPadding: textfieldPaddingConversation,
+                        fontSize: textFieldFontSizeConversation,
+                        cornerRadius: textfieldRadiusConversation,
+                        controller:
+                            widget.conversationController.textController,
+                        topWidget: snapshot.data!.quotedMessage != null
+                            ? buildQuoteMessageWidget(
+                                snapshot.data!.quotedMessage!,
+                                isSent(
+                                  snapshot.data!.quotedMessage!,
+                                  GetIt.I.get<UIDataService>().ownJid!,
+                                ),
+                                textfieldQuotedMessageRadius,
+                                textfieldQuotedMessageRadius,
+                                resetQuote:
+                                    widget.conversationController.removeQuote,
+                              )
+                            : null,
+                        focusNode: widget.textfieldFocusNode,
+                        //shouldSummonKeyboard: () => !snapshot.data!.pickerVisible,
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: _TextFieldIconButton(
+                            keyboardController: widget.keyboardController,
+                            tabController: widget.tabController,
+                            textfieldFocusNode: widget.textfieldFocusNode,
+                          ),
+                        ),
+                        prefixIconConstraints: const BoxConstraints(
+                          minWidth: 24,
+                          minHeight: 24,
+                        ),
+                        suffixIcon: snapshot.data!.isBodyEmpty &&
+                                snapshot.data!.quotedMessage == null
+                            ? Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: _TextFieldRecordButton(
+                                  conversationController:
+                                      widget.conversationController,
+                                  keyboardController: widget.keyboardController,
+                                ),
+                              )
+                            : null,
+                        suffixIconConstraints: const BoxConstraints(
+                          minWidth: 24,
+                          minHeight: 24,
+                        ),
+                      );
                     },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: SizedBox(
+                    width: 45,
+                    height: 45,
+                    child: StreamBuilder<SendButtonState>(
+                      initialData: defaultSendButtonState,
+                      stream: widget.conversationController.sendButtonStream,
+                      builder: (context, snapshot) => IgnorePointer(
+                        ignoring: snapshot.data! == SendButtonState.hidden,
+                        child: AnimatedOpacity(
+                          opacity:
+                              snapshot.data! == SendButtonState.hidden ? 0 : 1,
+                          duration: const Duration(milliseconds: 150),
+                          child: SpeedDial(
+                            icon: _getSendButtonIcon(snapshot.data!),
+                            backgroundColor: primaryColor,
+                            foregroundColor: Colors.white,
+                            children: [
+                              SpeedDialChild(
+                                child: const Icon(Icons.image),
+                                onTap: () {
+                                  context.read<ConversationBloc>().add(
+                                        ImagePickerRequestedEvent(),
+                                      );
+                                },
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.white,
+                                label: t.pages.conversation.sendImages,
+                              ),
+                              SpeedDialChild(
+                                child: const Icon(Icons.file_present),
+                                onTap: () {
+                                  context.read<ConversationBloc>().add(
+                                        FilePickerRequestedEvent(),
+                                      );
+                                },
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.white,
+                                label: t.pages.conversation.sendFiles,
+                              ),
+                              SpeedDialChild(
+                                child: const Icon(Icons.photo_camera),
+                                onTap: () {
+                                  showNotImplementedDialog(
+                                    'taking photos',
+                                    context,
+                                  );
+                                },
+                                backgroundColor: primaryColor,
+                                foregroundColor: Colors.white,
+                                label: t.pages.conversation.takePhotos,
+                              ),
+                            ],
+                            openCloseDial: widget.speedDialValueNotifier,
+                            onPress: () {
+                              switch (snapshot.data!) {
+                                case SendButtonState.cancelCorrection:
+                                  widget.conversationController
+                                      .endMessageEditing();
+                                  return;
+                                case SendButtonState.send:
+                                  widget.conversationController.sendMessage(
+                                    widget.isEncrypted,
+                                  );
+                                  return;
+                                case SendButtonState.multi:
+                                  widget.speedDialValueNotifier.value =
+                                      !widget.speedDialValueNotifier.value;
+                                  return;
+                                case SendButtonState.hidden:
+                                  return;
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 45 + 16,
+              child: StreamBuilder<RecordingData>(
+                initialData: const RecordingData(
+                  false,
+                  false,
+                ),
+                stream:
+                    widget.conversationController.recordingAudioMessageStream,
+                builder: (context, snapshot) => IgnorePointer(
+                  ignoring: !snapshot.data!.isRecording,
+                  child: AnimatedOpacity(
+                    opacity: snapshot.data!.isRecording ? 1 : 0,
+                    duration: const Duration(milliseconds: 150),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .extension<MoxxyThemeData>()!
+                            .conversationTextFieldColor,
+                        borderRadius:
+                            BorderRadius.circular(textfieldRadiusConversation),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 16),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: snapshot.data!.isRecording
+                              ? const TimerWidget()
+                              : const SizedBox(),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),

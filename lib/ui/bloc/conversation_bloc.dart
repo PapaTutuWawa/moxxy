@@ -1,24 +1,16 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_vibrate/flutter_vibrate.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
-import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:record/record.dart';
 
 part 'conversation_bloc.freezed.dart';
 part 'conversation_event.dart';
@@ -36,18 +28,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     on<ImagePickerRequestedEvent>(_onImagePickerRequested);
     on<FilePickerRequestedEvent>(_onFilePickerRequested);
     on<OmemoSetEvent>(_onOmemoSet);
-    on<SendButtonDragStartedEvent>(_onDragStarted);
-    on<SendButtonDragEndedEvent>(_onDragEnded);
-    on<SendButtonLockedEvent>(_onSendButtonLocked);
-    on<SendButtonLockPressedEvent>(_onSendButtonLockPressed);
-    on<RecordingCanceledEvent>(_onRecordingCanceled);
-
-    _audioRecorder = Record();
   }
-
-  /// The audio recorder
-  late Record _audioRecorder;
-  DateTime? _recordingStart;
 
   bool _isSameConversation(String jid) => jid == state.conversation?.jid;
 
@@ -200,129 +181,5 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
           ),
           awaitable: false,
         );
-  }
-
-  Future<void> _onDragStarted(
-    SendButtonDragStartedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
-    final status = await Permission.speech.status;
-    if (status.isDenied) {
-      await Permission.speech.request();
-      return;
-    }
-
-    emit(
-      state.copyWith(
-        isDragging: true,
-        isRecording: true,
-      ),
-    );
-
-    final now = DateTime.now();
-    _recordingStart = now;
-    final tempDir = await getTemporaryDirectory();
-    final timestamp =
-        '${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}';
-    final tempFile = path.join(tempDir.path, 'audio_$timestamp.aac');
-    await _audioRecorder.start(
-      path: tempFile,
-    );
-  }
-
-  Future<void> _handleRecordingEnd() async {
-    // Prevent messages of really short duration being sent
-    final now = DateTime.now();
-    if (now.difference(_recordingStart!).inSeconds < 1) {
-      await Fluttertoast.showToast(
-        msg: t.warnings.conversation.holdForLonger,
-        gravity: ToastGravity.SNACKBAR,
-        toastLength: Toast.LENGTH_SHORT,
-      );
-      return;
-    }
-
-    // Warn if something unexpected happened
-    final recordingPath = await _audioRecorder.stop();
-    if (recordingPath == null) {
-      await Fluttertoast.showToast(
-        msg: t.errors.conversation.audioRecordingError,
-        gravity: ToastGravity.SNACKBAR,
-        toastLength: Toast.LENGTH_SHORT,
-      );
-      return;
-    }
-
-    // Send the file
-    await MoxplatformPlugin.handler.getDataSender().sendData(
-          SendFilesCommand(
-            paths: [recordingPath],
-            recipients: [state.conversation!.jid],
-          ),
-          awaitable: false,
-        );
-  }
-
-  Future<void> _onDragEnded(
-    SendButtonDragEndedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
-    final recording = state.isRecording;
-    emit(
-      state.copyWith(
-        isDragging: false,
-        isLocked: false,
-        isRecording: false,
-      ),
-    );
-
-    if (recording) {
-      await _handleRecordingEnd();
-    }
-  }
-
-  Future<void> _onSendButtonLocked(
-    SendButtonLockedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
-    Vibrate.feedback(FeedbackType.light);
-
-    emit(state.copyWith(isLocked: true));
-  }
-
-  Future<void> _onSendButtonLockPressed(
-    SendButtonLockPressedEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
-    final recording = state.isRecording;
-    emit(
-      state.copyWith(
-        isLocked: false,
-        isDragging: false,
-        isRecording: false,
-      ),
-    );
-
-    if (recording) {
-      await _handleRecordingEnd();
-    }
-  }
-
-  Future<void> _onRecordingCanceled(
-    RecordingCanceledEvent event,
-    Emitter<ConversationState> emit,
-  ) async {
-    Vibrate.feedback(FeedbackType.heavy);
-
-    emit(
-      state.copyWith(
-        isLocked: false,
-        isDragging: false,
-        isRecording: false,
-      ),
-    );
-
-    final file = await _audioRecorder.stop();
-    unawaited(File(file!).delete());
   }
 }
