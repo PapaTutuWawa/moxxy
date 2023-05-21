@@ -58,6 +58,7 @@ class ContextMenu extends StatelessWidget {
     return ClipRRect(
       borderRadius: const BorderRadius.all(radiusLarge),
       child: Material(
+        color: contextMenuBackgroundColor,
         child: IntrinsicHeight(
           child: IntrinsicWidth(
             child: Column(
