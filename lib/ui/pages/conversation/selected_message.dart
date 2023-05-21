@@ -12,7 +12,7 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
-import 'package:moxxyv2/ui/widgets/overview_menu.dart';
+import 'package:moxxyv2/ui/widgets/context_menu.dart';
 
 /// A data "packet" to describe the selected message.
 class SelectedMessageData {

@@ -27,7 +27,7 @@ import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
-import 'package:moxxyv2/ui/widgets/overview_menu.dart';
+import 'package:moxxyv2/ui/widgets/context_menu.dart';
 
 int getMessageMenuOptionCount(
   Message message,

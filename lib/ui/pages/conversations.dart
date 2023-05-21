@@ -12,8 +12,8 @@ import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
-import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 enum ConversationsOptions { settings }
