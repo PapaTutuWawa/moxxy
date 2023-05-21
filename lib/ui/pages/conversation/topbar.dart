@@ -11,7 +11,6 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
@@ -45,7 +44,8 @@ class ConversationTopbar extends StatelessWidget
   const ConversationTopbar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(60);
+  Size get preferredSize =>
+      const Size.fromHeight(BorderlessTopbar.topbarPreferredHeight);
 
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
     return prev.conversation?.title != next.conversation?.title ||
@@ -57,6 +57,7 @@ class ConversationTopbar extends StatelessWidget
 
   Widget _buildChatState(ChatState state) {
     switch (state) {
+      case ChatState.composing:
       case ChatState.paused:
       case ChatState.active:
         return Text(
@@ -65,12 +66,9 @@ class ConversationTopbar extends StatelessWidget
             color: Colors.green,
           ),
         );
-      case ChatState.composing:
-        // TODO(Unknown): Colors
-        return const TypingIndicatorWidget(Colors.black, Colors.white);
       case ChatState.inactive:
       case ChatState.gone:
-        return Container();
+        return const SizedBox();
     }
   }
 
@@ -98,7 +96,11 @@ class ConversationTopbar extends StatelessWidget
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.only(
+                  top: 8,
+                  right: 8,
+                  bottom: 8,
+                ),
                 child: InkWell(
                   onTap: () => _openProfile(context, state),
                   child: Stack(
@@ -123,23 +125,17 @@ class ConversationTopbar extends StatelessWidget
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 200),
                         top: _isChatStateVisible(chatState) ? 0 : 10,
-                        left: 25,
+                        left: 60,
                         right: 0,
                         curve: Curves.easeInOutCubic,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            RebuildOnContactIntegrationChange(
-                              builder: () => Text(
-                                state.conversation?.titleWithOptionalContact ??
-                                    '',
-                                style: const TextStyle(
-                                  fontSize: fontsizeAppbar,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                        child: RebuildOnContactIntegrationChange(
+                          builder: () => Text(
+                            state.conversation?.titleWithOptionalContact ?? '',
+                            style: const TextStyle(
+                              fontSize: fontsizeAppbar,
                             ),
-                          ],
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       Positioned(

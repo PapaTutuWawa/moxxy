@@ -46,8 +46,6 @@ class ShareSelectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
-
     return WillPopScope(
       onWillPop: () async {
         GetIt.I.get<ShareSelectionBloc>().add(ResetEvent());
@@ -72,47 +70,35 @@ class ShareSelectionPage extends StatelessWidget {
             itemCount: state.items.length,
             itemBuilder: (context, index) {
               final item = state.items[index];
-              final isSelected = state.selection.contains(index);
 
-              return InkWell(
-                onTap: () {
+              return ConversationsListRow(
+                Conversation(
+                  item.title,
+                  null,
+                  item.avatarPath,
+                  item.jid,
+                  0,
+                  ConversationType.chat,
+                  0,
+                  true,
+                  true,
+                  '',
+                  false,
+                  false,
+                  ChatState.gone,
+                  contactId: item.contactId,
+                  contactAvatarPath: item.contactAvatarPath,
+                  contactDisplayName: item.contactDisplayName,
+                ),
+                false,
+                titleSuffixIcon: _getSuffixIcon(item),
+                showTimestamp: false,
+                isSelected: state.selection.contains(index),
+                onPressed: () {
                   context.read<ShareSelectionBloc>().add(
                         SelectionToggledEvent(index),
                       );
                 },
-                child: ConversationsListRow(
-                  maxTextWidth,
-                  Conversation(
-                    item.title,
-                    null,
-                    item.avatarPath,
-                    item.jid,
-                    0,
-                    ConversationType.chat,
-                    0,
-                    true,
-                    true,
-                    '',
-                    false,
-                    false,
-                    ChatState.gone,
-                    contactId: item.contactId,
-                    contactAvatarPath: item.contactAvatarPath,
-                    contactDisplayName: item.contactDisplayName,
-                  ),
-                  false,
-                  titleSuffixIcon: _getSuffixIcon(item),
-                  showTimestamp: false,
-                  extraWidgetWidth: 48,
-                  extra: Checkbox(
-                    value: isSelected,
-                    onChanged: (_) {
-                      context.read<ShareSelectionBloc>().add(
-                            SelectionToggledEvent(index),
-                          );
-                    },
-                  ),
-                ),
               );
             },
           ),

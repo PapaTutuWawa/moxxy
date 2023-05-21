@@ -2,7 +2,6 @@ import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
-import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/sticker_picker.dart';
@@ -27,7 +26,7 @@ class CombinedPicker extends StatelessWidget {
   final void Function() onBackspaceTapped;
 
   /// Called when a sticker has been tapped
-  final void Function(Sticker, StickerPack) onStickerTapped;
+  final void Function(Sticker) onStickerTapped;
 
   @override
   Widget build(BuildContext context) {

@@ -49,7 +49,6 @@ class NewConversationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
     return Scaffold(
       appBar: BorderlessTopbar.title(t.pages.newconversation.title),
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
@@ -87,8 +86,39 @@ class NewConversationPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: InkWell(
-                    onTap: () => context.read<NewConversationBloc>().add(
+                  child: ConversationsListRow(
+                    Conversation(
+                      item.title,
+                      Message(
+                        '',
+                        item.jid,
+                        0,
+                        '',
+                        0,
+                        '',
+                        false,
+                        false,
+                        false,
+                      ),
+                      item.avatarUrl,
+                      item.jid,
+                      0,
+                      ConversationType.chat,
+                      0,
+                      true,
+                      true,
+                      '',
+                      false,
+                      false,
+                      ChatState.gone,
+                      contactId: item.contactId,
+                      contactAvatarPath: item.contactAvatarPath,
+                      contactDisplayName: item.contactDisplayName,
+                    ),
+                    false,
+                    showTimestamp: false,
+                    isSelected: false,
+                    onPressed: () => context.read<NewConversationBloc>().add(
                           NewConversationAddedEvent(
                             item.jid,
                             item.title,
@@ -96,41 +126,8 @@ class NewConversationPage extends StatelessWidget {
                             ConversationType.chat,
                           ),
                         ),
-                    child: ConversationsListRow(
-                      maxTextWidth,
-                      Conversation(
-                        item.title,
-                        Message(
-                          '',
-                          item.jid,
-                          0,
-                          '',
-                          0,
-                          '',
-                          false,
-                          false,
-                          false,
-                        ),
-                        item.avatarUrl,
-                        item.jid,
-                        0,
-                        ConversationType.chat,
-                        0,
-                        true,
-                        true,
-                        '',
-                        false,
-                        false,
-                        ChatState.gone,
-                        contactId: item.contactId,
-                        contactAvatarPath: item.contactAvatarPath,
-                        contactDisplayName: item.contactDisplayName,
-                      ),
-                      false,
-                      showTimestamp: false,
-                      titleSuffixIcon:
-                          item.pseudoRosterItem ? Icons.smartphone : null,
-                    ),
+                    titleSuffixIcon:
+                        item.pseudoRosterItem ? Icons.smartphone : null,
                   ),
                 );
             }

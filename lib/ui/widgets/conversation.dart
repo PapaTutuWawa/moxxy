@@ -18,28 +18,108 @@ import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+class AnimatedMaterialColor extends StatefulWidget {
+  const AnimatedMaterialColor({
+    required this.color,
+    required this.child,
+    super.key,
+  });
+
+  /// The color attribute of the [Material] widget.
+  final Color color;
+
+  /// The child widget of the [Material] widget.
+  final Widget child;
+
+  @override
+  AnimatedMaterialColorState createState() => AnimatedMaterialColorState();
+}
+
+class AnimatedMaterialColorState extends State<AnimatedMaterialColor>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final ColorTween _tween;
+  late final Animation<Color?> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _tween = ColorTween(
+      begin: widget.color,
+      end: widget.color,
+    );
+
+    _animation = _tween.animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedMaterialColor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.color != widget.color) {
+      _tween
+        ..begin = oldWidget.color
+        ..end = widget.color;
+
+      _controller
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (_, child) => Material(
+        color: _animation.value,
+        child: child,
+      ),
+      child: widget.child,
+    );
+  }
+}
+
 class ConversationsListRow extends StatefulWidget {
   const ConversationsListRow(
-    this.maxTextWidth,
     this.conversation,
     this.update, {
+    required this.isSelected,
     this.showTimestamp = true,
     this.titleSuffixIcon,
-    this.extra,
     this.enableAvatarOnTap = false,
     this.avatarWidget,
-    this.extraWidgetWidth = 0,
+    this.onPressed,
     super.key,
   });
   final Conversation conversation;
-  final double maxTextWidth;
-  final double extraWidgetWidth;
   final bool update; // Should a timer run to update the timestamp
   final IconData? titleSuffixIcon;
   final bool showTimestamp;
   final bool enableAvatarOnTap;
   final Widget? avatarWidget;
-  final Widget? extra;
+
+  /// Flag indicating whether the conversation row is selected (true) or not (false).
+  final bool isSelected;
+
+  /// Callback for when the row has been tapped.
+  final VoidCallback? onPressed;
 
   @override
   ConversationsListRowState createState() => ConversationsListRowState();
@@ -254,10 +334,6 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final badgeText = widget.conversation.unreadCounter > 99
         ? '99+'
         : widget.conversation.unreadCounter.toString();
-    final screenWidth = MediaQuery.of(context).size.width;
-    final width = screenWidth - 24 - 70 - widget.extraWidgetWidth;
-    final textWidth = screenWidth * 0.6;
-
     final showTimestamp =
         widget.conversation.lastChangeTimestamp != timestampNever &&
             widget.showTimestamp;
@@ -267,106 +343,106 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final showBadge = widget.conversation.unreadCounter > 0 && !sentBySelf;
 
     return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Row(
-        children: [
-          _buildAvatar(),
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: LimitedBox(
-              maxWidth: width,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radiusLargeSize),
+        child: AnimatedMaterialColor(
+          color: widget.isSelected ? Colors.blue : Colors.transparent,
+          child: InkWell(
+            onTap: widget.onPressed ?? () {},
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RebuildOnContactIntegrationChange(
-                        builder: () => Text(
-                          widget.conversation.titleWithOptionalContact,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (widget.titleSuffixIcon != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            widget.titleSuffixIcon,
-                            size: 17,
-                          ),
-                        ),
-                      Visibility(
-                        visible: showTimestamp,
-                        child: const Spacer(),
-                      ),
-                      Visibility(
-                        visible: showTimestamp,
-                        child: Text(_timestampString),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (sentBySelf && !widget.conversation.isTyping)
-                          Padding(
-                            padding: const EdgeInsets.only(
-                              right: 8,
-                            ),
-                            child: Text(
-                              '${t.messages.you}:',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                  _buildAvatar(),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              RebuildOnContactIntegrationChange(
+                                builder: () => Text(
+                                  widget.conversation.titleWithOptionalContact,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                            ),
+                              if (widget.titleSuffixIcon != null)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 6),
+                                  child: Icon(
+                                    widget.titleSuffixIcon,
+                                    size: 17,
+                                  ),
+                                ),
+                              if (showTimestamp) const Spacer(),
+                              if (showTimestamp) Text(_timestampString),
+                            ],
                           ),
-                        if ((widget.conversation.lastMessage?.isThumbnailable ??
-                                false) &&
-                            !widget.conversation.isTyping)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 5),
-                            child: BlocBuilder<StickersBloc, StickersState>(
-                              buildWhen: (prev, next) =>
-                                  prev.stickerPacks.length !=
-                                      next.stickerPacks.length &&
-                                  widget.conversation.lastMessage
-                                          ?.stickerPackId !=
-                                      null,
-                              builder: (_, state) =>
-                                  _buildLastMessagePreview(state),
-                            ),
-                          )
-                        else
-                          const SizedBox(height: 30),
-                        LimitedBox(
-                          maxWidth: textWidth,
-                          child: _buildLastMessageBody(),
-                        ),
-                        const Spacer(),
-                        _getLastMessageIcon(sentBySelf),
-                        Visibility(
-                          visible: showBadge,
-                          child: badges.Badge(
-                            badgeContent: Text(badgeText),
-                            badgeColor: bubbleColorSent,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (sentBySelf && !widget.conversation.isTyping)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: 8,
+                                  ),
+                                  child: Text(
+                                    '${t.messages.you}:',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              if ((widget.conversation.lastMessage
+                                          ?.isThumbnailable ??
+                                      false) &&
+                                  !widget.conversation.isTyping)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 5),
+                                  child:
+                                      BlocBuilder<StickersBloc, StickersState>(
+                                    buildWhen: (prev, next) =>
+                                        prev.stickerPacks.length !=
+                                            next.stickerPacks.length &&
+                                        widget.conversation.lastMessage
+                                                ?.stickerPackId !=
+                                            null,
+                                    builder: (_, state) =>
+                                        _buildLastMessagePreview(state),
+                                  ),
+                                )
+                              else
+                                const SizedBox(height: 30),
+                              Expanded(
+                                child: _buildLastMessageBody(),
+                              ),
+                              _getLastMessageIcon(sentBySelf),
+                              if (showBadge)
+                                badges.Badge(
+                                  badgeContent: Text(badgeText),
+                                  badgeColor: bubbleColorSent,
+                                ),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          ...widget.extra != null ? [const Spacer(), widget.extra!] : [],
-        ],
+        ),
       ),
     );
   }

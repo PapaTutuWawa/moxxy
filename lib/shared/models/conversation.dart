@@ -144,6 +144,9 @@ class Conversation with _$Conversation {
 
     return title;
   }
+
+  /// The amount of items that are shown in the context menu.
+  int get numberContextMenuOptions => 1 + (unreadCounter != 0 ? 1 : 0);
 }
 
 /// Sorts conversations in descending order by their last change timestamp.

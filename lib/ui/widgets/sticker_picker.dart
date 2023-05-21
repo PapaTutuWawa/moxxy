@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
-import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
@@ -21,7 +20,7 @@ class StickerPicker extends StatelessWidget {
 
   final double width;
   late final double _itemSize;
-  final void Function(Sticker, StickerPack) onStickerTapped;
+  final void Function(Sticker) onStickerTapped;
 
   Widget _buildList(BuildContext context, StickersState state) {
     // TODO(PapaTutuWawa): Solve this somewhere else
@@ -91,7 +90,6 @@ class StickerPicker extends StatelessWidget {
                 onTap: () {
                   onStickerTapped(
                     stickerPacks[sindex].stickers[index],
-                    stickerPacks[sindex],
                   );
                 },
                 onLongPress: () {

@@ -95,6 +95,9 @@ const Color profileFallbackTextColorDark = Colors.white;
 /// The text color of the buttons in the overlay of the ConversationPage
 const Color conversationOverlayButtonTextColor = Color(0xffcf4aff);
 
+/// The background color of the context menu
+const Color contextMenuBackgroundColor = Color(0xff515151);
+
 const Color settingsSectionTitleColor = Color(0xffb72fe7);
 
 const double paddingVeryLarge = 64;
@@ -127,6 +130,9 @@ const Color reactionColorReceived = Color(0xff757575);
 
 /// The color of a reaction that is sent by ourselves.
 const Color reactionColorSent = Color(0xff2993FB);
+
+/// The color of the skim when a message is highlighted.
+const Color highlightSkimColor = Color(0xff000000);
 
 /// Navigation constants
 const String cropRoute = '/crop';

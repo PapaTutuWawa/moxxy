@@ -402,7 +402,7 @@ Future<void> openFile(String path) async {
 
 /// Opens a modal bottom sheet with an emoji picker. Resolves to the picked emoji,
 /// if one was picked. If the picker was dismissed, resolves to null.
-Future<String?> pickEmoji(BuildContext context) async {
+Future<String?> pickEmoji(BuildContext context, {bool pop = true}) async {
   final emoji = await showModalBottomSheet<String>(
     context: context,
     // TODO(PapaTutuWawa): Move this to the theme
@@ -427,8 +427,19 @@ Future<String?> pickEmoji(BuildContext context) async {
     ),
   );
 
-  // ignore: use_build_context_synchronously
-  Navigator.of(context).pop();
+  if (pop) {
+    // ignore: use_build_context_synchronously
+    Navigator.of(context).pop();
+  }
 
   return emoji;
+}
+
+/// Compute the current position of the widget with the global key [key].
+Rect getWidgetPositionOnScreen(GlobalKey key) {
+  // (See https://stackoverflow.com/questions/50316219/how-to-get-widgets-absolute-coordinates-on-a-screen-in-flutter/58788092#58788092)
+  final renderObject = key.currentContext!.findRenderObject()!;
+  final translation = renderObject.getTransformTo(null).getTranslation();
+  final offset = Offset(translation.x, translation.y);
+  return renderObject.paintBounds.shift(offset);
 }

@@ -1,10 +1,12 @@
 import 'dart:async';
-import 'package:flutter/services.dart';
+import 'dart:io';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:logging/logging.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
@@ -12,6 +14,10 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart' as conversation;
 import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 
 class MessageEditingState {
   const MessageEditingState(
@@ -38,7 +44,6 @@ class TextFieldData {
   const TextFieldData(
     this.isBodyEmpty,
     this.quotedMessage,
-    this.pickerVisible,
   );
 
   /// Flag indicating whether the current text input is empty.
@@ -46,9 +51,19 @@ class TextFieldData {
 
   /// The currently quoted message.
   final Message? quotedMessage;
+}
 
-  /// Flag indicating whether the picker is currently open or not.
-  final bool pickerVisible;
+class RecordingData {
+  const RecordingData(
+    this.isRecording,
+    this.isLocked,
+  );
+
+  /// Flag indicating whether we are currently recording (true) or not (false).
+  final bool isRecording;
+
+  /// Flag indicating whether the recording draggable is locked (true) or not (false).
+  final bool isLocked;
 }
 
 class BidirectionalConversationController
@@ -63,9 +78,6 @@ class BidirectionalConversationController
           maxPageAmount: maxMessagePages,
         ) {
     _textController.addListener(_handleTextChanged);
-    _keyboardVisibilitySubscription = KeyboardVisibilityController()
-        .onChange
-        .listen(_handleSoftKeyboardVisibilityChanged);
 
     BidirectionalConversationController.currentController = this;
 
@@ -78,8 +90,6 @@ class BidirectionalConversationController
   /// A singleton referring to the current instance as there can only be one
   /// BidirectionalConversationController at a time.
   static BidirectionalConversationController? currentController;
-
-  late final StreamSubscription<bool> _keyboardVisibilitySubscription;
 
   /// TextEditingController for the TextField
   final TextEditingController _textController = TextEditingController();
@@ -113,17 +123,20 @@ class BidirectionalConversationController
   Stream<TextFieldData> get textFieldDataStream =>
       _textFieldDataStreamController.stream;
 
-  /// Flag indicating whether the (emoji/sticker) picker is visible
-  bool _pickerVisible = false;
-  final StreamController<bool> _pickerVisibleStreamController =
-      StreamController.broadcast();
-  Stream<bool> get pickerVisibleStream => _pickerVisibleStreamController.stream;
-
   /// The timer for managing the "compose" state
   Timer? _composeTimer;
 
   /// The last time the TextField was modified
   int _lastChangeTimestamp = 0;
+
+  /// Flag indicating whether we are currently recording an audio message (true) or not
+  /// (false).
+  final Record _audioRecorder = Record();
+  DateTime? _recordingStart;
+  final StreamController<RecordingData> _recordingAudioMessageStreamController =
+      StreamController<RecordingData>.broadcast();
+  Stream<RecordingData> get recordingAudioMessageStream =>
+      _recordingAudioMessageStreamController.stream;
 
   void _updateChatState(ChatState state) {
     MoxplatformPlugin.handler.getDataSender().sendData(
@@ -159,12 +172,6 @@ class BidirectionalConversationController
     _composeTimer = null;
   }
 
-  void _handleSoftKeyboardVisibilityChanged(bool visible) {
-    if (visible && _pickerVisible) {
-      togglePickerVisibility(false);
-    }
-  }
-
   void _handleTextChanged() {
     final text = _textController.text;
     if (_messageEditingState != null) {
@@ -185,7 +192,6 @@ class BidirectionalConversationController
       TextFieldData(
         messageBody.isEmpty,
         _quotedMessage,
-        _pickerVisible,
       ),
     );
 
@@ -296,9 +302,6 @@ class BidirectionalConversationController
 
     // Remove a possible quote
     removeQuote();
-
-    // Close the picker
-    togglePickerVisibility(false);
   }
 
   Future<void> sendMessage(bool encrypted) async {
@@ -388,7 +391,6 @@ class BidirectionalConversationController
       TextFieldData(
         messageBody.isEmpty,
         message,
-        _pickerVisible,
       ),
     );
   }
@@ -400,7 +402,6 @@ class BidirectionalConversationController
       TextFieldData(
         messageBody.isEmpty,
         null,
-        _pickerVisible,
       ),
     );
   }
@@ -435,37 +436,104 @@ class BidirectionalConversationController
     _sendButtonStreamController.add(conversation.defaultSendButtonState);
   }
 
-  /// Toggles the visibility of the (emoji/sticker) picker
-  void togglePickerVisibility(bool handleKeyboard) {
-    final newState = !_pickerVisible;
-
-    if (handleKeyboard) {
-      if (newState) {
-        SystemChannels.textInput.invokeMethod('TextInput.hide');
-      } else {
-        SystemChannels.textInput.invokeMethod('TextInput.show');
-      }
+  Future<void> startAudioMessageRecording() async {
+    final status = await Permission.speech.status;
+    if (status.isDenied) {
+      await Permission.speech.request();
+      return;
     }
 
-    _pickerVisible = newState;
-    _pickerVisibleStreamController.add(newState);
-    _textFieldDataStreamController.add(
-      TextFieldData(
-        messageBody.isEmpty,
-        _quotedMessage,
-        newState,
+    _recordingAudioMessageStreamController.add(
+      const RecordingData(
+        true,
+        false,
+      ),
+    );
+    _sendButtonStreamController.add(conversation.SendButtonState.hidden);
+
+    final now = DateTime.now();
+    _recordingStart = now;
+    final tempDir = await getTemporaryDirectory();
+    final timestamp =
+        '${now.year}${now.month}${now.day}${now.hour}${now.minute}${now.second}';
+    final tempFile = path.join(tempDir.path, 'audio_$timestamp.aac');
+    await _audioRecorder.start(
+      path: tempFile,
+    );
+  }
+
+  void lockAudioMessageRecording() {
+    _recordingAudioMessageStreamController.add(
+      const RecordingData(
+        true,
+        true,
       ),
     );
   }
 
-  /// React to a onWillPop callback.
-  bool handlePop() {
-    if (_pickerVisible) {
-      togglePickerVisibility(false);
-      return false;
+  Future<void> cancelAudioMessageRecording() async {
+    Vibrate.feedback(FeedbackType.heavy);
+    _recordingAudioMessageStreamController.add(
+      const RecordingData(
+        false,
+        false,
+      ),
+    );
+    _sendButtonStreamController.add(conversation.defaultSendButtonState);
+
+    _recordingStart = null;
+    final file = await _audioRecorder.stop();
+    unawaited(File(file!).delete());
+  }
+
+  Future<void> endAudioMessageRecording() async {
+    _recordingAudioMessageStreamController.add(
+      const RecordingData(
+        false,
+        false,
+      ),
+    );
+    _sendButtonStreamController.add(conversation.defaultSendButtonState);
+
+    if (_recordingStart == null) {
+      return;
     }
 
-    return true;
+    Vibrate.feedback(FeedbackType.heavy);
+    final file = await _audioRecorder.stop();
+    final now = DateTime.now();
+    if (now.difference(_recordingStart!).inSeconds < 1) {
+      _recordingStart = null;
+      unawaited(File(file!).delete());
+      await Fluttertoast.showToast(
+        msg: t.warnings.conversation.holdForLonger,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    // Reset the recording timestamp
+    _recordingStart = null;
+
+    // Handle something unexpected
+    if (file == null) {
+      await Fluttertoast.showToast(
+        msg: t.errors.conversation.audioRecordingError,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_SHORT,
+      );
+      return;
+    }
+
+    // Send the file
+    await MoxplatformPlugin.handler.getDataSender().sendData(
+          SendFilesCommand(
+            paths: [file],
+            recipients: [conversationJid],
+          ),
+          awaitable: false,
+        );
   }
 
   /// React to app livecycle changes
@@ -477,11 +545,16 @@ class BidirectionalConversationController
 
   @override
   void dispose() {
-    super.dispose();
+    // Reset the singleton
     BidirectionalConversationController.currentController = null;
 
+    // Dispose of controllers
     _textController.dispose();
-    _keyboardVisibilitySubscription.cancel();
+    _audioRecorder.dispose();
+
+    // Tell the contact that we're gone
     _updateChatState(ChatState.gone);
+
+    super.dispose();
   }
 }
