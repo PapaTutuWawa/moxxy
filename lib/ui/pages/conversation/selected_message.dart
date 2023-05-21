@@ -188,10 +188,10 @@ class SelectedMessageContextMenu extends StatelessWidget {
             bottom: 20,
             child: Opacity(
               opacity: selectionController.animation.value,
-              child: OverviewMenu2(
+              child: ContextMenu(
                 children: [
                   if (message.isReactable)
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.add_reaction,
                       text: t.pages.conversation.addReaction,
                       onPressed: () async {
@@ -215,7 +215,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                     ),
 
                   if (message.canRetract(sentBySelf))
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.delete,
                       text: t.pages.conversation.retract,
                       onPressed: () async {
@@ -243,7 +243,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                               ?.lastMessage
                               ?.id ==
                           message.id)
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.edit,
                       text: t.pages.conversation.edit,
                       onPressed: () {
@@ -258,7 +258,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                     ),
 
                   if (message.errorMenuVisible)
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.info_outline,
                       text: t.pages.conversation.showError,
                       onPressed: () {
@@ -274,7 +274,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                     ),
 
                   if (message.hasWarning)
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.warning,
                       text: t.pages.conversation.showWarning,
                       onPressed: () {
@@ -290,7 +290,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                     ),
 
                   if (message.isCopyable)
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.content_copy,
                       text: t.pages.conversation.copy,
                       onPressed: () {
@@ -305,7 +305,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                     ),
 
                   if (message.isQuotable && message.conversationJid != '')
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.forward,
                       text: t.pages.conversation.forward,
                       onPressed: () {
@@ -318,7 +318,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                     ),
 
                   if (message.isQuotable)
-                    OverviewMenuItem(
+                    ContextMenuItem(
                       icon: Icons.reply,
                       text: t.pages.conversation.quote,
                       onPressed: () {

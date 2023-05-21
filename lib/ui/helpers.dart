@@ -434,3 +434,12 @@ Future<String?> pickEmoji(BuildContext context, {bool pop = true}) async {
 
   return emoji;
 }
+
+/// Compute the current position of the widget with the global key [key].
+Rect getWidgetPositionOnScreen(GlobalKey key) {
+  // (See https://stackoverflow.com/questions/50316219/how-to-get-widgets-absolute-coordinates-on-a-screen-in-flutter/58788092#58788092)
+  final renderObject = key.currentContext!.findRenderObject()!;
+  final translation = renderObject.getTransformTo(null).getTranslation();
+  final offset = Offset(translation.x, translation.y);
+  return renderObject.paintBounds.shift(offset);
+}

@@ -27,6 +27,7 @@ import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
+import 'package:moxxyv2/ui/widgets/overview_menu.dart';
 
 int getMessageMenuOptionCount(
   Message message,
@@ -284,11 +285,7 @@ class ConversationPageState extends State<ConversationPage>
         Vibrate.feedback(FeedbackType.medium);
 
         // Get the position of the message on screen
-        // (See https://stackoverflow.com/questions/50316219/how-to-get-widgets-absolute-coordinates-on-a-screen-in-flutter/58788092#58788092)
-        final renderObject = key.currentContext!.findRenderObject()!;
-        final translation = renderObject.getTransformTo(null).getTranslation();
-        final offset = Offset(translation.x, translation.y);
-        final widgetRect = renderObject.paintBounds.shift(offset);
+        final widgetRect = getWidgetPositionOnScreen(key);
 
         // Figure out how many overview items we'll be showing
         final overviewMenuItemCount = getMessageMenuOptionCount(
@@ -313,7 +310,7 @@ class ConversationPageState extends State<ConversationPage>
             MediaQuery.of(context).size.height -
                 widgetRect.bottom -
                 20 -
-                overviewMenuItemCount * 48 -
+                overviewMenuItemCount * ContextMenuItem.height -
                 20,
 
             start,

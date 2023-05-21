@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-class OverviewMenuItem extends StatelessWidget {
-  const OverviewMenuItem({
+/// A item in the context menu [ContextMenu].
+class ContextMenuItem extends StatelessWidget {
+  const ContextMenuItem({
     required this.icon,
     required this.text,
     required this.onPressed,
     super.key,
   });
+
+  /// The icon to show on the left side.
   final IconData icon;
+
+  /// The text of the menu item.
   final String text;
-  final void Function() onPressed;
+
+  /// Callback for when the item is pressed.
+  final VoidCallback onPressed;
+
+  /// The height of a single [ContextMenuItem].
+  static int height = 48;
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +29,7 @@ class OverviewMenuItem extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon),
             Padding(
@@ -32,82 +43,15 @@ class OverviewMenuItem extends StatelessWidget {
   }
 }
 
-class OverviewMenu extends StatelessWidget {
-  const OverviewMenu(
-    this._animation, {
-    required this.highlight,
+/// A context menu.
+class ContextMenu extends StatelessWidget {
+  const ContextMenu({
     required this.children,
-    this.highlightMaterialBorder,
-    this.rightBorder = true,
-    this.left,
-    this.right,
-    this.materialColor,
     super.key,
   });
-  final Animation<double> _animation;
-  final Widget highlight;
-  final List<Widget> children;
-  final bool rightBorder;
-  final double? left;
-  final double? right;
-  final BorderRadius? highlightMaterialBorder;
-  final Color? materialColor;
 
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        AnimatedBuilder(
-          animation: _animation,
-          builder: (context, child) {
-            return Positioned(
-              left: left,
-              right: right,
-              top: _animation.value,
-              child: Material(
-                borderRadius: highlightMaterialBorder,
-                color: materialColor,
-                child: highlight,
-              ),
-            );
-          },
-        ),
-        Positioned(
-          bottom: 50,
-          right: rightBorder ? 8 : null,
-          left: rightBorder ? null : 8,
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.all(radiusLarge),
-                child: Material(
-                  child: IntrinsicHeight(
-                    child: IntrinsicWidth(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: children,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// TODO: Replace the original widget.
-class OverviewMenu2 extends StatelessWidget {
-  const OverviewMenu2({
-    required this.children,
-    this.materialColor,
-    super.key,
-  });
+  /// A list of [ContextMenuItem]s to display.
   final List<Widget> children;
-  final Color? materialColor;
 
   @override
   Widget build(BuildContext context) {
@@ -117,6 +61,7 @@ class OverviewMenu2 extends StatelessWidget {
         child: IntrinsicHeight(
           child: IntrinsicWidth(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: children,
             ),

@@ -46,8 +46,6 @@ class ShareSelectionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
-
     return WillPopScope(
       onWillPop: () async {
         GetIt.I.get<ShareSelectionBloc>().add(ResetEvent());
@@ -64,6 +62,7 @@ class ShareSelectionPage extends StatelessWidget {
 
         return false;
       },
+      // TODO: Use a more traditional selection, i.e. selecting changes the background color
       child: BlocBuilder<ShareSelectionBloc, ShareSelectionState>(
         buildWhen: _buildWhen,
         builder: (context, state) => Scaffold(
@@ -81,7 +80,6 @@ class ShareSelectionPage extends StatelessWidget {
                       );
                 },
                 child: ConversationsListRow(
-                  maxTextWidth,
                   Conversation(
                     item.title,
                     null,
@@ -103,15 +101,15 @@ class ShareSelectionPage extends StatelessWidget {
                   false,
                   titleSuffixIcon: _getSuffixIcon(item),
                   showTimestamp: false,
-                  extraWidgetWidth: 48,
-                  extra: Checkbox(
+                  isSelected: isSelected,
+                  /*extra: Checkbox(
                     value: isSelected,
                     onChanged: (_) {
                       context.read<ShareSelectionBloc>().add(
                             SelectionToggledEvent(index),
                           );
                     },
-                  ),
+                  ),*/
                 ),
               );
             },

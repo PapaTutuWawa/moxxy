@@ -91,38 +91,77 @@ class ConversationsPage extends StatefulWidget {
 
 class ConversationsPageState extends State<ConversationsPage>
     with TickerProviderStateMixin {
-  late final AnimationController _controller;
-  late Animation<double> _convY;
+  /// The JID of the currently selected conversation.
+  Conversation? _selectedConversation;
+
+  /// Data for the context menu animation
+  late final AnimationController _contextMenuController;
+  late final Animation<double> _contextMenuAnimation;
+  final Map<String, GlobalKey> _conversationKeys = {};
+
+  /// The required offset from the top of the stack for the context menu.
+  double _topStackOffset = 0;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 200),
+
+    _contextMenuController = AnimationController(
+      duration: const Duration(milliseconds: 250),
       vsync: this,
+    );
+    _contextMenuAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(
+      CurvedAnimation(
+        parent: _contextMenuController,
+        curve: Curves.easeInOutCubic,
+      ),
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _contextMenuController.dispose();
     super.dispose();
   }
 
-  Widget _listWrapper(BuildContext context, ConversationsState state) {
-    final maxTextWidth = MediaQuery.of(context).size.width * 0.6;
+  void dismissContextMenu() {
+    _contextMenuController.reverse();
+    setState(() {
+      _selectedConversation = null;
+    });
+  }
 
+  Widget _listWrapper(BuildContext context, ConversationsState state) {
     if (state.conversations.isNotEmpty) {
       return ListView.builder(
         itemCount: state.conversations.length,
         itemBuilder: (context, index) {
           final item = state.conversations[index];
+
+          GlobalKey key;
+          if (_conversationKeys.containsKey(item.jid)) {
+            key = _conversationKeys[item.jid]!;
+          } else {
+            key = GlobalKey();
+            _conversationKeys[item.jid] = key;
+          }
+
           final row = ConversationsListRow(
-            maxTextWidth,
             item,
             true,
             enableAvatarOnTap: true,
-            key: ValueKey('conversationRow;${item.jid}'),
+            isSelected: _selectedConversation?.jid == item.jid,
+            onPressed: () => GetIt.I.get<ConversationBloc>().add(
+                  RequestedConversationEvent(
+                    item.jid,
+                    item.title,
+                    item.avatarUrl,
+                  ),
+                ),
+            key: key,
           );
 
           return ConversationsRowDismissible(
@@ -131,79 +170,39 @@ class ConversationsPageState extends State<ConversationsPage>
               onLongPressStart: (event) async {
                 Vibrate.feedback(FeedbackType.medium);
 
-                _convY = Tween<double>(
-                  begin: event.globalPosition.dy - 20,
-                  end: 200,
-                ).animate(
-                  CurvedAnimation(
-                    parent: _controller,
-                    curve: Curves.easeInOutCubic,
-                  ),
-                );
+                final widgetRect = getWidgetPositionOnScreen(key);
+                final height = MediaQuery.of(context).size.height;
 
-                await _controller.forward();
+                setState(() {
+                  _selectedConversation = item;
 
-                // ignore: use_build_context_synchronously
-                await showDialog<void>(
-                  context: context,
-                  builder: (context) => OverviewMenu(
-                    _convY,
-                    highlight: row,
-                    left: 0,
-                    right: 0,
-                    children: [
-                      if (item.unreadCounter != 0)
-                        OverviewMenuItem(
-                          icon: Icons.done_all,
-                          text: t.pages.conversations.markAsRead,
-                          onPressed: () {
-                            context.read<ConversationsBloc>().add(
-                                  ConversationMarkedAsReadEvent(item.jid),
-                                );
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      OverviewMenuItem(
-                        icon: Icons.close,
-                        text: t.pages.conversations.closeChat,
-                        onPressed: () async {
-                          // ignore: use_build_context_synchronously
-                          final result = await showConfirmationDialog(
-                            t.pages.conversations.closeChat,
-                            t.pages.conversations.closeChatBody(
-                              conversationTitle: item.title,
-                            ),
-                            context,
-                          );
+                  final numberOptions = item.numberContextMenuOptions;
+                  if (height - widgetRect.bottom >
+                      40 + numberOptions * ContextMenuItem.height) {
+                    // In this case, we have enough space below the conversation item,
+                    // so we say that the top of the context menu is
+                    // widgetRect.bottom (Bottom y coordinate of the conversation item)
+                    // minus 20 (padding so we're not directly against the conversation
+                    // item) - the height of the top bar.
+                    _topStackOffset =
+                        widgetRect.bottom - 20 - topbarPreferredHeight;
+                  } else {
+                    // In this case we don't have sufficient space below the conversation
+                    // item, so we place the context menu above it.
+                    // The computation is the same as in the above branch, but now
+                    // we position the context menu above and thus also substract the
+                    // height of the context menu
+                    // (numberOptions * ContextMenuItem.height).
+                    _topStackOffset = widgetRect.top -
+                        20 -
+                        numberOptions * ContextMenuItem.height -
+                        topbarPreferredHeight;
+                  }
+                });
 
-                          if (result) {
-                            // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                            // ignore: use_build_context_synchronously
-                            context.read<ConversationsBloc>().add(
-                                  ConversationClosedEvent(item.jid),
-                                );
-
-                            // ignore: use_build_context_synchronously
-                            Navigator.of(context).pop();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                );
-
-                await _controller.reverse();
+                await _contextMenuController.forward();
               },
-              child: InkWell(
-                onTap: () => GetIt.I.get<ConversationBloc>().add(
-                      RequestedConversationEvent(
-                        item.jid,
-                        item.title,
-                        item.avatarUrl,
-                      ),
-                    ),
-                child: row,
-              ),
+              child: row,
             ),
           );
         },
@@ -241,14 +240,21 @@ class ConversationsPageState extends State<ConversationsPage>
           children: [
             Expanded(
               child: InkWell(
-                onTap: () => GetIt.I.get<profile.ProfileBloc>().add(
-                      profile.ProfilePageRequestedEvent(
-                        true,
-                        jid: state.jid,
-                        avatarUrl: state.avatarUrl,
-                        displayName: state.displayName,
-                      ),
-                    ),
+                onTap: () {
+                  // Dismiss the selection, if we have an active one
+                  if (_selectedConversation != null) {
+                    dismissContextMenu();
+                  }
+
+                  GetIt.I.get<profile.ProfileBloc>().add(
+                        profile.ProfilePageRequestedEvent(
+                          true,
+                          jid: state.jid,
+                          avatarUrl: state.avatarUrl,
+                          displayName: state.displayName,
+                        ),
+                      );
+                },
                 child: Padding(
                   padding: const EdgeInsets.all(8),
                   child: Row(
@@ -300,7 +306,82 @@ class ConversationsPageState extends State<ConversationsPage>
             ),
           ],
         ),
-        body: _listWrapper(context, state),
+        body: Stack(
+          children: [
+            _listWrapper(context, state),
+            if (_selectedConversation != null)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: GestureDetector(
+                  onTap: dismissContextMenu,
+                  // NOTE: We must set the color to Colors.transparent because the container
+                  // would otherwise not span the entire screen (or Scaffold body to be
+                  // more precise).
+                  child: const ColoredBox(
+                    color: Colors.transparent,
+                  ),
+                ),
+              ),
+            Positioned(
+              top: _topStackOffset,
+              left: 8,
+              child: AnimatedBuilder(
+                animation: _contextMenuAnimation,
+                builder: (context, child) => IgnorePointer(
+                  ignoring: _selectedConversation == null,
+                  child: Opacity(
+                    opacity: _contextMenuAnimation.value,
+                    child: child,
+                  ),
+                ),
+                child: ContextMenu(
+                  children: [
+                    if ((_selectedConversation?.unreadCounter ?? 0) > 0)
+                      ContextMenuItem(
+                        icon: Icons.done_all,
+                        text: t.pages.conversations.markAsRead,
+                        onPressed: () {
+                          context.read<ConversationsBloc>().add(
+                                ConversationMarkedAsReadEvent(
+                                  _selectedConversation!.jid,
+                                ),
+                              );
+                        },
+                      ),
+                    ContextMenuItem(
+                      icon: Icons.close,
+                      text: t.pages.conversations.closeChat,
+                      onPressed: () async {
+                        // ignore: use_build_context_synchronously
+                        final result = await showConfirmationDialog(
+                          t.pages.conversations.closeChat,
+                          t.pages.conversations.closeChatBody(
+                            conversationTitle:
+                                _selectedConversation?.title ?? '',
+                          ),
+                          context,
+                        );
+
+                        if (result) {
+                          // TODO(Unknown): Show a snackbar allowing the user to revert the action
+                          // ignore: use_build_context_synchronously
+                          context.read<ConversationsBloc>().add(
+                                ConversationClosedEvent(
+                                  _selectedConversation!.jid,
+                                ),
+                              );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
         floatingActionButton: SpeedDial(
           icon: Icons.chat,
           curve: Curves.bounceInOut,
