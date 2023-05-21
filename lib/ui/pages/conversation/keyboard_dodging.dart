@@ -231,6 +231,7 @@ class KeyboardReplacerScaffold extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   appbar,
                   ...children,

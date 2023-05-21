@@ -11,7 +11,6 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
-import 'package:moxxyv2/ui/widgets/chat/typing.dart';
 import 'package:moxxyv2/ui/widgets/contact_helper.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
@@ -57,6 +56,7 @@ class ConversationTopbar extends StatelessWidget
 
   Widget _buildChatState(ChatState state) {
     switch (state) {
+      case ChatState.composing:
       case ChatState.paused:
       case ChatState.active:
         return Text(
@@ -65,12 +65,9 @@ class ConversationTopbar extends StatelessWidget
             color: Colors.green,
           ),
         );
-      case ChatState.composing:
-        // TODO(Unknown): Colors
-        return const TypingIndicatorWidget(Colors.black, Colors.white);
       case ChatState.inactive:
       case ChatState.gone:
-        return Container();
+        return const SizedBox();
     }
   }
 

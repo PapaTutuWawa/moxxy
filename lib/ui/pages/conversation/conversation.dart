@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 import 'package:get_it/get_it.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -19,6 +20,7 @@ import 'package:moxxyv2/ui/pages/conversation/helpers.dart';
 import 'package:moxxyv2/ui/pages/conversation/keyboard_dodging.dart';
 import 'package:moxxyv2/ui/pages/conversation/selected_message.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
+import 'package:moxxyv2/ui/pages/conversation/typing_indicator.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
@@ -638,6 +640,16 @@ class ConversationPageState extends State<ConversationPage>
                 ),
               ],
             ),
+          ),
+          BlocBuilder<ConversationBloc, ConversationState>(
+            buildWhen: (prev, next) =>
+                prev.conversation?.chatState != next.conversation?.chatState,
+            builder: (context, state) {
+              final chatState = state.conversation?.chatState ?? ChatState.gone;
+              return AnimatedTypingIndicator(
+                visible: chatState == ChatState.composing,
+              );
+            },
           ),
           BlocBuilder<ConversationBloc, ConversationState>(
             buildWhen: (prev, next) =>
