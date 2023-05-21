@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-/// The preferred height of the borderless topbar.
-const topbarPreferredHeight = 60.0;
-
 class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
   const BorderlessTopbar({
     required this.children,
@@ -51,6 +48,9 @@ class BorderlessTopbar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   final Size preferredSize;
+
+  /// The preferred height of the borderless topbar.
+  static const topbarPreferredHeight = 60.0;
 
   @override
   Widget build(BuildContext context) {

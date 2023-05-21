@@ -184,8 +184,9 @@ class ConversationsPageState extends State<ConversationsPage>
                     // widgetRect.bottom (Bottom y coordinate of the conversation item)
                     // minus 20 (padding so we're not directly against the conversation
                     // item) - the height of the top bar.
-                    _topStackOffset =
-                        widgetRect.bottom - 20 - topbarPreferredHeight;
+                    _topStackOffset = widgetRect.bottom -
+                        20 -
+                        BorderlessTopbar.topbarPreferredHeight;
                   } else {
                     // In this case we don't have sufficient space below the conversation
                     // item, so we place the context menu above it.
@@ -196,7 +197,7 @@ class ConversationsPageState extends State<ConversationsPage>
                     _topStackOffset = widgetRect.top -
                         20 -
                         numberOptions * ContextMenuItem.height -
-                        topbarPreferredHeight;
+                        BorderlessTopbar.topbarPreferredHeight;
                   }
                 });
 

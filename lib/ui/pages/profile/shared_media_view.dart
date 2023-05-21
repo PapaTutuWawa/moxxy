@@ -21,7 +21,7 @@ class SharedMediaView extends StatelessWidget {
         // Ensure the top bar has a height
         children: [
           SizedBox(
-            height: topbarPreferredHeight,
+            height: BorderlessTopbar.topbarPreferredHeight,
           ),
         ],
       ),

@@ -44,7 +44,8 @@ class ConversationTopbar extends StatelessWidget
   const ConversationTopbar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(60);
+  Size get preferredSize =>
+      const Size.fromHeight(BorderlessTopbar.topbarPreferredHeight);
 
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
     return prev.conversation?.title != next.conversation?.title ||
@@ -95,7 +96,11 @@ class ConversationTopbar extends StatelessWidget
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.only(
+                  top: 8,
+                  right: 8,
+                  bottom: 8,
+                ),
                 child: InkWell(
                   onTap: () => _openProfile(context, state),
                   child: Stack(
@@ -120,23 +125,17 @@ class ConversationTopbar extends StatelessWidget
                       AnimatedPositioned(
                         duration: const Duration(milliseconds: 200),
                         top: _isChatStateVisible(chatState) ? 0 : 10,
-                        left: 25,
+                        left: 60,
                         right: 0,
                         curve: Curves.easeInOutCubic,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            RebuildOnContactIntegrationChange(
-                              builder: () => Text(
-                                state.conversation?.titleWithOptionalContact ??
-                                    '',
-                                style: const TextStyle(
-                                  fontSize: fontsizeAppbar,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                        child: RebuildOnContactIntegrationChange(
+                          builder: () => Text(
+                            state.conversation?.titleWithOptionalContact ?? '',
+                            style: const TextStyle(
+                              fontSize: fontsizeAppbar,
                             ),
-                          ],
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
                       Positioned(
