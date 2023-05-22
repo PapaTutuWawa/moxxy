@@ -2,12 +2,39 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
+import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+
+/// A wrapper data class to group by a sticker pack's id, but display its title.
+@immutable
+class _StickerPackSeparator {
+  const _StickerPackSeparator(
+    this.name,
+    this.id,
+  );
+
+  /// The title of the sticker pack.
+  final String name;
+
+  /// The identifier of the sticker pack.
+  final String id;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _StickerPackSeparator &&
+        other.name == name &&
+        other.id == id;
+  }
+
+  @override
+  int get hashCode => name.hashCode ^ id.hashCode;
+}
 
 class StickerPicker extends StatelessWidget {
   StickerPicker({
@@ -54,67 +81,64 @@ class StickerPicker extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      itemCount: stickerPacks.length * 2,
-      itemBuilder: (_, si) {
-        if (si.isEven) {
-          return Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Text(
-              stickerPacks[si ~/ 2].name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 20,
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GroupedListView<StickerPack, _StickerPackSeparator>(
+        elements: stickerPacks,
+        groupBy: (stickerPack) => _StickerPackSeparator(
+          stickerPack.name,
+          stickerPack.id,
+        ),
+        groupSeparatorBuilder: (separator) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Text(
+            separator.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 20,
             ),
-          );
-        }
-
-        final sindex = (si - 1) ~/ 2;
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 15,
           ),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-            ),
-            itemCount: stickerPacks[sindex].stickers.length,
-            itemBuilder: (_, index) {
-              return InkWell(
-                onTap: () {
-                  onStickerTapped(
-                    stickerPacks[sindex].stickers[index],
-                  );
-                },
-                onLongPress: () {
-                  Vibrate.feedback(FeedbackType.medium);
+        ),
+        sort: false,
+        indexedItemBuilder: (context, stickerPack, index) => GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+          ),
+          itemCount: stickerPack.stickers.length,
+          itemBuilder: (_, index) {
+            return InkWell(
+              onTap: () {
+                onStickerTapped(
+                  stickerPack.stickers[index],
+                );
+              },
+              onLongPress: () {
+                Vibrate.feedback(FeedbackType.medium);
 
-                  context.read<StickerPackBloc>().add(
-                        LocallyAvailableStickerPackRequested(
-                          stickerPacks[sindex].id,
-                        ),
-                      );
-                },
-                child: Image.file(
-                  File(
-                    stickerPacks[sindex].stickers[index].fileMetadata.path!,
-                  ),
-                  key: ValueKey('${state.stickerPacks[sindex].id}_$index'),
-                  fit: BoxFit.contain,
-                  width: _itemSize,
-                  height: _itemSize,
+                context.read<StickerPackBloc>().add(
+                      LocallyAvailableStickerPackRequested(
+                        stickerPack.id,
+                      ),
+                    );
+              },
+              child: Image.file(
+                File(
+                  stickerPack.stickers[index].fileMetadata.path!,
                 ),
-              );
-            },
-          ),
-        );
-      },
+                key: ValueKey('${stickerPack.id}_$index'),
+                fit: BoxFit.contain,
+                width: _itemSize,
+                height: _itemSize,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
