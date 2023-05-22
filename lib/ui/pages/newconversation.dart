@@ -20,29 +20,37 @@ class NewConversationPage extends StatelessWidget {
         ),
       );
 
-  Widget _renderIconEntry(IconData icon, String text, void Function() onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: AvatarWrapper(
-              radius: 35,
-              altIcon: icon,
+  Widget _renderIconEntry(IconData icon, String text, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(radiusLargeSize),
+        child: Material(
+          child: InkWell(
+            onTap: onTap,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: AvatarWrapper(
+                    radius: 35,
+                    altIcon: icon,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Text(
+                    text,
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          )
-        ],
+        ),
       ),
     );
   }

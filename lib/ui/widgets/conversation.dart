@@ -96,6 +96,8 @@ class AnimatedMaterialColorState extends State<AnimatedMaterialColor>
   }
 }
 
+// TODO(Unknown): Make this widget less reliant on a [Conversation], so that we can use
+//                it to build the icon entry in other pages, like the newconversation page.
 class ConversationsListRow extends StatefulWidget {
   const ConversationsListRow(
     this.conversation,
