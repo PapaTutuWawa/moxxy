@@ -47,6 +47,7 @@ class XmppService {
   XmppService() {
     _eventHandler.addMatchers([
       EventTypeMatcher<ConnectionStateChangedEvent>(_onConnectionStateChanged),
+      EventTypeMatcher<StreamNegotiationsDoneEvent>(_onStreamNegotiationsDone),
       EventTypeMatcher<ResourceBoundEvent>(_onResourceBound),
       EventTypeMatcher<SubscriptionRequestReceivedEvent>(
         _onSubscriptionRequestReceived,
@@ -732,6 +733,74 @@ class XmppService {
     }
   }
 
+  Future<void> _onStreamNegotiationsDone(
+    StreamNegotiationsDoneEvent event, {
+    dynamic extra,
+  }) async {
+    final connection = GetIt.I.get<XmppConnection>();
+
+    // TODO(Unknown): Maybe have something better
+    final settings = connection.connectionSettings;
+    await GetIt.I.get<XmppStateService>().modifyXmppState(
+          (state) => state.copyWith(
+            jid: settings.jid.toString(),
+            password: settings.password,
+          ),
+        );
+
+    _log.finest('Connection connected. Is resumed? ${event.resumed}');
+    unawaited(_initializeOmemoService(settings.jid.toString()));
+
+    if (!event.resumed) {
+      // Reset the blocking service's cache
+      GetIt.I.get<BlocklistService>().onNewConnection();
+
+      // Reset the OMEMO cache
+      GetIt.I.get<OmemoService>().onNewConnection();
+
+      // Enable carbons
+      final carbonsResult = await connection
+          .getManagerById<CarbonsManager>(carbonsManager)!
+          .enableCarbons();
+      if (!carbonsResult) {
+        _log.warning('Failed to enable carbons');
+      }
+
+      // In section 5 of XEP-0198 it says that a client should not request the roster
+      // in case of a stream resumption.
+      await connection
+          .getManagerById<RosterManager>(rosterManager)!
+          .requestRoster();
+
+      // TODO(Unknown): Once groupchats come into the equation, this gets trickier
+      final roster = await GetIt.I.get<RosterService>().getRoster();
+      for (final item in roster) {
+        await GetIt.I
+            .get<AvatarService>()
+            .fetchAndUpdateAvatarForJid(item.jid, item.avatarHash);
+      }
+
+      await GetIt.I.get<BlocklistService>().getBlocklist();
+    }
+
+    // Make sure we display our own avatar correctly.
+    // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
+    // TODO(Unknown): Maybe don't do this on mobile Internet
+    unawaited(GetIt.I.get<AvatarService>().requestOwnAvatar());
+
+    if (_loginTriggeredFromUI) {
+      // TODO(Unknown): Trigger another event so the UI can see this aswell
+      await GetIt.I.get<XmppStateService>().modifyXmppState(
+            (state) => state.copyWith(
+              jid: connection.connectionSettings.jid.toString(),
+              displayName: connection.connectionSettings.jid.local,
+              avatarUrl: '',
+              avatarHash: '',
+            ),
+          );
+    }
+  }
+
   Future<void> _onConnectionStateChanged(
     ConnectionStateChangedEvent event, {
     dynamic extra,
@@ -742,71 +811,6 @@ class XmppService {
           event.before,
           event.state,
         );
-
-    if (event.state == XmppConnectionState.connected) {
-      final connection = GetIt.I.get<XmppConnection>();
-
-      // TODO(Unknown): Maybe have something better
-      final settings = connection.connectionSettings;
-      await GetIt.I.get<XmppStateService>().modifyXmppState(
-            (state) => state.copyWith(
-              jid: settings.jid.toString(),
-              password: settings.password,
-            ),
-          );
-
-      _log.finest('Connection connected. Is resumed? ${event.resumed}');
-      unawaited(_initializeOmemoService(settings.jid.toString()));
-
-      if (!event.resumed) {
-        // Reset the blocking service's cache
-        GetIt.I.get<BlocklistService>().onNewConnection();
-
-        // Reset the OMEMO cache
-        GetIt.I.get<OmemoService>().onNewConnection();
-
-        // Enable carbons
-        final carbonsResult = await connection
-            .getManagerById<CarbonsManager>(carbonsManager)!
-            .enableCarbons();
-        if (!carbonsResult) {
-          _log.warning('Failed to enable carbons');
-        }
-
-        // In section 5 of XEP-0198 it says that a client should not request the roster
-        // in case of a stream resumption.
-        await connection
-            .getManagerById<RosterManager>(rosterManager)!
-            .requestRoster();
-
-        // TODO(Unknown): Once groupchats come into the equation, this gets trickier
-        final roster = await GetIt.I.get<RosterService>().getRoster();
-        for (final item in roster) {
-          await GetIt.I
-              .get<AvatarService>()
-              .fetchAndUpdateAvatarForJid(item.jid, item.avatarHash);
-        }
-
-        await GetIt.I.get<BlocklistService>().getBlocklist();
-      }
-
-      // Make sure we display our own avatar correctly.
-      // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
-      // TODO(Unknown): Maybe don't do this on mobile Internet
-      unawaited(GetIt.I.get<AvatarService>().requestOwnAvatar());
-
-      if (_loginTriggeredFromUI) {
-        // TODO(Unknown): Trigger another event so the UI can see this aswell
-        await GetIt.I.get<XmppStateService>().modifyXmppState(
-              (state) => state.copyWith(
-                jid: connection.connectionSettings.jid.toString(),
-                displayName: connection.connectionSettings.jid.local,
-                avatarUrl: '',
-                avatarHash: '',
-              ),
-            );
-      }
-    }
   }
 
   Future<void> _onResourceBound(

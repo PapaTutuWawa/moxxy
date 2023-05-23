@@ -143,18 +143,18 @@ dependency_overrides:
     version: 0.0.4
     
   # NOTE: Leave here for development purposes
-  moxxmpp:
-    path: ../moxxmpp/packages/moxxmpp
+  # moxxmpp:
+  #   path: ../moxxmpp/packages/moxxmpp
   # moxxmpp_socket_tcp:
   #   path: ../moxxmpp/packages/moxxmpp_socket_tcp
   # omemo_dart:
   #   path: ../../Personal/omemo_dart
 
-  # moxxmpp:
-  #   git:
-  #     url: https://codeberg.org/moxxy/moxxmpp.git
-  #     rev: 47b679d168431fb8eda243adaea249932c7176c7
-  #     path: packages/moxxmpp
+  moxxmpp:
+    git:
+      url: https://codeberg.org/moxxy/moxxmpp.git
+      rev: c6552968d53aaf4382360c7414b248a3f09ce0aa
+      path: packages/moxxmpp
  
 extra_licenses:
   - name: undraw.co
