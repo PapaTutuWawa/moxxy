@@ -7,6 +7,7 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
 import 'package:moxxyv2/service/blocking.dart';
+import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
@@ -405,7 +406,9 @@ Future<void> performSetPreferences(
   final pm = GetIt.I
       .get<XmppConnection>()
       .getManagerById<PubSubManager>(pubsubManager)!;
-  final ownJid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
+  final ownJid = JID.fromString(
+    (await GetIt.I.get<XmppStateService>().getXmppState()).jid!,
+  );
   if (command.preferences.isStickersNodePublic &&
       !oldPrefs.isStickersNodePublic) {
     // Set to open
@@ -662,6 +665,9 @@ Future<void> performSendChatState(
 
   // Only send chat states if the users wants to send them
   if (!prefs.sendChatMarkers) return;
+
+  // Only send chat states when we're connected
+  if (!(await GetIt.I.get<ConnectivityService>().hasConnection())) return;
 
   final conn = GetIt.I.get<XmppConnection>();
 

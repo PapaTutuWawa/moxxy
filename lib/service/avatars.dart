@@ -93,7 +93,7 @@ class AvatarService {
     final am = GetIt.I
         .get<XmppConnection>()
         .getManagerById<UserAvatarManager>(userAvatarManager)!;
-    final idResult = await am.getAvatarId(jid);
+    final idResult = await am.getAvatarId(JID.fromString(jid));
     if (idResult.isType<AvatarError>()) {
       _log.warning('Failed to get avatar id via XEP-0084 for $jid');
       return null;
@@ -220,7 +220,7 @@ class AvatarService {
     final xss = GetIt.I.get<XmppStateService>();
     final state = await xss.getXmppState();
     final jid = state.jid!;
-    final idResult = await am.getAvatarId(jid);
+    final idResult = await am.getAvatarId(JID.fromString(jid));
     if (idResult.isType<AvatarError>()) {
       _log.info('Error while getting latest avatar id for own avatar');
       return;

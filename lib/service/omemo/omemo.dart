@@ -251,7 +251,7 @@ class OmemoService {
     final device = await omemoManager.getDevice();
 
     final bundlesRaw = await dm.discoItemsQuery(
-      bareJid.toString(),
+      bareJid,
       node: moxxmpp.omemoBundlesXmlns,
     );
     if (bundlesRaw.isType<moxxmpp.DiscoError>()) {

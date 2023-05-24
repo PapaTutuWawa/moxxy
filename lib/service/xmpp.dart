@@ -360,22 +360,25 @@ class XmppService {
     final result = await GetIt.I
         .get<XmppConnection>()
         .getDiscoManager()!
-        .discoInfoQuery(event.fromJid.toString());
+        .discoInfoQuery(event.fromJid);
     if (result.isType<DiscoError>()) return;
 
     final info = result.get<DiscoInfo>();
     if (event.isMarkable && info.features.contains(chatMarkersXmlns)) {
       unawaited(
         GetIt.I.get<XmppConnection>().sendStanza(
-              Stanza.message(
-                to: event.fromJid.toBare().toString(),
-                type: event.type,
-                children: [
-                  makeChatMarker(
-                    'received',
-                    event.stanzaId.originId ?? event.sid,
-                  )
-                ],
+              StanzaDetails(
+                Stanza.message(
+                  to: event.fromJid.toBare().toString(),
+                  type: event.type,
+                  children: [
+                    makeChatMarker(
+                      'received',
+                      event.stanzaId.originId ?? event.sid,
+                    )
+                  ],
+                ),
+                awaitable: false,
               ),
             ),
       );
@@ -383,14 +386,17 @@ class XmppService {
         info.features.contains(deliveryXmlns)) {
       unawaited(
         GetIt.I.get<XmppConnection>().sendStanza(
-              Stanza.message(
-                to: event.fromJid.toBare().toString(),
-                type: event.type,
-                children: [
-                  makeMessageDeliveryResponse(
-                    event.stanzaId.originId ?? event.sid,
-                  )
-                ],
+              StanzaDetails(
+                Stanza.message(
+                  to: event.fromJid.toBare().toString(),
+                  type: event.type,
+                  children: [
+                    makeMessageDeliveryResponse(
+                      event.stanzaId.originId ?? event.sid,
+                    )
+                  ],
+                ),
+                awaitable: false,
               ),
             ),
       );
@@ -406,12 +412,15 @@ class XmppService {
 
     unawaited(
       GetIt.I.get<XmppConnection>().sendStanza(
-            Stanza.message(
-              to: to,
-              type: 'chat',
-              children: [
-                makeChatMarker('displayed', sid),
-              ],
+            StanzaDetails(
+              Stanza.message(
+                to: to,
+                type: 'chat',
+                children: [
+                  makeChatMarker('displayed', sid),
+                ],
+              ),
+              awaitable: false,
             ),
           ),
     );
