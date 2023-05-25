@@ -40,7 +40,7 @@ import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-import 'package:permission_handler/permission_handler.dart';
+//import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
   final handler = EventHandler()
@@ -154,17 +154,18 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
   await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
   // Check some permissions
-  final storagePerm = await Permission.storage.status;
-  final permissions = List<int>.empty(growable: true);
-  if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
-    permissions.add(Permission.storage.value);
+  // TODO(Unknown): Do we still need this permission?
+  // final storagePerm = await Permission.storage.status;
+  // final permissions = List<int>.empty(growable: true);
+  // if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
+  //   permissions.add(Permission.storage.value);
 
-    await xss.modifyXmppState(
-      (state) => state.copyWith(
-        askedStoragePermission: true,
-      ),
-    );
-  }
+  //   await xss.modifyXmppState(
+  //     (state) => state.copyWith(
+  //       askedStoragePermission: true,
+  //     ),
+  //   );
+  // }
 
   return PreStartDoneEvent(
     state: 'logged_in',
@@ -172,7 +173,7 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
     displayName: state.displayName ?? state.jid!.split('@').first,
     avatarUrl: state.avatarUrl,
     avatarHash: state.avatarHash,
-    permissionsToRequest: permissions,
+    permissionsToRequest: [],
     preferences: preferences,
     conversations:
         (await GetIt.I.get<ConversationService>().loadConversations())
