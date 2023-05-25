@@ -62,4 +62,4 @@ lib/i18n/*.dart
 .android
 
 # Build scripts
-release/
+release-*/
