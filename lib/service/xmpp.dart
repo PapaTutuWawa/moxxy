@@ -374,7 +374,7 @@ class XmppService {
                   children: [
                     makeChatMarker(
                       'received',
-                      event.stanzaId.originId ?? event.sid,
+                      event.originId ?? event.sid,
                     )
                   ],
                 ),
@@ -392,7 +392,7 @@ class XmppService {
                   type: event.type,
                   children: [
                     makeMessageDeliveryResponse(
-                      event.stanzaId.originId ?? event.sid,
+                      event.originId ?? event.sid,
                     )
                   ],
                 ),
@@ -1270,7 +1270,7 @@ class XmppService {
           false,
       fileMetadata: fileMetadata?.fileMetadata,
       quoteId: replyId,
-      originId: event.stanzaId.originId,
+      originId: event.originId,
       errorType: errorTypeFromException(event.other['encryption_error']),
       stickerPackId: event.stickerPackId,
     );
@@ -1455,7 +1455,7 @@ class XmppService {
         isFileUploadNotification: false,
         isDownloading: shouldDownload,
         sid: event.sid,
-        originId: event.stanzaId.originId,
+        originId: event.originId,
       );
 
       // Remove the old entry
