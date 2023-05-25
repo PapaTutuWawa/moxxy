@@ -819,10 +819,10 @@ packages:
     dependency: "direct main"
     description:
       name: keyboard_height_plugin
-      sha256: ad8bff8e38b6cecf715e62f1ac518e553ef036eeb55cb6c06263060240be300f
+      sha256: "7b0d62ebde9525ee53e02072ae85ad21a6cd503e6ceaff9b17161bef642573ab"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.0.4"
+    version: "0.0.5"
   lints:
     dependency: transitive
     description:

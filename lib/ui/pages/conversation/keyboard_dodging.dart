@@ -49,15 +49,13 @@ class KeyboardReplacerController {
 
     _keyboardHeightPlugin.onKeyboardHeightChanged((height) {
       // Only update when the height actually changed
-      if (height == 0 || height + 48 == _keyboardHeight) {
-        return;
-      }
+      if (height == 0 || height == _keyboardHeight) return;
 
-      _keyboardHeight = height + 48;
+      _keyboardHeight = height;
       _streamController.add(
         KeyboardReplacerData(
           _keyboardVisible,
-          _keyboardHeight,
+          height,
           _widgetVisible,
         ),
       );
@@ -153,7 +151,7 @@ class KeyboardReplacerWidget extends StatelessWidget {
 
   /// The child to show or not show.
   final Widget child;
-
+  
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<KeyboardReplacerData>(

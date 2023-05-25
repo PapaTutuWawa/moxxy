@@ -3,7 +3,7 @@ description: An experimental XMPP client
 
 publish_to: 'none'
 
-version: 0.4.1+9
+version: 0.4.2+10
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -140,7 +140,7 @@ dependency_overrides:
   # A fork of keyboard_height_plugin that lowers the required Dart SDK version
   keyboard_height_plugin:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.0.4
+    version: 0.0.5
     
   # NOTE: Leave here for development purposes
   # moxxmpp:
