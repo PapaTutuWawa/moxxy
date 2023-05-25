@@ -194,7 +194,9 @@
 	},
 	"profile": {
 	    "general": {
-		"omemo": "Security"
+		"omemo": "Security",
+		"profile": "Profile",
+		"media": "Media"
 	    },
 	    "conversation": {
 		"notifications": "Notifications",

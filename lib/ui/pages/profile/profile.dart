@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
@@ -90,14 +91,14 @@ class ProfilePageState extends State<ProfilePage> {
                         _pageIndex = index;
                       });
                     },
-                    items: const [
+                    items: [
                       BottomNavigationBarItem(
-                        icon: Icon(Icons.person),
-                        label: 'Profile',
+                        icon: const Icon(Icons.person),
+                        label: t.pages.profile.general.profile,
                       ),
                       BottomNavigationBarItem(
-                        icon: Icon(Icons.perm_media),
-                        label: 'Media',
+                        icon: const Icon(Icons.perm_media),
+                        label: t.pages.profile.general.media,
                       ),
                     ],
                   )
