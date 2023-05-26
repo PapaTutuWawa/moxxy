@@ -18,6 +18,7 @@ import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/redirects.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -118,14 +119,49 @@ void dismissSoftKeyboard(BuildContext context) {
   }
 }
 
+/// A wrapper around [FilePicker.platform.pickFiles] that first checks if we have the
+/// appropriate permission. If not, tries to request the permission. If that failed,
+/// show a toast to inform the user and return null.
+///
+/// [type] is the type of file to pick.
+///
+/// [allowMultiple] indicates whether the file picker should allow multiple files to be
+/// selected. Defaults to true.
+///
+/// [withData] is equal to the withData parameter of [FilePicker.platform.pickFiles].
+Future<FilePickerResult?> safePickFiles(
+  FileType type, {
+  bool allowMultiple = true,
+  bool withData = false,
+}) async {
+  // If we have no storage permission, request it. If that also failed, show a toast
+  // telling the user that the storage permission is not available.
+  final status = await Permission.storage.status;
+  if (status.isDenied) {
+    final newStatus = await Permission.storage.request();
+    if (!newStatus.isGranted) {
+      await Fluttertoast.showToast(
+        msg: t.errors.filePicker.permissionDenied,
+        gravity: ToastGravity.SNACKBAR,
+        toastLength: Toast.LENGTH_LONG,
+      );
+      return null;
+    }
+  }
+
+  return FilePicker.platform.pickFiles(
+    type: type,
+    allowMultiple: allowMultiple,
+    withData: withData,
+  );
+}
+
 /// Open the file picker to pick an image and open the cropping tool.
 /// The Future either resolves to null if the user cancels the action or
 /// the actual image data.
 Future<Uint8List?> pickAndCropImage(BuildContext context) async {
-  final result = await FilePicker.platform.pickFiles(
-    type: FileType.image,
-    withData: true,
-  );
+  final result =
+      await safePickFiles(FileType.image, allowMultiple: false, withData: true);
 
   if (result != null) {
     return GetIt.I

@@ -12,6 +12,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 
 part 'stickers_bloc.freezed.dart';
 part 'stickers_event.dart';
@@ -85,8 +86,11 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     StickerPackImportedEvent event,
     Emitter<StickersState> emit,
   ) async {
-    final file = await FilePicker.platform.pickFiles();
-    if (file == null) return;
+    final pickerResult = await safePickFiles(
+      FileType.any,
+      allowMultiple: false,
+    );
+    if (pickerResult == null) return;
 
     emit(
       state.copyWith(
@@ -96,7 +100,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
 
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
           ImportStickerPackCommand(
-            path: file.files.single.path!,
+            path: pickerResult.files.single.path!,
           ),
         );
 

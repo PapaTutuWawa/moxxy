@@ -66,6 +66,9 @@
 	"you": "You"
     },
     "errors": {
+	"filePicker": {
+	    "permissionDenied": "The storage permission has been denied."
+	},
 	"omemo": {
 	    "couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work.",
 	    "notEncryptedForDevice": "This message was not encrypted for this device",

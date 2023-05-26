@@ -28,8 +28,9 @@ class ConversationSettingsPage extends StatelessWidget {
 
   // TODO(Unknown): Move this somewhere else to not mix UI and application logic
   Future<String?> _pickBackgroundImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
+    final result = await safePickFiles(
+      FileType.image,
+      allowMultiple: false,
     );
 
     if (result == null) return null;

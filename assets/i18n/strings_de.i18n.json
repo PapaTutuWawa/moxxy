@@ -66,6 +66,9 @@
 	"you": "Du"
     },
     "errors": {
+	"filePicker": {
+	    "permissionDenied": "Die Speicherberechtigung wurde nicht erteilt."
+	},
 	"omemo": {
 	    "couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht.",
 	    "notEncryptedForDevice": "Die Nachricht wurde nicht für dieses Gerät verschlüsselt",

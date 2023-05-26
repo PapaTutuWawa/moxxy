@@ -7,6 +7,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 
 part 'sendfiles_bloc.freezed.dart';
 part 'sendfiles_event.dart';
@@ -24,10 +25,9 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
   /// Pick files. Returns either a list of paths to attach or null if the process has
   /// been cancelled.
   Future<List<String>?> _pickFiles(SendFilesType type) async {
-    final fileType =
-        type == SendFilesType.image ? FileType.image : FileType.any;
-    final result = await FilePicker.platform
-        .pickFiles(type: fileType, allowMultiple: true);
+    final result = await safePickFiles(
+      type == SendFilesType.image ? FileType.image : FileType.any,
+    );
 
     if (result == null) return null;
 
