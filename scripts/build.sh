@@ -23,8 +23,8 @@ flutter pub run build_runner build --delete-conflicting-outputs
 # Build the release apk
 flutter build apk \
 	--release \
-	--split-per-abi
-	#--split-debug-info="./${version}"
+	--split-per-abi \
+	--split-debug-info="./${version}"
 
 # Create a folder with releases
 release_dir="./release-${version}"
