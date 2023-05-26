@@ -561,11 +561,11 @@ class XmppService {
           conn.connectionSettings.jid.toString(),
           recipient,
           conn.generateId(),
+          false,
           conversation?.type == ConversationType.note
               ? true
               : encrypt[recipient]!,
           // TODO(Unknown): Maybe make this depend on some setting
-          false,
           false,
           fileMetadata: metadata,
           originId: conn.generateId(),
