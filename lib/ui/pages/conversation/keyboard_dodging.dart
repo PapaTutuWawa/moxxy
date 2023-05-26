@@ -151,7 +151,7 @@ class KeyboardReplacerWidget extends StatelessWidget {
 
   /// The child to show or not show.
   final Widget child;
-  
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<KeyboardReplacerData>(
