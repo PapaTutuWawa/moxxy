@@ -23,8 +23,8 @@ flutter pub run build_runner build --delete-conflicting-outputs
 # Build the release apk
 flutter build apk \
 	--release \
-	--split-per-abi \
-	--split-debug-info="./${version}"
+	--split-per-abi
+	#--split-debug-info="./${version}"
 
 # Create a folder with releases
 release_dir="./release-${version}"
@@ -37,4 +37,4 @@ cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk "${release_dir}/mox
 cp build/app/outputs/flutter-apk/app-x86_64-release.apk "${release_dir}/moxxy-x86_64-release.apk"
 
 # Copy the debug symbols into it
-mv "./${version}" "${release_dir}/debug-info-${version}"
+#mv "./${version}" "${release_dir}/debug-info-${version}"
