@@ -1,0 +1,12 @@
+Many changes in this release are under the hood, but there are many changes nonetheless:
+
+- Messages that are sent while offline are now queued up until we're online again
+- Moxxy now makes use of SFS's caching possibilities. Receiving files sent via SFS are thus only downloaded if the file is not already locally available
+- Messages and shared media files are now shown in paged lists
+- Reworked various pages, like the Conversation page and the profile page
+- Rework the reactions UI
+- Add a "note to self" feature. This was a teaser task in the context of this year's GSoC
+- Chat states are no longer sent if a chat is no longer focused
+- Sending a sticker when a message is selected for quoting, the sticker is sent as a reply to that message
+- The database design was massively overhauled
+- The emoji/sticker picker should no longer jump around when switching from the keyboard
