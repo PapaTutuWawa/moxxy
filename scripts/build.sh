@@ -1,9 +1,16 @@
 #!/bin/bash
 set -e
 version=$(grep -E "^version: " pubspec.yaml | cut -b 10-)
+IFS="+" read -ra version_parts <<< "$version"
+version_code="${version_parts[1]}"
 echo "===== Moxxy ====="
 echo
 echo "Building version ${version}"
+
+# Check if we have a changelog file for that version
+if [[ ! -f "./fastlane/metadata/android/en-US/changelogs/$version_code.txt" ]]; then
+    echo "Warning: No changelog item for $version_code"
+fi
 
 if [[ ! $1 = "--no-clean" ]]; then
     # Clean flutter build

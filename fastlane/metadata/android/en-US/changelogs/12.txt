@@ -1,0 +1,7 @@
+This is a hotfix release.
+
+Sending a message with no attached file results in a gray
+box being displayed over the entire message list. This release
+contains a fix for that.
+
+(I also dropped my fork of the Flutter SDK)
