@@ -81,12 +81,12 @@ class ReactionList extends StatelessWidget {
             return ReactionsRow(
               avatar: ownReaction
                   ? AvatarWrapper(
-                      avatarUrl: bloc.state.avatarUrl,
+                      avatarUrl: bloc.state.avatarPath,
                       radius: 35,
                       altIcon: Icons.person,
                     )
                   : AvatarWrapper(
-                      avatarUrl: conversation?.avatarUrl,
+                      avatarUrl: conversation?.avatarPath,
                       radius: 35,
                       altIcon: Icons.person,
                     ),

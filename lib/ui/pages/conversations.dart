@@ -158,7 +158,7 @@ class ConversationsPageState extends State<ConversationsPage>
                   RequestedConversationEvent(
                     item.jid,
                     item.title,
-                    item.avatarUrl,
+                    item.avatarPath,
                   ),
                 ),
             key: key,
@@ -251,7 +251,7 @@ class ConversationsPageState extends State<ConversationsPage>
                         profile.ProfilePageRequestedEvent(
                           true,
                           jid: state.jid,
-                          avatarUrl: state.avatarUrl,
+                          avatarUrl: state.avatarPath,
                           displayName: state.displayName,
                         ),
                       );
@@ -267,7 +267,7 @@ class ConversationsPageState extends State<ConversationsPage>
                           color: const Color.fromRGBO(0, 0, 0, 0),
                           child: AvatarWrapper(
                             radius: 20,
-                            avatarUrl: state.avatarUrl,
+                            avatarUrl: state.avatarPath,
                             altIcon: Icons.person,
                           ),
                         ),

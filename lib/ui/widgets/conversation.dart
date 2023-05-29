@@ -180,10 +180,14 @@ class ConversationsListRowState extends State<ConversationsListRow> {
   Widget _buildAvatar() {
     return RebuildOnContactIntegrationChange(
       builder: () {
-        final avatar = AvatarWrapper(
+        final avatar = CachingXMPPAvatar(
           radius: 35,
-          avatarUrl: widget.conversation.avatarPathWithOptionalContact,
+          jid: widget.conversation.jid,
+          hash: widget.conversation.avatarHash,
           altText: widget.conversation.titleWithOptionalContact,
+          path: widget.conversation.avatarPathWithOptionalContact,
+          hasContactId: widget.conversation.contactId != null,
+          shouldRequest: widget.conversation.type != ConversationType.note,
         );
 
         if (widget.enableAvatarOnTap &&

@@ -108,7 +108,8 @@ class NewConversationPage extends StatelessWidget {
                         false,
                         false,
                       ),
-                      item.avatarUrl,
+                      item.avatarPath,
+                      item.avatarHash,
                       item.jid,
                       0,
                       ConversationType.chat,
@@ -130,7 +131,7 @@ class NewConversationPage extends StatelessWidget {
                           NewConversationAddedEvent(
                             item.jid,
                             item.title,
-                            item.avatarUrl,
+                            item.avatarPath,
                             ConversationType.chat,
                           ),
                         ),

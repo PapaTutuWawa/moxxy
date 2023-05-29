@@ -208,7 +208,7 @@ files:
         attributes:
           conversationJid: String
           title: String
-          avatarUrl: String
+          avatarPath: String
       - name: StickerPackImportSuccessEvent
         extends: BackgroundEvent
         implements:
@@ -576,6 +576,13 @@ files:
           - JsonImplementation
         attributes:
           messageId: int
+      - name: RequestAvatarForJidCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          hash: String?
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

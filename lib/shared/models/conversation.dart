@@ -51,8 +51,13 @@ class Conversation with _$Conversation {
   factory Conversation(
     String title,
     @ConversationMessageConverter() Message? lastMessage,
-    String avatarUrl,
+    /// The path to the avatar
+    String avatarPath,
+    /// The hash of the avatar
+    String? avatarHash,
+    /// The JID of the entity we're having a chat with
     String jid,
+    /// The number of unread messages
     int unreadCounter,
     ConversationType type,
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
@@ -128,10 +133,10 @@ class Conversation with _$Conversation {
   /// XMPP avatar's path.
   String? get avatarPathWithOptionalContact {
     if (GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
-      return contactAvatarPath ?? avatarUrl;
+      return contactAvatarPath ?? avatarPath;
     }
 
-    return avatarUrl;
+    return avatarPath;
   }
 
   /// The title of the chat. This returns, if enabled, first the contact's display

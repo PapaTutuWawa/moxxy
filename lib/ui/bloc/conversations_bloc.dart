@@ -53,7 +53,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
       state.copyWith(
         displayName: event.displayName,
         jid: event.jid,
-        avatarUrl: event.avatarUrl ?? '',
+        avatarPath: event.avatarUrl ?? '',
         conversations: event.conversations..sort(compareConversation),
       ),
     );
@@ -118,7 +118,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   ) async {
     return emit(
       state.copyWith(
-        avatarUrl: event.path,
+        avatarPath: event.path,
       ),
     );
   }

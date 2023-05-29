@@ -65,7 +65,7 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
           RequestedConversationEvent(
             result.conversation!.jid,
             result.conversation!.title,
-            result.conversation!.avatarUrl,
+            result.conversation!.avatarPath,
             removeUntilConversations: true,
           ),
         );

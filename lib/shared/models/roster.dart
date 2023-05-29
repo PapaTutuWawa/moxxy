@@ -8,7 +8,7 @@ part 'roster.g.dart';
 class RosterItem with _$RosterItem {
   factory RosterItem(
     int id,
-    String avatarUrl,
+    String avatarPath,
     String avatarHash,
     String jid,
     String title,

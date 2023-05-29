@@ -36,7 +36,7 @@ class NotificationsService {
         MessageNotificationTappedEvent(
           conversationJid: action.payload!['conversationJid']!,
           title: action.payload!['title']!,
-          avatarUrl: action.payload!['avatarUrl']!,
+          avatarPath: action.payload!['avatarPath']!,
         ),
       );
     } else if (action.buttonKeyPressed == _notificationActionKeyRead) {
@@ -110,8 +110,8 @@ class NotificationsService {
     final title =
         contactIntegrationEnabled ? c.contactDisplayName ?? c.title : c.title;
     final avatarPath = contactIntegrationEnabled
-        ? c.contactAvatarPath ?? c.avatarUrl
-        : c.avatarUrl;
+        ? c.contactAvatarPath ?? c.avatarPath
+        : c.avatarPath;
 
     await AwesomeNotifications().createNotification(
       content: NotificationContent(
@@ -131,7 +131,7 @@ class NotificationsService {
           'conversationJid': c.jid,
           'sid': m.sid,
           'title': title,
-          'avatarUrl': avatarPath,
+          'avatarPath': avatarPath,
         },
       ),
       actionButtons: [

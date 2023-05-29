@@ -58,7 +58,7 @@ class AvatarService {
       data,
       hash,
       jid,
-      (originalConversation?.avatarUrl ?? originalRoster?.avatarUrl)!,
+      (originalConversation?.avatarPath ?? originalRoster?.avatarPath)!,
     );
 
     if (originalConversation != null) {
@@ -67,7 +67,8 @@ class AvatarService {
         update: (c) async {
           return cs.updateConversation(
             jid,
-            avatarUrl: avatarPath,
+            avatarPath: avatarPath,
+            avatarHash: hash,
           );
         },
       );
@@ -81,7 +82,7 @@ class AvatarService {
     if (originalRoster != null) {
       final roster = await rs.updateRosterItem(
         originalRoster.id,
-        avatarUrl: avatarPath,
+        avatarPath: avatarPath,
         avatarHash: hash,
       );
 
@@ -115,7 +116,7 @@ class AvatarService {
   }
 
   Future<_AvatarData?> _handleVcardAvatar(String jid, String oldHash) async {
-    // Query the vCard
+    // Query th7 vCard
     final vm = GetIt.I
         .get<XmppConnection>()
         .getManagerById<VCardManager>(vcardManager)!;
@@ -137,10 +138,10 @@ class AvatarService {
     );
   }
 
-  Future<void> fetchAndUpdateAvatarForJid(String jid, String oldHash) async {
+  Future<void> fetchAndUpdateAvatarForJid(String jid, String? oldHash) async {
     _AvatarData? data;
-    data ??= await _handleUserAvatar(jid, oldHash);
-    data ??= await _handleVcardAvatar(jid, oldHash);
+    data ??= await _handleUserAvatar(jid, oldHash ?? '');
+    data ??= await _handleVcardAvatar(jid, oldHash ?? '');
 
     if (data != null) {
       await updateAvatarForJid(jid, data.id, data.data);

@@ -601,7 +601,7 @@ class XmppService {
             rosterItem?.title ?? recipient.split('@').first,
             lastMessages[recipient],
             ConversationType.chat,
-            rosterItem?.avatarUrl ?? '',
+            rosterItem?.avatarPath ?? '',
             recipient,
             0,
             DateTime.now().millisecondsSinceEpoch,
@@ -781,21 +781,8 @@ class XmppService {
           .getManagerById<RosterManager>(rosterManager)!
           .requestRoster();
 
-      // TODO(Unknown): Once groupchats come into the equation, this gets trickier
-      final roster = await GetIt.I.get<RosterService>().getRoster();
-      for (final item in roster) {
-        await GetIt.I
-            .get<AvatarService>()
-            .fetchAndUpdateAvatarForJid(item.jid, item.avatarHash);
-      }
-
       await GetIt.I.get<BlocklistService>().getBlocklist();
     }
-
-    // Make sure we display our own avatar correctly.
-    // Note that this only requests the avatar if its hash differs from the locally cached avatar's.
-    // TODO(Unknown): Maybe don't do this on mobile Internet
-    unawaited(GetIt.I.get<AvatarService>().requestOwnAvatar());
 
     if (_loginTriggeredFromUI) {
       // TODO(Unknown): Trigger another event so the UI can see this aswell
@@ -1336,7 +1323,7 @@ class XmppService {
           rosterItem?.title ?? conversationJid.split('@')[0],
           message,
           ConversationType.chat,
-          rosterItem?.avatarUrl ?? '',
+          rosterItem?.avatarPath ?? '',
           conversationJid,
           sent ? 0 : 1,
           messageTimestamp,

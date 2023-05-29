@@ -100,6 +100,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
+      EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1246,5 +1247,14 @@ Future<void> performGetReactions(
           .toList(),
     ),
     id: id,
+  );
+}
+
+Future<void> performRequestAvatarForJid(
+  RequestAvatarForJidCommand command, {
+  dynamic extra,
+}) async {
+  unawaited(
+    GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(command.jid, command.hash),
   );
 }

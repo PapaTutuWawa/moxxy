@@ -49,7 +49,7 @@ class ConversationTopbar extends StatelessWidget
 
   bool _shouldRebuild(ConversationState prev, ConversationState next) {
     return prev.conversation?.title != next.conversation?.title ||
-        prev.conversation?.avatarUrl != next.conversation?.avatarUrl ||
+        prev.conversation?.avatarPath != next.conversation?.avatarPath ||
         prev.conversation?.chatState != next.conversation?.chatState ||
         prev.conversation?.jid != next.conversation?.jid ||
         prev.conversation?.encrypted != next.conversation?.encrypted;
@@ -110,14 +110,16 @@ class ConversationTopbar extends StatelessWidget
                         child: Material(
                           color: Colors.transparent,
                           child: RebuildOnContactIntegrationChange(
-                            builder: () => AvatarWrapper(
-                              radius: 25,
-                              avatarUrl: state.conversation
-                                      ?.avatarPathWithOptionalContact ??
-                                  '',
+                            builder: () => CachingXMPPAvatar(
+                              jid: state.conversation?.jid ?? '', 
                               altText: state
                                       .conversation?.titleWithOptionalContact ??
                                   'A',
+                              radius: 25,
+                              hasContactId: state.conversation?.contactId != null,
+                              hash: state.conversation?.avatarHash,
+                              path: state.conversation?.avatarPath,
+                              shouldRequest: state.conversation != null,
                             ),
                           ),
                         ),

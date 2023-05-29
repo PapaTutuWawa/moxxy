@@ -173,7 +173,7 @@ Future<void> onNotificationTappend(
         conversation.RequestedConversationEvent(
           event.conversationJid,
           event.title,
-          event.avatarUrl,
+          event.avatarPath,
         ),
       );
 }
