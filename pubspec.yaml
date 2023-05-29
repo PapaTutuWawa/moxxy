@@ -123,20 +123,6 @@ dev_dependencies:
   very_good_analysis: ^4.0.0
 
 dependency_overrides:
-  # Okay, so hear me out: Flutter has the problem that focusing a TextField will automatically
-  # summon the soft keyboard with no way of (dynamically) telling it to not do that. This
-  # causes the issue in the ConversationPage where changing the cursor's position within the
-  # TextField while the Emoji picker is open summons the soft keyboard, having it stacked
-  # under the Emoji picker.
-  #
-  # My fork adds a callback function that is called whenever the soft keyboard is about to be
-  # summoned, with which we can tell flutter whether it should summon it or not.
-  #
-  # The code can be found here: https://git.polynom.me/Moxxy/flutter
-  flutter:
-    hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 3.7.3+1
-
   # A fork of keyboard_height_plugin that lowers the required Dart SDK version
   keyboard_height_plugin:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub

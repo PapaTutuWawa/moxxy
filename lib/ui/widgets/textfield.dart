@@ -30,7 +30,6 @@ class CustomTextField extends StatelessWidget {
     this.suffixIcon,
     this.suffixIconConstraints,
     this.onTap,
-    this.shouldSummonKeyboard,
     this.focusNode,
     this.fontSize,
     super.key,
@@ -63,7 +62,6 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
   final void Function()? onTap;
-  final bool Function()? shouldSummonKeyboard;
   final FocusNode? focusNode;
 
   @override
@@ -104,7 +102,6 @@ class CustomTextField extends StatelessWidget {
                 autocorrect: enableIMEFeatures,
                 style: style,
                 onTap: onTap,
-                shouldSummonKeyboard: shouldSummonKeyboard,
                 focusNode: focusNode,
                 decoration: InputDecoration(
                   labelText: labelText,

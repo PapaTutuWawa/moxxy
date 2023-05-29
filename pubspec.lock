@@ -443,12 +443,9 @@ packages:
     version: "1.0.1"
   flutter:
     dependency: "direct main"
-    description:
-      name: flutter
-      sha256: "9563bc28fc14bafd9082dfa96f065dac239c0aa5895396d29f1730aaf06c613b"
-      url: "https://git.polynom.me/api/packages/Moxxy/pub/"
-    source: hosted
-    version: "3.7.3+1"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_bloc:
     dependency: "direct main"
     description:
