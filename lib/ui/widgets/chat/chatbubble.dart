@@ -65,8 +65,8 @@ class RawChatBubble extends StatelessWidget {
     // Check if we can display a file upload notification
     // TODO(Unknown): Maybe support other thumbnail types
     final canDisplayFileUploadNotification =
-        message.fileMetadata!.thumbnailType == 'blurhash' &&
-            message.fileMetadata!.thumbnailData != null;
+        message.fileMetadata?.thumbnailType == 'blurhash' &&
+            message.fileMetadata?.thumbnailData != null;
     if (message.isFileUploadNotification && !canDisplayFileUploadNotification) {
       return false;
     }
