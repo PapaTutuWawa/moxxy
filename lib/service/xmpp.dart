@@ -1185,11 +1185,9 @@ class XmppService {
     }
 
     // Stop the processing here if the event does not describe a displayable message
-    // TODO
-    /*
     if (!_isMessageEventMessage(event) &&
-        event.other['encryption_error'] == null) return;
-    if (event.other['encryption_error'] is InvalidKeyExchangeException) return;*/
+        event.encryptionError == null) return;
+    if (event.encryptionError is InvalidKeyExchangeException) return;
 
     // Ignore File Upload Notifications where we don't have a filename.
     final fun = event.extensions.get<FileUploadNotificationData>();
@@ -1276,15 +1274,12 @@ class XmppService {
       conversationJid,
       event.id,
       fun != null,
-      // TODO
-      //event.encrypted,
-      false,
+      event.encrypted,
       event.extensions.get<MessageProcessingHintData>()?.hints.contains(MessageProcessingHint.noStore) ?? false,
       fileMetadata: fileMetadata?.fileMetadata,
       quoteId: replyId,
       originId: event.extensions.get<StableIdData>()?.originId,
-      // TODO
-      //errorType: errorTypeFromException(event.other['encryption_error']),
+      errorType: errorTypeFromException(event.encryptionError),
       stickerPackId: event.extensions.get<StickersData>()?.stickerPackId,
     );
 
