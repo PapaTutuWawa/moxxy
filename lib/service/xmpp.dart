@@ -56,7 +56,7 @@ class XmppService {
         _onDeliveryReceiptReceived,
       ),
       EventTypeMatcher<ChatMarkerEvent>(_onChatMarker),
-      EventTypeMatcher<AvatarUpdatedEvent>(_onAvatarUpdated),
+      EventTypeMatcher<UserAvatarUpdatedEvent>(_onAvatarUpdated),
       EventTypeMatcher<StanzaAckedEvent>(_onStanzaAcked),
       EventTypeMatcher<MessageEvent>(_onMessage),
       EventTypeMatcher<BlocklistBlockPushEvent>(_onBlocklistBlockPush),
@@ -1480,7 +1480,7 @@ class XmppService {
   }
 
   Future<void> _onAvatarUpdated(
-    AvatarUpdatedEvent event, {
+    UserAvatarUpdatedEvent event, {
     dynamic extra,
   }) async {
     await GetIt.I.get<AvatarService>().handleAvatarUpdate(event);

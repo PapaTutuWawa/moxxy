@@ -34,11 +34,51 @@ class _AvatarData {
 class AvatarService {
   final Logger _log = Logger('AvatarService');
 
-  Future<void> handleAvatarUpdate(AvatarUpdatedEvent event) async {
+  Future<void> requestAvatar(JID jid, String? oldHash) async {
+    _log.finest('Requesting avatar for $jid with old hash $oldHash');
+    final conn = GetIt.I.get<XmppConnection>();
+    final am = conn.getManagerById<UserAvatarManager>(userAvatarManager)!;
+    final rawId = await am.getAvatarId(jid);
+
+    if (rawId.isType<AvatarError>()) {
+      // TODO:
+      return;
+    }
+    final id = rawId.get<String>();
+    if (id == oldHash) {
+      _log.finest('Not fetching avatar for $jid since the hashes are equal');
+      return;
+    }
+
+    final rawAvatar = await am.getUserAvatar(jid);
+    if (rawAvatar.isType<AvatarError>()) {
+      _log.warning('Failed to request avatar for $jid');
+      return;
+    }
+
+    final avatar = rawAvatar.get<UserAvatarData>();
     await updateAvatarForJid(
-      event.jid,
-      event.hash,
-      base64Decode(_cleanBase64String(event.base64)),
+      jid.toString(),
+      avatar.hash,
+      avatar.data,
+    );
+  }
+  
+  Future<void> handleAvatarUpdate(UserAvatarUpdatedEvent event) async {
+    if (event.metadata.isEmpty) return;
+
+    final data = await GetIt.I.get<XmppConnection>().getManagerById<UserAvatarManager>(userAvatarManager)!.getUserAvatar(event.jid);
+
+    if (data.isType<AvatarError>()) {
+      _log.warning('Failed to get avatar for ${event.jid} after metadata update');
+      return;
+    }
+
+    final avatar = data.get<UserAvatarData>();
+    await updateAvatarForJid(
+      event.jid.toString(),
+      avatar.hash,
+      avatar.data,
     );
   }
 
@@ -94,7 +134,8 @@ class AvatarService {
     final am = GetIt.I
         .get<XmppConnection>()
         .getManagerById<UserAvatarManager>(userAvatarManager)!;
-    final idResult = await am.getAvatarId(JID.fromString(jid));
+    final entityJid = JID.fromString(jid);
+    final idResult = await am.getAvatarId(entityJid);
     if (idResult.isType<AvatarError>()) {
       _log.warning('Failed to get avatar id via XEP-0084 for $jid');
       return null;
@@ -102,15 +143,15 @@ class AvatarService {
     final id = idResult.get<String>();
     if (id == oldHash) return null;
 
-    final avatarResult = await am.getUserAvatar(jid);
+    final avatarResult = await am.getUserAvatar(entityJid);
     if (avatarResult.isType<AvatarError>()) {
       _log.warning('Failed to get avatar data via XEP-0084 for $jid');
       return null;
     }
-    final avatar = avatarResult.get<UserAvatar>();
+    final avatar = avatarResult.get<UserAvatarData>();
 
     return _AvatarData(
-      base64Decode(_cleanBase64String(avatar.base64)),
+      avatar.data,
       avatar.hash,
     );
   }
@@ -152,7 +193,7 @@ class AvatarService {
     return (await GetIt.I
             .get<XmppConnection>()
             .getManagerById<UserAvatarManager>(userAvatarManager)!
-            .subscribe(jid))
+            .subscribe(JID.fromString(jid)))
         .isType<bool>();
   }
 
@@ -160,7 +201,7 @@ class AvatarService {
     return (await GetIt.I
             .get<XmppConnection>()
             .getManagerById<UserAvatarManager>(userAvatarManager)!
-            .unsubscribe(jid))
+            .unsubscribe(JID.fromString(jid)))
         .isType<bool>();
   }
 
@@ -202,6 +243,7 @@ class AvatarService {
         imageSize.height.toInt(),
         // TODO(PapaTutuWawa): Maybe do a check here
         'image/png',
+        null,
       ),
       public,
     );
@@ -220,8 +262,8 @@ class AvatarService {
         .getManagerById<UserAvatarManager>(userAvatarManager)!;
     final xss = GetIt.I.get<XmppStateService>();
     final state = await xss.getXmppState();
-    final jid = state.jid!;
-    final idResult = await am.getAvatarId(JID.fromString(jid));
+    final jid = JID.fromString(state.jid!);
+    final idResult = await am.getAvatarId(jid);
     if (idResult.isType<AvatarError>()) {
       _log.info('Error while getting latest avatar id for own avatar');
       return;
@@ -238,14 +280,14 @@ class AvatarService {
       _log.severe('Failed to fetch our avatar');
       return;
     }
-    final avatarData = avatarDataResult.get<UserAvatar>();
+    final avatarData = avatarDataResult.get<UserAvatarData>();
 
     _log.info('Received data for our own avatar');
 
     final avatarPath = await saveAvatarInCache(
-      base64Decode(_cleanBase64String(avatarData.base64)),
+      avatarData.data,
       avatarData.hash,
-      jid,
+      jid.toString(),
       state.avatarUrl,
     );
     await xss.modifyXmppState(

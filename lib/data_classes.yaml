@@ -583,6 +583,12 @@ files:
         attributes:
           jid: String
           hash: String?
+      - name: DebugCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          id: int
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

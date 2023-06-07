@@ -29,6 +29,7 @@ import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/debug.dart' as debug;
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -101,6 +102,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
+      EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -516,20 +518,19 @@ Future<void> performAddContact(
   // Add to roster, if needed
   final item = await roster.getRosterItemByJid(jid);
   if (item != null) {
-    if (item.subscription != 'from' && item.subscription != 'both') {
+    GetIt.I.get<Logger>().finest('Roster item for $jid has subscription ${item.subscription}');
+    if (item.subscription != 'both') {
       GetIt.I.get<Logger>().finest(
             'Roster item already exists with no presence subscription from them. Sending subscription request',
           );
-      srs.sendSubscriptionRequest(jid);
+      srs.sendSubscriptionRequest(
+        jid,
+        preApprove: item.subscription != 'from',
+      );
     }
   } else {
     await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
   }
-
-  // Try to figure out an avatar
-  // TODO(Unknown): Don't do that here. Do it more intelligently.
-  await GetIt.I.get<AvatarService>().subscribeJid(jid);
-  await GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid, '');
 }
 
 Future<void> performRemoveContact(
@@ -1255,6 +1256,32 @@ Future<void> performRequestAvatarForJid(
   dynamic extra,
 }) async {
   unawaited(
-    GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(command.jid, command.hash),
+    GetIt.I.get<AvatarService>().requestAvatar(
+      JID.fromString(command.jid),
+      command.hash,
+    ),
   );
+}
+
+Future<void> performDebugCommand(
+  DebugCommand command, {
+  dynamic extra,
+}) async {
+  final conn = GetIt.I.get<XmppConnection>();
+
+  if (command.id == debug.DebugCommand.clearStreamResumption.id) {
+    // Disconnect
+    await conn.disconnect();
+
+    // Reset stream management
+    await conn.getManagerById<StreamManagementManager>(smManager)!.resetState();
+
+    // Reconnect
+    await conn.connect(
+      shouldReconnect: true,
+      waitForConnection: true,
+    );
+  } else if (command.id == debug.DebugCommand.requestRoster.id) {
+    await conn.getManagerById<RosterManager>(rosterManager)!.requestRoster(useRosterVersion: false);
+  }
 }

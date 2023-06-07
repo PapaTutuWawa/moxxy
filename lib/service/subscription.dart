@@ -5,6 +5,7 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
 
+// TODO: Remove
 class SubscriptionRequestService {
   List<String>? _subscriptionRequests;
 
@@ -73,7 +74,7 @@ class SubscriptionRequestService {
 
   /// Accept a subscription request from [jid].
   Future<void> acceptSubscriptionRequest(String jid) async {
-    _presence.sendSubscriptionRequestApproval(jid);
+    //_presence.sendSubscriptionRequestApproval(jid, preApprove: true);
     await removeSubscriptionRequest(jid);
   }
 
@@ -84,8 +85,8 @@ class SubscriptionRequestService {
   }
 
   /// Send a subscription request to [jid].
-  void sendSubscriptionRequest(String jid) {
-    _presence.sendSubscriptionRequest(jid);
+  void sendSubscriptionRequest(String jid, {bool preApprove = true}) {
+    _presence.sendSubscriptionRequest(jid, preApprove: preApprove);
   }
 
   /// Remove a presence subscription with [jid].

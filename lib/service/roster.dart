@@ -217,13 +217,15 @@ class RosterService {
       await css.getContactDisplayName(contactId),
     );
 
-    final result = await GetIt.I
-        .get<XmppConnection>()
+    final conn = GetIt.I.get<XmppConnection>();
+    final result = await conn 
         .getRosterManager()!
         .addToRoster(jid, title);
     if (!result) {
       // TODO(Unknown): Signal error?
     }
+
+    conn.getPresenceManager()!.sendSubscriptionRequest(jid, preApprove: true);
 
     sendEvent(RosterDiffEvent(added: [item]));
     return item;
