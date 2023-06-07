@@ -225,7 +225,11 @@ class RosterService {
       // TODO(Unknown): Signal error?
     }
 
-    conn.getPresenceManager()!.sendSubscriptionRequest(jid, preApprove: true);
+    final to = JID.fromString(jid);
+    final preApproval = await conn.getPresenceManager()!.preApproveSubscription(to);
+    if (!preApproval) {
+      await conn.getPresenceManager()!.requestSubscription(to);
+    }
 
     sendEvent(RosterDiffEvent(added: [item]));
     return item;

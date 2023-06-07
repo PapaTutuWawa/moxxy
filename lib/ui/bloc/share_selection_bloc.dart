@@ -192,7 +192,7 @@ class ShareSelectionBloc
             SendMessageCommand(
               recipients: _getRecipients(),
               body: state.text!,
-              chatState: chatStateToString(ChatState.gone),
+              chatState: ChatState.gone.toName(),
             ),
           );
 

@@ -321,7 +321,7 @@ Future<void> performSendMessage(
       command.editSid!,
       command.recipients.first,
       command.chatState.isNotEmpty
-          ? chatStateFromString(command.chatState)
+          ? ChatState.fromName(command.chatState)
           : null,
     );
     return;
@@ -331,7 +331,7 @@ Future<void> performSendMessage(
     body: command.body,
     recipients: command.recipients,
     chatState: command.chatState.isNotEmpty
-        ? chatStateFromString(command.chatState)
+        ? ChatState.fromName(command.chatState)
         : null,
     quotedMessage: command.quotedMessage,
     currentConversationJid: command.currentConversationJid,
@@ -675,9 +675,9 @@ Future<void> performSendChatState(
   final conn = GetIt.I.get<XmppConnection>();
 
   if (command.jid != '') {
-    conn
+    await conn
         .getManagerById<ChatStateManager>(chatStateManager)!
-        .sendChatState(chatStateFromString(command.state), command.jid);
+        .sendChatState(ChatState.fromName(command.state), command.jid);
   }
 }
 
@@ -866,17 +866,12 @@ Future<void> performMessageRetraction(
         true,
       );
   if (command.conversationJid != '') {
-    (GetIt.I
-            .get<XmppConnection>()
-            .getManagerById<MessageManager>(messageManager)!)
-        .sendMessage(
-      MessageDetails(
-        to: command.conversationJid,
-        messageRetraction: MessageRetractionData(
-          command.originId,
-          t.messages.retractedFallback,
-        ),
-      ),
+    final manager = GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!;
+    await manager.sendMessage(
+      JID.fromString(command.conversationJid),
+      TypedMap<StanzaHandlerExtension>.fromList([
+        MessageRetractionData(command.originId, t.messages.retractedFallback),
+      ]),
     );
   }
 }
@@ -958,24 +953,26 @@ Future<void> performAddMessageReaction(
     final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
 
     // Send the reaction
-    GetIt.I
+    final manager = GetIt.I
         .get<XmppConnection>()
-        .getManagerById<MessageManager>(messageManager)!
-        .sendMessage(
-          MessageDetails(
-            to: command.conversationJid,
-            messageReactions: MessageReactions(
-              msg.originId ?? msg.sid,
-              await rs.getReactionsForMessageByJid(
-                command.messageId,
-                jid,
-              ),
-            ),
-            requestChatMarkers: false,
-            messageProcessingHints:
-                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
+        .getManagerById<MessageManager>(messageManager)!;
+    await manager.sendMessage(
+      JID.fromString(command.conversationJid),
+      TypedMap<StanzaHandlerExtension>.fromList([
+        MessageReactionsData(
+          msg.originId ?? msg.sid,
+          await rs.getReactionsForMessageByJid(
+            command.messageId,
+            jid,
           ),
-        );
+        ),
+        const MarkableData(false),
+        MessageProcessingHintData([
+          if (!msg.containsNoStore)
+            MessageProcessingHint.store,
+        ]),
+      ]),
+    );
   }
 }
 
@@ -997,24 +994,26 @@ Future<void> performRemoveMessageReaction(
     final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
 
     // Send the reaction
-    GetIt.I
+    final manager = GetIt.I
         .get<XmppConnection>()
-        .getManagerById<MessageManager>(messageManager)!
-        .sendMessage(
-          MessageDetails(
-            to: command.conversationJid,
-            messageReactions: MessageReactions(
-              msg.originId ?? msg.sid,
-              await rs.getReactionsForMessageByJid(
-                command.messageId,
-                jid,
-              ),
-            ),
-            requestChatMarkers: false,
-            messageProcessingHints:
-                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
+        .getManagerById<MessageManager>(messageManager)!;
+    await manager.sendMessage(
+      JID.fromString(command.conversationJid),
+      TypedMap<StanzaHandlerExtension>.fromList([
+        MessageReactionsData(
+          msg.originId ?? msg.sid,
+          await rs.getReactionsForMessageByJid(
+            command.messageId,
+            jid,
           ),
-        );
+        ),
+        const MarkableData(false),
+        MessageProcessingHintData([
+          if (!msg.containsNoStore)
+            MessageProcessingHint.store,
+        ]),
+      ]),
+    );
   }
 }
 

@@ -80,17 +80,17 @@ class SubscriptionRequestService {
 
   /// Reject a subscription request from [jid].
   Future<void> rejectSubscriptionRequest(String jid) async {
-    _presence.sendSubscriptionRequestRejection(jid);
+    await _presence.rejectSubscriptionRequest(JID.fromString(jid));
     await removeSubscriptionRequest(jid);
   }
 
   /// Send a subscription request to [jid].
   void sendSubscriptionRequest(String jid, {bool preApprove = true}) {
-    _presence.sendSubscriptionRequest(jid, preApprove: preApprove);
+    _presence.requestSubscription(JID.fromString(jid));
   }
 
   /// Remove a presence subscription with [jid].
   void sendUnsubscriptionRequest(String jid) {
-    _presence.sendUnsubscriptionRequest(jid);
+    _presence.unsubscribe(JID.fromString(jid));
   }
 }

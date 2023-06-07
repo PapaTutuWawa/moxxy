@@ -324,7 +324,7 @@ class BidirectionalConversationController
             recipients: [conversationJid],
             body: text,
             quotedMessage: _quotedMessage,
-            chatState: chatStateToString(ChatState.active),
+            chatState: ChatState.active.toName(),
             editId: _messageEditingState?.id,
             editSid: _messageEditingState?.sid,
             currentConversationJid: conversationJid,

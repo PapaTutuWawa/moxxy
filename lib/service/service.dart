@@ -211,6 +211,7 @@ Future<void> entrypoint() async {
     StreamManagementNegotiator(),
     CSINegotiator(),
     RosterFeatureNegotiator(),
+    PresenceNegotiator(),
     SaslScramNegotiator(10, '', '', ScramHashType.sha512),
     SaslScramNegotiator(9, '', '', ScramHashType.sha256),
     SaslScramNegotiator(8, '', '', ScramHashType.sha1),
@@ -249,6 +250,7 @@ Future<void> entrypoint() async {
     LastMessageCorrectionManager(),
     MessageReactionsManager(),
     StickersManager(),
+    MessageProcessingHintManager(),
   ]);
 
   GetIt.I.registerSingleton<XmppConnection>(connection);

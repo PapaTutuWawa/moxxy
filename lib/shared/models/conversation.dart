@@ -14,11 +14,11 @@ class ConversationChatStateConverter
 
   @override
   ChatState fromJson(Map<String, dynamic> json) =>
-      chatStateFromString(json['chatState'] as String);
+      ChatState.fromName(json['chatState'] as String);
 
   @override
   Map<String, dynamic> toJson(ChatState state) => <String, String>{
-        'chatState': chatStateToString(state),
+        'chatState': state.toName(),
       };
 }
 
