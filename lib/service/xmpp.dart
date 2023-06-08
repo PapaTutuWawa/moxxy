@@ -759,6 +759,9 @@ class XmppService {
     unawaited(_initializeOmemoService(settings.jid.toString()));
 
     if (!event.resumed) {
+      // Reset the avatar service's cache
+      GetIt.I.get<AvatarService>().resetCache();
+
       // Reset the blocking service's cache
       GetIt.I.get<BlocklistService>().onNewConnection();
 
@@ -793,6 +796,10 @@ class XmppService {
             ),
           );
     }
+
+    sendEvent(
+      StreamNegotiationsCompletedEvent(resumed: event.resumed),
+    );
   }
 
   Future<void> _onConnectionStateChanged(

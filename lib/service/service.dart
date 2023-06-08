@@ -231,7 +231,6 @@ Future<void> entrypoint() async {
     CSIManager(),
     CarbonsManager(),
     PubSubManager(),
-    VCardManager(),
     UserAvatarManager(),
     StableIdManager(),
     MessageDeliveryReceiptManager(),

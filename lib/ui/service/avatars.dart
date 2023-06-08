@@ -19,4 +19,8 @@ class UIAvatarsService {
       RequestAvatarForJidCommand(jid: jid, hash: hash),
     );
   }
+
+  void resetCache() {
+    _avatarRequested.clear();
+  }
 }
