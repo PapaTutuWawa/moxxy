@@ -353,6 +353,7 @@ class HttpFileTransferService {
                     hashes: plaintextHashes,
                   ),
                   [source],
+                  includeOOBFallback: true,
                 ),
                 FileUploadNotificationReplacementData(oldSid),
                 MessageIdData(msg.sid),
