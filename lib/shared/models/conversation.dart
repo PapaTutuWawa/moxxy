@@ -51,12 +51,16 @@ class Conversation with _$Conversation {
   factory Conversation(
     String title,
     @ConversationMessageConverter() Message? lastMessage,
+
     /// The path to the avatar
     String avatarPath,
+
     /// The hash of the avatar
     String? avatarHash,
+
     /// The JID of the entity we're having a chat with
     String jid,
+
     /// The number of unread messages
     int unreadCounter,
     ConversationType type,

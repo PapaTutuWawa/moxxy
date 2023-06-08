@@ -590,6 +590,7 @@ files:
         attributes:
           jid: String
           hash: String?
+          ownAvatar: bool
       - name: DebugCommand
         extends: BackgroundCommand
         implements:

@@ -111,12 +111,13 @@ class ConversationTopbar extends StatelessWidget
                           color: Colors.transparent,
                           child: RebuildOnContactIntegrationChange(
                             builder: () => CachingXMPPAvatar(
-                              jid: state.conversation?.jid ?? '', 
+                              jid: state.conversation?.jid ?? '',
                               altText: state
                                       .conversation?.titleWithOptionalContact ??
                                   'A',
                               radius: 25,
-                              hasContactId: state.conversation?.contactId != null,
+                              hasContactId:
+                                  state.conversation?.contactId != null,
                               hash: state.conversation?.avatarHash,
                               path: state.conversation?.avatarPath,
                               shouldRequest: state.conversation != null,

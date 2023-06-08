@@ -265,10 +265,17 @@ class ConversationsPageState extends State<ConversationsPage>
                         tag: 'self_profile_picture',
                         child: Material(
                           color: const Color.fromRGBO(0, 0, 0, 0),
-                          child: AvatarWrapper(
+                          // NOTE: We do not care about the avatar hash because
+                          //       we just read it from the XMPP state in the
+                          //       avatar service.
+                          child: CachingXMPPAvatar(
                             radius: 20,
-                            avatarUrl: state.avatarPath,
+                            path: state.avatarPath,
+                            altText: state.jid[0],
                             altIcon: Icons.person,
+                            hasContactId: false,
+                            jid: state.jid,
+                            ownAvatar: true,
                           ),
                         ),
                       ),

@@ -217,15 +217,14 @@ class RosterService {
     );
 
     final conn = GetIt.I.get<XmppConnection>();
-    final result = await conn 
-        .getRosterManager()!
-        .addToRoster(jid, title);
+    final result = await conn.getRosterManager()!.addToRoster(jid, title);
     if (!result) {
       // TODO(Unknown): Signal error?
     }
 
     final to = JID.fromString(jid);
-    final preApproval = await conn.getPresenceManager()!.preApproveSubscription(to);
+    final preApproval =
+        await conn.getPresenceManager()!.preApproveSubscription(to);
     if (!preApproval) {
       await conn.getPresenceManager()!.requestSubscription(to);
     }

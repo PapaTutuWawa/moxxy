@@ -109,7 +109,9 @@ class CachingXMPPAvatar extends StatefulWidget {
     required this.altText,
     required this.radius,
     required this.hasContactId,
+    this.altIcon,
     this.shouldRequest = true,
+    this.ownAvatar = false,
     this.hash,
     this.path,
     super.key,
@@ -123,7 +125,7 @@ class CachingXMPPAvatar extends StatefulWidget {
 
   /// The alt-text, if [path] is null.
   final String altText;
-  
+
   /// The (potentially null) path to the avatar image.
   final String? path;
 
@@ -135,7 +137,13 @@ class CachingXMPPAvatar extends StatefulWidget {
 
   /// Flag indicating whether a request for the avatar should happen or not.
   final bool shouldRequest;
-  
+
+  /// Alt-icon, if [path] is null.
+  final IconData? altIcon;
+
+  /// Flag indicating whether this avatar is our own avatar.
+  final bool ownAvatar;
+
   @override
   CachingXMPPAvatarState createState() => CachingXMPPAvatarState();
 }
@@ -143,11 +151,13 @@ class CachingXMPPAvatar extends StatefulWidget {
 class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
   void _performRequest() {
     // Only request the avatar if we don't have a contact integration avatar already.
-    if (!GetIt.I.get<PreferencesBloc>().state.enableContactIntegration || !widget.hasContactId) {
+    if (!GetIt.I.get<PreferencesBloc>().state.enableContactIntegration ||
+        !widget.hasContactId) {
       GetIt.I.get<UIAvatarsService>().requestAvatarIfRequired(
-        widget.jid,
-        widget.hash,
-      );
+            widget.jid,
+            widget.hash,
+            widget.ownAvatar,
+          );
     }
   }
 
@@ -168,12 +178,13 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
       _performRequest();
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return AvatarWrapper(
       avatarUrl: widget.path,
       altText: widget.altText,
+      altIcon: widget.altIcon,
       radius: widget.radius,
     );
   }

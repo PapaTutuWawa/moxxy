@@ -510,16 +510,21 @@ Future<void> performAddContact(
   // Add to roster, if needed
   final item = await roster.getRosterItemByJid(jid);
   if (item != null) {
-    GetIt.I.get<Logger>().finest('Roster item for $jid has subscription ${item.subscription}');
+    GetIt.I
+        .get<Logger>()
+        .finest('Roster item for $jid has subscription ${item.subscription}');
 
     // Nothing more to do
     if (item.subscription != 'both') {
       return;
     }
 
-    final pm = GetIt.I.get<XmppConnection>().getManagerById<PresenceManager>(presenceManager)!;
+    final pm = GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<PresenceManager>(presenceManager)!;
     switch (item.subscription) {
-      case 'both': return;
+      case 'both':
+        return;
       case 'from':
         if (item.ask != 'subscribe') {
           // Try to move from "from" to "both", by going over "From + Pending Out"
@@ -626,7 +631,9 @@ Future<void> performSetShareOnlineStatus(
   if (item == null) return;
 
   final jid = JID.fromString(command.jid);
-  final pm = GetIt.I.get<XmppConnection>().getManagerById<PresenceManager>(presenceManager)!;
+  final pm = GetIt.I
+      .get<XmppConnection>()
+      .getManagerById<PresenceManager>(presenceManager)!;
   if (command.share) {
     switch (item.subscription) {
       case 'to':
@@ -876,7 +883,9 @@ Future<void> performMessageRetraction(
         true,
       );
   if (command.conversationJid != '') {
-    final manager = GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!;
+    final manager = GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
       JID.fromString(command.conversationJid),
       TypedMap<StanzaHandlerExtension>.fromList([
@@ -978,8 +987,7 @@ Future<void> performAddMessageReaction(
         ),
         const MarkableData(false),
         MessageProcessingHintData([
-          if (!msg.containsNoStore)
-            MessageProcessingHint.store,
+          if (!msg.containsNoStore) MessageProcessingHint.store,
         ]),
       ]),
     );
@@ -1019,8 +1027,7 @@ Future<void> performRemoveMessageReaction(
         ),
         const MarkableData(false),
         MessageProcessingHintData([
-          if (!msg.containsNoStore)
-            MessageProcessingHint.store,
+          if (!msg.containsNoStore) MessageProcessingHint.store,
         ]),
       ]),
     );
@@ -1264,12 +1271,18 @@ Future<void> performRequestAvatarForJid(
   RequestAvatarForJidCommand command, {
   dynamic extra,
 }) async {
-  unawaited(
-    GetIt.I.get<AvatarService>().requestAvatar(
+  final as = GetIt.I.get<AvatarService>();
+  Future<void> future;
+  if (command.ownAvatar) {
+    future = as.requestOwnAvatar();
+  } else {
+    future = as.requestAvatar(
       JID.fromString(command.jid),
       command.hash,
-    ),
-  );
+    );
+  }
+
+  unawaited(future);
 }
 
 Future<void> performDebugCommand(
@@ -1291,6 +1304,8 @@ Future<void> performDebugCommand(
       waitForConnection: true,
     );
   } else if (command.id == debug.DebugCommand.requestRoster.id) {
-    await conn.getManagerById<RosterManager>(rosterManager)!.requestRoster(useRosterVersion: false);
+    await conn
+        .getManagerById<RosterManager>(rosterManager)!
+        .requestRoster(useRosterVersion: false);
   }
 }

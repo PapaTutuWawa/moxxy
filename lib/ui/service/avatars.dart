@@ -10,14 +10,18 @@ class UIAvatarsService {
   /// JID already in the session (from login until stream resumption failure).
   final Map<String, bool> _avatarRequested = {};
 
-  void requestAvatarIfRequired(String jid, String? hash) {
+  void requestAvatarIfRequired(String jid, String? hash, bool ownAvatar) {
     if (_avatarRequested[jid] ?? false) return;
 
     _log.finest('Requesting avatar for $jid');
     _avatarRequested[jid] = true;
     MoxplatformPlugin.handler.getDataSender().sendData(
-      RequestAvatarForJidCommand(jid: jid, hash: hash),
-    );
+          RequestAvatarForJidCommand(
+            jid: jid,
+            hash: hash,
+            ownAvatar: ownAvatar,
+          ),
+        );
   }
 
   void resetCache() {

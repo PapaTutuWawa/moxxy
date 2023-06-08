@@ -189,9 +189,7 @@ class XmppService {
         TypedMap<StanzaHandlerExtension>.fromList([
           MessageBodyData(newBody),
           LastMessageCorrectionData(oldId),
-
-          if (chatState != null)
-            chatState,
+          if (chatState != null) chatState,
         ]),
       );
     }
@@ -270,7 +268,7 @@ class XmppService {
             const MarkableData(true),
             MessageIdData(sid),
             StableIdData(originId, null),
-            
+
             if (sticker != null && moxxmppSticker != null)
               StickersData(
                 sticker.stickerPackId,
@@ -281,8 +279,7 @@ class XmppService {
               ),
 
             // Optional chat state
-            if (chatState != null)
-              chatState,
+            if (chatState != null) chatState,
 
             // Prepare the appropriate quote
             if (quotedMessage != null)
@@ -380,10 +377,15 @@ class XmppService {
     if (result.isType<DiscoError>()) return;
 
     final info = result.get<DiscoInfo>();
-    final isMarkable = event.extensions.get<MarkableData>()?.isMarkable ?? false;
-    final deliveryReceiptRequested = event.extensions.get<MessageDeliveryReceiptData>()?.receiptRequested ?? false;
+    final isMarkable =
+        event.extensions.get<MarkableData>()?.isMarkable ?? false;
+    final deliveryReceiptRequested =
+        event.extensions.get<MessageDeliveryReceiptData>()?.receiptRequested ??
+            false;
     final originId = event.extensions.get<StableIdData>()?.originId;
-    final manager = GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!;
+    final manager = GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!;
     if (isMarkable && info.features.contains(chatMarkersXmlns)) {
       await manager.sendMessage(
         event.from.toBare(),
@@ -395,7 +397,7 @@ class XmppService {
         ]),
       );
     } else if (deliveryReceiptRequested &&
-      info.features.contains(deliveryXmlns)) {
+        info.features.contains(deliveryXmlns)) {
       await manager.sendMessage(
         event.from.toBare(),
         TypedMap<StanzaHandlerExtension>.fromList([
@@ -412,7 +414,9 @@ class XmppService {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
     if (!prefs.sendChatMarkers) return;
 
-    final manager = GetIt.I.get<XmppConnection>().getManagerById<MessageManager>(messageManager)!;
+    final manager = GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
       JID.fromString(to),
       TypedMap<StanzaHandlerExtension>.fromList([
@@ -767,12 +771,15 @@ class XmppService {
       // Reset the OMEMO cache
       GetIt.I.get<OmemoService>().onNewConnection();
 
-      // Enable carbons
-      final carbonsResult = await connection
-          .getManagerById<CarbonsManager>(carbonsManager)!
-          .enableCarbons();
-      if (!carbonsResult) {
-        _log.warning('Failed to enable carbons');
+      // Enable carbons, if they're not already enabled (e.g. by using SASL2)
+      final cm = connection.getManagerById<CarbonsManager>(carbonsManager)!;
+      if (!cm.isEnabled) {
+        final carbonsResult = await cm.enableCarbons();
+        if (!carbonsResult) {
+          _log.warning('Failed to enable carbons');
+        }
+      } else {
+        _log.info('Not enabling carbons as they are already enabled');
       }
 
       // In section 5 of XEP-0198 it says that a client should not request the roster
@@ -834,7 +841,9 @@ class XmppService {
     final rs = GetIt.I.get<RosterService>();
     final rosterItem = await rs.getRosterItemByJid(jid.toString());
     if (rosterItem != null) {
-      final pm = GetIt.I.get<XmppConnection>().getManagerById<PresenceManager>(presenceManager)!;
+      final pm = GetIt.I
+          .get<XmppConnection>()
+          .getManagerById<PresenceManager>(presenceManager)!;
 
       switch (rosterItem.subscription) {
         case 'from':
@@ -1196,8 +1205,7 @@ class XmppService {
     }
 
     // Stop the processing here if the event does not describe a displayable message
-    if (!_isMessageEventMessage(event) &&
-        event.encryptionError == null) return;
+    if (!_isMessageEventMessage(event) && event.encryptionError == null) return;
     if (event.encryptionError is InvalidKeyExchangeException) return;
 
     // Ignore File Upload Notifications where we don't have a filename.
@@ -1222,7 +1230,9 @@ class XmppService {
     final messageTimestamp = DateTime.now().millisecondsSinceEpoch;
 
     // Acknowledge the message if enabled
-    final receiptRequested = event.extensions.get<MessageDeliveryReceiptData>()?.receiptRequested ?? false;
+    final receiptRequested =
+        event.extensions.get<MessageDeliveryReceiptData>()?.receiptRequested ??
+            false;
     if (receiptRequested && isInRoster && prefs.sendChatMarkers) {
       // NOTE: We do not await it to prevent us being blocked if the IQ response id delayed
       await _acknowledgeMessage(event);
@@ -1286,7 +1296,11 @@ class XmppService {
       event.id,
       fun != null,
       event.encrypted,
-      event.extensions.get<MessageProcessingHintData>()?.hints.contains(MessageProcessingHint.noStore) ?? false,
+      event.extensions
+              .get<MessageProcessingHintData>()
+              ?.hints
+              .contains(MessageProcessingHint.noStore) ??
+          false,
       fileMetadata: fileMetadata?.fileMetadata,
       quoteId: replyId,
       originId: event.extensions.get<StableIdData>()?.originId,
@@ -1428,9 +1442,9 @@ class XmppService {
   ) async {
     final ms = GetIt.I.get<MessageService>();
 
-    final replacementId = event.extensions.get<FileUploadNotificationReplacementData>()!.id;
-    var message =
-        await ms.getMessageByStanzaId(conversationJid, replacementId);
+    final replacementId =
+        event.extensions.get<FileUploadNotificationReplacementData>()!.id;
+    var message = await ms.getMessageByStanzaId(conversationJid, replacementId);
     if (message == null) {
       _log.warning(
         'Received a FileUploadNotification replacement for unknown message',

@@ -38,13 +38,12 @@ class AvatarService {
       avatar.data,
     );
     return true;
-
   }
 
   /// Requests the avatar for [jid]. [oldHash], if given, is the last SHA-1 hash of the known avatar.
   /// If the avatar for [jid] has already been requested in this stream session, does nothing. Otherwise,
   /// requests the XEP-0084 metadata and queries the new avatar only if the queried SHA-1 != [oldHash].
-  /// 
+  ///
   /// Returns true, if everything went okay. Returns false if an error occurred.
   Future<bool> requestAvatar(JID jid, String? oldHash) async {
     if (_requestedInStream.contains(jid)) {
@@ -57,7 +56,9 @@ class AvatarService {
     final rawId = await am.getAvatarId(jid);
 
     if (rawId.isType<AvatarError>()) {
-      _log.finest('Failed to get avatar metadata for $jid using XEP-0084: ${rawId.get<AvatarError>()}');
+      _log.finest(
+        'Failed to get avatar metadata for $jid using XEP-0084: ${rawId.get<AvatarError>()}',
+      );
       return false;
     }
     final id = rawId.get<String>();
@@ -68,7 +69,7 @@ class AvatarService {
 
     return _fetchAvatarForJid(jid, id);
   }
-  
+
   Future<void> handleAvatarUpdate(UserAvatarUpdatedEvent event) async {
     if (event.metadata.isEmpty) return;
 
@@ -177,34 +178,40 @@ class AvatarService {
     return true;
   }
 
+  /// Like [requestAvatar], but fetches and processes the avatar for our own account.
   Future<void> requestOwnAvatar() async {
-    final am = GetIt.I
-        .get<XmppConnection>()
-        .getManagerById<UserAvatarManager>(userAvatarManager)!;
     final xss = GetIt.I.get<XmppStateService>();
     final state = await xss.getXmppState();
     final jid = JID.fromString(state.jid!);
-    final idResult = await am.getAvatarId(jid);
-    if (idResult.isType<AvatarError>()) {
-      _log.info('Error while getting latest avatar id for own avatar');
+
+    if (_requestedInStream.contains(jid)) {
       return;
     }
-    final id = idResult.get<String>();
+    _requestedInStream.add(jid);
 
-    if (id == state.avatarHash) return;
-
-    _log.info(
-      'Mismatch between saved avatar data and server-side avatar data about ourself',
-    );
-    final avatarDataResult = await am.getUserAvatar(jid);
-    if (avatarDataResult.isType<AvatarError>()) {
-      _log.severe('Failed to fetch our avatar');
+    final am = GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<UserAvatarManager>(userAvatarManager)!;
+    final rawId = await am.getAvatarId(jid);
+    if (rawId.isType<AvatarError>()) {
+      _log.finest(
+        'Failed to get avatar metadata for $jid using XEP-0084: ${rawId.get<AvatarError>()}',
+      );
       return;
     }
-    final avatarData = avatarDataResult.get<UserAvatarData>();
+    final id = rawId.get<String>();
 
-    _log.info('Received data for our own avatar');
+    if (id == state.avatarHash) {
+      _log.finest('Not fetching avatar for $jid since the hashes are equal');
+      return;
+    }
 
+    final rawAvatar = await am.getUserAvatar(jid);
+    if (rawAvatar.isType<AvatarError>()) {
+      _log.warning('Failed to request avatar for $jid');
+      return;
+    }
+    final avatarData = rawAvatar.get<UserAvatarData>();
     final avatarPath = await saveAvatarInCache(
       avatarData.data,
       avatarData.hash,

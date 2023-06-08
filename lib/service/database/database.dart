@@ -190,7 +190,9 @@ class DatabaseService {
       "Every migration's version must be smaller or equal to the last version",
     );
     assert(
-      migrations.sublist(0, migrations.length - 1).every((migration) => migration.version < version),
+      migrations
+          .sublist(0, migrations.length - 1)
+          .every((migration) => migration.version < version),
       'The last migration must have the largest version',
     );
 

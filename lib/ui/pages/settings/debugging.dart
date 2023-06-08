@@ -146,36 +146,33 @@ class DebuggingPage extends StatelessWidget {
                 );
               },
             ),
-            
+
             // Hide the testing commands outside of debug mode
             ...kDebugMode
                 ? [
                     const SectionTitle('Testing'),
-
-            SettingsRow(
-              title: 'Reset stream management state',
-              onTap: () {
-                MoxplatformPlugin.handler.getDataSender().sendData(
-                  DebugCommand(
-                    id: debug.DebugCommand.clearStreamResumption.id,
-                  ),
-                  awaitable: false,
-                );
-              },
-            ),
-
-            SettingsRow(
-              title: 'Request roster',
-              onTap: () {
-                MoxplatformPlugin.handler.getDataSender().sendData(
-                  DebugCommand(
-                    id: debug.DebugCommand.requestRoster.id,
-                  ),
-                  awaitable: false,
-                );
-              },
-            ),
-
+                    SettingsRow(
+                      title: 'Reset stream management state',
+                      onTap: () {
+                        MoxplatformPlugin.handler.getDataSender().sendData(
+                              DebugCommand(
+                                id: debug.DebugCommand.clearStreamResumption.id,
+                              ),
+                              awaitable: false,
+                            );
+                      },
+                    ),
+                    SettingsRow(
+                      title: 'Request roster',
+                      onTap: () {
+                        MoxplatformPlugin.handler.getDataSender().sendData(
+                              DebugCommand(
+                                id: debug.DebugCommand.requestRoster.id,
+                              ),
+                              awaitable: false,
+                            );
+                      },
+                    ),
                     SettingsRow(
                       title: 'Reset showDebugMenu state',
                       onTap: () {

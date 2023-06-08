@@ -35,7 +35,9 @@ void setupEventHandler() {
       EventTypeMatcher<ServiceReadyEvent>(onServiceReady),
       EventTypeMatcher<MessageNotificationTappedEvent>(onNotificationTappend),
       EventTypeMatcher<StickerPackAddedEvent>(onStickerPackAdded),
-      EventTypeMatcher<StreamNegotiationsCompletedEvent>(onStreamNegotiationsDone),
+      EventTypeMatcher<StreamNegotiationsCompletedEvent>(
+        onStreamNegotiationsDone,
+      ),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
