@@ -8,7 +8,6 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 
@@ -242,14 +241,14 @@ class RosterService {
     String jid, {
     bool unsubscribe = true,
   }) async {
-    final roster = GetIt.I.get<XmppConnection>().getRosterManager()!;
+    final conn = GetIt.I.get<XmppConnection>();
+    final roster = conn.getRosterManager()!;
+    final pm = conn.getManagerById<PresenceManager>(presenceManager)!;
     final result = await roster.removeFromRoster(jid);
     if (result == RosterRemovalResult.okay ||
         result == RosterRemovalResult.itemNotFound) {
       if (unsubscribe) {
-        GetIt.I
-            .get<SubscriptionRequestService>()
-            .sendUnsubscriptionRequest(jid);
+        await pm.unsubscribe(JID.fromString(jid));
       }
 
       _log.finest('Removing from roster maybe worked. Removing from database');

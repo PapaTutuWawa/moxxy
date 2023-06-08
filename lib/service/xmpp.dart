@@ -29,7 +29,6 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -829,20 +828,25 @@ class XmppService {
     SubscriptionRequestReceivedEvent event, {
     dynamic extra,
   }) async {
-    final jid = event.from.toBare().toString();
+    final jid = event.from.toBare();
 
     // Auto-accept if the JID is in the roster
     final rs = GetIt.I.get<RosterService>();
-    final srs = GetIt.I.get<SubscriptionRequestService>();
-    final rosterItem = await rs.getRosterItemByJid(jid);
+    final rosterItem = await rs.getRosterItemByJid(jid.toString());
     if (rosterItem != null) {
-      await srs.acceptSubscriptionRequest(jid);
+      final pm = GetIt.I.get<XmppConnection>().getManagerById<PresenceManager>(presenceManager)!;
+
+      switch (rosterItem.subscription) {
+        case 'from':
+          await pm.acceptSubscriptionRequest(jid);
+          break;
+        case 'to':
+          await pm.requestSubscription(jid);
+          break;
+      }
+
       return;
     }
-
-    await GetIt.I.get<SubscriptionRequestService>().addSubscriptionRequest(
-          event.from.toBare().toString(),
-        );
   }
 
   Future<void> _onDeliveryReceiptReceived(

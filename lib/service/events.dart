@@ -25,7 +25,6 @@ import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
-import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -508,25 +507,29 @@ Future<void> performAddContact(
     },
   );
 
-  // Manage subscription requests
-  final srs = GetIt.I.get<SubscriptionRequestService>();
-  final hasSubscriptionRequest = await srs.hasPendingSubscriptionRequest(jid);
-  if (hasSubscriptionRequest) {
-    await srs.acceptSubscriptionRequest(jid);
-  }
-
   // Add to roster, if needed
   final item = await roster.getRosterItemByJid(jid);
   if (item != null) {
     GetIt.I.get<Logger>().finest('Roster item for $jid has subscription ${item.subscription}');
+
+    // Nothing more to do
     if (item.subscription != 'both') {
-      GetIt.I.get<Logger>().finest(
-            'Roster item already exists with no presence subscription from them. Sending subscription request',
-          );
-      srs.sendSubscriptionRequest(
-        jid,
-        preApprove: item.subscription != 'from',
-      );
+      return;
+    }
+
+    final pm = GetIt.I.get<XmppConnection>().getManagerById<PresenceManager>(presenceManager)!;
+    switch (item.subscription) {
+      case 'both': return;
+      case 'from':
+        if (item.ask != 'subscribe') {
+          // Try to move from "from" to "both", by going over "From + Pending Out"
+          await pm.requestSubscription(JID.fromString(item.jid));
+        }
+        break;
+      case 'to':
+        // Move from "to" to "both"
+        await pm.acceptSubscriptionRequest(JID.fromString(item.jid));
+        break;
     }
   } else {
     await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
@@ -617,23 +620,30 @@ Future<void> performSetShareOnlineStatus(
   dynamic extra,
 }) async {
   final rs = GetIt.I.get<RosterService>();
-  final srs = GetIt.I.get<SubscriptionRequestService>();
   final item = await rs.getRosterItemByJid(command.jid);
 
   // TODO(Unknown): Maybe log
   if (item == null) return;
 
+  final jid = JID.fromString(command.jid);
+  final pm = GetIt.I.get<XmppConnection>().getManagerById<PresenceManager>(presenceManager)!;
   if (command.share) {
-    if (item.ask == 'subscribe') {
-      await srs.acceptSubscriptionRequest(command.jid);
-    } else {
-      srs.sendSubscriptionRequest(command.jid);
+    switch (item.subscription) {
+      case 'to':
+        await pm.acceptSubscriptionRequest(jid);
+        break;
+      case 'none':
+      case 'from':
+        await pm.requestSubscription(jid);
+        break;
     }
   } else {
-    if (item.ask == 'subscribe') {
-      await srs.rejectSubscriptionRequest(command.jid);
-    } else {
-      srs.sendUnsubscriptionRequest(command.jid);
+    switch (item.subscription) {
+      case 'both':
+      case 'from':
+      case 'to':
+        await pm.unsubscribe(jid);
+        break;
     }
   }
 }
