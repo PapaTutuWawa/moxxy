@@ -158,7 +158,7 @@ class ConversationsPageState extends State<ConversationsPage>
                   RequestedConversationEvent(
                     item.jid,
                     item.title,
-                    item.avatarUrl,
+                    item.avatarPath,
                   ),
                 ),
             key: key,
@@ -251,7 +251,7 @@ class ConversationsPageState extends State<ConversationsPage>
                         profile.ProfilePageRequestedEvent(
                           true,
                           jid: state.jid,
-                          avatarUrl: state.avatarUrl,
+                          avatarUrl: state.avatarPath,
                           displayName: state.displayName,
                         ),
                       );
@@ -265,10 +265,17 @@ class ConversationsPageState extends State<ConversationsPage>
                         tag: 'self_profile_picture',
                         child: Material(
                           color: const Color.fromRGBO(0, 0, 0, 0),
-                          child: AvatarWrapper(
+                          // NOTE: We do not care about the avatar hash because
+                          //       we just read it from the XMPP state in the
+                          //       avatar service.
+                          child: CachingXMPPAvatar(
                             radius: 20,
-                            avatarUrl: state.avatarUrl,
+                            path: state.avatarPath,
+                            altText: state.jid[0],
                             altIcon: Icons.person,
+                            hasContactId: false,
+                            jid: state.jid,
+                            ownAvatar: true,
                           ),
                         ),
                       ),

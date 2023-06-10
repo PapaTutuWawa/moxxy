@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -201,9 +202,12 @@ class Message with _$Message {
   /// Returns true if the message can be copied to the clipboard.
   bool get isCopyable => !isMedia && body.isNotEmpty && !isPseudoMessage;
 
-  /// Returns true if the message is a sticker
+  /// Returns true if the message is a sticker.
   bool get isSticker => isMedia && stickerPackId != null && !isPseudoMessage;
 
-  /// True if the message is a media message
+  /// True if the message is a media message.
   bool get isMedia => fileMetadata != null;
+
+  /// The JID of the sender in moxxmpp's format.
+  JID get senderJid => JID.fromString(sender);
 }

@@ -124,11 +124,7 @@ String getUnrecoverableErrorString(NonRecoverableErrorEvent event) {
 /// This information is complemented either the srcUrl or – if unavailable –
 /// by the body of the quoted message. For non-media messages, we always use
 /// the body as fallback.
-String? createFallbackBodyForQuotedMessage(Message? quotedMessage) {
-  if (quotedMessage == null) {
-    return null;
-  }
-
+String createFallbackBodyForQuotedMessage(Message quotedMessage) {
   if (quotedMessage.isMedia) {
     // Create formatted size string, if size is stored
     String quoteMessageSize;

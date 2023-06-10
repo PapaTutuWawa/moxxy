@@ -28,6 +28,7 @@ enum ShareSelectionType {
 class ShareListItem {
   const ShareListItem(
     this.avatarPath,
+    this.avatarHash,
     this.jid,
     this.title,
     this.isConversation,
@@ -38,6 +39,7 @@ class ShareListItem {
     this.contactDisplayName,
   );
   final String avatarPath;
+  final String? avatarHash;
   final String jid;
   final String title;
   final bool isConversation;
@@ -79,7 +81,8 @@ class ShareSelectionBloc
     final items = List<ShareListItem>.from(
       conversations.map((c) {
         return ShareListItem(
-          c.avatarUrl,
+          c.avatarPath,
+          c.avatarHash,
           c.jid,
           c.title,
           true,
@@ -100,7 +103,8 @@ class ShareSelectionBloc
       if (index == -1) {
         items.add(
           ShareListItem(
-            rosterItem.avatarUrl,
+            rosterItem.avatarPath,
+            rosterItem.avatarHash,
             rosterItem.jid,
             rosterItem.title,
             false,
@@ -113,7 +117,8 @@ class ShareSelectionBloc
         );
       } else {
         items[index] = ShareListItem(
-          rosterItem.avatarUrl,
+          rosterItem.avatarPath,
+          rosterItem.avatarHash,
           rosterItem.jid,
           rosterItem.title,
           false,
@@ -187,7 +192,7 @@ class ShareSelectionBloc
             SendMessageCommand(
               recipients: _getRecipients(),
               body: state.text!,
-              chatState: chatStateToString(ChatState.gone),
+              chatState: ChatState.gone.toName(),
             ),
           );
 

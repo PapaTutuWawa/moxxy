@@ -208,7 +208,7 @@ files:
         attributes:
           conversationJid: String
           title: String
-          avatarUrl: String
+          avatarPath: String
       - name: StickerPackImportSuccessEvent
         extends: BackgroundEvent
         implements:
@@ -274,6 +274,13 @@ files:
           reactions:
             type: List<ReactionGroup>
             deserialise: true
+      # Triggered when the stream negotiations have been completed
+      - name: StreamNegotiationsCompletedEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          resumed: bool
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -576,6 +583,20 @@ files:
           - JsonImplementation
         attributes:
           messageId: int
+      - name: RequestAvatarForJidCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          hash: String?
+          ownAvatar: bool
+      - name: DebugCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          id: int
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

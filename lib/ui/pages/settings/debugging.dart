@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/debug.dart' as debug;
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -148,6 +151,28 @@ class DebuggingPage extends StatelessWidget {
             ...kDebugMode
                 ? [
                     const SectionTitle('Testing'),
+                    SettingsRow(
+                      title: 'Reset stream management state',
+                      onTap: () {
+                        MoxplatformPlugin.handler.getDataSender().sendData(
+                              DebugCommand(
+                                id: debug.DebugCommand.clearStreamResumption.id,
+                              ),
+                              awaitable: false,
+                            );
+                      },
+                    ),
+                    SettingsRow(
+                      title: 'Request roster',
+                      onTap: () {
+                        MoxplatformPlugin.handler.getDataSender().sendData(
+                              DebugCommand(
+                                id: debug.DebugCommand.requestRoster.id,
+                              ),
+                              awaitable: false,
+                            );
+                      },
+                    ),
                     SettingsRow(
                       title: 'Reset showDebugMenu state',
                       onTap: () {

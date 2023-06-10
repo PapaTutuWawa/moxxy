@@ -338,14 +338,13 @@ class HttpFileTransferService {
         sendEvent(MessageUpdatedEvent(message: msg));
 
         // Send the message to the recipient
-        conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
-              MessageDetails(
-                to: recipient,
-                body: slot.getUrl,
-                requestDeliveryReceipt: true,
-                id: msg.sid,
-                originId: msg.originId,
-                sfs: StatelessFileSharingData(
+        await conn.getManagerById<MessageManager>(messageManager)!.sendMessage(
+              JID.fromString(recipient),
+              TypedMap<StanzaHandlerExtension>.fromList([
+                MessageBodyData(slot.getUrl),
+                const MessageDeliveryReceiptData(true),
+                StableIdData(msg.originId, null),
+                StatelessFileSharingData(
                   FileMetadataData(
                     mediaType: job.mime,
                     size: stat.size,
@@ -353,11 +352,12 @@ class HttpFileTransferService {
                     thumbnails: job.thumbnails,
                     hashes: plaintextHashes,
                   ),
-                  <StatelessFileSharingSource>[source],
+                  [source],
+                  includeOOBFallback: true,
                 ),
-                shouldEncrypt: job.encryptMap[recipient]!,
-                funReplacement: oldSid,
-              ),
+                FileUploadNotificationReplacementData(oldSid),
+                MessageIdData(msg.sid),
+              ]),
             );
         _log.finest(
           'Sent message with file upload for ${job.path} to $recipient',

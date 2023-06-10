@@ -25,10 +25,10 @@ import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
-import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/debug.dart' as debug;
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -100,6 +100,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetPagedMessagesCommand>(performGetPagedMessages),
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
+      EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
+      EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -318,7 +320,7 @@ Future<void> performSendMessage(
       command.editSid!,
       command.recipients.first,
       command.chatState.isNotEmpty
-          ? chatStateFromString(command.chatState)
+          ? ChatState.fromName(command.chatState)
           : null,
     );
     return;
@@ -328,7 +330,7 @@ Future<void> performSendMessage(
     body: command.body,
     recipients: command.recipients,
     chatState: command.chatState.isNotEmpty
-        ? chatStateFromString(command.chatState)
+        ? ChatState.fromName(command.chatState)
         : null,
     quotedMessage: command.quotedMessage,
     currentConversationJid: command.currentConversationJid,
@@ -505,30 +507,39 @@ Future<void> performAddContact(
     },
   );
 
-  // Manage subscription requests
-  final srs = GetIt.I.get<SubscriptionRequestService>();
-  final hasSubscriptionRequest = await srs.hasPendingSubscriptionRequest(jid);
-  if (hasSubscriptionRequest) {
-    await srs.acceptSubscriptionRequest(jid);
-  }
-
   // Add to roster, if needed
   final item = await roster.getRosterItemByJid(jid);
   if (item != null) {
-    if (item.subscription != 'from' && item.subscription != 'both') {
-      GetIt.I.get<Logger>().finest(
-            'Roster item already exists with no presence subscription from them. Sending subscription request',
-          );
-      srs.sendSubscriptionRequest(jid);
+    GetIt.I.get<Logger>().finest(
+          'Roster item for $jid has subscription "${item.subscription}" with ask "${item.ask}"',
+        );
+
+    // Nothing more to do
+    if (item.subscription == 'both') {
+      return;
+    }
+
+    final pm = GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<PresenceManager>(presenceManager)!;
+    switch (item.subscription) {
+      case 'both':
+        return;
+      case 'none':
+      case 'from':
+        if (item.ask != 'subscribe') {
+          // Try to move from "from"/"none" to "both", by going over "From + Pending Out"
+          await pm.requestSubscription(JID.fromString(item.jid));
+        }
+        break;
+      case 'to':
+        // Move from "to" to "both"
+        await pm.acceptSubscriptionRequest(JID.fromString(item.jid));
+        break;
     }
   } else {
     await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
   }
-
-  // Try to figure out an avatar
-  // TODO(Unknown): Don't do that here. Do it more intelligently.
-  await GetIt.I.get<AvatarService>().subscribeJid(jid);
-  await GetIt.I.get<AvatarService>().fetchAndUpdateAvatarForJid(jid, '');
 }
 
 Future<void> performRemoveContact(
@@ -547,7 +558,7 @@ Future<void> performRemoveContact(
     sendEvent(
       ConversationUpdatedEvent(
         conversation: conversation.copyWith(
-          inRoster: false,
+          showAddToRoster: true,
         ),
       ),
     );
@@ -615,23 +626,32 @@ Future<void> performSetShareOnlineStatus(
   dynamic extra,
 }) async {
   final rs = GetIt.I.get<RosterService>();
-  final srs = GetIt.I.get<SubscriptionRequestService>();
   final item = await rs.getRosterItemByJid(command.jid);
 
   // TODO(Unknown): Maybe log
   if (item == null) return;
 
+  final jid = JID.fromString(command.jid);
+  final pm = GetIt.I
+      .get<XmppConnection>()
+      .getManagerById<PresenceManager>(presenceManager)!;
   if (command.share) {
-    if (item.ask == 'subscribe') {
-      await srs.acceptSubscriptionRequest(command.jid);
-    } else {
-      srs.sendSubscriptionRequest(command.jid);
+    switch (item.subscription) {
+      case 'to':
+        await pm.acceptSubscriptionRequest(jid);
+        break;
+      case 'none':
+      case 'from':
+        await pm.requestSubscription(jid);
+        break;
     }
   } else {
-    if (item.ask == 'subscribe') {
-      await srs.rejectSubscriptionRequest(command.jid);
-    } else {
-      srs.sendUnsubscriptionRequest(command.jid);
+    switch (item.subscription) {
+      case 'both':
+      case 'from':
+      case 'to':
+        await pm.unsubscribe(jid);
+        break;
     }
   }
 }
@@ -673,9 +693,9 @@ Future<void> performSendChatState(
   final conn = GetIt.I.get<XmppConnection>();
 
   if (command.jid != '') {
-    conn
+    await conn
         .getManagerById<ChatStateManager>(chatStateManager)!
-        .sendChatState(chatStateFromString(command.state), command.jid);
+        .sendChatState(ChatState.fromName(command.state), command.jid);
   }
 }
 
@@ -864,17 +884,14 @@ Future<void> performMessageRetraction(
         true,
       );
   if (command.conversationJid != '') {
-    (GetIt.I
-            .get<XmppConnection>()
-            .getManagerById<MessageManager>(messageManager)!)
-        .sendMessage(
-      MessageDetails(
-        to: command.conversationJid,
-        messageRetraction: MessageRetractionData(
-          command.originId,
-          t.messages.retractedFallback,
-        ),
-      ),
+    final manager = GetIt.I
+        .get<XmppConnection>()
+        .getManagerById<MessageManager>(messageManager)!;
+    await manager.sendMessage(
+      JID.fromString(command.conversationJid),
+      TypedMap<StanzaHandlerExtension>.fromList([
+        MessageRetractionData(command.originId, t.messages.retractedFallback),
+      ]),
     );
   }
 }
@@ -956,24 +973,25 @@ Future<void> performAddMessageReaction(
     final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
 
     // Send the reaction
-    GetIt.I
+    final manager = GetIt.I
         .get<XmppConnection>()
-        .getManagerById<MessageManager>(messageManager)!
-        .sendMessage(
-          MessageDetails(
-            to: command.conversationJid,
-            messageReactions: MessageReactions(
-              msg.originId ?? msg.sid,
-              await rs.getReactionsForMessageByJid(
-                command.messageId,
-                jid,
-              ),
-            ),
-            requestChatMarkers: false,
-            messageProcessingHints:
-                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
+        .getManagerById<MessageManager>(messageManager)!;
+    await manager.sendMessage(
+      JID.fromString(command.conversationJid),
+      TypedMap<StanzaHandlerExtension>.fromList([
+        MessageReactionsData(
+          msg.originId ?? msg.sid,
+          await rs.getReactionsForMessageByJid(
+            command.messageId,
+            jid,
           ),
-        );
+        ),
+        const MarkableData(false),
+        MessageProcessingHintData([
+          if (!msg.containsNoStore) MessageProcessingHint.store,
+        ]),
+      ]),
+    );
   }
 }
 
@@ -995,24 +1013,25 @@ Future<void> performRemoveMessageReaction(
     final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
 
     // Send the reaction
-    GetIt.I
+    final manager = GetIt.I
         .get<XmppConnection>()
-        .getManagerById<MessageManager>(messageManager)!
-        .sendMessage(
-          MessageDetails(
-            to: command.conversationJid,
-            messageReactions: MessageReactions(
-              msg.originId ?? msg.sid,
-              await rs.getReactionsForMessageByJid(
-                command.messageId,
-                jid,
-              ),
-            ),
-            requestChatMarkers: false,
-            messageProcessingHints:
-                !msg.containsNoStore ? [MessageProcessingHint.store] : null,
+        .getManagerById<MessageManager>(messageManager)!;
+    await manager.sendMessage(
+      JID.fromString(command.conversationJid),
+      TypedMap<StanzaHandlerExtension>.fromList([
+        MessageReactionsData(
+          msg.originId ?? msg.sid,
+          await rs.getReactionsForMessageByJid(
+            command.messageId,
+            jid,
           ),
-        );
+        ),
+        const MarkableData(false),
+        MessageProcessingHintData([
+          if (!msg.containsNoStore) MessageProcessingHint.store,
+        ]),
+      ]),
+    );
   }
 }
 
@@ -1247,4 +1266,47 @@ Future<void> performGetReactions(
     ),
     id: id,
   );
+}
+
+Future<void> performRequestAvatarForJid(
+  RequestAvatarForJidCommand command, {
+  dynamic extra,
+}) async {
+  final as = GetIt.I.get<AvatarService>();
+  Future<void> future;
+  if (command.ownAvatar) {
+    future = as.requestOwnAvatar();
+  } else {
+    future = as.requestAvatar(
+      JID.fromString(command.jid),
+      command.hash,
+    );
+  }
+
+  unawaited(future);
+}
+
+Future<void> performDebugCommand(
+  DebugCommand command, {
+  dynamic extra,
+}) async {
+  final conn = GetIt.I.get<XmppConnection>();
+
+  if (command.id == debug.DebugCommand.clearStreamResumption.id) {
+    // Disconnect
+    await conn.disconnect();
+
+    // Reset stream management
+    await conn.getManagerById<StreamManagementManager>(smManager)!.resetState();
+
+    // Reconnect
+    await conn.connect(
+      shouldReconnect: true,
+      waitForConnection: true,
+    );
+  } else if (command.id == debug.DebugCommand.requestRoster.id) {
+    await conn
+        .getManagerById<RosterManager>(rosterManager)!
+        .requestRoster(useRosterVersion: false);
+  }
 }

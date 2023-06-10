@@ -87,8 +87,7 @@ class ConversationService {
       tmp.add(
         Conversation.fromDatabaseJson(
           c,
-          rosterItem != null && !rosterItem.pseudoRosterItem,
-          rosterItem?.subscription ?? 'none',
+          rosterItem?.showAddToRosterButton ?? true,
           lastMessage,
         ),
       );
@@ -136,7 +135,8 @@ class ConversationService {
     Message? lastMessage,
     bool? open,
     int? unreadCounter,
-    String? avatarUrl,
+    String? avatarPath,
+    Object? avatarHash = notSpecified,
     ChatState? chatState,
     bool? muted,
     bool? encrypted,
@@ -160,8 +160,11 @@ class ConversationService {
     if (unreadCounter != null) {
       c['unreadCounter'] = unreadCounter;
     }
-    if (avatarUrl != null) {
-      c['avatarUrl'] = avatarUrl;
+    if (avatarPath != null) {
+      c['avatarPath'] = avatarPath;
+    }
+    if (avatarHash != notSpecified) {
+      c['avatarHash'] = avatarHash as String?;
     }
     if (muted != null) {
       c['muted'] = boolToInt(muted);
@@ -191,8 +194,7 @@ class ConversationService {
         await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     var newConversation = Conversation.fromDatabaseJson(
       result,
-      rosterItem != null,
-      rosterItem?.subscription ?? 'none',
+      rosterItem?.showAddToRosterButton ?? true,
       lastMessage,
     );
 
@@ -215,7 +217,7 @@ class ConversationService {
     String title,
     Message? lastMessage,
     ConversationType type,
-    String avatarUrl,
+    String avatarPath,
     String jid,
     int unreadCounter,
     int lastChangeTimestamp,
@@ -231,14 +233,14 @@ class ConversationService {
     final newConversation = Conversation(
       title,
       lastMessage,
-      avatarUrl,
+      avatarPath,
+      null,
       jid,
       unreadCounter,
       type,
       lastChangeTimestamp,
       open,
-      rosterItem != null && !rosterItem.pseudoRosterItem,
-      rosterItem?.subscription ?? 'none',
+      rosterItem?.showAddToRosterButton ?? true,
       muted,
       encrypted,
       ChatState.gone,

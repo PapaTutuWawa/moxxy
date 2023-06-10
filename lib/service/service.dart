@@ -33,7 +33,6 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/stickers.dart';
-import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -175,9 +174,6 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<ContactsService>(ContactsService());
   GetIt.I.registerSingleton<StickersService>(StickersService());
   GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
-  GetIt.I.registerSingleton<SubscriptionRequestService>(
-    SubscriptionRequestService(),
-  );
   GetIt.I.registerSingleton<FilesService>(FilesService());
   GetIt.I.registerSingleton<ReactionsService>(ReactionsService());
   final xmpp = XmppService();
@@ -211,6 +207,7 @@ Future<void> entrypoint() async {
     StreamManagementNegotiator(),
     CSINegotiator(),
     RosterFeatureNegotiator(),
+    PresenceNegotiator(),
     SaslScramNegotiator(10, '', '', ScramHashType.sha512),
     SaslScramNegotiator(9, '', '', ScramHashType.sha256),
     SaslScramNegotiator(8, '', '', ScramHashType.sha1),
@@ -230,7 +227,6 @@ Future<void> entrypoint() async {
     CSIManager(),
     CarbonsManager(),
     PubSubManager(),
-    VCardManager(),
     UserAvatarManager(),
     StableIdManager(),
     MessageDeliveryReceiptManager(),
@@ -249,6 +245,7 @@ Future<void> entrypoint() async {
     LastMessageCorrectionManager(),
     MessageReactionsManager(),
     StickersManager(),
+    MessageProcessingHintManager(),
   ]);
 
   GetIt.I.registerSingleton<XmppConnection>(connection);

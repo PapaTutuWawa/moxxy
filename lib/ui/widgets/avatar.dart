@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/theme.dart';
 
 class AvatarWrapper extends StatelessWidget {
@@ -96,6 +99,93 @@ class AvatarWrapper extends StatelessWidget {
       onTap: onTapFunction,
       child:
           showEditButton ? _withEditButton(context) : _avatarWrapper(context),
+    );
+  }
+}
+
+class CachingXMPPAvatar extends StatefulWidget {
+  const CachingXMPPAvatar({
+    required this.jid,
+    required this.altText,
+    required this.radius,
+    required this.hasContactId,
+    this.altIcon,
+    this.shouldRequest = true,
+    this.ownAvatar = false,
+    this.hash,
+    this.path,
+    super.key,
+  });
+
+  /// The JID of the entity.
+  final String jid;
+
+  /// The hash of the JID's avatar or null, if we don't know of an avatar.
+  final String? hash;
+
+  /// The alt-text, if [path] is null.
+  final String altText;
+
+  /// The (potentially null) path to the avatar image.
+  final String? path;
+
+  /// The radius of the avatar widget.
+  final double radius;
+
+  /// Flag indicating whether the conversation has a contactId != null.
+  final bool hasContactId;
+
+  /// Flag indicating whether a request for the avatar should happen or not.
+  final bool shouldRequest;
+
+  /// Alt-icon, if [path] is null.
+  final IconData? altIcon;
+
+  /// Flag indicating whether this avatar is our own avatar.
+  final bool ownAvatar;
+
+  @override
+  CachingXMPPAvatarState createState() => CachingXMPPAvatarState();
+}
+
+class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
+  void _performRequest() {
+    // Only request the avatar if we don't have a contact integration avatar already.
+    if (!GetIt.I.get<PreferencesBloc>().state.enableContactIntegration ||
+        !widget.hasContactId) {
+      GetIt.I.get<UIAvatarsService>().requestAvatarIfRequired(
+            widget.jid,
+            widget.hash,
+            widget.ownAvatar,
+          );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (!widget.shouldRequest) return;
+
+    _performRequest();
+  }
+
+  @override
+  void didUpdateWidget(CachingXMPPAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.shouldRequest && !oldWidget.shouldRequest) {
+      _performRequest();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AvatarWrapper(
+      avatarUrl: widget.path,
+      altText: widget.altText,
+      altIcon: widget.altIcon,
+      radius: widget.radius,
     );
   }
 }

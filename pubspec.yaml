@@ -71,7 +71,7 @@ dependencies:
     version: 0.1.15
   moxxmpp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.3.1
+    version: 0.4.0
   moxxmpp_socket_tcp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.3.1
@@ -139,7 +139,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 1475cb542f7d68824f8f4b11efd751cfb3eea428
+      rev: f2d8c6a009d3f08806e1565bf9b92407e659f178
       path: packages/moxxmpp
  
 extra_licenses:

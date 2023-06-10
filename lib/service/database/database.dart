@@ -41,6 +41,8 @@ import 'package:moxxyv2/service/database/migrations/0002_reactions.dart';
 import 'package:moxxyv2/service/database/migrations/0002_reactions_2.dart';
 import 'package:moxxyv2/service/database/migrations/0002_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0002_sticker_metadata.dart';
+import 'package:moxxyv2/service/database/migrations/0003_avatar_hashes.dart';
+import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
 import 'package:path/path.dart' as path;
 import 'package:random_string/random_string.dart';
 // ignore: implementation_imports
@@ -144,6 +146,8 @@ const List<DatabaseMigration<Database>> migrations = [
   DatabaseMigration(35, upgradeFromV34ToV35),
   DatabaseMigration(36, upgradeFromV35ToV36),
   DatabaseMigration(37, upgradeFromV36ToV37),
+  DatabaseMigration(38, upgradeFromV37ToV38),
+  DatabaseMigration(39, upgradeFromV38ToV39),
 ];
 
 class DatabaseService {
@@ -179,10 +183,23 @@ class DatabaseService {
       _log.finest('Key generation done...');
     }
 
+    // Just some sanity checks
+    final version = migrations.last.version;
+    assert(
+      migrations.every((migration) => migration.version <= version),
+      "Every migration's version must be smaller or equal to the last version",
+    );
+    assert(
+      migrations
+          .sublist(0, migrations.length - 1)
+          .every((migration) => migration.version < version),
+      'The last migration must have the largest version',
+    );
+
     database = await openDatabase(
       dbPath,
       password: key,
-      version: 37,
+      version: version,
       onCreate: createDatabase,
       onConfigure: (db) async {
         // In order to do schema changes during database upgrades, we disable foreign

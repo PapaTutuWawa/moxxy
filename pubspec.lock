@@ -954,10 +954,10 @@ packages:
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: "1475cb542f7d68824f8f4b11efd751cfb3eea428"
+      resolved-ref: f2d8c6a009d3f08806e1565bf9b92407e659f178
       url: "https://codeberg.org/moxxy/moxxmpp.git"
     source: git
-    version: "0.3.2"
+    version: "0.4.0"
   moxxmpp_socket_tcp:
     dependency: "direct main"
     description:

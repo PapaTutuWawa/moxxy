@@ -17,6 +17,7 @@ import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart' as stickers;
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/prestart.dart';
+import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 
 void setupEventHandler() {
@@ -34,6 +35,9 @@ void setupEventHandler() {
       EventTypeMatcher<ServiceReadyEvent>(onServiceReady),
       EventTypeMatcher<MessageNotificationTappedEvent>(onNotificationTappend),
       EventTypeMatcher<StickerPackAddedEvent>(onStickerPackAdded),
+      EventTypeMatcher<StreamNegotiationsCompletedEvent>(
+        onStreamNegotiationsDone,
+      ),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -173,7 +177,7 @@ Future<void> onNotificationTappend(
         conversation.RequestedConversationEvent(
           event.conversationJid,
           event.title,
-          event.avatarUrl,
+          event.avatarPath,
         ),
       );
 }
@@ -185,4 +189,13 @@ Future<void> onStickerPackAdded(
   GetIt.I.get<stickers.StickersBloc>().add(
         stickers.StickerPackAddedEvent(event.stickerPack),
       );
+}
+
+Future<void> onStreamNegotiationsDone(
+  StreamNegotiationsCompletedEvent event, {
+  dynamic extra,
+}) async {
+  if (!event.resumed) {
+    GetIt.I.get<UIAvatarsService>().resetCache();
+  }
 }

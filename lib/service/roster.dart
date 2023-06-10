@@ -8,7 +8,6 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/subscription.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
 
@@ -32,7 +31,7 @@ class RosterService {
 
   /// Wrapper around [DatabaseService]'s addRosterItemFromData that updates the cache.
   Future<RosterItem> addRosterItemFromData(
-    String avatarUrl,
+    String avatarPath,
     String avatarHash,
     String jid,
     String title,
@@ -47,7 +46,7 @@ class RosterService {
     // TODO(PapaTutuWawa): Handle groups
     final i = RosterItem(
       -1,
-      avatarUrl,
+      avatarPath,
       avatarHash,
       jid,
       title,
@@ -76,7 +75,7 @@ class RosterService {
   /// Wrapper around [DatabaseService]'s updateRosterItem that updates the cache.
   Future<RosterItem> updateRosterItem(
     int id, {
-    String? avatarUrl,
+    String? avatarPath,
     String? avatarHash,
     String? title,
     String? subscription,
@@ -89,8 +88,8 @@ class RosterService {
   }) async {
     final i = <String, dynamic>{};
 
-    if (avatarUrl != null) {
-      i['avatarUrl'] = avatarUrl;
+    if (avatarPath != null) {
+      i['avatarPath'] = avatarPath;
     }
     if (avatarHash != null) {
       i['avatarHash'] = avatarHash;
@@ -197,7 +196,7 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(
-    String avatarUrl,
+    String avatarPath,
     String avatarHash,
     String jid,
     String title,
@@ -205,7 +204,7 @@ class RosterService {
     final css = GetIt.I.get<ContactsService>();
     final contactId = await css.getContactIdForJid(jid);
     final item = await addRosterItemFromData(
-      avatarUrl,
+      avatarPath,
       avatarHash,
       jid,
       title,
@@ -217,12 +216,17 @@ class RosterService {
       await css.getContactDisplayName(contactId),
     );
 
-    final result = await GetIt.I
-        .get<XmppConnection>()
-        .getRosterManager()!
-        .addToRoster(jid, title);
+    final conn = GetIt.I.get<XmppConnection>();
+    final result = await conn.getRosterManager()!.addToRoster(jid, title);
     if (!result) {
       // TODO(Unknown): Signal error?
+    }
+
+    final to = JID.fromString(jid);
+    final preApproval =
+        await conn.getPresenceManager()!.preApproveSubscription(to);
+    if (!preApproval) {
+      await conn.getPresenceManager()!.requestSubscription(to);
     }
 
     sendEvent(RosterDiffEvent(added: [item]));
@@ -236,14 +240,14 @@ class RosterService {
     String jid, {
     bool unsubscribe = true,
   }) async {
-    final roster = GetIt.I.get<XmppConnection>().getRosterManager()!;
+    final conn = GetIt.I.get<XmppConnection>();
+    final roster = conn.getRosterManager()!;
+    final pm = conn.getManagerById<PresenceManager>(presenceManager)!;
     final result = await roster.removeFromRoster(jid);
     if (result == RosterRemovalResult.okay ||
         result == RosterRemovalResult.itemNotFound) {
       if (unsubscribe) {
-        GetIt.I
-            .get<SubscriptionRequestService>()
-            .sendUnsubscriptionRequest(jid);
+        await pm.unsubscribe(JID.fromString(jid));
       }
 
       _log.finest('Removing from roster maybe worked. Removing from database');
