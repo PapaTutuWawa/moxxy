@@ -87,8 +87,7 @@ class ConversationService {
       tmp.add(
         Conversation.fromDatabaseJson(
           c,
-          rosterItem != null && !rosterItem.pseudoRosterItem,
-          rosterItem?.subscription ?? 'none',
+          rosterItem?.showAddToRosterButton ?? true,
           lastMessage,
         ),
       );
@@ -195,8 +194,7 @@ class ConversationService {
         await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
     var newConversation = Conversation.fromDatabaseJson(
       result,
-      rosterItem != null,
-      rosterItem?.subscription ?? 'none',
+      rosterItem?.showAddToRosterButton ?? true,
       lastMessage,
     );
 
@@ -242,8 +240,7 @@ class ConversationService {
       type,
       lastChangeTimestamp,
       open,
-      rosterItem != null && !rosterItem.pseudoRosterItem,
-      rosterItem?.subscription ?? 'none',
+      rosterItem?.showAddToRosterButton ?? true,
       muted,
       encrypted,
       ChatState.gone,

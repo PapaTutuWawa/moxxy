@@ -849,9 +849,6 @@ class XmppService {
         case 'from':
           await pm.acceptSubscriptionRequest(jid);
           break;
-        case 'to':
-          await pm.requestSubscription(jid);
-          break;
       }
 
       return;

@@ -116,7 +116,6 @@ class NewConversationPage extends StatelessWidget {
                       0,
                       true,
                       true,
-                      '',
                       false,
                       false,
                       ChatState.gone,

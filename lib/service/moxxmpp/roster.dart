@@ -1,11 +1,31 @@
 import 'dart:async';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
+
+/// Update the "showAddToRoster" state of the conversation with jid [jid] to
+/// [showAddToRoster], if the conversation exists.
+Future<void> updateConversation(String jid, bool showAddToRoster) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final newConversation = await cs.createOrUpdateConversation(
+    jid,
+    update: (conversation) async {
+      final c = conversation.copyWith(
+        showAddToRoster: showAddToRoster,
+      );
+      cs.setConversation(c);
+      return c;
+    },
+  );
+  if (newConversation != null) {
+    sendEvent(ConversationUpdatedEvent(conversation: newConversation));
+  }
+}
 
 class MoxxyRosterStateManager extends BaseRosterStateManager {
   @override
@@ -45,6 +65,7 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
     // Remove stale items
     for (final jid in removed) {
       await rs.removeRosterItemByJid(jid);
+      await updateConversation(jid, true);
     }
 
     // Create new roster items
@@ -54,21 +75,23 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
       // Skip adding items twice
       if (exists) continue;
 
-      rosterAdded.add(
-        await rs.addRosterItemFromData(
-          '',
-          '',
-          item.jid,
-          item.name ?? item.jid.split('@').first,
-          item.subscription,
-          item.ask ?? '',
-          false,
-          null,
-          null,
-          null,
-          groups: item.groups,
-        ),
+      final newRosterItem = await rs.addRosterItemFromData(
+        '',
+        '',
+        item.jid,
+        item.name ?? item.jid.split('@').first,
+        item.subscription,
+        item.ask ?? '',
+        false,
+        null,
+        null,
+        null,
+        groups: item.groups,
       );
+      rosterAdded.add(newRosterItem);
+
+      // Update the cached conversation item
+      await updateConversation(item.jid, newRosterItem.showAddToRosterButton);
     }
 
     // Update modified items
@@ -80,15 +103,17 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
         continue;
       }
 
-      rosterModified.add(
-        await rs.updateRosterItem(
-          ritem.id,
-          title: item.name,
-          subscription: item.subscription,
-          ask: item.ask,
-          groups: item.groups,
-        ),
+      final newRosterItem = await rs.updateRosterItem(
+        ritem.id,
+        title: item.name,
+        subscription: item.subscription,
+        ask: item.ask,
+        groups: item.groups,
       );
+      rosterModified.add(newRosterItem);
+
+      // Update the cached conversation item
+      await updateConversation(item.jid, newRosterItem.showAddToRosterButton);
     }
 
     // Tell the UI

@@ -102,7 +102,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     emit(
       state.copyWith(
         conversation: state.conversation!.copyWith(
-          inRoster: true,
+          showAddToRoster: false,
         ),
       ),
     );

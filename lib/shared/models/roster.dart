@@ -53,4 +53,24 @@ class RosterItem with _$RosterItem {
       'pseudoRosterItem': boolToInt(pseudoRosterItem),
     };
   }
+
+  /// Whether a conversation with this roster item should display the "Add to roster" button.
+  bool get showAddToRosterButton {
+    // Those chats are not dealt with on the roster
+    if (pseudoRosterItem) {
+      return false;
+    }
+
+    // A full presence subscription is already achieved. Nothing to do
+    if (subscription == 'both') {
+      return false;
+    }
+
+    // We are not yet waiting for a response to the presence request
+    if (ask == 'subscribe' && ['none', 'from', 'to'].contains(subscription)) {
+      return false;
+    }
+
+    return true;
+  }
 }

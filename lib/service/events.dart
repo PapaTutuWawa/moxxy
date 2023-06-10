@@ -510,12 +510,12 @@ Future<void> performAddContact(
   // Add to roster, if needed
   final item = await roster.getRosterItemByJid(jid);
   if (item != null) {
-    GetIt.I
-        .get<Logger>()
-        .finest('Roster item for $jid has subscription ${item.subscription}');
+    GetIt.I.get<Logger>().finest(
+          'Roster item for $jid has subscription "${item.subscription}" with ask "${item.ask}"',
+        );
 
     // Nothing more to do
-    if (item.subscription != 'both') {
+    if (item.subscription == 'both') {
       return;
     }
 
@@ -525,9 +525,10 @@ Future<void> performAddContact(
     switch (item.subscription) {
       case 'both':
         return;
+      case 'none':
       case 'from':
         if (item.ask != 'subscribe') {
-          // Try to move from "from" to "both", by going over "From + Pending Out"
+          // Try to move from "from"/"none" to "both", by going over "From + Pending Out"
           await pm.requestSubscription(JID.fromString(item.jid));
         }
         break;
@@ -557,7 +558,7 @@ Future<void> performRemoveContact(
     sendEvent(
       ConversationUpdatedEvent(
         conversation: conversation.copyWith(
-          inRoster: false,
+          showAddToRoster: true,
         ),
       ),
     );

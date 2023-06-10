@@ -90,16 +90,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     SetSubscriptionStateEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(
-      state.copyWith(
-        conversation: state.conversation!.copyWith(
-          // NOTE: This is wrong, but we just keep it like this until the real result comes
-          //       in.
-          subscription: event.shareStatus ? 'to' : 'from',
-        ),
-      ),
-    );
-
     await MoxplatformPlugin.handler.getDataSender().sendData(
           SetShareOnlineStatusCommand(jid: event.jid, share: event.shareStatus),
           awaitable: false,

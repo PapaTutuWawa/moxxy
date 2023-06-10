@@ -448,9 +448,12 @@ class ConversationPageState extends State<ConversationPage>
         children: [
           BlocBuilder<ConversationBloc, ConversationState>(
             buildWhen: (prev, next) =>
-                prev.conversation?.inRoster != next.conversation?.inRoster,
+                prev.conversation?.showAddToRoster !=
+                next.conversation?.showAddToRoster,
             builder: (context, state) {
-              if ((state.conversation?.inRoster ?? false) ||
+              final showAddToRoster =
+                  state.conversation?.showAddToRoster ?? false;
+              if (!showAddToRoster ||
                   state.conversation?.type == ConversationType.note) {
                 return const SizedBox();
               }

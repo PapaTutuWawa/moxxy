@@ -49,39 +49,52 @@ enum ConversationType {
 @freezed
 class Conversation with _$Conversation {
   factory Conversation(
+    /// The title of the chat.
     String title,
+
+    // The newest message in the chat.
     @ConversationMessageConverter() Message? lastMessage,
 
-    /// The path to the avatar
+    // The path to the avatar.
     String avatarPath,
 
-    /// The hash of the avatar
+    // The hash of the avatar.
     String? avatarHash,
 
-    /// The JID of the entity we're having a chat with
+    // The JID of the entity we're having a chat with...
     String jid,
 
-    /// The number of unread messages
+    // The number of unread messages.
     int unreadCounter,
+
+    // The kind of chat this conversation is representing.
     ConversationType type,
+
+    // The timestamp the conversation was last changed.
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
     int lastChangeTimestamp,
-    // Indicates if the conversation should be shown on the homescreen
+
+    // Indicates if the conversation should be shown on the homescreen.
     bool open,
-    // Indicates, if [jid] is a regular user, if the user is in the roster.
-    bool inRoster,
-    // The subscription state of the roster item
-    String subscription,
+
+    /// Flag indicating whether the "add to roster" button should be shown.
+    bool showAddToRoster,
+
     // Whether the chat is muted (true = muted, false = not muted)
     bool muted,
+
     // Whether the conversation is encrypted or not (true = encrypted, false = unencrypted)
     bool encrypted,
+
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState, {
+
     // The id of the contact in the device's phonebook if it exists
     String? contactId,
+
     // The path to the contact avatar, if available
     String? contactAvatarPath,
+
     // The contact's display name, if it exists
     String? contactDisplayName,
   }) = _Conversation;
@@ -94,16 +107,14 @@ class Conversation with _$Conversation {
 
   factory Conversation.fromDatabaseJson(
     Map<String, dynamic> json,
-    bool inRoster,
-    String subscription,
+    bool showAddToRoster,
     Message? lastMessage,
   ) {
     return Conversation.fromJson({
       ...json,
       'muted': intToBool(json['muted']! as int),
       'open': intToBool(json['open']! as int),
-      'inRoster': inRoster,
-      'subscription': subscription,
+      'showAddToRoster': showAddToRoster,
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState':
           const ConversationChatStateConverter().toJson(ChatState.gone),
@@ -116,8 +127,7 @@ class Conversation with _$Conversation {
     final map = toJson()
       ..remove('id')
       ..remove('chatState')
-      ..remove('inRoster')
-      ..remove('subscription')
+      ..remove('showAddToRoster')
       ..remove('lastMessage');
 
     return {

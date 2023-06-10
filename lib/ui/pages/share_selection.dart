@@ -83,7 +83,6 @@ class ShareSelectionPage extends StatelessWidget {
                   0,
                   true,
                   true,
-                  '',
                   false,
                   false,
                   ChatState.gone,
