@@ -214,6 +214,7 @@ Future<void> entrypoint() async {
     SaslPlainNegotiator(),
     Sasl2Negotiator(),
     Bind2Negotiator(),
+    FASTSaslNegotiator(),
   ]);
   await connection.registerManagers([
     MoxxyStreamManagementManager(),

@@ -65,6 +65,7 @@ class XmppService {
       ),
       EventTypeMatcher<StanzaSendingCancelledEvent>(_onStanzaSendingCancelled),
       EventTypeMatcher<NonRecoverableErrorEvent>(_onUnrecoverableError),
+      EventTypeMatcher<NewFASTTokenReceivedEvent>(_onNewFastToken),
     ]);
   }
 
@@ -461,7 +462,9 @@ class XmppService {
       )!
           .resource = lastResource
       ..getNegotiatorById<Sasl2Negotiator>(sasl2Negotiator)!.userAgent =
-          await xss.userAgent;
+          await xss.userAgent
+      ..getNegotiatorById<FASTSaslNegotiator>(saslFASTNegotiator)!.fastToken =
+          state.fastToken;
 
     await conn.connect(
       waitForConnection: true,
@@ -487,7 +490,9 @@ class XmppService {
       )!
           .resource = lastResource
       ..getNegotiatorById<Sasl2Negotiator>(sasl2Negotiator)!.userAgent =
-          await xss.userAgent;
+          await xss.userAgent
+      ..getNegotiatorById<FASTSaslNegotiator>(saslFASTNegotiator)!.fastToken =
+          state.fastToken;
 
     installEventHandlers();
     return conn.connect(
@@ -1622,5 +1627,15 @@ class XmppService {
           t.notifications.titles.error,
           getUnrecoverableErrorString(event),
         );
+  }
+
+  Future<void> _onNewFastToken(
+    NewFASTTokenReceivedEvent event, {
+    dynamic extra,
+  }) async {
+    // Store the new FAST token for the next authentication attempt.
+    await GetIt.I.get<XmppStateService>().modifyXmppState((state) {
+      return state.copyWith(fastToken: event.token.token);
+    });
   }
 }

@@ -27,6 +27,7 @@ class XmppState with _$XmppState {
     String? displayName,
     String? password,
     String? lastRosterVersion,
+    String? fastToken,
     @Default('') String avatarUrl,
     @Default('') String avatarHash,
     @Default(false) bool askedStoragePermission,
