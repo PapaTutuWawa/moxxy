@@ -212,6 +212,8 @@ Future<void> entrypoint() async {
     SaslScramNegotiator(9, '', '', ScramHashType.sha256),
     SaslScramNegotiator(8, '', '', ScramHashType.sha1),
     SaslPlainNegotiator(),
+    Sasl2Negotiator(),
+    Bind2Negotiator(),
   ]);
   await connection.registerManagers([
     MoxxyStreamManagementManager(),

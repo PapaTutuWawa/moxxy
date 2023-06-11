@@ -732,7 +732,9 @@ Future<void> performSignOut(SignOutCommand command, {dynamic extra}) async {
   final conn = GetIt.I.get<XmppConnection>();
   final xss = GetIt.I.get<XmppStateService>();
   unawaited(conn.disconnect());
-  await xss.modifyXmppState((state) => XmppState());
+  await xss.modifyXmppState(
+    (state) => XmppState(),
+  );
 
   sendEvent(
     SignedOutEvent(),

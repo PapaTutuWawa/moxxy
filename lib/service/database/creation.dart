@@ -185,12 +185,6 @@ Future<void> createDatabase(Database db, int version) async {
     ''',
   );
 
-  // Subscription requests
-  await db.execute('''
-    CREATE TABLE $subscriptionsTable(
-      jid TEXT PRIMARY KEY
-    )''');
-
   // OMEMO
   await db.execute(
     '''

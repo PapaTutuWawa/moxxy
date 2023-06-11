@@ -448,7 +448,8 @@ class XmppService {
     ConnectionSettings settings,
     bool triggeredFromUI,
   ) async {
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final xss = GetIt.I.get<XmppStateService>();
+    final state = await xss.getXmppState();
     final conn = GetIt.I.get<XmppConnection>();
     final lastResource = state.resource ?? '';
 
@@ -458,12 +459,13 @@ class XmppService {
       ..getNegotiatorById<StreamManagementNegotiator>(
         streamManagementNegotiator,
       )!
-          .resource = lastResource;
-    unawaited(
-      conn.connect(
-        waitForConnection: true,
-        shouldReconnect: true,
-      ),
+          .resource = lastResource
+      ..getNegotiatorById<Sasl2Negotiator>(sasl2Negotiator)!.userAgent =
+          await xss.userAgent;
+
+    await conn.connect(
+      waitForConnection: true,
+      shouldReconnect: true,
     );
     installEventHandlers();
   }
@@ -472,7 +474,8 @@ class XmppService {
     ConnectionSettings settings,
     bool triggeredFromUI,
   ) async {
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final xss = GetIt.I.get<XmppStateService>();
+    final state = await xss.getXmppState();
     final conn = GetIt.I.get<XmppConnection>();
     final lastResource = state.resource ?? '';
 
@@ -482,7 +485,10 @@ class XmppService {
       ..getNegotiatorById<StreamManagementNegotiator>(
         streamManagementNegotiator,
       )!
-          .resource = lastResource;
+          .resource = lastResource
+      ..getNegotiatorById<Sasl2Negotiator>(sasl2Negotiator)!.userAgent =
+          await xss.userAgent;
+
     installEventHandlers();
     return conn.connect(
       waitForConnection: true,
