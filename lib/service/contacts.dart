@@ -281,7 +281,7 @@ class ContactsService {
           return cs.updateConversation(
             contact.jid,
             contactId: contact.id,
-            contactAvatarPath: contactAvatarPath,
+            contactAvatarPath: contact.thumbnail != null ? contactAvatarPath : null,
             contactDisplayName: contact.displayName,
           );
         },
