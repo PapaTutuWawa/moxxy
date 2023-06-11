@@ -257,4 +257,25 @@ class RosterService {
 
     return false;
   }
+
+  /// Removes all roster items that are pseudo roster items.
+  Future<void> removePseudoRosterItems() async {
+    final items = await getRoster();
+    final removed = List<String>.empty(growable: true);
+    for (final item in items) {
+      if (!item.pseudoRosterItem) continue;
+
+      assert(
+        item.contactId != null,
+        'Only pseudo roster items that are for the contact integration should ge removed',
+      );
+
+      removed.add(item.jid);
+      await removeRosterItem(item.id);
+    }
+
+    sendEvent(
+      RosterDiffEvent(removed: removed),
+    );
+  }
 }

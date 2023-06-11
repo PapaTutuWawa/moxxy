@@ -394,13 +394,13 @@ Future<void> performSetPreferences(
   final css = GetIt.I.get<ContactsService>();
   if (command.preferences.enableContactIntegration) {
     if (!oldPrefs.enableContactIntegration) {
-      css.enableDatabaseListener();
+      await css.enable();
     }
 
     unawaited(css.scanContacts());
   } else {
     if (oldPrefs.enableContactIntegration) {
-      css.disableDatabaseListener();
+      await css.disable();
     }
   }
 

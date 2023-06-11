@@ -41,19 +41,25 @@ class ContactsService {
   final Map<String, String?> _contactDisplayNames = {};
 
   Future<void> initialize() async {
-    if (await _canUseContactIntegration()) {
-      enableDatabaseListener();
+    await enable(shouldScan: false);
+  }
+
+  /// Enable listening to contact database events. If [shouldScan] is true, also
+  /// performs a scan of the contacts database, if we're allowed.
+  Future<void> enable({bool shouldScan = true}) async {
+    FlutterContacts.addListener(_onContactsDatabaseUpdate);
+
+    if (shouldScan && await _canUseContactIntegration()) {
+      unawaited(scanContacts());
     }
   }
 
-  /// Enable listening to contact database events
-  void enableDatabaseListener() {
-    FlutterContacts.addListener(_onContactsDatabaseUpdate);
-  }
-
-  /// Disable listening to contact database events
-  void disableDatabaseListener() {
+  /// Disable listening to contact database events. Also removes all roster items
+  /// that are pseudo roster items.
+  Future<void> disable() async {
     FlutterContacts.removeListener(_onContactsDatabaseUpdate);
+
+    await GetIt.I.get<RosterService>().removePseudoRosterItems();
   }
 
   Future<void> _onContactsDatabaseUpdate() async {
@@ -123,7 +129,6 @@ class ContactsService {
   Future<Map<String, String>> _getContactIds() async {
     if (_contactIds != null) return _contactIds!;
 
-    // TODO(Unknown): Can we just .cast<String, String>() here?
     _contactIds = Map<String, String>.fromEntries(
       (await GetIt.I.get<DatabaseService>().database.query(contactsTable)).map(
         (item) => MapEntry(
