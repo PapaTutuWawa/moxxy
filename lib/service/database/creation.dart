@@ -103,7 +103,8 @@ Future<void> createDatabase(Database db, int version) async {
     CREATE TABLE $conversationsTable (
       jid TEXT NOT NULL PRIMARY KEY,
       title TEXT NOT NULL,
-      avatarUrl TEXT NOT NULL,
+      avatarPath TEXT NOT NULL,
+      avatarHash TEXT,
       type TEXT NOT NULL,
       lastChangeTimestamp INTEGER NOT NULL,
       unreadCounter INTEGER NOT NULL,
@@ -128,7 +129,8 @@ Future<void> createDatabase(Database db, int version) async {
     CREATE TABLE $contactsTable (
       id TEXT PRIMARY KEY,
       jid TEXT NOT NULL
-    )''');
+    )''',
+  );
 
   // Roster
   await db.execute(
@@ -137,7 +139,7 @@ Future<void> createDatabase(Database db, int version) async {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       jid TEXT NOT NULL,
       title TEXT NOT NULL,
-      avatarUrl TEXT NOT NULL,
+      avatarPath TEXT NOT NULL,
       avatarHash TEXT NOT NULL,
       subscription TEXT NOT NULL,
       ask TEXT NOT NULL,
