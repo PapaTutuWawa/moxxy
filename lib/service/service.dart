@@ -23,7 +23,6 @@ import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/moxxmpp/connectivity.dart';
-import 'package:moxxyv2/service/moxxmpp/omemo.dart';
 import 'package:moxxyv2/service/moxxmpp/roster.dart';
 import 'package:moxxyv2/service/moxxmpp/socket.dart';
 import 'package:moxxyv2/service/moxxmpp/stream.dart';
@@ -41,6 +40,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/logging.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/events.dart' as ui_events;
+import 'package:moxxyv2/ui/pages/settings/conversation.dart';
 
 Future<void> initializeServiceIfNeeded() async {
   final logger = GetIt.I.get<Logger>();
@@ -222,7 +222,10 @@ Future<void> entrypoint() async {
       const Identity(category: 'client', type: 'phone', name: 'Moxxy'),
     ]),
     RosterManager(MoxxyRosterStateManager()),
-    MoxxyOmemoManager(),
+    OmemoManager(
+      GetIt.I.get<OmemoService>().getOmemoManager,
+      (toJid, _) async => GetIt.I.get<ConversationService>().shouldEncryptForConversation(toJid),
+    ),
     PingManager(const Duration(minutes: 3)),
     MessageManager(),
     PresenceManager(),
