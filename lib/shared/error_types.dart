@@ -25,11 +25,9 @@ int errorTypeFromException(dynamic exception) {
     return noError;
   }
 
-  if (exception is NoDecryptionKeyException) {
-    return messageNoDecryptionKey;
-  } else if (exception is InvalidMessageHMACException) {
+  if (exception is InvalidMessageHMACError) {
     return messageInvalidHMAC;
-  } else if (exception is NotEncryptedForDeviceException) {
+  } else if (exception is NotEncryptedForDeviceError) {
     return messageNoDecryptionKey;
   } else if (exception is InvalidAffixElementsException) {
     return messageInvalidAffixElements;

@@ -387,22 +387,23 @@ class XmppService {
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
-    if (isMarkable && info.features.contains(chatMarkersXmlns)) {
+    final hasId = originId != null || event.id != null;
+    if (isMarkable && info.features.contains(chatMarkersXmlns) && hasId) {
       await manager.sendMessage(
         event.from.toBare(),
         TypedMap<StanzaHandlerExtension>.fromList([
           ChatMarkerData(
             ChatMarker.received,
-            originId ?? event.id,
+            originId ?? event.id!,
           )
         ]),
       );
     } else if (deliveryReceiptRequested &&
-        info.features.contains(deliveryXmlns)) {
+        info.features.contains(deliveryXmlns) && hasId) {
       await manager.sendMessage(
         event.from.toBare(),
         TypedMap<StanzaHandlerExtension>.fromList([
-          MessageDeliveryReceivedData(originId ?? event.id),
+          MessageDeliveryReceivedData(originId ?? event.id!),
         ]),
       );
     }
@@ -1054,10 +1055,17 @@ class XmppService {
       return;
     }
 
+    if (event.id == null) {
+      _log.warning(
+        'Received error message without id.',
+      );
+      return;
+    } 
+
     final ms = GetIt.I.get<MessageService>();
     final msg = await ms.getMessageByStanzaId(
       event.from.toBare().toString(),
-      event.id,
+      event.id!,
     );
 
     if (msg == null) {
@@ -1214,7 +1222,7 @@ class XmppService {
 
     // Stop the processing here if the event does not describe a displayable message
     if (!_isMessageEventMessage(event) && event.encryptionError == null) return;
-    if (event.encryptionError is InvalidKeyExchangeException) return;
+    if (event.encryptionError is InvalidKeyExchangeSignatureError) return;
 
     // Ignore File Upload Notifications where we don't have a filename.
     final fun = event.extensions.get<FileUploadNotificationData>();
@@ -1294,6 +1302,11 @@ class XmppService {
               );
     }
 
+    // Log encryption errors
+    if (event.encryptionError != null) {
+      _log.warning('Got encryption error from moxxmpp for message: ${event.encryptionError}');
+    }
+
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
     var message = await ms.addMessageFromData(
@@ -1301,7 +1314,8 @@ class XmppService {
       messageTimestamp,
       event.from.toString(),
       conversationJid,
-      event.id,
+      // TODO:
+      event.id ?? '',
       fun != null,
       event.encrypted,
       event.extensions
