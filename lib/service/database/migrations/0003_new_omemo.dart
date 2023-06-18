@@ -36,6 +36,7 @@ Future<void> upgradeFromV39ToV40(Database db) async {
       devices TEXT NOT NULL
     )''',
   );
+
   await db.execute(
     '''
     CREATE TABLE $omemoRatchetsTable (
