@@ -398,7 +398,8 @@ class XmppService {
         ]),
       );
     } else if (deliveryReceiptRequested &&
-        info.features.contains(deliveryXmlns) && hasId) {
+        info.features.contains(deliveryXmlns) &&
+        hasId) {
       await manager.sendMessage(
         event.from.toBare(),
         TypedMap<StanzaHandlerExtension>.fromList([
@@ -1061,7 +1062,7 @@ class XmppService {
         'Received error message without id.',
       );
       return;
-    } 
+    }
 
     final ms = GetIt.I.get<MessageService>();
     final msg = await ms.getMessageByStanzaId(
@@ -1305,7 +1306,9 @@ class XmppService {
 
     // Log encryption errors
     if (event.encryptionError != null) {
-      _log.warning('Got encryption error from moxxmpp for message: ${event.encryptionError}');
+      _log.warning(
+        'Got encryption error from moxxmpp for message: ${event.encryptionError}',
+      );
     }
 
     // Create the message in the database

@@ -18,7 +18,8 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Messages
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $messagesTable (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sender TEXT NOT NULL,
@@ -53,7 +54,8 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Reactions
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $reactionsTable (
       senderJid  TEXT NOT NULL,
       emoji      TEXT NOT NULL,
@@ -68,7 +70,8 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // File metadata
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $fileMetadataTable (
       id               TEXT NOT NULL PRIMARY KEY,
       path             TEXT,
@@ -87,7 +90,8 @@ Future<void> createDatabase(Database db, int version) async {
       size             INTEGER
     )''',
   );
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $fileMetadataHashesTable (
       algorithm TEXT NOT NULL,
       value     TEXT NOT NULL,
@@ -129,7 +133,8 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Contacts
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $contactsTable (
       id TEXT PRIMARY KEY,
       jid TEXT NOT NULL

@@ -223,7 +223,9 @@ Future<void> entrypoint() async {
     RosterManager(MoxxyRosterStateManager()),
     OmemoManager(
       GetIt.I.get<OmemoService>().getOmemoManager,
-      (toJid, _) async => GetIt.I.get<ConversationService>().shouldEncryptForConversation(toJid),
+      (toJid, _) async => GetIt.I
+          .get<ConversationService>()
+          .shouldEncryptForConversation(toJid),
     ),
     PingManager(const Duration(minutes: 3)),
     MessageManager(),

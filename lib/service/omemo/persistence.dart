@@ -43,7 +43,7 @@ Future<void> commitDevice(OmemoDevice device) async {
       'oldSpkId': device.oldSpkId,
       'opks': jsonEncode(serializedOpks),
     },
-    conflictAlgorithm: ConflictAlgorithm.replace, 
+    conflictAlgorithm: ConflictAlgorithm.replace,
   );
 }
 
@@ -63,7 +63,9 @@ Future<OmemoDevice?> loadOmemoDevice(String jid) async {
 
   // Deserialize the OPKs first
   final deserializedOpks = <int, OmemoKeyPair>{};
-  final opks = (jsonDecode(rawDevice.first['opks']! as String) as Map<dynamic, dynamic>).cast<String, dynamic>();
+  final opks =
+      (jsonDecode(rawDevice.first['opks']! as String) as Map<dynamic, dynamic>)
+          .cast<String, dynamic>();
   for (final opk in opks.entries) {
     final opkValue = (opk.value as Map<String, dynamic>).cast<String, String>();
     deserializedOpks[int.parse(opk.key)] = OmemoKeyPair.fromBytes(
@@ -164,7 +166,7 @@ Future<void> commitDeviceList(String jid, List<int> devices) async {
   );
 }
 
-Future<void> removeRatchets(List<RatchetMapKey> ratchets) async { 
+Future<void> removeRatchets(List<RatchetMapKey> ratchets) async {
   final db = GetIt.I.get<DatabaseService>().database;
   final batch = db.batch();
 
@@ -206,7 +208,9 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
 
     // Deserialize skipped keys
     final mkSkipped = <SkippedKey, List<int>>{};
-    final skippedKeysRaw = (jsonDecode(ratchetRaw['skipped']! as String) as List<dynamic>).cast<Map<dynamic, dynamic>>();
+    final skippedKeysRaw =
+        (jsonDecode(ratchetRaw['skipped']! as String) as List<dynamic>)
+            .cast<Map<dynamic, dynamic>>();
     for (final skippedRaw in skippedKeysRaw) {
       final key = SkippedKey(
         (skippedRaw['dhPub']! as String).fromBase64().toPublicKey(),
@@ -216,7 +220,9 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
     }
 
     // Deserialize the KEX
-    final kexRaw = (jsonDecode(ratchetRaw['kex']! as String) as Map<dynamic, dynamic>).cast<String, Object>();
+    final kexRaw =
+        (jsonDecode(ratchetRaw['kex']! as String) as Map<dynamic, dynamic>)
+            .cast<String, Object>();
     final kex = KeyExchangeData(
       kexRaw['pkId']! as int,
       kexRaw['spkId']! as int,
@@ -247,7 +253,8 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
   }
 
   return OmemoDataPackage(
-    (jsonDecode(deviceListRaw.first['devices']! as String) as List<dynamic>).cast<int>(),
+    (jsonDecode(deviceListRaw.first['devices']! as String) as List<dynamic>)
+        .cast<int>(),
     ratchets,
   );
 }

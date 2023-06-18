@@ -44,9 +44,13 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         );
 
     // Apply
-    final stickerPack = GetIt.I.get<stickers.StickersBloc>().state.stickerPacks.firstWhereOrNull(
-      (StickerPack pack) => pack.id == event.stickerPackId,
-    );
+    final stickerPack = GetIt.I
+        .get<stickers.StickersBloc>()
+        .state
+        .stickerPacks
+        .firstWhereOrNull(
+          (StickerPack pack) => pack.id == event.stickerPackId,
+        );
     assert(stickerPack != null, 'The sticker pack must be found');
     emit(
       state.copyWith(
@@ -176,9 +180,13 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     Emitter<StickerPackState> emit,
   ) async {
     // Find out if the sticker pack is locally available or not
-    final stickerPack = GetIt.I.get<stickers.StickersBloc>().state.stickerPacks.firstWhereOrNull(
-      (StickerPack pack) => pack.id == event.stickerPackId,
-    );
+    final stickerPack = GetIt.I
+        .get<stickers.StickersBloc>()
+        .state
+        .stickerPacks
+        .firstWhereOrNull(
+          (StickerPack pack) => pack.id == event.stickerPackId,
+        );
 
     if (stickerPack == null) {
       await _onRemoteStickerPackRequested(

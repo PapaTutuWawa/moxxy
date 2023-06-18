@@ -809,7 +809,10 @@ Future<void> performRecreateSessions(
   await GetIt.I.get<OmemoService>().removeAllRatchets(command.jid);
 
   // And force the creation of new ones
-  await GetIt.I.get<XmppConnection>().getManagerById<OmemoManager>(omemoManager)!.sendOmemoHeartbeat(
+  await GetIt.I
+      .get<XmppConnection>()
+      .getManagerById<OmemoManager>(omemoManager)!
+      .sendOmemoHeartbeat(
         command.jid,
       );
 }

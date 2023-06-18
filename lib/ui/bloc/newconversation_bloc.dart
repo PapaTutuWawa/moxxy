@@ -44,8 +44,9 @@ class NewConversationBloc
 
     // Guard against an unneccessary roundtrip
     final listContains = conversations.state.conversations.firstWhereOrNull(
-      (Conversation c) => c.jid == event.jid,
-    ) != null;
+          (Conversation c) => c.jid == event.jid,
+        ) !=
+        null;
     if (listContains) {
       GetIt.I.get<conversation.ConversationBloc>().add(
             conversation.RequestedConversationEvent(
