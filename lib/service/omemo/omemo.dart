@@ -33,6 +33,7 @@ class OmemoService {
   final Logger _log = Logger('OmemoService');
 
   bool _initialized = false;
+  bool _running = false;
   final Lock _lock = Lock();
   final Queue<Completer<void>> _waitingForInitialization =
       Queue<Completer<void>>();
@@ -64,7 +65,18 @@ class OmemoService {
   }
 
   Future<void> initializeIfNeeded(String jid) async {
-    final done = await _lock.synchronized(() => _initialized);
+    final done = await _lock.synchronized(() {
+      if (_initialized) {
+        return true;
+      }
+
+      if (_running) {
+        return true;
+      }
+
+      _running = true;
+      return false;
+    });
     if (done) return;
 
     final device = await loadOmemoDevice(jid);
@@ -102,6 +114,7 @@ class OmemoService {
     }
 
     await _lock.synchronized(() {
+      _running = false;
       _initialized = true;
 
       for (final c in _waitingForInitialization) {
@@ -112,7 +125,49 @@ class OmemoService {
   }
 
   Future<moxxmpp.OmemoError?> publishDeviceIfNeeded() async {
-    // TODO
+    _log.finest('publishDeviceIfNeeded: Waiting for initialization...');
+    await ensureInitialized();
+    _log.finest('publishDeviceIfNeeded: Done');
+
+    final conn = GetIt.I.get<moxxmpp.XmppConnection>();
+    final omemo =
+        conn.getManagerById<moxxmpp.OmemoManager>(moxxmpp.omemoManager)!;
+    final dm = conn.getManagerById<moxxmpp.DiscoManager>(moxxmpp.discoManager)!;
+    final bareJid = conn.connectionSettings.jid.toBare();
+    final device = await _omemoManager.getDevice();
+
+    final bundlesRaw = await dm.discoItemsQuery(
+      bareJid,
+      node: moxxmpp.omemoBundlesXmlns,
+    );
+    if (bundlesRaw.isType<moxxmpp.DiscoError>()) {
+      await omemo.publishBundle(await device.toBundle());
+      return null;
+    }
+
+    final bundleIds = bundlesRaw
+        .get<List<moxxmpp.DiscoItem>>()
+        .where((item) => item.name != null)
+        .map((item) => int.parse(item.name!));
+    if (!bundleIds.contains(device.id)) {
+      final result = await omemo.publishBundle(await device.toBundle());
+      if (result.isType<moxxmpp.OmemoError>()) {
+        return result.get<moxxmpp.OmemoError>();
+      }
+      return null;
+    }
+
+    final idsRaw = await omemo.getDeviceList(bareJid);
+    final ids =
+        idsRaw.isType<moxxmpp.OmemoError>() ? <int>[] : idsRaw.get<List<int>>();
+    if (!ids.contains(device.id)) {
+      final result = await omemo.publishBundle(await device.toBundle());
+      if (result.isType<moxxmpp.OmemoError>()) {
+        return result.get<moxxmpp.OmemoError>();
+      }
+      return null;
+    }
+
     return null;
   }
 

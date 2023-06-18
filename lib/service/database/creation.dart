@@ -46,7 +46,8 @@ Future<void> createDatabase(Database db, int version) async {
       pseudoMessageData TEXT,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
       CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
-    )''');
+    )''',
+  );
   await db.execute(
     'CREATE INDEX idx_messages_id ON $messagesTable (id, sid, originId)',
   );
@@ -60,7 +61,8 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT pk_sender PRIMARY KEY (senderJid, emoji, message_id),
       CONSTRAINT fk_message FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
         ON DELETE CASCADE
-    )''');
+    )''',
+  );
   await db.execute(
     'CREATE INDEX idx_reactions_message_id ON $reactionsTable (message_id, senderJid)',
   );
@@ -83,7 +85,8 @@ Future<void> createDatabase(Database db, int version) async {
       cipherTextHashes TEXT,
       filename         TEXT NOT NULL,
       size             INTEGER
-    )''');
+    )''',
+  );
   await db.execute('''
     CREATE TABLE $fileMetadataHashesTable (
       algorithm TEXT NOT NULL,
@@ -92,7 +95,8 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT f_primarykey PRIMARY KEY (algorithm, value),
       CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES $fileMetadataTable (id)
         ON DELETE CASCADE
-    )''');
+    )''',
+  );
   await db.execute(
     'CREATE INDEX idx_file_metadata_message_id ON $fileMetadataTable (id)',
   );
@@ -188,6 +192,8 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // OMEMO
+  // TODO
+  /*
   await db.execute(
     '''
     CREATE TABLE $omemoRatchetsTable (
@@ -257,7 +263,7 @@ Future<void> createDatabase(Database db, int version) async {
       fingerprint TEXT NOT NULL,
       PRIMARY KEY (jid, id)
     )''',
-  );
+  );*/
 
   // Settings
   await db.execute(
