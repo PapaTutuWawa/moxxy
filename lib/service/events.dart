@@ -865,16 +865,13 @@ Future<void> performRegenerateOwnDevice(
   RegenerateOwnDeviceCommand command, {
   dynamic extra,
 }) async {
-  // TODO
-  /*final id = extra as String;
-  final jid =
-      GetIt.I.get<XmppConnection>().connectionSettings.jid.toBare().toString();
-  final device = await GetIt.I.get<OmemoService>().regenerateDevice(jid);
+  final id = extra as String;
+  final device = await GetIt.I.get<OmemoService>().regenerateDevice();
 
   sendEvent(
     RegenerateOwnDeviceResult(device: device),
     id: id,
-  );*/
+  );
 }
 
 Future<void> performMessageRetraction(

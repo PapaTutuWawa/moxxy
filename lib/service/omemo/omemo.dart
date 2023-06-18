@@ -100,8 +100,8 @@ class OmemoService {
       commitDeviceList: commitDeviceList,
       removeRatchets: removeRatchets,
       loadRatchets: loadRatchets,
-    ); 
-   
+    );
+
     if (device == null) {
       await commitDevice(await _omemoManager.getDevice());
     }
@@ -205,7 +205,8 @@ class OmemoService {
     await _omemoManager.withTrustManager(
       jid,
       (tm) async {
-        trust = await (tm as BlindTrustBeforeVerificationTrustManager).getDevicesTrust(jid);
+        trust = await (tm as BlindTrustBeforeVerificationTrustManager)
+            .getDevicesTrust(jid);
       },
     );
 
@@ -222,19 +223,17 @@ class OmemoService {
 
   Future<void> setDeviceEnablement(String jid, int device, bool state) async {
     await ensureInitialized();
-    await _omemoManager.withTrustManager(
-      jid,
-      (tm) async {
-        await (tm as BlindTrustBeforeVerificationTrustManager).setEnabled(jid, device, state);
+    await _omemoManager.withTrustManager(jid, (tm) async {
+      await (tm as BlindTrustBeforeVerificationTrustManager)
+          .setEnabled(jid, device, state);
     });
   }
 
   Future<void> setDeviceVerified(String jid, int device) async {
     await ensureInitialized();
-    await _omemoManager.withTrustManager(
-      jid,
-      (tm) async {
-        await (tm as BlindTrustBeforeVerificationTrustManager).setDeviceTrust(jid, device, BTBVTrustState.verified);
+    await _omemoManager.withTrustManager(jid, (tm) async {
+      await (tm as BlindTrustBeforeVerificationTrustManager)
+          .setDeviceTrust(jid, device, BTBVTrustState.verified);
     });
   }
 
@@ -246,5 +245,30 @@ class OmemoService {
   Future<OmemoDevice> getDevice() async {
     await ensureInitialized();
     return _omemoManager.getDevice();
+  }
+
+  Future<model.OmemoDevice> regenerateDevice() async {
+    await ensureInitialized();
+
+    final oldDeviceId = (await getDevice()).id;
+
+    // Generate the new device
+    final newDevice = await _omemoManager.regenerateDevice();
+
+    // Remove the old device
+    unawaited(
+      GetIt.I
+          .get<moxxmpp.XmppConnection>()
+          .getManagerById<moxxmpp.OmemoManager>(moxxmpp.omemoManager)!
+          .deleteDevice(oldDeviceId),
+    );
+
+    return model.OmemoDevice(
+      await newDevice.getFingerprint(),
+      true,
+      true,
+      true,
+      newDevice.id,
+    );
   }
 }
