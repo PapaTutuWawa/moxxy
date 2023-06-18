@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -43,10 +43,10 @@ class NewConversationBloc
     final conversations = GetIt.I.get<ConversationsBloc>();
 
     // Guard against an unneccessary roundtrip
-    if (listContains(
-      conversations.state.conversations,
+    final listContains = conversations.state.conversations.firstWhereOrNull(
       (Conversation c) => c.jid == event.jid,
-    )) {
+    ) != null;
+    if (listContains) {
       GetIt.I.get<conversation.ConversationBloc>().add(
             conversation.RequestedConversationEvent(
               event.jid,
@@ -120,8 +120,7 @@ class NewConversationBloc
       if (event.removed.contains(item.jid)) continue;
 
       // Handle modified items
-      final modified = firstWhereOrNull(
-        event.modified,
+      final modified = event.modified.firstWhereOrNull(
         (RosterItem i) => i.id == item.id,
       );
       if (modified != null) {

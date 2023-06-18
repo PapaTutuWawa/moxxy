@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -313,8 +314,7 @@ class XmppService {
       //   },
       // );
 
-      final hasUrlSource = firstWhereOrNull(
-            sfs!.sources,
+      final hasUrlSource = sfs!.sources.firstWhereOrNull(
             (src) => src is StatelessFileSharingUrlSource,
           ) !=
           null;
@@ -336,8 +336,7 @@ class XmppService {
           sfs.metadata.size,
         );
       } else {
-        final encryptedSource = firstWhereOrNull(
-          sfs.sources,
+        final encryptedSource = sfs.sources.firstWhereOrNull(
           (src) => src is StatelessFileSharingEncryptedSource,
         )! as StatelessFileSharingEncryptedSource;
 
@@ -781,7 +780,7 @@ class XmppService {
       GetIt.I.get<BlocklistService>().onNewConnection();
 
       // Reset the OMEMO cache
-      GetIt.I.get<OmemoService>().onNewConnection();
+      await GetIt.I.get<OmemoService>().onNewConnection();
 
       // Enable carbons, if they're not already enabled (e.g. by using SASL2)
       final cm = connection.getManagerById<CarbonsManager>(carbonsManager)!;

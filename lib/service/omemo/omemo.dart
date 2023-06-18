@@ -111,6 +111,11 @@ class OmemoService {
     });
   }
 
+  Future<moxxmpp.OmemoError?> publishDeviceIfNeeded() async {
+    // TODO
+    return null;
+  }
+
   /// Adds a pseudo message saying that [jid] added a new device with id [deviceId].
   /// If, however, [jid] is our own JID, then nothing is done.
   Future<void> addNewDeviceMessage(String jid, int deviceId) async {
@@ -139,5 +144,7 @@ class OmemoService {
         message: message,
       ),
     );
-  }  
+  }
+
+  Future<void> onNewConnection() async => _omemoManager.onNewConnection();
 }

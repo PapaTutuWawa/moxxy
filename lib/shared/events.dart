@@ -1,4 +1,4 @@
-import 'package:moxlib/awaitabledatasender.dart';
+import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
