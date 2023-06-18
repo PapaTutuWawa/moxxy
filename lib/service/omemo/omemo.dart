@@ -15,25 +15,27 @@ import 'package:moxxyv2/shared/models/omemo_device.dart' as model;
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:synchronized/synchronized.dart';
 
-class OmemoDoubleRatchetWrapper {
-  OmemoDoubleRatchetWrapper(this.ratchet, this.id, this.jid);
-  final OmemoDoubleRatchet ratchet;
-  final int id;
-  final String jid;
-}
-
 class OmemoService {
+  /// Logger.
   final Logger _log = Logger('OmemoService');
 
+  /// Flag indicating whether we are initialized.
   bool _initialized = false;
+
+  /// Flag indicating whether the initialization is currently running.
   bool _running = false;
+
+  /// Lock guarding access to [_waitingForInitialization], [_running], and [_initialized].
   final Lock _lock = Lock();
+
+  /// Queue for code that is waiting on the service initialization.
   final Queue<Completer<void>> _waitingForInitialization =
       Queue<Completer<void>>();
 
   /// The manager to use for OMEMO.
   late OmemoManager _omemoManager;
 
+  /// Access the underlying [OmemoManager].
   Future<OmemoManager> getOmemoManager() async {
     await ensureInitialized();
     return _omemoManager;
@@ -57,16 +59,18 @@ class OmemoService {
     }
   }
 
+  /// Creates or loads the [OmemoManager] for the JID [jid].
   Future<void> initializeIfNeeded(String jid) async {
     final done = await _lock.synchronized(() {
+      // Do nothing if we're already initialized
       if (_initialized) {
         return true;
       }
 
+      // Lock the execution if we're not yet running.
       if (_running) {
         return true;
       }
-
       _running = true;
       return false;
     });
@@ -194,8 +198,10 @@ class OmemoService {
     );
   }
 
-  // TODO: Wait until we're ready. Maybe also don't await this
-  Future<void> onNewConnection() async => _omemoManager.onNewConnection();
+  Future<void> onNewConnection() async {
+    await ensureInitialized();
+    await _omemoManager.onNewConnection();
+  }
 
   Future<List<model.OmemoDevice>> getFingerprintsForJid(String jid) async {
     await ensureInitialized();

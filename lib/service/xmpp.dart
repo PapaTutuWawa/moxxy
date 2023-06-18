@@ -780,7 +780,9 @@ class XmppService {
       GetIt.I.get<BlocklistService>().onNewConnection();
 
       // Reset the OMEMO cache
-      await GetIt.I.get<OmemoService>().onNewConnection();
+      unawaited(
+        GetIt.I.get<OmemoService>().onNewConnection(),
+      );
 
       // Enable carbons, if they're not already enabled (e.g. by using SASL2)
       final cm = connection.getManagerById<CarbonsManager>(carbonsManager)!;
