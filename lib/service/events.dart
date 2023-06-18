@@ -771,28 +771,25 @@ Future<void> performGetOmemoFingerprints(
   GetConversationOmemoFingerprintsCommand command, {
   dynamic extra,
 }) async {
-  /*
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();
   sendEvent(
     GetConversationOmemoFingerprintsResult(
-      fingerprints: await omemo.getOmemoKeysForJid(command.jid),
+      fingerprints: await omemo.getFingerprintsForJid(command.jid),
     ),
     id: id,
-  );*/
+  );
 }
 
 Future<void> performEnableOmemoKey(
   SetOmemoDeviceEnabledCommand command, {
   dynamic extra,
 }) async {
-  // TODO
-  /*
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();
-  await omemo.setOmemoKeyEnabled(
+  await omemo.setDeviceEnablement(
     command.jid,
     command.deviceId,
     command.enabled,
@@ -801,21 +798,20 @@ Future<void> performEnableOmemoKey(
   await performGetOmemoFingerprints(
     GetConversationOmemoFingerprintsCommand(jid: command.jid),
     extra: id,
-  );*/
+  );
 }
 
 Future<void> performRecreateSessions(
   RecreateSessionsCommand command, {
   dynamic extra,
 }) async {
-  // TODO
-  /*
-  await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
+  // Remove all ratchets
+  await GetIt.I.get<OmemoService>().removeAllRatchets(command.jid);
 
-  final conn = GetIt.I.get<XmppConnection>();
-  await conn.getManagerById<BaseOmemoManager>(omemoManager)!.sendOmemoHeartbeat(
+  // And force the creation of new ones
+  await GetIt.I.get<XmppConnection>().getManagerById<OmemoManager>(omemoManager)!.sendOmemoHeartbeat(
         command.jid,
-      );*/
+      );
 }
 
 Future<void> performSetOmemoEnabled(
@@ -839,22 +835,20 @@ Future<void> performGetOwnOmemoFingerprints(
   GetOwnOmemoFingerprintsCommand command, {
   dynamic extra,
 }) async {
-  // TODO
-  /*
   final id = extra as String;
   final os = GetIt.I.get<OmemoService>();
   final xs = GetIt.I.get<XmppService>();
-  await os.ensureInitialized();
 
   final jid = (await xs.getConnectionSettings())!.jid;
+  final device = await os.getDevice();
   sendEvent(
     GetOwnOmemoFingerprintsResult(
-      ownDeviceFingerprint: await os.getDeviceFingerprint(),
-      ownDeviceId: await os.getDeviceId(),
-      fingerprints: await os.getOwnFingerprints(jid),
+      ownDeviceFingerprint: await device.getFingerprint(),
+      ownDeviceId: device.id,
+      fingerprints: await os.getFingerprintsForJid(jid.toString()),
     ),
     id: id,
-  );*/
+  );
 }
 
 Future<void> performRemoveOwnDevice(
@@ -1049,12 +1043,10 @@ Future<void> performMarkDeviceVerified(
   MarkOmemoDeviceAsVerifiedCommand command, {
   dynamic extra,
 }) async {
-  // TODO
-  /*
-  await GetIt.I.get<OmemoService>().verifyDevice(
-        command.deviceId,
+  await GetIt.I.get<OmemoService>().setDeviceVerified(
         command.jid,
-      );*/
+        command.deviceId,
+      );
 }
 
 Future<void> performImportStickerPack(

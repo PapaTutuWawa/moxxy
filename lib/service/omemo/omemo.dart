@@ -1,25 +1,18 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:hex/hex.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
-import 'package:moxxyv2/service/database/constants.dart';
-import 'package:moxxyv2/service/database/database.dart';
-import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
 import 'package:moxxyv2/service/omemo/persistence.dart';
-import 'package:moxxyv2/service/omemo/types.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart' as model;
 import 'package:omemo_dart/omemo_dart.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
 
 class OmemoDoubleRatchetWrapper {
@@ -201,5 +194,57 @@ class OmemoService {
     );
   }
 
+  // TODO: Wait until we're ready. Maybe also don't await this
   Future<void> onNewConnection() async => _omemoManager.onNewConnection();
+
+  Future<List<model.OmemoDevice>> getFingerprintsForJid(String jid) async {
+    await ensureInitialized();
+    final fingerprints = await _omemoManager.getFingerprintsForJid(jid) ?? [];
+    var trust = <int, BTBVTrustData>{};
+
+    await _omemoManager.withTrustManager(
+      jid,
+      (tm) async {
+        trust = await (tm as BlindTrustBeforeVerificationTrustManager).getDevicesTrust(jid);
+      },
+    );
+
+    return fingerprints.map((fp) {
+      return model.OmemoDevice(
+        fp.fingerprint,
+        trust[fp.deviceId]?.trusted ?? false,
+        trust[fp.deviceId]?.state == BTBVTrustState.verified,
+        trust[fp.deviceId]?.enabled ?? false,
+        fp.deviceId,
+      );
+    }).toList();
+  }
+
+  Future<void> setDeviceEnablement(String jid, int device, bool state) async {
+    await ensureInitialized();
+    await _omemoManager.withTrustManager(
+      jid,
+      (tm) async {
+        await (tm as BlindTrustBeforeVerificationTrustManager).setEnabled(jid, device, state);
+    });
+  }
+
+  Future<void> setDeviceVerified(String jid, int device) async {
+    await ensureInitialized();
+    await _omemoManager.withTrustManager(
+      jid,
+      (tm) async {
+        await (tm as BlindTrustBeforeVerificationTrustManager).setDeviceTrust(jid, device, BTBVTrustState.verified);
+    });
+  }
+
+  Future<void> removeAllRatchets(String jid) async {
+    await ensureInitialized();
+    await _omemoManager.removeAllRatchets(jid);
+  }
+
+  Future<OmemoDevice> getDevice() async {
+    await ensureInitialized();
+    return _omemoManager.getDevice();
+  }
 }

@@ -280,6 +280,7 @@ Future<List<BTBVTrustData>> loadTrust(String jid) async {
       trust['device']! as int,
       BTBVTrustState.fromInt(trust['trust']! as int),
       intToBool(trust['enabled']! as int),
+      false,
     );
   }).toList();
 }

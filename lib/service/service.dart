@@ -40,7 +40,6 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/logging.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
 import 'package:moxxyv2/ui/events.dart' as ui_events;
-import 'package:moxxyv2/ui/pages/settings/conversation.dart';
 
 Future<void> initializeServiceIfNeeded() async {
   final logger = GetIt.I.get<Logger>();
