@@ -12,8 +12,8 @@ extension ByteListHelpers on List<int> {
     return base64Encode(this);
   }
 
-  OmemoPublicKey toPublicKey() {
-    return OmemoPublicKey.fromBytes(this, KeyPairType.x25519);
+  OmemoPublicKey toPublicKey(KeyPairType type) {
+    return OmemoPublicKey.fromBytes(this, type);
   }
 }
 
@@ -213,7 +213,7 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
             .cast<Map<dynamic, dynamic>>();
     for (final skippedRaw in skippedKeysRaw) {
       final key = SkippedKey(
-        (skippedRaw['dhPub']! as String).fromBase64().toPublicKey(),
+        (skippedRaw['dhPub']! as String).fromBase64().toPublicKey(KeyPairType.x25519),
         skippedRaw['n']! as int,
       );
       mkSkipped[key] = (skippedRaw['mk']! as String).fromBase64();
@@ -226,8 +226,8 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
     final kex = KeyExchangeData(
       kexRaw['pkId']! as int,
       kexRaw['spkId']! as int,
-      (kexRaw['ek']! as String).fromBase64().toPublicKey(),
-      (kexRaw['ik']! as String).fromBase64().toPublicKey(),
+      (kexRaw['ek']! as String).fromBase64().toPublicKey(KeyPairType.x25519),
+      (kexRaw['ik']! as String).fromBase64().toPublicKey(KeyPairType.ed25519),
     );
 
     // Deserialize the entire ratchet
@@ -237,14 +237,14 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
         base64Decode(ratchetRaw['dhs']! as String),
         KeyPairType.x25519,
       ),
-      (ratchetRaw['dhrPub'] as String?)?.fromBase64().toPublicKey(),
+      (ratchetRaw['dhrPub'] as String?)?.fromBase64().toPublicKey(KeyPairType.x25519),
       base64Decode(ratchetRaw['rk']! as String),
       (ratchetRaw['cks'] as String?)?.fromBase64(),
       (ratchetRaw['ckr'] as String?)?.fromBase64(),
       ratchetRaw['ns']! as int,
       ratchetRaw['nr']! as int,
       ratchetRaw['pn']! as int,
-      (ratchetRaw['ik']! as String).fromBase64().toPublicKey(),
+      (ratchetRaw['ik']! as String).fromBase64().toPublicKey(KeyPairType.ed25519),
       (ratchetRaw['ad']! as String).fromBase64(),
       mkSkipped,
       intToBool(ratchetRaw['acked']! as int),
