@@ -4,13 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
-import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
 import 'package:moxxyv2/service/omemo/persistence.dart';
-import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/xmpp_state.dart';
-import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart' as model;
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:synchronized/synchronized.dart';
@@ -166,36 +161,6 @@ class OmemoService {
     }
 
     return null;
-  }
-
-  /// Adds a pseudo message saying that [jid] added a new device with id [deviceId].
-  /// If, however, [jid] is our own JID, then nothing is done.
-  Future<void> addNewDeviceMessage(String jid, int deviceId) async {
-    // Add a pseudo message if it is not about our own devices
-    final xmppState = await GetIt.I.get<XmppStateService>().getXmppState();
-    if (jid == xmppState.jid) return;
-
-    final ms = GetIt.I.get<MessageService>();
-    final message = await ms.addMessageFromData(
-      '',
-      DateTime.now().millisecondsSinceEpoch,
-      '',
-      jid,
-      '',
-      false,
-      false,
-      false,
-      pseudoMessageType: pseudoMessageTypeNewDevice,
-      pseudoMessageData: <String, dynamic>{
-        'deviceId': deviceId,
-        'jid': jid,
-      },
-    );
-    sendEvent(
-      MessageAddedEvent(
-        message: message,
-      ),
-    );
   }
 
   Future<void> onNewConnection() async {

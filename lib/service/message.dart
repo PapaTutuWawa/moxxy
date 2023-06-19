@@ -329,7 +329,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
     bool isDownloading = false,
     bool isUploading = false,
     String? stickerPackId,
-    int? pseudoMessageType,
+    PseudoMessageType? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
     bool received = false,
     bool displayed = false,

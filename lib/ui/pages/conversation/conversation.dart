@@ -232,6 +232,7 @@ class ConversationPageState extends State<ConversationPage>
             constraints: BoxConstraints(
               maxWidth: maxWidth,
             ),
+            // TODO: Create the correct bubble
             child: NewDeviceBubble(
               data: item.pseudoMessageData!,
               title: state.conversation!.title,

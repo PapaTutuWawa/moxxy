@@ -10,7 +10,30 @@ import 'package:moxxyv2/shared/warning_types.dart';
 part 'message.freezed.dart';
 part 'message.g.dart';
 
-const pseudoMessageTypeNewDevice = 1;
+extension PseudoMessageTypeFromInt on int {
+  PseudoMessageType? toPseudoMessageType() {
+    switch (this) {
+      case 1:
+        return PseudoMessageType.newDevice;
+      case 2:
+        return PseudoMessageType.changedDevice;
+      default:
+        return null;
+    }
+  }
+}
+
+enum PseudoMessageType {
+  /// Indicates that a new device was created in the chat.
+  newDevice(1),
+
+  /// Indicates that an existing device has been replaced.
+  changedDevice(2);
+
+  const PseudoMessageType(this.id);
+
+  final int id;
+}
 
 Map<String, dynamic> _optionalJsonDecodeWithFallback(String? data) {
   if (data == null) return <String, dynamic>{};
@@ -53,7 +76,7 @@ class Message with _$Message {
     Message? quotes,
     @Default([]) List<String> reactionsPreview,
     String? stickerPackId,
-    int? pseudoMessageType,
+    PseudoMessageType? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
   }) = _Message;
 
@@ -83,6 +106,8 @@ class Message with _$Message {
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
       'reactionsPreview': reactionsPreview,
+      'pseudoMessageType':
+          (json['pseudoMessageType'] as int?)?.toPseudoMessageType(),
       'pseudoMessageData':
           _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
     }).copyWith(
@@ -114,6 +139,7 @@ class Message with _$Message {
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
       'containsNoStore': boolToInt(containsNoStore),
+      'pseudoMessageType': pseudoMessageType?.id,
       'pseudoMessageData': _optionalJsonEncodeWithFallback(pseudoMessageData),
     };
   }
