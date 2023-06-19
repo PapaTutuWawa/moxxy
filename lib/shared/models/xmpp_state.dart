@@ -5,13 +5,27 @@ import 'package:moxxmpp/moxxmpp.dart';
 part 'xmpp_state.freezed.dart';
 part 'xmpp_state.g.dart';
 
+extension StreamManagementStateToJson on StreamManagementState {
+  Map<String, dynamic> toJson() => {
+        'c2s': c2s,
+        's2c': s2c,
+        'streamResumptionLocation': streamResumptionLocation,
+        'streamResumptionId': streamResumptionId,
+      };
+}
+
 class StreamManagementStateConverter
     implements JsonConverter<StreamManagementState, Map<String, dynamic>> {
   const StreamManagementStateConverter();
 
   @override
   StreamManagementState fromJson(Map<String, dynamic> json) =>
-      StreamManagementState.fromJson(json);
+      StreamManagementState(
+        json['c2s']! as int,
+        json['s2c']! as int,
+        streamResumptionLocation: json['streamResumptionLocation'] as String?,
+        streamResumptionId: json['streamResumptionId'] as String?,
+      );
 
   @override
   Map<String, dynamic> toJson(StreamManagementState state) => state.toJson();

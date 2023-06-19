@@ -213,7 +213,9 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
             .cast<Map<dynamic, dynamic>>();
     for (final skippedRaw in skippedKeysRaw) {
       final key = SkippedKey(
-        (skippedRaw['dhPub']! as String).fromBase64().toPublicKey(KeyPairType.x25519),
+        (skippedRaw['dhPub']! as String)
+            .fromBase64()
+            .toPublicKey(KeyPairType.x25519),
         skippedRaw['n']! as int,
       );
       mkSkipped[key] = (skippedRaw['mk']! as String).fromBase64();
@@ -237,14 +239,18 @@ Future<OmemoDataPackage?> loadRatchets(String jid) async {
         base64Decode(ratchetRaw['dhs']! as String),
         KeyPairType.x25519,
       ),
-      (ratchetRaw['dhrPub'] as String?)?.fromBase64().toPublicKey(KeyPairType.x25519),
+      (ratchetRaw['dhrPub'] as String?)
+          ?.fromBase64()
+          .toPublicKey(KeyPairType.x25519),
       base64Decode(ratchetRaw['rk']! as String),
       (ratchetRaw['cks'] as String?)?.fromBase64(),
       (ratchetRaw['ckr'] as String?)?.fromBase64(),
       ratchetRaw['ns']! as int,
       ratchetRaw['nr']! as int,
       ratchetRaw['pn']! as int,
-      (ratchetRaw['ik']! as String).fromBase64().toPublicKey(KeyPairType.ed25519),
+      (ratchetRaw['ik']! as String)
+          .fromBase64()
+          .toPublicKey(KeyPairType.ed25519),
       (ratchetRaw['ad']! as String).fromBase64(),
       mkSkipped,
       intToBool(ratchetRaw['acked']! as int),

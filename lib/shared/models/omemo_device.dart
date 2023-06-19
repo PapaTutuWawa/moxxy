@@ -11,9 +11,8 @@ class OmemoDevice with _$OmemoDevice {
     bool trusted,
     bool verified,
     bool enabled,
-    int deviceId, {
-    @Default(true) bool hasSessionWith,
-  }) = _OmemoDevice;
+    int deviceId,
+  ) = _OmemoDevice;
 
   /// JSON
   factory OmemoDevice.fromJson(Map<String, dynamic> json) =>

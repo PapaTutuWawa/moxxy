@@ -107,30 +107,25 @@ class OwnDevicesPage extends StatelessWidget {
           item.enabled,
           item.verified,
           hasVerifiedDevices,
-          onVerifiedPressed: !item.hasSessionWith
-              ? null
-              : () async {
-                  if (item.verified) return;
-                  if (!item.hasSessionWith) return;
+          onVerifiedPressed: () async {
+            if (item.verified) return;
 
-                  final uri = await scanXmppUriQrCode(context);
-                  if (uri == null) return;
+            final uri = await scanXmppUriQrCode(context);
+            if (uri == null) return;
 
-                  // ignore: use_build_context_synchronously
-                  context.read<OwnDevicesBloc>().add(
-                        DeviceVerifiedEvent(uri, item.deviceId),
-                      );
-                },
-          onEnableValueChanged: !item.hasSessionWith
-              ? null
-              : (value) {
-                  context.read<OwnDevicesBloc>().add(
-                        OwnDeviceEnabledSetEvent(
-                          item.deviceId,
-                          value,
-                        ),
-                      );
-                },
+            // ignore: use_build_context_synchronously
+            context.read<OwnDevicesBloc>().add(
+                  DeviceVerifiedEvent(uri, item.deviceId),
+                );
+          },
+          onEnableValueChanged: (value) {
+            context.read<OwnDevicesBloc>().add(
+                  OwnDeviceEnabledSetEvent(
+                    item.deviceId,
+                    value,
+                  ),
+                );
+          },
           onDeletePressed: () async {
             final result = await showConfirmationDialog(
               t.pages.profile.owndevices.deleteDeviceConfirmTitle,
