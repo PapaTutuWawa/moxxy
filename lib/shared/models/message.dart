@@ -106,8 +106,13 @@ class Message with _$Message {
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
       'reactionsPreview': reactionsPreview,
-      'pseudoMessageType':
-          (json['pseudoMessageType'] as int?)?.toPseudoMessageType(),
+      // NOTE: freezed expects the field name of the enum value here and refused to accept
+      //       actual enum value. Makes sense since we have to serialize it, I guess.
+      'pseudoMessageType': (json['pseudoMessageType'] as int?)
+          ?.toPseudoMessageType()
+          .toString()
+          .split('.')
+          .last,
       'pseudoMessageData':
           _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
     }).copyWith(

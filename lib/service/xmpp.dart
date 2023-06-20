@@ -1314,12 +1314,16 @@ class XmppService {
     // Check if we have to create pseudo-messages related to OMEMO
     final omemoData = event.get<OmemoData>();
     if (omemoData != null) {
-      final amountAdded = omemoData.newRatchets.values
-          .map((ids) => ids.length)
-          .reduce((value, element) => value + element);
-      final amountReplaced = omemoData.replacedRatchets.values
-          .map((ids) => ids.length)
-          .reduce((value, element) => value + element);
+      final addedRatchetsList =
+          omemoData.newRatchets.values.map((ids) => ids.length);
+      final amountAdded = addedRatchetsList.isEmpty
+          ? 0
+          : addedRatchetsList.reduce((value, element) => value + element);
+      final replacedRatchetsList =
+          omemoData.replacedRatchets.values.map((ids) => ids.length);
+      final amountReplaced = replacedRatchetsList.isEmpty
+          ? 0
+          : replacedRatchetsList.reduce((value, element) => value + element);
 
       // Notify of new ratchets
       final om = GetIt.I.get<OmemoService>();
@@ -1350,7 +1354,7 @@ class XmppService {
       messageTimestamp,
       event.from.toString(),
       conversationJid,
-      // TODO:
+      // TODO(Unknown): Should we handle this differently?
       event.id ?? '',
       fun != null,
       event.encrypted,
