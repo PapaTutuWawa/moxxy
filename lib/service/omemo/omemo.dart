@@ -4,8 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
+import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/omemo/implementations.dart';
 import 'package:moxxyv2/service/omemo/persistence.dart';
+import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/omemo_device.dart' as model;
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:synchronized/synchronized.dart';
@@ -240,6 +244,31 @@ class OmemoService {
       true,
       true,
       newDevice.id,
+    );
+  }
+
+  /// Adds a pseudo-message of type [type] to the chat with [conversationJid].
+  /// Also sends an event to the UI.
+  Future<void> addPseudoMessage(
+    String conversationJid,
+    PseudoMessageType type,
+  ) async {
+    final ms = GetIt.I.get<MessageService>();
+    final message = await ms.addMessageFromData(
+      '',
+      DateTime.now().millisecondsSinceEpoch,
+      '',
+      conversationJid,
+      '',
+      false,
+      false,
+      false,
+      pseudoMessageType: type,
+    );
+    sendEvent(
+      MessageAddedEvent(
+        message: message,
+      ),
     );
   }
 }

@@ -1311,6 +1311,27 @@ class XmppService {
       );
     }
 
+    // Check if we have to create pseudo-messages related to OMEMO
+    final omemoData = event.get<OmemoData>();
+    if (omemoData != null) {
+      // Notify of new ratchets
+      final om = GetIt.I.get<OmemoService>();
+      if (omemoData.newRatchets.isNotEmpty) {
+        await om.addPseudoMessage(
+          conversationJid,
+          PseudoMessageType.newDevice,
+        );
+      }
+
+      // Notify of changed ratchets
+      if (omemoData.replacedRatchets.isNotEmpty) {
+        await om.addPseudoMessage(
+          conversationJid,
+          PseudoMessageType.changedDevice,
+        );
+      }
+    }
+
     // Create the message in the database
     final ms = GetIt.I.get<MessageService>();
     var message = await ms.addMessageFromData(

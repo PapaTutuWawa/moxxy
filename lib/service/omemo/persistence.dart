@@ -4,11 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
-import 'package:moxxyv2/service/message.dart';
-import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/service/xmpp_state.dart';
-import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/message.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:sqflite_common/sql.dart';
 
@@ -110,27 +105,6 @@ Future<OmemoDevice?> loadOmemoDevice(String jid) async {
   );
 }
 
-Future<void> _addPseudoMessage(
-    String conversationJid, PseudoMessageType type,) async {
-  final ms = GetIt.I.get<MessageService>();
-  final message = await ms.addMessageFromData(
-    '',
-    DateTime.now().millisecondsSinceEpoch,
-    '',
-    conversationJid,
-    '',
-    false,
-    false,
-    false,
-    pseudoMessageType: type,
-  );
-  sendEvent(
-    MessageAddedEvent(
-      message: message,
-    ),
-  );
-}
-
 Future<void> commitRatchets(List<OmemoRatchetData> ratchets) async {
   final db = GetIt.I.get<DatabaseService>().database;
   final batch = db.batch();
@@ -178,22 +152,6 @@ Future<void> commitRatchets(List<OmemoRatchetData> ratchets) async {
   }
 
   await batch.commit();
-
-  // Check if we have to create pseudo messages
-  final ourJid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid;
-  final replaced = ratchets.any(
-      (ratchet) => ratchet.added && ratchet.replaced && ratchet.jid != ourJid,);
-  final added = ratchets.any(
-      (ratchet) => ratchet.added && !ratchet.replaced && ratchet.jid != ourJid,);
-
-  if (replaced) {
-    // TODO: Conversation Jid
-    await _addPseudoMessage('', PseudoMessageType.changedDevice);
-  }
-  if (added) {
-    // TODO: Conversation Jid
-    await _addPseudoMessage('', PseudoMessageType.newDevice);
-  }
 }
 
 Future<void> commitDeviceList(String jid, List<int> devices) async {
