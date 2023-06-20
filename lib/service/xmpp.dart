@@ -1314,12 +1314,21 @@ class XmppService {
     // Check if we have to create pseudo-messages related to OMEMO
     final omemoData = event.get<OmemoData>();
     if (omemoData != null) {
+      final amountAdded = omemoData.newRatchets.values
+          .map((ids) => ids.length)
+          .reduce((value, element) => value + element);
+      final amountReplaced = omemoData.replacedRatchets.values
+          .map((ids) => ids.length)
+          .reduce((value, element) => value + element);
+
       // Notify of new ratchets
       final om = GetIt.I.get<OmemoService>();
       if (omemoData.newRatchets.isNotEmpty) {
         await om.addPseudoMessage(
           conversationJid,
           PseudoMessageType.newDevice,
+          amountAdded,
+          amountReplaced,
         );
       }
 
@@ -1328,6 +1337,8 @@ class XmppService {
         await om.addPseudoMessage(
           conversationJid,
           PseudoMessageType.changedDevice,
+          amountAdded,
+          amountReplaced,
         );
       }
     }

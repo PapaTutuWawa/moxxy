@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 
-class NewDeviceBubble extends StatelessWidget {
-  const NewDeviceBubble({
-    required this.data,
-    required this.title,
+class OmemoBubble extends StatelessWidget {
+  const OmemoBubble({
+    required this.text,
+    required this.onTap,
     super.key,
   });
-  final Map<String, dynamic> data;
-  final String title;
+
+  /// The text to display in the bubble.
+  final String text;
+
+  /// Callback for tapping the message.
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -22,18 +23,14 @@ class NewDeviceBubble extends StatelessWidget {
         child: Material(
           color: bubbleColorNewDevice,
           child: InkWell(
-            onTap: () {
-              context.read<DevicesBloc>().add(
-                    DevicesRequestedEvent(data['jid']! as String),
-                  );
-            },
+            onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8,
                 vertical: 6,
               ),
               child: Text(
-                t.pages.conversation.newDeviceMessage(title: title),
+                text,
                 style: const TextStyle(
                   color: Colors.black,
                 ),

@@ -252,6 +252,8 @@ class OmemoService {
   Future<void> addPseudoMessage(
     String conversationJid,
     PseudoMessageType type,
+    int ratchetsAdded,
+    int ratchetsReplaced,
   ) async {
     final ms = GetIt.I.get<MessageService>();
     final message = await ms.addMessageFromData(
@@ -264,6 +266,10 @@ class OmemoService {
       false,
       false,
       pseudoMessageType: type,
+      pseudoMessageData: {
+        'ratchetsAdded': ratchetsAdded,
+        'ratchetsReplaced': ratchetsReplaced,
+      },
     );
     sendEvent(
       MessageAddedEvent(
