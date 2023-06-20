@@ -1244,8 +1244,6 @@ class XmppService {
     final isInRoster = rosterItem != null;
     // True if the message was sent by us (via a Carbon)
     final sent = isCarbon && event.from.toBare().toString() == state.jid;
-    // The timestamp at which we received the message
-    final messageTimestamp = DateTime.now().millisecondsSinceEpoch;
 
     // Acknowledge the message if enabled
     final receiptRequested =
@@ -1348,6 +1346,8 @@ class XmppService {
     }
 
     // Create the message in the database
+    // The timestamp at which we received the message
+    final messageTimestamp = DateTime.now().millisecondsSinceEpoch;
     final ms = GetIt.I.get<MessageService>();
     var message = await ms.addMessageFromData(
       messageBody,
