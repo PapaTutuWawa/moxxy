@@ -170,7 +170,14 @@
 	    "stickerPickerNoStickersLine1": "You have no sticker packs installed.",
 	    "stickerPickerNoStickersLine2": "They can be installed in the sticker settings.",
 	    "stickerSettings": "Sticker settings",
-	    "newDeviceMessage": "${title} added a new encryption device",
+	    "newDeviceMessage": {
+			"one": "A new device has been added",
+			"other": "Multiple new devices have been added"
+		},
+		"replacedDeviceMessage": {
+			"one": "A device has been changed",
+			"other": "Multiple devices have been added"
+		},
 	    "messageHint": "Send a message...",
 	    "sendImages": "Send images",
 	    "sendFiles": "Send files",

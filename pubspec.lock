@@ -921,40 +921,40 @@ packages:
     dependency: "direct main"
     description:
       name: moxlib
-      sha256: "135507494010803fba2d8a7333d323271c978559152882ca6ea695e5edbcd606"
+      sha256: "2a76a632d23ea73906964cee4463352995e40199036162217ea323a6c3846e73"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.5"
+    version: "0.2.0"
   moxplatform:
     dependency: "direct main"
     description:
       name: moxplatform
-      sha256: bd856b5b1cbdd45640aac22bc56747c5f1b0f3ca5b5e17767548e27a3f87eb2b
+      sha256: "6de28b4e358d09562f0c8275c565e0a25313003aa08501f1d6aa46350c1a1363"
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.15"
+    version: "0.1.16"
   moxplatform_android:
     dependency: transitive
     description:
       name: moxplatform_android
-      sha256: "8b2ac2716afb970eb1a1af2a5fd5c6b8864ad08d44c85678d86fffdca27d373e"
+      sha256: f7af2e9f326dba6f712edc99aaa8b75f8b09332465f359f514333e79024c41de
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.15"
+    version: "0.1.16"
   moxplatform_platform_interface:
     dependency: "direct main"
     description:
       name: moxplatform_platform_interface
-      sha256: "84bb5fb791567c1a197dba94dfad9e59e0839aa9a1e26359a70e0e9631ea71d6"
+      sha256: eba3f50a3fe00cd0d5fa9baae0f77a66017771c17ff1c376bd4c1ba04088bd5e
       url: "https://git.polynom.me/api/packages/Moxxy/pub/"
     source: hosted
-    version: "0.1.15"
+    version: "0.1.16"
   moxxmpp:
     dependency: "direct main"
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: fa2ce7c2d10042246e19249f672ce32f90bab087
+      resolved-ref: "05e3d804a4036e9cd93fd27473a1e970fda3c3fc"
       url: "https://codeberg.org/moxxy/moxxmpp.git"
     source: git
     version: "0.4.0"
@@ -1009,11 +1009,12 @@ packages:
   omemo_dart:
     dependency: "direct main"
     description:
-      name: omemo_dart
-      sha256: f255a0a16838b2a2373cf9739d2310909e79be179d894321b2c97d0531fc9614
-      url: "https://git.polynom.me/api/packages/PapaTutuWawa/pub/"
-    source: hosted
-    version: "0.4.3"
+      path: "."
+      ref: HEAD
+      resolved-ref: "49c7e114e6cf80dcde55fbbd218bba3182045862"
+      url: "https://github.com/PapaTutuWawa/omemo_dart.git"
+    source: git
+    version: "0.5.1"
   package_config:
     dependency: transitive
     description:
@@ -1198,6 +1199,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.4"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "01dd9bd0fa02548bf2ceee13545d4a0ec6046459d847b6b061d8a27237108a08"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
+  protoc_plugin:
+    dependency: transitive
+    description:
+      name: protoc_plugin
+      sha256: e2be5014ba145dc0f8de20ac425afa2a513aff64fe350d338e481d40de0573df
+      url: "https://pub.dev"
+    source: hosted
+    version: "20.0.1"
   provider:
     dependency: transitive
     description:

@@ -1,8 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -44,10 +44,13 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         );
 
     // Apply
-    final stickerPack = firstWhereOrNull(
-      GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,
-      (StickerPack pack) => pack.id == event.stickerPackId,
-    );
+    final stickerPack = GetIt.I
+        .get<stickers.StickersBloc>()
+        .state
+        .stickerPacks
+        .firstWhereOrNull(
+          (StickerPack pack) => pack.id == event.stickerPackId,
+        );
     assert(stickerPack != null, 'The sticker pack must be found');
     emit(
       state.copyWith(
@@ -177,10 +180,13 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     Emitter<StickerPackState> emit,
   ) async {
     // Find out if the sticker pack is locally available or not
-    final stickerPack = firstWhereOrNull(
-      GetIt.I.get<stickers.StickersBloc>().state.stickerPacks,
-      (StickerPack pack) => pack.id == event.stickerPackId,
-    );
+    final stickerPack = GetIt.I
+        .get<stickers.StickersBloc>()
+        .state
+        .stickerPacks
+        .firstWhereOrNull(
+          (StickerPack pack) => pack.id == event.stickerPackId,
+        );
 
     if (stickerPack == null) {
       await _onRemoteStickerPackRequested(

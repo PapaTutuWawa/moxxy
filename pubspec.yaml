@@ -62,13 +62,13 @@ dependencies:
     version: 0.1.4+1
   moxlib:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.5
+    version: ^0.2.0
   moxplatform:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.15
+    version: 0.1.16
   moxplatform_platform_interface:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
-    version: 0.1.15
+    version: 0.1.16
   moxxmpp:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.4.0
@@ -81,7 +81,7 @@ dependencies:
   native_imaging: 0.1.0
   omemo_dart:
     hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
-    version: 0.4.3
+    version: 0.5.0
   page_transition: 2.0.9
   path: 1.8.2
   path_provider: 2.0.11
@@ -139,8 +139,13 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: fa2ce7c2d10042246e19249f672ce32f90bab087
+      rev: 05e3d804a4036e9cd93fd27473a1e970fda3c3fc
       path: packages/moxxmpp
+
+  omemo_dart:
+    git:
+      url: https://github.com/PapaTutuWawa/omemo_dart.git
+      rev: 49c7e114e6cf80dcde55fbbd218bba3182045862
  
 extra_licenses:
   - name: undraw.co

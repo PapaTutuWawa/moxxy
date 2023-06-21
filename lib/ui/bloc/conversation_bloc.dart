@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
@@ -47,8 +47,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   ) async {
     final cb = GetIt.I.get<ConversationsBloc>();
     await cb.waitUntilInitialized();
-    final conversation = firstWhereOrNull(
-      cb.state.conversations,
+    final conversation = cb.state.conversations.firstWhereOrNull(
       (Conversation c) => c.jid == event.jid,
     )!;
     emit(

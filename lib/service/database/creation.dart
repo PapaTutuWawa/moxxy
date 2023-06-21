@@ -18,7 +18,8 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Messages
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $messagesTable (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       sender TEXT NOT NULL,
@@ -46,13 +47,15 @@ Future<void> createDatabase(Database db, int version) async {
       pseudoMessageData TEXT,
       CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
       CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
-    )''');
+    )''',
+  );
   await db.execute(
     'CREATE INDEX idx_messages_id ON $messagesTable (id, sid, originId)',
   );
 
   // Reactions
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $reactionsTable (
       senderJid  TEXT NOT NULL,
       emoji      TEXT NOT NULL,
@@ -60,13 +63,15 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT pk_sender PRIMARY KEY (senderJid, emoji, message_id),
       CONSTRAINT fk_message FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
         ON DELETE CASCADE
-    )''');
+    )''',
+  );
   await db.execute(
     'CREATE INDEX idx_reactions_message_id ON $reactionsTable (message_id, senderJid)',
   );
 
   // File metadata
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $fileMetadataTable (
       id               TEXT NOT NULL PRIMARY KEY,
       path             TEXT,
@@ -83,8 +88,10 @@ Future<void> createDatabase(Database db, int version) async {
       cipherTextHashes TEXT,
       filename         TEXT NOT NULL,
       size             INTEGER
-    )''');
-  await db.execute('''
+    )''',
+  );
+  await db.execute(
+    '''
     CREATE TABLE $fileMetadataHashesTable (
       algorithm TEXT NOT NULL,
       value     TEXT NOT NULL,
@@ -92,7 +99,8 @@ Future<void> createDatabase(Database db, int version) async {
       CONSTRAINT f_primarykey PRIMARY KEY (algorithm, value),
       CONSTRAINT fk_id FOREIGN KEY (id) REFERENCES $fileMetadataTable (id)
         ON DELETE CASCADE
-    )''');
+    )''',
+  );
   await db.execute(
     'CREATE INDEX idx_file_metadata_message_id ON $fileMetadataTable (id)',
   );
@@ -103,7 +111,8 @@ Future<void> createDatabase(Database db, int version) async {
     CREATE TABLE $conversationsTable (
       jid TEXT NOT NULL PRIMARY KEY,
       title TEXT NOT NULL,
-      avatarUrl TEXT NOT NULL,
+      avatarPath TEXT NOT NULL,
+      avatarHash TEXT,
       type TEXT NOT NULL,
       lastChangeTimestamp INTEGER NOT NULL,
       unreadCounter INTEGER NOT NULL,
@@ -124,11 +133,13 @@ Future<void> createDatabase(Database db, int version) async {
   );
 
   // Contacts
-  await db.execute('''
+  await db.execute(
+    '''
     CREATE TABLE $contactsTable (
       id TEXT PRIMARY KEY,
       jid TEXT NOT NULL
-    )''');
+    )''',
+  );
 
   // Roster
   await db.execute(
@@ -137,7 +148,7 @@ Future<void> createDatabase(Database db, int version) async {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       jid TEXT NOT NULL,
       title TEXT NOT NULL,
-      avatarUrl TEXT NOT NULL,
+      avatarPath TEXT NOT NULL,
       avatarHash TEXT NOT NULL,
       subscription TEXT NOT NULL,
       ask TEXT NOT NULL,
@@ -188,72 +199,58 @@ Future<void> createDatabase(Database db, int version) async {
   // OMEMO
   await db.execute(
     '''
-    CREATE TABLE $omemoRatchetsTable (
-      id         INTEGER NOT NULL,
-      jid        TEXT NOT NULL,
-      dhs        TEXT NOT NULL,
-      dhs_pub    TEXT NOT NULL,
-      dhr        TEXT,
-      rk         TEXT NOT NULL,
-      cks        TEXT,
-      ckr        TEXT,
-      ns         INTEGER NOT NULL,
-      nr         INTEGER NOT NULL,
-      pn         INTEGER NOT NULL,
-      ik_pub     TEXT NOT NULL,
-      session_ad TEXT NOT NULL,
-      acknowledged INTEGER NOT NULL,
-      mkskipped  TEXT NOT NULL,
-      kex_timestamp INTEGER NOT NULL,
-      kex        TEXT,
-      PRIMARY KEY (jid, id)
-    )''',
-  );
-  await db.execute(
-    '''
-    CREATE TABLE $omemoTrustCacheTable (
-      key   TEXT PRIMARY KEY NOT NULL,
-      trust INTEGER NOT NULL
-    )''',
-  );
-  await db.execute(
-    '''
-    CREATE TABLE $omemoTrustDeviceListTable (
-      jid    TEXT NOT NULL,
-      device INTEGER NOT NULL
-    )''',
-  );
-  await db.execute(
-    '''
-    CREATE TABLE $omemoTrustEnableListTable (
-      key     TEXT PRIMARY KEY NOT NULL,
-      enabled INTEGER NOT NULL
-    )''',
-  );
-  await db.execute(
-    '''
-    CREATE TABLE $omemoDeviceTable (
-      jid  TEXT NOT NULL,
-      id   INTEGER NOT NULL,
-      data TEXT NOT NULL,
-      PRIMARY KEY (jid, id)
+    CREATE TABLE $omemoDevicesTable (
+      jid       TEXT NOT NULL PRIMARY KEY,
+      id        INTEGER NOT NULL,
+      ikPub     TEXT NOT NULL,
+      ik        TEXT NOT NULL,
+      spkPub    TEXT NOT NULL,
+      spk       TEXT NOT NULL,
+      spkId     INTEGER NOT NULL,
+      spkSig    TEXT NOT NULL,
+      oldSpkPub TEXT,
+      oldSpk    TEXT,
+      oldSpkId  INTEGER,
+      opks      TEXT NOT NULL
     )''',
   );
   await db.execute(
     '''
     CREATE TABLE $omemoDeviceListTable (
-      jid  TEXT NOT NULL,
-      id   INTEGER NOT NULL,
-      PRIMARY KEY (jid, id)
+      jid     TEXT NOT NULL PRIMARY KEY,
+      devices TEXT NOT NULL
     )''',
   );
   await db.execute(
     '''
-    CREATE TABLE $omemoFingerprintCache (
-      jid  TEXT NOT NULL,
-      id   INTEGER NOT NULL,
-      fingerprint TEXT NOT NULL,
-      PRIMARY KEY (jid, id)
+    CREATE TABLE $omemoRatchetsTable (
+      jid TEXT NOT NULL,
+      device INTEGER NOT NULL,
+      dhsPub  TEXT NOT NULL,
+      dhs     TEXT NOT NULL,
+      dhrPub  TEXT,
+      rk      TEXT NOT NULL,
+      cks     TEXT,
+      ckr     TEXT,
+      ns      INTEGER NOT NULL,
+      nr      INTEGER NOT NULL,
+      pn      INTEGER NOT NULL,
+      ik      TEXT NOT NULL,
+      ad      TEXT NOT NULL,
+      skipped TEXT NOT NULL,
+      kex     TEXT NOT NULL,
+      acked   INTEGER NOT NULL,
+      PRIMARY KEY (jid, device)
+    )''',
+  );
+  await db.execute(
+    '''
+    CREATE TABLE $omemoTrustTable (
+      jid     TEXT NOT NULL,
+      device  INTEGER NOT NULL,
+      trust   INTEGER NOT NULL,
+      enabled INTEGER NOT NULL,
+      PRIMARY KEY (jid, device)
     )''',
   );
 

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/painting.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -53,8 +53,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     StickerPackRemovedEvent event,
     Emitter<StickersState> emit,
   ) async {
-    final stickerPack = firstWhereOrNull(
-      state.stickerPacks,
+    final stickerPack = state.stickerPacks.firstWhereOrNull(
       (StickerPack sp) => sp.id == event.stickerPackId,
     )!;
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);

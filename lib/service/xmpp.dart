@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+import 'package:collection/collection.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -313,8 +314,7 @@ class XmppService {
       //   },
       // );
 
-      final hasUrlSource = firstWhereOrNull(
-            sfs!.sources,
+      final hasUrlSource = sfs!.sources.firstWhereOrNull(
             (src) => src is StatelessFileSharingUrlSource,
           ) !=
           null;
@@ -336,8 +336,7 @@ class XmppService {
           sfs.metadata.size,
         );
       } else {
-        final encryptedSource = firstWhereOrNull(
-          sfs.sources,
+        final encryptedSource = sfs.sources.firstWhereOrNull(
           (src) => src is StatelessFileSharingEncryptedSource,
         )! as StatelessFileSharingEncryptedSource;
 
@@ -387,22 +386,24 @@ class XmppService {
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
-    if (isMarkable && info.features.contains(chatMarkersXmlns)) {
+    final hasId = originId != null || event.id != null;
+    if (isMarkable && info.features.contains(chatMarkersXmlns) && hasId) {
       await manager.sendMessage(
         event.from.toBare(),
         TypedMap<StanzaHandlerExtension>.fromList([
           ChatMarkerData(
             ChatMarker.received,
-            originId ?? event.id,
+            originId ?? event.id!,
           )
         ]),
       );
     } else if (deliveryReceiptRequested &&
-        info.features.contains(deliveryXmlns)) {
+        info.features.contains(deliveryXmlns) &&
+        hasId) {
       await manager.sendMessage(
         event.from.toBare(),
         TypedMap<StanzaHandlerExtension>.fromList([
-          MessageDeliveryReceivedData(originId ?? event.id),
+          MessageDeliveryReceivedData(originId ?? event.id!),
         ]),
       );
     }
@@ -780,7 +781,9 @@ class XmppService {
       GetIt.I.get<BlocklistService>().onNewConnection();
 
       // Reset the OMEMO cache
-      GetIt.I.get<OmemoService>().onNewConnection();
+      unawaited(
+        GetIt.I.get<OmemoService>().onNewConnection(),
+      );
 
       // Enable carbons, if they're not already enabled (e.g. by using SASL2)
       final cm = connection.getManagerById<CarbonsManager>(carbonsManager)!;
@@ -1054,10 +1057,17 @@ class XmppService {
       return;
     }
 
+    if (event.id == null) {
+      _log.warning(
+        'Received error message without id.',
+      );
+      return;
+    }
+
     final ms = GetIt.I.get<MessageService>();
     final msg = await ms.getMessageByStanzaId(
       event.from.toBare().toString(),
-      event.id,
+      event.id!,
     );
 
     if (msg == null) {
@@ -1214,7 +1224,7 @@ class XmppService {
 
     // Stop the processing here if the event does not describe a displayable message
     if (!_isMessageEventMessage(event) && event.encryptionError == null) return;
-    if (event.encryptionError is InvalidKeyExchangeException) return;
+    if (event.encryptionError is InvalidKeyExchangeSignatureError) return;
 
     // Ignore File Upload Notifications where we don't have a filename.
     final fun = event.extensions.get<FileUploadNotificationData>();
@@ -1234,8 +1244,6 @@ class XmppService {
     final isInRoster = rosterItem != null;
     // True if the message was sent by us (via a Carbon)
     final sent = isCarbon && event.from.toBare().toString() == state.jid;
-    // The timestamp at which we received the message
-    final messageTimestamp = DateTime.now().millisecondsSinceEpoch;
 
     // Acknowledge the message if enabled
     final receiptRequested =
@@ -1294,14 +1302,60 @@ class XmppService {
               );
     }
 
+    // Log encryption errors
+    if (event.encryptionError != null) {
+      _log.warning(
+        'Got encryption error from moxxmpp for message: ${event.encryptionError}',
+      );
+    }
+
+    // Check if we have to create pseudo-messages related to OMEMO
+    final omemoData = event.get<OmemoData>();
+    if (omemoData != null) {
+      final addedRatchetsList =
+          omemoData.newRatchets.values.map((ids) => ids.length);
+      final amountAdded = addedRatchetsList.isEmpty
+          ? 0
+          : addedRatchetsList.reduce((value, element) => value + element);
+      final replacedRatchetsList =
+          omemoData.replacedRatchets.values.map((ids) => ids.length);
+      final amountReplaced = replacedRatchetsList.isEmpty
+          ? 0
+          : replacedRatchetsList.reduce((value, element) => value + element);
+
+      // Notify of new ratchets
+      final om = GetIt.I.get<OmemoService>();
+      if (omemoData.newRatchets.isNotEmpty) {
+        await om.addPseudoMessage(
+          conversationJid,
+          PseudoMessageType.newDevice,
+          amountAdded,
+          amountReplaced,
+        );
+      }
+
+      // Notify of changed ratchets
+      if (omemoData.replacedRatchets.isNotEmpty) {
+        await om.addPseudoMessage(
+          conversationJid,
+          PseudoMessageType.changedDevice,
+          amountAdded,
+          amountReplaced,
+        );
+      }
+    }
+
     // Create the message in the database
+    // The timestamp at which we received the message
+    final messageTimestamp = DateTime.now().millisecondsSinceEpoch;
     final ms = GetIt.I.get<MessageService>();
     var message = await ms.addMessageFromData(
       messageBody,
       messageTimestamp,
       event.from.toString(),
       conversationJid,
-      event.id,
+      // TODO(Unknown): Should we handle this differently?
+      event.id ?? '',
       fun != null,
       event.encrypted,
       event.extensions

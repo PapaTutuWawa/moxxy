@@ -170,7 +170,14 @@
 	    "stickerPickerNoStickersLine1": "Du hast keine Stickerpacks installiert.",
 	    "stickerPickerNoStickersLine2": "Diese können in den Stickereinstellungen installiert werden.",
 	    "stickerSettings": "Stickereinstellungen",
-	    "newDeviceMessage": "${title} hat ein neues Verschlüsselungsgerät hinzugefügt",
+	    "newDeviceMessage": {
+			"one": "Ein neues Gerät wurde hinzugefügt",
+			"other": "Mehrere neue Geräte wurden hinzugefügt"
+		},
+		"replacedDeviceMessage": {
+			"one": "Ein Gerät hat sich verändert",
+			"other": "Mehrere Geräte haben sich verändert"
+		},
 	    "messageHint": "Nachricht senden...",
 	    "sendImages": "Bilder senden",
 	    "sendFiles": "Dateien senden",

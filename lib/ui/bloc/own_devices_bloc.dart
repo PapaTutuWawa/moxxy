@@ -87,17 +87,6 @@ class OwnDevicesBloc extends Bloc<OwnDevicesEvent, OwnDevicesState> {
           RecreateSessionsCommand(jid: GetIt.I.get<UIDataService>().ownJid!),
           awaitable: false,
         );
-    emit(
-      state.copyWith(
-        keys: List.from(
-          state.keys.map(
-            (key) => key.copyWith(
-              hasSessionWith: false,
-            ),
-          ),
-        ),
-      ),
-    );
 
     GetIt.I.get<NavigationBloc>().add(PoppedRouteEvent());
   }

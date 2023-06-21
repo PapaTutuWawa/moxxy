@@ -776,7 +776,7 @@ Future<void> performGetOmemoFingerprints(
   final omemo = GetIt.I.get<OmemoService>();
   sendEvent(
     GetConversationOmemoFingerprintsResult(
-      fingerprints: await omemo.getOmemoKeysForJid(command.jid),
+      fingerprints: await omemo.getFingerprintsForJid(command.jid),
     ),
     id: id,
   );
@@ -789,7 +789,7 @@ Future<void> performEnableOmemoKey(
   final id = extra as String;
 
   final omemo = GetIt.I.get<OmemoService>();
-  await omemo.setOmemoKeyEnabled(
+  await omemo.setDeviceEnablement(
     command.jid,
     command.deviceId,
     command.enabled,
@@ -805,10 +805,14 @@ Future<void> performRecreateSessions(
   RecreateSessionsCommand command, {
   dynamic extra,
 }) async {
-  await GetIt.I.get<OmemoService>().removeAllSessions(command.jid);
+  // Remove all ratchets
+  await GetIt.I.get<OmemoService>().removeAllRatchets(command.jid);
 
-  final conn = GetIt.I.get<XmppConnection>();
-  await conn.getManagerById<BaseOmemoManager>(omemoManager)!.sendOmemoHeartbeat(
+  // And force the creation of new ones
+  await GetIt.I
+      .get<XmppConnection>()
+      .getManagerById<OmemoManager>(omemoManager)!
+      .sendOmemoHeartbeat(
         command.jid,
       );
 }
@@ -837,14 +841,14 @@ Future<void> performGetOwnOmemoFingerprints(
   final id = extra as String;
   final os = GetIt.I.get<OmemoService>();
   final xs = GetIt.I.get<XmppService>();
-  await os.ensureInitialized();
 
   final jid = (await xs.getConnectionSettings())!.jid;
+  final device = await os.getDevice();
   sendEvent(
     GetOwnOmemoFingerprintsResult(
-      ownDeviceFingerprint: await os.getDeviceFingerprint(),
-      ownDeviceId: await os.getDeviceId(),
-      fingerprints: await os.getOwnFingerprints(jid),
+      ownDeviceFingerprint: await device.getFingerprint(),
+      ownDeviceId: device.id,
+      fingerprints: await os.getFingerprintsForJid(jid.toString()),
     ),
     id: id,
   );
@@ -856,7 +860,7 @@ Future<void> performRemoveOwnDevice(
 }) async {
   await GetIt.I
       .get<XmppConnection>()
-      .getManagerById<BaseOmemoManager>(omemoManager)!
+      .getManagerById<OmemoManager>(omemoManager)!
       .deleteDevice(command.deviceId);
 }
 
@@ -865,9 +869,7 @@ Future<void> performRegenerateOwnDevice(
   dynamic extra,
 }) async {
   final id = extra as String;
-  final jid =
-      GetIt.I.get<XmppConnection>().connectionSettings.jid.toBare().toString();
-  final device = await GetIt.I.get<OmemoService>().regenerateDevice(jid);
+  final device = await GetIt.I.get<OmemoService>().regenerateDevice();
 
   sendEvent(
     RegenerateOwnDeviceResult(device: device),
@@ -1041,9 +1043,9 @@ Future<void> performMarkDeviceVerified(
   MarkOmemoDeviceAsVerifiedCommand command, {
   dynamic extra,
 }) async {
-  await GetIt.I.get<OmemoService>().verifyDevice(
-        command.deviceId,
+  await GetIt.I.get<OmemoService>().setDeviceVerified(
         command.jid,
+        command.deviceId,
       );
 }
 

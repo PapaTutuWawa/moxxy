@@ -23,8 +23,8 @@ import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/pages/conversation/typing_indicator.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/theme.dart';
+import 'package:moxxyv2/ui/widgets/chat/bubbles/bubbles.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
-import 'package:moxxyv2/ui/widgets/chat/bubbles/new_device.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
@@ -232,10 +232,7 @@ class ConversationPageState extends State<ConversationPage>
             constraints: BoxConstraints(
               maxWidth: maxWidth,
             ),
-            child: NewDeviceBubble(
-              data: item.pseudoMessageData!,
-              title: state.conversation!.title,
-            ),
+            child: bubbleFromPseudoMessageType(context, item),
           ),
         ],
       );
