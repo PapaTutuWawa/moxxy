@@ -1,264 +1,311 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'
          xmlns='http://usefulinc.com/ns/doap#'
-	 xmlns:foaf='http://xmlns.com/foaf/0.1/'
-	 xmlns:xmpp='https://linkmauve.fr/ns/xmpp-doap#'>
+         xmlns:xmpp='https://linkmauve.fr/ns/xmpp-doap#'
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:schema='https://schema.org'>
   <Project xml:lang='en'>
+    <!-- Moxxy information -->
     <name>Moxxy</name>
     <created>2021-12-26</created>
-    <homepage rdf:resource='https://moxxy.org'/>
+    <homepage rdf:resource="https://moxxy.org" />
     <os>Android</os>
+    <shortdesc xml:lang="de">An experiment in building a better XMPP client.</shortdesc>
+    <description xml:lang="en">Moxxy is an experimental XMPP client that aims to be modern and easy to use.</description>
 
-    <programming-language>Dart</programming-language>
+    <!-- Graphics -->
+    <schema:logo rdf:resource="https://codeberg.org/moxxy/moxxy/raw/branch/master/fastlane/metadata/android/en-US/images/icon.png" />
+    <schema:screenshot rdf:resource="https://codeberg.org/moxxy/moxxy/raw/branch/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" />
 
+    <!-- Maintainer information -->
     <maintainer>
       <foaf:Person>
-	<foaf:name>Alexander "Polynomdivision"</foaf:name>
-	<foaf:homepage rdf:resource="https://blog.polynom.me" />
+      	<foaf:name>Alexander "Polynomdivision"</foaf:name>
+      	<foaf:homepage rdf:resource="https://polynom.me" />
       </foaf:Person>
     </maintainer>
 
-    <implements rdf:resource="https://xmpp.org/rfcs/rfc6120.html" />
+    <!-- Channel list -->
+    <developer-forum rdf:resource='xmpp:dev@muc.moxxy.org?join'/>
+    <support-forum rdf:resource='xmpp:moxxy@muc.moxxy.org?join'/>
 
+    <!-- Repository information -->
+    <programming-language>Dart</programming-language>
+    <bug-database rdf:resource="https://codeberg.org/moxxy/moxxy/issues" />
+    <license rdf:resource="https://codeberg.org/moxxy/moxxy/src/branch/master/LICENSE" />
+    <repository>
+      <GitRepository>
+        <browse rdf:resource="https://codeberg.org/moxxy/moxxy" />
+        <location rdf:resource="https://codeberg.org/moxxy/moxxy.git" />
+      </GitRepository>
+    </repository>
+
+    <!-- Core RFCs -->
+    <implements rdf:resource="https://xmpp.org/rfcs/rfc6120.html" />
+    <implements rdf:resource="https://xmpp.org/rfcs/rfc6121.html" />
+
+    <!-- Standard XEPs -->
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0004.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>2.13.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0004.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>2.13.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0030.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>2.5rc3</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0030.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>2.5rc3</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0060.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>1.24.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0060.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>1.24.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0066.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:note xml:lang="en">Only jabber:x:oob</xmpp:note>
-	<xmpp:version>1.5</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0066.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:note xml:lang="en">Only jabber:x:oob</xmpp:note>
+      	<xmpp:version>1.5</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0084.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:note xml:lang="en">Receiving data</xmpp:note>
-	<xmpp:version>1.1.4</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0084.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>1.1.4</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0085.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>2.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0085.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>2.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0115.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>1.5.2</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0115.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>1.5.2</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0153.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>1.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0153.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>1.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0184.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>1.4.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0184.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>1.4.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0191.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>1.3.0</xmpp:version>
-	<xmpp:note xml:lang="en">Not plugged into the UI</xmpp:note>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0191.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>1.3.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0198.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>1.6</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0198.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>1.6</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0280.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>1.0.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0280.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>1.0.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0297.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:note xml:lang="en">Exists only as part of support for XEP-0280</xmpp:note>
-	<xmpp:version>1.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0297.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:note xml:lang="en">Exists only as part of support for XEP-0280</xmpp:note>
+      	<xmpp:version>1.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0300.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:note xml:lang="en">Supports only Sha256, Sha512 and blake2b512</xmpp:note>
-	<xmpp:version>1.0.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0300.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:note xml:lang="en">Supports only Sha256, Sha512 and blake2b512</xmpp:note>
+      	<xmpp:version>1.0.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0308.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>1.2.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0308.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>1.2.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0333.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:note xml:lang="en">Read-only support</xmpp:note>
-	<xmpp:version>0.4</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0333.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:note xml:lang="en">Read-only support</xmpp:note>
+      	<xmpp:version>0.4</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0334.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:note xml:lang="en">Write-only support</xmpp:note>
-	<xmpp:version>0.3.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0334.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:note xml:lang="en">Write-only support</xmpp:note>
+      	<xmpp:version>0.3.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0352.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>1.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0352.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>1.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0359.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.6.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0359.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.6.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0363.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>1.1.0</xmpp:version>
-	<xmpp:note xml:lang="en">Only handles the success case; not accessible via the App</xmpp:note>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0363.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>1.1.0</xmpp:version>
+      	<xmpp:note xml:lang="en">Only handles the success case; not accessible via the App</xmpp:note>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0368.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>1.1.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0368.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>1.1.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0380.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.4.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0380.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.4.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0384.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.8.3</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0384.html" />
+      	<xmpp:status>complete</xmpp:status>
+       	<xmpp:version>0.8.3</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0420.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>0.4.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0386.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.4.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0424.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.3.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0388.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>0.4.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0444.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.1.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0420.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>0.4.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0446.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.2.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0424.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.3.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0447.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.1.2</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0444.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.1.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0448.html" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>0.2.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0446.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.2.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0449.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.1.1</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0447.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.1.2</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0461.html" />
-	<xmpp:status>complete</xmpp:status>
-	<xmpp:version>0.2.0</xmpp:version>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0448.html" />
+      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:version>0.2.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://codeberg.org/moxxy/custom-xeps/src/branch/master/xep-xxxx-extensible-file-thumbnails.md" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>0.2.1</xmpp:version>
-	<xmpp:note xml:lang="en">Only Blurhash is implemented</xmpp:note>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0449.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.1.1</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
     <implements>
       <xmpp:SupportedXep>
-	<xmpp:xep rdf:resource="https://codeberg.org/moxxy/custom-xeps/src/branch/master/xep-xxxx-file-upload-notification.md" />
-	<xmpp:status>partial</xmpp:status>
-	<xmpp:version>0.0.5</xmpp:version>
-	<xmpp:note xml:lang="en">Sending and receiving implemented; cancellation not implemented</xmpp:note>
+      	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0461.html" />
+      	<xmpp:status>complete</xmpp:status>
+      	<xmpp:version>0.2.0</xmpp:version>
+      </xmpp:SupportedXep>
+    </implements>
+
+    <!-- Non-Standard (Proto) XEPs -->
+    <implements>
+      <xmpp:SupportedXep>
+ 	      <xmpp:xep rdf:resource="https://xmpp.org/extensions/inbox/xep-fast.html" />
+	      <xmpp:status>partial</xmpp:status>
+	      <xmpp:version>0.0.1</xmpp:version>
+	      <xmpp:note xml:lang="en">Invalidation is never requested</xmpp:note>
+      </xmpp:SupportedXep> 
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
+	      <xmpp:xep rdf:resource="https://codeberg.org/moxxy/custom-xeps/src/branch/master/xep-xxxx-extensible-file-thumbnails.md" />
+	      <xmpp:status>partial</xmpp:status>
+	      <xmpp:version>0.2.1</xmpp:version>
+	      <xmpp:note xml:lang="en">Only Blurhash is implemented</xmpp:note>
+      </xmpp:SupportedXep>
+    </implements>
+    <implements>
+      <xmpp:SupportedXep>
+    	  <xmpp:xep rdf:resource="https://codeberg.org/moxxy/custom-xeps/src/branch/master/xep-xxxx-file-upload-notification.md" />
+    	  <xmpp:status>partial</xmpp:status>
+    	  <xmpp:version>0.0.5</xmpp:version>
+    	  <xmpp:note xml:lang="en">Sending and receiving implemented; cancellation not implemented</xmpp:note>
       </xmpp:SupportedXep>
     </implements>
   </Project>
