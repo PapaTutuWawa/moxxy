@@ -184,9 +184,9 @@ class ConversationsListRowState extends State<ConversationsListRow> {
           radius: 35,
           jid: widget.conversation.jid,
           hash: widget.conversation.avatarHash,
-          altText: widget.conversation.titleWithOptionalContact,
           path: widget.conversation.avatarPathWithOptionalContact,
           hasContactId: widget.conversation.contactId != null,
+          altIcon: widget.conversation.type == ConversationType.note ? Icons.notes : null,
           shouldRequest: widget.conversation.type != ConversationType.note,
         );
 

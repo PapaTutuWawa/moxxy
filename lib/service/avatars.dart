@@ -125,6 +125,13 @@ class AvatarService {
 
       sendEvent(RosterDiffEvent(modified: [roster]));
     }
+
+    sendEvent(
+      AvatarUpdatedEvent(
+        jid: jid.toString(),
+        path: avatarPath,
+      ),
+    );
   }
 
   /// Publishes the data at [path] as an avatar with PubSub ID

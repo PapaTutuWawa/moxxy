@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -33,11 +35,13 @@ class SelfProfileHeader extends StatelessWidget {
             Hero(
               tag: 'self_profile_picture',
               child: Material(
-                child: AvatarWrapper(
+                child: CachingXMPPAvatar(
                   radius: 110,
-                  avatarUrl: state.avatarUrl,
-                  altIcon: Icons.person,
-                  onTapFunction: () =>
+                  jid: GetIt.I.get<ConversationsBloc>().state.jid,
+                  hasContactId: false,
+                  ownAvatar: true,
+                  path: state.avatarUrl,
+                  onTap: () =>
                       pickAndSetAvatar(context, state.avatarUrl),
                 ),
               ),

@@ -1,112 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
-import 'package:moxxyv2/ui/theme.dart';
-
-class AvatarWrapper extends StatelessWidget {
-  const AvatarWrapper({
-    required this.radius,
-    this.avatarUrl,
-    this.altText,
-    this.altIcon,
-    this.onTapFunction,
-    this.showEditButton = false,
-    super.key,
-  })  : assert(
-          avatarUrl != null ||
-              (avatarUrl == null || avatarUrl == '') &&
-                  (altText != null && altText != '' || altIcon != null),
-          'avatarUrl and either altText or altIcon must be set',
-        ),
-        assert(
-          showEditButton ? onTapFunction != null : true,
-          'If the edit button is shown, then a onTap handler must be set',
-        );
-  final String? avatarUrl;
-  final String? altText;
-  final IconData? altIcon;
-  final double radius;
-  final bool showEditButton;
-  final void Function()? onTapFunction;
-
-  Widget _constructAlt(BuildContext context) {
-    if (altText != null) {
-      return Text(
-        avatarAltText(altText!),
-        style: TextStyle(
-          fontSize: radius * 0.8,
-          color: Theme.of(context)
-              .extension<MoxxyThemeData>()!
-              .profileFallbackTextColor,
-        ),
-      );
-    }
-
-    return Icon(
-      altIcon,
-      size: radius,
-      color: Theme.of(context)
-          .extension<MoxxyThemeData>()!
-          .profileFallbackTextColor,
-    );
-  }
-
-  /// Either display the alt or the actual image
-  Widget _avatarWrapper(BuildContext context) {
-    final useAlt = avatarUrl == null || avatarUrl == '';
-
-    return CircleAvatar(
-      backgroundColor: Theme.of(context)
-          .extension<MoxxyThemeData>()!
-          .profileFallbackBackgroundColor,
-      backgroundImage: !useAlt ? FileImage(File(avatarUrl!)) : null,
-      radius: radius,
-      child: useAlt ? _constructAlt(context) : null,
-    );
-  }
-
-  Widget _withEditButton(BuildContext context) {
-    return Stack(
-      children: [
-        _avatarWrapper(context),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              color: Colors.black38,
-              shape: BoxShape.circle,
-            ),
-            child: Padding(
-              padding: EdgeInsets.all((3 / 35) * radius),
-              child: Icon(
-                Icons.edit,
-                size: (2 / 4) * radius,
-              ),
-            ),
-          ),
-        )
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTapFunction,
-      child:
-          showEditButton ? _withEditButton(context) : _avatarWrapper(context),
-    );
-  }
-}
 
 class CachingXMPPAvatar extends StatefulWidget {
   const CachingXMPPAvatar({
     required this.jid,
-    required this.altText,
     required this.radius,
     required this.hasContactId,
     this.altIcon,
@@ -114,6 +15,7 @@ class CachingXMPPAvatar extends StatefulWidget {
     this.ownAvatar = false,
     this.hash,
     this.path,
+    this.onTap,
     super.key,
   });
 
@@ -122,9 +24,6 @@ class CachingXMPPAvatar extends StatefulWidget {
 
   /// The hash of the JID's avatar or null, if we don't know of an avatar.
   final String? hash;
-
-  /// The alt-text, if [path] is null.
-  final String altText;
 
   /// The (potentially null) path to the avatar image.
   final String? path;
@@ -143,6 +42,9 @@ class CachingXMPPAvatar extends StatefulWidget {
 
   /// Flag indicating whether this avatar is our own avatar.
   final bool ownAvatar;
+
+  /// If set, called when the avatar has been tapped.
+  final VoidCallback? onTap;
 
   @override
   CachingXMPPAvatarState createState() => CachingXMPPAvatarState();
@@ -179,13 +81,34 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
     }
   }
 
+  Widget _buildChild() {
+    if (widget.altIcon != null) {
+      return Icon(widget.altIcon);
+    }
+
+    assert(widget.jid.length >= 2, '${widget.jid} must be longer longer than 1 character',);
+    return Text(widget.jid.substring(0, 2).toUpperCase());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AvatarWrapper(
-      avatarUrl: widget.path,
-      altText: widget.altText,
-      altIcon: widget.altIcon,
-      radius: widget.radius,
+    return InkWell(
+      onTap: widget.onTap,
+      child: SizedBox(
+      width: widget.radius * 2,
+      height: widget.radius * 2,
+      child: StreamBuilder<AvatarUpdatedEvent>(
+        stream: GetIt.I.get<UIAvatarsService>().stream.where((event) => event.jid == widget.jid),
+        builder: (context, snapshot) {
+          final path = snapshot.data?.path ?? widget.path;
+          final isValidPath = path?.isNotEmpty ?? false;
+          return CircleAvatar(
+            backgroundImage: isValidPath ? FileImage(File(widget.path!)) : null,
+            child: isValidPath ? null : _buildChild(),
+          );
+        },
+      ),
+      ),
     );
   }
 }

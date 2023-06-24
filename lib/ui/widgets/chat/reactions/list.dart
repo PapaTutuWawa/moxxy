@@ -80,15 +80,19 @@ class ReactionList extends StatelessWidget {
                 ownReaction ? null : bloc.getConversationByJid(reaction.jid);
             return ReactionsRow(
               avatar: ownReaction
-                  ? AvatarWrapper(
-                      avatarUrl: bloc.state.avatarPath,
+                  ? const CachingXMPPAvatar(
                       radius: 35,
-                      altIcon: Icons.person,
+                      jid: '',
+                      hasContactId: false,
+                      ownAvatar: true,
                     )
-                  : AvatarWrapper(
-                      avatarUrl: conversation?.avatarPath,
+                  : CachingXMPPAvatar(
                       radius: 35,
-                      altIcon: Icons.person,
+                      jid: reaction.jid,
+                      // TODO(Unknown): This will break with groupchats
+                      hasContactId: conversation?.contactId != null,
+                      path: conversation?.avatarPath,
+                      hash: conversation?.avatarHash,
                     ),
               displayName: reaction.jid == ownJid
                   ? t.messages.you

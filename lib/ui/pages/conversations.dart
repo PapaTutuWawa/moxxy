@@ -271,7 +271,6 @@ class ConversationsPageState extends State<ConversationsPage>
                           child: CachingXMPPAvatar(
                             radius: 20,
                             path: state.avatarPath,
-                            altText: state.jid[0],
                             altIcon: Icons.person,
                             hasContactId: false,
                             jid: state.jid,

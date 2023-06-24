@@ -281,6 +281,13 @@ files:
           - JsonImplementation
         attributes:
           resumed: bool
+      - name: AvatarUpdatedEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String
+          path: String
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

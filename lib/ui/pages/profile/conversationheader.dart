@@ -28,10 +28,12 @@ class ConversationProfileHeader extends StatelessWidget {
     return RebuildOnContactIntegrationChange(
       builder: () {
         final path = conversation.avatarPathWithOptionalContact;
-        final avatar = AvatarWrapper(
+        final avatar = CachingXMPPAvatar(
           radius: 110,
-          avatarUrl: path,
-          altText: conversation.titleWithOptionalContact,
+          jid: conversation.jid,
+          hasContactId: conversation.contactId != null,
+          path: path,
+          hash: conversation.avatarHash,
         );
 
         if (path != null && path.isNotEmpty) {
