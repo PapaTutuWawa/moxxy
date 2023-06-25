@@ -19,6 +19,12 @@ For build and contribution guidelines, please refer to [`CONTRIBUTING.md`](./CON
 
 Also, feel free to join the development chat at `moxxy@muc.moxxy.org`.
 
+### Translating
+
+If you want to contribute by translating Moxxy, you can do that on [Codeberg's Weblate instance](https://translate.codeberg.org/projects/moxxy/moxxy/).
+
+[![Translation status](https://translate.codeberg.org/widgets/moxxy/-/moxxy/multi-auto.svg)](https://translate.codeberg.org/engage/moxxy/)
+
 ## A Bit of History
 
 This project is the successor of moxxyv1, which was written in *React Native* and abandoned
