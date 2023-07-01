@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
@@ -460,4 +461,16 @@ List<T> clampedListPrependAll<T>(List<T> list, List<T> items, int maxSize) {
     ...items,
     ...list,
   ].sublist(0, maxSize);
+}
+
+extension StringJsonHelper on String {
+  /// Converts the Map into a JSON-encoded String. Helper function for working with nullable maps.
+  Map<String, dynamic> fromJson() {
+    return (jsonDecode(this) as Map<dynamic, dynamic>).cast<String, dynamic>();
+  }
+}
+
+extension MapJsonHelper on Map<String, dynamic> {
+  /// Converts the map into a String. Helper function for working with nullable Strings.
+  String toJson() => jsonEncode(this);
 }

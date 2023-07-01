@@ -1,3 +1,4 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:omemo_dart/omemo_dart.dart';
@@ -181,4 +182,18 @@ enum MessageErrorType {
         return t.errors.message.unspecified;
     }
   }
+}
+
+/// A converter for converting between [MessageErrorType] and [int].
+class MessageErrorTypeConverter
+    implements JsonConverter<MessageErrorType, int> {
+  const MessageErrorTypeConverter();
+
+  @override
+  MessageErrorType fromJson(int json) {
+    return MessageErrorType.fromInt(json)!;
+  }
+
+  @override
+  int toJson(MessageErrorType data) => data.value;
 }

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
@@ -10,19 +9,6 @@ import 'package:moxxyv2/shared/warning_types.dart';
 part 'message.freezed.dart';
 part 'message.g.dart';
 
-extension PseudoMessageTypeFromInt on int {
-  PseudoMessageType? toPseudoMessageType() {
-    switch (this) {
-      case 1:
-        return PseudoMessageType.newDevice;
-      case 2:
-        return PseudoMessageType.changedDevice;
-      default:
-        return null;
-    }
-  }
-}
-
 enum PseudoMessageType {
   /// Indicates that a new device was created in the chat.
   newDevice(1),
@@ -30,35 +16,36 @@ enum PseudoMessageType {
   /// Indicates that an existing device has been replaced.
   changedDevice(2);
 
-  const PseudoMessageType(this.id);
+  const PseudoMessageType(this.value);
 
-  final int id;
+  /// The identifier for the type of pseudo message.
+  final int value;
+
+  static PseudoMessageType? fromInt(int value) {
+    switch (value) {
+      case 1:
+        return PseudoMessageType.newDevice;
+      case 2:
+        return PseudoMessageType.changedDevice;
+    }
+
+    return null;
+  }
 }
 
-Map<String, dynamic> _optionalJsonDecodeWithFallback(String? data) {
-  if (data == null) return <String, dynamic>{};
-
-  return (jsonDecode(data) as Map<dynamic, dynamic>).cast<String, dynamic>();
-}
-
-String? _optionalJsonEncodeWithFallback(Map<String, dynamic>? data) {
-  if (data == null) return null;
-  if (data.isEmpty) return null;
-
-  return jsonEncode(data);
-}
-
-class MessageErrorTypeConverter
-    implements JsonConverter<MessageErrorType, int> {
-  const MessageErrorTypeConverter();
+/// A converter for converting between [PseudoMessageType] and [int].
+class PseudoMessageTypeConverter extends JsonConverter<PseudoMessageType, int> {
+  const PseudoMessageTypeConverter();
 
   @override
-  MessageErrorType fromJson(int json) {
-    return MessageErrorType.fromInt(json)!;
+  PseudoMessageType fromJson(int json) {
+    return PseudoMessageType.fromInt(json)!;
   }
 
   @override
-  int toJson(MessageErrorType data) => data.value;
+  int toJson(PseudoMessageType object) {
+    return object.value;
+  }
 }
 
 @freezed
@@ -89,7 +76,7 @@ class Message with _$Message {
     Message? quotes,
     @Default([]) List<String> reactionsPreview,
     String? stickerPackId,
-    PseudoMessageType? pseudoMessageType,
+    @PseudoMessageTypeConverter() PseudoMessageType? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
   }) = _Message;
 
@@ -119,16 +106,7 @@ class Message with _$Message {
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
       'reactionsPreview': reactionsPreview,
-      //'errorType': MessageErrorType.fromInt(json['errorType'] as int?),
-      // NOTE: freezed expects the field name of the enum value here and refused to accept
-      //       actual enum value. Makes sense since we have to serialize it, I guess.
-      'pseudoMessageType': (json['pseudoMessageType'] as int?)
-          ?.toPseudoMessageType()
-          .toString()
-          .split('.')
-          .last,
-      'pseudoMessageData':
-          _optionalJsonDecodeWithFallback(json['pseudoMessageData'] as String?)
+      'pseudoMessageData': (json['pseudoMessageData'] as String?)?.fromJson(),
     }).copyWith(
       quotes: quotes,
       fileMetadata: fileMetadata,
@@ -158,9 +136,7 @@ class Message with _$Message {
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
       'containsNoStore': boolToInt(containsNoStore),
-      //'errorType': errorType?.value,
-      'pseudoMessageType': pseudoMessageType?.id,
-      'pseudoMessageData': _optionalJsonEncodeWithFallback(pseudoMessageData),
+      'pseudoMessageData': pseudoMessageData?.toJson(),
     };
   }
 
@@ -178,7 +154,7 @@ class Message with _$Message {
 
   /// Returns true if the message is an error. If not, then returns false.
   bool get hasError =>
-      errorType != null || errorType != MessageErrorType.noError;
+      errorType != null && errorType != MessageErrorType.noError;
 
   /// Returns true if the message is a warning. If not, then returns false.
   bool get hasWarning => warningType != null && warningType != noWarning;
@@ -241,8 +217,7 @@ class Message with _$Message {
 
   /// Returns true if the menu item to show the error should be shown in the
   /// longpress menu.
-  bool get errorMenuVisible =>
-      errorType != MessageErrorType.noError && !isOmemoError;
+  bool get errorMenuVisible => hasError && !isOmemoError;
 
   /// Returns true if the message contains media that can be thumbnailed, i.e. videos or
   /// images.
