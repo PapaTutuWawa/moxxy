@@ -288,6 +288,18 @@ files:
         attributes:
           jid: String
           path: String
+      # Returned when attempting to start a chat with a groupchat
+      - name: JidIsGroupchatEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+      # Returned when an error occured
+      - name: ErrorEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          errorId: int
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

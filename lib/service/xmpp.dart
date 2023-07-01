@@ -1075,20 +1075,13 @@ class XmppService {
       return;
     }
 
-    int error;
-    switch (event.error!.error) {
-      case 'service-unavailable':
-        error = messageServiceUnavailable;
-        break;
-      case 'remote-server-timeout':
-        error = messageRemoteServerTimeout;
-        break;
-      case 'remote-server-not-found':
-        error = messageRemoteServerNotFound;
-        break;
-      default:
-        error = unspecifiedError;
-        break;
+    var error = MessageErrorType.unspecified;
+    if (event.error! is ServiceUnavailableError) {
+      error = MessageErrorType.serviceUnavailable;
+    } else if (event.error! is RemoteServerNotFoundError) {
+      error = MessageErrorType.remoteServerNotFound;
+    } else if (event.error! is RemoteServerTimeoutError) {
+      error = MessageErrorType.remoteServerTimeout;
     }
 
     final newMsg = await ms.updateMessage(
@@ -1366,7 +1359,7 @@ class XmppService {
       fileMetadata: fileMetadata?.fileMetadata,
       quoteId: replyId,
       originId: event.extensions.get<StableIdData>()?.originId,
-      errorType: errorTypeFromException(event.encryptionError),
+      errorType: MessageErrorType.fromException(event.encryptionError),
       stickerPackId: event.extensions.get<StickersData>()?.stickerPackId,
     );
 
@@ -1666,7 +1659,7 @@ class XmppService {
     _log.finest('Cancel reason: ${event.data.cancelReason}');
     final newMessage = await ms.updateMessage(
       message.id,
-      errorType: errorTypeFromException(event.data.cancelReason),
+      errorType: MessageErrorType.fromException(event.data.cancelReason),
     );
 
     // Tell the UI

@@ -954,7 +954,7 @@ packages:
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: "05e3d804a4036e9cd93fd27473a1e970fda3c3fc"
+      resolved-ref: a928c5c877cec46e19a074e8afe46bbfb9a925a1
       url: "https://codeberg.org/moxxy/moxxmpp.git"
     source: git
     version: "0.4.0"

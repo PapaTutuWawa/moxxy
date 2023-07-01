@@ -1,15 +1,15 @@
-part of 'addcontact_bloc.dart';
+part of 'startchat_bloc.dart';
 
-abstract class AddContactEvent {}
+abstract class StartChatEvent {}
 
 /// Triggered when a new contact has been added by the UI
-class AddedContactEvent extends AddContactEvent {}
+class AddedContactEvent extends StartChatEvent {}
 
 /// Triggered by the UI when the JID input field is changed
-class JidChangedEvent extends AddContactEvent {
+class JidChangedEvent extends StartChatEvent {
   JidChangedEvent(this.jid);
   final String jid;
 }
 
 /// Triggered when the UI wants to reset its state
-class PageResetEvent extends AddContactEvent {}
+class PageResetEvent extends StartChatEvent {}

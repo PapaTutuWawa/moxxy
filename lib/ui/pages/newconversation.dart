@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/service/connectivity.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
@@ -61,17 +65,41 @@ class NewConversationPage extends StatelessWidget {
       body: BlocBuilder<NewConversationBloc, NewConversationState>(
         builder: (BuildContext context, NewConversationState state) =>
             ListView.builder(
-          itemCount: state.roster.length + 1,
+          itemCount: state.roster.length + 2,
           itemBuilder: (context, index) {
             switch (index) {
               case 0:
                 return _renderIconEntry(
                   Icons.person_add,
-                  t.pages.newconversation.addContact,
-                  () => Navigator.pushNamed(context, addContactRoute),
+                  t.pages.newconversation.startChat,
+                  () {
+                    if (!GetIt.I.get<UIConnectivityService>().hasConnection) {
+                      Fluttertoast.showToast(
+                        msg: t.errors.general.noInternet,
+                      );
+                      return;
+                    }
+
+                    Navigator.pushNamed(context, addContactRoute);
+                  },
+                );
+              case 1:
+                return _renderIconEntry(
+                  Icons.group,
+                  t.pages.newconversation.createGroupchat,
+                  () {
+                    if (!GetIt.I.get<UIConnectivityService>().hasConnection) {
+                      Fluttertoast.showToast(
+                        msg: t.errors.general.noInternet,
+                      );
+                      return;
+                    }
+
+                    showNotImplementedDialog('groupchat', context);
+                  },
                 );
               default:
-                final item = state.roster[index - 1];
+                final item = state.roster[index - 2];
                 return Dismissible(
                   key: ValueKey('roster;${item.jid}'),
                   direction: item.pseudoRosterItem

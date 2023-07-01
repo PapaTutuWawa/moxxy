@@ -2,18 +2,20 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
+import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 
-part 'addcontact_bloc.freezed.dart';
-part 'addcontact_event.dart';
-part 'addcontact_state.dart';
+part 'startchat_bloc.freezed.dart';
+part 'startchat_event.dart';
+part 'startchat_state.dart';
 
-class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
-  AddContactBloc() : super(AddContactState()) {
+class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
+  StartChatBloc() : super(StartChatState()) {
     on<AddedContactEvent>(_onContactAdded);
     on<JidChangedEvent>(_onJidChanged);
     on<PageResetEvent>(_onPageReset);
@@ -21,7 +23,7 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
 
   Future<void> _onContactAdded(
     AddedContactEvent event,
-    Emitter<AddContactState> emit,
+    Emitter<StartChatState> emit,
   ) async {
     final validation = validateJidString(state.jid);
     if (validation != null) {
@@ -41,31 +43,54 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
           AddContactCommand(
             jid: state.jid,
           ),
-        ) as AddContactResultEvent;
+        );
+
+    if (result is ErrorEvent) {
+      final error = result.errorId == ErrorType.remoteServerNotFound.value ||
+              result.errorId == ErrorType.remoteServerTimeout.value
+          ? t.errors.newChat.remoteServerError
+          : t.errors.newChat.unknown;
+      emit(
+        state.copyWith(
+          jidError: error,
+          isWorking: false,
+        ),
+      );
+      return;
+    } else if (result is JidIsGroupchatEvent) {
+      emit(
+        state.copyWith(
+          jidError: t.errors.newChat.groupchatUnsupported,
+          isWorking: false,
+        ),
+      );
+      return;
+    }
 
     await _onPageReset(PageResetEvent(), emit);
 
-    if (result.conversation != null) {
-      if (result.added) {
+    final addResult = result! as AddContactResultEvent;
+    if (addResult.conversation != null) {
+      if (addResult.added) {
         GetIt.I.get<ConversationsBloc>().add(
-              ConversationsAddedEvent(result.conversation!),
+              ConversationsAddedEvent(addResult.conversation!),
             );
       } else {
         GetIt.I.get<ConversationsBloc>().add(
-              ConversationsUpdatedEvent(result.conversation!),
+              ConversationsUpdatedEvent(addResult.conversation!),
             );
       }
     }
 
     assert(
-      result.conversation != null,
+      addResult.conversation != null,
       'RequestedConversationEvent must contain a not null conversation',
     );
     GetIt.I.get<ConversationBloc>().add(
           RequestedConversationEvent(
-            result.conversation!.jid,
-            result.conversation!.title,
-            result.conversation!.avatarPath,
+            addResult.conversation!.jid,
+            addResult.conversation!.title,
+            addResult.conversation!.avatarPath,
             removeUntilConversations: true,
           ),
         );
@@ -73,7 +98,7 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
 
   Future<void> _onJidChanged(
     JidChangedEvent event,
-    Emitter<AddContactState> emit,
+    Emitter<StartChatState> emit,
   ) async {
     emit(
       state.copyWith(
@@ -84,7 +109,7 @@ class AddContactBloc extends Bloc<AddContactEvent, AddContactState> {
 
   Future<void> _onPageReset(
     PageResetEvent event,
-    Emitter<AddContactState> emit,
+    Emitter<StartChatState> emit,
   ) async {
     emit(
       state.copyWith(

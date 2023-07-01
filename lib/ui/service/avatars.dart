@@ -12,7 +12,8 @@ class UIAvatarsService {
   /// JID already in the session (from login until stream resumption failure).
   final Map<String, bool> _avatarRequested = {};
 
-  final StreamController<AvatarUpdatedEvent> _updatedController = StreamController.broadcast();
+  final StreamController<AvatarUpdatedEvent> _updatedController =
+      StreamController.broadcast();
   Stream<AvatarUpdatedEvent> get stream => _updatedController.stream;
 
   void requestAvatarIfRequired(String jid, String? hash, bool ownAvatar) {

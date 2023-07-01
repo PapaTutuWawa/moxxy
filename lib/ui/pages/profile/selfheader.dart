@@ -41,8 +41,7 @@ class SelfProfileHeader extends StatelessWidget {
                   hasContactId: false,
                   ownAvatar: true,
                   path: state.avatarUrl,
-                  onTap: () =>
-                      pickAndSetAvatar(context, state.avatarUrl),
+                  onTap: () => pickAndSetAvatar(context, state.avatarUrl),
                 ),
               ),
             ),

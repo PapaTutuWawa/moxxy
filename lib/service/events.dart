@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -29,6 +30,7 @@ import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/debug.dart' as debug;
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -450,64 +452,9 @@ Future<void> performSetPreferences(
       );
 }
 
-Future<void> performAddContact(
-  AddContactCommand command, {
-  dynamic extra,
-}) async {
-  final id = extra as String;
-
-  final jid = command.jid;
+/// Attempts to achieve a "both" subscription with [jid].
+Future<void> _maybeAchieveBothSubscription(String jid) async {
   final roster = GetIt.I.get<RosterService>();
-  final inRoster = await roster.isInRoster(jid);
-  final cs = GetIt.I.get<ConversationService>();
-
-  await cs.createOrUpdateConversation(
-    jid,
-    create: () async {
-      // Create
-      final css = GetIt.I.get<ContactsService>();
-      final contactId = await css.getContactIdForJid(jid);
-      final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-      final newConversation = await cs.addConversationFromData(
-        jid.split('@')[0],
-        null,
-        ConversationType.chat,
-        '',
-        jid,
-        0,
-        DateTime.now().millisecondsSinceEpoch,
-        true,
-        prefs.defaultMuteState,
-        prefs.enableOmemoByDefault,
-        contactId,
-        await css.getProfilePicturePathForJid(jid),
-        await css.getContactDisplayName(contactId),
-      );
-
-      sendEvent(
-        AddContactResultEvent(conversation: newConversation, added: !inRoster),
-        id: id,
-      );
-
-      return newConversation;
-    },
-    update: (c) async {
-      final newConversation = await cs.updateConversation(
-        jid,
-        open: true,
-        lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
-      );
-
-      sendEvent(
-        AddContactResultEvent(conversation: newConversation, added: !inRoster),
-        id: id,
-      );
-
-      return newConversation;
-    },
-  );
-
-  // Add to roster, if needed
   final item = await roster.getRosterItemByJid(jid);
   if (item != null) {
     GetIt.I.get<Logger>().finest(
@@ -539,6 +486,121 @@ Future<void> performAddContact(
     }
   } else {
     await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
+  }
+}
+
+Future<void> performAddContact(
+  AddContactCommand command, {
+  dynamic extra,
+}) async {
+  final id = extra as String;
+
+  final jid = command.jid;
+  final roster = GetIt.I.get<RosterService>();
+  final inRoster = await roster.isInRoster(jid);
+  final cs = GetIt.I.get<ConversationService>();
+
+  final conversation = await cs.getConversationByJid(jid);
+  if (conversation != null) {
+    await cs.createOrUpdateConversation(
+      jid,
+      update: (c) async {
+        final newConversation = await cs.updateConversation(
+          jid,
+          open: true,
+          lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+        );
+
+        sendEvent(
+          AddContactResultEvent(
+            conversation: newConversation,
+            added: !inRoster,
+          ),
+          id: id,
+        );
+
+        return newConversation;
+      },
+    );
+
+    // Add to roster, if needed
+    await _maybeAchieveBothSubscription(jid);
+  } else {
+    // We did not have a conversation with that JID.
+    final info = await GetIt.I
+        .get<XmppConnection>()
+        .getDiscoManager()!
+        .discoInfoQuery(JID.fromString(jid));
+    var isGroupchat = false;
+    if (info.isType<DiscoInfo>()) {
+      isGroupchat = info.get<DiscoInfo>().identities.firstWhereOrNull(
+                (identity) => identity.category == 'conference',
+              ) !=
+          null;
+    } else if (info.isType<RemoteServerNotFoundError>()) {
+      sendEvent(
+        ErrorEvent(
+          errorId: ErrorType.remoteServerNotFound.value,
+        ),
+        id: id,
+      );
+      return;
+    } else if (info.isType<RemoteServerTimeoutError>()) {
+      sendEvent(
+        ErrorEvent(
+          errorId: ErrorType.remoteServerTimeout.value,
+        ),
+        id: id,
+      );
+      return;
+    }
+
+    if (isGroupchat) {
+      // The JID points to a groupchat. Handle that on the UI side
+      sendEvent(
+        JidIsGroupchatEvent(),
+        id: id,
+      );
+    } else {
+      await cs.createOrUpdateConversation(
+        jid,
+        create: () async {
+          // Create
+          final css = GetIt.I.get<ContactsService>();
+          final contactId = await css.getContactIdForJid(jid);
+          final prefs =
+              await GetIt.I.get<PreferencesService>().getPreferences();
+          final newConversation = await cs.addConversationFromData(
+            jid.split('@')[0],
+            null,
+            ConversationType.chat,
+            '',
+            jid,
+            0,
+            DateTime.now().millisecondsSinceEpoch,
+            true,
+            prefs.defaultMuteState,
+            prefs.enableOmemoByDefault,
+            contactId,
+            await css.getProfilePicturePathForJid(jid),
+            await css.getContactDisplayName(contactId),
+          );
+
+          sendEvent(
+            AddContactResultEvent(
+              conversation: newConversation,
+              added: !inRoster,
+            ),
+            id: id,
+          );
+
+          return newConversation;
+        },
+      );
+
+      // Add to roster, if required
+      await _maybeAchieveBothSubscription(jid);
+    }
   }
 }
 

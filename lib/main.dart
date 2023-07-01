@@ -10,7 +10,6 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-import 'package:moxxyv2/ui/bloc/addcontact_bloc.dart';
 import 'package:moxxyv2/ui/bloc/blocklist_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
@@ -26,6 +25,7 @@ import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
+import 'package:moxxyv2/ui/bloc/startchat_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -35,7 +35,6 @@ import 'package:moxxyv2/ui/events.dart';
 import "package:moxxyv2/ui/pages/register/register.dart";
 import "package:moxxyv2/ui/pages/postregister/postregister.dart";
 */
-import 'package:moxxyv2/ui/pages/addcontact.dart';
 import 'package:moxxyv2/ui/pages/blocklist.dart';
 import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
 import 'package:moxxyv2/ui/pages/conversations.dart';
@@ -61,9 +60,11 @@ import 'package:moxxyv2/ui/pages/settings/stickers.dart';
 import 'package:moxxyv2/ui/pages/share_selection.dart';
 //import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
+import 'package:moxxyv2/ui/pages/startchat.dart';
 import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
+import 'package:moxxyv2/ui/service/connectivity.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
@@ -86,6 +87,10 @@ Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIDataService>(UIDataService());
   GetIt.I.registerSingleton<UIAvatarsService>(UIAvatarsService());
   GetIt.I.registerSingleton<UISharingService>(UISharingService());
+  GetIt.I.registerSingleton<UIConnectivityService>(UIConnectivityService());
+
+  /// Initialize services
+  await GetIt.I.get<UIConnectivityService>().initialize();
 }
 
 void setupBlocs(GlobalKey<NavigatorState> navKey) {
@@ -97,7 +102,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<BlocklistBloc>(BlocklistBloc());
   GetIt.I.registerSingleton<ProfileBloc>(ProfileBloc());
   GetIt.I.registerSingleton<PreferencesBloc>(PreferencesBloc());
-  GetIt.I.registerSingleton<AddContactBloc>(AddContactBloc());
+  GetIt.I.registerSingleton<StartChatBloc>(StartChatBloc());
   GetIt.I.registerSingleton<CropBloc>(CropBloc());
   GetIt.I.registerSingleton<SendFilesBloc>(SendFilesBloc());
   GetIt.I.registerSingleton<CropBackgroundBloc>(CropBackgroundBloc());
@@ -149,8 +154,8 @@ void main() async {
         BlocProvider<PreferencesBloc>(
           create: (_) => GetIt.I.get<PreferencesBloc>(),
         ),
-        BlocProvider<AddContactBloc>(
-          create: (_) => GetIt.I.get<AddContactBloc>(),
+        BlocProvider<StartChatBloc>(
+          create: (_) => GetIt.I.get<StartChatBloc>(),
         ),
         BlocProvider<CropBloc>(
           create: (_) => GetIt.I.get<CropBloc>(),
@@ -300,7 +305,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case debuggingRoute:
             return DebuggingPage.route;
           case addContactRoute:
-            return AddContactPage.route;
+            return StartChatPage.route;
           case cropRoute:
             return CropPage.route;
           case sendFilesRoute:

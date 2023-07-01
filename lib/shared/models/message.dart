@@ -48,6 +48,19 @@ String? _optionalJsonEncodeWithFallback(Map<String, dynamic>? data) {
   return jsonEncode(data);
 }
 
+class MessageErrorTypeConverter
+    implements JsonConverter<MessageErrorType, int> {
+  const MessageErrorTypeConverter();
+
+  @override
+  MessageErrorType fromJson(int json) {
+    return MessageErrorType.fromInt(json)!;
+  }
+
+  @override
+  int toJson(MessageErrorType data) => data.value;
+}
+
 @freezed
 class Message with _$Message {
   factory Message(
@@ -62,7 +75,7 @@ class Message with _$Message {
     bool encrypted,
     // True if the message contains a <no-store> Message Processing Hint. False if not
     bool containsNoStore, {
-    int? errorType,
+    @MessageErrorTypeConverter() MessageErrorType? errorType,
     int? warningType,
     FileMetadata? fileMetadata,
     @Default(false) bool isDownloading,
@@ -106,6 +119,7 @@ class Message with _$Message {
       'isEdited': intToBool(json['isEdited']! as int),
       'containsNoStore': intToBool(json['containsNoStore']! as int),
       'reactionsPreview': reactionsPreview,
+      //'errorType': MessageErrorType.fromInt(json['errorType'] as int?),
       // NOTE: freezed expects the field name of the enum value here and refused to accept
       //       actual enum value. Makes sense since we have to serialize it, I guess.
       'pseudoMessageType': (json['pseudoMessageType'] as int?)
@@ -144,13 +158,27 @@ class Message with _$Message {
       'isRetracted': boolToInt(isRetracted),
       'isEdited': boolToInt(isEdited),
       'containsNoStore': boolToInt(containsNoStore),
+      //'errorType': errorType?.value,
       'pseudoMessageType': pseudoMessageType?.id,
       'pseudoMessageData': _optionalJsonEncodeWithFallback(pseudoMessageData),
     };
   }
 
+  /// True if the [errorType] describes an error related to OMEMO.
+  bool get isOmemoError => [
+        MessageErrorType.notEncryptedForDevice,
+        MessageErrorType.invalidHMAC,
+        MessageErrorType.noDecryptionKey,
+        MessageErrorType.invalidAffixElements,
+        MessageErrorType.failedToEncrypt,
+        MessageErrorType.failedToDecryptFile,
+        MessageErrorType.omemoNotSupported,
+        MessageErrorType.failedToEncryptFile,
+      ].contains(errorType);
+
   /// Returns true if the message is an error. If not, then returns false.
-  bool get hasError => errorType != null && errorType != noError;
+  bool get hasError =>
+      errorType != null || errorType != MessageErrorType.noError;
 
   /// Returns true if the message is a warning. If not, then returns false.
   bool get hasWarning => warningType != null && warningType != noWarning;
@@ -213,11 +241,8 @@ class Message with _$Message {
 
   /// Returns true if the menu item to show the error should be shown in the
   /// longpress menu.
-  bool get errorMenuVisible {
-    return hasError &&
-        (errorType! < messageNotEncryptedForDevice ||
-            errorType! > messageInvalidAffixElements);
-  }
+  bool get errorMenuVisible =>
+      errorType != MessageErrorType.noError && !isOmemoError;
 
   /// Returns true if the message contains media that can be thumbnailed, i.e. videos or
   /// images.

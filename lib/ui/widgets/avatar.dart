@@ -86,7 +86,10 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
       return Icon(widget.altIcon);
     }
 
-    assert(widget.jid.length >= 2, '${widget.jid} must be longer longer than 1 character',);
+    assert(
+      widget.jid.length >= 2,
+      '${widget.jid} must be longer longer than 1 character',
+    );
     return Text(widget.jid.substring(0, 2).toUpperCase());
   }
 
@@ -95,19 +98,23 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
     return InkWell(
       onTap: widget.onTap,
       child: SizedBox(
-      width: widget.radius * 2,
-      height: widget.radius * 2,
-      child: StreamBuilder<AvatarUpdatedEvent>(
-        stream: GetIt.I.get<UIAvatarsService>().stream.where((event) => event.jid == widget.jid),
-        builder: (context, snapshot) {
-          final path = snapshot.data?.path ?? widget.path;
-          final isValidPath = path?.isNotEmpty ?? false;
-          return CircleAvatar(
-            backgroundImage: isValidPath ? FileImage(File(widget.path!)) : null,
-            child: isValidPath ? null : _buildChild(),
-          );
-        },
-      ),
+        width: widget.radius * 2,
+        height: widget.radius * 2,
+        child: StreamBuilder<AvatarUpdatedEvent>(
+          stream: GetIt.I
+              .get<UIAvatarsService>()
+              .stream
+              .where((event) => event.jid == widget.jid),
+          builder: (context, snapshot) {
+            final path = snapshot.data?.path ?? widget.path;
+            final isValidPath = path?.isNotEmpty ?? false;
+            return CircleAvatar(
+              backgroundImage:
+                  isValidPath ? FileImage(File(widget.path!)) : null,
+              child: isValidPath ? null : _buildChild(),
+            );
+          },
+        ),
       ),
     );
   }

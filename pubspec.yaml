@@ -128,7 +128,7 @@ dependency_overrides:
     hosted: https://git.polynom.me/api/packages/Moxxy/pub
     version: 0.0.5
     
-  # NOTE: Leave here for development purposes
+  # NOTE: Leave here for development purposes 
   # moxxmpp:
   #   path: ../moxxmpp/packages/moxxmpp
   # moxxmpp_socket_tcp:
@@ -139,7 +139,7 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 05e3d804a4036e9cd93fd27473a1e970fda3c3fc
+      rev: a928c5c877cec46e19a074e8afe46bbfb9a925a1
       path: packages/moxxmpp
 
   omemo_dart:

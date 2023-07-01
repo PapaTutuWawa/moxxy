@@ -12,6 +12,7 @@ import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
@@ -324,7 +325,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
     String? originId,
     String? quoteId,
     FileMetadata? fileMetadata,
-    int? errorType,
+    MessageErrorType? errorType,
     int? warningType,
     bool isDownloading = false,
     bool isUploading = false,
@@ -444,7 +445,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
       m['acked'] = boolToInt(acked);
     }
     if (errorType != notSpecified) {
-      m['errorType'] = errorType as int?;
+      m['errorType'] = (errorType as MessageErrorType?)?.value;
     }
     if (warningType != notSpecified) {
       m['warningType'] = warningType as int?;

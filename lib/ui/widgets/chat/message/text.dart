@@ -2,7 +2,6 @@ import 'package:dart_emoji/dart_emoji.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_parsed_text/flutter_parsed_text.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -22,10 +21,8 @@ class TextChatWidget extends StatelessWidget {
   final Widget? topWidget;
 
   String getMessageText() {
-    if (message.hasError &&
-        message.errorType! >= messageNotEncryptedForDevice &&
-        message.errorType! <= messageInvalidAffixElements) {
-      return errorToTranslatableString(message.errorType!);
+    if (message.isOmemoError) {
+      return message.errorType!.translatableString;
     }
 
     if (message.isRetracted) {

@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
-import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
@@ -264,9 +263,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                       onPressed: () {
                         showInfoDialog(
                           t.errors.conversation.messageErrorDialogTitle,
-                          errorToTranslatableString(
-                            message.errorType!,
-                          ),
+                          message.errorType!.translatableString,
                           context,
                         );
                         selectionController.dismiss();

@@ -137,7 +137,10 @@ class HttpFileTransferService {
     }
   }
 
-  Future<void> _fileUploadFailed(FileUploadJob job, int error) async {
+  Future<void> _fileUploadFailed(
+    FileUploadJob job,
+    MessageErrorType error,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
 
@@ -190,7 +193,7 @@ class HttpFileTransferService {
             );
       } catch (ex) {
         _log.warning('Encrypting ${job.path} failed: $ex');
-        await _fileUploadFailed(job, messageFailedToEncryptFile);
+        await _fileUploadFailed(job, MessageErrorType.failedToEncryptFile);
         return;
       }
     }
@@ -209,7 +212,7 @@ class HttpFileTransferService {
 
     if (slotResult.isType<HttpFileUploadError>()) {
       _log.severe('Failed to request upload slot for ${job.path}!');
-      await _fileUploadFailed(job, fileUploadFailedError);
+      await _fileUploadFailed(job, MessageErrorType.fileUploadFailed);
       return;
     }
     final slot = slotResult.get<HttpFileUploadSlot>();
@@ -236,7 +239,7 @@ class HttpFileTransferService {
     final ms = GetIt.I.get<MessageService>();
     if (!isRequestOkay(uploadStatusCode)) {
       _log.severe('Upload failed due to status code $uploadStatusCode');
-      await _fileUploadFailed(job, fileUploadFailedError);
+      await _fileUploadFailed(job, MessageErrorType.fileUploadFailed);
       return;
     } else {
       _log.fine('Upload was successful');
@@ -324,7 +327,7 @@ class HttpFileTransferService {
         // Notify UI of upload completion
         var msg = await ms.updateMessage(
           job.messageMap[recipient]!.id,
-          errorType: noError,
+          errorType: null,
           isUploading: false,
           fileMetadata: metadata,
         );
@@ -390,7 +393,10 @@ class HttpFileTransferService {
     });
   }
 
-  Future<void> _fileDownloadFailed(FileDownloadJob job, int error) async {
+  Future<void> _fileDownloadFailed(
+    FileDownloadJob job,
+    MessageErrorType error,
+  ) async {
     final ms = GetIt.I.get<MessageService>();
 
     // Notify UI of download failure
@@ -451,7 +457,7 @@ class HttpFileTransferService {
       _log.warning(
         'HTTP GET of $downloadUrl returned $downloadStatusCode',
       );
-      await _fileDownloadFailed(job, fileDownloadFailedError);
+      await _fileDownloadFailed(job, MessageErrorType.fileDownloadFailed);
       return;
     }
 
@@ -479,7 +485,7 @@ class HttpFileTransferService {
 
         if (!result.decryptionOkay) {
           _log.warning('Failed to decrypt $downloadPath');
-          await _fileDownloadFailed(job, messageFailedToDecryptFile);
+          await _fileDownloadFailed(job, MessageErrorType.failedToDecryptFile);
           return;
         }
 
@@ -488,7 +494,7 @@ class HttpFileTransferService {
         _log.warning(
           'Decryption of $downloadPath ($downloadedPath) failed: $ex',
         );
-        await _fileDownloadFailed(job, messageFailedToDecryptFile);
+        await _fileDownloadFailed(job, MessageErrorType.failedToDecryptFile);
         return;
       }
 
@@ -591,7 +597,7 @@ class HttpFileTransferService {
           warningType:
               integrityCheckPassed ? null : warningFileIntegrityCheckFailed,
           errorType: conversation.encrypted && !decryptionKeysAvailable
-              ? messageChatEncryptedButFileNot
+              ? MessageErrorType.chatEncryptedButPlaintextFile
               : null,
           isDownloading: false,
         );

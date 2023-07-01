@@ -413,14 +413,6 @@ class ConversationsPageState extends State<ConversationsPage>
               label: t.pages.conversations.speeddialAddNoteToSelf,
             ),
             SpeedDialChild(
-              child: const Icon(Icons.group),
-              onTap: () => showNotImplementedDialog('groupchat', context),
-              backgroundColor: primaryColor,
-              // TODO(Unknown): Theme dependent?
-              foregroundColor: Colors.white,
-              label: t.pages.conversations.speeddialJoinGroupchat,
-            ),
-            SpeedDialChild(
               child: const Icon(Icons.person_add),
               onTap: () => Navigator.pushNamed(context, newConversationRoute),
               backgroundColor: primaryColor,

@@ -1,364 +1,372 @@
 {
-    "@@name": "Deutsch",
-    "global": {
-	"title": "Moxxy",
-	"moxxySubtitle": "Ein Experiment im Entwickeln eines modernen, einfachen und schönen XMPP-Clients.",
-	"dialogAccept": "Okay",
-	"dialogCancel": "Abbrechen",
-	"yes": "Ja",
-	"no": "Nein"
-    },
-    "notifications": {
-	"permanent": {
-	    "idle": "Bereit",
-	    "ready": "Bereit zum Nachrichtenempfang",
-	    "connecting": "Verbinde...",
-	    "disconnect": "Keine Verbindung",
-	    "error": "Fehler"
+	"@@name": "Deutsch",
+	"global": {
+		"title": "Moxxy",
+		"moxxySubtitle": "Ein Experiment im Entwickeln eines modernen, einfachen und schönen XMPP-Clients.",
+		"dialogAccept": "Okay",
+		"dialogCancel": "Abbrechen",
+		"yes": "Ja",
+		"no": "Nein"
 	},
-	"message": {
-	    "reply": "Antworten",
-	    "markAsRead": "Als gelesen markieren"
-	},
-	"channels": {
-	    "messagesChannelName": "Nachrichten",
-	    "messagesChannelDescription": "Empfangene Nachrichten",
-	    "warningChannelName": "Warnungen",
-	    "warningChannelDescription": "Warnungen im Bezug auf Moxxy"
-	},
-	"titles": {
-	    "error": "Fehler"
-	}
-    },
-    "dateTime": {
-	"justNow": "Gerade",
-	"nMinutesAgo": "vor ${min}min",
-	"mondayAbbrev": "Mon",
-	"tuesdayAbbrev": "Die",
-	"wednessdayAbbrev": "Mit",
-	"thursdayAbbrev": "Don",
-	"fridayAbbrev": "Fre",
-	"saturdayAbbrev": "Sam",
-	"sundayAbbrev": "Son",
-	"january": "Januar",
-	"february": "Februar",
-	"march": "März",
-	"april": "April",
-	"may": "Mai",
-	"june": "Juni",
-	"july": "Juli",
-	"august": "August",
-	"september": "September",
-	"october": "Oktober",
-	"november": "November",
-	"december": "Dezember",
-	"today": "Heute",
-	"yesterday": "Gestern"
-    },
-    "messages": {
-	"image": "Bild",
-	"video": "Video",
-	"audio": "Audio",
-	"file": "Datei",
-	"sticker": "Sticker",
-	"retracted": "Die Nachricht wurde zurückgezogen",
-	"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht",
-	"you": "Du"
-    },
-    "errors": {
-	"filePicker": {
-	    "permissionDenied": "Die Speicherberechtigung wurde nicht erteilt."
-	},
-	"omemo": {
-	    "couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht.",
-	    "notEncryptedForDevice": "Die Nachricht wurde nicht für dieses Gerät verschlüsselt",
-	    "invalidHmac": "Die Nachricht konnte nicht entschlüsselt werden",
-	    "noDecryptionKey": "Kein Schlüssel zum Entschlüsseln vorhanden",
-	    "messageInvalidAfixElement": "Ungültige verschlüsselte Nachricht",
-
-	    "verificationInvalidOmemoUrl": "Ungültiger OMEMO:2 Fingerabdruck",
-	    "verificationWrongJid": "Falsche XMPP-Addresse",
-	    "verificationWrongDevice": "Falsches OMEMO:2 Gerät",
-	    "verificationNotInList": "OMEMO:2 Gerät unbekannt",
-	    "verificationWrongFingerprint": "Falscher OMEMO:2 Fingerabdruck"
-	},
-	"connection": {
-	    "connectionTimeout": "Verbindung zum Server nicht möglich",
-	    "saslAccountDisabled": "Dein Account ist deaktiviert",
-	    "saslInvalidCredentials": "Deine Anmeldedaten sind ungültig",
-	    "unrecoverable": "Verbindung zum Server durch nicht behebbaren Fehler verloren"
-	},
-	"login": {
-	    "saslFailed": "Ungültige Logindaten",
-	    "startTlsFailed": "Konnte keine sichere Verbindung zum Server aufbauen",
-	    "noConnection": "Konnte keine Verbindung zum Server aufbauen",
-	    "unspecified": "Unbestimmter Fehler"
-	},
-	"message": {
-	    "unspecified": "Unbekannter Fehler",
-	    "fileUploadFailed": "Das Hochladen der Datei ist fehlgeschlagen",
-	    "contactDoesntSupportOmemo": "Der Kontakt unterstützt Verschlüsselung mit OMEMO:2 nicht",
-	    "fileDownloadFailed": "Das Herunterladen der Datei ist fehlgeschlagen",
-	    "serviceUnavailable": "Die Nachricht konnte nicht gesendet werden",
-	    "remoteServerTimeout": "Die Nachricht konnte nicht zugestellt werden",
-	    "remoteServerNotFound": "Die Nachricht konnte nicht gesendet werden, da der Empfängerserver unbekannt ist",
-	    "failedToEncrypt": "Die Nachricht konnte nicht verschlüsselt werden",
-	    "failedToEncryptFile": "Die Datei konnte nicht verschlüsselt werden",
-	    "failedToDecryptFile": "Die Datei konnte nicht entschlüsselt werden",
-	    "fileNotEncrypted": "Der Chat ist verschlüsselt, aber die Datei wurde unverschlüsselt übertragen"
-	},
-	"conversation": {
-	    "audioRecordingError": "Fehler beim Fertigstellen der Audioaufnahme",
-	    "openFileNoAppError": "Keine App vorhanden, um die Datei zu öffnen",
-	    "openFileGenericError": "Fehler beim Öffnen der Datei",
-	    "messageErrorDialogTitle": "Fehler"
-	}
-    },
-    "warnings": {
-	"message": {
-	    "integrityCheckFailed": "Konnte Integrität der Datei nicht überprüfen"
-	},
-	"conversation": {
-	    "holdForLonger": "Button länger gedrückt halten, um eine Sprachnachricht aufzunehmen"
-	}
-    },
-    "pages": {
-	"intro": {
-	    "noAccount": "Kein XMPP-Account vorhanden? Einen zu erstellen ist sehr einfach.",
-	    "loginButton": "Einloggen",
-	    "registerButton": "Registrieren"
-	},
-	"login": {
-	    "title": "Login",
-	    "xmppAddress": "XMPP-Adresse",
-	    "password": "Passwort",
-	    "advancedOptions": "Fortgeschrittene Optionen",
-	    "createAccount": "Account auf dem Server erstellen"
-	},
-	"conversations": {
-	    "speeddialNewChat": "Neuer chat",
-	    "speeddialJoinGroupchat": "Gruppenchat beitreten",
-		"speeddialAddNoteToSelf": "Notiz an mich",
-	    "overlaySettings": "Einstellungen",
-	    "noOpenChats": "Du hast keine offenen chats",
-	    "startChat": "Einen chat anfangen",
-	    "closeChat": "Chat schließen",
-	    "closeChatBody": "Bist du dir sicher, dass du den Chat mit ${conversationTitle} schließen möchtest?",
-	    "markAsRead": "Als gelesen markieren"
-	},
-	"conversation": {
-	    "unencrypted": "Unverschlüsselt",
-	    "encrypted": "Verschlüsselt",
-	    "closeChat": "Chat schließen",
-	    "closeChatConfirmTitle": "Chat schließen",
-	    "closeChatConfirmSubtext": "Bist Du dir sicher, dass du den Chat schließen möchtest?",
-	    "blockShort": "Blockieren",
-	    "blockUser": "Nutzer blockieren",
-	    "online": "Online",
-	    "retract": "Nachricht löschen",
-	    "retractBody": "Bist du dir sicher, dass du die Nachricht löschen willst? Bedenke, dass dies nur eine Bitte ist, die dein gegenüber nicht beachten muss.",
-	    "forward": "Weiterleiten",
-	    "edit": "Bearbeiten",
-	    "quote": "Zitieren",
-	    "copy": "Inhalt kopieren",
-	    "addReaction": "Reaktion hinzufügen",
-	    "showError": "Fehler anzeigen",
-	    "showWarning": "Warnung anzeigen",
-	    "addToContacts": "Zu Kontaken hinzufügen",
-	    "addToContactsTitle": "${jid} zu Kontakten hinzufügen",
-	    "addToContactsBody": "Bist du dir sicher, dass du ${jid} zu deinen Kontakten hinzufügen möchtest?",
-	    "stickerPickerNoStickersLine1": "Du hast keine Stickerpacks installiert.",
-	    "stickerPickerNoStickersLine2": "Diese können in den Stickereinstellungen installiert werden.",
-	    "stickerSettings": "Stickereinstellungen",
-	    "newDeviceMessage": {
-			"one": "Ein neues Gerät wurde hinzugefügt",
-			"other": "Mehrere neue Geräte wurden hinzugefügt"
+	"notifications": {
+		"permanent": {
+			"idle": "Bereit",
+			"ready": "Bereit zum Nachrichtenempfang",
+			"connecting": "Verbinde...",
+			"disconnect": "Keine Verbindung",
+			"error": "Fehler"
 		},
-		"replacedDeviceMessage": {
-			"one": "Ein Gerät hat sich verändert",
-			"other": "Mehrere Geräte haben sich verändert"
+		"message": {
+			"reply": "Antworten",
+			"markAsRead": "Als gelesen markieren"
 		},
-	    "messageHint": "Nachricht senden...",
-	    "sendImages": "Bilder senden",
-	    "sendFiles": "Dateien senden",
-	    "takePhotos": "Bilder aufnehmen"
+		"channels": {
+			"messagesChannelName": "Nachrichten",
+			"messagesChannelDescription": "Empfangene Nachrichten",
+			"warningChannelName": "Warnungen",
+			"warningChannelDescription": "Warnungen im Bezug auf Moxxy"
+		},
+		"titles": {
+			"error": "Fehler"
+		}
 	},
-	"addcontact": {
-	    "title": "Neuen Kontakt hinzufügen",
-	    "xmppAddress": "XMPP-Adresse",
-	    "subtitle": "Du kannst einen Kontakt hinzufügen, indem Du entweder die XMPP-Adresse eingibst oder den QR-Code deines Kontaktes scannst",
-	    "buttonAddToContact": "Kontakt hinzufügen"
+	"dateTime": {
+		"justNow": "Gerade",
+		"nMinutesAgo": "vor ${min}min",
+		"mondayAbbrev": "Mon",
+		"tuesdayAbbrev": "Die",
+		"wednessdayAbbrev": "Mit",
+		"thursdayAbbrev": "Don",
+		"fridayAbbrev": "Fre",
+		"saturdayAbbrev": "Sam",
+		"sundayAbbrev": "Son",
+		"january": "Januar",
+		"february": "Februar",
+		"march": "März",
+		"april": "April",
+		"may": "Mai",
+		"june": "Juni",
+		"july": "Juli",
+		"august": "August",
+		"september": "September",
+		"october": "Oktober",
+		"november": "November",
+		"december": "Dezember",
+		"today": "Heute",
+		"yesterday": "Gestern"
 	},
-	"newconversation": {
-	    "title": "Neuer chat",
-	    "addContact": "Kontakt hinzufügen",
-	    "createGroupchat": "Gruppenchat erstellen"
+	"messages": {
+		"image": "Bild",
+		"video": "Video",
+		"audio": "Audio",
+		"file": "Datei",
+		"sticker": "Sticker",
+		"retracted": "Die Nachricht wurde zurückgezogen",
+		"retractedFallback": "Eine vorherige Nachricht wurde zurückgezogen. Dein Client unterstüzt dies jedoch nicht",
+		"you": "Du"
 	},
-	"crop": {
-	    "setProfilePicture": "Als Profilbild festlegen"
+	"errors": {
+		"general": {
+			"noInternet": "Keine Internetverbindung."
+		},
+		"filePicker": {
+			"permissionDenied": "Die Speicherberechtigung wurde nicht erteilt."
+		},
+		"omemo": {
+			"couldNotPublish": "Konnte die kryptographische Identität nicht auf dem Server veröffentlichen. Ende-zu-Ende-Verschlüsselung funktioniert eventuell nicht.",
+			"notEncryptedForDevice": "Die Nachricht wurde nicht für dieses Gerät verschlüsselt",
+			"invalidHmac": "Die Nachricht konnte nicht entschlüsselt werden",
+			"noDecryptionKey": "Kein Schlüssel zum Entschlüsseln vorhanden",
+			"messageInvalidAfixElement": "Ungültige verschlüsselte Nachricht",
+			
+			"verificationInvalidOmemoUrl": "Ungültiger OMEMO:2 Fingerabdruck",
+			"verificationWrongJid": "Falsche XMPP-Addresse",
+			"verificationWrongDevice": "Falsches OMEMO:2 Gerät",
+			"verificationNotInList": "OMEMO:2 Gerät unbekannt",
+			"verificationWrongFingerprint": "Falscher OMEMO:2 Fingerabdruck"
+		},
+		"connection": {
+			"connectionTimeout": "Verbindung zum Server nicht möglich",
+			"saslAccountDisabled": "Dein Account ist deaktiviert",
+			"saslInvalidCredentials": "Deine Anmeldedaten sind ungültig",
+			"unrecoverable": "Verbindung zum Server durch nicht behebbaren Fehler verloren"
+		},
+		"login": {
+			"saslFailed": "Ungültige Logindaten",
+			"startTlsFailed": "Konnte keine sichere Verbindung zum Server aufbauen",
+			"noConnection": "Konnte keine Verbindung zum Server aufbauen",
+			"unspecified": "Unbestimmter Fehler"
+		},
+		"message": {
+			"unspecified": "Unbekannter Fehler",
+			"fileUploadFailed": "Das Hochladen der Datei ist fehlgeschlagen",
+			"contactDoesntSupportOmemo": "Der Kontakt unterstützt Verschlüsselung mit OMEMO:2 nicht",
+			"fileDownloadFailed": "Das Herunterladen der Datei ist fehlgeschlagen",
+			"serviceUnavailable": "Die Nachricht konnte nicht gesendet werden",
+			"remoteServerTimeout": "Die Nachricht konnte nicht zugestellt werden",
+			"remoteServerNotFound": "Die Nachricht konnte nicht gesendet werden, da der Empfängerserver unbekannt ist",
+			"failedToEncrypt": "Die Nachricht konnte nicht verschlüsselt werden",
+			"failedToEncryptFile": "Die Datei konnte nicht verschlüsselt werden",
+			"failedToDecryptFile": "Die Datei konnte nicht entschlüsselt werden",
+			"fileNotEncrypted": "Der Chat ist verschlüsselt, aber die Datei wurde unverschlüsselt übertragen"
+		},
+		"conversation": {
+			"audioRecordingError": "Fehler beim Fertigstellen der Audioaufnahme",
+			"openFileNoAppError": "Keine App vorhanden, um die Datei zu öffnen",
+			"openFileGenericError": "Fehler beim Öffnen der Datei",
+			"messageErrorDialogTitle": "Fehler"
+		},
+		"newChat": {
+			"remoteServerError": "Konnte den Server nicht erreichen.",
+			"groupchatUnsupported": "Das Beitreten eines Gruppenchats ist aktuell nicht unterstützt.",
+			"unknown": "Unbekannter Fehler."
+		}
 	},
-	"shareselection": {
-	    "shareWith": "Teilen mit...",
-	    "confirmTitle": "Dateien senden?",
-	    "confirmBody": "Einer oder mehr Chats sind unverschlüsselt. Das bedeutet, dass die Dateien dem Server unverschlüsselt vorliegen. Dateien trotzdem senden?"
+	"warnings": {
+		"message": {
+			"integrityCheckFailed": "Konnte Integrität der Datei nicht überprüfen"
+		},
+		"conversation": {
+			"holdForLonger": "Button länger gedrückt halten, um eine Sprachnachricht aufzunehmen"
+		}
 	},
-	"profile": {
-	    "general": {
-		"omemo": "Sicherheit",
-		"profile": "Profil",
-		"media": "Medien"
-	    },
-	    "conversation": {
-		"notifications": "Benachrichtigungen",
-		"notificationsMuted": "Stumm",
-		"notificationsEnabled": "Eingeschaltet",
-		"sharedMedia": "Medien"
-	    },
-	    "owndevices": {
-		"title": "Eigene Geräte",
-		"thisDevice": "Dieses Gerät",
-		"otherDevices": "Andere Geräte",
-		"deleteDeviceConfirmTitle": "Gerät löschen",
-		"deleteDeviceConfirmBody": "Das bedeutet, dass Kontakte für dieses Gerät nichtmehr verschlüsseln können. Fortfahren?",
-		"recreateOwnSessions": "Sessions neuerstellen",
-		"recreateOwnSessionsConfirmTitle": "Eigene Sessions neuerstellen?",
-		"recreateOwnSessionsConfirmBody": "Das wird alle kryptographischen Sessions mit den eigenen Geräten neuerstellen. Verwende dies nur, wenn deine eigenen Geräte Entschlüsselungsfehler erzeugen.",
-		"recreateOwnDevice": "Gerät neuerstellen",
-		"recreateOwnDeviceConfirmTitle": "Gerät neuerstellen?",
-		"recreateOwnDeviceConfirmBody": "Das wird die kryptographische Identität dieses Geräts neu erstellen. Wenn Kontakte die kryptographische Indentität verifiziert haben, dann müssen diese es erneut tun. Fortfahren?"
-	    },
-	    "devices": {
-		"title": "Sicherheit",
-		"recreateSessions": "Sessions zurücksetzen",
-		"recreateSessionsConfirmTitle": "Sessions zurücksetzen?",
-		"recreateSessionsConfirmBody": "Dies wird alle Sessions mit Deinen Geräten neu erstellen. Tue dies nur, wenn deine Geräte Fehler beim Entschlüsseln erzeugen.",
-		"noSessions": "Es sind keine kryptographischen Sessions vorhanden, die für Ende-zu-Ende-Verschlüsselung verwendet werden."
-	    }
-	},
-	"blocklist": {
-	    "title": "Blockliste",
-	    "noUsersBlocked": "Du hast niemanden blockiert",
-	    "unblockAll": "Alle entblocken",
-	    "unblockAllConfirmTitle": "Alle entblocken",
-	    "unblockAllConfirmBody": "Bist Du dir sicher, dass du alle geblockten Personen entblocken möchtest?",
-	    "unblockJidConfirmTitle": "${jid} entblocken?",
-	    "unblockJidConfirmBody": "Bist du dir sicher, dass du ${jid} entblocken möchtest? Du wirst wieder Nachrichten von dieser Person erhalten können."
-	},
-	"cropbackground": {
-	    "blur": "Hintergrund weichzeichnen",
-	    "setAsBackground": "Als Hintergrundbild festlegen"
-	},
-	"stickerPack": {
-	    "removeConfirmTitle": "Stickerpack entfernen",
-	    "removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?",
-	    "installConfirmTitle": "Stickerpack installieren",
-	    "installConfirmBody": "Bist Du Dir sicher, dass Du das Stickerpack installieren möchtest?",
-	    "restricted": "Dieses Stickerpack ist eingeschränkt. Das bedeutet, dass es im Chat angezeigt wird, jedoch nicht versendet werden kann.",
-	    "fetchingFailure": "Konnte das Stickerpack nicht finden"
-	},
-	"settings": {
-	    "settings": {
-		"title": "Einstellungen",
-		"conversationsSection": "Unterhaltungen",
-		"accountSection": "Account",
-		"signOut": "Abmelden",
-		"signOutConfirmTitle": "Abmelden",
-		"signOutConfirmBody": "Du bist dabei dich abzumelden. Fortfahren?",
-		"miscellaneousSection": "Unterschiedlich",
-		"debuggingSection": "Debugging",
-		"general": "Generell"
-	    },
-	    "about": {
-		"title": "Über",
-		"licensed": "Lizensiert unter GPL3",
-		"version": "Version ${version}",
-		"viewSourceCode": "Quellcode anschauen",
-		"nMoreToGo": "Noch ${n}...",
-		"debugMenuShown": "Du bist jetzt ein Entwickler!",
-		"debugMenuAlreadyShown": "Du bist bereits ein Entwickler!"
-	    },
-	    "appearance": {
-		"title": "Aussehen",
-		"languageSection": "Sprache",
-		"language": "Appsprache",
-		"languageSubtext": "Aktuell ausgewählt: $selectedLanguage",
-		"systemLanguage": "Systemsprache"
-	    },
-	    "licenses": {
-		"title": "Open-Source Lizenzen",
-		"licensedUnder": "Lizensiert unter $license"
-	    },
-	    "conversation": {
-		"title": "Chat",
-		"appearance": "Aussehen",
-		"selectBackgroundImage": "Hintergrundbild auswählen",
-		"selectBackgroundImageDescription": "Dieses Bild wird als Hintergrundbild in allen Chats verwendet",
-		"removeBackgroundImage": "Hintergrundbild entfernen",
-		"removeBackgroundImageConfirmTitle": "Hintergrundbild entfernen",
-		"removeBackgroundImageConfirmBody": "Bist Du dir sicher, dass Du das Hintergrundbild entfernen möchtest?",
-		"newChatsSection": "Neue Chats",
-		"newChatsMuteByDefault": "Neue Chats standardmäßig stummschalten",
-		"newChatsE2EE": "Ende-zu-Ende-Verschlüsselung standardmäßig aktivieren. WARNUNG: Experimentell",
-		"behaviourSection": "Verhalten",
-		"contactsIntegration": "Kontaktintegration",
-		"contactsIntegrationBody": "Wenn aktiviert, dann werden Kontakte aus dem Kontaktbuch verwendet, um Chatnamen und Profilbilder anzuzeigen. Dabei werden keine Daten an den Server gesendet."
-	    },
-	    "debugging": {
-		"title": "Debuggingoptionen",
-		"generalSection": "Generell",
-		"generalEnableDebugging": "Debugging einschalten",
-		"generalEncryptionPassword": "Verschlüsselungspasswort",
-		"generalEncryptionPasswordSubtext": "Die Logs enthalten eventuell sensible Daten. Wähle also daher eine starke Passphrase",
-		"generalLoggingIp": "Logging-IP",
-		"generalLoggingIpSubtext": "Die IP-Adresse an die die Logs gesendet werden",
-		"generalLoggingPort": "Logging-Port",
-		"generalLoggingPortSubtext": "Der Port an den die Logs gesendet werden"
-	    },
-	    "network": {
-		"title": "Netzwerk",
-		"automaticDownloadsSection": "Automatische Downloads",
-		"automaticDownloadsText": "Moxxy läd Dateien automatisch herunter, wenn verbunden mit...",
-		"automaticDownloadsMaximumSize": "Maximale Downloadgröße",
-		"automaticDownloadsMaximumSizeSubtext": "Die maximale Dateigröße, die automatisch heruntergeladen werden soll",
-		"automaticDownloadAlways": "Immer",
-		"wifi": "Wifi",
-		"mobileData": "Mobile Daten"
-	    },
-	    "privacy": {
-		"title": "Privatsphäre",
-		"generalSection": "Generell",
-		"showContactRequests": "Kontaktanfragen zeigen",
-		"showContactRequestsSubtext": "Dies zeigt Personen in der Chatübersicht an, die Dich zu ihrer Kontaktliste hinzugefügt haben, aber noch keine Nachricht gesendet haben",
-		"profilePictureVisibility": "Öffentliches Profilbild",
-		"profilePictureVisibilitSubtext": "Wenn aktiviert, dann kann jeder Dein Profilbild sehen. Wenn deaktiviert, dann können nur Personen aus deiner Kontaktliste kein Profilbild sehen",
-		"conversationsSection": "Unterhaltungen",
-		"sendChatMarkers": "Chatmarker senden",
-		"sendChatMarkersSubtext": "Dies teilt Deinem Gesprächspartner mit, ob du Nachrichten empfangen oder gelesen hast",
-		"sendChatStates": "Chatstates senden",
-		"sendChatStatesSubtext": "Dies teilt Deinem Gesprächspartner mit, ob du gerade im Chat aktiv bist oder schreibst",
-		"redirectsSection": "Weiterleitungen",
-		"redirectText": "Dies leitet Links von $serviceName, die du öffnest, an einen Proxydienst weiter, wie zum Beispiel $exampleProxy",
-		"currentlySelected": "Aktuell ausgewählt: $proxy",
-		"redirectsTitle": "${serviceName}weiterleitung",
-		"cannotEnableRedirect": "Kann ${serviceName}weiterleitung nicht aktivieren",
-		"cannotEnableRedirectSubtext": "Du must zuerst einen Proxydienst auswählen. Dazu berühre das Feld neben dem Schalter.",
-		"urlEmpty": "URL kann nicht leer sein",
-		"urlInvalid": "Ungültige URL",
-		"redirectDialogTitle": "${serviceName}weiterleitung",
-		"stickersPrivacy": "Stickerliste öffentlich halten",
-		"stickersPrivacySubtext": "Wenn eingeschaltet, dann kann jeder die Liste Deiner installierten Stickerpacks sehen."
-	    },
-	    "stickers": {
-		"title": "Stickers",
-		"stickerSection": "Sticker",
-		"displayStickers": "Sticker im Chat anzeigen",
-		"autoDownload": "Sticker automatisch herunterladen",
-		"autoDownloadBody": "Wenn aktiviert, dann werden Sticker automatisch heruntergeladen, wenn der Sender in der Kontaktliste ist.",
-		"stickerPacksSection": "Stickerpacks",
-		"importStickerPack": "Stickerpack importieren",
-		"importSuccess": "Stickerpack erfolgreich importiert",
-		"importFailure": "Beim Import des Stickerpacks ist ein Fehler aufgetreten"
-	    }
+	"pages": {
+		"intro": {
+			"noAccount": "Kein XMPP-Account vorhanden? Einen zu erstellen ist sehr einfach.",
+			"loginButton": "Einloggen",
+			"registerButton": "Registrieren"
+		},
+		"login": {
+			"title": "Login",
+			"xmppAddress": "XMPP-Adresse",
+			"password": "Passwort",
+			"advancedOptions": "Fortgeschrittene Optionen",
+			"createAccount": "Account auf dem Server erstellen"
+		},
+		"conversations": {
+			"speeddialNewChat": "Neuer chat",
+			"speeddialJoinGroupchat": "Gruppenchat beitreten",
+			"speeddialAddNoteToSelf": "Notiz an mich",
+			"overlaySettings": "Einstellungen",
+			"noOpenChats": "Du hast keine offenen chats",
+			"startChat": "Einen chat anfangen",
+			"closeChat": "Chat schließen",
+			"closeChatBody": "Bist du dir sicher, dass du den Chat mit ${conversationTitle} schließen möchtest?",
+			"markAsRead": "Als gelesen markieren"
+		},
+		"conversation": {
+			"unencrypted": "Unverschlüsselt",
+			"encrypted": "Verschlüsselt",
+			"closeChat": "Chat schließen",
+			"closeChatConfirmTitle": "Chat schließen",
+			"closeChatConfirmSubtext": "Bist Du dir sicher, dass du den Chat schließen möchtest?",
+			"blockShort": "Blockieren",
+			"blockUser": "Nutzer blockieren",
+			"online": "Online",
+			"retract": "Nachricht löschen",
+			"retractBody": "Bist du dir sicher, dass du die Nachricht löschen willst? Bedenke, dass dies nur eine Bitte ist, die dein gegenüber nicht beachten muss.",
+			"forward": "Weiterleiten",
+			"edit": "Bearbeiten",
+			"quote": "Zitieren",
+			"copy": "Inhalt kopieren",
+			"addReaction": "Reaktion hinzufügen",
+			"showError": "Fehler anzeigen",
+			"showWarning": "Warnung anzeigen",
+			"addToContacts": "Zu Kontaken hinzufügen",
+			"addToContactsTitle": "${jid} zu Kontakten hinzufügen",
+			"addToContactsBody": "Bist du dir sicher, dass du ${jid} zu deinen Kontakten hinzufügen möchtest?",
+			"stickerPickerNoStickersLine1": "Du hast keine Stickerpacks installiert.",
+			"stickerPickerNoStickersLine2": "Diese können in den Stickereinstellungen installiert werden.",
+			"stickerSettings": "Stickereinstellungen",
+			"newDeviceMessage": {
+				"one": "Ein neues Gerät wurde hinzugefügt",
+				"other": "Mehrere neue Geräte wurden hinzugefügt"
+			},
+			"replacedDeviceMessage": {
+				"one": "Ein Gerät hat sich verändert",
+				"other": "Mehrere Geräte haben sich verändert"
+			},
+			"messageHint": "Nachricht senden...",
+			"sendImages": "Bilder senden",
+			"sendFiles": "Dateien senden",
+			"takePhotos": "Bilder aufnehmen"
+		},
+		"startchat": {
+			"title": "Neuer Chat",
+			"xmppAddress": "XMPP-Adresse",
+			"subtitle": "Du kannst einen neuen Chat beginnen, indem du entweder eine XMPP-Adresse eingibst oder einen QR-Code scannst.",
+			"buttonAddToContact": "Neuen Chat beginnen"
+		},
+		"newconversation": {
+			"title": "Neuer Chat",
+			"startChat": "Neuen Chat beginnen",
+			"createGroupchat": "Gruppenchat erstellen"
+		},
+		"crop": {
+			"setProfilePicture": "Als Profilbild festlegen"
+		},
+		"shareselection": {
+			"shareWith": "Teilen mit...",
+			"confirmTitle": "Dateien senden?",
+			"confirmBody": "Einer oder mehr Chats sind unverschlüsselt. Das bedeutet, dass die Dateien dem Server unverschlüsselt vorliegen. Dateien trotzdem senden?"
+		},
+		"profile": {
+			"general": {
+				"omemo": "Sicherheit",
+				"profile": "Profil",
+				"media": "Medien"
+			},
+			"conversation": {
+				"notifications": "Benachrichtigungen",
+				"notificationsMuted": "Stumm",
+				"notificationsEnabled": "Eingeschaltet",
+				"sharedMedia": "Medien"
+			},
+			"owndevices": {
+				"title": "Eigene Geräte",
+				"thisDevice": "Dieses Gerät",
+				"otherDevices": "Andere Geräte",
+				"deleteDeviceConfirmTitle": "Gerät löschen",
+				"deleteDeviceConfirmBody": "Das bedeutet, dass Kontakte für dieses Gerät nichtmehr verschlüsseln können. Fortfahren?",
+				"recreateOwnSessions": "Sessions neuerstellen",
+				"recreateOwnSessionsConfirmTitle": "Eigene Sessions neuerstellen?",
+				"recreateOwnSessionsConfirmBody": "Das wird alle kryptographischen Sessions mit den eigenen Geräten neuerstellen. Verwende dies nur, wenn deine eigenen Geräte Entschlüsselungsfehler erzeugen.",
+				"recreateOwnDevice": "Gerät neuerstellen",
+				"recreateOwnDeviceConfirmTitle": "Gerät neuerstellen?",
+				"recreateOwnDeviceConfirmBody": "Das wird die kryptographische Identität dieses Geräts neu erstellen. Wenn Kontakte die kryptographische Indentität verifiziert haben, dann müssen diese es erneut tun. Fortfahren?"
+			},
+			"devices": {
+				"title": "Sicherheit",
+				"recreateSessions": "Sessions zurücksetzen",
+				"recreateSessionsConfirmTitle": "Sessions zurücksetzen?",
+				"recreateSessionsConfirmBody": "Dies wird alle Sessions mit Deinen Geräten neu erstellen. Tue dies nur, wenn deine Geräte Fehler beim Entschlüsseln erzeugen.",
+				"noSessions": "Es sind keine kryptographischen Sessions vorhanden, die für Ende-zu-Ende-Verschlüsselung verwendet werden."
+			}
+		},
+		"blocklist": {
+			"title": "Blockliste",
+			"noUsersBlocked": "Du hast niemanden blockiert",
+			"unblockAll": "Alle entblocken",
+			"unblockAllConfirmTitle": "Alle entblocken",
+			"unblockAllConfirmBody": "Bist Du dir sicher, dass du alle geblockten Personen entblocken möchtest?",
+			"unblockJidConfirmTitle": "${jid} entblocken?",
+			"unblockJidConfirmBody": "Bist du dir sicher, dass du ${jid} entblocken möchtest? Du wirst wieder Nachrichten von dieser Person erhalten können."
+		},
+		"cropbackground": {
+			"blur": "Hintergrund weichzeichnen",
+			"setAsBackground": "Als Hintergrundbild festlegen"
+		},
+		"stickerPack": {
+			"removeConfirmTitle": "Stickerpack entfernen",
+			"removeConfirmBody": "Bist Du Dir sicher, dass du das Stickerpack entfernen möchtest?",
+			"installConfirmTitle": "Stickerpack installieren",
+			"installConfirmBody": "Bist Du Dir sicher, dass Du das Stickerpack installieren möchtest?",
+			"restricted": "Dieses Stickerpack ist eingeschränkt. Das bedeutet, dass es im Chat angezeigt wird, jedoch nicht versendet werden kann.",
+			"fetchingFailure": "Konnte das Stickerpack nicht finden"
+		},
+		"settings": {
+			"settings": {
+				"title": "Einstellungen",
+				"conversationsSection": "Unterhaltungen",
+				"accountSection": "Account",
+				"signOut": "Abmelden",
+				"signOutConfirmTitle": "Abmelden",
+				"signOutConfirmBody": "Du bist dabei dich abzumelden. Fortfahren?",
+				"miscellaneousSection": "Unterschiedlich",
+				"debuggingSection": "Debugging",
+				"general": "Generell"
+			},
+			"about": {
+				"title": "Über",
+				"licensed": "Lizensiert unter GPL3",
+				"version": "Version ${version}",
+				"viewSourceCode": "Quellcode anschauen",
+				"nMoreToGo": "Noch ${n}...",
+				"debugMenuShown": "Du bist jetzt ein Entwickler!",
+				"debugMenuAlreadyShown": "Du bist bereits ein Entwickler!"
+			},
+			"appearance": {
+				"title": "Aussehen",
+				"languageSection": "Sprache",
+				"language": "Appsprache",
+				"languageSubtext": "Aktuell ausgewählt: $selectedLanguage",
+				"systemLanguage": "Systemsprache"
+			},
+			"licenses": {
+				"title": "Open-Source Lizenzen",
+				"licensedUnder": "Lizensiert unter $license"
+			},
+			"conversation": {
+				"title": "Chat",
+				"appearance": "Aussehen",
+				"selectBackgroundImage": "Hintergrundbild auswählen",
+				"selectBackgroundImageDescription": "Dieses Bild wird als Hintergrundbild in allen Chats verwendet",
+				"removeBackgroundImage": "Hintergrundbild entfernen",
+				"removeBackgroundImageConfirmTitle": "Hintergrundbild entfernen",
+				"removeBackgroundImageConfirmBody": "Bist Du dir sicher, dass Du das Hintergrundbild entfernen möchtest?",
+				"newChatsSection": "Neue Chats",
+				"newChatsMuteByDefault": "Neue Chats standardmäßig stummschalten",
+				"newChatsE2EE": "Ende-zu-Ende-Verschlüsselung standardmäßig aktivieren. WARNUNG: Experimentell",
+				"behaviourSection": "Verhalten",
+				"contactsIntegration": "Kontaktintegration",
+				"contactsIntegrationBody": "Wenn aktiviert, dann werden Kontakte aus dem Kontaktbuch verwendet, um Chatnamen und Profilbilder anzuzeigen. Dabei werden keine Daten an den Server gesendet."
+			},
+			"debugging": {
+				"title": "Debuggingoptionen",
+				"generalSection": "Generell",
+				"generalEnableDebugging": "Debugging einschalten",
+				"generalEncryptionPassword": "Verschlüsselungspasswort",
+				"generalEncryptionPasswordSubtext": "Die Logs enthalten eventuell sensible Daten. Wähle also daher eine starke Passphrase",
+				"generalLoggingIp": "Logging-IP",
+				"generalLoggingIpSubtext": "Die IP-Adresse an die die Logs gesendet werden",
+				"generalLoggingPort": "Logging-Port",
+				"generalLoggingPortSubtext": "Der Port an den die Logs gesendet werden"
+			},
+			"network": {
+				"title": "Netzwerk",
+				"automaticDownloadsSection": "Automatische Downloads",
+				"automaticDownloadsText": "Moxxy läd Dateien automatisch herunter, wenn verbunden mit...",
+				"automaticDownloadsMaximumSize": "Maximale Downloadgröße",
+				"automaticDownloadsMaximumSizeSubtext": "Die maximale Dateigröße, die automatisch heruntergeladen werden soll",
+				"automaticDownloadAlways": "Immer",
+				"wifi": "Wifi",
+				"mobileData": "Mobile Daten"
+			},
+			"privacy": {
+				"title": "Privatsphäre",
+				"generalSection": "Generell",
+				"showContactRequests": "Kontaktanfragen zeigen",
+				"showContactRequestsSubtext": "Dies zeigt Personen in der Chatübersicht an, die Dich zu ihrer Kontaktliste hinzugefügt haben, aber noch keine Nachricht gesendet haben",
+				"profilePictureVisibility": "Öffentliches Profilbild",
+				"profilePictureVisibilitSubtext": "Wenn aktiviert, dann kann jeder Dein Profilbild sehen. Wenn deaktiviert, dann können nur Personen aus deiner Kontaktliste kein Profilbild sehen",
+				"conversationsSection": "Unterhaltungen",
+				"sendChatMarkers": "Chatmarker senden",
+				"sendChatMarkersSubtext": "Dies teilt Deinem Gesprächspartner mit, ob du Nachrichten empfangen oder gelesen hast",
+				"sendChatStates": "Chatstates senden",
+				"sendChatStatesSubtext": "Dies teilt Deinem Gesprächspartner mit, ob du gerade im Chat aktiv bist oder schreibst",
+				"redirectsSection": "Weiterleitungen",
+				"redirectText": "Dies leitet Links von $serviceName, die du öffnest, an einen Proxydienst weiter, wie zum Beispiel $exampleProxy",
+				"currentlySelected": "Aktuell ausgewählt: $proxy",
+				"redirectsTitle": "${serviceName}weiterleitung",
+				"cannotEnableRedirect": "Kann ${serviceName}weiterleitung nicht aktivieren",
+				"cannotEnableRedirectSubtext": "Du must zuerst einen Proxydienst auswählen. Dazu berühre das Feld neben dem Schalter.",
+				"urlEmpty": "URL kann nicht leer sein",
+				"urlInvalid": "Ungültige URL",
+				"redirectDialogTitle": "${serviceName}weiterleitung",
+				"stickersPrivacy": "Stickerliste öffentlich halten",
+				"stickersPrivacySubtext": "Wenn eingeschaltet, dann kann jeder die Liste Deiner installierten Stickerpacks sehen."
+			},
+			"stickers": {
+				"title": "Stickers",
+				"stickerSection": "Sticker",
+				"displayStickers": "Sticker im Chat anzeigen",
+				"autoDownload": "Sticker automatisch herunterladen",
+				"autoDownloadBody": "Wenn aktiviert, dann werden Sticker automatisch heruntergeladen, wenn der Sender in der Kontaktliste ist.",
+				"stickerPacksSection": "Stickerpacks",
+				"importStickerPack": "Stickerpack importieren",
+				"importSuccess": "Stickerpack erfolgreich importiert",
+				"importFailure": "Beim Import des Stickerpacks ist ein Fehler aufgetreten"
+			}
+		}
 	}
-    }
 }

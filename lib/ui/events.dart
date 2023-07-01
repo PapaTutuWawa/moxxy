@@ -38,6 +38,7 @@ void setupEventHandler() {
       EventTypeMatcher<StreamNegotiationsCompletedEvent>(
         onStreamNegotiationsDone,
       ),
+      EventTypeMatcher<AvatarUpdatedEvent>(onAvatarUpdated),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -199,3 +200,8 @@ Future<void> onStreamNegotiationsDone(
     GetIt.I.get<UIAvatarsService>().resetCache();
   }
 }
+
+Future<void> onAvatarUpdated(
+  AvatarUpdatedEvent event, {
+  dynamic extra,
+}) async {}
