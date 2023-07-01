@@ -291,6 +291,9 @@ class ConversationPageState extends State<ConversationPage>
           sentBySelf,
         );
 
+        // Dismiss the soft-keyboard
+        dismissSoftKeyboard(context);
+
         // Start the actual animation
         _selectionController.selectMessage(
           SelectedMessageData(
