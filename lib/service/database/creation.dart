@@ -109,20 +109,20 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $conversationsTable (
-      jid TEXT NOT NULL PRIMARY KEY,
-      title TEXT NOT NULL,
-      avatarPath TEXT NOT NULL,
-      avatarHash TEXT,
-      type TEXT NOT NULL,
+      jid                 TEXT NOT NULL PRIMARY KEY,
+      title               TEXT NOT NULL,
+      avatarPath          TEXT NOT NULL,
+      avatarHash          TEXT,
+      type                TEXT NOT NULL,
       lastChangeTimestamp INTEGER NOT NULL,
-      unreadCounter INTEGER NOT NULL,
-      open INTEGER NOT NULL,
-      muted INTEGER NOT NULL,
-      encrypted INTEGER NOT NULL,
-      lastMessageId INTEGER,
-      contactId TEXT,
-      contactAvatarPath TEXT,
-      contactDisplayName TEXT,
+      unreadCounter       INTEGER NOT NULL,
+      open                INTEGER NOT NULL,
+      muted               INTEGER NOT NULL,
+      encrypted           INTEGER NOT NULL,
+      lastMessageId       INTEGER,
+      contactId           TEXT,
+      contactAvatarPath   TEXT,
+      contactDisplayName  TEXT,
       CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id),
       CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
         ON DELETE SET NULL

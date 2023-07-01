@@ -40,10 +40,39 @@ class ConversationMessageConverter
 }
 
 enum ConversationType {
-  @JsonValue('chat')
-  chat,
-  @JsonValue('note')
-  note
+  chat('chat'),
+  note('note');
+
+  const ConversationType(this.value);
+
+  /// The identifier of the enum value.
+  final String value;
+
+  static ConversationType? fromInt(String value) {
+    switch (value) {
+      case 'chat':
+        return ConversationType.chat;
+      case 'note':
+        return ConversationType.note;
+    }
+
+    return null;
+  }
+}
+
+class ConversationTypeConverter
+    extends JsonConverter<ConversationType, String> {
+  const ConversationTypeConverter();
+
+  @override
+  ConversationType fromJson(String json) {
+    return ConversationType.fromInt(json)!;
+  }
+
+  @override
+  String toJson(ConversationType object) {
+    return object.value;
+  }
 }
 
 @freezed
@@ -68,7 +97,7 @@ class Conversation with _$Conversation {
     int unreadCounter,
 
     // The kind of chat this conversation is representing.
-    ConversationType type,
+    @ConversationTypeConverter() ConversationType type,
 
     // The timestamp the conversation was last changed.
     // NOTE: In milliseconds since Epoch or -1 if none has ever happened
