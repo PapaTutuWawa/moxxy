@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
-import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
@@ -212,7 +210,6 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         selectionController.dismiss();
                       },
                     ),
-
                   if (message.canRetract(sentBySelf))
                     ContextMenuItem(
                       icon: Icons.delete,
@@ -232,16 +229,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         selectionController.dismiss();
                       },
                     ),
-
-                  // TODO(Unknown): Also allow correcting older messages
-                  if (message.canEdit(sentBySelf) &&
-                      GetIt.I
-                              .get<ConversationBloc>()
-                              .state
-                              .conversation
-                              ?.lastMessage
-                              ?.id ==
-                          message.id)
+                  if (message.canEdit(sentBySelf))
                     ContextMenuItem(
                       icon: Icons.edit,
                       text: t.pages.conversation.edit,
@@ -255,7 +243,6 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         selectionController.dismiss();
                       },
                     ),
-
                   if (message.errorMenuVisible)
                     ContextMenuItem(
                       icon: Icons.info_outline,
@@ -269,7 +256,6 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         selectionController.dismiss();
                       },
                     ),
-
                   if (message.hasWarning)
                     ContextMenuItem(
                       icon: Icons.warning,
@@ -285,7 +271,6 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         selectionController.dismiss();
                       },
                     ),
-
                   if (message.isCopyable)
                     ContextMenuItem(
                       icon: Icons.content_copy,
@@ -300,7 +285,6 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         selectionController.dismiss();
                       },
                     ),
-
                   if (message.isQuotable && message.conversationJid != '')
                     ContextMenuItem(
                       icon: Icons.forward,
@@ -313,7 +297,6 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         selectionController.dismiss();
                       },
                     ),
-
                   if (message.isQuotable)
                     ContextMenuItem(
                       icon: Icons.reply,

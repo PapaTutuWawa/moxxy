@@ -1,0 +1,1 @@
+- Allow correcting messages older than the last one. Whether all clients will accept such a correction is unclear.
