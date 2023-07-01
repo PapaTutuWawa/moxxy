@@ -1,0 +1,89 @@
+{
+    "global": {
+        "yes": "はい",
+        "no": "いいえ",
+        "dialogCancel": "キャンセル"
+    },
+    "dateTime": {
+        "thursdayAbbrev": "木",
+        "fridayAbbrev": "金",
+        "saturdayAbbrev": "土",
+        "january": "1月",
+        "february": "2月",
+        "march": "3月",
+        "may": "5月",
+        "june": "6月",
+        "july": "7月",
+        "september": "9月",
+        "october": "10月",
+        "justNow": "ちょうど今",
+        "nMinutesAgo": "${min}分前",
+        "mondayAbbrev": "月",
+        "tuesdayAbbrev": "火",
+        "wednessdayAbbrev": "水",
+        "sundayAbbrev": "日",
+        "april": "4月",
+        "august": "8月",
+        "november": "11月",
+        "december": "12月",
+        "today": "今日",
+        "yesterday": "昨日"
+    },
+    "messages": {
+        "audio": "音声",
+        "you": "自分",
+        "image": "画像",
+        "video": "ビデオ",
+        "file": "ファイル",
+        "sticker": "スタンプ",
+        "retracted": "メッセージ取り消された"
+    },
+    "errors": {
+        "connection": {
+            "connectionTimeout": "サーバー接続中にタイムアウトが発生しました",
+            "saslInvalidCredentials": "ユーザー名またはパスワードが無効"
+        },
+        "login": {
+            "noConnection": "接続できませんでした",
+            "startTlsFailed": "接続できませんでした"
+        },
+        "message": {
+            "fileUploadFailed": "アップロードに失敗しました",
+            "fileDownloadFailed": "ダウンロードに失敗しました",
+            "serviceUnavailable": "配信に失敗しました"
+        },
+        "omemo": {
+            "notEncryptedForDevice": "このデバイス向けにメッセージは暗号化されませんでした"
+        },
+        "conversation": {
+            "messageErrorDialogTitle": "エラー"
+        }
+    },
+    "warnings": {
+        "conversation": {
+            "holdForLonger": "長押しすると音声記録できます"
+        }
+    },
+    "pages": {
+        "intro": {
+            "loginButton": "ログイン",
+            "registerButton": "新規登録",
+            "noAccount": "XMPPアドレスをお持ちですか？XMPPアドレスの作成は簡単です。"
+        },
+        "login": {
+            "title": "ログイン",
+            "xmppAddress": "XMPPアドレス",
+            "password": "パスワード",
+            "advancedOptions": "詳細設定"
+        }
+    },
+    "notifications": {
+        "permanent": {
+            "connecting": "接続中…"
+        },
+        "message": {
+            "reply": "返信",
+            "markAsRead": "既読"
+        }
+    }
+}

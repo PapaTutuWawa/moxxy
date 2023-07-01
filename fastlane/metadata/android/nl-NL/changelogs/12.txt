@@ -1,0 +1,5 @@
+Dit is een oplossingsversie:
+
+Het versturen van een bericht zonder bijlage zorgde voor een grijs vlak op de berichtenlijst. Dat is nu opgelost.
+
+(Ook ben ik gestopt met de ontwikkeling van mijn afsplitsing van de Flutter-sdk.)

@@ -1,0 +1,1 @@
+Moxxy is een experimentele xmpp-client met als doel modern gebruiksgemak.
