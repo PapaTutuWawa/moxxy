@@ -313,10 +313,6 @@ class BidirectionalConversationController
     assert(text.isNotEmpty, 'Cannot send empty text messages');
     _textController.text = '';
 
-    // Reset the message editing state
-    final wasEditing = _messageEditingState != null;
-    _messageEditingState = null;
-
     // Add message to the database and send it
     // ignore: cast_nullable_to_non_nullable
     final result = await MoxplatformPlugin.handler.getDataSender().sendData(
@@ -331,6 +327,10 @@ class BidirectionalConversationController
           ),
           awaitable: true,
         ) as MessageAddedEvent;
+
+    // Reset the message editing state
+    final wasEditing = _messageEditingState != null;
+    _messageEditingState = null;
 
     // Reset the quote
     removeQuote();
@@ -413,6 +413,8 @@ class BidirectionalConversationController
     int id,
     String sid,
   ) {
+    _log.fine('Beginning editing for id: $id, sid: $sid');
+
     _messageEditingState = MessageEditingState(
       id,
       sid,
