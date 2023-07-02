@@ -237,6 +237,118 @@
         },
         "crop": {
             "setProfilePicture": "Загрузить аватар"
+        },
+        "stickerPack": {
+            "removeConfirmTitle": "Удалить стикерпак",
+            "removeConfirmBody": "Вы действительно хотите удалить этот стикерпак?",
+            "installConfirmTitle": "добавить стикерпак",
+            "installConfirmBody": "Вы действительно хотите установить этот стикерпак?",
+            "restricted": "Этот стикерпак ограничен, стикеры будут отображаться, но отправить их нельзя.",
+            "fetchingFailure": "Стикерпак не найден"
+        },
+        "settings": {
+            "about": {
+                "version": "Версия ${version}",
+                "debugMenuShown": "Теперь ты разработчик ^_^",
+                "debugMenuAlreadyShown": "Ты уже разработчик :^",
+                "title": "О нас",
+                "viewSourceCode": "Исходный код",
+                "nMoreToGo": "Осталось еще ${n}...",
+                "licensed": "Лицензировано под GPL3"
+            },
+            "conversation": {
+                "removeBackgroundImageConfirmBody": "Вы действительно хотите удалить фон?",
+                "title": "Чат",
+                "appearance": "Внешний вид",
+                "selectBackgroundImage": "Выбрать фон",
+                "removeBackgroundImage": "Удалить фон",
+                "removeBackgroundImageConfirmTitle": "Удалить фон",
+                "newChatsSection": "Новый чат",
+                "newChatsMuteByDefault": "Отключать звук в новых чатах по умолчанию",
+                "newChatsE2EE": "Включить оконечное шифрование по умолчанию",
+                "behaviourSection": "Поведение",
+                "contactsIntegration": "Синхронизация контактов",
+                "selectBackgroundImageDescription": "Это изображение будет фоном для ваших чатов",
+                "contactsIntegrationBody": "При включении данные из телефонной книги будут использованы в заголовках чатов и фото профилей, на сервер ничего не оправляется"
+            },
+            "debugging": {
+                "title": "Опции отладки",
+                "generalSection": "Основные",
+                "generalEnableDebugging": "Включить отладку",
+                "generalEncryptionPassword": "Пароль шифрования",
+                "generalEncryptionPasswordSubtext": "Журналы могут содержать конфиденциальную информацию, поэтому поставте надежный пароль",
+                "generalLoggingIpSubtext": "IP, на который должны отправляться журналы",
+                "generalLoggingIp": "IP для логов",
+                "generalLoggingPort": "порт для логов",
+                "generalLoggingPortSubtext": "IP, на который должны отправляться журналы"
+            },
+            "network": {
+                "automaticDownloadsSection": "Автоматическая загрузка",
+                "title": "Сеть",
+                "automaticDownloadsMaximumSizeSubtext": "Максимальный размер, при котором файлы будут автоматически загружаться",
+                "automaticDownloadsMaximumSize": "Максимальный размер для загрузки",
+                "automaticDownloadAlways": "Всегда",
+                "wifi": "Wifi",
+                "mobileData": "Мобильный интернет",
+                "automaticDownloadsText": "Moxxy будет автоматически загружать файлы до..."
+            },
+            "privacy": {
+                "showContactRequests": "Показывать запрос в контакты",
+                "showContactRequestsSubtext": "Это покажет людей, добавивших вас в свой список контактов",
+                "generalSection": "Основные",
+                "profilePictureVisibility": "Сделать фото профиля публичным",
+                "sendChatMarkers": "Отправлять маркеры",
+                "redirectText": "Это позволит перенаправлять ссылки с ${serviceName} на прокси, такие как ${exampleProxy}",
+                "redirectsSection": "Перенаправление",
+                "currentlySelected": "Выбрано сейчас: $proxy",
+                "redirectsTitle": "$serviceName Перенаправление",
+                "urlEmpty": "URL не может быть пустым",
+                "title": "Приватность",
+                "conversationsSection": "Диалог",
+                "sendChatMarkersSubtext": "Это сообщит вашему собеседнику о получении или прочтении сообщения",
+                "sendChatStates": "Отправлять состояние чата",
+                "sendChatStatesSubtext": "Собеседник будет видеть, когда вы набираете сообщение или просматриваете чат",
+                "cannotEnableRedirect": "Не работает перенаправление $serviceName",
+                "cannotEnableRedirectSubtext": "Сначала нужно добавить прокси сервер. Для этого нажмите слева от переключателя",
+                "urlInvalid": "Недопустимый URL",
+                "redirectDialogTitle": "$serviceName Перенаправление",
+                "stickersPrivacy": "Публиковать список стикеров",
+                "stickersPrivacySubtext": "Когда включено, все могут видет установленные у вас стикеры",
+                "profilePictureVisibilitSubtext": "Когда в ключено, все видят ваш аватар, когда выключено - только контакты"
+            },
+            "stickers": {
+                "importSuccess": "Стикерпаки успешно импортированы",
+                "title": "Стикеры",
+                "stickerSection": "Стикеры",
+                "displayStickers": "Показывать стикеры",
+                "autoDownload": "Загружать стикеры автоматически",
+                "autoDownloadBody": "Стикеры будут автоматически загружаться, если их отправитель у вас в контактах",
+                "stickerPacksSection": "Стикерпаки",
+                "importStickerPack": "Импортировать стикерпаки",
+                "importFailure": "Ошибка при импорте стикерпаков"
+            },
+            "settings": {
+                "title": "Настройки",
+                "conversationsSection": "Чаты",
+                "accountSection": "Учетная запись",
+                "signOut": "Выйти",
+                "signOutConfirmTitle": "Выйти",
+                "signOutConfirmBody": "Вы хотите выйти, продолжить?",
+                "miscellaneousSection": "Другое",
+                "debuggingSection": "Отладка",
+                "general": "Основные"
+            },
+            "appearance": {
+                "title": "Внешний вид",
+                "languageSection": "Язык",
+                "language": "Язык в приложении",
+                "systemLanguage": "Как в системе",
+                "languageSubtext": "Выбранный язык: ${selectedLanguage}"
+            },
+            "licenses": {
+                "title": "Открытые лицензии",
+                "licensedUnder": "Лицензировано под ${license}"
+            }
         }
     },
     "@@name": "Русский",
