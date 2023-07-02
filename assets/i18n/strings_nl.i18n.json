@@ -111,6 +111,14 @@
             "openFileGenericError": "Het bestand kan niet worden geopend",
             "messageErrorDialogTitle": "Foutmelding",
             "openFileNoAppError": "Er is geen app die dit bestand kan openen"
+        },
+        "general": {
+            "noInternet": "Er is geen internetverbinding."
+        },
+        "newChat": {
+            "groupchatUnsupported": "Deelnemen aan groepsgesprekken wordt momenteel niet ondersteund.",
+            "unknown": "Onbekende foutmelding.",
+            "remoteServerError": "Er kan geen verbinding worden gemaakt met de externe server."
         }
     },
     "warnings": {
@@ -189,9 +197,10 @@
             "buttonAddToContact": "Toevoegen aan contactpersonen"
         },
         "newconversation": {
-            "title": "Gesprek starten",
+            "title": "Nieuw gesprek",
             "addContact": "Contactpersoon toevoegen",
-            "createGroupchat": "Groepsgesprek aanmaken"
+            "createGroupchat": "Nieuw groepsgesprek",
+            "startChat": "Gesprek starten"
         },
         "crop": {
             "setProfilePicture": "Instellen als profielfoto"
@@ -358,6 +367,12 @@
                 "importSuccess": "Het stickerpakket is geïmporteerd",
                 "importFailure": "Het stickerpakket kan niet worden geïmporteerd"
             }
+        },
+        "startchat": {
+            "title": "Nieuw gesprek",
+            "xmppAddress": "Xmpp-adres",
+            "subtitle": "Je kunt een nieuw gesprek starten door een xmpp-adres in te voeren of een QR-code te scannen.",
+            "buttonAddToContact": "Gesprek starten"
         }
     }
 }
