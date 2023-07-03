@@ -57,16 +57,29 @@ class TextChatWidget extends StatelessWidget {
                 fontSize: fontsize,
               ),
               parse: [
+                // NOTE: We use [renderWidget] here because otherwise, flutter_parsed_text will
+                //       use [TextSpan]s with a [GestureRecognizer]. This interferes with the
+                //       surrounding [GestureDetector] that we use for long-press interactions.
                 MatchText(
                   // Taken from flutter_parsed_text's source code. Added ";" and "%" to
                   // valid URLs
                   pattern:
                       r'[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:._\+-~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:_\+.~#?&\/\/=\;\%]*)',
-                  style: const TextStyle(
-                    decoration: TextDecoration.underline,
-                  ),
                   onTap: handleUri,
-                )
+                  renderWidget: ({
+                    required String pattern,
+                    required String text,
+                  }) {
+                    return Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: fontsize,
+                        color: bubbleTextColor,
+                        decoration: TextDecoration.underline,
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
