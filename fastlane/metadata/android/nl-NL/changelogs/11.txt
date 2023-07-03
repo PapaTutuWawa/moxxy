@@ -1,0 +1,10 @@
+- Offline-berichten worden verstuurd als de verbinding hersteld is;
+- SFS-cache, waardoor downloaden alleen plaatsvindt indien niet lokaal beschikbaar;
+- Berichten en mediabestanden worden op pagina's getoond;
+- Diverse pagina's bijgewerkt;
+- Reacties herontworpen;
+- Zelfmemofunctie;
+- Gespreksstatussen worden niet meer verstuurd indien ongefocust;
+- Stickers als antwoord op citaten;
+- Nieuw databankontwerp;
+- Verbeterde emoji-/stickerkeuze i.c.m. toetsenbord.

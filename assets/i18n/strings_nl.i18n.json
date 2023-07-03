@@ -1,0 +1,363 @@
+{
+    "@@name": "Engels",
+    "global": {
+        "title": "Moxxy",
+        "dialogAccept": "Oké",
+        "dialogCancel": "Annuleren",
+        "yes": "Ja",
+        "no": "Nee",
+        "moxxySubtitle": "Een xmpp-experiment: het bouwen van een moderne, eenvoudige en mooie client."
+    },
+    "notifications": {
+        "permanent": {
+            "idle": "Inactief",
+            "ready": "Klaar om berichten te ontvangen",
+            "connecting": "Bezig met verbinden…",
+            "disconnect": "Verbinding verbroken",
+            "error": "Foutmelding"
+        },
+        "message": {
+            "reply": "Beantwoorden",
+            "markAsRead": "Markeren als gelezen"
+        },
+        "channels": {
+            "messagesChannelName": "Berichten",
+            "warningChannelName": "Waarschuwingen",
+            "warningChannelDescription": "Aan Moxxy gerelateerde waarschuwingen",
+            "messagesChannelDescription": "Het meldingskanaal voor het ontvangen van berichten"
+        },
+        "titles": {
+            "error": "Foutmelding"
+        }
+    },
+    "dateTime": {
+        "justNow": "Zojuist",
+        "nMinutesAgo": "${min} min. geleden",
+        "mondayAbbrev": "ma",
+        "tuesdayAbbrev": "di",
+        "wednessdayAbbrev": "woe",
+        "thursdayAbbrev": "do",
+        "fridayAbbrev": "vrij",
+        "saturdayAbbrev": "za",
+        "sundayAbbrev": "zo",
+        "january": "januari",
+        "february": "februari",
+        "march": "maart",
+        "april": "april",
+        "may": "mei",
+        "june": "juni",
+        "july": "juli",
+        "august": "augustus",
+        "september": "september",
+        "october": "oktober",
+        "november": "november",
+        "december": "december",
+        "today": "Vandaag",
+        "yesterday": "Gisteren"
+    },
+    "messages": {
+        "image": "Afbeelding",
+        "video": "Video",
+        "audio": "Audio",
+        "file": "Bestand",
+        "sticker": "Sticker",
+        "retracted": "Dit bericht is herroepen",
+        "retractedFallback": "Er is een eerder bericht herroepen, maar je client heeft hier geen ondersteuning voor",
+        "you": "Ik"
+    },
+    "errors": {
+        "filePicker": {
+            "permissionDenied": "Het opslagrecht is geweigerd."
+        },
+        "omemo": {
+            "notEncryptedForDevice": "Dit bericht is niet versleuteld op dit apparaat",
+            "invalidHmac": "Het bericht kan niet worden ontsleuteld",
+            "noDecryptionKey": "Er is geen sleutel beschikbaar",
+            "messageInvalidAfixElement": "Het bericht is ongeldig versleuteld",
+            "verificationInvalidOmemoUrl": "Ongeldige OMEMO:2-vingerafdruk",
+            "verificationWrongJid": "Ongeldig xmpp-adres",
+            "verificationWrongDevice": "Ongeldig OMEMO:2-apparaat",
+            "verificationNotInList": "Ongeldig OMEMO:2-apparaat",
+            "verificationWrongFingerprint": "Ongeldige OMEMO:2-vingerafdruk",
+            "couldNotPublish": "De versleutelde identiteit kan niet worden gepubliceerd op de server. Hierdoor werkt eind-tot-eindversleuteling mogelijk niet."
+        },
+        "connection": {
+            "saslAccountDisabled": "Je account is uitgeschakeld",
+            "saslInvalidCredentials": "Je inloggegevens zijn ongeldig",
+            "unrecoverable": "De verbinding is verbroken wegens een onoplosbare fout",
+            "connectionTimeout": "Er kan geen verbinding worden gemaakt met de server"
+        },
+        "login": {
+            "saslFailed": "De inloggegevens zijn ongeldig",
+            "noConnection": "Er kan geen verbinding worden opgezet",
+            "unspecified": "Onbekende foutmelding",
+            "startTlsFailed": "Er kan geen beveiligde verbinding worden opgezet"
+        },
+        "message": {
+            "unspecified": "Onbekende foutmelding",
+            "fileUploadFailed": "Het bestand kan niet worden geüpload",
+            "contactDoesntSupportOmemo": "Deze contactpersoon heeft geen ondersteuning voon OMEMO:2-versleuteling",
+            "fileDownloadFailed": "Het bestand kan niet worden opgehaald",
+            "serviceUnavailable": "Het bericht kan niet worden bezorgd",
+            "remoteServerTimeout": "Het bericht kan niet worden verstuurd naar de server",
+            "failedToEncrypt": "Het bericht kan niet worden versleuteld",
+            "failedToEncryptFile": "Het bestand kan niet worden versleuteld",
+            "failedToDecryptFile": "Het bestand kan niet worden ontsleuteld",
+            "fileNotEncrypted": "Het gesprek is versleuteld, maar het bestand niet",
+            "remoteServerNotFound": "Het bericht kan niet worden verstuurd naar de server omdat het niet bestaat"
+        },
+        "conversation": {
+            "audioRecordingError": "De audio-opname kan niet worden afgerond",
+            "openFileGenericError": "Het bestand kan niet worden geopend",
+            "messageErrorDialogTitle": "Foutmelding",
+            "openFileNoAppError": "Er is geen app die dit bestand kan openen"
+        }
+    },
+    "warnings": {
+        "message": {
+            "integrityCheckFailed": "De bestandsintegriteit kan niet worden vastgesteld"
+        },
+        "conversation": {
+            "holdForLonger": "Houd langer ingedrukt om een spraakbericht op te nemen"
+        }
+    },
+    "pages": {
+        "intro": {
+            "loginButton": "Inloggen",
+            "registerButton": "Registreren",
+            "noAccount": "Geen xmpp-account? Geen zorgen: je maakt er in een handomdraai een aan."
+        },
+        "login": {
+            "title": "Inloggen",
+            "xmppAddress": "Xmpp-adres",
+            "password": "Wachtwoord",
+            "advancedOptions": "Geavanceerde opties",
+            "createAccount": "Account aanmaken op server"
+        },
+        "conversations": {
+            "speeddialNewChat": "Nieuw gesprek",
+            "speeddialJoinGroupchat": "Deelnemen aan groepsgesprek",
+            "speeddialAddNoteToSelf": "Zelfmemo",
+            "overlaySettings": "Instellingen",
+            "noOpenChats": "Er zijn geen openstaande gesprekken",
+            "startChat": "Gesprek starten",
+            "closeChat": "Gesprek sluiten",
+            "closeChatBody": "Weet je zeker dat je het gesprek “${conversationTitle}” wilt sluiten?",
+            "markAsRead": "Markeren als gelezen"
+        },
+        "conversation": {
+            "unencrypted": "Onversleuteld",
+            "encrypted": "Versleuteld",
+            "closeChat": "Gesprek sluiten",
+            "closeChatConfirmSubtext": "Weet je zeker dat je dit gesprek wilt sluiten?",
+            "blockShort": "Blokkeren",
+            "blockUser": "Gebruiker blokkeren",
+            "online": "Online",
+            "retract": "Bericht herroepen",
+            "forward": "Doorsturen",
+            "edit": "Bewerken",
+            "quote": "Citeren",
+            "copy": "Inhoud kopiëren",
+            "addReaction": "Reageren",
+            "showError": "Foutmelding tonen",
+            "showWarning": "Waarschuwing tonen",
+            "addToContacts": "Toevoegen aan contactpersonen",
+            "addToContactsTitle": "${jid} toevoegen aan contactpersonen",
+            "addToContactsBody": "Weet je zeker dat je ${jid} wilt toevoegen aan je contactpersonen?",
+            "stickerPickerNoStickersLine1": "Er zijn geen stickerpakketten beschikbaar.",
+            "stickerSettings": "Stickerinstellingen",
+            "newDeviceMessage": {
+                "one": "Er is een nieuw apparaat toegevoegd",
+                "other": "Er zijn meerdere nieuwe apparaten toegevoegd"
+            },
+            "replacedDeviceMessage": {
+                "one": "Er is een apparaat gewijzigd",
+                "other": "Er zijn meerdere apparaten toegevoegd"
+            },
+            "messageHint": "Verstuur een bericht…",
+            "sendImages": "Afbeeldingen versturen",
+            "sendFiles": "Bestanden versturen",
+            "closeChatConfirmTitle": "Gesprek sluiten",
+            "retractBody": "Weet je zeker dat je dit bericht wilt herroepen? Dit is slechts een verzoek aan de client dat niet in acht hoeft te worden genomen.",
+            "stickerPickerNoStickersLine2": "Installeer pakketten via de stickerinstellingen.",
+            "takePhotos": "Foto's maken"
+        },
+        "addcontact": {
+            "title": "Toevoegen aan contactpersonen",
+            "xmppAddress": "Xmpp-adres",
+            "subtitle": "Voeg een contactpersoon toe door zijn/haar xmpp-adres in te vullen of een Qr-code te scannen",
+            "buttonAddToContact": "Toevoegen aan contactpersonen"
+        },
+        "newconversation": {
+            "title": "Gesprek starten",
+            "addContact": "Contactpersoon toevoegen",
+            "createGroupchat": "Groepsgesprek aanmaken"
+        },
+        "crop": {
+            "setProfilePicture": "Instellen als profielfoto"
+        },
+        "shareselection": {
+            "shareWith": "Delen met…",
+            "confirmTitle": "Bestand versturen",
+            "confirmBody": "Een of meerdere gesprekken zijn onversleuteld. Dit houdt in dat het bestand kan worden uitgelezen door de server. Weet je zeker dat je wilt doorgaan?"
+        },
+        "profile": {
+            "general": {
+                "omemo": "Beveiliging",
+                "profile": "Profiel",
+                "media": "Media"
+            },
+            "conversation": {
+                "notifications": "Meldingen",
+                "notificationsMuted": "Gedempt",
+                "notificationsEnabled": "Ingeschakeld",
+                "sharedMedia": "Media"
+            },
+            "owndevices": {
+                "title": "Mijn apparaten",
+                "thisDevice": "Dit apparaat",
+                "otherDevices": "Overige apparaten",
+                "deleteDeviceConfirmTitle": "Apparaat verwijderen",
+                "deleteDeviceConfirmBody": "Let op: hierdoor kunnen contactpersonen het apparaat niet meer versleutelen. Wil je doorgaan?",
+                "recreateOwnSessions": "Sessies heraanmaken",
+                "recreateOwnSessionsConfirmTitle": "Wil je je sessies heraanmaken?",
+                "recreateOwnDevice": "Apparaat heraanmaken",
+                "recreateOwnDeviceConfirmTitle": "Wil je je apparaat heraanmaken?",
+                "recreateOwnSessionsConfirmBody": "Hierdoor worden de versleutelde sessies opnieuw aangemaakt op je apparaten. Let op: doe dit alléén als apparaten ontsleutelfoutmeldingen tonen.",
+                "recreateOwnDeviceConfirmBody": "Hierdoor wordt de versleutelde identiteit van dit apparaat opnieuw aangemaakt. Dit kan even duren. Als contactpersonen je apparaat hebben goedgekeurd, dan dienen ze dit opnieuw te doen. Wil je doorgaan?"
+            },
+            "devices": {
+                "title": "Beveiliging",
+                "recreateSessions": "Sessies heraanmaken",
+                "recreateSessionsConfirmTitle": "Wil je je sessies heraanmaken?",
+                "recreateSessionsConfirmBody": "Hierdoor worden alle versleutelde sessies opnieuw aangemaakt op je apparaten. Let op: doe dit alléén als je apparaten ontsleutelfoutmeldingen tonen.",
+                "noSessions": "Er zijn geen versleutelde sessies die worden gebruikt voor eind-tot-eindversleuteling."
+            }
+        },
+        "blocklist": {
+            "title": "Blokkadelijst",
+            "noUsersBlocked": "Er zijn geen geblokkeerde gebruikers",
+            "unblockAll": "Iedereen deblokkeren",
+            "unblockAllConfirmTitle": "Weet je het zeker?",
+            "unblockAllConfirmBody": "Weet je zeker dat je alle gebruikers wilt deblokkeren?",
+            "unblockJidConfirmTitle": "Wil je ${jid} deblokkeren?",
+            "unblockJidConfirmBody": "Weet je zeker dat je ${jid} wilt deblokkeren? Hierdoor ontvang je weer berichten van deze gebruiker."
+        },
+        "cropbackground": {
+            "blur": "Achtergrond vervagen",
+            "setAsBackground": "Instellen als achtergrond"
+        },
+        "stickerPack": {
+            "removeConfirmTitle": "Stickerpakket verwijderen",
+            "installConfirmTitle": "Stickerpakket installeren",
+            "installConfirmBody": "Weet je zeker dat je dit stickerpakket wilt installeren?",
+            "fetchingFailure": "Het stickerpakket is niet gevonden",
+            "removeConfirmBody": "Weet je zeker dat je dit stickerpakket wilt verwijderen?",
+            "restricted": "Dit stickerpakket is beperkt toegankelijk. Dit houdt in dat de stickers kunnen worden getoond, maar niet worden verstuurd."
+        },
+        "settings": {
+            "settings": {
+                "title": "Instellingen",
+                "conversationsSection": "Gesprekken",
+                "accountSection": "Account",
+                "signOut": "Uitloggen",
+                "signOutConfirmTitle": "Uitloggen",
+                "signOutConfirmBody": "Je staat op het punt om uit te loggen. Wil je doorgaan?",
+                "miscellaneousSection": "Overig",
+                "debuggingSection": "Foutopsporing",
+                "general": "Algemeen"
+            },
+            "about": {
+                "title": "Over",
+                "licensed": "Uitgebracht onder de GPL3-licentie",
+                "version": "Versie ${version}",
+                "viewSourceCode": "Broncode bekijken",
+                "nMoreToGo": "Nog ${n} te gaan…",
+                "debugMenuShown": "Je bent nu een ontwikkelaar!",
+                "debugMenuAlreadyShown": "Je bent al een ontwikkelaar!"
+            },
+            "appearance": {
+                "title": "Vormgeving",
+                "languageSection": "Taal",
+                "language": "Apptaal",
+                "languageSubtext": "Huidige taal: $selectedLanguage",
+                "systemLanguage": "Standaardtaal"
+            },
+            "licenses": {
+                "title": "Opensourcelicenties",
+                "licensedUnder": "Uitgebracht onder de $license-licentie"
+            },
+            "conversation": {
+                "title": "Gesprek",
+                "appearance": "Vormgeving",
+                "selectBackgroundImage": "Kies een achtergrond",
+                "removeBackgroundImage": "Afbeelding verwijderen",
+                "removeBackgroundImageConfirmTitle": "Afbeelding verwijderen",
+                "removeBackgroundImageConfirmBody": "Weet je zeker dat je de huidige gespreksachtergrond wilt verwijderen?",
+                "newChatsSection": "Nieuwe gesprekken",
+                "newChatsMuteByDefault": "Nieuwe gesprekken dempen",
+                "newChatsE2EE": "Eind-tot-eindversleuteling standaard inschakelen (WAARSCHUWING: experimenteel)",
+                "behaviourSection": "Gedrag",
+                "contactsIntegration": "Contactpersoonintegratie",
+                "contactsIntegrationBody": "Schakel in om het adresboek te gebruiken om gesprekstitels en profielfoto's in te stellen. Er worden geen gegevens verstuurd naar de server.",
+                "selectBackgroundImageDescription": "Deze afbeelding wordt gebruikt als achtergrond in al je gesprekken"
+            },
+            "debugging": {
+                "title": "Foutopsporingsopties",
+                "generalSection": "Algemeen",
+                "generalEnableDebugging": "Foutopsporing inschakelen",
+                "generalEncryptionPassword": "Versleutelwachtwoord",
+                "generalLoggingIp": "Ip-log",
+                "generalLoggingIpSubtext": "Het ip-adres waar de logboeken naartoe dienen te worden gestuurd",
+                "generalLoggingPort": "Logpoort",
+                "generalLoggingPortSubtext": "Het ip-adres waar de logboeken naartoe dienen te worden gestuurd",
+                "generalEncryptionPasswordSubtext": "Let op: de logboeken kunnen privéinformatie bevatten, dus stel een sterk wachtwoord in"
+            },
+            "network": {
+                "title": "Netwerk",
+                "automaticDownloadsSection": "Automatisch ophalen",
+                "automaticDownloadsMaximumSize": "Maximale downloadomvang",
+                "automaticDownloadsMaximumSizeSubtext": "De maximale bestandsgrootte van automatisch op te halen bestanden",
+                "automaticDownloadAlways": "Ieder netwerk",
+                "wifi": "Wifi",
+                "mobileData": "Mobiel internet",
+                "automaticDownloadsText": "Moxxy zal bestanden automatisch ophalen bij gebruik van…"
+            },
+            "privacy": {
+                "title": "Privacy",
+                "generalSection": "Algemeen",
+                "showContactRequests": "Contactpersoonverzoeken tonen",
+                "profilePictureVisibility": "Profielfoto aan iedereen tonen",
+                "conversationsSection": "Gesprek",
+                "sendChatMarkersSubtext": "Hiermee kan je gesprekspartner zien of je een bericht gelezen of ontvangen hebt",
+                "sendChatMarkers": "Gespreksacties versturen",
+                "sendChatStates": "Gespreksstatussen versturen",
+                "sendChatStatesSubtext": "Hiermee kan je gesprekspartner zien of je aan het typen of het gesprek aan het bekijken bent",
+                "redirectsSection": "Doorverwijzingen",
+                "redirectText": "Hiermee worden $serviceName-links doorverwezen naar een proxy, bijvoorbeeld $exampleProxy",
+                "currentlySelected": "Huidige proxy: $proxy",
+                "redirectsTitle": "$serviceName-doorverwijzing",
+                "cannotEnableRedirect": "$serviceName-doorverwijzingen mislukt",
+                "cannotEnableRedirectSubtext": "Stel eerst een proxy als doorverwijzing in. Druk hiervoor op het veld naast de schakelaar.",
+                "urlEmpty": "Voer een url in",
+                "urlInvalid": "De url is ongeldig",
+                "redirectDialogTitle": "$serviceName-doorverwijzing",
+                "stickersPrivacy": "Stickerlijst aan iedereen tonen",
+                "stickersPrivacySubtext": "Schakel in om je lijst met stickerpakketten aan iedereen te tonen",
+                "showContactRequestsSubtext": "Hiermee worden verzoeken getoond van personen die je hebben toegevoegd, maar nog geen bericht hebben gestuurd",
+                "profilePictureVisibilitSubtext": "Schakel in om iedereen je profielfoto te tonen; schakel uit om alleen gebruikers op je lijst je profielfoto te tonen"
+            },
+            "stickers": {
+                "title": "Stickers",
+                "stickerSection": "Sticker",
+                "displayStickers": "Stickers in gesprekken tonen",
+                "autoDownload": "Stickers automatisch ophalen",
+                "autoDownloadBody": "Schakel in om stickers automatisch op te halen na het toevoegen van de afzender",
+                "stickerPacksSection": "Stickerpakketten",
+                "importStickerPack": "Stickerpakket importeren",
+                "importSuccess": "Het stickerpakket is geïmporteerd",
+                "importFailure": "Het stickerpakket kan niet worden geïmporteerd"
+            }
+        }
+    }
+}

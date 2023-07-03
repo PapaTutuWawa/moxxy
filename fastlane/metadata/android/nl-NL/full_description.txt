@@ -1,0 +1,24 @@
+Moxxy is een experimentele xmpp-client met als doel modern gebruiksgemak.
+
+Let op: Moxxy is momenteel in de alfafase. Dit houdt in dat er gegarandeerd bugs en
+problemen zullen zijn. Gebruik Moxxy dus niet voor belangrijke zaken.
+
+Huidige functies:
+<ul>
+  <li>Verstuur bestanden en afbeeldingen;</li>
+  <li>Stel je profielfoto in;</li>
+  <li>Typmeldingen en berichtstatussen;</li>
+  <li>Gespreksachtergronden;</li>
+  <li>Draait op de achtergrond zónder pushmeldingen;</li>
+  <li>OMEMO (momenteel niet compatibel met de meeste apps);</li>
+  <li>Stickers.</li>
+</ul>
+
+Voor de beste gebruikservaring is het belangrijk om een server te gebruiken met:
+<ul>
+  <li>Ondersteuning voor TLS/StartTLS op dezelfde domeinnaam als in de Jid;</li>
+  <li>Ondersteuning voor SCRAM-SHA-1, SCRAM-SHA-256 of SCRAM-SHA-512;</li>
+  <li>Ondersteuning voor HTTP-bestandsupload;</li>
+  <li>Ondersteuning voor streambeheer;</li>
+  <li>Ondersteuning voor Client State Indication.</li>
+</ul>

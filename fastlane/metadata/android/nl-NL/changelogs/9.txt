@@ -1,0 +1,7 @@
+* Expose the debug menu by tapping the Moxxy icon on the about page 10 times
+* Maybe fix a connection race condition
+* Allow sharing media with the app when it was closed
+* Make quotes prettier
+* Make the bottom part of the conversation page prettier
+* Fix roster fetching
+* Fix OMEMO key generation

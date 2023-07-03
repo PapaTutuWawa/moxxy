@@ -1,0 +1,251 @@
+{
+    "global": {
+        "title": "Moxxy",
+        "dialogAccept": "Принять",
+        "dialogCancel": "Отмена",
+        "yes": "Да",
+        "no": "Нет",
+        "moxxySubtitle": "Эксперементальный XMPP-клиент, простой, современный и красивый."
+    },
+    "notifications": {
+        "permanent": {
+            "idle": "Idle",
+            "ready": "Готов к приему сообщений",
+            "connecting": "Подключение...",
+            "disconnect": "Отключен",
+            "error": "Ошибка"
+        },
+        "message": {
+            "reply": "Ответ",
+            "markAsRead": "Прочитано"
+        },
+        "channels": {
+            "messagesChannelName": "Сообщения",
+            "warningChannelName": "Предупреждение",
+            "warningChannelDescription": "Предупреждения, связанные с Moxxy",
+            "messagesChannelDescription": "Канал уведомления о полученных сообщениях"
+        },
+        "titles": {
+            "error": "Ошибка"
+        }
+    },
+    "dateTime": {
+        "justNow": "Сейчас",
+        "nMinutesAgo": "${min}минут назад",
+        "mondayAbbrev": "Пн",
+        "tuesdayAbbrev": "Вт",
+        "wednessdayAbbrev": "Ср",
+        "thursdayAbbrev": "Чт",
+        "fridayAbbrev": "Пт",
+        "sundayAbbrev": "Вс",
+        "january": "Январь",
+        "february": "Февраль",
+        "may": "Май",
+        "june": "Июнь",
+        "october": "Октябрь",
+        "november": "Ноябрь",
+        "december": "Декабрь",
+        "today": "Сегодня",
+        "saturdayAbbrev": "Сб",
+        "march": "Март",
+        "april": "Апрель",
+        "july": "Июль",
+        "august": "Август",
+        "september": "Сентябрь",
+        "yesterday": "Вчера"
+    },
+    "messages": {
+        "image": "Картинка",
+        "video": "Видео",
+        "file": "Файл",
+        "sticker": "Стикер",
+        "you": "Ты",
+        "audio": "Аудио",
+        "retracted": "Сообщение удалено",
+        "retractedFallback": "Предыдущее сообщение было удалено, но ваш клиент не поддерживает удаление"
+    },
+    "errors": {
+        "filePicker": {
+            "permissionDenied": "Доступ к хранилищу не был выдан"
+        },
+        "omemo": {
+            "notEncryptedForDevice": "Сообщение зашифровано, но не для этого устройства",
+            "invalidHmac": "Не удалось расшифровать сообщение",
+            "noDecryptionKey": "Нет ключа для расшифровки",
+            "verificationWrongFingerprint": "Неправильный OMEMO:2 отпечаток",
+            "couldNotPublish": "Не удалось опубликовать ключи шифрования на сервере. Это означает, что сквозное шифрование может не работать.",
+            "messageInvalidAfixElement": "Ошибка в зашифрованном сообщении",
+            "verificationInvalidOmemoUrl": "неверный отпечаток OMEMO:2",
+            "verificationWrongJid": "Неправильный XMPP-адрес",
+            "verificationWrongDevice": "Неправильное OMEMO:2 устройство",
+            "verificationNotInList": "Неправильное OMEMO:2 устройство"
+        },
+        "connection": {
+            "connectionTimeout": "Нет соединения с сервером",
+            "saslInvalidCredentials": "Данные учетной записи недействительны",
+            "unrecoverable": "Соединение прервано из-за ошибки",
+            "saslAccountDisabled": "Аккаунт отключен"
+        },
+        "login": {
+            "saslFailed": "Неверный логин",
+            "startTlsFailed": "Не удалось установить безопасное соединение",
+            "noConnection": "Не удалось установить соединение",
+            "unspecified": "Неопределенная ошибка"
+        },
+        "message": {
+            "fileDownloadFailed": "Не удалось загрузить файл",
+            "remoteServerTimeout": "Сообщение не доставлено на сервер получателя",
+            "unspecified": "Неизвесная ошибка",
+            "fileUploadFailed": "Не удалось отправить файл",
+            "contactDoesntSupportOmemo": "Получатель не поддерживает OMEMO:2 шифрование",
+            "serviceUnavailable": "Сообщение не доставлено получателю",
+            "remoteServerNotFound": "Cообщение не доставлено, не найден сервер получателя",
+            "failedToEncrypt": "Сообщение не может быть зашифровано",
+            "failedToEncryptFile": "Файл не может быть зашифрован",
+            "failedToDecryptFile": "Файл не может быть расшифрован",
+            "fileNotEncrypted": "Чат зашифрован, но файл не зашифрован"
+        },
+        "conversation": {
+            "audioRecordingError": "Не удалось завершить аудиозапись",
+            "openFileNoAppError": "Приложения для открытия этого файла не найдены",
+            "openFileGenericError": "Не удалось открыть файл",
+            "messageErrorDialogTitle": "Ошибка"
+        }
+    },
+    "pages": {
+        "intro": {
+            "registerButton": "Регистрация",
+            "loginButton": "Login",
+            "noAccount": "Нет XMPP аккаунта? Зарегистрируйтесь на одном из серверов, это не сложно."
+        },
+        "login": {
+            "title": "Login",
+            "password": "Пароль",
+            "xmppAddress": "XMPP-адрес",
+            "advancedOptions": "Расширенные опции",
+            "createAccount": "Зарегистрироваться на сервере"
+        },
+        "conversations": {
+            "speeddialNewChat": "Написать",
+            "speeddialJoinGroupchat": "Групповой чат",
+            "speeddialAddNoteToSelf": "Себе",
+            "overlaySettings": "Настройки",
+            "startChat": "Начать диалог",
+            "markAsRead": "Пометить как прочитанное",
+            "noOpenChats": "У вас пока нет диалогов",
+            "closeChat": "Завершить диалог",
+            "closeChatBody": "Вы уверены, что хотите завершить диалог с ${conversationTitle}?"
+        },
+        "conversation": {
+            "unencrypted": "Незашифрованно",
+            "encrypted": "Зашифрованно",
+            "closeChat": "Закрыть чат",
+            "closeChatConfirmTitle": "Закрыть чат",
+            "closeChatConfirmSubtext": "Вы уверены что хотите закрыть этот чат?",
+            "blockShort": "Заблокировать",
+            "blockUser": "Заблокировать пользователя",
+            "online": "В сети",
+            "retract": "Отозвать сообщение",
+            "copy": "Копировать",
+            "addReaction": "Реакция",
+            "showError": "Показать ошибки",
+            "showWarning": "Показать предупреждения",
+            "sendFiles": "Отправить файл",
+            "takePhotos": "Сделать фотографии",
+            "retractBody": "Вы уверены, что хотите отозвать сообщение? Помните, что это всего лишь просьба, которую клиент не обязан выполнять.",
+            "forward": "Продолжить",
+            "edit": "Изменить",
+            "quote": "Цитировать",
+            "addToContacts": "Добавить в контакты",
+            "addToContactsTitle": "Добавить ${jid} в контакты",
+            "addToContactsBody": "Вы уверены, что хотите добавить ${jid} в контакты?",
+            "stickerPickerNoStickersLine1": "Нет установленных стикерпаков.",
+            "stickerPickerNoStickersLine2": "Их можно установить в настройках стикеров.",
+            "stickerSettings": "Настройки стикеров",
+            "newDeviceMessage": {
+                "one": "Добавлено новое устройство",
+                "other": "Добавлено несколько новых устройств"
+            },
+            "replacedDeviceMessage": {
+                "one": "Устройство было изменено",
+                "other": "Добавлено несколько устройств"
+            },
+            "messageHint": "Сообщение...",
+            "sendImages": "Отправить картинку"
+        },
+        "addcontact": {
+            "xmppAddress": "XMPP-адрес",
+            "buttonAddToContact": "Добавить в контакты",
+            "title": "Добавить контакт",
+            "subtitle": "Вы можете добавить контакт введя его XMPP адрес или отсканировав QR код"
+        },
+        "newconversation": {
+            "title": "Начать новый чат",
+            "addContact": "Добавить контакт",
+            "createGroupchat": "Создать групповой чат"
+        },
+        "shareselection": {
+            "shareWith": "Поделиться с...",
+            "confirmTitle": "Отправить файл",
+            "confirmBody": "Один или несколько чатов не зашифрованы, это означает, что файл будет доступен администрации сервера. Вы все еще хотите продолжить?"
+        },
+        "profile": {
+            "general": {
+                "omemo": "Безопасность",
+                "profile": "Профиль",
+                "media": "Медиа"
+            },
+            "conversation": {
+                "sharedMedia": "Медиа",
+                "notifications": "Уведомления",
+                "notificationsMuted": "Без звука",
+                "notificationsEnabled": "Включено"
+            },
+            "owndevices": {
+                "thisDevice": "Это устройство",
+                "recreateOwnDevice": "Восстановить устройство",
+                "title": "Собственные устройства",
+                "otherDevices": "Другие устройства",
+                "deleteDeviceConfirmTitle": "Удалить устройство",
+                "deleteDeviceConfirmBody": "Контакты не смогут быть зашифрованы для этого устройства. Продолжить?",
+                "recreateOwnSessions": "Пересоздать сеанс",
+                "recreateOwnSessionsConfirmTitle": "Пересоздать текущий сеанс?",
+                "recreateOwnSessionsConfirmBody": "Создать новые ключи шифрования для этого устройства. Используйте только в крайнем случае.",
+                "recreateOwnDeviceConfirmTitle": "Восстановить это устройство?",
+                "recreateOwnDeviceConfirmBody": "Ключи шифрования для этого устройства будут заменены на новые, продолжить?"
+            },
+            "devices": {
+                "title": "Безопасность",
+                "recreateSessionsConfirmTitle": "Пересоздать сеанс?",
+                "noSessions": "Нет ключей для шифрования.",
+                "recreateSessions": "Пересоздать сеанс",
+                "recreateSessionsConfirmBody": "Создать новые ключи шифрования для этого устройства. Используйте только в крайнем случае."
+            }
+        },
+        "blocklist": {
+            "unblockAll": "Разблокировать всех",
+            "unblockJidConfirmTitle": "Разблокировать ${jid}?",
+            "title": "Блоклист",
+            "noUsersBlocked": "Нет заблокированных пользователей",
+            "unblockAllConfirmTitle": "Вы уверены?",
+            "unblockAllConfirmBody": "Вы действительно хотите разблокировать всех пользователей?",
+            "unblockJidConfirmBody": "Вы уверены, что хотите разблокировать ${jid}? Вы снова будете получать сообщения от этого пользователя."
+        },
+        "cropbackground": {
+            "blur": "Размыть фон",
+            "setAsBackground": "Установить фоновое изображение"
+        },
+        "crop": {
+            "setProfilePicture": "Загрузить аватар"
+        }
+    },
+    "@@name": "Русский",
+    "warnings": {
+        "message": {
+            "integrityCheckFailed": "Не удалось проверить целостность файла"
+        },
+        "conversation": {
+            "holdForLonger": "Удерживайте для записи"
+        }
+    }
+}
