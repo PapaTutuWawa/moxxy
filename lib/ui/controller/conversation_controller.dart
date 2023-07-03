@@ -68,7 +68,7 @@ class RecordingData {
 
 class BidirectionalConversationController
     extends BidirectionalController<Message> {
-  BidirectionalConversationController(this.conversationJid)
+  BidirectionalConversationController(this.conversationJid, this.focusNode)
       : assert(
           BidirectionalConversationController.currentController == null,
           'There can only be one BidirectionalConversationController',
@@ -94,6 +94,10 @@ class BidirectionalConversationController
   /// TextEditingController for the TextField
   final TextEditingController _textController = TextEditingController();
   TextEditingController get textController => _textController;
+
+  /// The focus node of the textfield used for message text input. Useful for
+  /// forcing focus after selecting a message for editing.
+  final FocusNode focusNode;
 
   /// Stream for SendButtonState updates
   final StreamController<conversation.SendButtonState>
@@ -428,6 +432,9 @@ class BidirectionalConversationController
 
     _sendButtonStreamController
         .add(conversation.SendButtonState.cancelCorrection);
+
+    // Focus the textfield.
+    focusNode.requestFocus();
   }
 
   /// Exit the "edit mode" for a message.

@@ -88,6 +88,7 @@ class ConversationPageState extends State<ConversationPage>
     // Setup message paging
     _conversationController = BidirectionalConversationController(
       widget.conversationJid,
+      _textfieldFocusNode,
     );
     _conversationController.fetchOlderData();
 
