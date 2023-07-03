@@ -1,0 +1,2 @@
+-(Hopelijk) Oplossing voor OMEMO tussen twee Moxxy-clients;
+-Bewerken van berichten ouder dan het recentste bericht. Onduidelijk of alle clients dit op de juiste manier tonen.
