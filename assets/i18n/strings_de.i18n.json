@@ -169,6 +169,7 @@
 			"edit": "Bearbeiten",
 			"quote": "Zitieren",
 			"copy": "Inhalt kopieren",
+			"messageCopied": "Nachrichteninhalt in die Zwischenablage kopiert",
 			"addReaction": "Reaktion hinzufügen",
 			"showError": "Fehler anzeigen",
 			"showWarning": "Warnung anzeigen",

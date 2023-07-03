@@ -169,6 +169,7 @@
 			"edit": "Edit",
 			"quote": "Quote",
 			"copy": "Copy content",
+			"messageCopied": "Message content copied to clipboard",
 			"addReaction": "Add reaction",
 			"showError": "Show error",
 			"showWarning": "Show warning",

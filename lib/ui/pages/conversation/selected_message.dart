@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -276,13 +277,17 @@ class SelectedMessageContextMenu extends StatelessWidget {
                       icon: Icons.content_copy,
                       text: t.pages.conversation.copy,
                       onPressed: () {
-                        // TODO(Unknown): Show a toast saying the message has been copied
                         Clipboard.setData(
                           ClipboardData(
                             text: message.body,
                           ),
                         );
                         selectionController.dismiss();
+
+                        // Show an informative toast
+                        Fluttertoast.showToast(
+                          msg: t.pages.conversation.messageCopied,
+                        );
                       },
                     ),
                   if (message.isQuotable && message.conversationJid != '')
