@@ -1,2 +1,3 @@
 - (Hopefully) fix OMEMO between two Moxxy clients.
 - Allow correcting messages older than the last one. Whether all clients will accept such a correction is unclear.
+- Add (incomplete) translations for Dutch, Japanese, and Russian.
