@@ -5,3 +5,5 @@ targets:
         options:
           input_directory: assets/i18n
           output_directory: lib/i18n
+          fallback_strategy: base_locale
+          base_locale: en

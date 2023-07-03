@@ -173,7 +173,7 @@
             "messageHint": "Сообщение...",
             "sendImages": "Отправить картинку"
         },
-        "addcontact": {
+        "startchat": {
             "xmppAddress": "XMPP-адрес",
             "buttonAddToContact": "Добавить в контакты",
             "title": "Добавить контакт",
@@ -181,7 +181,7 @@
         },
         "newconversation": {
             "title": "Начать новый чат",
-            "addContact": "Добавить контакт",
+            "startChat": "Добавить контакт",
             "createGroupchat": "Создать групповой чат"
         },
         "shareselection": {

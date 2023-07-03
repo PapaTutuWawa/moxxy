@@ -190,17 +190,10 @@
             "stickerPickerNoStickersLine2": "Installeer pakketten via de stickerinstellingen.",
             "takePhotos": "Foto's maken"
         },
-        "addcontact": {
-            "title": "Toevoegen aan contactpersonen",
-            "xmppAddress": "Xmpp-adres",
-            "subtitle": "Voeg een contactpersoon toe door zijn/haar xmpp-adres in te vullen of een Qr-code te scannen",
-            "buttonAddToContact": "Toevoegen aan contactpersonen"
-        },
         "newconversation": {
             "title": "Nieuw gesprek",
-            "addContact": "Contactpersoon toevoegen",
-            "createGroupchat": "Nieuw groepsgesprek",
-            "startChat": "Gesprek starten"
+            "startChat": "Gesprek starten",
+            "createGroupchat": "Nieuw groepsgesprek"
         },
         "crop": {
             "setProfilePicture": "Instellen als profielfoto"
