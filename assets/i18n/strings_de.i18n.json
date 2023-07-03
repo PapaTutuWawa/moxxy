@@ -173,6 +173,7 @@
 			"addReaction": "Reaktion hinzufügen",
 			"showError": "Fehler anzeigen",
 			"showWarning": "Warnung anzeigen",
+			"warning": "Warnung",
 			"addToContacts": "Zu Kontaken hinzufügen",
 			"addToContactsTitle": "${jid} zu Kontakten hinzufügen",
 			"addToContactsBody": "Bist du dir sicher, dass du ${jid} zu deinen Kontakten hinzufügen möchtest?",

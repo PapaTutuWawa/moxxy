@@ -263,7 +263,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                       text: t.pages.conversation.showWarning,
                       onPressed: () {
                         showInfoDialog(
-                          'Warning',
+                          t.pages.conversation.warning,
                           warningToTranslatableString(
                             message.warningType!,
                           ),
