@@ -982,9 +982,9 @@ Future<void> performMarkConversationAsRead(
     sendEvent(ConversationUpdatedEvent(conversation: conversation));
 
     if (conversation.lastMessage != null) {
-      await GetIt.I.get<XmppService>().sendReadMarker(
-            command.conversationJid,
-            conversation.lastMessage!.sid,
+      await GetIt.I.get<MessageService>().markMessageAsRead(
+            conversation.lastMessage!.id,
+            conversation.type != ConversationType.note,
           );
     }
   }
@@ -999,26 +999,10 @@ Future<void> performMarkMessageAsRead(
   MarkMessageAsReadCommand command, {
   dynamic extra,
 }) async {
-  final cs = GetIt.I.get<ConversationService>();
-
-  final conversation = await cs.createOrUpdateConversation(
-    command.conversationJid,
-    update: (c) async {
-      return cs.updateConversation(
-        command.conversationJid,
-        unreadCounter: command.newUnreadCounter,
+  await GetIt.I.get<MessageService>().markMessageAsRead(
+        command.id,
+        command.sendMarker,
       );
-    },
-  );
-
-  if (conversation != null) {
-    sendEvent(ConversationUpdatedEvent(conversation: conversation));
-
-    await GetIt.I.get<XmppService>().sendReadMarker(
-          command.conversationJid,
-          command.sid,
-        );
-  }
 }
 
 Future<void> performAddMessageReaction(

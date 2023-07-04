@@ -118,6 +118,9 @@ class ConversationTopbar extends StatelessWidget
                               hash: state.conversation?.avatarHash,
                               path: state.conversation?.avatarPath,
                               shouldRequest: state.conversation != null,
+                              altIcon: state.conversation?.isSelfChat ?? false
+                                  ? Icons.notes
+                                  : null,
                             ),
                           ),
                         ),
