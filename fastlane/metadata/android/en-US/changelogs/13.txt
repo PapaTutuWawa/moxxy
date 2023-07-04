@@ -3,3 +3,4 @@
 - Add (incomplete) translations for Dutch, Japanese, and Russian.
 - Fix having to long-press a message bubble on its corner to active the selection menu.
 - If enabled, read markers are automatically sent.
+- Highlight legacy quotes in text messages.
