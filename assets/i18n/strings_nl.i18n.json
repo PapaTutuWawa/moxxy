@@ -188,7 +188,9 @@
             "closeChatConfirmTitle": "Gesprek sluiten",
             "retractBody": "Weet je zeker dat je dit bericht wilt herroepen? Dit is slechts een verzoek aan de client dat niet in acht hoeft te worden genomen.",
             "stickerPickerNoStickersLine2": "Installeer pakketten via de stickerinstellingen.",
-            "takePhotos": "Foto's maken"
+            "takePhotos": "Foto's maken",
+            "warning": "Waarschuwing",
+            "messageCopied": "De berichtinhoud is gekopieerd naar het klembord"
         },
         "newconversation": {
             "title": "Nieuw gesprek",
