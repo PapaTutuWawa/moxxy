@@ -195,6 +195,9 @@ class Conversation with _$Conversation {
 
   /// The amount of items that are shown in the context menu.
   int get numberContextMenuOptions => 1 + (unreadCounter != 0 ? 1 : 0);
+
+  /// True, if the conversation is a self-chat. False, if not.
+  bool get isSelfChat => type == ConversationType.note;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.
