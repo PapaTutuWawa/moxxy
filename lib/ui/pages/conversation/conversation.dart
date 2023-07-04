@@ -324,7 +324,7 @@ class ConversationPageState extends State<ConversationPage>
       visibilityCallback: (info) {
         if (sentBySelf) return;
 
-        if (info.visibleFraction >= 0.2) {
+        if (info.visibleFraction >= 0) {
           GetIt.I.get<UIReadMarkerService>().handleMarker(message);
         }
       },
