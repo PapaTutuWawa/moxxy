@@ -32,10 +32,9 @@ class UIReadMarkerService {
     final id = message.originId ?? message.sid;
     _log.finest('Sending chat marker for ${message.conversationJid}:$id');
     MoxplatformPlugin.handler.getDataSender().sendData(
-          MarkMessageAsReadScrolledCommand(
-            conversationJid: message.conversationJid,
-            sid: id,
+          MarkMessageAsReadCommand(
             id: message.id,
+            sendMarker: true,
           ),
           awaitable: false,
         );

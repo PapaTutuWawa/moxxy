@@ -5,10 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/contacts.dart';
-import 'package:moxxyv2/service/events.dart';
+import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
-import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
@@ -40,15 +39,12 @@ class NotificationsService {
         ),
       );
     } else if (action.buttonKeyPressed == _notificationActionKeyRead) {
-      // TODO(Unknown): Maybe refactor this call such that we don't have to use
-      //                a command.
-      await performMarkMessageAsRead(
-        MarkMessageAsReadCommand(
-          conversationJid: action.payload!['conversationJid']!,
-          sid: action.payload!['sid']!,
-          newUnreadCounter: 0,
-        ),
-      );
+      await GetIt.I.get<MessageService>().markMessageAsRead(
+            int.parse(action.payload!['id']!),
+            // [XmppService.sendReadMarker] will check whether the *SHOULD* send
+            // the marker, i.e. if the privacy settings allow it.
+            true,
+          );
     } else {
       logger.warning(
         'Received unknown notification action key ${action.buttonKeyPressed}',
@@ -132,6 +128,7 @@ class NotificationsService {
           'sid': m.sid,
           'title': title,
           'avatarPath': avatarPath,
+          'messageId': m.id.toString(),
         },
       ),
       actionButtons: [

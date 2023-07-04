@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/error_types.dart';
@@ -626,5 +627,29 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
         );
       }
     });
+  }
+
+  /// Marks the message with the database id [id] as displayed and sends an
+  /// [MessageUpdatedEvent] to the UI. if [sendChatMarker] is true, then
+  /// a Chat Marker with <displayed /> is sent to the message's
+  /// conversationJid attribute.
+  Future<Message> markMessageAsRead(int id, bool sendChatMarker) async {
+    final newMessage = await updateMessage(
+      id,
+      displayed: true,
+    );
+
+    // Tell the UI
+    sendEvent(MessageUpdatedEvent(message: newMessage));
+
+    if (sendChatMarker) {
+      await GetIt.I.get<XmppService>().sendReadMarker(
+            // TODO(Unknown): This is wrong once groupchats are implemented
+            newMessage.conversationJid,
+            newMessage.originId ?? newMessage.sid,
+          );
+    }
+
+    return newMessage;
   }
 }

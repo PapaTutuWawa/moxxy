@@ -510,17 +510,8 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          conversationJid: String
-          sid: String
-          newUnreadCounter: int
-      - name: MarkMessageAsReadScrolledCommand
-        extends: BackgroundCommand
-        implements:
-          - JsonImplementation
-        attributes:
-          conversationJid: String
-          sid: String
           id: int
+          sendMarker: bool
       - name: AddReactionToMessageCommand
         extends: BackgroundCommand
         implements:
