@@ -73,8 +73,12 @@ class AppearanceSettingsPage extends StatelessWidget {
                       title: Text(t.pages.settings.appearance.language),
                       children: [
                         _buildLanguageOption(context, 'default', state),
+                        // NOTE: Keep all list items below sorted by their language code
                         _buildLanguageOption(context, 'de', state),
                         _buildLanguageOption(context, 'en', state),
+                        _buildLanguageOption(context, 'ja', state),
+                        _buildLanguageOption(context, 'nl', state),
+                        _buildLanguageOption(context, 'ru', state),
                       ],
                     );
                   },

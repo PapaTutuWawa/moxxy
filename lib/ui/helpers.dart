@@ -235,9 +235,15 @@ Color getTileColor(BuildContext context) {
 String localeCodeToLanguageName(String localeCode) {
   switch (localeCode) {
     case 'de':
-      return 'Deutsch';
+      return AppLocale.de.build().language;
     case 'en':
-      return 'English';
+      return AppLocale.en.build().language;
+    case 'nl':
+      return AppLocale.nl.build().language;
+    case 'ja':
+      return AppLocale.ja.build().language;
+    case 'ru':
+      return AppLocale.ru.build().language;
     case 'default':
       return t.pages.settings.appearance.systemLanguage;
   }

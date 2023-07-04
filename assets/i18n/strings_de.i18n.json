@@ -1,5 +1,5 @@
 {
-	"@@name": "Deutsch",
+	"language": "Deutsch",
 	"global": {
 		"title": "Moxxy",
 		"moxxySubtitle": "Ein Experiment im Entwickeln eines modernen, einfachen und schönen XMPP-Clients.",
