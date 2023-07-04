@@ -68,9 +68,15 @@ class Message with _$Message {
     @Default(false) bool isDownloading,
     @Default(false) bool isUploading,
     @Default(false) bool received,
+    /// If the message was sent by us, this means that the recipient has displayed the message.
+    /// If we received the message, then this means that we sent a read marker for that message.
     @Default(false) bool displayed,
+    /// Specified whether the message has been acked using stream management, i.e. it was successfully sent to
+    /// the server.
     @Default(false) bool acked,
+    /// Indicates whether the message has been retracted.
     @Default(false) bool isRetracted,
+    /// Indicates whether the message has been edited.
     @Default(false) bool isEdited,
     String? originId,
     Message? quotes,

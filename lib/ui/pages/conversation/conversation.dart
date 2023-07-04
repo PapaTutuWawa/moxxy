@@ -22,6 +22,7 @@ import 'package:moxxyv2/ui/pages/conversation/selected_message.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/pages/conversation/typing_indicator.dart';
 import 'package:moxxyv2/ui/service/data.dart';
+import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/bubbles.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
@@ -320,6 +321,13 @@ class ConversationPageState extends State<ConversationPage>
           ),
         );
       },
+      visibilityCallback: (info) {
+        if (sentBySelf) return;
+
+        if (info.visibleFraction >= 0.2) {
+          GetIt.I.get<UIReadMarkerService>().handleMarker(message);
+        }
+      },
     );
   }
 
@@ -338,6 +346,8 @@ class ConversationPageState extends State<ConversationPage>
           return false;
         }
 
+        // Clear the read marker cache
+        GetIt.I.get<UIReadMarkerService>().clear();
         return true;
       },
       child: KeyboardReplacerScaffold(

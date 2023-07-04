@@ -67,6 +67,7 @@ import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
+import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
@@ -88,6 +89,7 @@ Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIAvatarsService>(UIAvatarsService());
   GetIt.I.registerSingleton<UISharingService>(UISharingService());
   GetIt.I.registerSingleton<UIConnectivityService>(UIConnectivityService());
+  GetIt.I.registerSingleton<UIReadMarkerService>(UIReadMarkerService());
 
   /// Initialize services
   await GetIt.I.get<UIConnectivityService>().initialize();

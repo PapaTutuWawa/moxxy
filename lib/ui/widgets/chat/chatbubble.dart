@@ -7,6 +7,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
 import 'package:moxxyv2/ui/widgets/chat/reactions/preview.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class RawChatBubble extends StatelessWidget {
   const RawChatBubble(
@@ -142,18 +143,31 @@ class ChatBubble extends StatefulWidget {
     required this.onSwipedCallback,
     required this.bubble,
     this.onLongPressed,
+    this.visibilityCallback,
     super.key,
   });
+
+  /// The actual message to render.
   final Message message;
+
+  /// Flag indicating whether the message was sent by us or not.
   final bool sentBySelf;
-  // For rendering the corners
+
+  /// For rendering the corners
   final double maxWidth;
-  // For acting on swiping
+
+  /// For acting on swiping
   final void Function(Message) onSwipedCallback;
-  // For acting on long-pressing the message
+
+  /// For acting on long-pressing the message
   final GestureLongPressStartCallback? onLongPressed;
-  // The actual message bubble
+
+  /// The actual message bubble
   final RawChatBubble bubble;
+
+  /// An optional callback for when the visiblity of the message bubble
+  /// changed.
+  final VisibilityChangedCallback? visibilityCallback;
 
   @override
   ChatBubbleState createState() => ChatBubbleState();
@@ -179,108 +193,113 @@ class ChatBubbleState extends State<ChatBubble>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return SwipeableTile.swipeToTrigger(
-      direction: _getSwipeDirection(),
-      swipeThreshold: 0.2,
-      onSwiped: (_) => widget.onSwipedCallback(widget.message),
-      backgroundBuilder: (_, direction, progress) {
-        // NOTE: Taken from https://github.com/watery-desert/swipeable_tile/blob/main/example/lib/main.dart#L240
-        //       and modified.
-        var vibrated = false;
-        return AnimatedBuilder(
-          animation: progress,
-          builder: (_, __) {
-            if (progress.value > 0.9999 && !vibrated) {
-              Vibrate.feedback(FeedbackType.light);
-              vibrated = true;
-            } else if (progress.value < 0.9999) {
-              vibrated = false;
-            }
+    return VisibilityDetector(
+      key: ValueKey('message-visibility;${widget.message}'),
+      onVisibilityChanged: widget.visibilityCallback?.call,
+      child: SwipeableTile.swipeToTrigger(
+        direction: _getSwipeDirection(),
+        swipeThreshold: 0.2,
+        onSwiped: (_) => widget.onSwipedCallback(widget.message),
+        backgroundBuilder: (_, direction, progress) {
+          // NOTE: Taken from https://github.com/watery-desert/swipeable_tile/blob/main/example/lib/main.dart#L240
+          //       and modified.
+          var vibrated = false;
+          return AnimatedBuilder(
+            animation: progress,
+            builder: (_, __) {
+              if (progress.value > 0.9999 && !vibrated) {
+                Vibrate.feedback(FeedbackType.light);
+                vibrated = true;
+              } else if (progress.value < 0.9999) {
+                vibrated = false;
+              }
 
-            return Container(
-              alignment: direction == SwipeDirection.endToStart
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: direction == SwipeDirection.endToStart ? 24.0 : 0.0,
-                  left: direction == SwipeDirection.startToEnd ? 24.0 : 0.0,
-                ),
-                child: Transform.scale(
-                  scale: Tween<double>(
-                    begin: 0,
-                    end: 1.2,
-                  )
-                      .animate(
-                        CurvedAnimation(
-                          parent: progress,
-                          curve: const Interval(
-                            0.5,
-                            1,
+              return Container(
+                alignment: direction == SwipeDirection.endToStart
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: direction == SwipeDirection.endToStart ? 24.0 : 0.0,
+                    left: direction == SwipeDirection.startToEnd ? 24.0 : 0.0,
+                  ),
+                  child: Transform.scale(
+                    scale: Tween<double>(
+                      begin: 0,
+                      end: 1.2,
+                    )
+                        .animate(
+                          CurvedAnimation(
+                            parent: progress,
+                            curve: const Interval(
+                              0.5,
+                              1,
+                            ),
                           ),
+                        )
+                        .value,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.reply,
+                          color: Colors.white,
                         ),
-                      )
-                      .value,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.reply,
-                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-      isEelevated: false,
-      key: ValueKey('message;${widget.message}'),
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: !widget.sentBySelf ? 8.0 : 0.0,
-          right: widget.sentBySelf ? 8.0 : 0.0,
-        ),
-        child: Align(
-          alignment:
-              widget.sentBySelf ? Alignment.centerRight : Alignment.centerLeft,
-          child: Stack(
-            children: [
-              Positioned(
-                bottom: 10,
-                right: widget.sentBySelf ? 0 : null,
-                left: widget.sentBySelf ? null : 0,
-                child: ReactionsPreview(widget.message, widget.sentBySelf),
-              ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: widget.sentBySelf
-                    ? CrossAxisAlignment.end
-                    : CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onLongPressStart: widget.onLongPressed,
-                    child: widget.bubble,
-                  ),
-                  if (widget.message.reactionsPreview.isNotEmpty)
-                    // This SizedBox ensures that we have a proper bottom padding for the
-                    // reaction preview, but also ensure that the Stack is wide enough
-                    // so that the preview is not clipped by the Stack, since the overflow
-                    // does not receive input events.
-                    // See https://github.com/flutter/flutter/issues/19445
-                    SizedBox(
-                      height: 40,
-                      width: MediaQuery.of(context).size.width,
+              );
+            },
+          );
+        },
+        isEelevated: false,
+        key: ValueKey('message;${widget.message}'),
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: !widget.sentBySelf ? 8.0 : 0.0,
+            right: widget.sentBySelf ? 8.0 : 0.0,
+          ),
+          child: Align(
+            alignment: widget.sentBySelf
+                ? Alignment.centerRight
+                : Alignment.centerLeft,
+            child: Stack(
+              children: [
+                Positioned(
+                  bottom: 10,
+                  right: widget.sentBySelf ? 0 : null,
+                  left: widget.sentBySelf ? null : 0,
+                  child: ReactionsPreview(widget.message, widget.sentBySelf),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: widget.sentBySelf
+                      ? CrossAxisAlignment.end
+                      : CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onLongPressStart: widget.onLongPressed,
+                      child: widget.bubble,
                     ),
-                ],
-              ),
-            ],
+                    if (widget.message.reactionsPreview.isNotEmpty)
+                      // This SizedBox ensures that we have a proper bottom padding for the
+                      // reaction preview, but also ensure that the Stack is wide enough
+                      // so that the preview is not clipped by the Stack, since the overflow
+                      // does not receive input events.
+                      // See https://github.com/flutter/flutter/issues/19445
+                      SizedBox(
+                        height: 40,
+                        width: MediaQuery.of(context).size.width,
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

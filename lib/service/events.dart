@@ -86,6 +86,9 @@ void setupBackgroundEventHandler() {
         performMarkConversationAsRead,
       ),
       EventTypeMatcher<MarkMessageAsReadCommand>(performMarkMessageAsRead),
+      EventTypeMatcher<MarkMessageAsReadScrolledCommand>(
+        performMarkMessageAsReadScrolled,
+      ),
       EventTypeMatcher<AddReactionToMessageCommand>(performAddMessageReaction),
       EventTypeMatcher<RemoveReactionFromMessageCommand>(
         performRemoveMessageReaction,
@@ -1014,6 +1017,30 @@ Future<void> performMarkMessageAsRead(
   if (conversation != null) {
     sendEvent(ConversationUpdatedEvent(conversation: conversation));
 
+    await GetIt.I.get<XmppService>().sendReadMarker(
+          command.conversationJid,
+          command.sid,
+        );
+  }
+}
+
+Future<void> performMarkMessageAsReadScrolled(
+  MarkMessageAsReadScrolledCommand command, {
+  dynamic extra,
+}) async {
+  final cs = GetIt.I.get<ConversationService>();
+  final ms = GetIt.I.get<MessageService>();
+  final newMessage = await ms.updateMessage(
+    command.id,
+    displayed: true,
+  );
+
+  sendEvent(
+    MessageUpdatedEvent(message: newMessage),
+  );
+
+  final conversation = await cs.getConversationByJid(command.conversationJid);
+  if (conversation != null && conversation.type != ConversationType.note) {
     await GetIt.I.get<XmppService>().sendReadMarker(
           command.conversationJid,
           command.sid,
