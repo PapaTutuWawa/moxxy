@@ -10,7 +10,9 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
+import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
 class StorageSettingsPage extends StatefulWidget {
@@ -53,26 +55,45 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
         builder: (context, state) => ListView(
           children: [
-            StreamBuilder<int>(
-              stream: _controller.stream,
-              builder: (context, snapshot) {
-                final description = snapshot.hasData
-                    ? fileSizeToString(snapshot.data!)
-                    : t.pages.settings.storage.wait;
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: StreamBuilder<int>(
+                stream: _controller.stream,
+                builder: (context, snapshot) {
+                  final size = snapshot.hasData
+                      ? fileSizeToString(snapshot.data!)
+                      : t.pages.settings.storage.sizePlaceholder;
 
-                return SettingsRow(
-                  title: t.pages.settings.storage.storageUsed,
-                  description: description,
-                  onTap: () {
-                    context.read<nav.NavigationBloc>().add(
-                          nav.PushedNamedEvent(
-                            const nav.NavigationDestination(
-                              storageSharedMediaSettingsRoute,
-                            ),
+                  return Center(
+                    child: Text(
+                      t.pages.settings.storage.storageUsed(size: size),
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  );
+                },
+              ),
+            ),
+            Center(
+              child: TextButton(
+                child: Text(t.pages.settings.storage.viewMediaFiles),
+                onPressed: () {
+                  context.read<nav.NavigationBloc>().add(
+                        nav.PushedNamedEvent(
+                          const nav.NavigationDestination(
+                            storageSharedMediaSettingsRoute,
                           ),
-                        );
-                  },
-                );
+                        ),
+                      );
+                },
+              ),
+            ),
+            SectionTitle(t.pages.settings.storage.storageManagement),
+            SettingsRow(
+              title: t.pages.settings.storage.removeOldMedia.title,
+              description: t.pages.settings.storage.removeOldMedia.description,
+              onTap: () {
+                // TODO: Implement
+                showNotImplementedDialog('removing old media', context);
               },
             ),
           ],

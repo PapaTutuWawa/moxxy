@@ -371,8 +371,14 @@
 			},
 			"storage": {
 				"title": "Storage",
-				"storageUsed": "Storage usage",
-				"wait": "Determining storage usage...",
+				"storageUsed": "Storage used: ${size}",
+				"sizePlaceholder": "Computing...",
+				"storageManagement": "Storage Management",
+				"removeOldMedia" : {
+					"title": "Remove old media",
+					"description": "Removes old media files from the device"
+				},
+				"viewMediaFiles": "View media files",
 				"mediaFiles": "Media Files"
 			}
 		}
