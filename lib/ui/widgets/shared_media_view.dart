@@ -3,6 +3,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
+import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
 import 'package:moxxyv2/ui/widgets/grouped_grid_view.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -105,13 +106,9 @@ class SharedMediaView extends StatelessWidget {
                     padding: const EdgeInsets.only(
                       top: 4,
                       bottom: 4,
-                      left: 16,
                     ),
-                    child: Text(
+                    child: DateBubble(
                       formatDateBubble(timestamp, now),
-                      style: const TextStyle(
-                        fontSize: 25,
-                      ),
                     ),
                   ),
                 );
