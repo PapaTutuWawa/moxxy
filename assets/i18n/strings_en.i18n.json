@@ -372,7 +372,8 @@
 			"storage": {
 				"title": "Storage",
 				"storageUsed": "Storage usage",
-				"wait": "Determining storage usage..."
+				"wait": "Determining storage usage...",
+				"mediaFiles": "Media Files"
 			}
 		}
 	}

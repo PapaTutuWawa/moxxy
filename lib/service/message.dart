@@ -251,17 +251,19 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
 
   /// Like getPaginatedMessagesForJid, but instead only returns messages that have file
   /// metadata attached. This method bypasses the cache and does not load the message's
-  /// quoted message, if it exists.
+  /// quoted message, if it exists. If [jid] is set to null, then the media messages for
+  /// all conversations are queried.
   Future<List<Message>> getPaginatedSharedMediaMessagesForJid(
-    String jid,
+    String? jid,
     bool olderThan,
     int? oldestTimestamp,
   ) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final comparator = olderThan ? '<' : '>';
+    final queryPrefix = jid != null ? 'conversationJid = ? AND' : '';
     final query = oldestTimestamp != null
-        ? 'conversationJid = ? AND file_metadata_id IS NOT NULL AND timestamp $comparator ?'
-        : 'conversationJid = ? AND file_metadata_id IS NOT NULL';
+        ? 'file_metadata_id IS NOT NULL AND timestamp $comparator ?'
+        : 'file_metadata_id IS NOT NULL';
     final rawMessages = await db.rawQuery(
       '''
 SELECT
@@ -281,11 +283,11 @@ SELECT
   fm.cipherTextHashes as fm_cipherTextHashes,
   fm.filename as fm_filename,
   fm.size as fm_size
-FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $sharedMediaPaginationSize) AS msg
+FROM (SELECT * FROM $messagesTable WHERE $queryPrefix $query ORDER BY timestamp DESC LIMIT $sharedMediaPaginationSize) AS msg
   LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id;
       ''',
       [
-        jid,
+        if (jid != null) jid,
         if (oldestTimestamp != null) oldestTimestamp,
       ],
     );

@@ -600,7 +600,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          conversationJid: String
+          conversationJid: String?
           olderThan: bool
           timestamp: int?
       - name: GetReactionsForMessageCommand

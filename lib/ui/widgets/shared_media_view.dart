@@ -1,28 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
 import 'package:moxxyv2/ui/widgets/chat/message.dart';
 import 'package:moxxyv2/ui/widgets/grouped_grid_view.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
+/// A widget that displays a lazily-loaded list of media files in a grid, grouped
+/// by the send/receive date.
 class SharedMediaView extends StatelessWidget {
-  const SharedMediaView(this.mediaController, {super.key});
+  const SharedMediaView(
+    this.mediaController, {
+    required this.showBackButton,
+    this.title,
+    super.key,
+  });
 
   /// The controller used for requesting shared media messages.
   final BidirectionalSharedMediaController mediaController;
+
+  /// Indicate whether to show the back button in the top bar or not.
+  final bool showBackButton;
+
+  /// An optional title to show in the top bar. If null, then the top bar is kept
+  /// in size by a [SizedBox].
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     return Scaffold(
-      appBar: const BorderlessTopbar(
-        showBackButton: false,
+      appBar: BorderlessTopbar(
+        showBackButton: showBackButton,
         // Ensure the top bar has a height
         children: [
-          SizedBox(
-            height: BorderlessTopbar.topbarPreferredHeight,
-          ),
+          if (title == null)
+            const SizedBox(
+              height: BorderlessTopbar.topbarPreferredHeight,
+            )
+          else
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  title!,
+                  style: const TextStyle(
+                    fontSize: fontsizeAppbar,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       body: Stack(

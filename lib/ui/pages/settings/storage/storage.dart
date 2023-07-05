@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -8,6 +7,7 @@ import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
@@ -63,7 +63,15 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                 return SettingsRow(
                   title: t.pages.settings.storage.storageUsed,
                   description: description,
-                  onTap: () async {},
+                  onTap: () {
+                    context.read<nav.NavigationBloc>().add(
+                          nav.PushedNamedEvent(
+                            const nav.NavigationDestination(
+                              storageSharedMediaSettingsRoute,
+                            ),
+                          ),
+                        );
+                  },
                 );
               },
             ),

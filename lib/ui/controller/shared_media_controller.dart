@@ -25,7 +25,7 @@ class BidirectionalSharedMediaController
   static BidirectionalSharedMediaController? currentController;
 
   /// The JID of the conversation we want to get shared media of.
-  final String conversationJid;
+  final String? conversationJid;
 
   @override
   Future<List<Message>> fetchOlderDataImpl(
