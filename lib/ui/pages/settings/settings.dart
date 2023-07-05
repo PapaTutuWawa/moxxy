@@ -64,6 +64,16 @@ class SettingsPage extends StatelessWidget {
               },
             ),
             SettingsRow(
+              title: t.pages.settings.storage.title,
+              prefix: const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: Icon(Icons.storage),
+              ),
+              onTap: () {
+                Navigator.pushNamed(context, storageSettingsRoute);
+              },
+            ),
+            SettingsRow(
               title: t.pages.settings.network.title,
               prefix: const Padding(
                 padding: EdgeInsets.only(right: 16),

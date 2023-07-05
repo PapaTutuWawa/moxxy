@@ -300,6 +300,14 @@ files:
           - JsonImplementation
         attributes:
           errorId: int
+      # Returned after a [GetStorageUsageCommand]
+      - name: GetStorageUsageEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          # The used storage in bytes
+          usage: int
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -609,6 +617,10 @@ files:
           jid: String
           hash: String?
           ownAvatar: bool
+      - name: GetStorageUsageCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
       - name: DebugCommand
         extends: BackgroundCommand
         implements:

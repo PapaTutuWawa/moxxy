@@ -368,6 +368,11 @@
 				"importStickerPack": "Import sticker pack",
 				"importSuccess": "Sticker pack successfully imported",
 				"importFailure": "Failed to import sticker pack"
+			},
+			"storage": {
+				"title": "Storage",
+				"storageUsed": "Storage usage",
+				"wait": "Determining storage usage..."
 			}
 		}
 	}
