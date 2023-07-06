@@ -10,10 +10,92 @@ import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
+
+enum OlderThan {
+  all(0),
+  oneWeek(7 * 24 * 60 * 60 * 1000),
+  oneMonth(31 * 24 * 60 * 60 * 1000);
+
+  const OlderThan(this.milliseconds);
+
+  final int milliseconds;
+}
+
+class DeleteMediaDialog extends StatefulWidget {
+  const DeleteMediaDialog({
+    super.key,
+  });
+
+  @override
+  DeleteMediaDialogState createState() => DeleteMediaDialogState();
+}
+
+class DeleteMediaDialogState extends State<DeleteMediaDialog> {
+  OlderThan _selection = OlderThan.oneWeek;
+
+  Widget _optionRow(OlderThan value, String text) {
+    return InkWell(
+      onTap: () {
+        setState(() => _selection = value);
+      },
+      child: Row(
+        children: [
+          Radio(
+            value: value,
+            groupValue: _selection,
+            onChanged: (_) {
+              setState(() => _selection = value);
+            },
+          ),
+          Text(text),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Delete media files'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(textfieldRadiusRegular),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(_selection);
+          },
+          child: Text(
+            'Delete',
+            style: const TextStyle(
+              color: Colors.red,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            t.global.dialogCancel,
+          ),
+        ),
+      ],
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _optionRow(OlderThan.all, 'All media files'),
+          _optionRow(OlderThan.oneWeek, 'Older than 1 week'),
+          _optionRow(OlderThan.oneMonth, 'Older than 1 month'),
+        ],
+      ),
+    );
+  }
+}
 
 class StorageSettingsPage extends StatefulWidget {
   const StorageSettingsPage({super.key});
@@ -91,9 +173,26 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
             SettingsRow(
               title: t.pages.settings.storage.removeOldMedia.title,
               description: t.pages.settings.storage.removeOldMedia.description,
-              onTap: () {
-                // TODO: Implement
-                showNotImplementedDialog('removing old media', context);
+              onTap: () async {
+                final result = await showDialog<OlderThan>(
+                  context: context,
+                  builder: (context) => const DeleteMediaDialog(),
+                );
+                if (result != null) {
+                  final deleteResult =
+                      // ignore: cast_nullable_to_non_nullable
+                      await MoxplatformPlugin.handler.getDataSender().sendData(
+                            DeleteOldMediaFilesCommand(
+                              timeOffset: result.milliseconds,
+                            ),
+                            awaitable: true,
+                          ) as DeleteOldMediaFilesDoneEvent;
+
+                  // Update the display
+                  _controller.add(
+                    deleteResult.newUsage,
+                  );
+                }
               },
             ),
           ],

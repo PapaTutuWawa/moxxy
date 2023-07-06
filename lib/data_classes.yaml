@@ -308,6 +308,14 @@ files:
         attributes:
           # The used storage in bytes
           usage: int
+      # Returned after [DeleteOldMediaFilesCommand]
+      - name: DeleteOldMediaFilesDoneEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          # The used storage in bytes after the deletion operation is done
+          newUsage: int
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -621,6 +629,14 @@ files:
         extends: BackgroundCommand
         implements:
           - JsonImplementation
+      - name: DeleteOldMediaFilesCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          # Milliseconds from now in the past; The maximum age of a file to not
+          # get deleted.
+          timeOffset: int
       - name: DebugCommand
         extends: BackgroundCommand
         implements:

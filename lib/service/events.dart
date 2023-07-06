@@ -105,6 +105,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
       EventTypeMatcher<GetStorageUsageCommand>(performGetStorageUsage),
+      EventTypeMatcher<DeleteOldMediaFilesCommand>(performOldMediaFileDeletion),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
@@ -1346,6 +1347,20 @@ Future<void> performGetStorageUsage(
 
   sendEvent(
     GetStorageUsageEvent(usage: usage),
+    id: extra as String,
+  );
+}
+
+Future<void> performOldMediaFileDeletion(
+  DeleteOldMediaFilesCommand command, {
+  dynamic extra,
+}) async {
+  await GetIt.I.get<StorageService>().deleteOldMediaFiles(command.timeOffset);
+
+  sendEvent(
+    DeleteOldMediaFilesDoneEvent(
+      newUsage: await GetIt.I.get<StorageService>().computeUsedStorage(),
+    ),
     id: extra as String,
   );
 }
