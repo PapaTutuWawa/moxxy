@@ -65,11 +65,12 @@ class StorageService {
     }
 
     // Empty the message caches for conversations where we just removed the file
-    // TODO: This seems like a possible SQL injection
-    final resultIds = results.map((e) => '"${e['id']! as String}"').join(', ');
+    final resultIdPlaceholders =
+        List<String>.filled(results.length, '?').join(', ');
     final conversations = (await db.query(
       messagesTable,
-      where: 'file_metadata_id IN ($resultIds)',
+      where: 'file_metadata_id IN ($resultIdPlaceholders)',
+      whereArgs: results.map((result) => result['id']! as String).toList(),
       columns: ['conversationJid'],
       distinct: true,
     ))
