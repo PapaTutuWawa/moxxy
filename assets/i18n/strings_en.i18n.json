@@ -385,7 +385,10 @@
 						"oneWeek": "Older than 1 week",
 						"oneMonth": "Older than 1 month"
 					},
-					"delete": "Delete"
+					"delete": "Delete",
+					"confirmation": {
+						"body": "Are you sure you want to delete old media files?"
+					}
 				},
 				"viewMediaFiles": "View media files",
 				"mediaFiles": "Media Files"

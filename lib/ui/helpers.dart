@@ -28,8 +28,9 @@ import 'package:url_launcher/url_launcher.dart';
 Future<bool> showConfirmationDialog(
   String title,
   String body,
-  BuildContext context,
-) async {
+  BuildContext context, {
+  String? affirmativeText,
+}) async {
   final result = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
@@ -42,7 +43,7 @@ Future<bool> showConfirmationDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(t.global.yes),
+          child: Text(affirmativeText ?? t.global.yes),
         ),
         TextButton(
           onPressed: Navigator.of(context).pop,

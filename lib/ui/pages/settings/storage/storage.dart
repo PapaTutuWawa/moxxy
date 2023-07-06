@@ -12,6 +12,7 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -67,8 +68,18 @@ class DeleteMediaDialogState extends State<DeleteMediaDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(_selection);
+          onPressed: () async {
+            Navigator.of(context).pop(
+              await showConfirmationDialog(
+                t.pages.settings.storage.removeOldMediaDialog.title,
+                t.pages.settings.storage.removeOldMediaDialog.confirmation.body,
+                context,
+                affirmativeText:
+                    t.pages.settings.storage.removeOldMediaDialog.delete,
+              )
+                  ? _selection
+                  : null,
+            );
           },
           child: Text(
             t.pages.settings.storage.removeOldMediaDialog.delete,
