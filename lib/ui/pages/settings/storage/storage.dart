@@ -76,6 +76,7 @@ class DeleteMediaDialogState extends State<DeleteMediaDialog> {
                 context,
                 affirmativeText:
                     t.pages.settings.storage.removeOldMediaDialog.delete,
+                destructive: true,
               )
                   ? _selection
                   : null,
