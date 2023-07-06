@@ -61,7 +61,7 @@ class DeleteMediaDialogState extends State<DeleteMediaDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Delete media files'),
+      title: Text(t.pages.settings.storage.removeOldMediaDialog.title),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(textfieldRadiusRegular),
       ),
@@ -71,7 +71,7 @@ class DeleteMediaDialogState extends State<DeleteMediaDialog> {
             Navigator.of(context).pop(_selection);
           },
           child: Text(
-            'Delete',
+            t.pages.settings.storage.removeOldMediaDialog.delete,
             style: const TextStyle(
               color: Colors.red,
             ),
@@ -90,9 +90,18 @@ class DeleteMediaDialogState extends State<DeleteMediaDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _optionRow(OlderThan.all, 'All media files'),
-          _optionRow(OlderThan.oneWeek, 'Older than 1 week'),
-          _optionRow(OlderThan.oneMonth, 'Older than 1 month'),
+          _optionRow(
+            OlderThan.all,
+            t.pages.settings.storage.removeOldMediaDialog.options.all,
+          ),
+          _optionRow(
+            OlderThan.oneWeek,
+            t.pages.settings.storage.removeOldMediaDialog.options.oneWeek,
+          ),
+          _optionRow(
+            OlderThan.oneMonth,
+            t.pages.settings.storage.removeOldMediaDialog.options.oneMonth,
+          ),
         ],
       ),
     );
