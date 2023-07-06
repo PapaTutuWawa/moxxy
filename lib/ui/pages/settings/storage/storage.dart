@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
@@ -192,6 +194,11 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                   _controller.add(
                     deleteResult.newUsage,
                   );
+
+                  // Show the new conversations list
+                  GetIt.I.get<ConversationsBloc>().add(
+                        ConversationsSetEvent(deleteResult.conversations),
+                      );
                 }
               },
             ),

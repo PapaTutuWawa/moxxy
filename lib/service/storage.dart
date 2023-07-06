@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/files.dart';
+import 'package:moxxyv2/service/message.dart';
 
 /// Service responsible for handling storage related queries, like how much storage
 /// are we currently using.
@@ -11,6 +15,8 @@ class StorageService {
 
   /// Compute the amount of storage all FileMetadata objects take, that both have
   /// their file size and path set to something other than null.
+  /// Note that this usage also includes file metadata items that are stickers, while
+  /// [deleteOldMediaFiles] excludes those.
   Future<int> computeUsedStorage() async {
     final db = GetIt.I.get<DatabaseService>().database;
     final result = await db.rawQuery(
@@ -42,14 +48,37 @@ class StorageService {
       SELECT path, id FROM $fileMetadataTable AS fmt
         WHERE (SELECT MAX(timestamp) FROM $messagesTable WHERE file_metadata_id = fmt.id) <= $maxAge
           AND NOT EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
+          AND path IS NOT NULL
       ''',
     );
     _log.finest('Found ${results.length} matching files for deletion');
 
     for (final result in results) {
-      // TODO: Update the fmt entry
-      // TODO: Delete the file
-      // TODO: Check if we have to update a conversation
+      // Update the entry
+      await GetIt.I.get<FilesService>().updateFileMetadata(
+            result['id']! as String,
+            path: null,
+          );
+
+      final file = File(result['path']! as String);
+      if (file.existsSync()) await file.delete();
     }
+
+    // Empty the message caches for conversations where we just removed the file
+    // TODO: This seems like a possible SQL injection
+    final resultIds = results.map((e) => '"${e['id']! as String}"').join(', ');
+    final conversations = (await db.query(
+      messagesTable,
+      where: 'file_metadata_id IN ($resultIds)',
+      columns: ['conversationJid'],
+      distinct: true,
+    ))
+        .map((item) => item['conversationJid']! as String);
+
+    // Evict the affected message pages from cache
+    _log.finest('Evicting conversations from cache: $conversations');
+    await GetIt.I
+        .get<MessageService>()
+        .evictMultipleFromCache(conversations.toList());
   }
 }

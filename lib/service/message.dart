@@ -284,7 +284,8 @@ SELECT
   fm.filename as fm_filename,
   fm.size as fm_size
 FROM (SELECT * FROM $messagesTable WHERE $queryPrefix $query ORDER BY timestamp DESC LIMIT $sharedMediaPaginationSize) AS msg
-  LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id;
+  LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id
+  WHERE fm_path IS NOT NULL;
       ''',
       [
         if (jid != null) jid,
@@ -653,5 +654,20 @@ FROM (SELECT * FROM $messagesTable WHERE $queryPrefix $query ORDER BY timestamp 
     }
 
     return newMessage;
+  }
+
+  /// Evicts all cached message pages for [jid], if any were cached, from the
+  /// cache.
+  Future<void> evictFromCache(String jid) async {
+    return _cacheLock.synchronized(() => _messageCache.remove(jid));
+  }
+
+  /// Like [evictFromCache], but for multiple JIDs [jids].
+  Future<void> evictMultipleFromCache(List<String> jids) async {
+    return _cacheLock.synchronized(() {
+      for (final jid in jids) {
+        _messageCache.remove(jid);
+      }
+    });
   }
 }

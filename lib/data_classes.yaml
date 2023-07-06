@@ -316,6 +316,10 @@ files:
         attributes:
           # The used storage in bytes after the deletion operation is done
           newUsage: int
+          # The new list of Conversations
+          conversations:
+            type: List<Conversation>
+            deserialize: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

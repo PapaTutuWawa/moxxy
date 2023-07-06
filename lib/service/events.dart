@@ -1360,6 +1360,10 @@ Future<void> performOldMediaFileDeletion(
   sendEvent(
     DeleteOldMediaFilesDoneEvent(
       newUsage: await GetIt.I.get<StorageService>().computeUsedStorage(),
+      conversations:
+          (await GetIt.I.get<ConversationService>().loadConversations())
+              .where((c) => c.open)
+              .toList(),
     ),
     id: extra as String,
   );
