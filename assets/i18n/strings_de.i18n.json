@@ -202,7 +202,8 @@
 		"newconversation": {
 			"title": "Neuer Chat",
 			"startChat": "Neuen Chat beginnen",
-			"createGroupchat": "Gruppenchat erstellen"
+			"createGroupchat": "Gruppenchat erstellen",
+			"joinGroupChat":  "Join groupchat"
 		},
 		"crop": {
 			"setProfilePicture": "Als Profilbild festlegen"

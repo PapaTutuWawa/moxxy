@@ -300,6 +300,18 @@ files:
           - JsonImplementation
         attributes:
           errorId: int
+      # Triggered by the service in response to an [JoinGroupchatCommand].
+      - name: JoinGroupchatResultEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          conversation:
+            type: Conversation?
+            deserialise: true
+          # Indicate if the conversation is new (true) or modified (false).
+          # Does not mean anything unless conversation != null.
+          added: bool    
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -616,6 +628,13 @@ files:
           - JsonImplementation
         attributes:
           id: int
+      - name: JoinGroupchatCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String 
+          nick: String 
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

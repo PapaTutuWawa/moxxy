@@ -193,7 +193,8 @@
         "newconversation": {
             "title": "Nieuw gesprek",
             "startChat": "Gesprek starten",
-            "createGroupchat": "Nieuw groepsgesprek"
+            "createGroupchat": "Nieuw groepsgesprek",
+            "joinGroupChat":  "Join groupchat"
         },
         "crop": {
             "setProfilePicture": "Instellen als profielfoto"

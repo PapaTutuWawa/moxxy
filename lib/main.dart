@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,6 +62,7 @@ import 'package:moxxyv2/ui/pages/share_selection.dart';
 //import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
 import 'package:moxxyv2/ui/pages/startchat.dart';
+import 'package:moxxyv2/ui/pages/startgroupchat.dart';
 import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
@@ -306,6 +308,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             return DebuggingPage.route;
           case addContactRoute:
             return StartChatPage.route;
+          case newGroupchatRoute:
+            return StartGroupChatPage.route;
           case cropRoute:
             return CropPage.route;
           case sendFilesRoute:

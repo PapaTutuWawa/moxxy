@@ -95,7 +95,7 @@ class NewConversationPage extends StatelessWidget {
                       return;
                     }
 
-                    showNotImplementedDialog('groupchat', context);
+                    Navigator.pushNamed(context, newGroupchatRoute);
                   },
                 );
               default:
