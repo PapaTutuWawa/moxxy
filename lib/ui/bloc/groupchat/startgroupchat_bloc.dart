@@ -39,7 +39,9 @@ class StartGroupchatBloc
     Emitter<StartGroupchatState> emit,
   ) async {
     emit(
-      state.copyWith(nick: event.nick),
+      state.copyWith(
+        nick: event.nick,
+      ),
     );
   }
 

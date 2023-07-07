@@ -73,6 +73,8 @@ import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
 
+import 'ui/bloc/groupchat/startgroupchat_bloc.dart';
+
 void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
   Logger.root.onRecord.listen((record) {
@@ -114,6 +116,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
   GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
   GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
+  GetIt.I.registerSingleton<StartGroupchatBloc>(StartGroupchatBloc());
 }
 
 void main() async {
@@ -185,6 +188,9 @@ void main() async {
         ),
         BlocProvider<StickerPackBloc>(
           create: (_) => GetIt.I.get<StickerPackBloc>(),
+        ),
+        BlocProvider<StartGroupchatBloc>(
+          create: (_) => GetIt.I.get<StartGroupchatBloc>(),
         ),
       ],
       child: TranslationProvider(

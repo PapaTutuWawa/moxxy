@@ -23,7 +23,8 @@ class StartGroupChatPage extends StatefulWidget {
 }
 
 class StartGroupChatPageState extends State<StartGroupChatPage> {
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _jidController = TextEditingController();
+  final TextEditingController _nickController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +58,7 @@ class StartGroupChatPageState extends State<StartGroupChatPage> {
                   onChanged: (value) => context.read<StartGroupchatBloc>().add(
                         JidChangedEvent(value),
                       ),
-                  controller: _controller,
+                  controller: _jidController,
                   enabled: !state.isWorking,
                   cornerRadius: textfieldRadiusRegular,
                   borderColor: primaryColor,
@@ -69,7 +70,7 @@ class StartGroupChatPageState extends State<StartGroupChatPage> {
                       final jid = await scanXmppUriQrCode(context);
                       if (jid == null) return;
 
-                      _controller.text = jid.path;
+                      _jidController.text = jid.path;
                       // ignore: use_build_context_synchronously
                       context.read<StartGroupchatBloc>().add(
                             JidChangedEvent(jid.path),
@@ -86,7 +87,7 @@ class StartGroupChatPageState extends State<StartGroupChatPage> {
                   onChanged: (value) => context.read<StartGroupchatBloc>().add(
                         NickChangedEvent(value),
                       ),
-                  controller: _controller,
+                  controller: _nickController,
                   enabled: !state.isWorking,
                   cornerRadius: textfieldRadiusRegular,
                   borderColor: primaryColor,
