@@ -41,7 +41,8 @@ class ConversationMessageConverter
 
 enum ConversationType {
   chat('chat'),
-  note('note');
+  note('note'),
+  groupchat('groupchat');
 
   const ConversationType(this.value);
 
@@ -54,6 +55,8 @@ enum ConversationType {
         return ConversationType.chat;
       case 'note':
         return ConversationType.note;
+      case 'groupchat':
+        return ConversationType.groupchat;
     }
 
     return null;
@@ -93,6 +96,9 @@ class Conversation with _$Conversation {
     // The JID of the entity we're having a chat with...
     String jid,
 
+    // The nick with which the MUC is joined...
+    String? nick,
+
     // The number of unread messages.
     int unreadCounter,
 
@@ -117,7 +123,6 @@ class Conversation with _$Conversation {
 
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState, {
-
     // The id of the contact in the device's phonebook if it exists
     String? contactId,
 

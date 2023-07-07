@@ -308,10 +308,7 @@ files:
         attributes:
           conversation:
             type: Conversation?
-            deserialise: true
-          # Indicate if the conversation is new (true) or modified (false).
-          # Does not mean anything unless conversation != null.
-          added: bool    
+            deserialise: true  
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"

@@ -138,6 +138,7 @@ class NewConversationPage extends StatelessWidget {
                       item.avatarPath,
                       item.avatarHash,
                       item.jid,
+                      null,
                       0,
                       ConversationType.chat,
                       0,

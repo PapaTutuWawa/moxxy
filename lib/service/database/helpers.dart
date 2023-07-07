@@ -20,6 +20,10 @@ String conversationTypeToString(ConversationType type) {
       {
         return 'note';
       }
+    case ConversationType.groupchat:
+      {
+        return 'groupchat';
+      }
   }
 }
 
@@ -29,9 +33,13 @@ ConversationType stringToConversationType(String type) {
       {
         return ConversationType.chat;
       }
-    default:
+    case 'note':
       {
         return ConversationType.note;
+      }
+    default:
+      {
+        return ConversationType.groupchat;
       }
   }
 }

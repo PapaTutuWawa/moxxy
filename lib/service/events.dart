@@ -12,6 +12,7 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -104,6 +105,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
+      EventTypeMatcher<JoinGroupchatCommand>(performJoinGroupchat),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -252,6 +254,7 @@ Future<void> performAddConversation(
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
+        '',
       );
 
       sendEvent(
@@ -584,6 +587,7 @@ Future<void> performAddContact(
             contactId,
             await css.getProfilePicturePathForJid(jid),
             await css.getContactDisplayName(contactId),
+            '',
           );
 
           sendEvent(
@@ -1374,5 +1378,73 @@ Future<void> performDebugCommand(
     await conn
         .getManagerById<RosterManager>(rosterManager)!
         .requestRoster(useRosterVersion: false);
+  }
+}
+
+Future<void> performJoinGroupchat(
+  JoinGroupchatCommand command, {
+  dynamic extra,
+}) async {
+  final jid = command.jid;
+  final nick = command.nick;
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(jid);
+  if (conversation != null) {
+    await cs.createOrUpdateConversation(
+      jid,
+      update: (c) async {
+        final newConversation = await cs.updateConversation(
+          jid,
+          open: true,
+          lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+        );
+
+        sendEvent(
+          JoinGroupchatResultEvent(
+            conversation: newConversation,
+          ),
+        );
+
+        return newConversation;
+      },
+    );
+  } else {
+    // We did not have a conversation with that JID.
+    final joinRoomResult = await GetIt.I
+        .get<GroupchatService>()
+        .joinRoom(JID.fromString(jid), nick);
+    var isGroupchat = true;
+    await cs.createOrUpdateConversation(
+      jid,
+      create: () async {
+        // Create
+        final css = GetIt.I.get<ContactsService>();
+        final contactId = await css.getContactIdForJid(jid);
+        final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+        final newConversation = await cs.addConversationFromData(
+          jid.split('@')[0],
+          null,
+          ConversationType.groupchat,
+          '',
+          jid,
+          0,
+          DateTime.now().millisecondsSinceEpoch,
+          true,
+          prefs.defaultMuteState,
+          prefs.enableOmemoByDefault,
+          contactId,
+          await css.getProfilePicturePathForJid(jid),
+          await css.getContactDisplayName(contactId),
+          nick,
+        );
+        sendEvent(
+          JoinGroupchatResultEvent(
+            conversation: newConversation,
+          ),
+        );
+
+        return newConversation;
+      },
+    );
   }
 }

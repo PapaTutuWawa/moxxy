@@ -227,6 +227,7 @@ class ConversationService {
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
+    String? nick,
   ) async {
     final rosterItem =
         await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
@@ -236,6 +237,7 @@ class ConversationService {
       avatarPath,
       null,
       jid,
+      nick,
       unreadCounter,
       type,
       lastChangeTimestamp,

@@ -16,4 +16,15 @@ class GroupchatService {
     }
     throw Exception(result.get<MUCError>());
   }
+
+  Future<bool> joinRoom(JID muc, String nick) async {
+    final conn = GetIt.I.get<XmppConnection>();
+    final mm = conn.getManagerById<MUCManager>(mucManager)!;
+    final result = await mm.joinRoom(muc, nick);
+    if (result is MUCError) {
+      throw Exception(result.get<MUCError>());
+    } else {
+      return result.get<bool>();
+    }
+  }
 }

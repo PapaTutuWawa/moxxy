@@ -98,15 +98,9 @@ class StartGroupchatBloc
     await _onPageReset(PageResetEvent(), emit);
     final joinEvent = result! as JoinGroupchatResultEvent;
     if (joinEvent.conversation != null) {
-      if (joinEvent.added) {
-        GetIt.I.get<ConversationsBloc>().add(
-              ConversationsAddedEvent(joinEvent.conversation!),
-            );
-      } else {
-        GetIt.I.get<ConversationsBloc>().add(
-              ConversationsUpdatedEvent(joinEvent.conversation!),
-            );
-      }
+      GetIt.I.get<ConversationsBloc>().add(
+            ConversationsAddedEvent(joinEvent.conversation!),
+          );
     }
 
     assert(

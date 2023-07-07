@@ -622,6 +622,7 @@ class XmppService {
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
+            '',
           );
 
           // Update the cache
@@ -1434,6 +1435,7 @@ class XmppService {
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),
+          '',
         );
 
         // Notify the UI
