@@ -193,6 +193,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                 builder: (context, snapshot) => StackedBarChart(
                   width: MediaQuery.of(context).size.width * 0.8,
                   items: [
+                    // TODO: i18n
                     BartChartItem(
                       'Media',
                       snapshot.data ?? 0,
@@ -251,6 +252,13 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                         ConversationsSetEvent(deleteResult.conversations),
                       );
                 }
+              },
+            ),
+            SettingsRow(
+              // TODO: i18n
+              title: 'Manage sticker packs',
+              onTap: () {
+                Navigator.of(context).pushNamed(stickersRoute);
               },
             ),
           ],
