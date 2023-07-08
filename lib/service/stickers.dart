@@ -281,34 +281,35 @@ JOIN
       );
 
       // Get file metadata
-      final fileMetadataRaw =
-          await GetIt.I.get<FilesService>().createFileMetadataIfRequired(
-                MediaFileLocation(
-                  sticker.fileMetadata.sourceUrls!,
-                  p.basename(stickerPath),
-                  null,
-                  null,
-                  null,
-                  sticker.fileMetadata.plaintextHashes,
-                  null,
-                  sticker.fileMetadata.size,
-                ),
-                sticker.fileMetadata.mimeType,
-                sticker.fileMetadata.size,
-                sticker.fileMetadata.width != null &&
-                        sticker.fileMetadata.height != null
-                    ? Size(
-                        sticker.fileMetadata.width!.toDouble(),
-                        sticker.fileMetadata.height!.toDouble(),
-                      )
-                    : null,
-                // TODO(Unknown): Maybe consider the thumbnails one day
-                null,
-                null,
-                path: stickerPath,
-              );
+      final fs = GetIt.I.get<FilesService>();
+      final fileMetadataRaw = await fs.createFileMetadataIfRequired(
+        MediaFileLocation(
+          sticker.fileMetadata.sourceUrls!,
+          p.basename(stickerPath),
+          null,
+          null,
+          null,
+          sticker.fileMetadata.plaintextHashes,
+          null,
+          sticker.fileMetadata.size,
+        ),
+        sticker.fileMetadata.mimeType,
+        sticker.fileMetadata.size,
+        sticker.fileMetadata.width != null &&
+                sticker.fileMetadata.height != null
+            ? Size(
+                sticker.fileMetadata.width!.toDouble(),
+                sticker.fileMetadata.height!.toDouble(),
+              )
+            : null,
+        // TODO(Unknown): Maybe consider the thumbnails one day
+        null,
+        null,
+        path: stickerPath,
+      );
 
-      if (!fileMetadataRaw.retrieved) {
+      if (!fileMetadataRaw.retrieved &&
+          fileMetadataRaw.fileMetadata.path == null) {
         final downloadStatusCode = await downloadFile(
           Uri.parse(sticker.fileMetadata.sourceUrls!.first),
           stickerPath,
@@ -322,13 +323,22 @@ JOIN
         }
       }
 
+      var fm = fileMetadataRaw.fileMetadata;
+      if (fileMetadataRaw.fileMetadata.size == null) {
+        // Determine the file size of the sticker.
+        fm = await fs.updateFileMetadata(
+          fileMetadataRaw.fileMetadata.id,
+          size: File(stickerPath).lengthSync(),
+        );
+      }
+
       stickers[i] = await _addStickerFromData(
         getStrongestHashFromMap(sticker.fileMetadata.plaintextHashes) ??
             DateTime.now().millisecondsSinceEpoch.toString(),
         remotePack.hashValue,
         sticker.desc,
         sticker.suggests,
-        fileMetadataRaw.fileMetadata,
+        fm,
       );
     }
 
@@ -437,6 +447,7 @@ JOIN
     // Add all stickers
     var size = 0;
     final stickers = List<Sticker>.empty(growable: true);
+    final fs = GetIt.I.get<FilesService>();
     for (final sticker in pack.stickers) {
       // Get the "path" to the sticker
       final stickerPath = await computeCachedPathForFile(
@@ -449,45 +460,57 @@ JOIN
           .whereType<moxxmpp.StatelessFileSharingUrlSource>()
           .map((src) => src.url)
           .toList();
-      final fileMetadataRaw = await GetIt.I
-          .get<FilesService>()
-          .createFileMetadataIfRequired(
-            MediaFileLocation(
-              urlSources,
-              p.basename(stickerPath),
-              null,
-              null,
-              null,
-              sticker.metadata.hashes,
-              null,
-              sticker.metadata.size,
-            ),
-            sticker.metadata.mediaType,
-            sticker.metadata.size,
-            sticker.metadata.width != null && sticker.metadata.height != null
-                ? Size(
-                    sticker.metadata.width!.toDouble(),
-                    sticker.metadata.height!.toDouble(),
-                  )
-                : null,
-            // TODO(Unknown): Maybe consider the thumbnails one day
-            null,
-            null,
-            path: stickerPath,
-          );
+      final fileMetadataRaw = await fs.createFileMetadataIfRequired(
+        MediaFileLocation(
+          urlSources,
+          p.basename(stickerPath),
+          null,
+          null,
+          null,
+          sticker.metadata.hashes,
+          null,
+          sticker.metadata.size,
+        ),
+        sticker.metadata.mediaType,
+        sticker.metadata.size,
+        sticker.metadata.width != null && sticker.metadata.height != null
+            ? Size(
+                sticker.metadata.width!.toDouble(),
+                sticker.metadata.height!.toDouble(),
+              )
+            : null,
+        // TODO(Unknown): Maybe consider the thumbnails one day
+        null,
+        null,
+        path: stickerPath,
+      );
 
       // Only copy the sticker to storage if we don't already have it
-      if (!fileMetadataRaw.retrieved) {
+      var fm = fileMetadataRaw.fileMetadata;
+      if (!fileMetadataRaw.retrieved &&
+          fileMetadataRaw.fileMetadata.path == null) {
         final stickerFile = archive.findFile(sticker.metadata.name!)!;
         final file = File(stickerPath);
         await file.writeAsBytes(
           stickerFile.content as List<int>,
         );
 
+        // Update the File Metadata entry
+        fm = await fs.updateFileMetadata(
+          fm.id,
+          size: file.lengthSync(),
+        );
         size += file.lengthSync();
-      } else {
-        // TODO(Unknown): What do we do here? Handle unavailable files, i.e. path IS NULL.
-        size += sticker.metadata.size ?? 0;
+      }
+
+      // Check if the sticker has size
+      if (fm.size == null) {
+        // Update the File Metadata entry
+        fm = await fs.updateFileMetadata(
+          fm.id,
+          size: File(stickerPath).lengthSync(),
+        );
+        size += fm.size!;
       }
 
       stickers.add(
