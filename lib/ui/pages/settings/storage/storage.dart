@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -12,19 +11,27 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart' as nav;
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/storage_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/stacked_bar_chart.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
+/// The various time offsets for deleting old media files.
 enum OlderThan {
+  /// No offset. Deletes all media files.
   all(0),
+
+  /// Deletes all files older than one week.
   oneWeek(7 * 24 * 60 * 60 * 1000),
+
+  /// Deletes all files older than one month.
   oneMonth(31 * 24 * 60 * 60 * 1000);
 
   const OlderThan(this.milliseconds);
 
+  /// The time offset in milliseconds.
   final int milliseconds;
 }
 
@@ -136,30 +143,21 @@ class StorageSettingsPage extends StatefulWidget {
 }
 
 class StorageSettingsPageState extends State<StorageSettingsPage> {
-  /// [StreamController] for the "Storage used: " label. The broadcast values
-  /// are the storage used by media files (NOT stickers). As such, the total, assuming
-  /// `usage` is a value received from the stream, is `usage + _stickersUsage`.
-  final StreamController<int> _controller = StreamController<int>.broadcast();
-
-  /// Cached sticker usage. The used storage by sticker packs cannot change from
-  /// this page, so caching it is fin.
-  int _stickerUsage = 0;
+  /// The controller providing data to build the bar chart and the label.
+  final StorageController _controller = StorageController();
 
   @override
   void initState() {
     super.initState();
 
-    _asyncInit();
+    _controller.fetchStorageUsage();
   }
 
-  Future<void> _asyncInit() async {
-    // ignore: cast_nullable_to_non_nullable
-    final result = await MoxplatformPlugin.handler.getDataSender().sendData(
-          GetStorageUsageCommand(),
-        ) as GetStorageUsageEvent;
+  @override
+  void dispose() {
+    _controller.dispose();
 
-    _stickerUsage = result.stickerUsage;
-    _controller.add(result.mediaUsage);
+    super.dispose();
   }
 
   @override
@@ -171,11 +169,11 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8),
-              child: StreamBuilder<int>(
+              child: StreamBuilder<StorageState>(
                 stream: _controller.stream,
                 builder: (context, snapshot) {
                   final size = snapshot.hasData
-                      ? fileSizeToString(snapshot.data! + _stickerUsage)
+                      ? fileSizeToString(snapshot.data!.totalUsage)
                       : t.pages.settings.storage.sizePlaceholder;
 
                   return Center(
@@ -188,19 +186,19 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
               ),
             ),
             Center(
-              child: StreamBuilder<int>(
+              child: StreamBuilder<StorageState>(
                 stream: _controller.stream,
                 builder: (context, snapshot) => StackedBarChart(
                   width: MediaQuery.of(context).size.width * 0.8,
                   items: [
                     BartChartItem(
                       t.pages.settings.storage.types.media,
-                      snapshot.data ?? 0,
+                      snapshot.data?.mediaUsage ?? 0,
                       primaryColor,
                     ),
                     BartChartItem(
                       t.pages.settings.storage.types.stickers,
-                      _stickerUsage,
+                      snapshot.data?.stickersUsage ?? 0,
                       Colors.blue,
                     ),
                   ],
@@ -242,7 +240,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                           ) as DeleteOldMediaFilesDoneEvent;
 
                   // Update the display
-                  _controller.add(
+                  _controller.mediaUsageUpdated(
                     deleteResult.newUsage,
                   );
 

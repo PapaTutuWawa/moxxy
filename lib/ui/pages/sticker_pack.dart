@@ -5,6 +5,7 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/controller/storage_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/shimmer.dart';
@@ -64,6 +65,9 @@ class StickerPackPage extends StatelessWidget {
       context,
     );
     if (result) {
+      // Update the storage page, if required
+      StorageController.instance?.stickerPackRemoved(state.stickerPack!.size);
+
       // ignore: use_build_context_synchronously
       context.read<StickerPackBloc>().add(
             StickerPackRemovedEvent(state.stickerPack!.id),
