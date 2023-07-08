@@ -196,7 +196,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                     BartChartItem(
                       t.pages.settings.storage.types.media,
                       snapshot.data ?? 0,
-                      Colors.red,
+                      primaryColor,
                     ),
                     BartChartItem(
                       t.pages.settings.storage.types.stickers,
