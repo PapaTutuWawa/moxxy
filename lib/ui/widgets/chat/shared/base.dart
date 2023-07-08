@@ -27,6 +27,7 @@ class SharedMediaContainer extends StatelessWidget {
     this.child, {
     required this.color,
     this.onTap,
+    this.onLongPress,
     this.size = sharedMediaContainerDimension,
     this.borderRadius = 10,
     super.key,
@@ -34,30 +35,28 @@ class SharedMediaContainer extends StatelessWidget {
   final double borderRadius;
   final Widget? child;
   final void Function()? onTap;
+  final void Function()? onLongPress;
   final double size;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final childWidget = SizedBox(
-      height: size,
-      width: size,
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: child,
-      ),
-    );
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: Material(
         color: color,
-        child: onTap != null
-            ? InkWell(
-                onTap: onTap,
-                child: childWidget,
-              )
-            : childWidget,
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: SizedBox(
+            height: size,
+            width: size,
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: child,
+            ),
+          ),
+        ),
       ),
     );
   }

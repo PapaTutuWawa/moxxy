@@ -4,7 +4,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
-import 'package:moxxyv2/ui/widgets/chat/message.dart';
+import 'package:moxxyv2/ui/widgets/chat/shared.dart';
 import 'package:moxxyv2/ui/widgets/grouped_grid_view.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
@@ -15,7 +15,9 @@ class SharedMediaView extends StatelessWidget {
     this.mediaController, {
     required this.emptyText,
     required this.showBackButton,
+    required this.onTap,
     this.title,
+    this.onLongPress,
     super.key,
   });
 
@@ -32,6 +34,12 @@ class SharedMediaView extends StatelessWidget {
   /// The text to show, when no media files are available, i.e. when no files have been
   /// sent/received in the chat.
   final String emptyText;
+
+  /// Callback for when a widget has been tapped.
+  final SharedMediaWidgetCallback onTap;
+
+  /// Callback for when a widget has been long pressed.
+  final SharedMediaWidgetCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +132,8 @@ class SharedMediaView extends StatelessWidget {
                   itemBuilder: (_, message) => buildSharedMediaWidget(
                     message.fileMetadata!,
                     message.conversationJid,
+                    onTap,
+                    onLongPress: onLongPress,
                   ),
                   separatorBuilder: (_, timestamp) => Padding(
                     padding: const EdgeInsets.only(

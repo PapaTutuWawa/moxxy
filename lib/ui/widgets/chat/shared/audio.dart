@@ -6,6 +6,7 @@ class SharedAudioWidget extends StatelessWidget {
   const SharedAudioWidget(
     this.path, {
     this.onTap,
+    this.onLongPress,
     this.borderColor,
     this.borderRadius = 3,
     this.size = sharedMediaContainerDimension,
@@ -14,6 +15,7 @@ class SharedAudioWidget extends StatelessWidget {
   final String path;
   final Color? borderColor;
   final void Function()? onTap;
+  final void Function()? onLongPress;
   final double borderRadius;
   final double size;
 
@@ -39,6 +41,7 @@ class SharedAudioWidget extends StatelessWidget {
       color: sharedMediaItemBackgroundColor,
       size: size,
       onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }

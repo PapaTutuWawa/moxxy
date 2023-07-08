@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/sticker.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/text.dart';
 import 'package:moxxyv2/ui/widgets/chat/message/video.dart';
-import 'package:moxxyv2/ui/widgets/chat/playbutton.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/audio.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/file.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/image.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/sticker.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/text.dart';
 import 'package:moxxyv2/ui/widgets/chat/quote/video.dart';
-import 'package:moxxyv2/ui/widgets/chat/shared/audio.dart';
-import 'package:moxxyv2/ui/widgets/chat/shared/file.dart';
-import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
-import 'package:moxxyv2/ui/widgets/chat/shared/video.dart';
 
 enum MessageType {
   text,
@@ -179,31 +172,4 @@ Widget buildQuoteMessageWidget(
         resetQuote: resetQuote,
       );
   }
-}
-
-Widget buildSharedMediaWidget(FileMetadata metadata, String conversationJid) {
-  if (metadata.mimeType!.startsWith('image/')) {
-    return SharedImageWidget(
-      metadata.path!,
-      onTap: () => openFile(metadata.path!),
-    );
-  } else if (metadata.mimeType!.startsWith('video/')) {
-    return SharedVideoWidget(
-      metadata.path!,
-      conversationJid,
-      metadata.mimeType!,
-      onTap: () => openFile(metadata.path!),
-      child: const PlayButton(size: 32),
-    );
-  } else if (metadata.mimeType!.startsWith('audio/')) {
-    return SharedAudioWidget(
-      metadata.path!,
-      onTap: () => openFile(metadata.path!),
-    );
-  }
-
-  return SharedFileWidget(
-    metadata.path!,
-    onTap: () => openFile(metadata.path!),
-  );
 }

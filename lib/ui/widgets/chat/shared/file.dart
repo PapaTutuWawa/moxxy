@@ -6,12 +6,14 @@ class SharedFileWidget extends StatelessWidget {
   const SharedFileWidget(
     this.path, {
     this.onTap,
+    this.onLongPress,
     this.borderRadius = 3,
     this.size = sharedMediaContainerDimension,
     super.key,
   });
   final String path;
   final void Function()? onTap;
+  final void Function()? onLongPress;
   final double borderRadius;
   final double size;
 
@@ -26,6 +28,7 @@ class SharedFileWidget extends StatelessWidget {
       borderRadius: borderRadius,
       size: size,
       onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }
