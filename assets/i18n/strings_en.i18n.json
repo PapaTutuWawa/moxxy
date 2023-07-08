@@ -391,7 +391,12 @@
 					}
 				},
 				"viewMediaFiles": "View media files",
-				"mediaFiles": "Media Files"
+				"mediaFiles": "Media Files",
+				"types": {
+					"media": "Media",
+					"stickers": "Stickers"
+				},
+				"manageStickers": "Manage sticker packs"
 			}
 		}
 	}

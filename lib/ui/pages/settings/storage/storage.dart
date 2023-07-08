@@ -193,14 +193,13 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                 builder: (context, snapshot) => StackedBarChart(
                   width: MediaQuery.of(context).size.width * 0.8,
                   items: [
-                    // TODO: i18n
                     BartChartItem(
-                      'Media',
+                      t.pages.settings.storage.types.media,
                       snapshot.data ?? 0,
                       Colors.red,
                     ),
                     BartChartItem(
-                      'Stickers',
+                      t.pages.settings.storage.types.stickers,
                       _stickerUsage,
                       Colors.blue,
                     ),
@@ -255,8 +254,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
               },
             ),
             SettingsRow(
-              // TODO: i18n
-              title: 'Manage sticker packs',
+              title: t.pages.settings.storage.manageStickers,
               onTap: () {
                 Navigator.of(context).pushNamed(stickersRoute);
               },
