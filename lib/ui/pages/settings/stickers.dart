@@ -124,6 +124,7 @@ class StickersSettingsPage extends StatelessWidget {
                                 ),
                               ),
                               Text(
+                                // TODO: Maybe i18n-ize this
                                 '($sizeString)',
                                 style: const TextStyle(
                                   color: Colors.grey,
