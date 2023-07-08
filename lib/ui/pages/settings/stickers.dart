@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
+import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sticker_pack_bloc.dart';
@@ -107,8 +108,29 @@ class StickersSettingsPage extends StatelessWidget {
                           );
                         }
 
+                        final sizeString = fileSizeToString(
+                          stickers.stickerPacks[index - 1].size,
+                        );
                         return SettingsRow(
-                          title: stickers.stickerPacks[index - 1].name,
+                          titleWidget: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  stickers.stickerPacks[index - 1].name,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '($sizeString)',
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
                           description:
                               stickers.stickerPacks[index - 1].description,
                           crossAxisAlignment: CrossAxisAlignment.start,

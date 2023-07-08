@@ -1203,6 +1203,7 @@ Future<void> performFetchStickerPack(
           stickerPack.hashValue,
           stickerPack.restricted,
           false,
+          0,
         ),
       ),
       id: id,

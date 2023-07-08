@@ -27,6 +27,37 @@ class StickersService {
   final Map<String, StickerPack> _stickerPacks = {};
   final Logger _log = Logger('StickersService');
 
+  /// Computes the total amount of storage occupied by the stickers in the sticker
+  /// pack identified by id [id].
+  /// NOTE that if a sticker does not indicate a file size, i.e. the "size" column is
+  /// NULL, then a size of 0 is assumed.
+  Future<int> getStickerPackSizeById(String id) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final result = await db.rawQuery(
+      '''
+      SELECT
+        SUM(size) AS size
+      FROM
+        $fileMetadataTable as fmt
+      WHERE
+        path IS NOT NULL AND
+        EXISTS (
+          SELECT
+            id
+          FROM
+            $stickersTable
+          WHERE
+            file_metadata_id = fmt.id AND
+            stickerPackId = ?
+        )
+      ''',
+      [id],
+    );
+
+    _log.finest('Cumulative size for $id: $result');
+    return result.first['size'] as int? ?? 0;
+  }
+
   Future<StickerPack?> getStickerPackById(String id) async {
     if (_stickerPacks.containsKey(id)) return _stickerPacks[id];
 
@@ -59,8 +90,18 @@ SELECT
   fm.cipherTextHashes AS fm_cipherTextHashes,
   fm.filename AS fm_filename,
   fm.size AS fm_size
-FROM (SELECT * FROM $stickersTable WHERE stickerPackId = ?) AS sticker
-  JOIN $fileMetadataTable fm ON sticker.file_metadata_id = fm.id;
+FROM
+  (SELECT
+    *
+  FROM
+    $stickersTable
+  WHERE
+    stickerPackId = ?
+  ) AS sticker
+JOIN
+  $fileMetadataTable fm
+  ON
+    sticker.file_metadata_id = fm.id;
       ''',
       [id],
     );
@@ -75,6 +116,8 @@ FROM (SELECT * FROM $stickersTable WHERE stickerPackId = ?) AS sticker
           ),
         );
       }).toList(),
+    ).copyWith(
+      size: await getStickerPackSizeById(id),
     );
 
     return _stickerPacks[id]!;
@@ -387,10 +430,12 @@ FROM (SELECT * FROM $stickersTable WHERE stickerPackId = ?) AS sticker
       pack.hashValue,
       pack.restricted,
       true,
+      0,
     );
     await _addStickerPackFromData(stickerPack);
 
     // Add all stickers
+    var size = 0;
     final stickers = List<Sticker>.empty(growable: true);
     for (final sticker in pack.stickers) {
       // Get the "path" to the sticker
@@ -434,9 +479,15 @@ FROM (SELECT * FROM $stickersTable WHERE stickerPackId = ?) AS sticker
       // Only copy the sticker to storage if we don't already have it
       if (!fileMetadataRaw.retrieved) {
         final stickerFile = archive.findFile(sticker.metadata.name!)!;
-        await File(stickerPath).writeAsBytes(
+        final file = File(stickerPath);
+        await file.writeAsBytes(
           stickerFile.content as List<int>,
         );
+
+        size += file.lengthSync();
+      } else {
+        // TODO(Unknown): What do we do here? Handle unavailable files, i.e. path IS NULL.
+        size += sticker.metadata.size ?? 0;
       }
 
       stickers.add(
@@ -453,6 +504,7 @@ FROM (SELECT * FROM $stickersTable WHERE stickerPackId = ?) AS sticker
 
     final stickerPackWithStickers = stickerPack.copyWith(
       stickers: stickers,
+      size: size,
     );
 
     // Add it to the cache
