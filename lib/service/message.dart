@@ -283,9 +283,23 @@ SELECT
   fm.cipherTextHashes as fm_cipherTextHashes,
   fm.filename as fm_filename,
   fm.size as fm_size
-FROM (SELECT * FROM $messagesTable WHERE $queryPrefix $query ORDER BY timestamp DESC LIMIT $sharedMediaPaginationSize) AS msg
-  LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id
-  WHERE fm_path IS NOT NULL;
+FROM
+  (SELECT
+    *
+  FROM
+    $messagesTable
+  WHERE
+    $queryPrefix $query
+    ORDER BY timestamp
+    DESC LIMIT $sharedMediaPaginationSize
+  ) AS msg
+  LEFT JOIN
+    $fileMetadataTable fm
+    ON
+      msg.file_metadata_id = fm.id
+    WHERE
+      fm_path IS NOT NULL
+      AND NOT EXISTS (SELECT id FROM $stickersTable WHERE file_metadata_id = fm.id);
       ''',
       [
         if (jid != null) jid,
