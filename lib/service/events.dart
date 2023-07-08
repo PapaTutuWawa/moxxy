@@ -11,6 +11,8 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -1343,10 +1345,12 @@ Future<void> performGetStorageUsage(
   GetStorageUsageCommand command, {
   dynamic extra,
 }) async {
-  final usage = await GetIt.I.get<StorageService>().computeUsedStorage();
-
   sendEvent(
-    GetStorageUsageEvent(usage: usage),
+    GetStorageUsageEvent(
+      mediaUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
+      stickerUsage:
+          await GetIt.I.get<StorageService>().computeUsedStickerStorage(),
+    ),
     id: extra as String,
   );
 }
@@ -1359,7 +1363,7 @@ Future<void> performOldMediaFileDeletion(
 
   sendEvent(
     DeleteOldMediaFilesDoneEvent(
-      newUsage: await GetIt.I.get<StorageService>().computeUsedStorage(),
+      newUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
       conversations:
           (await GetIt.I.get<ConversationService>().loadConversations())
               .where((c) => c.open)
@@ -1391,5 +1395,20 @@ Future<void> performDebugCommand(
     await conn
         .getManagerById<RosterManager>(rosterManager)!
         .requestRoster(useRosterVersion: false);
+  } else if (command.id == debug.DebugCommand.logAvailableMediaFiles.id) {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final results = await db.rawQuery(
+      '''
+      SELECT
+        path,
+        id
+      FROM
+        $fileMetadataTable AS fmt
+      WHERE
+        AND NOT EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
+        AND path IS NOT NULL
+      ''',
+    );
+    Logger.root.finest(results);
   }
 }

@@ -27,6 +27,8 @@ enum OlderThan {
   final int milliseconds;
 }
 
+const double _stackedBarChartHeight = 15;
+
 class DeleteMediaDialog extends StatefulWidget {
   const DeleteMediaDialog({
     super.key,
@@ -135,7 +137,14 @@ class StorageSettingsPage extends StatefulWidget {
 }
 
 class StorageSettingsPageState extends State<StorageSettingsPage> {
-  final StreamController<int> _controller = StreamController<int>();
+  /// [StreamController] for the "Storage used: " label. The broadcast values
+  /// are the storage used by media files (NOT stickers). As such, the total, assuming
+  /// `usage` is a value received from the stream, is `usage + _stickersUsage`.
+  final StreamController<int> _controller = StreamController<int>.broadcast();
+
+  /// Cached sticker usage. The used storage by sticker packs cannot change from
+  /// this page, so caching it is fin.
+  int _stickerUsage = 0;
 
   @override
   void initState() {
@@ -150,11 +159,13 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
           GetStorageUsageCommand(),
         ) as GetStorageUsageEvent;
 
-    _controller.add(result.usage);
+    _stickerUsage = result.stickerUsage;
+    _controller.add(result.mediaUsage);
   }
 
   @override
   Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
     return Scaffold(
       appBar: BorderlessTopbar.title(t.pages.settings.storage.title),
       body: BlocBuilder<PreferencesBloc, PreferencesState>(
@@ -166,7 +177,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                 stream: _controller.stream,
                 builder: (context, snapshot) {
                   final size = snapshot.hasData
-                      ? fileSizeToString(snapshot.data!)
+                      ? fileSizeToString(snapshot.data! + _stickerUsage)
                       : t.pages.settings.storage.sizePlaceholder;
 
                   return Center(
@@ -176,6 +187,103 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
                     ),
                   );
                 },
+              ),
+            ),
+            // TODO: Refactor this into its own widget
+            Center(
+              child: StreamBuilder<int>(
+                stream: _controller.stream,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return SizedBox(
+                      height: _stackedBarChartHeight,
+                      width: mq.size.width * 0.8,
+                      child: const ColoredBox(
+                        color: Colors.grey,
+                      ),
+                    );
+                  }
+
+                  final total = snapshot.data! + _stickerUsage;
+                  final mediaWidth =
+                      mq.size.width * 0.8 * (snapshot.data! / total);
+                  final stickersWidth =
+                      mq.size.width * 0.8 * (_stickerUsage / total);
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(_stackedBarChartHeight),
+                    child: SizedBox(
+                      width: mq.size.width * 0.8,
+                      height: _stackedBarChartHeight,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: SizedBox(
+                              width: mediaWidth,
+                              height: _stackedBarChartHeight,
+                              child: const ColoredBox(
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: mediaWidth,
+                            top: 0,
+                            bottom: 0,
+                            child: SizedBox(
+                              width: stickersWidth,
+                              height: _stackedBarChartHeight,
+                              child: const ColoredBox(
+                                color: Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(
+                top: 8,
+                left: 0.1 /* 0.2 * 0.5*/ * mq.size.width,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(_stackedBarChartHeight),
+                    child: const SizedBox(
+                      width: _stackedBarChartHeight,
+                      height: _stackedBarChartHeight,
+                      child: ColoredBox(
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text('Media'),
+                  ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(_stackedBarChartHeight),
+                    child: const SizedBox(
+                      width: _stackedBarChartHeight,
+                      height: _stackedBarChartHeight,
+                      child: ColoredBox(
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Text('Stickers'),
+                  ),
+                ],
               ),
             ),
             Center(

@@ -306,8 +306,10 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          # The used storage in bytes
-          usage: int
+          # The used storage in bytes for media files
+          mediaUsage: int
+          # The used storage in bytes for stickers
+          stickerUsage: int
       # Returned after [DeleteOldMediaFilesCommand]
       - name: DeleteOldMediaFilesDoneEvent
         extends: BackgroundEvent

@@ -15,15 +15,35 @@ class StorageService {
 
   /// Compute the amount of storage all FileMetadata objects take, that both have
   /// their file size and path set to something other than null.
-  /// Note that this usage also includes file metadata items that are stickers, while
-  /// [deleteOldMediaFiles] excludes those.
-  Future<int> computeUsedStorage() async {
+  /// Note that this usage does not include file metadata items that are stickers.
+  Future<int> computeUsedMediaStorage() async {
     final db = GetIt.I.get<DatabaseService>().database;
     final result = await db.rawQuery(
-      'SELECT SUM(size) AS size FROM $fileMetadataTable WHERE path IS NOT NULL AND size IS NOT NULL',
+      '''
+      SELECT SUM(size) AS size FROM $fileMetadataTable AS fmt
+        WHERE path IS NOT NULL
+          AND size IS NOT NULL
+          AND NOT EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
+      ''',
     );
 
-    return result.first['size']! as int;
+    _log.finest('computeUsedMediaStorage: SQL:: $result');
+    return result.first['size'] as int? ?? 0;
+  }
+
+  Future<int> computeUsedStickerStorage() async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final result = await db.rawQuery(
+      '''
+      SELECT SUM(size) AS size FROM $fileMetadataTable as fmt
+        WHERE path IS NOT NULL
+          AND size IS NOT NULL
+          AND EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
+      ''',
+    );
+
+    _log.finest('computeUsedStickerStorage: SQL:: $result');
+    return result.first['size'] as int? ?? 0;
   }
 
   /// Deletes shared media files for which the age of the newest attached message
@@ -43,12 +63,21 @@ class StorageService {
     //   puts it in deletion range.
     // - We don't want to delete files that belong to a sticker pack because the storage of those
     //   is managed differently.
+    // - In case we have file metadata items that are dangling, we also remove those.
+    // TODO(Unknown): It might be nice to merge the two subqueries
     final results = await db.rawQuery(
       '''
-      SELECT path, id FROM $fileMetadataTable AS fmt
-        WHERE (SELECT MAX(timestamp) FROM $messagesTable WHERE file_metadata_id = fmt.id) <= $maxAge
-          AND NOT EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
-          AND path IS NOT NULL
+      SELECT
+        path,
+        id
+      FROM
+        $fileMetadataTable AS fmt
+      WHERE (
+          (SELECT MAX(timestamp) FROM $messagesTable WHERE file_metadata_id = fmt.id) <= $maxAge
+          OR NOT EXISTS (SELECT id FROM $messagesTable WHERE file_metadata_id = fmt.id)
+        )
+        AND NOT EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
+        AND path IS NOT NULL
       ''',
     );
     _log.finest('Found ${results.length} matching files for deletion');

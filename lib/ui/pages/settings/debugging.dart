@@ -174,6 +174,18 @@ class DebuggingPage extends StatelessWidget {
                       },
                     ),
                     SettingsRow(
+                      title: 'Log available media files',
+                      onTap: () {
+                        MoxplatformPlugin.handler.getDataSender().sendData(
+                              DebugCommand(
+                                id: debug
+                                    .DebugCommand.logAvailableMediaFiles.id,
+                              ),
+                              awaitable: false,
+                            );
+                      },
+                    ),
+                    SettingsRow(
                       title: 'Reset showDebugMenu state',
                       onTap: () {
                         context.read<PreferencesBloc>().add(
