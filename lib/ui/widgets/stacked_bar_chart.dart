@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +45,7 @@ class StackedBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var leftOffset = 0.0;
+    var rightOffset = 0.0;
     final total = items
         .map((item) => item.value)
         .reduce((value, element) => value + element);
@@ -69,20 +71,32 @@ class StackedBarChart extends StatelessWidget {
                         ),
                       ),
                     ]
-                  : items.map(
+                  : items.reversed.map(
                       (item) {
-                        final lo = leftOffset;
-                        final itemWidth = width * (item.value / total);
-                        leftOffset += itemWidth;
+                        // We reverse the item list and use the offset from the right
+                        // border so that we can have a nice stacking effect.
+                        final ro = rightOffset;
+                        final itemWidth = width * (item.value / total) + height;
+                        rightOffset += itemWidth;
                         return Positioned(
-                          left: lo,
+                          // Clamp the offset from the right border to [0, inf)
+                          right: max(
+                            ro - height,
+                            0,
+                          ),
                           top: 0,
                           bottom: 0,
-                          child: SizedBox(
-                            width: itemWidth,
-                            height: height,
-                            child: ColoredBox(
-                              color: item.color,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(height),
+                              bottomRight: Radius.circular(height),
+                            ),
+                            child: SizedBox(
+                              width: itemWidth,
+                              height: height,
+                              child: ColoredBox(
+                                color: item.color,
+                              ),
                             ),
                           ),
                         );
