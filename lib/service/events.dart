@@ -1410,10 +1410,23 @@ Future<void> performJoinGroupchat(
     );
   } else {
     // We did not have a conversation with that JID.
-    final joinRoomResult = await GetIt.I
-        .get<GroupchatService>()
-        .joinRoom(JID.fromString(jid), nick);
-    var isGroupchat = true;
+    late bool joinRoomResult;
+    try {
+      joinRoomResult = await GetIt.I
+          .get<GroupchatService>()
+          .joinRoom(JID.fromString(jid), nick);
+    } catch (e) {
+      if (e == GroupchatErrorType.roomNotJoinedError) {
+        sendEvent(
+          ErrorEvent(errorId: GroupchatErrorType.roomNotJoinedError.value),
+        );
+      } else {
+        sendEvent(
+          ErrorEvent(errorId: (e as GroupchatErrorType).value),
+        );
+      }
+    }
+    if (!joinRoomResult) return;
     await cs.createOrUpdateConversation(
       jid,
       create: () async {
