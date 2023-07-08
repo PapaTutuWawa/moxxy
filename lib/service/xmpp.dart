@@ -1365,8 +1365,9 @@ class XmppService {
 
     // Attempt to auto-download the embedded file, if
     // - there is a file attached and
-    // - we have not retrieved the file metadata
-    if (shouldDownload && !(fileMetadata?.retrieved ?? false)) {
+    // - we have not retrieved the file metadata OR we know of the file but have no path for it
+    if (shouldDownload && (!(fileMetadata?.retrieved ?? false)) ||
+        fileMetadata?.fileMetadata.path == null) {
       final fts = GetIt.I.get<HttpFileTransferService>();
       final metadata = await peekFile(embeddedFile!.urls.first);
 
