@@ -92,7 +92,10 @@ class SharedMediaView extends StatelessWidget {
               stream: mediaController.dataStream,
               initialData: mediaController.cache,
               builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data!.isEmpty) {
+                // Only show the image if we have no media files
+                if (snapshot.connectionState != ConnectionState.none &&
+                    snapshot.connectionState != ConnectionState.waiting &&
+                    snapshot.data!.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
