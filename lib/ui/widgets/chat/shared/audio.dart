@@ -7,7 +7,7 @@ class SharedAudioWidget extends StatelessWidget {
     this.path, {
     this.onTap,
     this.borderColor,
-    this.borderRadius = 10,
+    this.borderRadius = 3,
     this.size = sharedMediaContainerDimension,
     super.key,
   });

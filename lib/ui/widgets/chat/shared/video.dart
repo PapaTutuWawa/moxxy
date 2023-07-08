@@ -11,7 +11,7 @@ class SharedVideoWidget extends StatelessWidget {
     this.borderColor,
     this.child,
     this.size = sharedMediaContainerDimension,
-    this.borderRadius = 10,
+    this.borderRadius = 3,
     super.key,
   });
   final String path;

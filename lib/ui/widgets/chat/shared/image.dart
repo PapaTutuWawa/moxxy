@@ -8,7 +8,7 @@ class SharedImageWidget extends StatelessWidget {
     this.onTap,
     this.borderColor,
     this.child,
-    this.borderRadius = 10,
+    this.borderRadius = 3,
     this.size = sharedMediaContainerDimension,
     super.key,
   });
