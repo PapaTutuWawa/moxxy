@@ -367,7 +367,8 @@
 				"stickerPacksSection": "Sticker packs",
 				"importStickerPack": "Import sticker pack",
 				"importSuccess": "Sticker pack successfully imported",
-				"importFailure": "Failed to import sticker pack"
+				"importFailure": "Failed to import sticker pack",
+				"stickerPackSize": "(${size})"
 			},
 			"storage": {
 				"title": "Storage",
