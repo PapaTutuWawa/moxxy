@@ -266,6 +266,12 @@
 			"restricted": "This sticker pack is restricted. That means that the stickers will be displayed but cannot be sent.",
 			"fetchingFailure": "Could not find the sticker pack"
 		},
+		"sharedMedia": {
+			"empty": {
+				"chat": "No shared media for this chat",
+				"general": "No media files available"
+			}
+		},
 		"settings": {
 			"settings": {
 				"title": "Settings",

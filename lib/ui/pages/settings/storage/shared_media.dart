@@ -40,6 +40,7 @@ class StorageSharedMediaPageState extends State<StorageSharedMediaPage> {
   Widget build(BuildContext context) {
     return SharedMediaView(
       _controller,
+      emptyText: t.pages.sharedMedia.empty.general,
       showBackButton: true,
       title: t.pages.settings.storage.mediaFiles,
     );

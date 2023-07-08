@@ -13,6 +13,7 @@ import 'package:moxxyv2/ui/widgets/topbar.dart';
 class SharedMediaView extends StatelessWidget {
   const SharedMediaView(
     this.mediaController, {
+    required this.emptyText,
     required this.showBackButton,
     this.title,
     super.key,
@@ -27,6 +28,10 @@ class SharedMediaView extends StatelessWidget {
   /// An optional title to show in the top bar. If null, then the top bar is kept
   /// in size by a [SizedBox].
   final String? title;
+
+  /// The text to show, when no media files are available, i.e. when no files have been
+  /// sent/received in the chat.
+  final String emptyText;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +84,24 @@ class SharedMediaView extends StatelessWidget {
               stream: mediaController.dataStream,
               initialData: mediaController.cache,
               builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset('assets/images/empty.png'),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Text(
+                            emptyText,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 return GroupedGridView<Message, DateTime>(
                   controller: mediaController.scrollController,
                   elements: snapshot.data!,

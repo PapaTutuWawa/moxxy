@@ -114,6 +114,7 @@ class ProfilePageState extends State<ProfilePage> {
                 ),
                 SharedMediaView(
                   _mediaController,
+                  emptyText: t.pages.sharedMedia.empty.chat,
                   showBackButton: false,
                   key: const PageStorageKey('shared_media_view'),
                 ),
