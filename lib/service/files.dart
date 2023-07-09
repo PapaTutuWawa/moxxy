@@ -90,6 +90,9 @@ class FilesService {
           'value': hash.value,
           'id': metadataId,
         },
+        // TODO(Unknown): I would like to get rid of this. In events.dart, when processing
+        //                a request to manually download a file, we should check if we already
+        //                have hash pointers for a file metadata item.
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }

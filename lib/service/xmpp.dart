@@ -1388,6 +1388,9 @@ class XmppService {
             embeddedFile,
             message.id,
             message.fileMetadata!.id,
+            // If we did not retrieve the file, then we were not able to find it using
+            // hashes.
+            !fileMetadata!.retrieved,
             conversationJid,
             mimeGuess,
           ),
@@ -1564,6 +1567,9 @@ class XmppService {
                 embeddedFile,
                 message.id,
                 oldFileMetadata!.id,
+                // If [fileMetadata] is null, then we were not able to find the file metadata
+                // using hashes and thus have to create hash pointers.
+                fileMetadata == null,
                 conversationJid,
                 _getMimeGuess(event),
                 shouldShowNotification: false,

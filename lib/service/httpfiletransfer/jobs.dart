@@ -55,15 +55,32 @@ class FileDownloadJob {
     this.location,
     this.mId,
     this.metadataId,
+    this.createMetadataHashes,
     this.conversationJid,
     this.mimeGuess, {
     this.shouldShowNotification = true,
   });
+
+  /// The location where the file can be found.
   final MediaFileLocation location;
+
+  /// The id of the message associated with the download.
   final int mId;
+
+  /// The id of the file metadata describing the file.
   final String metadataId;
+
+  /// Flag indicating whether we should create hash pointers to the file metadata
+  /// object.
+  final bool createMetadataHashes;
+
+  /// The JID of the conversation this message was received in.
   final String conversationJid;
+
+  /// A guess to the files's MIME type.
   final String? mimeGuess;
+
+  /// Flag indicating whether a notification should be shown after successful download.
   final bool shouldShowNotification;
 
   @override

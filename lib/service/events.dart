@@ -672,6 +672,7 @@ Future<void> performRequestDownload(
       ),
       message.id,
       message.fileMetadata!.id,
+      message.fileMetadata!.plaintextHashes?.isNotEmpty ?? false,
       message.conversationJid,
       mimeGuess,
     ),
