@@ -45,6 +45,7 @@ import 'package:moxxyv2/service/database/migrations/0003_avatar_hashes.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo_pseudo_messages.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
+import 'package:moxxyv2/service/database/migrations/0003_sticker_pack_timestamp.dart';
 import 'package:path/path.dart' as path;
 import 'package:random_string/random_string.dart';
 // ignore: implementation_imports
@@ -152,6 +153,7 @@ const List<DatabaseMigration<Database>> migrations = [
   DatabaseMigration(39, upgradeFromV38ToV39),
   DatabaseMigration(40, upgradeFromV39ToV40),
   DatabaseMigration(41, upgradeFromV40ToV41),
+  DatabaseMigration(42, upgradeFromV41ToV42),
 ];
 
 class DatabaseService {

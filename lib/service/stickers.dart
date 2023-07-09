@@ -16,6 +16,7 @@ import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
+import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
@@ -440,6 +441,7 @@ JOIN
       pack.hashValue,
       pack.restricted,
       true,
+      DateTime.now().millisecondsSinceEpoch,
       0,
     );
     await _addStickerPackFromData(stickerPack);
@@ -540,5 +542,73 @@ JOIN
     // Publish but don't block
     unawaited(_publishStickerPack(pack));
     return stickerPackWithStickers;
+  }
+
+  /// Returns a paginated list of sticker packs.
+  Future<List<StickerPack>> getPaginatedStickerPacks(
+    bool olderThan,
+    int? timestamp,
+  ) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final comparator = olderThan ? '<' : '>';
+    final query = timestamp != null ? 'addedTimestamp $comparator ?' : null;
+
+    final stickerPacksRaw = await db.query(
+      stickerPacksTable,
+      where: query,
+      orderBy: 'addedTimestamp DESC',
+      limit: stickerPackPaginationSize,
+    );
+
+    final stickerPacks = List<StickerPack>.empty(growable: true);
+    for (final pack in stickerPacksRaw) {
+      // Query the stickers
+      final stickersRaw = await db.rawQuery(
+        '''
+        SELECT
+          st.*,
+          fm.id AS fm_id,
+          fm.path AS fm_path,
+          fm.sourceUrls AS fm_sourceUrls,
+          fm.mimeType AS fm_mimeType,
+          fm.thumbnailType AS fm_thumbnailType,
+          fm.thumbnailData AS fm_thumbnailData,
+          fm.width AS fm_width,
+          fm.height AS fm_height,
+          fm.plaintextHashes AS fm_plaintextHashes,
+          fm.encryptionKey AS fm_encryptionKey,
+          fm.encryptionIv AS fm_encryptionIv,
+          fm.encryptionScheme AS fm_encryptionScheme,
+          fm.cipherTextHashes AS fm_cipherTextHashes,
+          fm.filename AS fm_filename,
+          fm.size AS fm_size
+        FROM
+          $stickersTable AS st,
+          $fileMetadataTable AS fm
+        WHERE
+          st.stickerPackId = ? AND
+          st.file_metadata_id = fm.id
+        ''',
+        [
+          pack['id']! as String,
+        ],
+      );
+
+      stickerPacks.add(
+        StickerPack.fromDatabaseJson(
+          pack,
+          stickersRaw.map((sticker) {
+            return Sticker.fromDatabaseJson(
+              sticker,
+              FileMetadata.fromDatabaseJson(
+                getPrefixedSubMap(sticker, 'fm_'),
+              ),
+            );
+          }).toList(),
+        ),
+      );
+    }
+
+    return stickerPacks;
   }
 }

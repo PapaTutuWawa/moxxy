@@ -322,6 +322,14 @@ files:
           conversations:
             type: List<Conversation>
             deserialize: true
+      - name: PagedStickerPackResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPacks:
+            type: List<StickerPack>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -643,6 +651,13 @@ files:
           # Milliseconds from now in the past; The maximum age of a file to not
           # get deleted.
           timeOffset: int
+      - name: GetPagedStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          olderThan: bool
+          timestamp: int?
       - name: DebugCommand
         extends: BackgroundCommand
         implements:

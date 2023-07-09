@@ -18,6 +18,9 @@ class StickerPack with _$StickerPack {
     bool restricted,
     bool local,
 
+    /// The timestamp (milliseconds since epoch) when the sticker pack was added
+    int addedTimestamp,
+
     /// The size in bytes
     int size,
   ) = _StickerPack;
@@ -37,6 +40,7 @@ class StickerPack with _$StickerPack {
         pack.hashValue,
         pack.restricted,
         local,
+        0,
         0,
       );
 

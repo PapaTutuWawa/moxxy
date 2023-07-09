@@ -108,6 +108,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
       EventTypeMatcher<GetStorageUsageCommand>(performGetStorageUsage),
       EventTypeMatcher<DeleteOldMediaFilesCommand>(performOldMediaFileDeletion),
+      EventTypeMatcher<GetPagedStickerPackCommand>(performGetPagedStickerPacks),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
@@ -1205,6 +1206,7 @@ Future<void> performFetchStickerPack(
           stickerPack.restricted,
           false,
           0,
+          0,
         ),
       ),
       id: id,
@@ -1370,6 +1372,23 @@ Future<void> performOldMediaFileDeletion(
           (await GetIt.I.get<ConversationService>().loadConversations())
               .where((c) => c.open)
               .toList(),
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performGetPagedStickerPacks(
+  GetPagedStickerPackCommand command, {
+  dynamic extra,
+}) async {
+  final result = await GetIt.I.get<StickersService>().getPaginatedStickerPacks(
+        command.olderThan,
+        command.timestamp,
+      );
+
+  sendEvent(
+    PagedStickerPackResult(
+      stickerPacks: result,
     ),
     id: extra as String,
   );
