@@ -12,7 +12,7 @@ class GroupchatService {
     final conn = GetIt.I.get<XmppConnection>();
     final mm = conn.getManagerById<MUCManager>(mucManager)!;
     final result = await mm.queryRoomInformation(roomJID);
-    if (result is RoomInformation) {
+    if (result.isType<RoomInformation>()) {
       return result.get<RoomInformation>();
     }
     throw Exception(result.get<MUCError>());
@@ -26,7 +26,7 @@ class GroupchatService {
       throw Exception(GroupchatErrorType.roomPasswordProtected);
     }
     final result = await mm.joinRoom(muc, nick);
-    if (result is MUCError) {
+    if (result.isType<MUCError>()) {
       throw Exception(GroupchatErrorType.fromException(result.get<MUCError>()));
     } else {
       return result.get<bool>();

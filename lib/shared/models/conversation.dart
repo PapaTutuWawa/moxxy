@@ -79,6 +79,20 @@ class ConversationTypeConverter
   }
 }
 
+class GroupchatDetailsConverter
+    extends JsonConverter<GroupchatDetails, Map<String, dynamic>> {
+  const GroupchatDetailsConverter();
+
+  @override
+  GroupchatDetails fromJson(Map<String, dynamic> json) =>
+      GroupchatDetails(json['nick'] as String);
+
+  @override
+  Map<String, dynamic> toJson(GroupchatDetails object) => <String, dynamic>{
+        'nick': object.nick,
+      };
+}
+
 @freezed
 class Conversation with _$Conversation {
   factory Conversation(
@@ -98,7 +112,7 @@ class Conversation with _$Conversation {
     String jid,
 
     // The nick with which the MUC is joined...
-    GroupchatDetails? nick,
+    @GroupchatDetailsConverter() GroupchatDetails? nick,
 
     // The number of unread messages.
     int unreadCounter,
@@ -163,7 +177,8 @@ class Conversation with _$Conversation {
       ..remove('id')
       ..remove('chatState')
       ..remove('showAddToRoster')
-      ..remove('lastMessage');
+      ..remove('lastMessage')
+      ..remove('nick');
 
     return {
       ...map,
