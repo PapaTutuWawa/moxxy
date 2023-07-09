@@ -8,6 +8,7 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -227,7 +228,7 @@ class ConversationService {
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
-    String? nick,
+    GroupchatDetails? groupchatDetails,
   ) async {
     final rosterItem =
         await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
@@ -237,7 +238,7 @@ class ConversationService {
       avatarPath,
       null,
       jid,
-      nick,
+      groupchatDetails,
       unreadCounter,
       type,
       lastChangeTimestamp,

@@ -37,6 +37,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
@@ -254,7 +255,7 @@ Future<void> performAddConversation(
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
-        '',
+        GroupchatDetails(''),
       );
 
       sendEvent(
@@ -587,7 +588,7 @@ Future<void> performAddContact(
             contactId,
             await css.getProfilePicturePathForJid(jid),
             await css.getContactDisplayName(contactId),
-            '',
+            GroupchatDetails(''),
           );
 
           sendEvent(
@@ -1448,7 +1449,7 @@ Future<void> performJoinGroupchat(
           contactId,
           await css.getProfilePicturePathForJid(jid),
           await css.getContactDisplayName(contactId),
-          nick,
+          GroupchatDetails(nick),
         );
         sendEvent(
           JoinGroupchatResultEvent(

@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 
@@ -97,7 +98,7 @@ class Conversation with _$Conversation {
     String jid,
 
     // The nick with which the MUC is joined...
-    String? nick,
+    GroupchatDetails? nick,
 
     // The number of unread messages.
     int unreadCounter,

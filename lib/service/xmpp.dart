@@ -37,6 +37,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:omemo_dart/omemo_dart.dart';
@@ -622,7 +623,7 @@ class XmppService {
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
-            '',
+            GroupchatDetails(''),
           );
 
           // Update the cache
@@ -1435,7 +1436,7 @@ class XmppService {
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),
-          '',
+          GroupchatDetails(''),
         );
 
         // Notify the UI
