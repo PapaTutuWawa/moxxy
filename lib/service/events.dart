@@ -190,7 +190,6 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
             .where((c) => c.open)
             .toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
-    stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
 }
 

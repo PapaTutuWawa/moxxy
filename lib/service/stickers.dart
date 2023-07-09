@@ -594,21 +594,28 @@ JOIN
         ],
       );
 
+      final stickerPack = StickerPack.fromDatabaseJson(
+        pack,
+        stickersRaw.map((sticker) {
+          return Sticker.fromDatabaseJson(
+            sticker,
+            FileMetadata.fromDatabaseJson(
+              getPrefixedSubMap(sticker, 'fm_'),
+            ),
+          );
+        }).toList(),
+      );
+
       stickerPacks.add(
-        StickerPack.fromDatabaseJson(
-          pack,
-          stickersRaw.map((sticker) {
-            return Sticker.fromDatabaseJson(
-              sticker,
-              FileMetadata.fromDatabaseJson(
-                getPrefixedSubMap(sticker, 'fm_'),
-              ),
-            );
-          }).toList(),
+        stickerPack.copyWith(
+          size: stickerPack.stickers
+              .map((sticker) => sticker.fileMetadata.size ?? 0)
+              .reduce((value, element) => value + element),
         ),
       );
     }
 
+    // TODO: Cache
     return stickerPacks;
   }
 }

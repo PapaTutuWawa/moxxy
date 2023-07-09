@@ -1,5 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:collection/collection.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
@@ -44,7 +43,8 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         );
 
     // Apply
-    final stickerPack = GetIt.I
+    // TODO
+    /*final stickerPack = GetIt.I
         .get<stickers.StickersBloc>()
         .state
         .stickerPacks
@@ -57,7 +57,7 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         isWorking: false,
         stickerPack: stickerPack,
       ),
-    );
+    );*/
   }
 
   Future<void> _onStickerPackRemoved(
@@ -179,8 +179,9 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     StickerPackRequested event,
     Emitter<StickerPackState> emit,
   ) async {
+    // TODO
     // Find out if the sticker pack is locally available or not
-    final stickerPack = GetIt.I
+    /*final stickerPack = GetIt.I
         .get<stickers.StickersBloc>()
         .state
         .stickerPacks
@@ -202,5 +203,6 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         emit,
       );
     }
+    */
   }
 }

@@ -1,16 +1,12 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:bloc/bloc.dart';
-import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/painting.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
@@ -20,40 +16,17 @@ part 'stickers_state.dart';
 
 class StickersBloc extends Bloc<StickersEvent, StickersState> {
   StickersBloc() : super(StickersState()) {
-    on<StickersSetEvent>(_onStickersSet);
     on<StickerPackRemovedEvent>(_onStickerPackRemoved);
     on<StickerPackImportedEvent>(_onStickerPackImported);
     on<StickerPackAddedEvent>(_onStickerPackAdded);
-  }
-
-  Future<void> _onStickersSet(
-    StickersSetEvent event,
-    Emitter<StickersState> emit,
-  ) async {
-    // Also store a mapping of (pack Id, sticker Id) -> Sticker to allow fast lookup
-    // of the sticker in the UI.
-    final map = <StickerKey, Sticker>{};
-    for (final pack in event.stickerPacks) {
-      for (final sticker in pack.stickers) {
-        if (!sticker.isImage) continue;
-
-        map[StickerKey(pack.id, sticker.id)] = sticker;
-      }
-    }
-
-    emit(
-      state.copyWith(
-        stickerPacks: event.stickerPacks,
-        stickerMap: map,
-      ),
-    );
   }
 
   Future<void> _onStickerPackRemoved(
     StickerPackRemovedEvent event,
     Emitter<StickersState> emit,
   ) async {
-    final stickerPack = state.stickerPacks.firstWhereOrNull(
+    // TODO
+    /*final stickerPack = state.stickerPacks.firstWhereOrNull(
       (StickerPack sp) => sp.id == event.stickerPackId,
     )!;
     final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
@@ -71,7 +44,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         ),
         stickerMap: sm,
       ),
-    );
+    );*/
 
     await MoxplatformPlugin.handler.getDataSender().sendData(
           RemoveStickerPackCommand(
@@ -104,7 +77,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         );
 
     if (result is StickerPackImportSuccessEvent) {
-      final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
+      /*final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
       for (final sticker in result.stickerPack.stickers) {
         if (!sticker.isImage) continue;
 
@@ -119,7 +92,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
           stickerMap: sm,
           isImportRunning: false,
         ),
-      );
+      );*/
 
       await Fluttertoast.showToast(
         msg: t.pages.settings.stickers.importSuccess,
@@ -145,7 +118,7 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
     StickerPackAddedEvent event,
     Emitter<StickersState> emit,
   ) async {
-    final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
+    /*final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
     for (final sticker in event.stickerPack.stickers) {
       if (!sticker.isImage) continue;
 
@@ -161,5 +134,6 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         stickerMap: sm,
       ),
     );
+    */
   }
 }

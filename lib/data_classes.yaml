@@ -36,9 +36,6 @@ files:
           roster:
             type: List<RosterItem>?
             deserialise: true
-          stickers:
-            type: List<StickerPack>?
-            deserialise: true
       # Triggered if a conversation has been added.
       # Also returned by [AddConversationCommand]
       - name: ConversationAddedEvent
