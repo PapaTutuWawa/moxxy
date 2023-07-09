@@ -1,2 +1,5 @@
 -(Hopelijk) Oplossing voor OMEMO tussen twee Moxxy-clients;
--Bewerken van berichten ouder dan het recentste bericht. Onduidelijk of alle clients dit op de juiste manier tonen.
+-Oplossing voor het lang ingedrukt houden van een bericht om het keuzemenu te openen;
+-Leesmarkeringen worden voortaan automatisch verzonden (indien ingeschakeld);
+-Nieuw: (onvolledige) Nederlandse, Japanse en Russische vertalingen;
+-Nieuw: bewerken van berichten ouder dan het recentste bericht. Onduidelijk of alle clients dit op de juiste manier tonen.
