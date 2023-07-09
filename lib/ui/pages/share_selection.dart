@@ -79,7 +79,7 @@ class ShareSelectionPage extends StatelessWidget {
                   item.avatarHash,
                   item.jid,
                   0,
-                  ConversationType.chat,
+                  item.conversationType ?? ConversationType.chat,
                   0,
                   true,
                   true,

@@ -32,6 +32,7 @@ class ShareListItem {
     this.jid,
     this.title,
     this.isConversation,
+    this.conversationType,
     this.isEncrypted,
     this.pseudoRosterItem,
     this.contactId,
@@ -43,6 +44,7 @@ class ShareListItem {
   final String jid;
   final String title;
   final bool isConversation;
+  final ConversationType? conversationType;
   final bool isEncrypted;
   final bool pseudoRosterItem;
   final String? contactId;
@@ -86,6 +88,7 @@ class ShareSelectionBloc
           c.jid,
           c.title,
           true,
+          c.type,
           c.encrypted,
           false,
           c.contactId,
@@ -108,6 +111,7 @@ class ShareSelectionBloc
             rosterItem.jid,
             rosterItem.title,
             false,
+            null,
             GetIt.I.get<PreferencesBloc>().state.enableOmemoByDefault,
             rosterItem.pseudoRosterItem,
             rosterItem.contactId,
@@ -122,6 +126,7 @@ class ShareSelectionBloc
           rosterItem.jid,
           rosterItem.title,
           false,
+          null,
           items[index].isEncrypted,
           items[index].pseudoRosterItem,
           items[index].contactId,
