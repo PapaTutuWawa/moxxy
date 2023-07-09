@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 /// dynamically built list.
 class SettingsRow extends StatelessWidget {
   const SettingsRow({
-    required this.title,
+    this.title,
+    this.titleWidget,
     this.description,
     this.maxLines = 3,
     this.suffix,
@@ -17,8 +18,12 @@ class SettingsRow extends StatelessWidget {
       horizontal: 16,
     ),
     super.key,
-  });
-  final String title;
+  }) : assert(
+          title != null || titleWidget != null,
+          'Either a title or a title widget must be provided',
+        );
+  final String? title;
+  final Widget? titleWidget;
   final String? description;
   final int maxLines;
   final Widget? suffix;
@@ -42,13 +47,14 @@ class SettingsRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
+                  titleWidget ??
+                      Text(
+                        title!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
                   if (description != null)
                     Padding(
                       padding: const EdgeInsets.only(

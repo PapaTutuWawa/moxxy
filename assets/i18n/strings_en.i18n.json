@@ -266,6 +266,12 @@
 			"restricted": "This sticker pack is restricted. That means that the stickers will be displayed but cannot be sent.",
 			"fetchingFailure": "Could not find the sticker pack"
 		},
+		"sharedMedia": {
+			"empty": {
+				"chat": "No shared media for this chat",
+				"general": "No media files available"
+			}
+		},
 		"settings": {
 			"settings": {
 				"title": "Settings",
@@ -367,7 +373,37 @@
 				"stickerPacksSection": "Sticker packs",
 				"importStickerPack": "Import sticker pack",
 				"importSuccess": "Sticker pack successfully imported",
-				"importFailure": "Failed to import sticker pack"
+				"importFailure": "Failed to import sticker pack",
+				"stickerPackSize": "(${size})"
+			},
+			"storage": {
+				"title": "Storage",
+				"storageUsed": "Storage used: ${size}",
+				"sizePlaceholder": "Computing...",
+				"storageManagement": "Storage Management",
+				"removeOldMedia" : {
+					"title": "Remove old media",
+					"description": "Removes old media files from the device"
+				},
+				"removeOldMediaDialog": {
+					"title": "Delete media files",
+					"options": {
+						"all": "All media files",
+						"oneWeek": "Older than 1 week",
+						"oneMonth": "Older than 1 month"
+					},
+					"delete": "Delete",
+					"confirmation": {
+						"body": "Are you sure you want to delete old media files?"
+					}
+				},
+				"viewMediaFiles": "View media files",
+				"mediaFiles": "Media Files",
+				"types": {
+					"media": "Media",
+					"stickers": "Stickers"
+				},
+				"manageStickers": "Manage sticker packs"
 			}
 		}
 	}

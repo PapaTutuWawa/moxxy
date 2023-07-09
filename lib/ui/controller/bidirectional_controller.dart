@@ -98,11 +98,7 @@ class BidirectionalController<T> {
     hasOlderData = data.length >= pageSize;
 
     // Don't trigger an update if we fetched nothing
-    if (data.isEmpty) {
-      _setIsFetching(false);
-      return;
-    }
-
+    _setIsFetching(false);
     _cache.insertAll(0, data);
 
     // Evict items from the cache if we overstep the maximum

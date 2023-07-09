@@ -12,6 +12,7 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite_common/sql.dart';
 
 /// A class for returning whether a file metadata element was just created or retrieved.
 class FileMetadataWrapper {
@@ -89,6 +90,7 @@ class FilesService {
           'value': hash.value,
           'id': metadataId,
         },
+        conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }
   }

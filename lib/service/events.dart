@@ -11,6 +11,8 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -26,6 +28,7 @@ import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
+import 'package:moxxyv2/service/storage.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -103,6 +106,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
+      EventTypeMatcher<GetStorageUsageCommand>(performGetStorageUsage),
+      EventTypeMatcher<DeleteOldMediaFilesCommand>(performOldMediaFileDeletion),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
@@ -1198,6 +1203,7 @@ Future<void> performFetchStickerPack(
           stickerPack.hashValue,
           stickerPack.restricted,
           false,
+          0,
         ),
       ),
       id: id,
@@ -1336,6 +1342,38 @@ Future<void> performRequestAvatarForJid(
   unawaited(future);
 }
 
+Future<void> performGetStorageUsage(
+  GetStorageUsageCommand command, {
+  dynamic extra,
+}) async {
+  sendEvent(
+    GetStorageUsageEvent(
+      mediaUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
+      stickerUsage:
+          await GetIt.I.get<StorageService>().computeUsedStickerStorage(),
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performOldMediaFileDeletion(
+  DeleteOldMediaFilesCommand command, {
+  dynamic extra,
+}) async {
+  await GetIt.I.get<StorageService>().deleteOldMediaFiles(command.timeOffset);
+
+  sendEvent(
+    DeleteOldMediaFilesDoneEvent(
+      newUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
+      conversations:
+          (await GetIt.I.get<ConversationService>().loadConversations())
+              .where((c) => c.open)
+              .toList(),
+    ),
+    id: extra as String,
+  );
+}
+
 Future<void> performDebugCommand(
   DebugCommand command, {
   dynamic extra,
@@ -1358,5 +1396,20 @@ Future<void> performDebugCommand(
     await conn
         .getManagerById<RosterManager>(rosterManager)!
         .requestRoster(useRosterVersion: false);
+  } else if (command.id == debug.DebugCommand.logAvailableMediaFiles.id) {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final results = await db.rawQuery(
+      '''
+      SELECT
+        path,
+        id
+      FROM
+        $fileMetadataTable AS fmt
+      WHERE
+        AND NOT EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
+        AND path IS NOT NULL
+      ''',
+    );
+    Logger.root.finest(results);
   }
 }

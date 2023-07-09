@@ -6,15 +6,17 @@ class SharedImageWidget extends StatelessWidget {
   const SharedImageWidget(
     this.path, {
     this.onTap,
+    this.onLongPress,
     this.borderColor,
     this.child,
-    this.borderRadius = 10,
+    this.borderRadius = 3,
     this.size = sharedMediaContainerDimension,
     super.key,
   });
   final String path;
   final Color? borderColor;
   final void Function()? onTap;
+  final void Function()? onLongPress;
   final Widget? child;
   final double borderRadius;
   final double size;
@@ -50,6 +52,7 @@ class SharedImageWidget extends StatelessWidget {
       color: Colors.transparent,
       size: size,
       onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }

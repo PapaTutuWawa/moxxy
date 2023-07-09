@@ -25,11 +25,19 @@ import 'package:url_launcher/url_launcher.dart';
 /// Shows a dialog asking the user if they are sure that they want to proceed with an
 /// action. Resolves to true if the user pressed the confirm button. Returns false if
 /// the cancel button was pressed.
+///
+/// If [affirmativeText] is given, then its value is used for the "OK" button. If not,
+/// the i18n-defined "yes" value will be used.
+///
+/// If [destructive] is set to true, then the affirmative button's text color will be
+/// set to red. If set to false, the default text color is used.
 Future<bool> showConfirmationDialog(
   String title,
   String body,
-  BuildContext context,
-) async {
+  BuildContext context, {
+  String? affirmativeText,
+  bool destructive = false,
+}) async {
   final result = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
@@ -42,7 +50,10 @@ Future<bool> showConfirmationDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(t.global.yes),
+          child: Text(
+            affirmativeText ?? t.global.yes,
+            style: destructive ? const TextStyle(color: Colors.red) : null,
+          ),
         ),
         TextButton(
           onPressed: Navigator.of(context).pop,

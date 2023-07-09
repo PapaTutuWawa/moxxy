@@ -8,10 +8,11 @@ class SharedVideoWidget extends StatelessWidget {
     this.conversationJid,
     this.mime, {
     this.onTap,
+    this.onLongPress,
     this.borderColor,
     this.child,
     this.size = sharedMediaContainerDimension,
-    this.borderRadius = 10,
+    this.borderRadius = 3,
     super.key,
   });
   final String path;
@@ -19,6 +20,7 @@ class SharedVideoWidget extends StatelessWidget {
   final String mime;
   final Color? borderColor;
   final void Function()? onTap;
+  final void Function()? onLongPress;
   final Widget? child;
   final double size;
   final double borderRadius;
@@ -40,6 +42,7 @@ class SharedVideoWidget extends StatelessWidget {
       color: Colors.transparent,
       size: size,
       onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }
