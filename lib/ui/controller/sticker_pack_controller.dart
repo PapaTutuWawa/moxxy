@@ -23,6 +23,13 @@ class BidirectionalStickerPackController
   static BidirectionalStickerPackController? instance;
 
   @override
+  void dispose() {
+    super.dispose();
+
+    instance = null;
+  }
+
+  @override
   Future<List<StickerPack>> fetchOlderDataImpl(
     StickerPack? oldestElement,
   ) async {

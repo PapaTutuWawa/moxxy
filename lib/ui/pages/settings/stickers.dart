@@ -41,6 +41,13 @@ class StickersSettingsPageState extends State<StickersSettingsPage> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
       builder: (_, stickersState) => WillPopScope(

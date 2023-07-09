@@ -69,6 +69,13 @@ class StickerPickerState extends State<StickerPicker> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocBuilder<StickersBloc, StickersState>(
       builder: (context, state) {

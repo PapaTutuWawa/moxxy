@@ -50,8 +50,10 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
                 id: event.stickerPackId,
               ),
             ) as GetStickerPackByIdResult;
-    assert(stickerPackResult.stickerPack != null,
-        'The sticker pack must be found',);
+    assert(
+      stickerPackResult.stickerPack != null,
+      'The sticker pack must be found',
+    );
 
     emit(
       state.copyWith(
