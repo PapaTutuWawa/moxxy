@@ -83,7 +83,13 @@ class CachingXMPPAvatarState extends State<CachingXMPPAvatar> {
 
   Widget _buildChild() {
     if (widget.altIcon != null) {
-      return Icon(widget.altIcon);
+      return Icon(
+        widget.altIcon,
+        // NOTE: 62/87 is 2*31/87, of which 31/87 has been pixel measured from how it was
+        // before this size attribute has been set. The multiplication with 2 just makes
+        // it look better.
+        size: widget.radius * (62 / 87),
+      );
     }
 
     assert(
