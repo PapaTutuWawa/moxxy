@@ -109,6 +109,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetStorageUsageCommand>(performGetStorageUsage),
       EventTypeMatcher<DeleteOldMediaFilesCommand>(performOldMediaFileDeletion),
       EventTypeMatcher<GetPagedStickerPackCommand>(performGetPagedStickerPacks),
+      EventTypeMatcher<GetStickerPackByIdCommand>(performGetStickerPackById),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
@@ -1388,6 +1389,20 @@ Future<void> performGetPagedStickerPacks(
   sendEvent(
     PagedStickerPackResult(
       stickerPacks: result,
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performGetStickerPackById(
+  GetStickerPackByIdCommand command, {
+  dynamic extra,
+}) async {
+  sendEvent(
+    GetStickerPackByIdResult(
+      stickerPack: await GetIt.I.get<StickersService>().getStickerPackById(
+            command.id,
+          ),
     ),
     id: extra as String,
   );

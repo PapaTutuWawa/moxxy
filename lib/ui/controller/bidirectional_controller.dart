@@ -213,6 +213,22 @@ class BidirectionalController<T> {
     return found;
   }
 
+  /// Removes the first item for which [test] returns true.
+  void removeItem(bool Function(T) test) {
+    var found = false;
+    for (var i = 0; i < _cache.length; i++) {
+      if (test(_cache[i])) {
+        _cache.removeAt(i);
+        found = true;
+        break;
+      }
+    }
+
+    if (found) {
+      _dataStreamController.add(_cache);
+    }
+  }
+
   /// Animate to the bottom of the view.
   void animateToBottom() {
     _controller.animateTo(

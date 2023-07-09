@@ -8,10 +8,19 @@ import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 class BidirectionalStickerPackController
     extends BidirectionalController<StickerPack> {
   BidirectionalStickerPackController()
-      : super(
+      : assert(
+          instance == null,
+          'There can only be one BidirectionalStickerPackController',
+        ),
+        super(
           pageSize: stickerPackPaginationSize,
           maxPageAmount: maxStickerPackPages,
-        );
+        ) {
+    instance = this;
+  }
+
+  /// Singleton instance access.
+  static BidirectionalStickerPackController? instance;
 
   @override
   Future<List<StickerPack>> fetchOlderDataImpl(

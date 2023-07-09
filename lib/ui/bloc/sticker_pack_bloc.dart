@@ -43,21 +43,22 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         );
 
     // Apply
-    // TODO
-    /*final stickerPack = GetIt.I
-        .get<stickers.StickersBloc>()
-        .state
-        .stickerPacks
-        .firstWhereOrNull(
-          (StickerPack pack) => pack.id == event.stickerPackId,
-        );
-    assert(stickerPack != null, 'The sticker pack must be found');
+    final stickerPackResult =
+        // ignore: cast_nullable_to_non_nullable
+        await MoxplatformPlugin.handler.getDataSender().sendData(
+              GetStickerPackByIdCommand(
+                id: event.stickerPackId,
+              ),
+            ) as GetStickerPackByIdResult;
+    assert(stickerPackResult.stickerPack != null,
+        'The sticker pack must be found',);
+
     emit(
       state.copyWith(
         isWorking: false,
-        stickerPack: stickerPack,
+        stickerPack: stickerPackResult.stickerPack,
       ),
-    );*/
+    );
   }
 
   Future<void> _onStickerPackRemoved(
@@ -152,21 +153,13 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
       ),
     );
 
-    if (result is StickerPackInstallSuccessEvent) {
-      GetIt.I.get<stickers.StickersBloc>().add(
-            stickers.StickerPackAddedEvent(result.stickerPack),
-          );
+    // Leave the page
+    GetIt.I.get<NavigationBloc>().add(
+          PoppedRouteEvent(),
+        );
 
-      // Leave the page
-      GetIt.I.get<NavigationBloc>().add(
-            PoppedRouteEvent(),
-          );
-    } else {
-      // Leave the page
-      GetIt.I.get<NavigationBloc>().add(
-            PoppedRouteEvent(),
-          );
-
+    // Notify on failure
+    if (result is! StickerPackInstallSuccessEvent) {
       await Fluttertoast.showToast(
         msg: t.pages.stickerPack.fetchingFailure,
         gravity: ToastGravity.SNACKBAR,
@@ -179,17 +172,22 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
     StickerPackRequested event,
     Emitter<StickerPackState> emit,
   ) async {
-    // TODO
-    // Find out if the sticker pack is locally available or not
-    /*final stickerPack = GetIt.I
-        .get<stickers.StickersBloc>()
-        .state
-        .stickerPacks
-        .firstWhereOrNull(
-          (StickerPack pack) => pack.id == event.stickerPackId,
-        );
+    emit(
+      state.copyWith(
+        isWorking: true,
+      ),
+    );
 
-    if (stickerPack == null) {
+    final stickerPackResult =
+        // ignore: cast_nullable_to_non_nullable
+        await MoxplatformPlugin.handler.getDataSender().sendData(
+              GetStickerPackByIdCommand(
+                id: event.stickerPackId,
+              ),
+            ) as GetStickerPackByIdResult;
+
+    // Find out if the sticker pack is locally available or not
+    if (stickerPackResult.stickerPack == null) {
       await _onRemoteStickerPackRequested(
         RemoteStickerPackRequested(
           event.stickerPackId,
@@ -198,11 +196,12 @@ class StickerPackBloc extends Bloc<StickerPackEvent, StickerPackState> {
         emit,
       );
     } else {
-      await _onLocalStickerPackRequested(
-        LocallyAvailableStickerPackRequested(event.stickerPackId),
-        emit,
+      emit(
+        state.copyWith(
+          isWorking: false,
+          stickerPack: stickerPackResult.stickerPack,
+        ),
       );
     }
-    */
   }
 }

@@ -7,7 +7,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/sticker_pack.dart';
+import 'package:moxxyv2/ui/controller/sticker_pack_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
 part 'stickers_bloc.freezed.dart';
@@ -18,34 +18,18 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
   StickersBloc() : super(StickersState()) {
     on<StickerPackRemovedEvent>(_onStickerPackRemoved);
     on<StickerPackImportedEvent>(_onStickerPackImported);
-    on<StickerPackAddedEvent>(_onStickerPackAdded);
   }
 
   Future<void> _onStickerPackRemoved(
     StickerPackRemovedEvent event,
     Emitter<StickersState> emit,
   ) async {
-    // TODO
-    /*final stickerPack = state.stickerPacks.firstWhereOrNull(
-      (StickerPack sp) => sp.id == event.stickerPackId,
-    )!;
-    final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
-    for (final sticker in stickerPack.stickers) {
-      sm.remove(StickerKey(stickerPack.id, sticker.id));
+    // Remove from the UI
+    BidirectionalStickerPackController.instance?.removeItem(
+      (stickerPack) => stickerPack.id == event.stickerPackId,
+    );
 
-      // Evict stickers from the cache
-      unawaited(FileImage(File(sticker.fileMetadata.path!)).evict());
-    }
-
-    emit(
-      state.copyWith(
-        stickerPacks: List.from(
-          state.stickerPacks.where((sp) => sp.id != event.stickerPackId),
-        ),
-        stickerMap: sm,
-      ),
-    );*/
-
+    // Notify the backend
     await MoxplatformPlugin.handler.getDataSender().sendData(
           RemoveStickerPackCommand(
             stickerPackId: event.stickerPackId,
@@ -77,23 +61,6 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         );
 
     if (result is StickerPackImportSuccessEvent) {
-      /*final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
-      for (final sticker in result.stickerPack.stickers) {
-        if (!sticker.isImage) continue;
-
-        sm[StickerKey(result.stickerPack.id, sticker.id)] = sticker;
-      }
-      emit(
-        state.copyWith(
-          stickerPacks: List<StickerPack>.from([
-            ...state.stickerPacks,
-            result.stickerPack,
-          ]),
-          stickerMap: sm,
-          isImportRunning: false,
-        ),
-      );*/
-
       await Fluttertoast.showToast(
         msg: t.pages.settings.stickers.importSuccess,
         gravity: ToastGravity.SNACKBAR,
@@ -112,28 +79,5 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         toastLength: Toast.LENGTH_SHORT,
       );
     }
-  }
-
-  Future<void> _onStickerPackAdded(
-    StickerPackAddedEvent event,
-    Emitter<StickersState> emit,
-  ) async {
-    /*final sm = Map<StickerKey, Sticker>.from(state.stickerMap);
-    for (final sticker in event.stickerPack.stickers) {
-      if (!sticker.isImage) continue;
-
-      sm[StickerKey(event.stickerPack.id, sticker.id)] = sticker;
-    }
-
-    emit(
-      state.copyWith(
-        stickerPacks: List<StickerPack>.from([
-          ...state.stickerPacks,
-          event.stickerPack,
-        ]),
-        stickerMap: sm,
-      ),
-    );
-    */
   }
 }

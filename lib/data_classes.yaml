@@ -327,6 +327,14 @@ files:
           stickerPacks:
             type: List<StickerPack>
             deserialise: true
+      - name: GetStickerPackByIdResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack?
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -655,6 +663,12 @@ files:
         attributes:
           olderThan: bool
           timestamp: int?
+      - name: GetStickerPackByIdCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          id: String
       - name: DebugCommand
         extends: BackgroundCommand
         implements:
