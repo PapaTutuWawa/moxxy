@@ -2,7 +2,7 @@
 
 An experimental XMPP client that tries to be as easy, modern and beautiful as possible.
 
-The code is also available on [codeberg](https://codeberg.org/moxxy/moxxy).
+The code is also available on [Codeberg](https://codeberg.org/moxxy/moxxy).
 
 [<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height="80">](https://apt.izzysoft.de/fdroid/index/apk/org.moxxy.moxxyv2)
 
