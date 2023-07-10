@@ -169,6 +169,7 @@ class Conversation with _$Conversation {
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState':
           const ConversationChatStateConverter().toJson(ChatState.gone),
+      'groupchatDetails': GroupchatDetails(json['nick'] as String),
     }).copyWith(
       lastMessage: lastMessage,
     );
