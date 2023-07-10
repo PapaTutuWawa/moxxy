@@ -24,9 +24,23 @@ class StickerWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (sticker.fileMetadata.path != null) {
-      return Image.file(
-        File(sticker.fileMetadata.path!),
+      return Image(
+        image: ResizeImage.resizeIfNeeded(
+          null,
+          null,
+          FileImage(
+            File(sticker.fileMetadata.path!),
+          ),
+        ),
         fit: cover ? BoxFit.contain : null,
+        loadingBuilder: (_, child, event) {
+          if (event == null) return child;
+
+          return const ClipRRect(
+            borderRadius: BorderRadius.all(radiusLarge),
+            child: ShimmerWidget(),
+          );
+        },
       );
     } else {
       return Image.network(

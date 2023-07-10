@@ -141,6 +141,7 @@ JOIN
   }
 
   Future<void> removeStickerPack(String id) async {
+    final db = GetIt.I.get<DatabaseService>().database;
     final pack = await getStickerPackById(id);
     assert(pack != null, 'The sticker pack must exist');
 
@@ -161,7 +162,12 @@ JOIN
     }
 
     // Remove from the database
-    await GetIt.I.get<DatabaseService>().database.delete(
+    await db.delete(
+      stickersTable,
+      where: 'stickerPackId = ?',
+      whereArgs: [id],
+    );
+    await db.delete(
       stickerPacksTable,
       where: 'id = ?',
       whereArgs: [id],
@@ -489,8 +495,11 @@ JOIN
 
       // Only copy the sticker to storage if we don't already have it
       var fm = fileMetadataRaw.fileMetadata;
-      if (!fileMetadataRaw.retrieved &&
+      if (!fileMetadataRaw.retrieved ||
           fileMetadataRaw.fileMetadata.path == null) {
+        _log.finest(
+          'Copying sticker ${sticker.metadata.name!} to media storage',
+        );
         final stickerFile = archive.findFile(sticker.metadata.name!)!;
         final file = File(stickerPath);
         await file.writeAsBytes(
@@ -501,12 +510,21 @@ JOIN
         fm = await fs.updateFileMetadata(
           fm.id,
           size: file.lengthSync(),
+          path: stickerPath,
         );
         size += file.lengthSync();
+      } else {
+        _log.finest(
+          'Not copying sticker ${sticker.metadata.name!} as we already have it',
+        );
       }
 
       // Check if the sticker has size
       if (fm.size == null) {
+        _log.finest(
+          'Sticker ${sticker.metadata.name!} has no size. Calculating it',
+        );
+
         // Update the File Metadata entry
         fm = await fs.updateFileMetadata(
           fm.id,
@@ -522,7 +540,7 @@ JOIN
           pack.hashValue,
           sticker.metadata.desc!,
           sticker.suggests,
-          fileMetadataRaw.fileMetadata,
+          fm,
         ),
       );
     }

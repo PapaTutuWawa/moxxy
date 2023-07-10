@@ -60,6 +60,12 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
           ),
         );
 
+    emit(
+      state.copyWith(
+        isImportRunning: false,
+      ),
+    );
+
     if (result is StickerPackImportSuccessEvent) {
       await Fluttertoast.showToast(
         msg: t.pages.settings.stickers.importSuccess,
@@ -67,12 +73,6 @@ class StickersBloc extends Bloc<StickersEvent, StickersState> {
         toastLength: Toast.LENGTH_SHORT,
       );
     } else {
-      emit(
-        state.copyWith(
-          isImportRunning: false,
-        ),
-      );
-
       await Fluttertoast.showToast(
         msg: t.pages.settings.stickers.importFailure,
         gravity: ToastGravity.SNACKBAR,

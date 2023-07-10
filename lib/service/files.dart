@@ -68,7 +68,8 @@ Future<String> computeCachedPathForFile(
   return path.join(
     basePath,
     hash != null
-        ? '$hash.$ext'
+        // NOTE: [ext] already includes a leading "."
+        ? '$hash$ext'
         : '$filename.${DateTime.now().millisecondsSinceEpoch}.$ext',
   );
 }
