@@ -1386,6 +1386,7 @@ Future<void> performJoinGroupchat(
   JoinGroupchatCommand command, {
   dynamic extra,
 }) async {
+  final id = extra as String;
   final jid = command.jid;
   final nick = command.nick;
   final cs = GetIt.I.get<ConversationService>();
@@ -1404,6 +1405,7 @@ Future<void> performJoinGroupchat(
           JoinGroupchatResultEvent(
             conversation: newConversation,
           ),
+          id: id,
         );
 
         return newConversation;
@@ -1420,10 +1422,12 @@ Future<void> performJoinGroupchat(
       if (e == GroupchatErrorType.roomNotJoinedError) {
         sendEvent(
           ErrorEvent(errorId: GroupchatErrorType.roomNotJoinedError.value),
+          id: id,
         );
       } else {
         sendEvent(
           ErrorEvent(errorId: (e as GroupchatErrorType).value),
+          id: id,
         );
       }
     }
@@ -1455,6 +1459,7 @@ Future<void> performJoinGroupchat(
           JoinGroupchatResultEvent(
             conversation: newConversation,
           ),
+          id: id,
         );
 
         return newConversation;
