@@ -45,8 +45,7 @@ class StickerPacksSettingsState extends State<StickerPacksSettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // TODO: i18n
-      appBar: BorderlessTopbar.title('Sticker packs'),
+      appBar: BorderlessTopbar.title(t.pages.settings.stickerPacks.title),
       body: StreamBuilder<List<StickerPack>>(
         stream: _controller.dataStream,
         initialData: const [],

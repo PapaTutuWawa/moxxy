@@ -85,7 +85,6 @@ class StickersSettingsPage extends StatelessWidget {
                           title: t.pages.settings.stickers.importStickerPack,
                         ),
                         SettingsRow(
-                          // TODO: Rename the key
                           title: t.pages.settings.storage.manageStickers,
                           onTap: () {
                             Navigator.of(context).pushNamed(
