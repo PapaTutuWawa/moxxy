@@ -123,6 +123,7 @@ Future<void> createDatabase(Database db, int version) async {
       contactId           TEXT,
       contactAvatarPath   TEXT,
       contactDisplayName  TEXT,
+      nick                TEXT,
       CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id),
       CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
         ON DELETE SET NULL
