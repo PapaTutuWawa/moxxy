@@ -25,7 +25,6 @@ import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:path/path.dart' as p;
 
 class StickersService {
-  final Map<String, StickerPack> _stickerPacks = {};
   final Logger _log = Logger('StickersService');
 
   /// Computes the total amount of storage occupied by the stickers in the sticker
@@ -60,8 +59,6 @@ class StickersService {
   }
 
   Future<StickerPack?> getStickerPackById(String id) async {
-    if (_stickerPacks.containsKey(id)) return _stickerPacks[id];
-
     final db = GetIt.I.get<DatabaseService>().database;
     final rawPack = await db.query(
       stickerPacksTable,
@@ -107,7 +104,7 @@ JOIN
       [id],
     );
 
-    _stickerPacks[id] = StickerPack.fromDatabaseJson(
+    final stickerPack = StickerPack.fromDatabaseJson(
       rawPack.first,
       rawStickers.map((sticker) {
         return Sticker.fromDatabaseJson(
@@ -121,23 +118,7 @@ JOIN
       size: await getStickerPackSizeById(id),
     );
 
-    return _stickerPacks[id]!;
-  }
-
-  Future<List<StickerPack>> getStickerPacks() async {
-    if (_stickerPacks.isEmpty) {
-      final rawPackIds = await GetIt.I.get<DatabaseService>().database.query(
-        stickerPacksTable,
-        columns: ['id'],
-      );
-      for (final rawPack in rawPackIds) {
-        final id = rawPack['id']! as String;
-        await getStickerPackById(id);
-      }
-    }
-
-    _log.finest('Got ${_stickerPacks.length} sticker packs');
-    return _stickerPacks.values.toList();
+    return stickerPack;
   }
 
   Future<void> removeStickerPack(String id) async {
@@ -172,9 +153,6 @@ JOIN
       where: 'id = ?',
       whereArgs: [id],
     );
-
-    // Remove from the cache
-    _stickerPacks.remove(id);
 
     // Retract from PubSub
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
@@ -550,9 +528,6 @@ JOIN
       size: size,
     );
 
-    // Add it to the cache
-    _stickerPacks[pack.hashValue] = stickerPackWithStickers;
-
     _log.info(
       'Sticker pack ${stickerPack.id} successfully added to the database',
     );
@@ -665,7 +640,6 @@ JOIN
       );
     }
 
-    // TODO: Cache (if includeStickers == true)
     return stickerPacks;
   }
 }
