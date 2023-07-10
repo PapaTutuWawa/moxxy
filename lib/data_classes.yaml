@@ -663,6 +663,7 @@ files:
         attributes:
           olderThan: bool
           timestamp: int?
+          includeStickers: bool
       - name: GetStickerPackByIdCommand
         extends: BackgroundCommand
         implements:

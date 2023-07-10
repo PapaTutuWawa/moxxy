@@ -58,7 +58,7 @@ class StickerPicker extends StatefulWidget {
 
 class StickerPickerState extends State<StickerPicker> {
   final BidirectionalStickerPackController _controller =
-      BidirectionalStickerPackController();
+      BidirectionalStickerPackController(true);
 
   @override
   void initState() {

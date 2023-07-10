@@ -563,9 +563,14 @@ JOIN
   }
 
   /// Returns a paginated list of sticker packs.
+  /// [includeStickers] controls whether the stickers for a given sticker pack are
+  /// fetched from the database. Setting this to false, i.e. not loading the stickers,
+  /// can be useful, for example, when we're only interested in listing the sticker
+  /// packs without the stickers being visible.
   Future<List<StickerPack>> getPaginatedStickerPacks(
     bool olderThan,
     int? timestamp,
+    bool includeStickers,
   ) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final comparator = olderThan ? '<' : '>';
@@ -581,8 +586,10 @@ JOIN
     final stickerPacks = List<StickerPack>.empty(growable: true);
     for (final pack in stickerPacksRaw) {
       // Query the stickers
-      final stickersRaw = await db.rawQuery(
-        '''
+      List<Map<String, Object?>> stickersRaw;
+      if (includeStickers) {
+        stickersRaw = await db.rawQuery(
+          '''
         SELECT
           st.*,
           fm.id AS fm_id,
@@ -607,10 +614,13 @@ JOIN
           st.stickerPackId = ? AND
           st.file_metadata_id = fm.id
         ''',
-        [
-          pack['id']! as String,
-        ],
-      );
+          [
+            pack['id']! as String,
+          ],
+        );
+      } else {
+        stickersRaw = List<Map<String, Object?>>.empty();
+      }
 
       final stickerPack = StickerPack.fromDatabaseJson(
         pack,
@@ -624,16 +634,38 @@ JOIN
         }).toList(),
       );
 
+      /// If stickers were not requested, we still have to get the size of the
+      /// sticker pack anyway.
+      int size;
+      if (includeStickers && stickerPack.stickers.isNotEmpty) {
+        size = stickerPack.stickers
+            .map((sticker) => sticker.fileMetadata.size ?? 0)
+            .reduce((value, element) => value + element);
+      } else {
+        final sizeResult = await db.rawQuery(
+          '''
+          SELECT
+            SUM(fm.size) as size
+          FROM
+            $fileMetadataTable as fm,
+            $stickersTable as st
+          WHERE
+            st.stickerPackId = ? AND
+            st.file_metadata_id = fm.id
+          ''',
+          [pack['id']! as String],
+        );
+        size = sizeResult.first['size'] as int? ?? 0;
+      }
+
       stickerPacks.add(
         stickerPack.copyWith(
-          size: stickerPack.stickers
-              .map((sticker) => sticker.fileMetadata.size ?? 0)
-              .reduce((value, element) => value + element),
+          size: size,
         ),
       );
     }
 
-    // TODO: Cache
+    // TODO: Cache (if includeStickers == true)
     return stickerPacks;
   }
 }

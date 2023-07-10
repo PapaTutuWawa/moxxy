@@ -1384,6 +1384,7 @@ Future<void> performGetPagedStickerPacks(
   final result = await GetIt.I.get<StickersService>().getPaginatedStickerPacks(
         command.olderThan,
         command.timestamp,
+        command.includeStickers,
       );
 
   sendEvent(

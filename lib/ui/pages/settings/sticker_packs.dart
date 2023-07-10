@@ -26,7 +26,7 @@ class StickerPacksSettingsPage extends StatefulWidget {
 
 class StickerPacksSettingsState extends State<StickerPacksSettingsPage> {
   final BidirectionalStickerPackController _controller =
-      BidirectionalStickerPackController();
+      BidirectionalStickerPackController(false);
 
   @override
   void initState() {

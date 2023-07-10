@@ -7,7 +7,7 @@ import 'package:moxxyv2/ui/controller/bidirectional_controller.dart';
 
 class BidirectionalStickerPackController
     extends BidirectionalController<StickerPack> {
-  BidirectionalStickerPackController()
+  BidirectionalStickerPackController(this.includeStickers)
       : assert(
           instance == null,
           'There can only be one BidirectionalStickerPackController',
@@ -18,6 +18,9 @@ class BidirectionalStickerPackController
         ) {
     instance = this;
   }
+
+  /// A flag telling the UI to also include stickers in the sticker pack requests.
+  final bool includeStickers;
 
   /// Singleton instance access.
   static BidirectionalStickerPackController? instance;
@@ -38,6 +41,7 @@ class BidirectionalStickerPackController
           GetPagedStickerPackCommand(
             olderThan: true,
             timestamp: oldestElement?.addedTimestamp,
+            includeStickers: includeStickers,
           ),
         ) as PagedStickerPackResult;
 
@@ -53,6 +57,7 @@ class BidirectionalStickerPackController
           GetPagedStickerPackCommand(
             olderThan: false,
             timestamp: newestElement?.addedTimestamp,
+            includeStickers: includeStickers,
           ),
         ) as PagedStickerPackResult;
 
