@@ -36,9 +36,6 @@ files:
           roster:
             type: List<RosterItem>?
             deserialise: true
-          stickers:
-            type: List<StickerPack>?
-            deserialise: true
       # Triggered if a conversation has been added.
       # Also returned by [AddConversationCommand]
       - name: ConversationAddedEvent
@@ -322,6 +319,22 @@ files:
           conversations:
             type: List<Conversation>
             deserialize: true
+      - name: PagedStickerPackResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPacks:
+            type: List<StickerPack>
+            deserialise: true
+      - name: GetStickerPackByIdResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack?
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -643,6 +656,20 @@ files:
           # Milliseconds from now in the past; The maximum age of a file to not
           # get deleted.
           timeOffset: int
+      - name: GetPagedStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          olderThan: bool
+          timestamp: int?
+          includeStickers: bool
+      - name: GetStickerPackByIdCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          id: String
       - name: DebugCommand
         extends: BackgroundCommand
         implements:

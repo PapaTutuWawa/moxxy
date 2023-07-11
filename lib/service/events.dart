@@ -108,6 +108,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
       EventTypeMatcher<GetStorageUsageCommand>(performGetStorageUsage),
       EventTypeMatcher<DeleteOldMediaFilesCommand>(performOldMediaFileDeletion),
+      EventTypeMatcher<GetPagedStickerPackCommand>(performGetPagedStickerPacks),
+      EventTypeMatcher<GetStickerPackByIdCommand>(performGetStickerPackById),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
@@ -189,7 +191,6 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
             .where((c) => c.open)
             .toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
-    stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
 }
 
@@ -1205,6 +1206,7 @@ Future<void> performFetchStickerPack(
           stickerPack.restricted,
           false,
           0,
+          0,
         ),
       ),
       id: id,
@@ -1370,6 +1372,38 @@ Future<void> performOldMediaFileDeletion(
           (await GetIt.I.get<ConversationService>().loadConversations())
               .where((c) => c.open)
               .toList(),
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performGetPagedStickerPacks(
+  GetPagedStickerPackCommand command, {
+  dynamic extra,
+}) async {
+  final result = await GetIt.I.get<StickersService>().getPaginatedStickerPacks(
+        command.olderThan,
+        command.timestamp,
+        command.includeStickers,
+      );
+
+  sendEvent(
+    PagedStickerPackResult(
+      stickerPacks: result,
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performGetStickerPackById(
+  GetStickerPackByIdCommand command, {
+  dynamic extra,
+}) async {
+  sendEvent(
+    GetStickerPackByIdResult(
+      stickerPack: await GetIt.I.get<StickersService>().getStickerPackById(
+            command.id,
+          ),
     ),
     id: extra as String,
   );

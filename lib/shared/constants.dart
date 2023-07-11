@@ -14,3 +14,9 @@ const int maxSharedMediaPages = 3;
 
 /// The amount of conversations for which we cache the first page.
 const int conversationMessagePageCacheSize = 4;
+
+/// The amount of sticker packs we fetch per paginated request
+const stickerPackPaginationSize = 10;
+
+/// The amount of sticker packs we can cache in memory.
+const maxStickerPackPages = 2;

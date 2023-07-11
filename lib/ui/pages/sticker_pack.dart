@@ -24,9 +24,23 @@ class StickerWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (sticker.fileMetadata.path != null) {
-      return Image.file(
-        File(sticker.fileMetadata.path!),
+      return Image(
+        image: ResizeImage.resizeIfNeeded(
+          null,
+          null,
+          FileImage(
+            File(sticker.fileMetadata.path!),
+          ),
+        ),
         fit: cover ? BoxFit.contain : null,
+        loadingBuilder: (_, child, event) {
+          if (event == null) return child;
+
+          return const ClipRRect(
+            borderRadius: BorderRadius.all(radiusLarge),
+            child: ShimmerWidget(),
+          );
+        },
       );
     } else {
       return Image.network(
@@ -132,85 +146,87 @@ class StickerPackPage extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, StickerPackState state) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.7,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      state.stickerPack?.description ?? '',
-                    ),
-                    if (state.stickerPack?.restricted ?? false)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: Text(
-                          t.pages.stickerPack.restricted,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        state.stickerPack?.description ?? '',
+                      ),
+                      if (state.stickerPack?.restricted ?? false)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Text(
+                            t.pages.stickerPack.restricted,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildButton(context, state),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(
-            top: 16,
-            left: 8,
-            right: 8,
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildButton(context, state),
+              ),
+            ],
           ),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 16,
+              left: 8,
+              right: 8,
             ),
-            itemCount: state.stickerPack!.stickers.length,
-            itemBuilder: (_, index) {
-              final sticker = state.stickerPack!.stickers[index];
-              return InkWell(
-                child: StickerWrapper(
-                  sticker,
-                  cover: false,
-                ),
-                onTap: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (context) {
-                      return IgnorePointer(
-                        child: StickerWrapper(
-                          sticker,
-                          cover: false,
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
-            },
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemCount: state.stickerPack!.stickers.length,
+              itemBuilder: (_, index) {
+                final sticker = state.stickerPack!.stickers[index];
+                return InkWell(
+                  child: StickerWrapper(
+                    sticker,
+                    cover: false,
+                  ),
+                  onTap: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) {
+                        return IgnorePointer(
+                          child: StickerWrapper(
+                            sticker,
+                            cover: false,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

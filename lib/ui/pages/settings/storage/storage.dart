@@ -254,7 +254,7 @@ class StorageSettingsPageState extends State<StorageSettingsPage> {
             SettingsRow(
               title: t.pages.settings.storage.manageStickers,
               onTap: () {
-                Navigator.of(context).pushNamed(stickersRoute);
+                Navigator.of(context).pushNamed(stickerPacksRoute);
               },
             ),
           ],

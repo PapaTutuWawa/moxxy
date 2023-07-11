@@ -183,7 +183,8 @@ Future<void> createDatabase(Database db, int version) async {
       description    TEXT NOT NULL,
       hashAlgorithm  TEXT NOT NULL,
       hashValue      TEXT NOT NULL,
-      restricted     INTEGER NOT NULL
+      restricted     INTEGER NOT NULL,
+      addedTimestamp INTEGER NOT NULL
     )''',
   );
 

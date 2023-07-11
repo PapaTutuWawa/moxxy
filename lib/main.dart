@@ -56,6 +56,7 @@ import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/privacy.dart';
 import 'package:moxxyv2/ui/pages/settings/settings.dart';
+import 'package:moxxyv2/ui/pages/settings/sticker_packs.dart';
 import 'package:moxxyv2/ui/pages/settings/stickers.dart';
 import 'package:moxxyv2/ui/pages/settings/storage/shared_media.dart';
 import 'package:moxxyv2/ui/pages/settings/storage/storage.dart';
@@ -334,6 +335,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             );
           case stickersRoute:
             return StickersSettingsPage.route;
+          case stickerPacksRoute:
+            return StickerPacksSettingsPage.route;
           case stickerPackRoute:
             return StickerPackPage.route;
           case storageSettingsRoute:

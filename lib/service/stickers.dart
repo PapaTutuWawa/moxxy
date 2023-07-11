@@ -16,6 +16,7 @@ import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
+import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
@@ -24,7 +25,6 @@ import 'package:moxxyv2/shared/models/sticker_pack.dart';
 import 'package:path/path.dart' as p;
 
 class StickersService {
-  final Map<String, StickerPack> _stickerPacks = {};
   final Logger _log = Logger('StickersService');
 
   /// Computes the total amount of storage occupied by the stickers in the sticker
@@ -59,8 +59,6 @@ class StickersService {
   }
 
   Future<StickerPack?> getStickerPackById(String id) async {
-    if (_stickerPacks.containsKey(id)) return _stickerPacks[id];
-
     final db = GetIt.I.get<DatabaseService>().database;
     final rawPack = await db.query(
       stickerPacksTable,
@@ -106,7 +104,7 @@ JOIN
       [id],
     );
 
-    _stickerPacks[id] = StickerPack.fromDatabaseJson(
+    final stickerPack = StickerPack.fromDatabaseJson(
       rawPack.first,
       rawStickers.map((sticker) {
         return Sticker.fromDatabaseJson(
@@ -120,26 +118,11 @@ JOIN
       size: await getStickerPackSizeById(id),
     );
 
-    return _stickerPacks[id]!;
-  }
-
-  Future<List<StickerPack>> getStickerPacks() async {
-    if (_stickerPacks.isEmpty) {
-      final rawPackIds = await GetIt.I.get<DatabaseService>().database.query(
-        stickerPacksTable,
-        columns: ['id'],
-      );
-      for (final rawPack in rawPackIds) {
-        final id = rawPack['id']! as String;
-        await getStickerPackById(id);
-      }
-    }
-
-    _log.finest('Got ${_stickerPacks.length} sticker packs');
-    return _stickerPacks.values.toList();
+    return stickerPack;
   }
 
   Future<void> removeStickerPack(String id) async {
+    final db = GetIt.I.get<DatabaseService>().database;
     final pack = await getStickerPackById(id);
     assert(pack != null, 'The sticker pack must exist');
 
@@ -160,14 +143,16 @@ JOIN
     }
 
     // Remove from the database
-    await GetIt.I.get<DatabaseService>().database.delete(
+    await db.delete(
+      stickersTable,
+      where: 'stickerPackId = ?',
+      whereArgs: [id],
+    );
+    await db.delete(
       stickerPacksTable,
       where: 'id = ?',
       whereArgs: [id],
     );
-
-    // Remove from the cache
-    _stickerPacks.remove(id);
 
     // Retract from PubSub
     final state = await GetIt.I.get<XmppStateService>().getXmppState();
@@ -440,6 +425,7 @@ JOIN
       pack.hashValue,
       pack.restricted,
       true,
+      DateTime.now().millisecondsSinceEpoch,
       0,
     );
     await _addStickerPackFromData(stickerPack);
@@ -487,8 +473,11 @@ JOIN
 
       // Only copy the sticker to storage if we don't already have it
       var fm = fileMetadataRaw.fileMetadata;
-      if (!fileMetadataRaw.retrieved &&
+      if (!fileMetadataRaw.retrieved ||
           fileMetadataRaw.fileMetadata.path == null) {
+        _log.finest(
+          'Copying sticker ${sticker.metadata.name!} to media storage',
+        );
         final stickerFile = archive.findFile(sticker.metadata.name!)!;
         final file = File(stickerPath);
         await file.writeAsBytes(
@@ -499,12 +488,21 @@ JOIN
         fm = await fs.updateFileMetadata(
           fm.id,
           size: file.lengthSync(),
+          path: stickerPath,
         );
         size += file.lengthSync();
+      } else {
+        _log.finest(
+          'Not copying sticker ${sticker.metadata.name!} as we already have it',
+        );
       }
 
       // Check if the sticker has size
       if (fm.size == null) {
+        _log.finest(
+          'Sticker ${sticker.metadata.name!} has no size. Calculating it',
+        );
+
         // Update the File Metadata entry
         fm = await fs.updateFileMetadata(
           fm.id,
@@ -520,7 +518,7 @@ JOIN
           pack.hashValue,
           sticker.metadata.desc!,
           sticker.suggests,
-          fileMetadataRaw.fileMetadata,
+          fm,
         ),
       );
     }
@@ -530,9 +528,6 @@ JOIN
       size: size,
     );
 
-    // Add it to the cache
-    _stickerPacks[pack.hashValue] = stickerPackWithStickers;
-
     _log.info(
       'Sticker pack ${stickerPack.id} successfully added to the database',
     );
@@ -540,5 +535,111 @@ JOIN
     // Publish but don't block
     unawaited(_publishStickerPack(pack));
     return stickerPackWithStickers;
+  }
+
+  /// Returns a paginated list of sticker packs.
+  /// [includeStickers] controls whether the stickers for a given sticker pack are
+  /// fetched from the database. Setting this to false, i.e. not loading the stickers,
+  /// can be useful, for example, when we're only interested in listing the sticker
+  /// packs without the stickers being visible.
+  Future<List<StickerPack>> getPaginatedStickerPacks(
+    bool olderThan,
+    int? timestamp,
+    bool includeStickers,
+  ) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final comparator = olderThan ? '<' : '>';
+    final query = timestamp != null ? 'addedTimestamp $comparator ?' : null;
+
+    final stickerPacksRaw = await db.query(
+      stickerPacksTable,
+      where: query,
+      orderBy: 'addedTimestamp DESC',
+      limit: stickerPackPaginationSize,
+    );
+
+    final stickerPacks = List<StickerPack>.empty(growable: true);
+    for (final pack in stickerPacksRaw) {
+      // Query the stickers
+      List<Map<String, Object?>> stickersRaw;
+      if (includeStickers) {
+        stickersRaw = await db.rawQuery(
+          '''
+        SELECT
+          st.*,
+          fm.id AS fm_id,
+          fm.path AS fm_path,
+          fm.sourceUrls AS fm_sourceUrls,
+          fm.mimeType AS fm_mimeType,
+          fm.thumbnailType AS fm_thumbnailType,
+          fm.thumbnailData AS fm_thumbnailData,
+          fm.width AS fm_width,
+          fm.height AS fm_height,
+          fm.plaintextHashes AS fm_plaintextHashes,
+          fm.encryptionKey AS fm_encryptionKey,
+          fm.encryptionIv AS fm_encryptionIv,
+          fm.encryptionScheme AS fm_encryptionScheme,
+          fm.cipherTextHashes AS fm_cipherTextHashes,
+          fm.filename AS fm_filename,
+          fm.size AS fm_size
+        FROM
+          $stickersTable AS st,
+          $fileMetadataTable AS fm
+        WHERE
+          st.stickerPackId = ? AND
+          st.file_metadata_id = fm.id
+        ''',
+          [
+            pack['id']! as String,
+          ],
+        );
+      } else {
+        stickersRaw = List<Map<String, Object?>>.empty();
+      }
+
+      final stickerPack = StickerPack.fromDatabaseJson(
+        pack,
+        stickersRaw.map((sticker) {
+          return Sticker.fromDatabaseJson(
+            sticker,
+            FileMetadata.fromDatabaseJson(
+              getPrefixedSubMap(sticker, 'fm_'),
+            ),
+          );
+        }).toList(),
+      );
+
+      /// If stickers were not requested, we still have to get the size of the
+      /// sticker pack anyway.
+      int size;
+      if (includeStickers && stickerPack.stickers.isNotEmpty) {
+        size = stickerPack.stickers
+            .map((sticker) => sticker.fileMetadata.size ?? 0)
+            .reduce((value, element) => value + element);
+      } else {
+        final sizeResult = await db.rawQuery(
+          '''
+          SELECT
+            SUM(fm.size) as size
+          FROM
+            $fileMetadataTable as fm,
+            $stickersTable as st
+          WHERE
+            st.stickerPackId = ? AND
+            st.file_metadata_id = fm.id
+          ''',
+          [pack['id']! as String],
+        );
+        size = sizeResult.first['size'] as int? ?? 0;
+      }
+
+      stickerPacks.add(
+        stickerPack.copyWith(
+          size: size,
+        ),
+      );
+    }
+
+    return stickerPacks;
   }
 }
