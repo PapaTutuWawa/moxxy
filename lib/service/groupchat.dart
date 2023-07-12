@@ -6,11 +6,6 @@ import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
 
 class GroupchatService {
-  Future<bool> isRoomPasswordProtected(JID roomJID) async {
-    final roomInformation = await getRoomInformation(roomJID);
-    return roomInformation.features.contains('muc_passwordprotected');
-  }
-
   Future<RoomInformation> getRoomInformation(JID roomJID) async {
     final conn = GetIt.I.get<XmppConnection>();
     final mm = conn.getManagerById<MUCManager>(mucManager)!;
@@ -21,10 +16,12 @@ class GroupchatService {
     throw Exception(result.get<MUCError>());
   }
 
-  Future<bool> joinRoom(JID muc, String nick) async {
+  Future<GroupchatDetails> joinRoom(JID muc, String nick) async {
     final conn = GetIt.I.get<XmppConnection>();
     final mm = conn.getManagerById<MUCManager>(mucManager)!;
-    final roomPasswordProtected = await isRoomPasswordProtected(muc);
+    final roomInformation = await getRoomInformation(muc);
+    final roomPasswordProtected =
+        roomInformation.features.contains('muc_passwordprotected');
     if (roomPasswordProtected) {
       throw Exception(GroupchatErrorType.roomPasswordProtected);
     }
@@ -32,18 +29,20 @@ class GroupchatService {
     if (result.isType<MUCError>()) {
       throw Exception(GroupchatErrorType.fromException(result.get<MUCError>()));
     } else {
-      return result.get<bool>();
+      return GroupchatDetails(
+        muc.toBare().toString(),
+        nick,
+        roomInformation.name,
+      );
     }
   }
 
   Future<GroupchatDetails> addGroupchatDetailsFromData(
     String jid,
     String nick,
+    String title,
   ) async {
-    final groupchatDetails = GroupchatDetails(
-      jid,
-      nick,
-    );
+    final groupchatDetails = GroupchatDetails(jid, nick, title);
     await GetIt.I.get<DatabaseService>().database.insert(
           groupchatTable,
           groupchatDetails.toJson(),

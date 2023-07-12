@@ -255,7 +255,11 @@ Future<void> performAddConversation(
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
-        GroupchatDetails(command.jid, ''),
+        GroupchatDetails(
+          command.jid,
+          '',
+          '',
+        ),
       );
 
       sendEvent(
@@ -588,7 +592,11 @@ Future<void> performAddContact(
             contactId,
             await css.getProfilePicturePathForJid(jid),
             await css.getContactDisplayName(contactId),
-            GroupchatDetails(jid, ''),
+            GroupchatDetails(
+              jid,
+              '',
+              '',
+            ),
           );
 
           sendEvent(
@@ -1413,7 +1421,7 @@ Future<void> performJoinGroupchat(
     );
   } else {
     // We did not have a conversation with that JID.
-    late bool joinRoomResult;
+    late GroupchatDetails joinRoomResult;
     try {
       joinRoomResult = await GetIt.I
           .get<GroupchatService>()
@@ -1431,7 +1439,7 @@ Future<void> performJoinGroupchat(
         );
       }
     }
-    if (!joinRoomResult) return;
+
     await cs.createOrUpdateConversation(
       jid,
       create: () async {
@@ -1456,6 +1464,7 @@ Future<void> performJoinGroupchat(
           GroupchatDetails(
             jid,
             nick,
+            joinRoomResult.title,
           ),
         );
         sendEvent(

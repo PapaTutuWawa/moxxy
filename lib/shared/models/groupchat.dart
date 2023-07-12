@@ -8,6 +8,7 @@ class GroupchatDetails with _$GroupchatDetails {
   factory GroupchatDetails(
     String jid,
     String nick,
+    String title,
   ) = _GroupchatDetails;
 
   const GroupchatDetails._();

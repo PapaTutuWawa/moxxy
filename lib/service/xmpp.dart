@@ -626,6 +626,7 @@ class XmppService {
             GroupchatDetails(
               recipient,
               '',
+              '',
             ),
           );
 
@@ -1441,6 +1442,7 @@ class XmppService {
           await css.getContactDisplayName(contactId),
           GroupchatDetails(
             conversationJid,
+            '',
             '',
           ),
         );

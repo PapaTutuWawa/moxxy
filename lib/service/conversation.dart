@@ -273,7 +273,11 @@ class ConversationService {
     }
 
     if (type == ConversationType.groupchat) {
-      await gs.addGroupchatDetailsFromData(jid, groupchatDetails!.nick);
+      await gs.addGroupchatDetailsFromData(
+        jid,
+        groupchatDetails!.nick,
+        groupchatDetails.title,
+      );
     }
 
     return newConversation;

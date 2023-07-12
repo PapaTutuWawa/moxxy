@@ -6,7 +6,8 @@ Future<void> upgradeFromV41ToV42(Database db) async {
     '''
     CREATE TABLE $groupchatTable (
       jid TEXT PRIMARY KEY,
-      nick TEXT NOT NULL
+      nick TEXT NOT NULL,
+      title TEXT NOT NULL
     )''',
   );
 }
