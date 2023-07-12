@@ -123,7 +123,6 @@ Future<void> createDatabase(Database db, int version) async {
       contactId           TEXT,
       contactAvatarPath   TEXT,
       contactDisplayName  TEXT,
-      nick                TEXT,
       CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id),
       CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
         ON DELETE SET NULL
@@ -264,6 +263,16 @@ Future<void> createDatabase(Database db, int version) async {
       value TEXT NOT NULL
     )''',
   );
+
+  // Groupchat
+  await db.execute(
+    '''
+    CREATE TABLE $groupchatTable (
+      jid TEXT PRIMARY KEY,
+      nick TEXT NOT NULL
+    )''',
+  );
+
   await db.insert(
     preferenceTable,
     Preference(

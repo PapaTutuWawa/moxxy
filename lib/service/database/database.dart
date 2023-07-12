@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
@@ -42,7 +43,7 @@ import 'package:moxxyv2/service/database/migrations/0002_reactions_2.dart';
 import 'package:moxxyv2/service/database/migrations/0002_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0002_sticker_metadata.dart';
 import 'package:moxxyv2/service/database/migrations/0003_avatar_hashes.dart';
-import 'package:moxxyv2/service/database/migrations/0003_groupchat_details_nick.dart';
+import 'package:moxxyv2/service/database/migrations/0003_groupchat_table.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo_pseudo_messages.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';

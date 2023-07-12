@@ -255,7 +255,7 @@ Future<void> performAddConversation(
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
-        GroupchatDetails(''),
+        GroupchatDetails(command.jid, ''),
       );
 
       sendEvent(
@@ -588,7 +588,7 @@ Future<void> performAddContact(
             contactId,
             await css.getProfilePicturePathForJid(jid),
             await css.getContactDisplayName(contactId),
-            GroupchatDetails(''),
+            GroupchatDetails(jid, ''),
           );
 
           sendEvent(
@@ -1453,7 +1453,10 @@ Future<void> performJoinGroupchat(
           contactId,
           await css.getProfilePicturePathForJid(jid),
           await css.getContactDisplayName(contactId),
-          GroupchatDetails(nick),
+          GroupchatDetails(
+            jid,
+            nick,
+          ),
         );
         sendEvent(
           JoinGroupchatResultEvent(

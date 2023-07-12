@@ -3,6 +3,10 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 
 Future<void> upgradeFromV41ToV42(Database db) async {
   await db.execute(
-    'ALTER TABLE $conversationsTable ADD COLUMN nick TEXT DEFAULT NULL;',
+    '''
+    CREATE TABLE $groupchatTable (
+      jid TEXT PRIMARY KEY,
+      nick TEXT NOT NULL
+    )''',
   );
 }

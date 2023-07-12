@@ -84,12 +84,17 @@ class GroupchatDetailsConverter
   const GroupchatDetailsConverter();
 
   @override
-  GroupchatDetails fromJson(Map<String, dynamic> json) =>
-      GroupchatDetails(json['nick'] as String);
+  GroupchatDetails fromJson(Map<String, dynamic> json) {
+    return GroupchatDetails(
+      json['jid'] as String,
+      json['nick'] as String,
+    );
+  }
 
   @override
   Map<String, dynamic> toJson(GroupchatDetails object) {
     return {
+      'jid': object.jid,
       'nick': object.nick,
     };
   }
@@ -160,6 +165,7 @@ class Conversation with _$Conversation {
     Map<String, dynamic> json,
     bool showAddToRoster,
     Message? lastMessage,
+    GroupchatDetails? groupchatDetails,
   ) {
     return Conversation.fromJson({
       ...json,
@@ -169,10 +175,9 @@ class Conversation with _$Conversation {
       'encrypted': intToBool(json['encrypted']! as int),
       'chatState':
           const ConversationChatStateConverter().toJson(ChatState.gone),
-      'groupchatDetails': const GroupchatDetailsConverter()
-          .toJson(GroupchatDetails(json['nick'] as String)),
     }).copyWith(
       lastMessage: lastMessage,
+      groupchatDetails: groupchatDetails,
     );
   }
 
@@ -190,7 +195,6 @@ class Conversation with _$Conversation {
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
       'lastMessageId': lastMessage?.id,
-      'nick': groupchatDetails?.nick,
     };
   }
 

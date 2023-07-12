@@ -1,6 +1,9 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
+import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/shared/error_types.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 
 class GroupchatService {
   Future<bool> isRoomPasswordProtected(JID roomJID) async {
@@ -31,5 +34,32 @@ class GroupchatService {
     } else {
       return result.get<bool>();
     }
+  }
+
+  Future<GroupchatDetails> addGroupchatDetailsFromData(
+    String jid,
+    String nick,
+  ) async {
+    final groupchatDetails = GroupchatDetails(
+      jid,
+      nick,
+    );
+    await GetIt.I.get<DatabaseService>().database.insert(
+          groupchatTable,
+          groupchatDetails.toJson(),
+        );
+
+    return groupchatDetails;
+  }
+
+  Future<GroupchatDetails?> getGroupchatDetailsByJid(String jid) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final groupchatDetailsRaw = await db.query(
+      groupchatTable,
+      where: 'jid = ?',
+      whereArgs: [jid],
+    );
+    if (groupchatDetailsRaw.isEmpty) return null;
+    return GroupchatDetails.fromDatabaseJson(groupchatDetailsRaw[0]);
   }
 }
