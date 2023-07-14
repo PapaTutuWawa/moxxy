@@ -182,8 +182,7 @@
         "newconversation": {
             "title": "Начать новый чат",
             "startChat": "Добавить контакт",
-            "createGroupchat": "Создать групповой чат",
-            "joinGroupChat":  "Join groupchat"
+            "createGroupchat": "Создать групповой чат"
         },
         "shareselection": {
             "shareWith": "Поделиться с...",
