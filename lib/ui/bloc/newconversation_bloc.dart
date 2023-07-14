@@ -65,7 +65,7 @@ class NewConversationBloc
             jid: event.jid,
             avatarUrl: event.avatarUrl,
             lastMessageBody: '',
-            conversationType: conversationTypeToString(event.type),
+            conversationType: event.type.value,
           ),
         );
 

@@ -88,7 +88,7 @@ class ConversationService {
       }
 
       GroupchatDetails? groupchatDetails;
-      if (c['type'] == 'groupchat') {
+      if (c['type'] == ConversationType.groupchat.value) {
         groupchatDetails =
             await gs.getGroupchatDetailsByJid(c['jid']! as String);
       }
@@ -272,7 +272,7 @@ class ConversationService {
       _conversationCache![newConversation.jid] = newConversation;
     }
 
-    if (type == ConversationType.groupchat) {
+    if (type == ConversationType.groupchat && groupchatDetails != null) {
       await gs.addGroupchatDetailsFromData(
         jid,
         groupchatDetails!.nick,

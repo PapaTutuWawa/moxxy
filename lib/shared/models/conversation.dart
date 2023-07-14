@@ -40,28 +40,52 @@ class ConversationMessageConverter
       };
 }
 
-enum ConversationType {
+// enum ConversationType {
+//   chat('chat'),
+//   note('note'),
+//   groupchat('groupchat');
+
+//   const ConversationType(this.value);
+
+//   /// The identifier of the enum value.
+//   final String value;
+
+//   static ConversationType? fromInt(String value) {
+//     switch (value) {
+//       case 'chat':
+//         return ConversationType.chat;
+//       case 'note':
+//         return ConversationType.note;
+//       case 'groupchat':
+//         return ConversationType.groupchat;
+//     }
+
+//     return null;
+//   }
+// }
+
+enum ConversationType implements Comparable<ConversationType> {
   chat('chat'),
   note('note'),
   groupchat('groupchat');
 
   const ConversationType(this.value);
-
-  /// The identifier of the enum value.
   final String value;
 
-  static ConversationType? fromInt(String value) {
+  static ConversationType fromString(String value) {
     switch (value) {
-      case 'chat':
-        return ConversationType.chat;
-      case 'note':
-        return ConversationType.note;
       case 'groupchat':
         return ConversationType.groupchat;
+      case 'note':
+        return ConversationType.note;
+      default:
+        return ConversationType.chat;
     }
-
-    return null;
   }
+
+  // TODO: What to do here?
+  @override
+  int compareTo(ConversationType other) => 0;
 }
 
 class ConversationTypeConverter
@@ -70,7 +94,7 @@ class ConversationTypeConverter
 
   @override
   ConversationType fromJson(String json) {
-    return ConversationType.fromInt(json)!;
+    return ConversationType.fromString(json)!;
   }
 
   @override

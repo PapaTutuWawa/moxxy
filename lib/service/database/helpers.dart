@@ -10,40 +10,6 @@ bool stringToBool(String s) => s == 'true' ? true : false;
 String intToString(int i) => '$i';
 int stringToInt(String s) => int.parse(s);
 
-String conversationTypeToString(ConversationType type) {
-  switch (type) {
-    case ConversationType.chat:
-      {
-        return 'chat';
-      }
-    case ConversationType.note:
-      {
-        return 'note';
-      }
-    case ConversationType.groupchat:
-      {
-        return 'groupchat';
-      }
-  }
-}
-
-ConversationType stringToConversationType(String type) {
-  switch (type) {
-    case 'chat':
-      {
-        return ConversationType.chat;
-      }
-    case 'note':
-      {
-        return ConversationType.note;
-      }
-    default:
-      {
-        return ConversationType.groupchat;
-      }
-  }
-}
-
 /// Given a map [map], extract all key-value pairs from [map] where the key starts with
 /// [prefix]. Combine those key-value pairs into a new map, where the leading [prefix]
 /// is removed from all key names.

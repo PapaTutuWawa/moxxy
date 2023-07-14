@@ -105,8 +105,8 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
-      EventTypeMatcher<DebugCommand>(performDebugCommand),
       EventTypeMatcher<JoinGroupchatCommand>(performJoinGroupchat),
+      EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -244,7 +244,7 @@ Future<void> performAddConversation(
       final newConversation = await cs.addConversationFromData(
         command.title,
         null,
-        stringToConversationType(command.conversationType),
+        ConversationType.fromString(command.conversationType),
         command.avatarUrl,
         command.jid,
         0,
@@ -255,11 +255,7 @@ Future<void> performAddConversation(
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
-        GroupchatDetails(
-          command.jid,
-          '',
-          '',
-        ),
+        null,
       );
 
       sendEvent(
@@ -592,11 +588,7 @@ Future<void> performAddContact(
             contactId,
             await css.getProfilePicturePathForJid(jid),
             await css.getContactDisplayName(contactId),
-            GroupchatDetails(
-              jid,
-              '',
-              '',
-            ),
+            null,
           );
 
           sendEvent(
