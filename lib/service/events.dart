@@ -1410,7 +1410,7 @@ Future<void> performJoinGroupchat(
         );
 
         sendEvent(
-          JoinGroupchatResultEvent(
+          JoinGroupchatResult(
             conversation: newConversation,
           ),
           id: id,
@@ -1468,7 +1468,7 @@ Future<void> performJoinGroupchat(
           ),
         );
         sendEvent(
-          JoinGroupchatResultEvent(
+          JoinGroupchatResult(
             conversation: newConversation,
           ),
           id: id,

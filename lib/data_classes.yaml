@@ -301,7 +301,7 @@ files:
         attributes:
           errorId: int
       # Triggered by the service in response to an [JoinGroupchatCommand].
-      - name: JoinGroupchatResultEvent
+      - name: JoinGroupchatResult
         extends: BackgroundEvent
         implements:
           - JsonImplementation
