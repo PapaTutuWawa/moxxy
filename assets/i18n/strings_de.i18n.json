@@ -86,7 +86,7 @@
         },
         "connection": {
             "connectionTimeout": "Verbindung zum Server nicht möglich",
-            "saslAccountDisabled": "Dein Account ist deaktiviert",
+            "saslAccountDisabled": "Dein Konto ist deaktiviert",
             "saslInvalidCredentials": "Deine Anmeldedaten sind ungültig",
             "unrecoverable": "Verbindung zum Server durch nicht behebbaren Fehler verloren"
         },
@@ -131,7 +131,7 @@
     },
     "pages": {
         "intro": {
-            "noAccount": "Kein XMPP-Account vorhanden? Einen zu erstellen ist sehr einfach.",
+            "noAccount": "Kein XMPP-Konto vorhanden? Keine Sorge, es ist ganz einfach, eines zu erstellen.",
             "loginButton": "Einloggen",
             "registerButton": "Registrieren"
         },
@@ -140,7 +140,7 @@
             "xmppAddress": "XMPP-Adresse",
             "password": "Passwort",
             "advancedOptions": "Fortgeschrittene Optionen",
-            "createAccount": "Account auf dem Server erstellen"
+            "createAccount": "Konto auf dem Server erstellen"
         },
         "conversations": {
             "speeddialNewChat": "Neuer chat",
@@ -269,7 +269,7 @@
             "settings": {
                 "title": "Einstellungen",
                 "conversationsSection": "Unterhaltungen",
-                "accountSection": "Account",
+                "accountSection": "Konto",
                 "signOut": "Abmelden",
                 "signOutConfirmTitle": "Abmelden",
                 "signOutConfirmBody": "Du bist dabei dich abzumelden. Fortfahren?",
@@ -330,7 +330,7 @@
                 "automaticDownloadsMaximumSize": "Maximale Downloadgröße",
                 "automaticDownloadsMaximumSizeSubtext": "Die maximale Dateigröße, die automatisch heruntergeladen werden soll",
                 "automaticDownloadAlways": "Immer",
-                "wifi": "Wifi",
+                "wifi": "WLAN",
                 "mobileData": "Mobile Daten"
             },
             "privacy": {
