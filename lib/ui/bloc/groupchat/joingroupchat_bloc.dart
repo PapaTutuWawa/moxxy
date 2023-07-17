@@ -68,7 +68,7 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
       emit(state.copyWith(jidError: validation));
       return;
     } else if (state.nick.isEmpty) {
-      emit(state.copyWith(nickError: 'Nickname cannot be null!'));
+      emit(state.copyWith(nickError: t.pages.newconversation.nullNickname));
       return;
     }
 

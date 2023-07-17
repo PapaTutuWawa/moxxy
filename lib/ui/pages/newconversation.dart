@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,7 +9,6 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
@@ -95,7 +95,9 @@ class NewConversationPage extends StatelessWidget {
                       return;
                     }
 
-                    Navigator.pushNamed(context, joinGroupchatRoute);
+                    if (kDebugMode) {
+                      Navigator.pushNamed(context, joinGroupchatRoute);
+                    }
                   },
                 );
               default:

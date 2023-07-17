@@ -203,7 +203,8 @@
 			"title": "New chat",
 			"startChat": "Start new chat",
 			"createGroupchat": "New groupchat",
-			"joinGroupChat":  "Join groupchat"
+			"joinGroupChat":  "Join groupchat",
+			"nullNickname":"Nickname cannot be null!"
 		},
 		"crop": {
 			"setProfilePicture": "Set as profile picture"
