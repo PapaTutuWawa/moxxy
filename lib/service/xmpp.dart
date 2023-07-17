@@ -17,6 +17,7 @@ import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/files.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -601,6 +602,7 @@ class XmppService {
     }
 
     final rs = GetIt.I.get<RosterService>();
+    final gs = GetIt.I.get<GroupchatService>();
     for (final recipient in recipients) {
       await cs.createOrUpdateConversation(
         recipient,
@@ -608,6 +610,9 @@ class XmppService {
           // Create
           final rosterItem = await rs.getRosterItemByJid(recipient);
           final contactId = await css.getContactIdForJid(recipient);
+          final groupchatDetails = await gs.getGroupchatDetailsByJid(
+            recipient,
+          );
           final newConversation = await cs.addConversationFromData(
             // TODO(Unknown): Should we use the JID parser?
             rosterItem?.title ?? recipient.split('@').first,
@@ -623,11 +628,11 @@ class XmppService {
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
-            GroupchatDetails(
-              recipient,
-              '',
-              '',
-            ),
+            groupchatDetails ??
+                GroupchatDetails(
+                  recipient,
+                  '',
+                ),
           );
 
           // Update the cache
@@ -1421,11 +1426,16 @@ class XmppService {
     // Whether to send the notification
     var sendNotification = true;
 
+    final gs = GetIt.I.get<GroupchatService>();
+
     final conversation = await cs.createOrUpdateConversation(
       conversationJid,
       create: () async {
         // Create
         final contactId = await css.getContactIdForJid(conversationJid);
+        final groupchatDetails = await gs.getGroupchatDetailsByJid(
+          JID.fromString(conversationJid).toBare().toString(),
+        );
         final newConversation = await cs.addConversationFromData(
           rosterItem?.title ?? conversationJid.split('@')[0],
           message,
@@ -1440,11 +1450,11 @@ class XmppService {
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),
-          GroupchatDetails(
-            conversationJid,
-            '',
-            '',
-          ),
+          groupchatDetails ??
+              GroupchatDetails(
+                conversationJid,
+                '',
+              ),
         );
 
         // Notify the UI
