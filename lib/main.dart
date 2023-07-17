@@ -73,7 +73,7 @@ import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
 
-import 'ui/bloc/groupchat/startgroupchat_bloc.dart';
+import 'ui/bloc/groupchat/joingroupchat_bloc.dart';
 
 void setupLogging() {
   Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
@@ -116,7 +116,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
   GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
   GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
-  GetIt.I.registerSingleton<StartGroupchatBloc>(StartGroupchatBloc());
+  GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
 }
 
 void main() async {
@@ -189,8 +189,8 @@ void main() async {
         BlocProvider<StickerPackBloc>(
           create: (_) => GetIt.I.get<StickerPackBloc>(),
         ),
-        BlocProvider<StartGroupchatBloc>(
-          create: (_) => GetIt.I.get<StartGroupchatBloc>(),
+        BlocProvider<JoinGroupchatBloc>(
+          create: (_) => GetIt.I.get<JoinGroupchatBloc>(),
         ),
       ],
       child: TranslationProvider(
@@ -314,8 +314,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             return DebuggingPage.route;
           case addContactRoute:
             return StartChatPage.route;
-          case newGroupchatRoute:
-            return StartGroupChatPage.route;
+          case joinGroupchatRoute:
+            return JoinGroupchatPage.route;
           case cropRoute:
             return CropPage.route;
           case sendFilesRoute:

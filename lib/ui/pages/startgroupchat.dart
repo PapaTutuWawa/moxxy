@@ -1,41 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/ui/bloc/groupchat/startgroupchat_bloc.dart';
+import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-class StartGroupChatPage extends StatefulWidget {
-  const StartGroupChatPage({super.key});
+class JoinGroupchatPage extends StatefulWidget {
+  const JoinGroupchatPage({super.key});
 
   static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-        builder: (_) => const StartGroupChatPage(),
+        builder: (_) => const JoinGroupchatPage(),
         settings: const RouteSettings(
-          name: newGroupchatRoute,
+          name: joinGroupchatRoute,
         ),
       );
 
   @override
-  StartGroupChatPageState createState() => StartGroupChatPageState();
+  JoinGroupchatPageState createState() => JoinGroupchatPageState();
 }
 
-class StartGroupChatPageState extends State<StartGroupChatPage> {
+class JoinGroupchatPageState extends State<JoinGroupchatPage> {
   final TextEditingController _jidController = TextEditingController();
   final TextEditingController _nickController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<StartGroupchatBloc, StartGroupchatState>(
+    return BlocBuilder<JoinGroupchatBloc, JoinGroupchatState>(
       builder: (context, state) => WillPopScope(
         onWillPop: () async {
           if (state.isWorking) {
             return false;
           }
 
-          context.read<StartGroupchatBloc>().add(
+          context.read<JoinGroupchatBloc>().add(
                 PageResetEvent(),
               );
           return true;
@@ -55,7 +55,7 @@ class StartGroupChatPageState extends State<StartGroupChatPage> {
                         .add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
                   labelText: t.pages.startchat.xmppAddress,
-                  onChanged: (value) => context.read<StartGroupchatBloc>().add(
+                  onChanged: (value) => context.read<JoinGroupchatBloc>().add(
                         JidChangedEvent(value),
                       ),
                   controller: _jidController,
@@ -72,7 +72,7 @@ class StartGroupChatPageState extends State<StartGroupChatPage> {
 
                       _jidController.text = jid.path;
                       // ignore: use_build_context_synchronously
-                      context.read<StartGroupchatBloc>().add(
+                      context.read<JoinGroupchatBloc>().add(
                             JidChangedEvent(jid.path),
                           );
                     },
@@ -84,7 +84,7 @@ class StartGroupChatPageState extends State<StartGroupChatPage> {
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
                 child: CustomTextField(
-                  onChanged: (value) => context.read<StartGroupchatBloc>().add(
+                  onChanged: (value) => context.read<JoinGroupchatBloc>().add(
                         NickChangedEvent(value),
                       ),
                   controller: _nickController,
@@ -111,8 +111,8 @@ class StartGroupChatPageState extends State<StartGroupChatPage> {
                       child: RoundedButton(
                         cornerRadius: 32,
                         onTap: () => context
-                            .read<StartGroupchatBloc>()
-                            .add(JoinGroupchatEvent()),
+                            .read<JoinGroupchatBloc>()
+                            .add(StartGroupchatEvent()),
                         enabled: !state.isWorking,
                         child: Text(t.pages.newconversation.joinGroupChat),
                       ),

@@ -95,7 +95,7 @@ class NewConversationPage extends StatelessWidget {
                       return;
                     }
 
-                    Navigator.pushNamed(context, newGroupchatRoute);
+                    Navigator.pushNamed(context, joinGroupchatRoute);
                   },
                 );
               default:

@@ -256,6 +256,7 @@ Future<void> entrypoint() async {
     StickersManager(),
     MessageProcessingHintManager(),
     MUCManager(),
+    OccupantIdManager(),
   ]);
 
   GetIt.I.registerSingleton<XmppConnection>(connection);

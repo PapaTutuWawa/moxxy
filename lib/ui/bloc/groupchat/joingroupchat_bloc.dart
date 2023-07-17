@@ -10,22 +10,21 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 
-part 'startgroupchat_bloc.freezed.dart';
-part 'startgroupchat_event.dart';
-part 'startgroupchat_state.dart';
+part 'joingroupchat_bloc.freezed.dart';
+part 'joingroupchat_event.dart';
+part 'joingroupchat_state.dart';
 
-class StartGroupchatBloc
-    extends Bloc<StartGroupchatEvent, StartGroupchatState> {
-  StartGroupchatBloc() : super(StartGroupchatState()) {
+class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
+  JoinGroupchatBloc() : super(JoinGroupchatState()) {
     on<JidChangedEvent>(_onJidChanged);
     on<PageResetEvent>(_onPageReset);
-    on<JoinGroupchatEvent>(_onJoinGroupchat);
+    on<StartGroupchatEvent>(_onStartGroupchat);
     on<NickChangedEvent>(_onNickChanged);
   }
 
   Future<void> _onJidChanged(
     JidChangedEvent event,
-    Emitter<StartGroupchatState> emit,
+    Emitter<JoinGroupchatState> emit,
   ) async {
     emit(
       state.copyWith(
@@ -36,7 +35,7 @@ class StartGroupchatBloc
 
   Future<void> _onNickChanged(
     NickChangedEvent event,
-    Emitter<StartGroupchatState> emit,
+    Emitter<JoinGroupchatState> emit,
   ) async {
     emit(
       state.copyWith(
@@ -47,7 +46,7 @@ class StartGroupchatBloc
 
   Future<void> _onPageReset(
     PageResetEvent event,
-    Emitter<StartGroupchatState> emit,
+    Emitter<JoinGroupchatState> emit,
   ) async {
     emit(
       state.copyWith(
@@ -60,9 +59,9 @@ class StartGroupchatBloc
     );
   }
 
-  Future<void> _onJoinGroupchat(
+  Future<void> _onStartGroupchat(
     JoinGroupchatEvent event,
-    Emitter<StartGroupchatState> emit,
+    Emitter<JoinGroupchatState> emit,
   ) async {
     final validation = validateJidString(state.jid);
     if (validation != null) {
