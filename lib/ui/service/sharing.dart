@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:share_handler/share_handler.dart';
@@ -23,15 +24,37 @@ class UISharingService {
 
     _log.finest('Handling media');
     final attachments = media.attachments ?? [];
-    GetIt.I.get<ShareSelectionBloc>().add(
-          ShareSelectionRequestedEvent(
-            attachments.map((a) => a!.path).toList(),
-            media.content,
-            media.content != null
-                ? ShareSelectionType.text
-                : ShareSelectionType.media,
-          ),
+
+    if (media.conversationIdentifier != null) {
+      if (media.content != null) {
+        // TODO: Open the conversation and put the text in the textfield
+      } else {
+        final isMedia = attachments.every(
+          (attachment) =>
+              attachment!.type == SharedAttachmentType.image ||
+              attachment.type == SharedAttachmentType.video,
         );
+        GetIt.I.get<SendFilesBloc>().add(
+              SendFilesPageRequestedEvent(
+                [media.conversationIdentifier!],
+                isMedia ? SendFilesType.image : SendFilesType.generic,
+                paths:
+                    attachments.map((attachment) => attachment!.path).toList(),
+                popEntireStack: true,
+              ),
+            );
+      }
+    } else {
+      GetIt.I.get<ShareSelectionBloc>().add(
+            ShareSelectionRequestedEvent(
+              attachments.map((a) => a!.path).toList(),
+              media.content,
+              media.content != null
+                  ? ShareSelectionType.text
+                  : ShareSelectionType.media,
+            ),
+          );
+    }
 
     await clearSharedMedia();
   }
