@@ -252,46 +252,4 @@ enum GroupchatErrorType {
 
   /// The identifier representing the error.
   final int value;
-
-  // String get translatableString {
-  //   assert(
-  //     this != MessageErrorType.noError,
-  //     'Calling errorToTranslatableString with noError makes no sense',
-  //   );
-
-  //   switch (this) {
-  //     case MessageErrorType.notEncryptedForDevice:
-  //       return t.errors.omemo.notEncryptedForDevice;
-  //     case MessageErrorType.invalidHMAC:
-  //       return t.errors.omemo.invalidHmac;
-  //     case MessageErrorType.noDecryptionKey:
-  //       return t.errors.omemo.noDecryptionKey;
-  //     case MessageErrorType.invalidAffixElements:
-  //       return t.errors.omemo.messageInvalidAfixElement;
-  //     case MessageErrorType.fileUploadFailed:
-  //       return t.errors.message.fileUploadFailed;
-  //     case MessageErrorType.omemoNotSupported:
-  //       return t.errors.message.contactDoesntSupportOmemo;
-  //     case MessageErrorType.fileDownloadFailed:
-  //       return t.errors.message.fileDownloadFailed;
-  //     case MessageErrorType.serviceUnavailable:
-  //       return t.errors.message.serviceUnavailable;
-  //     case MessageErrorType.remoteServerTimeout:
-  //       return t.errors.message.remoteServerTimeout;
-  //     case MessageErrorType.remoteServerNotFound:
-  //       return t.errors.message.remoteServerNotFound;
-  //     case MessageErrorType.failedToEncrypt:
-  //       return t.errors.message.failedToEncrypt;
-  //     case MessageErrorType.failedToDecryptFile:
-  //       return t.errors.message.failedToDecryptFile;
-  //     case MessageErrorType.chatEncryptedButPlaintextFile:
-  //       return t.errors.message.fileNotEncrypted;
-  //     case MessageErrorType.failedToEncryptFile:
-  //       return t.errors.message.failedToEncryptFile;
-  //     // NOTE: This fallthrough is just here to make Dart happy
-  //     case MessageErrorType.noError:
-  //     case MessageErrorType.unspecified:
-  //       return t.errors.message.unspecified;
-  //   }
-  // }
 }
