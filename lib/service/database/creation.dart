@@ -269,8 +269,7 @@ Future<void> createDatabase(Database db, int version) async {
     '''
     CREATE TABLE $groupchatTable (
       jid TEXT PRIMARY KEY,
-      nick TEXT NOT NULL,
-      title TEXT NOT NULL
+      nick TEXT NOT NULL
     )''',
   );
 

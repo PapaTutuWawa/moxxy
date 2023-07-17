@@ -11,7 +11,6 @@ import 'package:moxxyv2/service/blocking.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
@@ -1456,7 +1455,6 @@ Future<void> performJoinGroupchat(
           GroupchatDetails(
             jid,
             nick,
-            joinRoomResult.title,
           ),
         );
         sendEvent(

@@ -275,8 +275,7 @@ class ConversationService {
     if (type == ConversationType.groupchat && groupchatDetails != null) {
       await gs.addGroupchatDetailsFromData(
         jid,
-        groupchatDetails!.nick,
-        groupchatDetails.title,
+        groupchatDetails.nick,
       );
     }
 

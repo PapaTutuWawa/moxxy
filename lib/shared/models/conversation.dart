@@ -112,7 +112,6 @@ class GroupchatDetailsConverter
     return GroupchatDetails(
       json['jid'] as String,
       json['nick'] as String,
-      json['title'] as String,
     );
   }
 
@@ -121,7 +120,6 @@ class GroupchatDetailsConverter
     return {
       'jid': object.jid,
       'nick': object.nick,
-      'title': object.title,
     };
   }
 }

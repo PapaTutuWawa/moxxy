@@ -41,7 +41,6 @@ class GroupchatService {
       return GroupchatDetails(
         muc.toBare().toString(),
         nick,
-        roomInformation.name,
       );
     }
   }
@@ -53,9 +52,8 @@ class GroupchatService {
   Future<GroupchatDetails> addGroupchatDetailsFromData(
     String jid,
     String nick,
-    String title,
   ) async {
-    final groupchatDetails = GroupchatDetails(jid, nick, title);
+    final groupchatDetails = GroupchatDetails(jid, nick);
     await GetIt.I.get<DatabaseService>().database.insert(
           groupchatTable,
           groupchatDetails.toJson(),
