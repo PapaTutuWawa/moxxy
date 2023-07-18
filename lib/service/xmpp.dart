@@ -195,11 +195,11 @@ class XmppService {
           if (chatState != null) chatState,
         ]),
       );
-
-      await GetIt.I.get<ShareService>().recordSentMessage(
-            conversation!,
-          );
     }
+
+    await GetIt.I.get<ShareService>().recordSentMessage(
+          conversation!,
+        );
   }
 
   /// Sends a message to JIDs in [recipients] with the body of [body].
@@ -299,15 +299,16 @@ class XmppService {
               ),
           ]),
         );
-
-        await GetIt.I.get<ShareService>().recordSentMessage(
-              conversation!,
-            );
       }
 
       sendEvent(
         ConversationUpdatedEvent(conversation: conversation!),
       );
+
+      // Tell the system to show the chat in the direct share list.
+      await GetIt.I.get<ShareService>().recordSentMessage(
+            conversation,
+          );
     }
   }
 
@@ -699,11 +700,12 @@ class XmppService {
               ),
             ]),
           );
-
-          await GetIt.I.get<ShareService>().recordSentMessage(
-                conversationsMap[recipient]!,
-              );
         }
+
+        // Notify the system to update the direct shares.
+        await GetIt.I.get<ShareService>().recordSentMessage(
+              conversationsMap[recipient]!,
+            );
       }
 
       recipients.remove('');

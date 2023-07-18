@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
@@ -27,11 +28,17 @@ class UISharingService {
     final attachments = media.attachments ?? [];
 
     if (media.conversationIdentifier != null) {
+      // Handle shares to the self-chat
+      final conversationJid =
+          media.conversationIdentifier == selfChatShareFakeJid
+              ? ''
+              : media.conversationIdentifier;
+
       // Handle direct shares
       if (media.content != null) {
         GetIt.I.get<ConversationBloc>().add(
               RequestedConversationEvent(
-                media.conversationIdentifier!,
+                conversationJid!,
                 '',
                 '',
                 removeUntilConversations: true,
@@ -46,7 +53,7 @@ class UISharingService {
         );
         GetIt.I.get<SendFilesBloc>().add(
               SendFilesPageRequestedEvent(
-                [media.conversationIdentifier!],
+                [conversationJid!],
                 isMedia ? SendFilesType.image : SendFilesType.generic,
                 paths:
                     attachments.map((attachment) => attachment!.path).toList(),
