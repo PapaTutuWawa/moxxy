@@ -280,11 +280,13 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case newConversationRoute:
             return NewConversationPage.route;
           case conversationRoute:
+            final args = settings.arguments! as ConversationPageArguments;
             return PageTransition<dynamic>(
               type: PageTransitionType.rightToLeft,
               settings: settings,
               child: ConversationPage(
-                conversationJid: settings.arguments! as String,
+                conversationJid: args.conversationJid,
+                initialText: args.initialText,
               ),
             );
           // case sharedMediaRoute:

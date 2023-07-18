@@ -30,6 +30,17 @@ import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 
+class ConversationPageArguments {
+  const ConversationPageArguments(
+    this.conversationJid,
+    this.initialText,
+  );
+
+  final String conversationJid;
+
+  final String? initialText;
+}
+
 int getMessageMenuOptionCount(
   Message message,
   Message? lastMessage,
@@ -50,11 +61,15 @@ int getMessageMenuOptionCount(
 class ConversationPage extends StatefulWidget {
   const ConversationPage({
     required this.conversationJid,
+    this.initialText,
     super.key,
   });
 
   /// The JID of the current conversation
   final String conversationJid;
+
+  /// The optional initial text to put in the input field.
+  final String? initialText;
 
   @override
   ConversationPageState createState() => ConversationPageState();
@@ -90,6 +105,7 @@ class ConversationPageState extends State<ConversationPage>
     _conversationController = BidirectionalConversationController(
       widget.conversationJid,
       _textfieldFocusNode,
+      initialText: widget.initialText,
     );
     _conversationController.fetchOlderData();
 

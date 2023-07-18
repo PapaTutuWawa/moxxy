@@ -68,8 +68,11 @@ class RecordingData {
 
 class BidirectionalConversationController
     extends BidirectionalController<Message> {
-  BidirectionalConversationController(this.conversationJid, this.focusNode)
-      : assert(
+  BidirectionalConversationController(
+    this.conversationJid,
+    this.focusNode, {
+    String? initialText,
+  })  : assert(
           BidirectionalConversationController.currentController == null,
           'There can only be one BidirectionalConversationController',
         ),
@@ -78,6 +81,9 @@ class BidirectionalConversationController
           maxPageAmount: maxMessagePages,
         ) {
     _textController.addListener(_handleTextChanged);
+    if (initialText != null) {
+      _textController.text = initialText;
+    }
 
     BidirectionalConversationController.currentController = this;
 
