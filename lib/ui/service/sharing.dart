@@ -24,10 +24,12 @@ class UISharingService {
   Future<void> _handleSharedMedia(SharedMedia? media) async {
     if (media == null) return;
 
-    _log.finest('Handling media');
+    _log.finest('Handling media (identifier: ${media.conversationIdentifier})');
     final attachments = media.attachments ?? [];
 
     if (media.conversationIdentifier != null) {
+      _log.finest('Treating share as direct share');
+
       // Handle shares to the self-chat
       final conversationJid =
           media.conversationIdentifier == selfChatShareFakeJid

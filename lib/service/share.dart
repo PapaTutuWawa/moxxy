@@ -1,10 +1,11 @@
 import 'package:get_it/get_it.dart';
 import 'package:moxlib/moxlib.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:share_handler/share_handler.dart';
 
 /// The service responsible for handling the direct share feature.
 class ShareService {
@@ -25,7 +26,6 @@ class ShareService {
         : conversation.getTitleWithOptionalContact(
             prefs.enableContactIntegration,
           );
-    // TODO: Use an appropriate avatar for self-chats
     final conversationImageFilePath =
         conversation.getAvatarPathWithOptionalContact(
       prefs.enableContactIntegration,
@@ -34,13 +34,12 @@ class ShareService {
     final conversationJid =
         conversation.isSelfChat ? selfChatShareFakeJid : conversation.jid;
 
-    await ShareHandlerPlatform.instance.recordSentMessage(
-      conversationIdentifier: conversationJid,
-      conversationName: conversationName,
-      conversationImageFilePath: conversationImageFilePath?.isEmpty ?? true
-          ? null
-          : conversationImageFilePath,
-      serviceName: 'moxxy-share-recorder',
+    // Tell the system to create a direct share shortcut
+    await MoxplatformPlugin.contacts.recordSentMessage(
+      conversationName,
+      conversationJid,
+      avatarPath: conversationImageFilePath.isEmpty ? null : conversationImageFilePath,
+      fallbackIcon: conversation.isSelfChat ? FallbackIconType.notes : FallbackIconType.person,
     );
   }
 }

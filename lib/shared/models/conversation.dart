@@ -174,7 +174,7 @@ class Conversation with _$Conversation {
   /// The path to the avatar. This returns, if [contactIntegration] is true, first the contact's avatar
   /// path, then the XMPP avatar's path. If [contactIntegration] is false, just returns the regular
   /// XMPP avatar's path.
-  String? getAvatarPathWithOptionalContact(bool contactIntegration) {
+  String getAvatarPathWithOptionalContact(bool contactIntegration) {
     if (contactIntegration) {
       return contactAvatarPath ?? avatarPath;
     }
