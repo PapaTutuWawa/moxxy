@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
@@ -9,6 +10,9 @@ import 'package:moxxyv2/shared/models/conversation.dart';
 
 /// The service responsible for handling the direct share feature.
 class ShareService {
+  /// Logging.
+  final Logger _log = Logger('ShareService');
+
   /// Updates the share shortcuts for [conversation]. If a message was received or
   /// sent in [conversation], this method should be called.
   Future<void> recordSentMessage(
@@ -33,6 +37,10 @@ class ShareService {
     // Prevent empty JIDs as that messes with share_handler
     final conversationJid =
         conversation.isSelfChat ? selfChatShareFakeJid : conversation.jid;
+
+    _log.finest(
+      'Creating direct share target "$conversationName" (jid=$conversationJid, avatarPath=$conversationImageFilePath)',
+    );
 
     // Tell the system to create a direct share shortcut
     await MoxplatformPlugin.contacts.recordSentMessage(
