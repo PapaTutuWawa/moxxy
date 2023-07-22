@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:moxlib/moxlib.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -10,14 +11,12 @@ class GroupchatService {
   /// JID.
   /// Returns a [Future] that resolves to a [RoomInformation] object containing
   /// details about the room.
-  Future<RoomInformation> getRoomInformation(JID roomJID) async {
+  Future<Result<RoomInformation, MUCError>> getRoomInformation(
+      JID roomJID) async {
     final conn = GetIt.I.get<XmppConnection>();
     final mm = conn.getManagerById<MUCManager>(mucManager)!;
     final result = await mm.queryRoomInformation(roomJID);
-    if (result.isType<RoomInformation>()) {
-      return result.get<RoomInformation>();
-    }
-    throw Exception(result.get<MUCError>());
+    return result;
   }
 
   /// Joins a group chat room specified by the given MUC JID and a nickname.
@@ -25,22 +24,41 @@ class GroupchatService {
   /// representing the details of the joined room.
   /// Throws an exception of type [GroupchatErrorType.roomPasswordProtected]
   /// if the room requires a password for entry.
-  Future<GroupchatDetails> joinRoom(JID muc, String nick) async {
+  Future<Result<GroupchatDetails, GroupchatErrorType>> joinRoom(
+    JID muc,
+    String nick,
+  ) async {
     final conn = GetIt.I.get<XmppConnection>();
     final mm = conn.getManagerById<MUCManager>(mucManager)!;
-    final roomInformation = await getRoomInformation(muc);
-    final roomPasswordProtected =
-        roomInformation.features.contains('muc_passwordprotected');
-    if (roomPasswordProtected) {
-      throw Exception(GroupchatErrorType.roomPasswordProtected);
-    }
-    final result = await mm.joinRoom(muc, nick);
-    if (result.isType<MUCError>()) {
-      throw Exception(GroupchatErrorType.fromException(result.get<MUCError>()));
+    final roomInformationResult = await getRoomInformation(muc);
+    if (roomInformationResult.isType<RoomInformation>()) {
+      final roomPasswordProtected = roomInformationResult
+          .get<RoomInformation>()
+          .features
+          .contains('muc_passwordprotected');
+      if (roomPasswordProtected) {
+        return const Result(GroupchatErrorType.roomPasswordProtected);
+      }
+      final result = await mm.joinRoom(muc, nick);
+      if (result.isType<MUCError>()) {
+        return Result(
+          GroupchatErrorType.fromException(
+            result.get<MUCError>(),
+          ),
+        );
+      } else {
+        return Result(
+          GroupchatDetails(
+            muc.toBare().toString(),
+            nick,
+          ),
+        );
+      }
     } else {
-      return GroupchatDetails(
-        muc.toBare().toString(),
-        nick,
+      return Result(
+        GroupchatErrorType.fromException(
+          roomInformationResult.get<MUCError>(),
+        ),
       );
     }
   }
