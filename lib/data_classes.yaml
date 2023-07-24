@@ -307,7 +307,7 @@ files:
           - JsonImplementation
         attributes:
           conversation:
-            type: Conversation?
+            type: Conversation
             deserialise: true  
     generate_builder: true
     builder_name: "Event"

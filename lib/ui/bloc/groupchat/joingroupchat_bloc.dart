@@ -96,23 +96,19 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
       );
       return;
     }
+
     await _onPageReset(PageResetEvent(), emit);
     final joinEvent = result! as JoinGroupchatResult;
-    if (joinEvent.conversation != null) {
-      GetIt.I.get<ConversationsBloc>().add(
-            ConversationsAddedEvent(joinEvent.conversation!),
-          );
-    }
 
-    assert(
-      joinEvent.conversation != null,
-      'RequestedConversationEvent must contain a not null conversation',
-    );
+    GetIt.I.get<ConversationsBloc>().add(
+          ConversationsAddedEvent(joinEvent.conversation),
+        );
+
     GetIt.I.get<ConversationBloc>().add(
           RequestedConversationEvent(
-            joinEvent.conversation!.jid,
-            joinEvent.conversation!.title,
-            joinEvent.conversation!.avatarPath,
+            joinEvent.conversation.jid,
+            joinEvent.conversation.title,
+            joinEvent.conversation.avatarPath,
             removeUntilConversations: true,
           ),
         );

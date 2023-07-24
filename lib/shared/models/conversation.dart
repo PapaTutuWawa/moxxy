@@ -40,30 +40,6 @@ class ConversationMessageConverter
       };
 }
 
-// enum ConversationType {
-//   chat('chat'),
-//   note('note'),
-//   groupchat('groupchat');
-
-//   const ConversationType(this.value);
-
-//   /// The identifier of the enum value.
-//   final String value;
-
-//   static ConversationType? fromInt(String value) {
-//     switch (value) {
-//       case 'chat':
-//         return ConversationType.chat;
-//       case 'note':
-//         return ConversationType.note;
-//       case 'groupchat':
-//         return ConversationType.groupchat;
-//     }
-
-//     return null;
-//   }
-// }
-
 enum ConversationType implements Comparable<ConversationType> {
   chat('chat'),
   note('note'),
@@ -78,8 +54,11 @@ enum ConversationType implements Comparable<ConversationType> {
         return ConversationType.groupchat;
       case 'note':
         return ConversationType.note;
-      default:
+      case 'chat':
         return ConversationType.chat;
+      default:
+        // Should ideally never happen
+        throw Exception();
     }
   }
 
