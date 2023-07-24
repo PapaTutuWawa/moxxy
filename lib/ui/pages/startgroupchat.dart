@@ -87,6 +87,7 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
                   onChanged: (value) => context.read<JoinGroupchatBloc>().add(
                         NickChangedEvent(value),
                       ),
+                  labelText: t.pages.newconversation.nick,
                   controller: _nickController,
                   enabled: !state.isWorking,
                   cornerRadius: textfieldRadiusRegular,
