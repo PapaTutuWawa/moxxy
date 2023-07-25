@@ -258,8 +258,13 @@ class SendFilesPage extends StatelessWidget {
                 top: 8,
                 left: 8,
                 child: CancelButton(
-                  onPressed: () =>
-                      context.read<NavigationBloc>().add(PoppedRouteEvent()),
+                  onPressed: () {
+                    // If we do a direct share and the user presses the "x" button, then it
+                    // happens that just popping the stack results in just a gray screen.
+                    // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
+                    // entire app".
+                    context.read<NavigationBloc>().add(PoppedRouteWithOptionalSystemNavigatorEvent());
+                  },
                 ),
               ),
             ],

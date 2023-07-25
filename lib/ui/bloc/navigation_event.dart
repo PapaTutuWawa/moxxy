@@ -28,3 +28,7 @@ class PushedNamedReplaceEvent extends NavigationEvent {
 }
 
 class PoppedRouteEvent extends NavigationEvent {}
+
+/// Checks if we can pop the Flutter Navigator. If not, i.e. if `Navigator.canPop` returns
+/// false, uses the `SystemNavigator` to pop the OS' navigation stack.
+class PoppedRouteWithOptionalSystemNavigatorEvent extends NavigationEvent {}
