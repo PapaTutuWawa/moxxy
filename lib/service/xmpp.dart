@@ -30,6 +30,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/service/share.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -195,6 +196,10 @@ class XmppService {
         ]),
       );
     }
+
+    await GetIt.I.get<ShareService>().recordSentMessage(
+          conversation!,
+        );
   }
 
   /// Sends a message to JIDs in [recipients] with the body of [body].
@@ -299,6 +304,11 @@ class XmppService {
       sendEvent(
         ConversationUpdatedEvent(conversation: conversation!),
       );
+
+      // Tell the system to show the chat in the direct share list.
+      await GetIt.I.get<ShareService>().recordSentMessage(
+            conversation,
+          );
     }
   }
 
@@ -521,6 +531,8 @@ class XmppService {
     final lastMessages = <String, Message>{};
     // Path -> Metadata Id
     final metadataMap = <String, String>{};
+    // Recipient -> Conversation
+    final conversationsMap = <String, Conversation>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -601,7 +613,7 @@ class XmppService {
 
     final rs = GetIt.I.get<RosterService>();
     for (final recipient in recipients) {
-      await cs.createOrUpdateConversation(
+      conversationsMap[recipient] = (await cs.createOrUpdateConversation(
         recipient,
         create: () async {
           // Create
@@ -649,7 +661,7 @@ class XmppService {
 
           return newConversation;
         },
-      );
+      ))!;
     }
 
     // Requesting Upload slots and uploading
@@ -689,6 +701,11 @@ class XmppService {
             ]),
           );
         }
+
+        // Notify the system to update the direct shares.
+        await GetIt.I.get<ShareService>().recordSentMessage(
+              conversationsMap[recipient]!,
+            );
       }
 
       recipients.remove('');
@@ -1473,10 +1490,15 @@ class XmppService {
       },
     );
 
+    // Update the share handler
+    await GetIt.I.get<ShareService>().recordSentMessage(
+          conversation!,
+        );
+
     // Create the notification if we the user does not already know about the message
     if (sendNotification) {
       await ns.showNotification(
-        conversation!,
+        conversation,
         message,
         isInRoster ? conversation.title : conversationJid,
         body: conversationBody,

@@ -1,5 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/shared/constants.dart';
+import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:share_handler/share_handler.dart';
@@ -21,17 +24,56 @@ class UISharingService {
   Future<void> _handleSharedMedia(SharedMedia? media) async {
     if (media == null) return;
 
-    _log.finest('Handling media');
+    _log.finest('Handling media (identifier: ${media.conversationIdentifier})');
     final attachments = media.attachments ?? [];
-    GetIt.I.get<ShareSelectionBloc>().add(
-          ShareSelectionRequestedEvent(
-            attachments.map((a) => a!.path).toList(),
-            media.content,
-            media.content != null
-                ? ShareSelectionType.text
-                : ShareSelectionType.media,
-          ),
+
+    if (media.conversationIdentifier != null) {
+      _log.finest('Treating share as direct share');
+
+      // Handle shares to the self-chat
+      final conversationJid =
+          media.conversationIdentifier == selfChatShareFakeJid
+              ? ''
+              : media.conversationIdentifier;
+
+      // Handle direct shares
+      if (media.content != null) {
+        GetIt.I.get<ConversationBloc>().add(
+              RequestedConversationEvent(
+                conversationJid!,
+                '',
+                '',
+                removeUntilConversations: true,
+                initialText: media.content,
+              ),
+            );
+      } else {
+        final isMedia = attachments.every(
+          (attachment) =>
+              attachment!.type == SharedAttachmentType.image ||
+              attachment.type == SharedAttachmentType.video,
         );
+        GetIt.I.get<SendFilesBloc>().add(
+              SendFilesPageRequestedEvent(
+                [conversationJid!],
+                isMedia ? SendFilesType.image : SendFilesType.generic,
+                paths:
+                    attachments.map((attachment) => attachment!.path).toList(),
+                popEntireStack: true,
+              ),
+            );
+      }
+    } else {
+      GetIt.I.get<ShareSelectionBloc>().add(
+            ShareSelectionRequestedEvent(
+              attachments.map((a) => a!.path).toList(),
+              media.content,
+              media.content != null
+                  ? ShareSelectionType.text
+                  : ShareSelectionType.media,
+            ),
+          );
+    }
 
     await clearSharedMedia();
   }

@@ -11,6 +11,7 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/pages/conversation/conversation.dart';
 
 part 'conversation_bloc.freezed.dart';
 part 'conversation_event.dart';
@@ -59,18 +60,22 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
       ),
     );
 
+    final arguments = ConversationPageArguments(
+      event.jid,
+      event.initialText,
+    );
     final navEvent = event.removeUntilConversations
         ? (PushedNamedAndRemoveUntilEvent(
             NavigationDestination(
               conversationRoute,
-              arguments: event.jid,
+              arguments: arguments,
             ),
             ModalRoute.withName(conversationsRoute),
           ))
         : (PushedNamedEvent(
             NavigationDestination(
               conversationRoute,
-              arguments: event.jid,
+              arguments: arguments,
             ),
           ));
 

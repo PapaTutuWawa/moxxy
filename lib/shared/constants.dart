@@ -20,3 +20,7 @@ const stickerPackPaginationSize = 10;
 
 /// The amount of sticker packs we can cache in memory.
 const maxStickerPackPages = 2;
+
+/// An "invalid" fake JID to make share_handler happy when adding the self-chat
+/// to the direct share list.
+const String selfChatShareFakeJid = '{{ self-chat }}';
