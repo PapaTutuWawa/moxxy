@@ -293,6 +293,8 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
+        attributes:
+          jid: String
       # Returned when an error occured
       - name: ErrorEvent
         extends: BackgroundEvent

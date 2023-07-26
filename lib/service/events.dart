@@ -561,7 +561,7 @@ Future<void> performAddContact(
     if (isGroupchat) {
       // The JID points to a groupchat. Handle that on the UI side
       sendEvent(
-        JidIsGroupchatEvent(),
+        JidIsGroupchatEvent(jid: jid),
         id: id,
       );
     } else {

@@ -2,12 +2,6 @@ part of 'joingroupchat_bloc.dart';
 
 abstract class JoinGroupchatEvent {}
 
-/// Triggered by the UI when the JID input field is changed
-class JidChangedEvent extends JoinGroupchatEvent {
-  JidChangedEvent(this.jid);
-  final String jid;
-}
-
 /// Triggered by the UI when the Nick input field is changed
 class NickChangedEvent extends JoinGroupchatEvent {
   NickChangedEvent(this.nick);
@@ -18,4 +12,7 @@ class NickChangedEvent extends JoinGroupchatEvent {
 class PageResetEvent extends JoinGroupchatEvent {}
 
 /// Triggered when a new MUC joining has been attempted
-class StartGroupchatEvent extends JoinGroupchatEvent {}
+class StartGroupchatEvent extends JoinGroupchatEvent {
+  StartGroupchatEvent(this.jid);
+  final String jid;
+}

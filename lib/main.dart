@@ -315,7 +315,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case addContactRoute:
             return StartChatPage.route;
           case joinGroupchatRoute:
-            return JoinGroupchatPage.route;
+            return JoinGroupchatPage.getRoute(
+              settings.arguments! as JoinGroupchatArguments,
+            );
           case cropRoute:
             return CropPage.route;
           case sendFilesRoute:

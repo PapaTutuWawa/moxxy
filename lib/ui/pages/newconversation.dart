@@ -97,7 +97,7 @@ class NewConversationPage extends StatelessWidget {
                     }
 
                     if (kDebugMode) {
-                      Navigator.pushNamed(context, joinGroupchatRoute);
+                      Navigator.pushNamed(context, addContactRoute);
                     } else {
                       showNotImplementedDialog('groupchat', context);
                     }

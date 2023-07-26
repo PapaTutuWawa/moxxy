@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxplatform/moxplatform.dart';
@@ -9,6 +10,9 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
+import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
+import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/pages/startgroupchat.dart';
 
 part 'startchat_bloc.freezed.dart';
 part 'startchat_event.dart';
@@ -58,12 +62,24 @@ class StartChatBloc extends Bloc<StartChatEvent, StartChatState> {
       );
       return;
     } else if (result is JidIsGroupchatEvent) {
-      emit(
-        state.copyWith(
-          jidError: t.errors.newChat.groupchatUnsupported,
-          isWorking: false,
-        ),
-      );
+      if (kDebugMode) {
+        GetIt.I.get<NavigationBloc>().add(
+              PushedNamedAndRemoveUntilEvent(
+                NavigationDestination(
+                  joinGroupchatRoute,
+                  arguments: JoinGroupchatArguments(result.jid),
+                ),
+                (_) => false,
+              ),
+            );
+      } else {
+        emit(
+          state.copyWith(
+            jidError: t.errors.newChat.groupchatUnsupported,
+            isWorking: false,
+          ),
+        );
+      }
       return;
     }
 

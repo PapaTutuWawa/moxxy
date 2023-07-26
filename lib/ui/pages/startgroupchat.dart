@@ -3,16 +3,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/button.dart';
 import 'package:moxxyv2/ui/widgets/textfield.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 
-class JoinGroupchatPage extends StatefulWidget {
-  const JoinGroupchatPage({super.key});
+class JoinGroupchatArguments {
+  JoinGroupchatArguments(this.jid);
 
-  static MaterialPageRoute<dynamic> get route => MaterialPageRoute<dynamic>(
-        builder: (_) => const JoinGroupchatPage(),
+  /// The JID of the conversation entity.
+  final String jid;
+}
+
+class JoinGroupchatPage extends StatefulWidget {
+  const JoinGroupchatPage(this.arguments, {super.key});
+
+  final JoinGroupchatArguments arguments;
+
+  static MaterialPageRoute<dynamic> getRoute(
+    JoinGroupchatArguments arguments,
+  ) =>
+      MaterialPageRoute<dynamic>(
+        builder: (_) => JoinGroupchatPage(arguments),
         settings: const RouteSettings(
           name: joinGroupchatRoute,
         ),
@@ -23,7 +34,6 @@ class JoinGroupchatPage extends StatefulWidget {
 }
 
 class JoinGroupchatPageState extends State<JoinGroupchatPage> {
-  final TextEditingController _jidController = TextEditingController();
   final TextEditingController _nickController = TextEditingController();
 
   @override
@@ -48,36 +58,6 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
               Visibility(
                 visible: state.isWorking,
                 child: const LinearProgressIndicator(),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
-                        .add(const EdgeInsets.only(top: 8)),
-                child: CustomTextField(
-                  labelText: t.pages.startchat.xmppAddress,
-                  onChanged: (value) => context.read<JoinGroupchatBloc>().add(
-                        JidChangedEvent(value),
-                      ),
-                  controller: _jidController,
-                  enabled: !state.isWorking,
-                  cornerRadius: textfieldRadiusRegular,
-                  borderColor: primaryColor,
-                  borderWidth: 1,
-                  errorText: state.jidError,
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.qr_code),
-                    onPressed: () async {
-                      final jid = await scanXmppUriQrCode(context);
-                      if (jid == null) return;
-
-                      _jidController.text = jid.path;
-                      // ignore: use_build_context_synchronously
-                      context.read<JoinGroupchatBloc>().add(
-                            JidChangedEvent(jid.path),
-                          );
-                    },
-                  ),
-                ),
               ),
               Padding(
                 padding:
@@ -111,9 +91,11 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
                     Expanded(
                       child: RoundedButton(
                         cornerRadius: 32,
-                        onTap: () => context
-                            .read<JoinGroupchatBloc>()
-                            .add(StartGroupchatEvent()),
+                        onTap: () => context.read<JoinGroupchatBloc>().add(
+                              StartGroupchatEvent(
+                                widget.arguments.jid,
+                              ),
+                            ),
                         enabled: !state.isWorking,
                         child: Text(t.pages.newconversation.joinGroupChat),
                       ),
