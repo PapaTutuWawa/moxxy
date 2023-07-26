@@ -11,22 +11,15 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
-import 'package:moxxyv2/shared/cache.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:synchronized/synchronized.dart';
 
 class MessageService {
   /// Logger
   final Logger _log = Logger('MessageService');
-
-  final LRUCache<String, List<Message>> _messageCache =
-      LRUCache(conversationMessagePageCacheSize);
-  final Lock _cacheLock = Lock();
 
   Future<Message?> getMessageById(
     int id,
@@ -127,13 +120,6 @@ class MessageService {
     bool olderThan,
     int? oldestTimestamp,
   ) async {
-    if (olderThan && oldestTimestamp == null) {
-      final result = await _cacheLock.synchronized<List<Message>?>(() {
-        return _messageCache.getValue(jid);
-      });
-      if (result != null) return result;
-    }
-
     final db = GetIt.I.get<DatabaseService>().database;
     final comparator = olderThan ? '<' : '>';
     final query = oldestTimestamp != null
@@ -235,15 +221,6 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
               .getPreviewReactionsForMessage(m['id']! as int),
         ),
       );
-    }
-
-    if (olderThan && oldestTimestamp == null) {
-      await _cacheLock.synchronized(() {
-        _messageCache.cache(
-          jid,
-          page,
-        );
-      });
     }
 
     return page;
@@ -387,25 +364,9 @@ FROM
       }
     }
 
-    m = m.copyWith(
+    return m.copyWith(
       id: await db.insert(messagesTable, m.toDatabaseJson()),
     );
-
-    await _cacheLock.synchronized(() {
-      final cachedList = _messageCache.getValue(conversationJid);
-      if (cachedList != null) {
-        _messageCache.replaceValue(
-          conversationJid,
-          clampedListPrepend(
-            cachedList,
-            m,
-            messagePaginationSize,
-          ),
-        );
-      }
-    });
-
-    return m;
   }
 
   Future<Message?> getMessageByStanzaId(
@@ -530,22 +491,6 @@ FROM
       await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(id),
     );
 
-    await _cacheLock.synchronized(() {
-      final page = _messageCache.getValue(msg.conversationJid);
-      if (page != null) {
-        _messageCache.replaceValue(
-          msg.conversationJid,
-          page.map((m) {
-            if (m.id == msg.id) {
-              return msg;
-            }
-
-            return m;
-          }).toList(),
-        );
-      }
-    });
-
     return msg;
   }
 
@@ -628,24 +573,6 @@ FROM
     }
   }
 
-  Future<void> replaceMessageInCache(Message message) async {
-    await _cacheLock.synchronized(() {
-      final cachedList = _messageCache.getValue(message.conversationJid);
-      if (cachedList != null) {
-        _messageCache.replaceValue(
-          message.conversationJid,
-          cachedList.map((m) {
-            if (m.id == message.id) {
-              return message;
-            }
-
-            return m;
-          }).toList(),
-        );
-      }
-    });
-  }
-
   /// Marks the message with the database id [id] as displayed and sends an
   /// [MessageUpdatedEvent] to the UI. if [sendChatMarker] is true, then
   /// a Chat Marker with <displayed /> is sent to the message's
@@ -668,20 +595,5 @@ FROM
     }
 
     return newMessage;
-  }
-
-  /// Evicts all cached message pages for [jid], if any were cached, from the
-  /// cache.
-  Future<void> evictFromCache(String jid) async {
-    return _cacheLock.synchronized(() => _messageCache.remove(jid));
-  }
-
-  /// Like [evictFromCache], but for multiple JIDs [jids].
-  Future<void> evictMultipleFromCache(List<String> jids) async {
-    return _cacheLock.synchronized(() {
-      for (final jid in jids) {
-        _messageCache.remove(jid);
-      }
-    });
   }
 }

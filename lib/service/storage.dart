@@ -1,11 +1,9 @@
 import 'dart:io';
-
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/files.dart';
-import 'package:moxxyv2/service/message.dart';
 
 /// Service responsible for handling storage related queries, like how much storage
 /// are we currently using.
@@ -92,23 +90,5 @@ class StorageService {
       final file = File(result['path']! as String);
       if (file.existsSync()) await file.delete();
     }
-
-    // Empty the message caches for conversations where we just removed the file
-    final resultIdPlaceholders =
-        List<String>.filled(results.length, '?').join(', ');
-    final conversations = (await db.query(
-      messagesTable,
-      where: 'file_metadata_id IN ($resultIdPlaceholders)',
-      whereArgs: results.map((result) => result['id']! as String).toList(),
-      columns: ['conversationJid'],
-      distinct: true,
-    ))
-        .map((item) => item['conversationJid']! as String);
-
-    // Evict the affected message pages from cache
-    _log.finest('Evicting conversations from cache: $conversations');
-    await GetIt.I
-        .get<MessageService>()
-        .evictMultipleFromCache(conversations.toList());
   }
 }
