@@ -13,7 +13,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     on<PushedNamedAndRemoveUntilEvent>(_onPushedNamedAndRemoveUntil);
     on<PushedNamedReplaceEvent>(_onPushedNamedReplaceEvent);
     on<PoppedRouteEvent>(_onPoppedRoute);
-    on<PoppedRouteWithOptionalSystemNavigatorEvent>(_onPoppedWithSystemNavigator);
+    on<PoppedRouteWithOptionalSystemNavigatorEvent>(
+      _onPoppedWithSystemNavigator,
+    );
   }
   final GlobalKey<NavigatorState> navigationKey;
 

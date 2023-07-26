@@ -28,7 +28,13 @@
 		},
 		"titles": {
 			"error": "Error"
-		}
+		},
+    "errors": {
+      "messageError": {
+        "title": "Message delivery failure",
+        "body": "Failed to deliver message to ${conversationTitle}"
+      }
+    }
 	},
 	"dateTime": {
 		"justNow": "Just now",

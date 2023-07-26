@@ -46,8 +46,11 @@ class ShareService {
     await MoxplatformPlugin.contacts.recordSentMessage(
       conversationName,
       conversationJid,
-      avatarPath: conversationImageFilePath.isEmpty ? null : conversationImageFilePath,
-      fallbackIcon: conversation.isSelfChat ? FallbackIconType.notes : FallbackIconType.person,
+      avatarPath:
+          conversationImageFilePath.isEmpty ? null : conversationImageFilePath,
+      fallbackIcon: conversation.isSelfChat
+          ? FallbackIconType.notes
+          : FallbackIconType.person,
     );
   }
 }

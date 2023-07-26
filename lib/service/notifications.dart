@@ -5,9 +5,11 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/contacts.dart';
+import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
@@ -155,6 +157,34 @@ class NotificationsService {
         id: Random().nextInt(_maxNotificationId),
         title: title,
         body: body,
+        channelKey: _warningChannelKey,
+      ),
+    );
+  }
+
+  /// Show a notification for a bounced message with erorr [type] for a
+  /// message in the chat with [jid].
+  Future<void> showMessageErrorNotification(
+    String jid,
+    MessageErrorType type,
+  ) async {
+    // Only show the notification for certain errors
+    if (![
+      MessageErrorType.remoteServerTimeout,
+      MessageErrorType.remoteServerNotFound,
+      MessageErrorType.serviceUnavailable
+    ].contains(type)) {
+      return;
+    }
+
+    final conversation =
+        await GetIt.I.get<ConversationService>().getConversationByJid(jid);
+    await AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: Random().nextInt(_maxNotificationId),
+        title: t.notifications.errors.messageError.title,
+        body: t.notifications.errors.messageError
+            .body(conversationTitle: conversation!.title),
         channelKey: _warningChannelKey,
       ),
     );

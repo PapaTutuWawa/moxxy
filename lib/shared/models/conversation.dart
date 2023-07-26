@@ -117,7 +117,6 @@ class Conversation with _$Conversation {
 
     // The current chat state
     @ConversationChatStateConverter() ChatState chatState, {
-
     // The id of the contact in the device's phonebook if it exists
     String? contactId,
 

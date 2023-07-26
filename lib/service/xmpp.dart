@@ -1106,8 +1106,12 @@ class XmppService {
       errorType: error,
     );
 
-    // TODO(PapaTutuWawa): Show a notification for certain error types, i.e. those
-    //                     that mean that the message could not be delivered.
+    // Show an error notification
+    await GetIt.I
+        .get<NotificationsService>()
+        .showMessageErrorNotification(msg.conversationJid, error);
+
+    // Update the UI
     sendEvent(MessageUpdatedEvent(message: newMsg));
   }
 

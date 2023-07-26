@@ -263,7 +263,9 @@ class SendFilesPage extends StatelessWidget {
                     // happens that just popping the stack results in just a gray screen.
                     // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
                     // entire app".
-                    context.read<NavigationBloc>().add(PoppedRouteWithOptionalSystemNavigatorEvent());
+                    context
+                        .read<NavigationBloc>()
+                        .add(PoppedRouteWithOptionalSystemNavigatorEvent());
                   },
                 ),
               ),
