@@ -1,12 +1,12 @@
 import 'dart:math';
-import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxlib/moxlib.dart';
+import 'package:moxplatform/moxplatform.dart';
+import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
-import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/error_types.dart';
@@ -18,65 +18,60 @@ import 'package:moxxyv2/shared/models/message.dart' as modelm;
 const _maxNotificationId = 2147483647;
 const _messageChannelKey = 'message_channel';
 const _warningChannelKey = 'warning_channel';
-const _notificationActionKeyRead = 'markAsRead';
-const _notificationActionKeyReply = 'reply';
 
-// TODO(Unknown): Add resolution dependent drawables for the notification icon
 class NotificationsService {
   NotificationsService() : _log = Logger('NotificationsService');
   // ignore: unused_field
   final Logger _log;
 
-  @pragma('vm:entry-point')
-  static Future<void> onReceivedAction(ReceivedAction action) async {
-    final logger = Logger('NotificationHandler');
-
-    if (action.buttonKeyPressed.isEmpty && action.buttonKeyInput.isEmpty) {
+  Future<void> onNotificationEvent(NotificationEvent event) async {
+    if (event.type == NotificationEventType.open) {
       // The notification has been tapped
       sendEvent(
         MessageNotificationTappedEvent(
-          conversationJid: action.payload!['conversationJid']!,
-          title: action.payload!['title']!,
-          avatarPath: action.payload!['avatarPath']!,
+          conversationJid: event.extra!['conversationJid']!,
+          title: event.extra!['title']!,
+          avatarPath: event.extra!['avatarPath']!,
         ),
       );
-    } else if (action.buttonKeyPressed == _notificationActionKeyRead) {
-      await GetIt.I.get<MessageService>().markMessageAsRead(
+    } else if (event.type == NotificationEventType.markAsRead) {
+      // TODO: Handle mark as read
+      /*await GetIt.I.get<MessageService>().markMessageAsRead(
             int.parse(action.payload!['id']!),
             // [XmppService.sendReadMarker] will check whether the *SHOULD* send
             // the marker, i.e. if the privacy settings allow it.
             true,
-          );
-    } else {
-      logger.warning(
-        'Received unknown notification action key ${action.buttonKeyPressed}',
-      );
+          );*/
+    } else if (event.type == NotificationEventType.reply) {
+      // TODO: Handle
     }
   }
 
   Future<void> initialize() async {
-    final an = AwesomeNotifications();
-    await an.initialize(
-      'resource://drawable/ic_service_icon',
-      [
-        NotificationChannel(
-          channelKey: _messageChannelKey,
-          channelName: t.notifications.channels.messagesChannelName,
-          channelDescription:
-              t.notifications.channels.messagesChannelDescription,
-        ),
-        NotificationChannel(
-          channelKey: _warningChannelKey,
-          channelName: t.notifications.channels.warningChannelName,
-          channelDescription:
-              t.notifications.channels.warningChannelDescription,
-        ),
-      ],
-      debug: kDebugMode,
+    await MoxplatformPlugin.notifications.createNotificationChannel(
+      t.notifications.channels.messagesChannelName,
+      t.notifications.channels.messagesChannelDescription,
+      _messageChannelKey,
+      true,
     );
-    await an.setListeners(
-      onActionReceivedMethod: onReceivedAction,
+    await MoxplatformPlugin.notifications.createNotificationChannel(
+      t.notifications.channels.warningChannelName,
+      t.notifications.channels.warningChannelDescription,
+      _warningChannelKey,
+      false,
     );
+    await MoxplatformPlugin.notifications.setI18n(
+      NotificationI18nData(
+        reply: t.notifications.message.reply,
+        markAsRead: t.notifications.message.markAsRead,
+        you: t.messages.you,
+      ),
+    );
+
+    // Listen to notification events
+    MoxplatformPlugin.notifications
+        .getEventStream()
+        .listen(onNotificationEvent);
   }
 
   /// Returns true if a notification should be shown. false otherwise.
@@ -111,53 +106,52 @@ class NotificationsService {
         ? c.contactAvatarPath ?? c.avatarPath
         : c.avatarPath;
 
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: m.id,
-        groupKey: c.jid,
-        channelKey: _messageChannelKey,
-        summary: title,
+    assert(
+      implies(m.fileMetadata?.path != null, m.fileMetadata?.mimeType != null),
+      'File metadata has path but no mime type',
+    );
+    await MoxplatformPlugin.notifications.showMessagingNotification(
+      MessagingNotification(
         title: title,
-        body: body,
-        largeIcon: avatarPath.isNotEmpty ? 'file://$avatarPath' : null,
-        notificationLayout: m.isThumbnailable
-            ? NotificationLayout.BigPicture
-            : NotificationLayout.Messaging,
-        category: NotificationCategory.Message,
-        bigPicture: m.isThumbnailable ? 'file://${m.fileMetadata!.path}' : null,
-        payload: <String, String>{
+        id: m.id,
+        channelId: _messageChannelKey,
+        jid: c.jid,
+        // TODO: Track the messages
+        messages: [
+          NotificationMessage(
+            sender: title,
+            jid: m.sender,
+            content: NotificationMessageContent(
+              body: body,
+              mime: m.fileMetadata?.mimeType,
+              path: m.fileMetadata?.path,
+            ),
+            timestamp: m.timestamp,
+            avatarPath: avatarPath,
+          ),
+        ],
+        // TODO
+        isGroupchat: false,
+        extra: {
           'conversationJid': c.jid,
           'sid': m.sid,
           'title': title,
           'avatarPath': avatarPath,
-          'messageId': m.id.toString(),
         },
       ),
-      actionButtons: [
-        NotificationActionButton(
-          key: _notificationActionKeyReply,
-          label: t.notifications.message.reply,
-          requireInputText: true,
-          autoDismissible: false,
-        ),
-        NotificationActionButton(
-          key: _notificationActionKeyRead,
-          label: t.notifications.message.markAsRead,
-        )
-      ],
     );
   }
 
   /// Show a notification with the highest priority that uses [title] as the title
   /// and [body] as the body.
-  // TODO(Unknown): Use the warning icon as the notification icon
   Future<void> showWarningNotification(String title, String body) async {
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: Random().nextInt(_maxNotificationId),
+    await MoxplatformPlugin.notifications.showNotification(
+      RegularNotification(
         title: title,
         body: body,
-        channelKey: _warningChannelKey,
+        channelId: _warningChannelKey,
+        id: Random().nextInt(_maxNotificationId),
+        icon: NotificationIcon.warning,
       ),
     );
   }
@@ -179,13 +173,14 @@ class NotificationsService {
 
     final conversation =
         await GetIt.I.get<ConversationService>().getConversationByJid(jid);
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: Random().nextInt(_maxNotificationId),
+    await MoxplatformPlugin.notifications.showNotification(
+      RegularNotification(
         title: t.notifications.errors.messageError.title,
         body: t.notifications.errors.messageError
             .body(conversationTitle: conversation!.title),
-        channelKey: _warningChannelKey,
+        channelId: _warningChannelKey,
+        id: Random().nextInt(_maxNotificationId),
+        icon: NotificationIcon.error,
       ),
     );
   }
@@ -193,6 +188,7 @@ class NotificationsService {
   /// Since all notifications are grouped by the conversation's JID, this function
   /// clears all notifications for [jid].
   Future<void> dismissNotificationsByJid(String jid) async {
-    await AwesomeNotifications().dismissNotificationsByGroupKey(jid);
+    // TODO
+    //await AwesomeNotifications().dismissNotificationsByGroupKey(jid);
   }
 }

@@ -6,7 +6,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/conversation.dart';
@@ -127,9 +126,6 @@ class HttpFileTransferService {
   ) async {
     if (!File(to).existsSync()) {
       await File(job.path).copy(to);
-
-      // Let the media scanner index the file
-      MoxplatformPlugin.media.scanFile(to);
     } else {
       _log.finest(
         'Skipping file copy on upload as file is already at media location',
@@ -533,8 +529,6 @@ class HttpFileTransferService {
     int? mediaHeight;
     if (mime != null) {
       if (mime.startsWith('image/')) {
-        MoxplatformPlugin.media.scanFile(downloadedPath);
-
         // Find out the dimensions
         final imageSize = await getImageSizeFromPath(downloadedPath);
         if (imageSize == null) {
@@ -544,8 +538,6 @@ class HttpFileTransferService {
         mediaWidth = imageSize?.width.toInt();
         mediaHeight = imageSize?.height.toInt();
       } else if (mime.startsWith('video/')) {
-        MoxplatformPlugin.media.scanFile(downloadedPath);
-
         /*
         // Generate thumbnail
         final thumbnailPath = await getVideoThumbnailPath(
@@ -561,8 +553,6 @@ class HttpFileTransferService {
         
         mediaWidth = imageSize?.width.toInt();
         mediaHeight = imageSize?.height.toInt();*/
-      } else if (mime.startsWith('audio/')) {
-        MoxplatformPlugin.media.scanFile(downloadedPath);
       }
     }
 

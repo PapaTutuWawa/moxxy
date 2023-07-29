@@ -149,6 +149,13 @@ dependency_overrides:
     git:
       url: https://github.com/PapaTutuWawa/omemo_dart.git
       rev: 49c7e114e6cf80dcde55fbbd218bba3182045862
+
+  moxplatform:
+    path: ../moxplatform/packages/moxplatform
+  moxplatform_platform_interface:
+    path: ../moxplatform/packages/moxplatform_platform_interface
+  moxplatform_android:
+    path: ../moxplatform/packages/moxplatform_android
  
 extra_licenses:
   - name: undraw.co
