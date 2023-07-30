@@ -35,11 +35,12 @@ class NotificationsService {
   final Logger _log;
 
   Future<void> onNotificationEvent(NotificationEvent event) async {
+    final conversationJid = event.extra![_conversationJidKey]!;
     if (event.type == NotificationEventType.open) {
       // The notification has been tapped
       sendEvent(
         MessageNotificationTappedEvent(
-          conversationJid: event.extra![_conversationJidKey]!,
+          conversationJid: conversationJid,
           title: event.extra![_conversationTitleKey]!,
           avatarPath: event.extra![_conversationAvatarKey]!,
         ),
@@ -54,10 +55,12 @@ class NotificationsService {
           );
 
       // Update the conversation
-      await GetIt.I.get<ConversationService>().createOrUpdateConversation(
-        event.extra![_conversationJidKey]!,
+      final cs = GetIt.I.get<ConversationService>();
+      await cs.createOrUpdateConversation(
+        conversationJid,
         update: (conversation) async {
-          final newConversation = conversation.copyWith(
+          final newConversation = await cs.updateConversation(
+            conversationJid,
             unreadCounter: 0,
           );
 
@@ -73,9 +76,34 @@ class NotificationsService {
       );
 
       // Clear notifications
-      await dismissNotificationsByJid(event.extra![_conversationJidKey]!);
+      await dismissNotificationsByJid(conversationJid);
     } else if (event.type == NotificationEventType.reply) {
-      // TODO: Handle
+      // Save this as a notification so that we can display it later
+      assert(
+        event.payload != null,
+        'Reply payload must be not null',
+      );
+      final notification = modeln.Notification(
+        event.id,
+        conversationJid,
+        null,
+        null,
+        null,
+        event.payload!,
+        null,
+        null,
+        DateTime.now().millisecondsSinceEpoch,
+      );
+      await GetIt.I.get<DatabaseService>().database.insert(
+            notificationsTable,
+            notification.toJson(),
+          );
+
+      // Send the actual reply
+      await GetIt.I.get<XmppService>().sendMessage(
+        body: event.payload!,
+        recipients: [conversationJid],
+      );
     }
   }
 

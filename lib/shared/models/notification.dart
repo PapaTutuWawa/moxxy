@@ -27,7 +27,7 @@ class Notification with _$Notification {
     int timestamp,
   ) = _Notification;
 
-  const Notification._(); 
+  const Notification._();
 
   /// JSON
   factory Notification.fromJson(Map<String, dynamic> json) =>
@@ -35,9 +35,8 @@ class Notification with _$Notification {
 
   NotificationMessage toNotificationMessage() {
     return NotificationMessage(
-      // TODO:: Allow self-sender (null)
-      sender: sender ?? '',
-      jid: senderJid ?? '',
+      sender: sender,
+      jid: senderJid,
       avatarPath: avatarPath,
       content: NotificationMessageContent(
         body: body,
