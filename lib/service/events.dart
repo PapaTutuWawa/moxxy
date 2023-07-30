@@ -687,6 +687,11 @@ Future<void> performSetAvatar(SetAvatarCommand command, {dynamic extra}) async {
           avatarHash: command.hash,
         ),
       );
+
+  // Update our notification avatar
+  await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
+
+  // Publish our avatar
   await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
 

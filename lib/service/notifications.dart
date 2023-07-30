@@ -12,6 +12,7 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
@@ -300,6 +301,17 @@ class NotificationsService {
     final id = await _clearNotificationsForJid(jid);
     if (id != null) {
       await MoxplatformPlugin.notifications.dismissNotification(id);
+    }
+  }
+
+  /// Requests the avatar path from [XmppStateService] and configures the notification plugin
+  /// accordingly, if the avatar path is not null. If it is null, this method does nothing.
+  Future<void> maybeSetAvatarFromState() async {
+    final avatarPath =
+        (await GetIt.I.get<XmppStateService>().getXmppState()).avatarUrl;
+    if (avatarPath.isNotEmpty) {
+      await MoxplatformPlugin.notifications
+          .setNotificationSelfAvatar(avatarPath);
     }
   }
 }

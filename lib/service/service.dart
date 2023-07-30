@@ -279,6 +279,9 @@ Future<void> entrypoint() async {
           .initializeIfNeeded(settings.jid.toBare().toString()),
     );
 
+    // Potentially set the notification avatar
+    await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
+
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.
     await connection
