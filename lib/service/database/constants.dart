@@ -16,6 +16,7 @@ const omemoDevicesTable = 'OmemoDevices';
 const omemoDeviceListTable = 'OmemoDeviceList';
 const omemoRatchetsTable = 'OmemoRatchets';
 const omemoTrustTable = 'OmemoTrustTable';
+const notificationsTable = 'Notifications';
 
 const typeString = 0;
 const typeInt = 1;

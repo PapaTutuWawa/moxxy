@@ -7,6 +7,9 @@ import 'package:moxplatform_platform_interface/moxplatform_platform_interface.da
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/error_types.dart';
@@ -14,10 +17,17 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
 import 'package:moxxyv2/shared/models/message.dart' as modelm;
+import 'package:moxxyv2/shared/models/notification.dart' as modeln;
 
 const _maxNotificationId = 2147483647;
 const _messageChannelKey = 'message_channel';
 const _warningChannelKey = 'warning_channel';
+
+/// Message payload keys.
+const _conversationJidKey = 'conversationJid';
+const _messageIdKey = 'mid';
+const _conversationTitleKey = 'title';
+const _conversationAvatarKey = 'avatarPath';
 
 class NotificationsService {
   NotificationsService() : _log = Logger('NotificationsService');
@@ -29,19 +39,41 @@ class NotificationsService {
       // The notification has been tapped
       sendEvent(
         MessageNotificationTappedEvent(
-          conversationJid: event.extra!['conversationJid']!,
-          title: event.extra!['title']!,
-          avatarPath: event.extra!['avatarPath']!,
+          conversationJid: event.extra![_conversationJidKey]!,
+          title: event.extra![_conversationTitleKey]!,
+          avatarPath: event.extra![_conversationAvatarKey]!,
         ),
       );
     } else if (event.type == NotificationEventType.markAsRead) {
-      // TODO: Handle mark as read
-      /*await GetIt.I.get<MessageService>().markMessageAsRead(
-            int.parse(action.payload!['id']!),
+      // Mark the message as read
+      await GetIt.I.get<MessageService>().markMessageAsRead(
+            int.parse(event.extra![_messageIdKey]!),
             // [XmppService.sendReadMarker] will check whether the *SHOULD* send
             // the marker, i.e. if the privacy settings allow it.
             true,
-          );*/
+          );
+
+      // Update the conversation
+      await GetIt.I.get<ConversationService>().createOrUpdateConversation(
+        event.extra![_conversationJidKey]!,
+        update: (conversation) async {
+          final newConversation = conversation.copyWith(
+            unreadCounter: 0,
+          );
+
+          // Notify the UI
+          sendEvent(
+            ConversationUpdatedEvent(
+              conversation: newConversation,
+            ),
+          );
+
+          return newConversation;
+        },
+      );
+
+      // Clear notifications
+      await dismissNotificationsByJid(event.extra![_conversationJidKey]!);
     } else if (event.type == NotificationEventType.reply) {
       // TODO: Handle
     }
@@ -79,6 +111,38 @@ class NotificationsService {
     return GetIt.I.get<XmppService>().getCurrentlyOpenedChatJid() != jid;
   }
 
+  /// Queries the notifications for the conversation [jid] from the database.
+  Future<List<modeln.Notification>> _getNotificationsForJid(String jid) async {
+    final rawNotifications =
+        await GetIt.I.get<DatabaseService>().database.query(
+      notificationsTable,
+      where: 'conversationJid = ?',
+      whereArgs: [jid],
+    );
+    return rawNotifications.map(modeln.Notification.fromJson).toList();
+  }
+
+  Future<int?> _clearNotificationsForJid(String jid) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+
+    final result = await db.query(
+      notificationsTable,
+      where: 'conversationJid = ?',
+      whereArgs: [jid],
+      limit: 1,
+    );
+
+    // Assumption that all rows with the same conversationJid have the same id.
+    final id = result.isNotEmpty ? result.first['id']! as int : null;
+    await db.delete(
+      notificationsTable,
+      where: 'conversationJid = ?',
+      whereArgs: [jid],
+    );
+
+    return id;
+  }
+
   /// Show a notification for a message [m] grouped by its conversationJid
   /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
   /// then Android's BigPicture will be used.
@@ -110,35 +174,52 @@ class NotificationsService {
       implies(m.fileMetadata?.path != null, m.fileMetadata?.mimeType != null),
       'File metadata has path but no mime type',
     );
+
+    final notifications = await _getNotificationsForJid(c.jid);
+    final id = notifications.isNotEmpty
+        ? notifications.first.id
+        : Random().nextInt(_maxNotificationId);
+
+    // Add to the database
+    final newNotification = modeln.Notification(
+      id,
+      c.jid,
+      title,
+      m.senderJid.toString(),
+      avatarPath.isEmpty ? null : avatarPath,
+      body,
+      m.fileMetadata?.mimeType,
+      m.fileMetadata?.path,
+      m.timestamp,
+    );
+    await GetIt.I.get<DatabaseService>().database.insert(
+          notificationsTable,
+          newNotification.toJson(),
+        );
+    final newMessage = newNotification.toNotificationMessage();
+    _log.finest('Created notification with avatar "${newMessage.avatarPath}"');
+
+    final payload = MessagingNotification(
+      title: title,
+      id: id,
+      channelId: _messageChannelKey,
+      jid: c.jid,
+      messages: [
+        ...notifications.map((n) => n.toNotificationMessage()),
+        newMessage,
+      ],
+      // TODO
+      isGroupchat: false,
+      extra: {
+        _conversationJidKey: c.jid,
+        _messageIdKey: m.id.toString(),
+        _conversationTitleKey: title,
+        _conversationAvatarKey: avatarPath,
+      },
+    );
+    _log.finest('Payload avatar: ${payload.messages.last!.avatarPath}');
     await MoxplatformPlugin.notifications.showMessagingNotification(
-      MessagingNotification(
-        title: title,
-        id: m.id,
-        channelId: _messageChannelKey,
-        jid: c.jid,
-        // TODO: Track the messages
-        messages: [
-          NotificationMessage(
-            sender: title,
-            jid: m.sender,
-            content: NotificationMessageContent(
-              body: body,
-              mime: m.fileMetadata?.mimeType,
-              path: m.fileMetadata?.path,
-            ),
-            timestamp: m.timestamp,
-            avatarPath: avatarPath,
-          ),
-        ],
-        // TODO
-        isGroupchat: false,
-        extra: {
-          'conversationJid': c.jid,
-          'sid': m.sid,
-          'title': title,
-          'avatarPath': avatarPath,
-        },
-      ),
+      payload,
     );
   }
 
@@ -188,7 +269,9 @@ class NotificationsService {
   /// Since all notifications are grouped by the conversation's JID, this function
   /// clears all notifications for [jid].
   Future<void> dismissNotificationsByJid(String jid) async {
-    // TODO
-    //await AwesomeNotifications().dismissNotificationsByGroupKey(jid);
+    final id = await _clearNotificationsForJid(jid);
+    if (id != null) {
+      await MoxplatformPlugin.notifications.dismissNotification(id);
+    }
   }
 }
