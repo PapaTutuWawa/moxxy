@@ -40,7 +40,7 @@ class ConversationMessageConverter
       };
 }
 
-enum ConversationType implements Comparable<ConversationType> {
+enum ConversationType {
   chat('chat'),
   note('note'),
   groupchat('groupchat');
@@ -61,10 +61,6 @@ enum ConversationType implements Comparable<ConversationType> {
         throw Exception();
     }
   }
-
-  // TODO: What to do here?
-  @override
-  int compareTo(ConversationType other) => 0;
 }
 
 class ConversationTypeConverter
