@@ -48,7 +48,7 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
     JoinGroupchatEvent event,
     Emitter<JoinGroupchatState> emit,
   ) async {
-    // Assuming that JID has been validated before this step
+    // Assuming that the JID has been validated before this step
 
     if (state.nick.isEmpty) {
       emit(state.copyWith(nickError: t.pages.newconversation.nullNickname));
