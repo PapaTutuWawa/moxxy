@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as p;
@@ -425,9 +426,9 @@ Future<String> getContactProfilePicturePath(String id) async {
 }
 
 Future<String> getStickerPackPath(String hashFunction, String hashValue) async {
-  final appDir = await getApplicationDocumentsDirectory();
+  final appDir = await MoxplatformPlugin.platform.getPersistentDataPath();
   return p.join(
-    appDir.path,
+    appDir,
     'stickers',
     '${hashFunction}_$hashValue',
   );

@@ -258,12 +258,20 @@ Future<void> entrypoint() async {
     StickersManager(),
     MessageProcessingHintManager(),
   ]);
-
   GetIt.I.registerSingleton<XmppConnection>(connection);
-
   GetIt.I.get<Logger>().finest('Done with xmpp');
 
-  final settings = await xmpp.getConnectionSettings();
+  // Ensure our data directory exists
+  final dir = Directory(
+    await MoxplatformPlugin.platform.getPersistentDataPath(),
+  );
+  if (!dir.existsSync()) {
+    GetIt.I
+        .get<Logger>()
+        .finest('Data dir ${dir.path} does not exist. Creating...');
+    await dir.create(recursive: true);
+    GetIt.I.get<Logger>().finest('Done');
+  }
 
   // Ensure we can access translations here
   // TODO(Unknown): This does *NOT* allow us to get the system's locale as we have no
@@ -271,6 +279,7 @@ Future<void> entrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   LocaleSettings.useDeviceLocale();
 
+  final settings = await xmpp.getConnectionSettings();
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
     unawaited(
