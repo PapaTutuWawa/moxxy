@@ -3,7 +3,6 @@ import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as p;
@@ -423,15 +422,6 @@ Future<String> getContactProfilePicturePath(String id) async {
   if (!dir.existsSync()) await dir.create(recursive: true);
 
   return p.join(avatarDir, id);
-}
-
-Future<String> getStickerPackPath(String hashFunction, String hashValue) async {
-  final appDir = await MoxplatformPlugin.platform.getPersistentDataPath();
-  return p.join(
-    appDir,
-    'stickers',
-    '${hashFunction}_$hashValue',
-  );
 }
 
 /// Prepend [item] to [list], but ensure that the resulting list's size is
