@@ -19,6 +19,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
 import 'package:moxxyv2/shared/models/message.dart' as modelm;
 import 'package:moxxyv2/shared/models/notification.dart' as modeln;
+import 'package:sqflite_sqlcipher/sqflite.dart';
 
 const _maxNotificationId = 2147483647;
 const _messageChannelKey = 'message_channel';
@@ -180,14 +181,13 @@ class NotificationsService {
     return id;
   }
 
-  /// Show a notification for a message [m] grouped by its conversationJid
-  /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
-  /// then Android's BigPicture will be used.
-  Future<void> showNotification(
+  Future<modeln.Notification> _createNotification(
     modelc.Conversation c,
     modelm.Message m,
-    String title, {
-    String? body,
+    String? avatarPath,
+    int id,
+    bool contactIntegrationEnabled, {
+    bool shouldOverride = false,
   }) async {
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
     String body;
@@ -199,23 +199,13 @@ class NotificationsService {
       body = m.body;
     }
 
-    final css = GetIt.I.get<ContactsService>();
-    final contactIntegrationEnabled = await css.isContactIntegrationEnabled();
     final title =
         contactIntegrationEnabled ? c.contactDisplayName ?? c.title : c.title;
-    final avatarPath = contactIntegrationEnabled
-        ? c.contactAvatarPath ?? c.avatarPath
-        : c.avatarPath;
 
     assert(
       implies(m.fileMetadata?.path != null, m.fileMetadata?.mimeType != null),
       'File metadata has path but no mime type',
     );
-
-    final notifications = await _getNotificationsForJid(c.jid);
-    final id = notifications.isNotEmpty
-        ? notifications.first.id
-        : Random().nextInt(_maxNotificationId);
 
     // Add to the database
     final newNotification = modeln.Notification(
@@ -223,7 +213,7 @@ class NotificationsService {
       c.jid,
       title,
       m.senderJid.toString(),
-      avatarPath.isEmpty ? null : avatarPath,
+      (avatarPath?.isEmpty ?? false) ? null : avatarPath,
       body,
       m.fileMetadata?.mimeType,
       m.fileMetadata?.path,
@@ -232,31 +222,112 @@ class NotificationsService {
     await GetIt.I.get<DatabaseService>().database.insert(
           notificationsTable,
           newNotification.toJson(),
+          conflictAlgorithm: shouldOverride ? ConflictAlgorithm.replace : null,
         );
-    final newMessage = newNotification.toNotificationMessage();
-    _log.finest('Created notification with avatar "${newMessage.avatarPath}"');
+    return newNotification;
+  }
 
-    final payload = MessagingNotification(
-      title: title,
-      id: id,
-      channelId: _messageChannelKey,
-      jid: c.jid,
-      messages: [
-        ...notifications.map((n) => n.toNotificationMessage()),
-        newMessage,
-      ],
-      // TODO
-      isGroupchat: false,
-      extra: {
-        _conversationJidKey: c.jid,
-        _messageIdKey: m.id.toString(),
-        _conversationTitleKey: title,
-        _conversationAvatarKey: avatarPath,
-      },
+  /// When a notification is already visible, then build a new notification based on [c] and [m],
+  /// update the database state and tell the OS to show the notification again.
+  /// TODO(Unknown): What about systems that cannot do this (Linux, OS X, Windows)?
+  Future<void> updateNotification(
+    modelc.Conversation c,
+    modelm.Message m,
+  ) async {
+    final contactIntegrationEnabled =
+        await GetIt.I.get<ContactsService>().isContactIntegrationEnabled();
+    final avatarPath = contactIntegrationEnabled
+        ? c.contactAvatarPath ?? c.avatarPath
+        : c.avatarPath;
+    final title =
+        contactIntegrationEnabled ? c.contactDisplayName ?? c.title : c.title;
+
+    final notifications = await _getNotificationsForJid(c.jid);
+    final id = notifications.first.id;
+    final notification = await _createNotification(
+      c,
+      m,
+      avatarPath,
+      id,
+      contactIntegrationEnabled,
+      shouldOverride: true,
     );
-    _log.finest('Payload avatar: ${payload.messages.last!.avatarPath}');
+
     await MoxplatformPlugin.notifications.showMessagingNotification(
-      payload,
+      MessagingNotification(
+        title: title,
+        id: id,
+        channelId: _messageChannelKey,
+        jid: c.jid,
+        messages: [
+          ...notifications.map((n) {
+            // Based on the table's composite primary key
+            if (n.id == notification.id &&
+                n.conversationJid == notification.conversationJid &&
+                n.senderJid == notification.senderJid &&
+                n.timestamp == notification.timestamp) {
+              return notification.toNotificationMessage();
+            }
+
+            return n.toNotificationMessage();
+          }),
+        ],
+        // TODO
+        isGroupchat: false,
+        extra: {
+          _conversationJidKey: c.jid,
+          _messageIdKey: m.id.toString(),
+          _conversationTitleKey: title,
+          _conversationAvatarKey: avatarPath,
+        },
+      ),
+    );
+  }
+
+  /// Show a notification for a message [m] grouped by its conversationJid
+  /// attribute. If the message is a media message, i.e. mediaUrl != null and isMedia == true,
+  /// then Android's BigPicture will be used.
+  Future<void> showNotification(
+    modelc.Conversation c,
+    modelm.Message m,
+    String title, {
+    String? body,
+  }) async {
+    final contactIntegrationEnabled =
+        await GetIt.I.get<ContactsService>().isContactIntegrationEnabled();
+    final avatarPath = contactIntegrationEnabled
+        ? c.contactAvatarPath ?? c.avatarPath
+        : c.avatarPath;
+    final notifications = await _getNotificationsForJid(c.jid);
+    final id = notifications.isNotEmpty
+        ? notifications.first.id
+        : Random().nextInt(_maxNotificationId);
+    await MoxplatformPlugin.notifications.showMessagingNotification(
+      MessagingNotification(
+        title: title,
+        id: id,
+        channelId: _messageChannelKey,
+        jid: c.jid,
+        messages: [
+          ...notifications.map((n) => n.toNotificationMessage()),
+          (await _createNotification(
+            c,
+            m,
+            avatarPath,
+            id,
+            contactIntegrationEnabled,
+          ))
+              .toNotificationMessage(),
+        ],
+        // TODO
+        isGroupchat: false,
+        extra: {
+          _conversationJidKey: c.jid,
+          _messageIdKey: m.id.toString(),
+          _conversationTitleKey: title,
+          _conversationAvatarKey: avatarPath,
+        },
+      ),
     );
   }
 

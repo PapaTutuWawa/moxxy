@@ -603,7 +603,7 @@ class HttpFileTransferService {
     if (notification.shouldShowNotification(msg.conversationJid) &&
         job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      await notification.showNotification(updatedConversation, msg, '');
+      await notification.updateNotification(updatedConversation, msg);
     }
 
     sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));
