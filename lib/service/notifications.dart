@@ -108,6 +108,18 @@ class NotificationsService {
     }
   }
 
+  /// Configures the translatable strings on the native side
+  /// using locale is currently configured.
+  Future<void> configureNotificationI18n() async {
+    await MoxplatformPlugin.notifications.setI18n(
+      NotificationI18nData(
+        reply: t.notifications.message.reply,
+        markAsRead: t.notifications.message.markAsRead,
+        you: t.messages.you,
+      ),
+    );
+  }
+
   Future<void> initialize() async {
     await MoxplatformPlugin.notifications.createNotificationChannel(
       t.notifications.channels.messagesChannelName,
@@ -121,13 +133,9 @@ class NotificationsService {
       _warningChannelKey,
       false,
     );
-    await MoxplatformPlugin.notifications.setI18n(
-      NotificationI18nData(
-        reply: t.notifications.message.reply,
-        markAsRead: t.notifications.message.markAsRead,
-        you: t.messages.you,
-      ),
-    );
+
+    // Configure i18n
+    await configureNotificationI18n();
 
     // Listen to notification events
     MoxplatformPlugin.notifications

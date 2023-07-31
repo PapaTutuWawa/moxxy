@@ -208,6 +208,7 @@ Future<void> performPreStart(
   } else {
     LocaleSettings.setLocaleRaw(preferences.languageLocaleCode);
   }
+  await GetIt.I.get<NotificationsService>().configureNotificationI18n();
   GetIt.I.get<XmppService>().setNotificationText(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
@@ -456,6 +457,7 @@ Future<void> performSetPreferences(
   GetIt.I.get<XmppService>().setNotificationText(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
+  await GetIt.I.get<NotificationsService>().configureNotificationI18n();
 }
 
 /// Attempts to achieve a "both" subscription with [jid].
