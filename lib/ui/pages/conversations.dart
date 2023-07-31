@@ -356,6 +356,7 @@ class ConversationsPageState extends State<ConversationsPage>
                                   _selectedConversation!.jid,
                                 ),
                               );
+                          dismissContextMenu();
                         },
                       ),
                     ContextMenuItem(
@@ -380,6 +381,7 @@ class ConversationsPageState extends State<ConversationsPage>
                                   _selectedConversation!.jid,
                                 ),
                               );
+                          dismissContextMenu();
                         }
                       },
                     ),
