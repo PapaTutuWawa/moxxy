@@ -5,7 +5,6 @@ import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
-import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -185,8 +184,7 @@ class NotificationsService {
     modelc.Conversation c,
     modelm.Message m,
     String? avatarPath,
-    int id,
-    bool contactIntegrationEnabled, {
+    int id, {
     bool shouldOverride = false,
   }) async {
     // See https://github.com/MaikuB/flutter_local_notifications/blob/master/flutter_local_notifications/example/lib/main.dart#L1293
@@ -199,9 +197,6 @@ class NotificationsService {
       body = m.body;
     }
 
-    final title =
-        contactIntegrationEnabled ? c.contactDisplayName ?? c.title : c.title;
-
     assert(
       implies(m.fileMetadata?.path != null, m.fileMetadata?.mimeType != null),
       'File metadata has path but no mime type',
@@ -211,7 +206,7 @@ class NotificationsService {
     final newNotification = modeln.Notification(
       id,
       c.jid,
-      title,
+      c.titleWithOptionalContact,
       m.senderJid.toString(),
       (avatarPath?.isEmpty ?? false) ? null : avatarPath,
       body,
@@ -234,28 +229,19 @@ class NotificationsService {
     modelc.Conversation c,
     modelm.Message m,
   ) async {
-    final contactIntegrationEnabled =
-        await GetIt.I.get<ContactsService>().isContactIntegrationEnabled();
-    final avatarPath = contactIntegrationEnabled
-        ? c.contactAvatarPath ?? c.avatarPath
-        : c.avatarPath;
-    final title =
-        contactIntegrationEnabled ? c.contactDisplayName ?? c.title : c.title;
-
     final notifications = await _getNotificationsForJid(c.jid);
     final id = notifications.first.id;
     final notification = await _createNotification(
       c,
       m,
-      avatarPath,
+      c.avatarPathWithOptionalContact,
       id,
-      contactIntegrationEnabled,
       shouldOverride: true,
     );
 
     await MoxplatformPlugin.notifications.showMessagingNotification(
       MessagingNotification(
-        title: title,
+        title: c.titleWithOptionalContact,
         id: id,
         channelId: _messageChannelKey,
         jid: c.jid,
@@ -277,8 +263,8 @@ class NotificationsService {
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id.toString(),
-          _conversationTitleKey: title,
-          _conversationAvatarKey: avatarPath,
+          _conversationTitleKey: c.titleWithOptionalContact,
+          _conversationAvatarKey: c.avatarPathWithOptionalContact,
         },
       ),
     );
@@ -293,11 +279,6 @@ class NotificationsService {
     String title, {
     String? body,
   }) async {
-    final contactIntegrationEnabled =
-        await GetIt.I.get<ContactsService>().isContactIntegrationEnabled();
-    final avatarPath = contactIntegrationEnabled
-        ? c.contactAvatarPath ?? c.avatarPath
-        : c.avatarPath;
     final notifications = await _getNotificationsForJid(c.jid);
     final id = notifications.isNotEmpty
         ? notifications.first.id
@@ -313,9 +294,8 @@ class NotificationsService {
           (await _createNotification(
             c,
             m,
-            avatarPath,
+            c.avatarPathWithOptionalContact,
             id,
-            contactIntegrationEnabled,
           ))
               .toNotificationMessage(),
         ],
@@ -324,8 +304,8 @@ class NotificationsService {
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id.toString(),
-          _conversationTitleKey: title,
-          _conversationAvatarKey: avatarPath,
+          _conversationTitleKey: c.titleWithOptionalContact,
+          _conversationAvatarKey: c.avatarPathWithOptionalContact,
         },
       ),
     );
