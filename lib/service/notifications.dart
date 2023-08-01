@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:get_it/get_it.dart';
-import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
@@ -31,10 +30,8 @@ const _conversationTitleKey = 'title';
 const _conversationAvatarKey = 'avatarPath';
 
 class NotificationsService {
-  NotificationsService() : _log = Logger('NotificationsService');
-  // ignore: unused_field
-  final Logger _log;
-
+  /// Called when something happens to the notification, i.e. the actions are triggered or
+  /// the notification has been tapped.
   Future<void> onNotificationEvent(NotificationEvent event) async {
     final conversationJid = event.extra![_conversationJidKey]!;
     if (event.type == NotificationEventType.open) {
@@ -121,6 +118,7 @@ class NotificationsService {
   }
 
   Future<void> initialize() async {
+    // Set up the notitifcation channels.
     await MoxplatformPlugin.notifications.createNotificationChannel(
       t.notifications.channels.messagesChannelName,
       t.notifications.channels.messagesChannelDescription,
