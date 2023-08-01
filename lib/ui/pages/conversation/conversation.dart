@@ -22,12 +22,24 @@ import 'package:moxxyv2/ui/pages/conversation/selected_message.dart';
 import 'package:moxxyv2/ui/pages/conversation/topbar.dart';
 import 'package:moxxyv2/ui/pages/conversation/typing_indicator.dart';
 import 'package:moxxyv2/ui/service/data.dart';
+import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/bubbles.dart';
 import 'package:moxxyv2/ui/widgets/chat/bubbles/date.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
 import 'package:moxxyv2/ui/widgets/combined_picker.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
+
+class ConversationPageArguments {
+  const ConversationPageArguments(
+    this.conversationJid,
+    this.initialText,
+  );
+
+  final String conversationJid;
+
+  final String? initialText;
+}
 
 int getMessageMenuOptionCount(
   Message message,
@@ -49,11 +61,15 @@ int getMessageMenuOptionCount(
 class ConversationPage extends StatefulWidget {
   const ConversationPage({
     required this.conversationJid,
+    this.initialText,
     super.key,
   });
 
   /// The JID of the current conversation
   final String conversationJid;
+
+  /// The optional initial text to put in the input field.
+  final String? initialText;
 
   @override
   ConversationPageState createState() => ConversationPageState();
@@ -89,6 +105,7 @@ class ConversationPageState extends State<ConversationPage>
     _conversationController = BidirectionalConversationController(
       widget.conversationJid,
       _textfieldFocusNode,
+      initialText: widget.initialText,
     );
     _conversationController.fetchOlderData();
 
@@ -320,6 +337,13 @@ class ConversationPageState extends State<ConversationPage>
           ),
         );
       },
+      visibilityCallback: (info) {
+        if (sentBySelf) return;
+
+        if (info.visibleFraction >= 0) {
+          GetIt.I.get<UIReadMarkerService>().handleMarker(message);
+        }
+      },
     );
   }
 
@@ -338,6 +362,8 @@ class ConversationPageState extends State<ConversationPage>
           return false;
         }
 
+        // Clear the read marker cache
+        GetIt.I.get<UIReadMarkerService>().clear();
         return true;
       },
       child: KeyboardReplacerScaffold(

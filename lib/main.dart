@@ -57,7 +57,10 @@ import 'package:moxxyv2/ui/pages/settings/licenses.dart';
 import 'package:moxxyv2/ui/pages/settings/network.dart';
 import 'package:moxxyv2/ui/pages/settings/privacy/privacy.dart';
 import 'package:moxxyv2/ui/pages/settings/settings.dart';
+import 'package:moxxyv2/ui/pages/settings/sticker_packs.dart';
 import 'package:moxxyv2/ui/pages/settings/stickers.dart';
+import 'package:moxxyv2/ui/pages/settings/storage/shared_media.dart';
+import 'package:moxxyv2/ui/pages/settings/storage/storage.dart';
 import 'package:moxxyv2/ui/pages/share_selection.dart';
 //import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
@@ -69,6 +72,7 @@ import 'package:moxxyv2/ui/service/avatars.dart';
 import 'package:moxxyv2/ui/service/connectivity.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
+import 'package:moxxyv2/ui/service/read.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
 import 'package:moxxyv2/ui/theme.dart';
 import 'package:page_transition/page_transition.dart';
@@ -90,6 +94,7 @@ Future<void> setupUIServices() async {
   GetIt.I.registerSingleton<UIAvatarsService>(UIAvatarsService());
   GetIt.I.registerSingleton<UISharingService>(UISharingService());
   GetIt.I.registerSingleton<UIConnectivityService>(UIConnectivityService());
+  GetIt.I.registerSingleton<UIReadMarkerService>(UIReadMarkerService());
 
   /// Initialize services
   await GetIt.I.get<UIConnectivityService>().initialize();
@@ -281,11 +286,13 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
           case newConversationRoute:
             return NewConversationPage.route;
           case conversationRoute:
+            final args = settings.arguments! as ConversationPageArguments;
             return PageTransition<dynamic>(
               type: PageTransitionType.rightToLeft,
               settings: settings,
               child: ConversationPage(
-                conversationJid: settings.arguments! as String,
+                conversationJid: args.conversationJid,
+                initialText: args.initialText,
               ),
             );
           // case sharedMediaRoute:
@@ -340,8 +347,14 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             );
           case stickersRoute:
             return StickersSettingsPage.route;
+          case stickerPacksRoute:
+            return StickerPacksSettingsPage.route;
           case stickerPackRoute:
             return StickerPackPage.route;
+          case storageSettingsRoute:
+            return StorageSettingsPage.route;
+          case storageSharedMediaSettingsRoute:
+            return StorageSharedMediaPage.route;
         }
 
         return null;

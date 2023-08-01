@@ -21,6 +21,7 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     on<AvatarChangedEvent>(_onAvatarChanged);
     on<ConversationClosedEvent>(_onConversationClosed);
     on<ConversationMarkedAsReadEvent>(_onConversationMarkedAsRead);
+    on<ConversationsSetEvent>(_onConversationsSet);
   }
 
   // TODO(Unknown): This pattern is used so often that it should become its own thing in moxlib
@@ -153,5 +154,16 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   /// Returns null, if the conversation does not exist.
   Conversation? getConversationByJid(String jid) {
     return state.conversations.firstWhereOrNull((c) => c.jid == jid);
+  }
+
+  Future<void> _onConversationsSet(
+    ConversationsSetEvent event,
+    Emitter<ConversationsState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        conversations: event.conversations,
+      ),
+    );
   }
 }

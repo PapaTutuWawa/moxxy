@@ -21,9 +21,9 @@
         },
         "channels": {
             "messagesChannelName": "Сообщения",
-            "warningChannelName": "Предупреждение",
+            "warningChannelName": "Предупреждения",
             "warningChannelDescription": "Предупреждения, связанные с Moxxy",
-            "messagesChannelDescription": "Канал уведомления о полученных сообщениях"
+            "messagesChannelDescription": "Канал уведомлений о полученных сообщениях"
         },
         "titles": {
             "error": "Ошибка"
@@ -55,14 +55,14 @@
         "yesterday": "Вчера"
     },
     "messages": {
-        "image": "Картинка",
+        "image": "Изображение",
         "video": "Видео",
         "file": "Файл",
         "sticker": "Стикер",
         "you": "Ты",
         "audio": "Аудио",
         "retracted": "Сообщение удалено",
-        "retractedFallback": "Предыдущее сообщение было удалено, но ваш клиент не поддерживает удаление"
+        "retractedFallback": "Предыдущее сообщение было удалено, но это не поддерживается Вашим клиентом"
     },
     "errors": {
         "filePicker": {
@@ -103,13 +103,21 @@
             "failedToEncrypt": "Сообщение не может быть зашифровано",
             "failedToEncryptFile": "Файл не может быть зашифрован",
             "failedToDecryptFile": "Файл не может быть расшифрован",
-            "fileNotEncrypted": "Чат зашифрован, но файл не зашифрован"
+            "fileNotEncrypted": "Этот чат зашифрован, но файл нет"
         },
         "conversation": {
             "audioRecordingError": "Не удалось завершить аудиозапись",
             "openFileNoAppError": "Приложения для открытия этого файла не найдены",
             "openFileGenericError": "Не удалось открыть файл",
             "messageErrorDialogTitle": "Ошибка"
+        },
+        "newChat": {
+            "groupchatUnsupported": "Вступление в групповой чат пока не поддерживается.",
+            "remoteServerError": "Не удалось связаться с удалённым сервером.",
+            "unknown": "Неизвестная ошибка."
+        },
+        "general": {
+            "noInternet": "Нет подключения к интернету."
         }
     },
     "pages": {
@@ -128,7 +136,7 @@
         "conversations": {
             "speeddialNewChat": "Написать",
             "speeddialJoinGroupchat": "Групповой чат",
-            "speeddialAddNoteToSelf": "Себе",
+            "speeddialAddNoteToSelf": "Заметка себе",
             "overlaySettings": "Настройки",
             "startChat": "Начать диалог",
             "markAsRead": "Пометить как прочитанное",
@@ -146,14 +154,14 @@
             "blockUser": "Заблокировать пользователя",
             "online": "В сети",
             "retract": "Отозвать сообщение",
-            "copy": "Копировать",
+            "copy": "Копировать содержимое",
             "addReaction": "Реакция",
             "showError": "Показать ошибки",
             "showWarning": "Показать предупреждения",
             "sendFiles": "Отправить файл",
             "takePhotos": "Сделать фотографии",
             "retractBody": "Вы уверены, что хотите отозвать сообщение? Помните, что это всего лишь просьба, которую клиент не обязан выполнять.",
-            "forward": "Продолжить",
+            "forward": "Переслать",
             "edit": "Изменить",
             "quote": "Цитировать",
             "addToContacts": "Добавить в контакты",
@@ -171,7 +179,9 @@
                 "other": "Добавлено несколько устройств"
             },
             "messageHint": "Сообщение...",
-            "sendImages": "Отправить картинку"
+            "sendImages": "Отправить изображение",
+            "messageCopied": "Сообщение скопировано в буфер",
+            "warning": "Предупреждение"
         },
         "startchat": {
             "xmppAddress": "XMPP-адрес",
@@ -180,14 +190,14 @@
             "subtitle": "Вы можете добавить контакт введя его XMPP адрес или отсканировав QR код"
         },
         "newconversation": {
-            "title": "Начать новый чат",
+            "title": "Новый чат",
             "startChat": "Добавить контакт",
-            "createGroupchat": "Создать групповой чат"
+            "createGroupchat": "Создать новый групповой чат"
         },
         "shareselection": {
             "shareWith": "Поделиться с...",
             "confirmTitle": "Отправить файл",
-            "confirmBody": "Один или несколько чатов не зашифрованы, это означает, что файл будет доступен администрации сервера. Вы все еще хотите продолжить?"
+            "confirmBody": "Один или несколько чатов не зашифрованы, из-за чего файл будет доступен администрации сервера. Вы уверены, что хотите продолжить?"
         },
         "profile": {
             "general": {
@@ -204,20 +214,20 @@
             "owndevices": {
                 "thisDevice": "Это устройство",
                 "recreateOwnDevice": "Восстановить устройство",
-                "title": "Собственные устройства",
+                "title": "Мои устройства",
                 "otherDevices": "Другие устройства",
                 "deleteDeviceConfirmTitle": "Удалить устройство",
                 "deleteDeviceConfirmBody": "Контакты не смогут быть зашифрованы для этого устройства. Продолжить?",
                 "recreateOwnSessions": "Пересоздать сеанс",
-                "recreateOwnSessionsConfirmTitle": "Пересоздать текущий сеанс?",
+                "recreateOwnSessionsConfirmTitle": "Пересоздать свои сеансы?",
                 "recreateOwnSessionsConfirmBody": "Создать новые ключи шифрования для этого устройства. Используйте только в крайнем случае.",
                 "recreateOwnDeviceConfirmTitle": "Восстановить это устройство?",
-                "recreateOwnDeviceConfirmBody": "Ключи шифрования для этого устройства будут заменены на новые, продолжить?"
+                "recreateOwnDeviceConfirmBody": "Это создаст новый криптографический отпечаток устройства, что займёт некоторое время. Если ваше устройство было подтверждено контактами, им придётся сделать это снова. Продолжить?"
             },
             "devices": {
                 "title": "Безопасность",
                 "recreateSessionsConfirmTitle": "Пересоздать сеанс?",
-                "noSessions": "Нет ключей для шифрования.",
+                "noSessions": "Нет криптографических сессий, используемых для сквозного шифрования.",
                 "recreateSessions": "Пересоздать сеанс",
                 "recreateSessionsConfirmBody": "Создать новые ключи шифрования для этого устройства. Используйте только в крайнем случае."
             }
@@ -263,13 +273,13 @@
                 "selectBackgroundImage": "Выбрать фон",
                 "removeBackgroundImage": "Удалить фон",
                 "removeBackgroundImageConfirmTitle": "Удалить фон",
-                "newChatsSection": "Новый чат",
+                "newChatsSection": "Новые чаты",
                 "newChatsMuteByDefault": "Отключать звук в новых чатах по умолчанию",
                 "newChatsE2EE": "Включить оконечное шифрование по умолчанию",
                 "behaviourSection": "Поведение",
                 "contactsIntegration": "Синхронизация контактов",
                 "selectBackgroundImageDescription": "Это изображение будет фоном для ваших чатов",
-                "contactsIntegrationBody": "При включении данные из телефонной книги будут использованы в заголовках чатов и фото профилей, на сервер ничего не оправляется"
+                "contactsIntegrationBody": "При включении данные из Контактов будут использованы для названий чатов и фото профилей. На сервер ничего отправлено не будет."
             },
             "debugging": {
                 "title": "Опции отладки",
@@ -314,7 +324,7 @@
                 "redirectDialogTitle": "$serviceName Перенаправление",
                 "stickersPrivacy": "Публиковать список стикеров",
                 "stickersPrivacySubtext": "Когда включено, все могут видет установленные у вас стикеры",
-                "profilePictureVisibilitSubtext": "Когда в ключено, все видят ваш аватар, когда выключено - только контакты"
+                "profilePictureVisibilitSubtext": "Когда включено, все видят Ваш аватар; когда выключено - только контакты"
             },
             "stickers": {
                 "importSuccess": "Стикерпаки успешно импортированы",
@@ -330,7 +340,7 @@
             "settings": {
                 "title": "Настройки",
                 "conversationsSection": "Чаты",
-                "accountSection": "Учетная запись",
+                "accountSection": "Учётная запись",
                 "signOut": "Выйти",
                 "signOutConfirmTitle": "Выйти",
                 "signOutConfirmBody": "Вы хотите выйти, продолжить?",
@@ -349,9 +359,15 @@
                 "title": "Открытые лицензии",
                 "licensedUnder": "Лицензировано под ${license}"
             }
+        },
+        "sharedMedia": {
+            "empty": {
+                "chat": "Нет общих медиафайлов для этого чата",
+                "general": "Нет доступных медиаустройств"
+            }
         }
     },
-    "@@name": "Русский",
+    "language": "Русский",
     "warnings": {
         "message": {
             "integrityCheckFailed": "Не удалось проверить целостность файла"

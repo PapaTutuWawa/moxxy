@@ -32,7 +32,9 @@ import 'package:moxxyv2/service/omemo/omemo.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
+import 'package:moxxyv2/service/share.dart';
 import 'package:moxxyv2/service/stickers.dart';
+import 'package:moxxyv2/service/storage.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -177,6 +179,8 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<FilesService>(FilesService());
   GetIt.I.registerSingleton<ReactionsService>(ReactionsService());
   GetIt.I.registerSingleton<GroupchatService>(GroupchatService());
+  GetIt.I.registerSingleton<StorageService>(StorageService());
+  GetIt.I.registerSingleton<ShareService>(ShareService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 

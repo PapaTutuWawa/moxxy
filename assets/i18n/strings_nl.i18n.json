@@ -1,5 +1,5 @@
 {
-    "@@name": "Engels",
+    "language": "Nederlands",
     "global": {
         "title": "Moxxy",
         "dialogAccept": "Oké",
@@ -188,7 +188,9 @@
             "closeChatConfirmTitle": "Gesprek sluiten",
             "retractBody": "Weet je zeker dat je dit bericht wilt herroepen? Dit is slechts een verzoek aan de client dat niet in acht hoeft te worden genomen.",
             "stickerPickerNoStickersLine2": "Installeer pakketten via de stickerinstellingen.",
-            "takePhotos": "Foto's maken"
+            "takePhotos": "Foto's maken",
+            "warning": "Waarschuwing",
+            "messageCopied": "De berichtinhoud is gekopieerd naar het klembord"
         },
         "newconversation": {
             "title": "Nieuw gesprek",
@@ -358,7 +360,40 @@
                 "stickerPacksSection": "Stickerpakketten",
                 "importStickerPack": "Stickerpakket importeren",
                 "importSuccess": "Het stickerpakket is geïmporteerd",
-                "importFailure": "Het stickerpakket kan niet worden geïmporteerd"
+                "importFailure": "Het stickerpakket kan niet worden geïmporteerd",
+                "stickerPackSize": "(${size})"
+            },
+            "storage": {
+                "title": "Opslag",
+                "storageUsed": "In gebruik: ${size}",
+                "sizePlaceholder": "Bezig met berekenen…",
+                "storageManagement": "Opslagbeheer",
+                "removeOldMedia": {
+                    "title": "Oude media verwijderen",
+                    "description": "Verwijdert oude mediabestanden van het apparaat"
+                },
+                "removeOldMediaDialog": {
+                    "title": "Mediabestanden verwijderen",
+                    "options": {
+                        "all": "Alle mediabestanden",
+                        "oneWeek": "Ouder dan 1 week",
+                        "oneMonth": "Ouder dan 1 maand"
+                    },
+                    "delete": "Verwijderen",
+                    "confirmation": {
+                        "body": "Weet je zeker dat je oude mediabestanden wilt verwijderen?"
+                    }
+                },
+                "viewMediaFiles": "Mediabestanden bekijken",
+                "mediaFiles": "Mediabestanden",
+                "types": {
+                    "media": "Media",
+                    "stickers": "Stickers"
+                },
+                "manageStickers": "Stickerpakketten beheren"
+            },
+            "stickerPacks": {
+                "title": "Stickerpakketten"
             }
         },
         "startchat": {
@@ -366,6 +401,12 @@
             "xmppAddress": "Xmpp-adres",
             "subtitle": "Je kunt een nieuw gesprek starten door een xmpp-adres in te voeren of een QR-code te scannen.",
             "buttonAddToContact": "Gesprek starten"
+        },
+        "sharedMedia": {
+            "empty": {
+                "chat": "Er is geen gedeelde media in dit gesprek",
+                "general": "Er zijn geen mediabestanden beschikbaar"
+            }
         }
     }
 }

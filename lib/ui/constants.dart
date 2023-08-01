@@ -134,6 +134,9 @@ const Color reactionColorSent = Color(0xff2993FB);
 /// The color of the skim when a message is highlighted.
 const Color highlightSkimColor = Color(0xff000000);
 
+/// The width of the bar used to indicate a legacy quote.
+const double textMessageQuoteBarWidth = 3;
+
 /// Navigation constants
 const String cropRoute = '/crop';
 const String introRoute = '/intro';
@@ -158,6 +161,9 @@ const String backgroundCroppingRoute = '$settingsRoute/appearance/background';
 const String conversationSettingsRoute = '$settingsRoute/conversation';
 const String appearanceRoute = '$settingsRoute/appearance';
 const String stickersRoute = '$settingsRoute/stickers';
+const String stickerPacksRoute = '$settingsRoute/stickers/sticker_packs';
+const String storageSettingsRoute = '$settingsRoute/storage';
+const String storageSharedMediaSettingsRoute = '$settingsRoute/storage/media';
 const String blocklistRoute = '/blocklist';
 const String shareSelectionRoute = '/share_selection';
 const String serverInfoRoute = '$profileRoute/server_info';

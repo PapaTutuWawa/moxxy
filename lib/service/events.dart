@@ -12,6 +12,9 @@ import 'package:moxxyv2/service/connectivity.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/groupchat.dart';
+import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/database/database.dart';
+import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -26,6 +29,7 @@ import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/stickers.dart';
+import 'package:moxxyv2/service/storage.dart';
 import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/commands.dart';
@@ -105,6 +109,10 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
       EventTypeMatcher<JoinGroupchatCommand>(performJoinGroupchat),
+      EventTypeMatcher<GetStorageUsageCommand>(performGetStorageUsage),
+      EventTypeMatcher<DeleteOldMediaFilesCommand>(performOldMediaFileDeletion),
+      EventTypeMatcher<GetPagedStickerPackCommand>(performGetPagedStickerPacks),
+      EventTypeMatcher<GetStickerPackByIdCommand>(performGetStickerPackById),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
     ]);
 
@@ -186,7 +194,6 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
             .where((c) => c.open)
             .toList(),
     roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
-    stickers: await GetIt.I.get<StickersService>().getStickerPacks(),
   );
 }
 
@@ -671,6 +678,7 @@ Future<void> performRequestDownload(
       ),
       message.id,
       message.fileMetadata!.id,
+      message.fileMetadata!.plaintextHashes?.isNotEmpty ?? false,
       message.conversationJid,
       mimeGuess,
     ),
@@ -986,9 +994,9 @@ Future<void> performMarkConversationAsRead(
     sendEvent(ConversationUpdatedEvent(conversation: conversation));
 
     if (conversation.lastMessage != null) {
-      await GetIt.I.get<XmppService>().sendReadMarker(
-            command.conversationJid,
-            conversation.lastMessage!.sid,
+      await GetIt.I.get<MessageService>().markMessageAsRead(
+            conversation.lastMessage!.id,
+            conversation.type != ConversationType.note,
           );
     }
   }
@@ -1003,26 +1011,10 @@ Future<void> performMarkMessageAsRead(
   MarkMessageAsReadCommand command, {
   dynamic extra,
 }) async {
-  final cs = GetIt.I.get<ConversationService>();
-
-  final conversation = await cs.createOrUpdateConversation(
-    command.conversationJid,
-    update: (c) async {
-      return cs.updateConversation(
-        command.conversationJid,
-        unreadCounter: command.newUnreadCounter,
+  await GetIt.I.get<MessageService>().markMessageAsRead(
+        command.id,
+        command.sendMarker,
       );
-    },
-  );
-
-  if (conversation != null) {
-    sendEvent(ConversationUpdatedEvent(conversation: conversation));
-
-    await GetIt.I.get<XmppService>().sendReadMarker(
-          command.conversationJid,
-          command.sid,
-        );
-  }
 }
 
 Future<void> performAddMessageReaction(
@@ -1218,6 +1210,8 @@ Future<void> performFetchStickerPack(
           stickerPack.hashValue,
           stickerPack.restricted,
           false,
+          0,
+          0,
         ),
       ),
       id: id,
@@ -1356,6 +1350,70 @@ Future<void> performRequestAvatarForJid(
   unawaited(future);
 }
 
+Future<void> performGetStorageUsage(
+  GetStorageUsageCommand command, {
+  dynamic extra,
+}) async {
+  sendEvent(
+    GetStorageUsageEvent(
+      mediaUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
+      stickerUsage:
+          await GetIt.I.get<StorageService>().computeUsedStickerStorage(),
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performOldMediaFileDeletion(
+  DeleteOldMediaFilesCommand command, {
+  dynamic extra,
+}) async {
+  await GetIt.I.get<StorageService>().deleteOldMediaFiles(command.timeOffset);
+
+  sendEvent(
+    DeleteOldMediaFilesDoneEvent(
+      newUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
+      conversations:
+          (await GetIt.I.get<ConversationService>().loadConversations())
+              .where((c) => c.open)
+              .toList(),
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performGetPagedStickerPacks(
+  GetPagedStickerPackCommand command, {
+  dynamic extra,
+}) async {
+  final result = await GetIt.I.get<StickersService>().getPaginatedStickerPacks(
+        command.olderThan,
+        command.timestamp,
+        command.includeStickers,
+      );
+
+  sendEvent(
+    PagedStickerPackResult(
+      stickerPacks: result,
+    ),
+    id: extra as String,
+  );
+}
+
+Future<void> performGetStickerPackById(
+  GetStickerPackByIdCommand command, {
+  dynamic extra,
+}) async {
+  sendEvent(
+    GetStickerPackByIdResult(
+      stickerPack: await GetIt.I.get<StickersService>().getStickerPackById(
+            command.id,
+          ),
+    ),
+    id: extra as String,
+  );
+}
+
 Future<void> performDebugCommand(
   DebugCommand command, {
   dynamic extra,
@@ -1378,6 +1436,21 @@ Future<void> performDebugCommand(
     await conn
         .getManagerById<RosterManager>(rosterManager)!
         .requestRoster(useRosterVersion: false);
+  } else if (command.id == debug.DebugCommand.logAvailableMediaFiles.id) {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final results = await db.rawQuery(
+      '''
+      SELECT
+        path,
+        id
+      FROM
+        $fileMetadataTable AS fmt
+      WHERE
+        AND NOT EXISTS (SELECT id from $stickersTable WHERE file_metadata_id = fmt.id)
+        AND path IS NOT NULL
+      ''',
+    );
+    Logger.root.finest(results);
   }
 }
 

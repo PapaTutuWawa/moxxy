@@ -60,6 +60,39 @@ class TextChatWidget extends StatelessWidget {
                 // NOTE: We use [renderWidget] here because otherwise, flutter_parsed_text will
                 //       use [TextSpan]s with a [GestureRecognizer]. This interferes with the
                 //       surrounding [GestureDetector] that we use for long-press interactions.
+                // Match quotes
+                MatchText(
+                  pattern: '> .*',
+                  renderWidget: ({
+                    required String pattern,
+                    required String text,
+                  }) {
+                    return DecoratedBox(
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          left: BorderSide(
+                            color: Colors.grey,
+                            width: textMessageQuoteBarWidth,
+                          ),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 2 * textMessageQuoteBarWidth,
+                        ),
+                        // TODO(Unknown): Somehow, we should also parse a possible link here
+                        child: Text(
+                          // Remove the leading "> "
+                          text.substring(2),
+                          style: const TextStyle(
+                            color: bubbleTextQuoteColor,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                // Match URLs
                 MatchText(
                   // Taken from flutter_parsed_text's source code. Added ";" and "%" to
                   // valid URLs

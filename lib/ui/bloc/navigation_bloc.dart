@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'navigation_bloc.freezed.dart';
@@ -12,6 +13,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     on<PushedNamedAndRemoveUntilEvent>(_onPushedNamedAndRemoveUntil);
     on<PushedNamedReplaceEvent>(_onPushedNamedReplaceEvent);
     on<PoppedRouteEvent>(_onPoppedRoute);
+    on<PoppedRouteWithOptionalSystemNavigatorEvent>(
+      _onPoppedWithSystemNavigator,
+    );
   }
   final GlobalKey<NavigatorState> navigationKey;
 
@@ -55,5 +59,17 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
 
   bool canPop() {
     return navigationKey.currentState!.canPop();
+  }
+
+  Future<void> _onPoppedWithSystemNavigator(
+    PoppedRouteWithOptionalSystemNavigatorEvent event,
+    Emitter<NavigationState> emit,
+  ) async {
+    if (!canPop()) {
+      await SystemNavigator.pop();
+      return;
+    }
+
+    await _onPoppedRoute(PoppedRouteEvent(), emit);
   }
 }

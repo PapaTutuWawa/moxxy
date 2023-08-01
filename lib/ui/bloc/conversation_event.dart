@@ -22,12 +22,17 @@ class RequestedConversationEvent extends ConversationEvent {
     this.title,
     this.avatarUrl, {
     this.removeUntilConversations = false,
+    this.initialText,
   });
-  // These are placeholders in case we have to wait a bit longer
+
+  /// These are placeholders in case we have to wait a bit longer
   final String jid;
   final String title;
   final String avatarUrl;
   final bool removeUntilConversations;
+
+  /// Initial value to put in the input field.
+  final String? initialText;
 }
 
 /// Triggered by the UI when a user should be blocked

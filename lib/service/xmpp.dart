@@ -31,6 +31,7 @@ import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/service/share.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/eventhandler.dart';
@@ -197,6 +198,10 @@ class XmppService {
         ]),
       );
     }
+
+    await GetIt.I.get<ShareService>().recordSentMessage(
+          conversation!,
+        );
   }
 
   /// Sends a message to JIDs in [recipients] with the body of [body].
@@ -301,6 +306,11 @@ class XmppService {
       sendEvent(
         ConversationUpdatedEvent(conversation: conversation!),
       );
+
+      // Tell the system to show the chat in the direct share list.
+      await GetIt.I.get<ShareService>().recordSentMessage(
+            conversation,
+          );
     }
   }
 
@@ -523,6 +533,8 @@ class XmppService {
     final lastMessages = <String, Message>{};
     // Path -> Metadata Id
     final metadataMap = <String, String>{};
+    // Recipient -> Conversation
+    final conversationsMap = <String, Conversation>{};
 
     // Create the messages and shared media entries
     final conn = GetIt.I.get<XmppConnection>();
@@ -604,7 +616,7 @@ class XmppService {
     final rs = GetIt.I.get<RosterService>();
     final gs = GetIt.I.get<GroupchatService>();
     for (final recipient in recipients) {
-      await cs.createOrUpdateConversation(
+      conversationsMap[recipient] = (await cs.createOrUpdateConversation(
         recipient,
         create: () async {
           // Create
@@ -660,7 +672,7 @@ class XmppService {
 
           return newConversation;
         },
-      );
+      ))!;
     }
 
     // Requesting Upload slots and uploading
@@ -700,6 +712,11 @@ class XmppService {
             ]),
           );
         }
+
+        // Notify the system to update the direct shares.
+        await GetIt.I.get<ShareService>().recordSentMessage(
+              conversationsMap[recipient]!,
+            );
       }
 
       recipients.remove('');
@@ -1100,8 +1117,12 @@ class XmppService {
       errorType: error,
     );
 
-    // TODO(PapaTutuWawa): Show a notification for certain error types, i.e. those
-    //                     that mean that the message could not be delivered.
+    // Show an error notification
+    await GetIt.I
+        .get<NotificationsService>()
+        .showMessageErrorNotification(msg.conversationJid, error);
+
+    // Update the UI
     sendEvent(MessageUpdatedEvent(message: newMsg));
   }
 
@@ -1376,8 +1397,9 @@ class XmppService {
 
     // Attempt to auto-download the embedded file, if
     // - there is a file attached and
-    // - we have not retrieved the file metadata
-    if (shouldDownload && !(fileMetadata?.retrieved ?? false)) {
+    // - we have not retrieved the file metadata OR we know of the file but have no path for it
+    if (shouldDownload && (!(fileMetadata?.retrieved ?? false)) ||
+        fileMetadata?.fileMetadata.path == null) {
       final fts = GetIt.I.get<HttpFileTransferService>();
       final metadata = await peekFile(embeddedFile!.urls.first);
 
@@ -1398,6 +1420,9 @@ class XmppService {
             embeddedFile,
             message.id,
             message.fileMetadata!.id,
+            // If we did not retrieve the file, then we were not able to find it using
+            // hashes.
+            !fileMetadata!.retrieved,
             conversationJid,
             mimeGuess,
           ),
@@ -1490,10 +1515,15 @@ class XmppService {
       },
     );
 
+    // Update the share handler
+    await GetIt.I.get<ShareService>().recordSentMessage(
+          conversation!,
+        );
+
     // Create the notification if we the user does not already know about the message
     if (sendNotification) {
       await ns.showNotification(
-        conversation!,
+        conversation,
         message,
         isInRoster ? conversation.title : conversationJid,
         body: conversationBody,
@@ -1584,6 +1614,9 @@ class XmppService {
                 embeddedFile,
                 message.id,
                 oldFileMetadata!.id,
+                // If [fileMetadata] is null, then we were not able to find the file metadata
+                // using hashes and thus have to create hash pointers.
+                fileMetadata == null,
                 conversationJid,
                 _getMimeGuess(event),
                 shouldShowNotification: false,

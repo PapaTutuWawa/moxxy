@@ -98,11 +98,7 @@ class BidirectionalController<T> {
     hasOlderData = data.length >= pageSize;
 
     // Don't trigger an update if we fetched nothing
-    if (data.isEmpty) {
-      _setIsFetching(false);
-      return;
-    }
-
+    _setIsFetching(false);
     _cache.insertAll(0, data);
 
     // Evict items from the cache if we overstep the maximum
@@ -215,6 +211,22 @@ class BidirectionalController<T> {
     }
 
     return found;
+  }
+
+  /// Removes the first item for which [test] returns true.
+  void removeItem(bool Function(T) test) {
+    var found = false;
+    for (var i = 0; i < _cache.length; i++) {
+      if (test(_cache[i])) {
+        _cache.removeAt(i);
+        found = true;
+        break;
+      }
+    }
+
+    if (found) {
+      _dataStreamController.add(_cache);
+    }
   }
 
   /// Animate to the bottom of the view.

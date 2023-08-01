@@ -9,7 +9,6 @@ import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
@@ -46,11 +45,6 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
     GetIt.I.get<NewConversationBloc>().add(
           NewConversationInitEvent(
             result.roster!,
-          ),
-        );
-    GetIt.I.get<StickersBloc>().add(
-          StickersSetEvent(
-            result.stickers!,
           ),
         );
     GetIt.I.get<ShareSelectionBloc>().add(

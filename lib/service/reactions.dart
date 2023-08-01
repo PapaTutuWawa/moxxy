@@ -100,7 +100,6 @@ class ReactionsService {
         final newMsg = msg.copyWith(
           reactionsPreview: newPreview,
         );
-        await ms.replaceMessageInCache(newMsg);
 
         sendEvent(
           MessageUpdatedEvent(
@@ -149,7 +148,6 @@ class ReactionsService {
     final newMsg = msg.copyWith(
       reactionsPreview: newPreview,
     );
-    await ms.replaceMessageInCache(newMsg);
     sendEvent(
       MessageUpdatedEvent(
         message: newMsg,
@@ -195,9 +193,6 @@ class ReactionsService {
     final newMessage = msg.copyWith(
       reactionsPreview: await getPreviewReactionsForMessage(msg.id),
     );
-    await GetIt.I.get<MessageService>().replaceMessageInCache(
-          newMessage,
-        );
     sendEvent(MessageUpdatedEvent(message: newMessage));
   }
 }

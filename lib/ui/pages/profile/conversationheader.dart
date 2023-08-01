@@ -34,6 +34,8 @@ class ConversationProfileHeader extends StatelessWidget {
           hasContactId: conversation.contactId != null,
           path: path,
           hash: conversation.avatarHash,
+          altIcon:
+              conversation.type == ConversationType.note ? Icons.notes : null,
         );
 
         if (path != null && path.isNotEmpty) {

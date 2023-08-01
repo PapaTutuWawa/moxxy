@@ -4,8 +4,9 @@ import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/controller/shared_media_controller.dart';
+import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/pages/profile/profile_view.dart';
-import 'package:moxxyv2/ui/pages/profile/shared_media_view.dart';
+import 'package:moxxyv2/ui/widgets/shared_media_view.dart';
 
 class ProfileArguments {
   ProfileArguments(this.isSelfProfile, this.jid);
@@ -114,7 +115,12 @@ class ProfilePageState extends State<ProfilePage> {
                 ),
                 SharedMediaView(
                   _mediaController,
+                  emptyText: t.pages.sharedMedia.empty.chat,
+                  showBackButton: false,
                   key: const PageStorageKey('shared_media_view'),
+                  onTap: (fm) => openFile(fm.path!),
+                  // TODO(Unknown): Allow deleting singular items
+                  //onLongPress: (fm) {},
                 ),
               ],
             ),

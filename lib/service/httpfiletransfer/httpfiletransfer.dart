@@ -577,15 +577,13 @@ class HttpFileTransferService {
     );
 
     // Only add the hash pointers if the file hashes match what was sent
-    if (job.location.plaintextHashes?.isNotEmpty ?? false) {
-      if (integrityCheckPassed) {
-        await fs.createMetadataHashEntries(
-          job.location.plaintextHashes!,
-          job.metadataId,
-        );
-      } else {
-        _log.warning('Integrity check failed for file');
-      }
+    if ((job.location.plaintextHashes?.isNotEmpty ?? false) &&
+        integrityCheckPassed &&
+        job.createMetadataHashes) {
+      await fs.createMetadataHashEntries(
+        job.location.plaintextHashes!,
+        job.metadataId,
+      );
     }
 
     final cs = GetIt.I.get<ConversationService>();

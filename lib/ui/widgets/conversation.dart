@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:io';
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
-import 'package:moxxyv2/ui/bloc/stickers_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
@@ -215,7 +213,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     );
   }
 
-  Widget _buildLastMessagePreview(StickersState state) {
+  Widget _buildLastMessagePreview() {
     Widget? preview;
     if (widget.conversation.lastMessage!.stickerPackId != null) {
       if (widget.conversation.lastMessage!.fileMetadata!.path != null) {
@@ -417,17 +415,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
                                   !widget.conversation.isTyping)
                                 Padding(
                                   padding: const EdgeInsets.only(right: 5),
-                                  child:
-                                      BlocBuilder<StickersBloc, StickersState>(
-                                    buildWhen: (prev, next) =>
-                                        prev.stickerPacks.length !=
-                                            next.stickerPacks.length &&
-                                        widget.conversation.lastMessage
-                                                ?.stickerPackId !=
-                                            null,
-                                    builder: (_, state) =>
-                                        _buildLastMessagePreview(state),
-                                  ),
+                                  child: _buildLastMessagePreview(),
                                 )
                               else
                                 const SizedBox(height: 30),

@@ -200,30 +200,47 @@ class Conversation with _$Conversation {
   /// True, when the chat state of the conversation indicates typing. False, if not.
   bool get isTyping => chatState == ChatState.composing;
 
-  /// The path to the avatar. This returns, if enabled, first the contact's avatar
-  /// path, then the XMPP avatar's path. If not enabled, just returns the regular
+  /// The path to the avatar. This returns, if [contactIntegration] is true, first the contact's avatar
+  /// path, then the XMPP avatar's path. If [contactIntegration] is false, just returns the regular
   /// XMPP avatar's path.
-  String? get avatarPathWithOptionalContact {
-    if (GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+  String getAvatarPathWithOptionalContact(bool contactIntegration) {
+    if (contactIntegration) {
       return contactAvatarPath ?? avatarPath;
     }
 
     return avatarPath;
   }
 
-  /// The title of the chat. This returns, if enabled, first the contact's display
-  /// name, then the XMPP chat title. If not enabled, just returns the XMPP chat
+  /// This getter is a short-hand for [getAvatarPathWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesBloc].
+  /// NOTE: This method only works in the UI.
+  String? get avatarPathWithOptionalContact => getAvatarPathWithOptionalContact(
+        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
+      );
+
+  /// The title of the chat. This returns, if [contactIntegration] is true, first the contact's display
+  /// name, then the XMPP chat title. If [contactIntegration] is false, just returns the XMPP chat
   /// title.
-  String get titleWithOptionalContact {
-    if (GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+  String getTitleWithOptionalContact(bool contactIntegration) {
+    if (contactIntegration) {
       return contactDisplayName ?? title;
     }
 
     return title;
   }
 
+  /// This getter is a short-hand for [getTitleWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesBloc].
+  /// NOTE: This method only works in the UI.
+  String get titleWithOptionalContact => getTitleWithOptionalContact(
+        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
+      );
+
   /// The amount of items that are shown in the context menu.
   int get numberContextMenuOptions => 1 + (unreadCounter != 0 ? 1 : 0);
+
+  /// True, if the conversation is a self-chat. False, if not.
+  bool get isSelfChat => type == ConversationType.note;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.

@@ -12,6 +12,7 @@ import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:sqflite_common/sql.dart';
 
 /// A class for returning whether a file metadata element was just created or retrieved.
 class FileMetadataWrapper {
@@ -67,7 +68,8 @@ Future<String> computeCachedPathForFile(
   return path.join(
     basePath,
     hash != null
-        ? '$hash.$ext'
+        // NOTE: [ext] already includes a leading "."
+        ? '$hash$ext'
         : '$filename.${DateTime.now().millisecondsSinceEpoch}.$ext',
   );
 }
@@ -89,6 +91,10 @@ class FilesService {
           'value': hash.value,
           'id': metadataId,
         },
+        // TODO(Unknown): I would like to get rid of this. In events.dart, when processing
+        //                a request to manually download a file, we should check if we already
+        //                have hash pointers for a file metadata item.
+        conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }
   }

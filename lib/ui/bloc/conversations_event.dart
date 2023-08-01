@@ -46,3 +46,10 @@ class ConversationMarkedAsReadEvent extends ConversationsEvent {
   ConversationMarkedAsReadEvent(this.jid);
   final String jid;
 }
+
+/// Triggered by the UI when we received a fresh list of conversations, for example
+/// after removing old media files.
+class ConversationsSetEvent extends ConversationsEvent {
+  ConversationsSetEvent(this.conversations);
+  final List<Conversation> conversations;
+}

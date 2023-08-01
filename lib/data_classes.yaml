@@ -36,9 +36,6 @@ files:
           roster:
             type: List<RosterItem>?
             deserialise: true
-          stickers:
-            type: List<StickerPack>?
-            deserialise: true
       # Triggered if a conversation has been added.
       # Also returned by [AddConversationCommand]
       - name: ConversationAddedEvent
@@ -294,7 +291,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          jid: String
+          jid: String  
       # Returned when an error occured
       - name: ErrorEvent
         extends: BackgroundEvent
@@ -310,7 +307,45 @@ files:
         attributes:
           conversation:
             type: Conversation
-            deserialise: true  
+            deserialise: true          
+      # Returned after a [GetStorageUsageCommand]
+      - name: GetStorageUsageEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          # The used storage in bytes for media files
+          mediaUsage: int
+          # The used storage in bytes for stickers
+          stickerUsage: int
+      # Returned after [DeleteOldMediaFilesCommand]
+      - name: DeleteOldMediaFilesDoneEvent
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          # The used storage in bytes after the deletion operation is done
+          newUsage: int
+          # The new list of Conversations
+          conversations:
+            type: List<Conversation>
+            deserialize: true
+      - name: PagedStickerPackResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPacks:
+            type: List<StickerPack>
+            deserialise: true
+      - name: GetStickerPackByIdResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          stickerPack:
+            type: StickerPack?
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -521,9 +556,8 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          conversationJid: String
-          sid: String
-          newUnreadCounter: int
+          id: int
+          sendMarker: bool
       - name: AddReactionToMessageCommand
         extends: BackgroundCommand
         implements:
@@ -604,7 +638,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          conversationJid: String
+          conversationJid: String?
           olderThan: bool
           timestamp: int?
       - name: GetReactionsForMessageCommand
@@ -621,6 +655,32 @@ files:
           jid: String
           hash: String?
           ownAvatar: bool
+      - name: GetStorageUsageCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+      - name: DeleteOldMediaFilesCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          # Milliseconds from now in the past; The maximum age of a file to not
+          # get deleted.
+          timeOffset: int
+      - name: GetPagedStickerPackCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          olderThan: bool
+          timestamp: int?
+          includeStickers: bool
+      - name: GetStickerPackByIdCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          id: String
       - name: DebugCommand
         extends: BackgroundCommand
         implements:
@@ -633,7 +693,7 @@ files:
           - JsonImplementation
         attributes:
           jid: String 
-          nick: String 
+          nick: String    
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

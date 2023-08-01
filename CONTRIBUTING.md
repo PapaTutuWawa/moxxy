@@ -3,6 +3,11 @@
 Thanks for your interest in the Moxxy XMPP client! This document contains guidelines and guides for working
 on the Moxxy codebase.
 
+## Non-Code Contributions
+### Translations
+
+You can contribute to Moxxy by translating parts of Moxxy into a language you can speak. To do that, head over to [Codeberg's Weblate instance](https://translate.codeberg.org/projects/moxxy/moxxy/), where you can start translating.
+
 ## Prerequisites
 
 Before building or working on Moxxy, please make sure that your development environment is correctly set up.
@@ -51,7 +56,22 @@ Before creating a pull request, please make sure you checked every item on the f
 If you think that your code is ready for a pull request, but you are not sure if it is ready, prefix the PR's title with "WIP: ", so that discussion
 can happen there. If you think your PR is ready for review, remove the "WIP: " prefix.
 
+### Tips
+#### `data_classes.yaml`
+
+When you add, remove, or modify data classes in `data_classes.yaml`, you need to rebuild the classes using `flutter pub run build_runner build`. However, there appears
+to be a bug in my own build runner script, which prevents the data classes from being
+rebuilt if they are changed. To fix this, remove the generated data classes by running
+`rm lib/shared/*.moxxy.dart`, after which build_runner will rebuild the data classes.
+
 ### Code Guidelines
+#### Translations
+
+If your code adds new strings that should be translated, only add them to the base
+language, which is English. Even if you know more than English, do not add the keys
+to other language files. To prevent merge conflicts between Weblate and the repository,
+all other languages are managed via [Codeberg's Weblate instance](https://translate.codeberg.org/projects/moxxy/moxxy/).
+
 #### Commit messages
 
 Commit messages should be uniformly formatted. `gitlint` is a linter for commit messages that enforces those guidelines. They are defined in the `.gitlint` file

@@ -17,6 +17,12 @@ class StickerPack with _$StickerPack {
     String hashValue,
     bool restricted,
     bool local,
+
+    /// The timestamp (milliseconds since epoch) when the sticker pack was added
+    int addedTimestamp,
+
+    /// The size in bytes
+    int size,
   ) = _StickerPack;
 
   const StickerPack._();
@@ -34,6 +40,8 @@ class StickerPack with _$StickerPack {
         pack.hashValue,
         pack.restricted,
         local,
+        0,
+        0,
       );
 
   /// JSON
@@ -49,6 +57,7 @@ class StickerPack with _$StickerPack {
       'local': true,
       'restricted': intToBool(json['restricted']! as int),
       'stickers': <Sticker>[],
+      'size': 0,
     });
 
     return pack.copyWith(stickers: stickers);
@@ -57,7 +66,8 @@ class StickerPack with _$StickerPack {
   Map<String, dynamic> toDatabaseJson() {
     final json = toJson()
       ..remove('local')
-      ..remove('stickers');
+      ..remove('stickers')
+      ..remove('size');
 
     return {
       ...json,

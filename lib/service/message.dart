@@ -10,22 +10,16 @@ import 'package:moxxyv2/service/files.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/service.dart';
-import 'package:moxxyv2/shared/cache.dart';
+import 'package:moxxyv2/service/xmpp.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:synchronized/synchronized.dart';
 
 class MessageService {
   /// Logger
   final Logger _log = Logger('MessageService');
-
-  final LRUCache<String, List<Message>> _messageCache =
-      LRUCache(conversationMessagePageCacheSize);
-  final Lock _cacheLock = Lock();
 
   Future<Message?> getMessageById(
     int id,
@@ -126,13 +120,6 @@ class MessageService {
     bool olderThan,
     int? oldestTimestamp,
   ) async {
-    if (olderThan && oldestTimestamp == null) {
-      final result = await _cacheLock.synchronized<List<Message>?>(() {
-        return _messageCache.getValue(jid);
-      });
-      if (result != null) return result;
-    }
-
     final db = GetIt.I.get<DatabaseService>().database;
     final comparator = olderThan ? '<' : '>';
     final query = oldestTimestamp != null
@@ -236,31 +223,24 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
       );
     }
 
-    if (olderThan && oldestTimestamp == null) {
-      await _cacheLock.synchronized(() {
-        _messageCache.cache(
-          jid,
-          page,
-        );
-      });
-    }
-
     return page;
   }
 
   /// Like getPaginatedMessagesForJid, but instead only returns messages that have file
   /// metadata attached. This method bypasses the cache and does not load the message's
-  /// quoted message, if it exists.
+  /// quoted message, if it exists. If [jid] is set to null, then the media messages for
+  /// all conversations are queried.
   Future<List<Message>> getPaginatedSharedMediaMessagesForJid(
-    String jid,
+    String? jid,
     bool olderThan,
     int? oldestTimestamp,
   ) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final comparator = olderThan ? '<' : '>';
+    final queryPrefix = jid != null ? 'conversationJid = ? AND' : '';
     final query = oldestTimestamp != null
-        ? 'conversationJid = ? AND file_metadata_id IS NOT NULL AND timestamp $comparator ?'
-        : 'conversationJid = ? AND file_metadata_id IS NOT NULL';
+        ? 'file_metadata_id IS NOT NULL AND timestamp $comparator ?'
+        : 'file_metadata_id IS NOT NULL';
     final rawMessages = await db.rawQuery(
       '''
 SELECT
@@ -280,11 +260,26 @@ SELECT
   fm.cipherTextHashes as fm_cipherTextHashes,
   fm.filename as fm_filename,
   fm.size as fm_size
-FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $sharedMediaPaginationSize) AS msg
-  LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id;
+FROM
+  (SELECT
+    *
+  FROM
+    $messagesTable
+  WHERE
+    $queryPrefix $query
+    ORDER BY timestamp
+    DESC LIMIT $sharedMediaPaginationSize
+  ) AS msg
+  LEFT JOIN
+    $fileMetadataTable fm
+    ON
+      msg.file_metadata_id = fm.id
+    WHERE
+      fm_path IS NOT NULL
+      AND NOT EXISTS (SELECT id FROM $stickersTable WHERE file_metadata_id = fm.id);
       ''',
       [
-        jid,
+        if (jid != null) jid,
         if (oldestTimestamp != null) oldestTimestamp,
       ],
     );
@@ -369,25 +364,9 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
       }
     }
 
-    m = m.copyWith(
+    return m.copyWith(
       id: await db.insert(messagesTable, m.toDatabaseJson()),
     );
-
-    await _cacheLock.synchronized(() {
-      final cachedList = _messageCache.getValue(conversationJid);
-      if (cachedList != null) {
-        _messageCache.replaceValue(
-          conversationJid,
-          clampedListPrepend(
-            cachedList,
-            m,
-            messagePaginationSize,
-          ),
-        );
-      }
-    });
-
-    return m;
   }
 
   Future<Message?> getMessageByStanzaId(
@@ -512,22 +491,6 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
       await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(id),
     );
 
-    await _cacheLock.synchronized(() {
-      final page = _messageCache.getValue(msg.conversationJid);
-      if (page != null) {
-        _messageCache.replaceValue(
-          msg.conversationJid,
-          page.map((m) {
-            if (m.id == msg.id) {
-              return msg;
-            }
-
-            return m;
-          }).toList(),
-        );
-      }
-    });
-
     return msg;
   }
 
@@ -610,21 +573,27 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $s
     }
   }
 
-  Future<void> replaceMessageInCache(Message message) async {
-    await _cacheLock.synchronized(() {
-      final cachedList = _messageCache.getValue(message.conversationJid);
-      if (cachedList != null) {
-        _messageCache.replaceValue(
-          message.conversationJid,
-          cachedList.map((m) {
-            if (m.id == message.id) {
-              return message;
-            }
+  /// Marks the message with the database id [id] as displayed and sends an
+  /// [MessageUpdatedEvent] to the UI. if [sendChatMarker] is true, then
+  /// a Chat Marker with <displayed /> is sent to the message's
+  /// conversationJid attribute.
+  Future<Message> markMessageAsRead(int id, bool sendChatMarker) async {
+    final newMessage = await updateMessage(
+      id,
+      displayed: true,
+    );
 
-            return m;
-          }).toList(),
-        );
-      }
-    });
+    // Tell the UI
+    sendEvent(MessageUpdatedEvent(message: newMessage));
+
+    if (sendChatMarker) {
+      await GetIt.I.get<XmppService>().sendReadMarker(
+            // TODO(Unknown): This is wrong once groupchats are implemented
+            newMessage.conversationJid,
+            newMessage.originId ?? newMessage.sid,
+          );
+    }
+
+    return newMessage;
   }
 }
