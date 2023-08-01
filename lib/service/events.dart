@@ -23,6 +23,7 @@ import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
+import 'package:moxxyv2/service/permissions.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -171,7 +172,9 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
     avatarUrl: state.avatarUrl,
     avatarHash: state.avatarHash,
     preferences: preferences,
-    requestNotificationPermission: state.askedNotificationPermission,
+    requestNotificationPermission: await GetIt.I
+        .get<PermissionsService>()
+        .shouldRequestNotificationPermission(),
     conversations:
         (await GetIt.I.get<ConversationService>().loadConversations())
             .where((c) => c.open)
@@ -209,9 +212,9 @@ Future<void> performPreStart(
     sendEvent(
       PreStartDoneEvent(
         state: 'not_logged_in',
-        requestNotificationPermission:
-            (await GetIt.I.get<XmppStateService>().getXmppState())
-                .askedNotificationPermission,
+        requestNotificationPermission: await GetIt.I
+            .get<PermissionsService>()
+            .shouldRequestNotificationPermission(),
         preferences: preferences,
       ),
       id: id,
