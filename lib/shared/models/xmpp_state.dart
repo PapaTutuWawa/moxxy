@@ -45,6 +45,7 @@ class XmppState with _$XmppState {
     @Default('') String avatarUrl,
     @Default('') String avatarHash,
     @Default(false) bool askedStoragePermission,
+    @Default(false) bool askedNotificationPermission,
   }) = _XmppState;
 
   const XmppState._();
@@ -69,6 +70,8 @@ class XmppState with _$XmppState {
       'avatarUrl': tuples['avatarUrl'],
       'avatarHash': tuples['avatarHash'],
       'askedStoragePermission': tuples['askedStoragePermission'] == 'true',
+      'askedNotificationPermission':
+          tuples['askedNotificationPermission'] == 'true',
     };
 
     return XmppState.fromJson(json);
@@ -77,12 +80,15 @@ class XmppState with _$XmppState {
   Map<String, String?> toDatabaseTuples() {
     final json = toJson()
       ..remove('smState')
-      ..remove('askedStoragePermission');
+      ..remove('askedStoragePermission')
+      ..remove('askedNotificationPermission');
 
     return {
       ...json.cast<String, String?>(),
       'smState': jsonEncode(smState?.toJson()),
       'askedStoragePermission': askedStoragePermission ? 'true' : 'false',
+      'askedNotificationPermission':
+          askedNotificationPermission ? 'true' : 'false',
     };
   }
 }

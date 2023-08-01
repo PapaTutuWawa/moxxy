@@ -164,28 +164,14 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
 
   await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
-  // Check some permissions
-  // TODO(Unknown): Do we still need this permission?
-  // final storagePerm = await Permission.storage.status;
-  // final permissions = List<int>.empty(growable: true);
-  // if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
-  //   permissions.add(Permission.storage.value);
-
-  //   await xss.modifyXmppState(
-  //     (state) => state.copyWith(
-  //       askedStoragePermission: true,
-  //     ),
-  //   );
-  // }
-
   return PreStartDoneEvent(
     state: 'logged_in',
     jid: state.jid,
     displayName: state.displayName ?? state.jid!.split('@').first,
     avatarUrl: state.avatarUrl,
     avatarHash: state.avatarHash,
-    permissionsToRequest: [],
     preferences: preferences,
+    requestNotificationPermission: state.askedNotificationPermission,
     conversations:
         (await GetIt.I.get<ConversationService>().loadConversations())
             .where((c) => c.open)
@@ -223,7 +209,9 @@ Future<void> performPreStart(
     sendEvent(
       PreStartDoneEvent(
         state: 'not_logged_in',
-        permissionsToRequest: List<int>.empty(),
+        requestNotificationPermission:
+            (await GetIt.I.get<XmppStateService>().getXmppState())
+                .askedNotificationPermission,
         preferences: preferences,
       ),
       id: id,

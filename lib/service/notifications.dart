@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
 import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
@@ -17,6 +18,7 @@ import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart' as modelc;
 import 'package:moxxyv2/shared/models/message.dart' as modelm;
 import 'package:moxxyv2/shared/models/notification.dart' as modeln;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 const _maxNotificationId = 2147483647;
@@ -30,6 +32,9 @@ const _conversationTitleKey = 'title';
 const _conversationAvatarKey = 'avatarPath';
 
 class NotificationsService {
+  /// Logging.
+  final Logger _log = Logger('NotificationsService');
+
   /// Called when something happens to the notification, i.e. the actions are triggered or
   /// the notification has been tapped.
   Future<void> onNotificationEvent(NotificationEvent event) async {
@@ -204,7 +209,7 @@ class NotificationsService {
     final newNotification = modeln.Notification(
       id,
       c.jid,
-      c.titleWithOptionalContact,
+      await c.titleWithOptionalContactService,
       m.senderJid.toString(),
       (avatarPath?.isEmpty ?? false) ? null : avatarPath,
       body,
@@ -220,6 +225,11 @@ class NotificationsService {
     return newNotification;
   }
 
+  /// Indicates whether we're allowed to show notifications on devices >= Android 13.
+  Future<bool> _canDoNotifications() async {
+    return Permission.notification.isGranted;
+  }
+
   /// When a notification is already visible, then build a new notification based on [c] and [m],
   /// update the database state and tell the OS to show the notification again.
   /// TODO(Unknown): What about systems that cannot do this (Linux, OS X, Windows)?
@@ -227,6 +237,13 @@ class NotificationsService {
     modelc.Conversation c,
     modelm.Message m,
   ) async {
+    if (!(await _canDoNotifications())) {
+      _log.warning(
+        'updateNotification: Notifications permission not granted. Doing nothing.',
+      );
+      return;
+    }
+
     final notifications = await _getNotificationsForJid(c.jid);
     final id = notifications.first.id;
     final notification = await _createNotification(
@@ -239,7 +256,7 @@ class NotificationsService {
 
     await MoxplatformPlugin.notifications.showMessagingNotification(
       MessagingNotification(
-        title: c.titleWithOptionalContact,
+        title: await c.titleWithOptionalContactService,
         id: id,
         channelId: _messageChannelKey,
         jid: c.jid,
@@ -261,8 +278,8 @@ class NotificationsService {
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id.toString(),
-          _conversationTitleKey: c.titleWithOptionalContact,
-          _conversationAvatarKey: c.avatarPathWithOptionalContact,
+          _conversationTitleKey: await c.titleWithOptionalContactService,
+          _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },
       ),
     );
@@ -277,6 +294,13 @@ class NotificationsService {
     String title, {
     String? body,
   }) async {
+    if (!(await _canDoNotifications())) {
+      _log.warning(
+        'showNotification: Notifications permission not granted. Doing nothing.',
+      );
+      return;
+    }
+
     final notifications = await _getNotificationsForJid(c.jid);
     final id = notifications.isNotEmpty
         ? notifications.first.id
@@ -292,7 +316,7 @@ class NotificationsService {
           (await _createNotification(
             c,
             m,
-            c.avatarPathWithOptionalContact,
+            await c.avatarPathWithOptionalContactService,
             id,
           ))
               .toNotificationMessage(),
@@ -302,8 +326,8 @@ class NotificationsService {
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id.toString(),
-          _conversationTitleKey: c.titleWithOptionalContact,
-          _conversationAvatarKey: c.avatarPathWithOptionalContact,
+          _conversationTitleKey: await c.titleWithOptionalContactService,
+          _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },
       ),
     );
@@ -312,6 +336,13 @@ class NotificationsService {
   /// Show a notification with the highest priority that uses [title] as the title
   /// and [body] as the body.
   Future<void> showWarningNotification(String title, String body) async {
+    if (!(await _canDoNotifications())) {
+      _log.warning(
+        'showWarningNotification: Notifications permission not granted. Doing nothing.',
+      );
+      return;
+    }
+
     await MoxplatformPlugin.notifications.showNotification(
       RegularNotification(
         title: title,
@@ -329,6 +360,13 @@ class NotificationsService {
     String jid,
     MessageErrorType type,
   ) async {
+    if (!(await _canDoNotifications())) {
+      _log.warning(
+        'showMessageErrorNotification: Notifications permission not granted. Doing nothing.',
+      );
+      return;
+    }
+
     // Only show the notification for certain errors
     if (![
       MessageErrorType.remoteServerTimeout,

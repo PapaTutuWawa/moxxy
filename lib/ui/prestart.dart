@@ -12,6 +12,13 @@ import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
 import 'package:moxxyv2/ui/service/sharing.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+Future<void> _requestPermissions() async {
+  if (!(await Permission.notification.request().isGranted)) {
+    GetIt.I.get<Logger>().finest('User did not grant notifcation permission');
+  }
+}
 
 /// Handler for when we received a [PreStartDoneEvent].
 Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
@@ -61,6 +68,12 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
           .finest('Early media available. Navigating to share selection');
       await sharing.handleEarlySharedMedia();
     } else {
+      // TODO(Unknown): Actually handle this in the UI so that we can also display a text with the
+      //                popup.
+      if (result.requestNotificationPermission) {
+        unawaited(_requestPermissions());
+      }
+
       GetIt.I.get<Logger>().finest('Navigating to conversations');
       GetIt.I.get<NavigationBloc>().add(
             PushedNamedAndRemoveUntilEvent(

@@ -22,7 +22,7 @@ files:
           - JsonImplementation
         attributes:
           state: String
-          permissionsToRequest: List<int>
+          requestNotificationPermission: bool
           preferences:
             type: PreferencesState
             deserialise: true
