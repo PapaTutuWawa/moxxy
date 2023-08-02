@@ -481,7 +481,7 @@ class ConversationPageState extends State<ConversationPage>
               final showAddToRoster =
                   state.conversation?.showAddToRoster ?? false;
               if (!showAddToRoster ||
-                  state.conversation?.type == ConversationType.note) {
+                  state.conversation?.type != ConversationType.chat) {
                 return const SizedBox();
               }
 

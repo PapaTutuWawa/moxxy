@@ -51,8 +51,7 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
           return true;
         },
         child: Scaffold(
-          appBar:
-              BorderlessTopbar.title(t.pages.newconversation.createGroupchat),
+          appBar: BorderlessTopbar.title(t.pages.newconversation.enterNickname),
           body: Column(
             children: [
               Visibility(
@@ -80,7 +79,7 @@ class JoinGroupchatPageState extends State<JoinGroupchatPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: paddingVeryLarge)
                         .add(const EdgeInsets.only(top: 8)),
-                child: Text(t.pages.startchat.subtitle),
+                child: Text(t.pages.newconversation.nicknameSubtitle),
               ),
               Padding(
                 padding:
