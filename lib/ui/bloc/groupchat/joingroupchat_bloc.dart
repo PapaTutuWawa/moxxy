@@ -94,7 +94,6 @@ class JoinGroupchatBloc extends Bloc<JoinGroupchatEvent, JoinGroupchatState> {
             joinEvent.conversation.jid,
             joinEvent.conversation.title,
             joinEvent.conversation.avatarPath,
-            removeUntilConversations: true,
           ),
         );
   }

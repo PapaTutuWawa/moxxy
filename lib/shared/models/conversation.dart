@@ -69,7 +69,7 @@ class ConversationTypeConverter
 
   @override
   ConversationType fromJson(String json) {
-    return ConversationType.fromString(json)!;
+    return ConversationType.fromString(json);
   }
 
   @override
