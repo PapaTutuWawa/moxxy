@@ -101,8 +101,6 @@ enum MessageErrorType {
       return MessageErrorType.omemoNotSupported;
     } else if (value == MessageErrorType.chatEncryptedButPlaintextFile.value) {
       return MessageErrorType.chatEncryptedButPlaintextFile;
-    } else if (value == MessageErrorType.chatEncryptedButPlaintextFile.value) {
-      return MessageErrorType.chatEncryptedButPlaintextFile;
     } else if (value == MessageErrorType.failedToEncryptFile.value) {
       return MessageErrorType.failedToEncryptFile;
     } else if (value == MessageErrorType.fileDownloadFailed.value) {
