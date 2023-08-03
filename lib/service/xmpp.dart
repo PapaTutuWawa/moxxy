@@ -266,7 +266,7 @@ class XmppService {
         );
       }
 
-      if (conversation?.type == ConversationType.chat) {
+      if (conversation?.type != ConversationType.note) {
         final moxxmppSticker = sticker?.toMoxxmpp();
         final manager = conn.getManagerById<MessageManager>(messageManager)!;
 
@@ -300,6 +300,7 @@ class XmppService {
                 ),
               ),
           ]),
+          type: conversation!.type.value,
         );
       }
 

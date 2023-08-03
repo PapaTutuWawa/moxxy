@@ -83,6 +83,7 @@ class NewConversationBloc
             event.title,
             event.avatarUrl,
             removeUntilConversations: true,
+            type: event.type.value,
           ),
         );
   }

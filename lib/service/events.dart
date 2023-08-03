@@ -769,7 +769,11 @@ Future<void> performSendChatState(
   if (command.jid != '') {
     await conn
         .getManagerById<ChatStateManager>(chatStateManager)!
-        .sendChatState(ChatState.fromName(command.state), command.jid);
+        .sendChatState(
+          ChatState.fromName(command.state),
+          command.jid,
+          messageType: command.type,
+        );
   }
 }
 

@@ -293,6 +293,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               child: ConversationPage(
                 conversationJid: args.conversationJid,
                 initialText: args.initialText,
+                conversationType: args.type,
               ),
             );
           // case sharedMediaRoute:
