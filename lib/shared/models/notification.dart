@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
+import 'package:moxplatform/moxplatform.dart';
 
 part 'notification.freezed.dart';
 part 'notification.g.dart';
