@@ -36,7 +36,7 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
       state.copyWith(
         requests: event.requests,
         currentIndex: 0,
-        shouldShow: true,
+        shouldShow: event.requests.isNotEmpty,
       ),
     );
   }

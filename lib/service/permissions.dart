@@ -17,4 +17,20 @@ class PermissionsService {
 
     return retValue;
   }
+
+  /// Returns true if the UI should request to not be battery-optimised. If not,
+  /// returns false.
+  /// If the excemption should be requested, this method also sets the `XmppState`'s
+  /// `askedBatteryOptimizationExcemption` to true.
+  Future<bool> shouldRequestBatteryOptimisationExcemption() async {
+    final xss = GetIt.I.get<XmppStateService>();
+    final retValue = !(await xss.getXmppState()).askedBatteryOptimizationExcemption;
+    if (retValue) {
+      await xss.modifyXmppState(
+        (state) => state.copyWith(askedBatteryOptimizationExcemption: true),
+      );
+    }
+
+    return retValue;  
+  }
 }

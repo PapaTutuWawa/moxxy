@@ -175,6 +175,9 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
     requestNotificationPermission: await GetIt.I
         .get<PermissionsService>()
         .shouldRequestNotificationPermission(),
+    excludeFromBatteryOptimisation: await GetIt.I
+        .get<PermissionsService>()
+        .shouldRequestBatteryOptimisationExcemption(),
     conversations:
         (await GetIt.I.get<ConversationService>().loadConversations())
             .where((c) => c.open)
@@ -215,6 +218,9 @@ Future<void> performPreStart(
         requestNotificationPermission: await GetIt.I
             .get<PermissionsService>()
             .shouldRequestNotificationPermission(),
+        excludeFromBatteryOptimisation: await GetIt.I
+            .get<PermissionsService>()
+            .shouldRequestBatteryOptimisationExcemption(),
         preferences: preferences,
       ),
       id: id,

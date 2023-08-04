@@ -23,6 +23,7 @@ files:
         attributes:
           state: String
           requestNotificationPermission: bool
+          excludeFromBatteryOptimisation: bool
           preferences:
             type: PreferencesState
             deserialise: true

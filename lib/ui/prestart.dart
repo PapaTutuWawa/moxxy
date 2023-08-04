@@ -8,6 +8,7 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
+import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/data.dart';
@@ -60,6 +61,19 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
             result.roster!,
           ),
         );
+
+    // Handle requesting permissions
+    GetIt.I.get<RequestBloc>().add(
+      RequestsSetEvent(
+        [
+          if (result.requestNotificationPermission)
+            Request.notifications,
+
+          if (result.excludeFromBatteryOptimisation)
+            Request.batterySavingExcemption,
+        ],
+      ),
+    );
 
     final sharing = GetIt.I.get<UISharingService>();
     if (sharing.hasEarlyMedia) {
