@@ -9,8 +9,11 @@ import 'package:moxxyv2/ui/bloc/conversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart' as profile;
+import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
+import 'package:moxxyv2/ui/post_build.dart';
+import 'package:moxxyv2/ui/request_dialog.dart';
 import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/context_menu.dart';
 import 'package:moxxyv2/ui/widgets/conversation.dart';
@@ -234,195 +237,207 @@ class ConversationsPageState extends State<ConversationsPage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ConversationsBloc, ConversationsState>(
-      builder: (BuildContext context, ConversationsState state) => Scaffold(
-        appBar: BorderlessTopbar(
-          showBackButton: false,
-          children: [
-            Expanded(
-              child: InkWell(
-                onTap: () {
-                  // Dismiss the selection, if we have an active one
-                  if (_selectedConversation != null) {
-                    dismissContextMenu();
-                  }
+    return PostBuildWidget(
+      postBuild: () async {
+        final bloc = GetIt.I.get<RequestBloc>();
+        if (bloc.state.shouldShow) {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const RequestDialog(),
+          );
+        }
+      },
+      child: BlocBuilder<ConversationsBloc, ConversationsState>(
+        builder: (BuildContext context, ConversationsState state) => Scaffold(
+          appBar: BorderlessTopbar(
+            showBackButton: false,
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    // Dismiss the selection, if we have an active one
+                    if (_selectedConversation != null) {
+                      dismissContextMenu();
+                    }
 
-                  GetIt.I.get<profile.ProfileBloc>().add(
-                        profile.ProfilePageRequestedEvent(
-                          true,
-                          jid: state.jid,
-                          avatarUrl: state.avatarPath,
-                          displayName: state.displayName,
-                        ),
-                      );
-                },
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Hero(
-                        tag: 'self_profile_picture',
-                        child: Material(
-                          color: const Color.fromRGBO(0, 0, 0, 0),
-                          // NOTE: We do not care about the avatar hash because
-                          //       we just read it from the XMPP state in the
-                          //       avatar service.
-                          child: CachingXMPPAvatar(
-                            radius: 20,
-                            path: state.avatarPath,
-                            altIcon: Icons.person,
-                            hasContactId: false,
+                    GetIt.I.get<profile.ProfileBloc>().add(
+                          profile.ProfilePageRequestedEvent(
+                            true,
                             jid: state.jid,
-                            ownAvatar: true,
+                            avatarUrl: state.avatarPath,
+                            displayName: state.displayName,
+                          ),
+                        );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Hero(
+                          tag: 'self_profile_picture',
+                          child: Material(
+                            color: const Color.fromRGBO(0, 0, 0, 0),
+                            // NOTE: We do not care about the avatar hash because
+                            //       we just read it from the XMPP state in the
+                            //       avatar service.
+                            child: CachingXMPPAvatar(
+                              radius: 20,
+                              path: state.avatarPath,
+                              altIcon: Icons.person,
+                              hasContactId: false,
+                              jid: state.jid,
+                              ownAvatar: true,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Text(
-                          state.displayName,
-                          style: const TextStyle(
-                            fontSize: fontsizeAppbar,
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            state.displayName,
+                            style: const TextStyle(
+                              fontSize: fontsizeAppbar,
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: PopupMenuButton(
+                  onSelected: (ConversationsOptions result) {
+                    switch (result) {
+                      case ConversationsOptions.settings:
+                        Navigator.pushNamed(context, settingsRoute);
+                        break;
+                    }
+                  },
+                  icon: const Icon(Icons.more_vert),
+                  itemBuilder: (BuildContext context) => [
+                    PopupMenuItem(
+                      value: ConversationsOptions.settings,
+                      child: Text(t.pages.conversations.overlaySettings),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+          body: Stack(
+            children: [
+              _listWrapper(context, state),
+              if (_selectedConversation != null)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onTap: dismissContextMenu,
+                    // NOTE: We must set the color to Colors.transparent because the container
+                    // would otherwise not span the entire screen (or Scaffold body to be
+                    // more precise).
+                    child: const ColoredBox(
+                      color: Colors.transparent,
+                    ),
+                  ),
+                ),
+              Positioned(
+                top: _topStackOffset,
+                left: 8,
+                child: AnimatedBuilder(
+                  animation: _contextMenuAnimation,
+                  builder: (context, child) => IgnorePointer(
+                    ignoring: _selectedConversation == null,
+                    child: Opacity(
+                      opacity: _contextMenuAnimation.value,
+                      child: child,
+                    ),
+                  ),
+                  child: ContextMenu(
+                    children: [
+                      if ((_selectedConversation?.unreadCounter ?? 0) > 0)
+                        ContextMenuItem(
+                          icon: Icons.done_all,
+                          text: t.pages.conversations.markAsRead,
+                          onPressed: () {
+                            context.read<ConversationsBloc>().add(
+                                  ConversationMarkedAsReadEvent(
+                                    _selectedConversation!.jid,
+                                  ),
+                                );
+                            dismissContextMenu();
+                          },
+                        ),
+                      ContextMenuItem(
+                        icon: Icons.close,
+                        text: t.pages.conversations.closeChat,
+                        onPressed: () async {
+                          // ignore: use_build_context_synchronously
+                          final result = await showConfirmationDialog(
+                            t.pages.conversations.closeChat,
+                            t.pages.conversations.closeChatBody(
+                              conversationTitle:
+                                  _selectedConversation?.title ?? '',
+                            ),
+                            context,
+                          );
+
+                          if (result) {
+                            // TODO(Unknown): Show a snackbar allowing the user to revert the action
+                            // ignore: use_build_context_synchronously
+                            context.read<ConversationsBloc>().add(
+                                  ConversationClosedEvent(
+                                    _selectedConversation!.jid,
+                                  ),
+                                );
+                            dismissContextMenu();
+                          }
+                        },
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: PopupMenuButton(
-                onSelected: (ConversationsOptions result) {
-                  switch (result) {
-                    case ConversationsOptions.settings:
-                      Navigator.pushNamed(context, settingsRoute);
-                      break;
-                  }
+            ],
+          ),
+          floatingActionButton: SpeedDial(
+            icon: Icons.chat,
+            curve: Curves.bounceInOut,
+            backgroundColor: primaryColor,
+            foregroundColor: Colors.white,
+            children: [
+              SpeedDialChild(
+                child: const Icon(Icons.notes),
+                onTap: () {
+                  context.read<NewConversationBloc>().add(
+                        NewConversationAddedEvent(
+                          '',
+                          t.pages.conversations.speeddialAddNoteToSelf,
+                          '',
+                          ConversationType.note,
+                        ),
+                      );
                 },
-                icon: const Icon(Icons.more_vert),
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem(
-                    value: ConversationsOptions.settings,
-                    child: Text(t.pages.conversations.overlaySettings),
-                  )
-                ],
+                backgroundColor: primaryColor,
+                // TODO(Unknown): Theme dependent?
+                foregroundColor: Colors.white,
+                label: t.pages.conversations.speeddialAddNoteToSelf,
               ),
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            _listWrapper(context, state),
-            if (_selectedConversation != null)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: GestureDetector(
-                  onTap: dismissContextMenu,
-                  // NOTE: We must set the color to Colors.transparent because the container
-                  // would otherwise not span the entire screen (or Scaffold body to be
-                  // more precise).
-                  child: const ColoredBox(
-                    color: Colors.transparent,
-                  ),
-                ),
-              ),
-            Positioned(
-              top: _topStackOffset,
-              left: 8,
-              child: AnimatedBuilder(
-                animation: _contextMenuAnimation,
-                builder: (context, child) => IgnorePointer(
-                  ignoring: _selectedConversation == null,
-                  child: Opacity(
-                    opacity: _contextMenuAnimation.value,
-                    child: child,
-                  ),
-                ),
-                child: ContextMenu(
-                  children: [
-                    if ((_selectedConversation?.unreadCounter ?? 0) > 0)
-                      ContextMenuItem(
-                        icon: Icons.done_all,
-                        text: t.pages.conversations.markAsRead,
-                        onPressed: () {
-                          context.read<ConversationsBloc>().add(
-                                ConversationMarkedAsReadEvent(
-                                  _selectedConversation!.jid,
-                                ),
-                              );
-                          dismissContextMenu();
-                        },
-                      ),
-                    ContextMenuItem(
-                      icon: Icons.close,
-                      text: t.pages.conversations.closeChat,
-                      onPressed: () async {
-                        // ignore: use_build_context_synchronously
-                        final result = await showConfirmationDialog(
-                          t.pages.conversations.closeChat,
-                          t.pages.conversations.closeChatBody(
-                            conversationTitle:
-                                _selectedConversation?.title ?? '',
-                          ),
-                          context,
-                        );
-
-                        if (result) {
-                          // TODO(Unknown): Show a snackbar allowing the user to revert the action
-                          // ignore: use_build_context_synchronously
-                          context.read<ConversationsBloc>().add(
-                                ConversationClosedEvent(
-                                  _selectedConversation!.jid,
-                                ),
-                              );
-                          dismissContextMenu();
-                        }
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        floatingActionButton: SpeedDial(
-          icon: Icons.chat,
-          curve: Curves.bounceInOut,
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          children: [
-            SpeedDialChild(
-              child: const Icon(Icons.notes),
-              onTap: () {
-                context.read<NewConversationBloc>().add(
-                      NewConversationAddedEvent(
-                        '',
-                        t.pages.conversations.speeddialAddNoteToSelf,
-                        '',
-                        ConversationType.note,
-                      ),
-                    );
-              },
-              backgroundColor: primaryColor,
-              // TODO(Unknown): Theme dependent?
-              foregroundColor: Colors.white,
-              label: t.pages.conversations.speeddialAddNoteToSelf,
-            ),
-            SpeedDialChild(
-              child: const Icon(Icons.person_add),
-              onTap: () => Navigator.pushNamed(context, newConversationRoute),
-              backgroundColor: primaryColor,
-              // TODO(Unknown): Theme dependent?
-              foregroundColor: Colors.white,
-              label: t.pages.conversations.speeddialNewChat,
-            )
-          ],
+              SpeedDialChild(
+                child: const Icon(Icons.person_add),
+                onTap: () => Navigator.pushNamed(context, newConversationRoute),
+                backgroundColor: primaryColor,
+                // TODO(Unknown): Theme dependent?
+                foregroundColor: Colors.white,
+                label: t.pages.conversations.speeddialNewChat,
+              )
+            ],
+          ),
         ),
       ),
     );
