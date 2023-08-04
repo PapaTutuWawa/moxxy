@@ -14,7 +14,7 @@ class RequestDialog extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(textfieldRadiusRegular),
       ),
-      child: BlocConsumer<RequestBloc, RequestBlocState>(
+      child: BlocConsumer<RequestBloc, RequestState>(
         listener: (_, state) {
           // Automatically dismiss the dialog when we're done
           if (!state.shouldShow) {

@@ -1,7 +1,10 @@
 import 'package:bloc/bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 
-// TODO: Split this up into multiple files.
+part 'request_bloc.freezed.dart';
+part 'request_event.dart';
+part 'request_state.dart';
 
 enum Request {
   notifications,
@@ -18,47 +21,8 @@ enum Request {
   }
 }
 
-abstract class RequestBlocEvent {}
-
-class RequestsSetEvent extends RequestBlocEvent {
-  RequestsSetEvent(this.requests);
-
-  final List<Request> requests;
-}
-
-class NextRequestEvent extends RequestBlocEvent {}
-
-class ResetRequestEvent extends RequestBlocEvent {}
-
-class RequestBlocState {
-  const RequestBlocState({
-    required this.requests,
-    required this.currentIndex,
-    required this.shouldShow,
-  });
-
-  factory RequestBlocState.initial() =>
-      const RequestBlocState(requests: [], currentIndex: 0, shouldShow: false);
-
-  final bool shouldShow;
-  final List<Request> requests;
-  final int currentIndex;
-
-  RequestBlocState copyWith({
-    List<Request>? requests,
-    int? currentIndex,
-    bool? shouldShow,
-  }) {
-    return RequestBlocState(
-      requests: requests ?? this.requests,
-      currentIndex: currentIndex ?? this.currentIndex,
-      shouldShow: shouldShow ?? this.shouldShow,
-    );
-  }
-}
-
-class RequestBloc extends Bloc<RequestBlocEvent, RequestBlocState> {
-  RequestBloc() : super(RequestBlocState.initial()) {
+class RequestBloc extends Bloc<RequestEvent, RequestState> {
+  RequestBloc() : super(const RequestState()) {
     on<RequestsSetEvent>(_onRequestsSet);
     on<NextRequestEvent>(_onNextRequest);
     on<ResetRequestEvent>(_onReset);
@@ -66,7 +30,7 @@ class RequestBloc extends Bloc<RequestBlocEvent, RequestBlocState> {
 
   Future<void> _onRequestsSet(
     RequestsSetEvent event,
-    Emitter<RequestBlocState> emit,
+    Emitter<RequestState> emit,
   ) async {
     emit(
       state.copyWith(
@@ -79,7 +43,7 @@ class RequestBloc extends Bloc<RequestBlocEvent, RequestBlocState> {
 
   Future<void> _onNextRequest(
     NextRequestEvent event,
-    Emitter<RequestBlocState> emit,
+    Emitter<RequestState> emit,
   ) async {
     if (state.currentIndex + 1 >= state.requests.length) {
       return _onReset(ResetRequestEvent(), emit);
@@ -94,7 +58,7 @@ class RequestBloc extends Bloc<RequestBlocEvent, RequestBlocState> {
 
   Future<void> _onReset(
     ResetRequestEvent event,
-    Emitter<RequestBlocState> emit,
+    Emitter<RequestState> emit,
   ) async {
     emit(
       state.copyWith(
