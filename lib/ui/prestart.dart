@@ -64,16 +64,14 @@ Future<void> preStartDone(PreStartDoneEvent result, {dynamic extra}) async {
 
     // Handle requesting permissions
     GetIt.I.get<RequestBloc>().add(
-      RequestsSetEvent(
-        [
-          if (result.requestNotificationPermission)
-            Request.notifications,
-
-          if (result.excludeFromBatteryOptimisation)
-            Request.batterySavingExcemption,
-        ],
-      ),
-    );
+          RequestsSetEvent(
+            [
+              if (result.requestNotificationPermission) Request.notifications,
+              if (result.excludeFromBatteryOptimisation)
+                Request.batterySavingExcemption,
+            ],
+          ),
+        );
 
     final sharing = GetIt.I.get<UISharingService>();
     if (sharing.hasEarlyMedia) {
