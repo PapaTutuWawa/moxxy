@@ -23,7 +23,7 @@ class FileUploadJob {
   // Recipient -> Message
   final Map<String, Message> messageMap;
   final String metadataId;
-  final List<Thumbnail> thumbnails;
+  final List<JingleContentThumbnail> thumbnails;
 
   @override
   bool operator ==(Object other) {
