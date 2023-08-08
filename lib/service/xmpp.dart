@@ -1453,7 +1453,6 @@ class XmppService {
     var sendNotification = true;
 
     final gs = GetIt.I.get<GroupchatService>();
-
     final conversation = await cs.createOrUpdateConversation(
       conversationJid,
       create: () async {
