@@ -8,6 +8,7 @@ Future<void> configureDatabase(Database db) async {
 }
 
 Future<void> createDatabase(Database db, int version) async {
+  // TODO: Adjust to migrations
   // XMPP state
   await db.execute(
     '''
