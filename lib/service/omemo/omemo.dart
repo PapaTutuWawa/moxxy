@@ -251,12 +251,14 @@ class OmemoService {
   /// Also sends an event to the UI.
   Future<void> addPseudoMessage(
     String conversationJid,
+    String accountJid,
     PseudoMessageType type,
     int ratchetsAdded,
     int ratchetsReplaced,
   ) async {
     final ms = GetIt.I.get<MessageService>();
     final message = await ms.addMessageFromData(
+      accountJid,
       '',
       DateTime.now().millisecondsSinceEpoch,
       '',

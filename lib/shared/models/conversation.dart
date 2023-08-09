@@ -78,6 +78,9 @@ class ConversationTypeConverter
 @freezed
 class Conversation with _$Conversation {
   factory Conversation(
+    /// The account that has the conversation.
+    String accountJid,
+
     /// The title of the chat.
     String title,
 
@@ -163,7 +166,7 @@ class Conversation with _$Conversation {
       'open': boolToInt(open),
       'muted': boolToInt(muted),
       'encrypted': boolToInt(encrypted),
-      'lastMessageId': lastMessage?.id,
+      'lastMessageId': lastMessage?.sid,
     };
   }
 

@@ -7,6 +7,7 @@ import 'package:moxxyv2/shared/models/message.dart';
 @immutable
 class FileUploadJob {
   const FileUploadJob(
+    this.accountJid,
     this.recipients,
     this.path,
     this.mime,
@@ -24,10 +25,12 @@ class FileUploadJob {
   final Map<String, Message> messageMap;
   final String metadataId;
   final List<Thumbnail> thumbnails;
+  final String accountJid;
 
   @override
   bool operator ==(Object other) {
     return other is FileUploadJob &&
+        accountJid == other.accountJid &&
         recipients == other.recipients &&
         path == other.path &&
         messageMap == other.messageMap &&
@@ -53,7 +56,8 @@ class FileUploadJob {
 class FileDownloadJob {
   const FileDownloadJob(
     this.location,
-    this.mId,
+    this.mSid,
+    this.accountJid,
     this.metadataId,
     this.createMetadataHashes,
     this.conversationJid,
@@ -65,7 +69,10 @@ class FileDownloadJob {
   final MediaFileLocation location;
 
   /// The id of the message associated with the download.
-  final int mId;
+  final String mSid;
+
+  /// The associated account
+  final String accountJid;
 
   /// The id of the file metadata describing the file.
   final String metadataId;
@@ -87,7 +94,8 @@ class FileDownloadJob {
   bool operator ==(Object other) {
     return other is FileDownloadJob &&
         location == other.location &&
-        mId == other.mId &&
+        mSid == other.mSid &&
+        accountJid == other.accountJid &&
         metadataId == other.metadataId &&
         conversationJid == other.conversationJid &&
         mimeGuess == other.mimeGuess &&
@@ -97,7 +105,7 @@ class FileDownloadJob {
   @override
   int get hashCode =>
       location.hashCode ^
-      mId.hashCode ^
+      mSid.hashCode ^
       metadataId.hashCode ^
       conversationJid.hashCode ^
       mimeGuess.hashCode ^

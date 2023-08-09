@@ -10,6 +10,7 @@ import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/roster.dart';
@@ -59,7 +60,9 @@ class ContactsService {
   Future<void> disable() async {
     FlutterContacts.removeListener(_onContactsDatabaseUpdate);
 
-    await GetIt.I.get<RosterService>().removePseudoRosterItems();
+    await GetIt.I.get<RosterService>().removePseudoRosterItems(
+      await GetIt.I.get<XmppStateService>().getAccountJid(),
+    );
   }
 
   Future<void> _onContactsDatabaseUpdate() async {
@@ -190,6 +193,7 @@ class ContactsService {
     final modifiedRosterItems = List<RosterItem>.empty(growable: true);
     final addedRosterItems = List<RosterItem>.empty(growable: true);
     final removedRosterItems = List<String>.empty(growable: true);
+    final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
     for (final id in List<String>.from(knownContactIds.values)) {
       final index = contacts.indexWhere((c) => c.id == id);
@@ -214,9 +218,11 @@ class ContactsService {
       // Remove the contact attributes from the conversation, if it existed
       final conversation = await cs.createOrUpdateConversation(
         jid,
+        accountJid,
         update: (c) async {
           return cs.updateConversation(
             jid,
+            accountJid,
             contactId: null,
             contactAvatarPath: null,
             contactDisplayName: null,
@@ -232,15 +238,16 @@ class ContactsService {
       }
 
       // Remove the contact attributes from the roster item, if it existed
-      final r = await rs.getRosterItemByJid(jid);
+      final r = await rs.getRosterItemByJid(jid, accountJid);
       if (r != null) {
         if (r.pseudoRosterItem) {
           _log.finest('Removing pseudo roster item $jid');
-          await rs.removeRosterItem(r.id);
+          await rs.removeRosterItem(r.jid, accountJid);
           removedRosterItems.add(jid);
         } else {
           final newRosterItem = await rs.updateRosterItem(
-            r.id,
+            r.jid,
+            accountJid,
             contactId: null,
             contactAvatarPath: null,
             contactDisplayName: null,
@@ -277,9 +284,11 @@ class ContactsService {
       // Update a possibly existing conversation
       final conversation = await cs.createOrUpdateConversation(
         contact.jid,
+        accountJid,
         update: (c) async {
           return cs.updateConversation(
             contact.jid,
+            accountJid,
             contactId: contact.id,
             contactAvatarPath:
                 contact.thumbnail != null ? contactAvatarPath : null,
@@ -296,10 +305,11 @@ class ContactsService {
       }
 
       // Update a possibly existing roster item
-      final r = await rs.getRosterItemByJid(contact.jid);
+      final r = await rs.getRosterItemByJid(contact.jid, accountJid);
       if (r != null) {
         final newRosterItem = await rs.updateRosterItem(
-          r.id,
+          r.jid,
+          accountJid,
           contactId: contact.id,
           contactAvatarPath: contactAvatarPath,
           contactDisplayName: contact.displayName,
@@ -307,6 +317,7 @@ class ContactsService {
         modifiedRosterItems.add(newRosterItem);
       } else {
         final newRosterItem = await rs.addRosterItemFromData(
+          accountJid,
           '',
           '',
           contact.jid,

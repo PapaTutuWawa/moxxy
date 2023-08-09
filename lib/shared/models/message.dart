@@ -51,6 +51,9 @@ class PseudoMessageTypeConverter extends JsonConverter<PseudoMessageType, int> {
 @freezed
 class Message with _$Message {
   factory Message(
+    /// The JID of the account that sent or received the message.
+    String accountJid,
+
     /// The full JID of the sender
     String sender,
 
@@ -62,9 +65,6 @@ class Message with _$Message {
 
     /// The "id" attribute of the message stanza.
     String sid,
-
-    /// The JID of the account that sent or received the message.
-    String accountJid,
 
     /// The JID of the conversation this message was received/sent in.
     String conversationJid,
@@ -181,7 +181,7 @@ class Message with _$Message {
       'encrypted': boolToInt(encrypted),
       'file_metadata_id': fileMetadata?.id,
       // NOTE: Message.quote_id is a foreign-key
-      'quote_id': quotes?.id,
+      'quote_sid': quotes?.sid,
       'isDownloading': boolToInt(isDownloading),
       'isUploading': boolToInt(isUploading),
       'isRetracted': boolToInt(isRetracted),

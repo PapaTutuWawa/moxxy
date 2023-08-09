@@ -101,4 +101,9 @@ class XmppStateService {
     }
     await batch.commit();
   }
+
+  Future<String> getAccountJid() async {
+    // TODO:
+    return '';
+  }
 }

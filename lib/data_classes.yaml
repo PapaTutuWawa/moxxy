@@ -107,7 +107,8 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          id: int
+          sid: String
+          conversationJid: String
           progress: double?
       # Triggered by [RosterService] if we receive a roster push.
       - name: RosterDiffEvent
@@ -383,7 +384,6 @@ files:
             type: Message?
             deserialise: true
           editSid: String?
-          editId: int?
           currentConversationJid: String?
       - name: SendFilesCommand
         extends: BackgroundCommand
@@ -545,14 +545,15 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          id: int
+          sid: String
+          conversationJid: String
           sendMarker: bool
       - name: AddReactionToMessageCommand
         extends: BackgroundCommand
         implements:
           - JsonImplementation
         attributes:
-          messageId: int
+          messageSid: String
           conversationJid: String
           emoji: String
       - name: RemoveReactionFromMessageCommand
@@ -560,7 +561,7 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          messageId: int
+          messageSid: String
           conversationJid: String
           emoji: String
       - name: MarkOmemoDeviceAsVerifiedCommand
@@ -635,7 +636,8 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          messageId: int
+          messageSid: String
+          conversationJid: String
       - name: RequestAvatarForJidCommand
         extends: BackgroundCommand
         implements:

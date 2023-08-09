@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:omemo_dart/omemo_dart.dart';
 import 'package:sqflite_common/sql.dart';
 
@@ -106,6 +107,7 @@ Future<OmemoDevice?> loadOmemoDevice(String jid) async {
 }
 
 Future<void> commitRatchets(List<OmemoRatchetData> ratchets) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final db = GetIt.I.get<DatabaseService>().database;
   final batch = db.batch();
   for (final ratchet in ratchets) {
@@ -146,6 +148,7 @@ Future<void> commitRatchets(List<OmemoRatchetData> ratchets) async {
         'skipped': jsonEncode(serializedSkippedKeys),
         'kex': jsonEncode(kex),
         'acked': boolToInt(ratchet.ratchet.acknowledged),
+        'accountJid': accountJid,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -161,6 +164,7 @@ Future<void> commitDeviceList(String jid, List<int> devices) async {
     {
       'jid': jid,
       'devices': jsonEncode(devices),
+      'accountJid': await GetIt.I.get<XmppStateService>().getAccountJid(),
     },
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
@@ -173,8 +177,12 @@ Future<void> removeRatchets(List<RatchetMapKey> ratchets) async {
   for (final key in ratchets) {
     batch.delete(
       omemoRatchetsTable,
-      where: 'jid = ? AND device = ?',
-      whereArgs: [key.jid, key.deviceId],
+      where: 'jid = ? AND device = ? AND accountJid = ?',
+      whereArgs: [
+        key.jid,
+        key.deviceId,
+        await GetIt.I.get<XmppStateService>().getAccountJid(),
+      ],
     );
   }
 
@@ -182,16 +190,17 @@ Future<void> removeRatchets(List<RatchetMapKey> ratchets) async {
 }
 
 Future<OmemoDataPackage?> loadRatchets(String jid) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final db = GetIt.I.get<DatabaseService>().database;
   final ratchetsRaw = await db.query(
     omemoRatchetsTable,
-    where: 'jid = ?',
-    whereArgs: [jid],
+    where: 'jid = ? AND accountJid = ?',
+    whereArgs: [jid, accountJid],
   );
   final deviceListRaw = await db.query(
     omemoDeviceListTable,
-    where: 'jid = ?',
-    whereArgs: [jid],
+    where: 'jid = ? AND accountJid = ?',
+    whereArgs: [jid, accountJid],
     limit: 1,
   );
   if (ratchetsRaw.isEmpty || deviceListRaw.isEmpty) {
@@ -274,6 +283,7 @@ Future<void> commitTrust(BTBVTrustData trust) async {
       'device': trust.device,
       'trust': trust.state.value,
       'enabled': boolToInt(trust.enabled),
+      'accountJid': await GetIt.I.get<XmppStateService>().getAccountJid(),
     },
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
@@ -283,8 +293,8 @@ Future<List<BTBVTrustData>> loadTrust(String jid) async {
   final db = GetIt.I.get<DatabaseService>().database;
   final rawTrust = await db.query(
     omemoTrustTable,
-    where: 'jid = ?',
-    whereArgs: [jid],
+    where: 'jid = ? AND accountJid = ?',
+    whereArgs: [jid, await GetIt.I.get<XmppStateService>().getAccountJid()],
   );
 
   return rawTrust.map((trust) {
@@ -302,7 +312,7 @@ Future<void> removeTrust(String jid) async {
   final db = GetIt.I.get<DatabaseService>().database;
   await db.delete(
     omemoTrustTable,
-    where: 'jid = ?',
-    whereArgs: [jid],
+    where: 'jid = ? AND accountJid = ?',
+    whereArgs: [jid, await GetIt.I.get<XmppStateService>().getAccountJid()],
   );
 }

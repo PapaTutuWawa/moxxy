@@ -68,7 +68,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       displayed                INTEGER,
       acked                    INTEGER,
       originId                 TEXT,
-      quote_id                 TEXT,
+      quote_sid                TEXT,
       file_metadata_id         TEXT,
       isDownloading            INTEGER NOT NULL,
       isUploading              INTEGER NOT NULL,
@@ -91,8 +91,10 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   // Build up the message map
   /// Message's old id attribute -> Message's sid attribute.
   final messageMap = <int, String>{};
-  for (var message in messages) {
+  final conversationMap = <int, String>{};
+  for (final message in messages) {
     messageMap[message['id']! as int] = message['sid']! as String;
+    conversationMap[message['id']! as int] = message['conversationJid']! as String;
   }
   // Then migrate messages
   for (final message in messages) {
@@ -101,16 +103,18 @@ Future<void> upgradeFromV45ToV46(Database db) async {
         ..remove('id')
         ..remove('quote_id'),
       'accountJid': accountJid,
-      'quote_id': message
+      'quote_sid': messageMap.maybeGet(message['quote_id']! as int)
     });
   }
   await db.execute('DROP TABLE $messagesTable');
   await db.execute('ALTER TABLE ${messagesTable}_new RENAME TO $messagesTable');
   await db.execute('DROP INDEX idx_messages_id');
   await db.execute(
-      'CREATE INDEX idx_messages_sid ON $messagesTable (accountJid, sid)');
+    'CREATE INDEX idx_messages_sid ON $messagesTable (accountJid, sid)',
+  );
   await db.execute(
-      'CREATE INDEX idx_messages_origin_sid ON $messagesTable (accountJid, originId, sid)');
+    'CREATE INDEX idx_messages_origin_sid ON $messagesTable (accountJid, originId, sid)',
+  );
 
   // Migrate conversations
   await db.execute(
@@ -154,23 +158,26 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   }
   await db.execute('DROP TABLE $conversationsTable');
   await db.execute(
-      'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable');
+    'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable',
+  );
   await db.execute('DROP INDEX idx_conversation_id');
   await db.execute(
-      'CREATE INDEX idx_conversation_id ON $conversationsTable (accountJid, jid)');
+    'CREATE INDEX idx_conversation_id ON $conversationsTable (accountJid, jid)',
+  );
 
   // Migrate reactions
   await db.execute(
     '''
     CREATE TABLE ${reactionsTable}_new (
-      accountJid TEXT NOT NULL,
-      senderJid  TEXT NOT NULL,
-      emoji      TEXT NOT NULL,
-      message_id TEXT NOT NULL,
-      PRIMARY KEY (accountJid, senderJid, emoji, message_id),
+      accountJid      TEXT NOT NULL,
+      senderJid       TEXT NOT NULL,
+      emoji           TEXT NOT NULL,
+      message_sid     TEXT NOT NULL,
+      conversationJid TEXT NOT NULL,
+      PRIMARY KEY (accountJid, senderJid, emoji, message_sid, conversationJid),
       CONSTRAINT fk_message
-        FOREIGN KEY (accountJid, message_id)
-        REFERENCES $messagesTable (accountJid, sid)
+        FOREIGN KEY (accountJid, message_sid, conversationJid)
+        REFERENCES $messagesTable (accountJid, sid, conversationJid)
         ON DELETE CASCADE
     )''',
   );
@@ -179,7 +186,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       '${reactionsTable}_new',
       {
         ...reaction..remove('message_id'),
-        'message_id': messageMap.maybeGet(reaction['message_id'] as int?),
+        'message_sid': messageMap.maybeGet(reaction['message_id']! as int),
+        'conversationJid': conversationMap[reaction['message_id']! as int],
         'accountJid': accountJid,
       },
     );
@@ -262,7 +270,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   }
   await db.execute('DROP TABLE $omemoDeviceListTable');
   await db.execute(
-      'ALTER TABLE ${omemoDeviceListTable}_new RENAME TO $omemoDeviceListTable');
+    'ALTER TABLE ${omemoDeviceListTable}_new RENAME TO $omemoDeviceListTable',
+  );
 
   // Migrate OMEMO trust
   await db.execute(
@@ -324,5 +333,6 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   }
   await db.execute('DROP TABLE $omemoRatchetsTable');
   await db.execute(
-      'ALTER TABLE ${omemoRatchetsTable}_new RENAME TO $omemoRatchetsTable');
+    'ALTER TABLE ${omemoRatchetsTable}_new RENAME TO $omemoRatchetsTable',
+  );
 }

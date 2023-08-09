@@ -8,8 +8,18 @@ class Reaction with _$Reaction {
   factory Reaction(
     // This is valid in combination with freezed
     // ignore: invalid_annotation_target
-    @JsonKey(name: 'message_id') int messageId,
+    @JsonKey(name: 'message_sid') String messageSid,
+
+    /// The JID of the conversation this reaction is in.
+    String conversationJid,
+
+    // The account JID of the attached message.
+    String accountJid,
+
+    // The sender of the reaction.
     String senderJid,
+
+    // The emoji reaction.
     String emoji,
   ) = _Reaction;
 

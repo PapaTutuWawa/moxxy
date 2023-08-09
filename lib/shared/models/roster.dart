@@ -7,21 +7,40 @@ part 'roster.g.dart';
 @freezed
 class RosterItem with _$RosterItem {
   factory RosterItem(
-    int id,
+    // The the JID of the account this roster belongs to.
+    String accountJid,
+
+    // Path to the roster avatar.
     String avatarPath,
+
+    // The SHA-1 hash of the roster avatar.
     String avatarHash,
+
+    // The JID of the roster item.
     String jid,
+
+    // The title of the roster item.
     String title,
+
+    // The subscription state of the roster item.
     String subscription,
+
+    // The ask attribute of the roster item.
     String ask,
+
     // Indicates whether the "roster item" really exists on the roster and is not just there
     // for the contact integration
     bool pseudoRosterItem,
+
+    // A list of groups the roster item is in.
     List<String> groups, {
+
     // The id of the contact in the device's phonebook, if it exists
     String? contactId,
+
     // The path to the profile picture of the contact, if it exists
     String? contactAvatarPath,
+
     // The contact's display name, if it exists
     String? contactDisplayName,
   }) = _RosterItem;
@@ -43,7 +62,6 @@ class RosterItem with _$RosterItem {
 
   Map<String, dynamic> toDatabaseJson() {
     final json = toJson()
-      ..remove('id')
       // TODO(PapaTutuWawa): Fix
       ..remove('groups')
       ..remove('pseudoRosterItem');

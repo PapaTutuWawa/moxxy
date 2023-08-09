@@ -18,19 +18,20 @@ class RosterService {
   /// Logger.
   final Logger _log = Logger('RosterService');
 
-  Future<void> _loadRosterIfNeeded() async {
+  Future<void> _loadRosterIfNeeded(String accountJid) async {
     if (_rosterCache == null) {
-      await loadRosterFromDatabase();
+      await loadRosterFromDatabase(accountJid);
     }
   }
 
-  Future<bool> isInRoster(String jid) async {
-    await _loadRosterIfNeeded();
+  Future<bool> isInRoster(String jid, String accountJid) async {
+    await _loadRosterIfNeeded(accountJid);
     return _rosterCache!.containsKey(jid);
   }
 
   /// Wrapper around [DatabaseService]'s addRosterItemFromData that updates the cache.
   Future<RosterItem> addRosterItemFromData(
+    String accountJid,
     String avatarPath,
     String avatarHash,
     String jid,
@@ -44,8 +45,8 @@ class RosterService {
     List<String> groups = const [],
   }) async {
     // TODO(PapaTutuWawa): Handle groups
-    final i = RosterItem(
-      -1,
+    final item = RosterItem(
+      accountJid,
       avatarPath,
       avatarHash,
       jid,
@@ -58,13 +59,10 @@ class RosterService {
       contactAvatarPath: contactAvatarPath,
       contactDisplayName: contactDisplayName,
     );
-
-    final item = i.copyWith(
-      id: await GetIt.I
-          .get<DatabaseService>()
-          .database
-          .insert(rosterTable, i.toDatabaseJson()),
-    );
+    await GetIt.I
+        .get<DatabaseService>()
+        .database
+        .insert(rosterTable, item.toDatabaseJson());
 
     // Update the cache
     _rosterCache![item.jid] = item;
@@ -74,7 +72,8 @@ class RosterService {
 
   /// Wrapper around [DatabaseService]'s updateRosterItem that updates the cache.
   Future<RosterItem> updateRosterItem(
-    int id, {
+    String jid,
+    String accountJid, {
     String? avatarPath,
     String? avatarHash,
     String? title,
@@ -125,8 +124,8 @@ class RosterService {
         await GetIt.I.get<DatabaseService>().database.updateAndReturn(
       rosterTable,
       i,
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'jid = ? AND accountJid = ?',
+      whereArgs: [jid, accountJid],
     );
     final newItem = RosterItem.fromDatabaseJson(result);
 
@@ -137,40 +136,28 @@ class RosterService {
   }
 
   /// Removes a roster item from the database and cache
-  Future<void> removeRosterItem(int id) async {
+  Future<void> removeRosterItem(String jid, String accountJid) async {
     // NOTE: This call ensures that _rosterCache != null
     await GetIt.I.get<DatabaseService>().database.delete(
       rosterTable,
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'jid = ? AND accountJid = ?',
+      whereArgs: [jid, accountJid],
     );
     assert(_rosterCache != null, '_rosterCache must be non-null');
 
     /// Update cache
-    _rosterCache!.removeWhere((_, value) => value.id == id);
-  }
-
-  /// Removes a roster item from the database based on its JID.
-  Future<void> removeRosterItemByJid(String jid) async {
-    await _loadRosterIfNeeded();
-
-    for (final item in _rosterCache!.values) {
-      if (item.jid == jid) {
-        await removeRosterItem(item.id);
-        return;
-      }
-    }
+    _rosterCache!.removeWhere((_, value) => value.jid == jid);
   }
 
   /// Returns the entire roster
-  Future<List<RosterItem>> getRoster() async {
-    await _loadRosterIfNeeded();
+  Future<List<RosterItem>> getRoster(String accountJid) async {
+    await _loadRosterIfNeeded(accountJid);
     return _rosterCache!.values.toList();
   }
 
   /// Returns the roster item with jid [jid] if it exists. Null otherwise.
-  Future<RosterItem?> getRosterItemByJid(String jid) async {
-    if (await isInRoster(jid)) {
+  Future<RosterItem?> getRosterItemByJid(String jid, String accountJid) async {
+    if (await isInRoster(jid, accountJid)) {
       return _rosterCache![jid];
     }
 
@@ -179,9 +166,12 @@ class RosterService {
 
   /// Load the roster from the database. This function is guarded against loading the
   /// roster multiple times and thus creating too many "RosterDiff" actions.
-  Future<List<RosterItem>> loadRosterFromDatabase() async {
-    final itemsRaw =
-        await GetIt.I.get<DatabaseService>().database.query(rosterTable);
+  Future<List<RosterItem>> loadRosterFromDatabase(String accountJid) async {
+    final itemsRaw = await GetIt.I.get<DatabaseService>().database.query(
+      rosterTable,
+      where: 'accountJid = ?',
+      whereArgs: [accountJid],
+    );
     final items = itemsRaw.map(RosterItem.fromDatabaseJson);
 
     _rosterCache = <String, RosterItem>{};
@@ -196,6 +186,7 @@ class RosterService {
   /// and, if it was successful, create the database entry. Returns the
   /// [RosterItem] model object.
   Future<RosterItem> addToRosterWrapper(
+    String accountJid,
     String avatarPath,
     String avatarHash,
     String jid,
@@ -204,6 +195,7 @@ class RosterService {
     final css = GetIt.I.get<ContactsService>();
     final contactId = await css.getContactIdForJid(jid);
     final item = await addRosterItemFromData(
+      accountJid,
       avatarPath,
       avatarHash,
       jid,
@@ -237,7 +229,8 @@ class RosterService {
   /// successful, from the database. If [unsubscribe] is true, then [jid] won't receive
   /// our presence anymore.
   Future<bool> removeFromRosterWrapper(
-    String jid, {
+    String jid,
+    String accountJid, {
     bool unsubscribe = true,
   }) async {
     final conn = GetIt.I.get<XmppConnection>();
@@ -251,7 +244,7 @@ class RosterService {
       }
 
       _log.finest('Removing from roster maybe worked. Removing from database');
-      await removeRosterItemByJid(jid);
+      await removeRosterItem(jid, accountJid);
       return true;
     }
 
@@ -259,8 +252,8 @@ class RosterService {
   }
 
   /// Removes all roster items that are pseudo roster items.
-  Future<void> removePseudoRosterItems() async {
-    final items = await getRoster();
+  Future<void> removePseudoRosterItems(String accountJid) async {
+    final items = await getRoster(accountJid);
     final removed = List<String>.empty(growable: true);
     for (final item in items) {
       if (!item.pseudoRosterItem) continue;
@@ -271,7 +264,7 @@ class RosterService {
       );
 
       removed.add(item.jid);
-      await removeRosterItem(item.id);
+      await removeRosterItem(item.jid, accountJid);
     }
 
     sendEvent(
