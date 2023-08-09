@@ -12,7 +12,8 @@ class GroupchatService {
   /// Returns a [Future] that resolves to a [RoomInformation] object containing
   /// details about the room.
   Future<Result<RoomInformation, MUCError>> getRoomInformation(
-      JID roomJID) async {
+    JID roomJID,
+  ) async {
     final conn = GetIt.I.get<XmppConnection>();
     final mm = conn.getManagerById<MUCManager>(mucManager)!;
     final result = await mm.queryRoomInformation(roomJID);
