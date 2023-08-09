@@ -264,6 +264,16 @@ Future<void> createDatabase(Database db, int version) async {
       value TEXT NOT NULL
     )''',
   );
+
+  // Groupchat
+  await db.execute(
+    '''
+    CREATE TABLE $groupchatTable (
+      jid TEXT PRIMARY KEY,
+      nick TEXT NOT NULL
+    )''',
+  );
+
   await db.insert(
     preferenceTable,
     Preference(

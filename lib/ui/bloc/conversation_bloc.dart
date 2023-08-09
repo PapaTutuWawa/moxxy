@@ -63,6 +63,7 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
     final arguments = ConversationPageArguments(
       event.jid,
       event.initialText,
+      event.type,
     );
     final navEvent = event.removeUntilConversations
         ? (PushedNamedAndRemoveUntilEvent(

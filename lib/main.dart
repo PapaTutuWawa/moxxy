@@ -16,6 +16,7 @@ import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/crop_bloc.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
 import 'package:moxxyv2/ui/bloc/devices_bloc.dart';
+import 'package:moxxyv2/ui/bloc/groupchat/joingroupchat_bloc.dart';
 import 'package:moxxyv2/ui/bloc/login_bloc.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
@@ -64,6 +65,7 @@ import 'package:moxxyv2/ui/pages/share_selection.dart';
 //import 'package:moxxyv2/ui/pages/sharedmedia.dart';
 import 'package:moxxyv2/ui/pages/splashscreen/splashscreen.dart';
 import 'package:moxxyv2/ui/pages/startchat.dart';
+import 'package:moxxyv2/ui/pages/startgroupchat.dart';
 import 'package:moxxyv2/ui/pages/sticker_pack.dart';
 import 'package:moxxyv2/ui/pages/util/qrcode.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
@@ -117,6 +119,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
   GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
   GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
+  GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
 }
 
 void main() async {
@@ -188,6 +191,9 @@ void main() async {
         ),
         BlocProvider<StickerPackBloc>(
           create: (_) => GetIt.I.get<StickerPackBloc>(),
+        ),
+        BlocProvider<JoinGroupchatBloc>(
+          create: (_) => GetIt.I.get<JoinGroupchatBloc>(),
         ),
       ],
       child: TranslationProvider(
@@ -287,6 +293,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               child: ConversationPage(
                 conversationJid: args.conversationJid,
                 initialText: args.initialText,
+                conversationType: args.type,
               ),
             );
           // case sharedMediaRoute:
@@ -313,6 +320,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             return DebuggingPage.route;
           case addContactRoute:
             return StartChatPage.route;
+          case joinGroupchatRoute:
+            return JoinGroupchatPage.getRoute(
+              settings.arguments! as JoinGroupchatArguments,
+            );
           case cropRoute:
             return CropPage.route;
           case sendFilesRoute:

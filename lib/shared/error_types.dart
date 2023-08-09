@@ -197,3 +197,59 @@ class MessageErrorTypeConverter
   @override
   int toJson(MessageErrorType data) => data.value;
 }
+
+enum GroupchatErrorType {
+  unspecified(0),
+  roomPasswordProtected(1),
+  unableToJoinRoom(2),
+  noNicknameSpecified(3),
+  invalidStanzaFormat(4),
+  invalidDiscoInfoResponse(5),
+  roomNotJoinedError(6);
+
+  const GroupchatErrorType(this.value);
+
+  static GroupchatErrorType? fromInt(int? value) {
+    if (value == null) {
+      return null;
+    }
+    if (value == GroupchatErrorType.unspecified.value) {
+      return GroupchatErrorType.unspecified;
+    } else if (value == GroupchatErrorType.roomPasswordProtected.value) {
+      return GroupchatErrorType.roomPasswordProtected;
+    } else if (value == GroupchatErrorType.unableToJoinRoom.value) {
+      return GroupchatErrorType.unableToJoinRoom;
+    } else if (value == GroupchatErrorType.noNicknameSpecified.value) {
+      return GroupchatErrorType.noNicknameSpecified;
+    } else if (value == GroupchatErrorType.invalidStanzaFormat.value) {
+      return GroupchatErrorType.invalidStanzaFormat;
+    } else if (value == GroupchatErrorType.invalidDiscoInfoResponse.value) {
+      return GroupchatErrorType.invalidDiscoInfoResponse;
+    } else if (value == GroupchatErrorType.roomNotJoinedError.value) {
+      return GroupchatErrorType.roomNotJoinedError;
+    }
+
+    return null;
+  }
+
+  static GroupchatErrorType? fromException(dynamic exception) {
+    if (exception == null) {
+      return null;
+    }
+
+    if (exception is NoNicknameSpecified) {
+      return GroupchatErrorType.noNicknameSpecified;
+    } else if (exception is InvalidStanzaFormat) {
+      return GroupchatErrorType.invalidStanzaFormat;
+    } else if (exception is InvalidDiscoInfoResponse) {
+      return GroupchatErrorType.invalidDiscoInfoResponse;
+    } else if (exception is RoomNotJoinedError) {
+      return GroupchatErrorType.roomNotJoinedError;
+    }
+
+    return GroupchatErrorType.unspecified;
+  }
+
+  /// The identifier representing the error.
+  final int value;
+}
