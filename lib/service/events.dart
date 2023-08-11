@@ -135,6 +135,7 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
   // ignore: avoid_dynamic_calls
   final xc = GetIt.I.get<XmppConnection>();
   if (result.isType<bool>() && result.get<bool>()) {
+    await GetIt.I.get<XmppStateService>().setAccountJid(command.jid);
     final preferences =
         await GetIt.I.get<PreferencesService>().getPreferences();
     final settings = xc.connectionSettings;
@@ -146,6 +147,7 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
       id: id,
     );
   } else {
+    await GetIt.I.get<XmppStateService>().resetAccountJid();
     await xc.reconnectionPolicy.setShouldReconnect(false);
     sendEvent(
       LoginFailureEvent(
@@ -191,7 +193,8 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
         (await GetIt.I.get<ConversationService>().loadConversations(accountJid))
             .where((c) => c.open)
             .toList(),
-    roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(accountJid),
+    roster:
+        await GetIt.I.get<RosterService>().loadRosterFromDatabase(accountJid),
   );
 }
 
@@ -213,8 +216,12 @@ Future<void> performPreStart(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
 
-  final settings = await GetIt.I.get<XmppService>().getConnectionSettings();
-  if (settings != null) {
+  // Check if we have an account JID and, if we do, if we have login data.
+  final accountJid = await GetIt.I.get<XmppStateService>().getRawAccountJid();
+  final isLoggedIn = accountJid != null
+      ? await GetIt.I.get<XmppService>().getConnectionSettings() != null
+      : false;
+  if (isLoggedIn) {
     sendEvent(
       await _buildPreStartDoneEvent(preferences),
       id: id,
@@ -468,7 +475,10 @@ Future<void> performSetPreferences(
 }
 
 /// Attempts to achieve a "both" subscription with [jid].
-Future<void> _maybeAchieveBothSubscription(String jid, String accountJid) async {
+Future<void> _maybeAchieveBothSubscription(
+  String jid,
+  String accountJid,
+) async {
   final roster = GetIt.I.get<RosterService>();
   final item = await roster.getRosterItemByJid(jid, accountJid);
   if (item != null) {
@@ -826,6 +836,7 @@ Future<void> performSignOut(SignOutCommand command, {dynamic extra}) async {
   await xss.modifyXmppState(
     (state) => XmppState(),
   );
+  await xss.resetAccountJid();
 
   sendEvent(
     SignedOutEvent(),
@@ -834,7 +845,11 @@ Future<void> performSignOut(SignOutCommand command, {dynamic extra}) async {
 }
 
 Future<void> performSendFiles(SendFilesCommand command, {dynamic extra}) async {
-  await GetIt.I.get<XmppService>().sendFiles(command.paths, command.recipients);
+  await GetIt.I.get<XmppService>().sendFiles(
+        await GetIt.I.get<XmppStateService>().getAccountJid(),
+        command.paths,
+        command.recipients,
+      );
 }
 
 Future<void> performSetMuteState(
@@ -899,7 +914,8 @@ Future<void> performRecreateSessions(
   RecreateSessionsCommand command, {
   dynamic extra,
 }) async {
-  // TODO: Is this account specfic?
+  // NOTE: As [removeAllRatchets] delegates the deletion to the OmemoManager, this call
+  //       is implicitly dependent on the account JID.
   // Remove all ratchets
   await GetIt.I.get<OmemoService>().removeAllRatchets(command.jid);
 
@@ -1173,6 +1189,7 @@ Future<void> performSendSticker(
   dynamic extra,
 }) async {
   await GetIt.I.get<XmppService>().sendMessage(
+        accountJid: await GetIt.I.get<XmppStateService>().getAccountJid(),
         body: command.sticker.desc,
         recipients: [command.recipient],
         sticker: command.sticker,
@@ -1416,10 +1433,11 @@ Future<void> performOldMediaFileDeletion(
   sendEvent(
     DeleteOldMediaFilesDoneEvent(
       newUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
-      conversations:
-          (await GetIt.I.get<ConversationService>().loadConversations(accountJid))
-              .where((c) => c.open)
-              .toList(),
+      conversations: (await GetIt.I
+              .get<ConversationService>()
+              .loadConversations(accountJid))
+          .where((c) => c.open)
+          .toList(),
     ),
     id: extra as String,
   );

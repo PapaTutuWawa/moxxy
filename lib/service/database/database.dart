@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:math';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/service/database/creation.dart';
@@ -47,13 +46,11 @@ import 'package:moxxyv2/service/database/migrations/0003_new_omemo.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo_pseudo_messages.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0003_sticker_pack_timestamp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:path/path.dart' as path;
-import 'package:random_string/random_string.dart';
 // ignore: implementation_imports
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
-
-const databasePasswordKey = 'database_encryption_password';
 
 extension DatabaseHelpers on Database {
   /// Count the number of rows in [table] where [where] with the arguments [whereArgs]
@@ -160,12 +157,6 @@ const List<DatabaseMigration<Database>> migrations = [
 ];
 
 class DatabaseService {
-  /// Secure storage for accesing the database encryption key.
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    // TODO(Unknown): Set other options
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
-
   /// Logger.
   final Logger _log = Logger('DatabaseService');
 
@@ -177,20 +168,7 @@ class DatabaseService {
       await getDatabasesPath(),
       'moxxy.db',
     );
-
-    String key;
-    if (await _storage.containsKey(key: databasePasswordKey)) {
-      _log.finest('Database encryption key found');
-      key = (await _storage.read(key: databasePasswordKey))!;
-    } else {
-      _log.finest('Database encryption not key found. Generating it...');
-      key = randomAlphaNumeric(
-        40,
-        provider: CoreRandomProvider.from(Random.secure()),
-      );
-      await _storage.write(key: databasePasswordKey, value: key);
-      _log.finest('Key generation done...');
-    }
+    final dbPassword = await GetIt.I.get<XmppStateService>().getOrCreateDatabaseKey();
 
     // Just some sanity checks
     final version = migrations.last.version;
@@ -207,7 +185,7 @@ class DatabaseService {
 
     database = await openDatabase(
       dbPath,
-      password: key,
+      password: dbPassword,
       version: version,
       onCreate: createDatabase,
       onConfigure: (db) async {

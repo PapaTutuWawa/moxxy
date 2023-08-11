@@ -1,4 +1,6 @@
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/constants.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 extension MaybeGet<K, V> on Map<K, V> {
@@ -26,6 +28,9 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     // TODO: Remove all messages?
   }
   final accountJid = rawJid.first['value']! as String;
+
+  // Store the account JID in the secure storage.
+  await GetIt.I.get<XmppStateService>().setAccountJid(accountJid);
 
   // Migrate the XMPP state
   await db.execute(

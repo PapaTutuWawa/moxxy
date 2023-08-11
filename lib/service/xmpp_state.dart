@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:math';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
+import 'package:random_string/random_string.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:uuid/uuid.dart';
@@ -18,13 +22,47 @@ extension UserAgentJson on UserAgent {
 
 const _userAgentKey = 'userAgent';
 
+const _databasePasswordKey = 'database_encryption_password';
+const _accountJidKey = 'account_jid';
+
 class XmppStateService {
+  /// Logger
+  final Logger _log = Logger('XmppStateService');
+
   /// Persistent state around the connection, like the SM token, etc.
   XmppState? _state;
+
+  /// Cached account JID.
+  String? _accountJid;
 
   /// Cache the user agent
   UserAgent? _userAgent;
   final Lock _userAgentLock = Lock();
+
+  /// Secure storage for data we must have before the database is up.
+  final FlutterSecureStorage _storage = const FlutterSecureStorage(
+    // TODO(Unknown): Set other options
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
+  /// Either returns the database password from the secure storage or
+  /// generates a new one and writes it to the secure storage.
+  Future<String> getOrCreateDatabaseKey() async {
+    final key = await _storage.read(key: _databasePasswordKey);
+    if (key != null) {
+      return key;
+    }
+
+    // We have no database key yet, so generate, save, and return.
+    _log.info('Found no database encryption password. Generating a new one...');
+    final newKey = randomAlphaNumeric(
+      40,
+      provider: CoreRandomProvider.from(Random.secure()),
+    );
+    await _storage.write(key: _databasePasswordKey, value: newKey);
+    _log.info('Key generation done');
+    return newKey;
+  }
 
   /// The user agent used for SASL2 authentication. If cached, returns from cache.
   /// If not cached, loads from the database. If not in the database, creates a
@@ -102,8 +140,33 @@ class XmppStateService {
     await batch.commit();
   }
 
+  /// Resets the current account JID to null.
+  Future<void> resetAccountJid() async {
+    _accountJid = null;
+    await _storage.delete(key: _accountJidKey);
+  }
+
+  /// Sets the current account JID to [jid] and stores it in the secure storage.
+  Future<void> setAccountJid(String jid) async {
+    _accountJid = jid;
+    await _storage.write(key: _accountJidKey, value: jid);
+  }
+
+  Future<String?> _loadAccountJid() async {
+    return _accountJid ??= await _storage.read(key: _accountJidKey);
+  }
+
+  /// Returns a string if we have an account jid and null if we don't.
+  Future<String?> getRawAccountJid() async {
+    if (_accountJid != null) {
+      return _accountJid;
+    }
+
+    return _loadAccountJid();
+  }
+
+  /// Gets the current account JID from the cache or from the secure storage.
   Future<String> getAccountJid() async {
-    // TODO:
-    return '';
+    return _accountJid ?? (await _loadAccountJid())!;
   }
 }

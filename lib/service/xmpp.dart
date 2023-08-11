@@ -142,8 +142,8 @@ class XmppService {
   String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
 
   /// Sends a message correction to [recipient] regarding the message with stanza id
-  /// [oldId]. The old message's body gets corrected to [newBody]. [id] is the message's
-  /// database id. [chatState] can be optionally specified to also include a chat state
+  /// [oldId]. The old message's body gets corrected to [newBody]. [sid] is the message's
+  /// stanza id. [chatState] can be optionally specified to also include a chat state
   /// in the message.
   ///
   /// This function handles updating the message and optionally the corresponding
@@ -1105,7 +1105,9 @@ class XmppService {
   /// returns false.
   /// [conversationJid] refers to the JID of the conversation the message was received in.
   Future<bool> _shouldDownloadFile(
-      String conversationJid, String accountJid) async {
+    String conversationJid,
+    String accountJid,
+  ) async {
     return (await Permission.storage.status).isGranted &&
         await _automaticFileDownloadAllowed() &&
         await GetIt.I
@@ -1115,7 +1117,9 @@ class XmppService {
 
   /// Handles receiving a message stanza of type error.
   Future<void> _handleErrorMessage(
-      MessageEvent event, String accountJid) async {
+    MessageEvent event,
+    String accountJid,
+  ) async {
     if (event.error == null) {
       _log.warning(
         'Received error for message ${event.id} without an error element',
@@ -1282,7 +1286,10 @@ class XmppService {
     // Process File Upload Notifications replacements separately
     if (event.extensions.get<FileUploadNotificationReplacementData>() != null) {
       await _handleFileUploadNotificationReplacement(
-          event, conversationJid, accountJid);
+        event,
+        conversationJid,
+        accountJid,
+      );
       return;
     }
 
