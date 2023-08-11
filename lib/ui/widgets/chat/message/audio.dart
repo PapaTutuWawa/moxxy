@@ -33,7 +33,7 @@ class _AudioWidget extends StatelessWidget {
     this.onChanged,
     this.duration,
     this.position,
-    this.messageId,
+    this.messageKey,
   );
   final double maxWidth;
   final bool isDownloading;
@@ -42,14 +42,14 @@ class _AudioWidget extends StatelessWidget {
   final double? duration;
   final double? position;
   final Widget? icon;
-  final int messageId;
+  final MessageKey messageKey;
 
   Widget _getLeftWidget() {
     if (isDownloading) {
       return SizedBox(
         width: 48,
         height: 48,
-        child: ProgressWidget(id: messageId),
+        child: ProgressWidget(messageKey),
       );
     }
 
@@ -174,7 +174,7 @@ class AudioChatState extends State<AudioChatWidget> {
         (_) {},
         null,
         null,
-        widget.message.id,
+        widget.message.messageKey,
       ),
       MessageBubbleBottom(widget.message, widget.sent),
       widget.radius,
@@ -192,7 +192,7 @@ class AudioChatState extends State<AudioChatWidget> {
         (_) {},
         null,
         null,
-        widget.message.id,
+        widget.message.messageKey,
       ),
       MessageBubbleBottom(widget.message, widget.sent),
       widget.radius,
@@ -237,7 +237,7 @@ class AudioChatState extends State<AudioChatWidget> {
         },
         _duration,
         _position,
-        widget.message.id,
+        widget.message.messageKey,
       ),
       MessageBubbleBottom(
         widget.message,

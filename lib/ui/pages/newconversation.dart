@@ -123,13 +123,14 @@ class NewConversationPage extends StatelessWidget {
                   ),
                   child: ConversationsListRow(
                     Conversation(
+                      '',
                       item.title,
                       Message(
+                        '',
                         '',
                         item.jid,
                         0,
                         '',
-                        0,
                         '',
                         false,
                         false,

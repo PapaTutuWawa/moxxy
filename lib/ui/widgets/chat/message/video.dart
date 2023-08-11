@@ -41,7 +41,7 @@ class VideoChatWidget extends StatelessWidget {
       ),
       MessageBubbleBottom(message, sent),
       radius,
-      extra: ProgressWidget(id: message.id),
+      extra: ProgressWidget(message.messageKey),
     );
   }
 
@@ -61,7 +61,7 @@ class VideoChatWidget extends StatelessWidget {
         ),
         MessageBubbleBottom(message, sent),
         radius,
-        extra: ProgressWidget(id: message.id),
+        extra: ProgressWidget(message.messageKey),
       );
     } else {
       return FileChatBaseWidget(
@@ -71,7 +71,7 @@ class VideoChatWidget extends StatelessWidget {
         maxWidth,
         sent,
         mimeType: message.fileMetadata!.mimeType,
-        downloadButton: ProgressWidget(id: message.id),
+        downloadButton: ProgressWidget(message.messageKey),
       );
     }
   }

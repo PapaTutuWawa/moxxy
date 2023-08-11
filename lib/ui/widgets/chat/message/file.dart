@@ -147,7 +147,7 @@ class FileChatWidget extends StatelessWidget {
       maxWidth,
       sent,
       mimeType: message.fileMetadata!.filename,
-      downloadButton: ProgressWidget(id: message.id),
+      downloadButton: ProgressWidget(message.messageKey),
     );
   }
 

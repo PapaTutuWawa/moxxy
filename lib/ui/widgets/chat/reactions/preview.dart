@@ -33,8 +33,7 @@ class ReactionsPreview extends StatelessWidget {
           ),
           builder: (context) {
             return ReactionList(
-              message.id,
-              message.conversationJid,
+              message.messageKey,
             );
           },
         );

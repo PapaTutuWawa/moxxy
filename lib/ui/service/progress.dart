@@ -1,4 +1,5 @@
 import 'package:logging/logging.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 
 typedef UIProgressCallback = void Function(double?);
 
@@ -11,16 +12,16 @@ class UIProgressService {
 
   final Logger _log;
   // Database message id -> callback function
-  final Map<int, UIProgressCallback> _callbacks;
+  final Map<MessageKey, UIProgressCallback> _callbacks;
 
-  void registerCallback(int id, UIProgressCallback callback) {
-    _log.finest('Registering callback for $id');
-    _callbacks[id] = callback;
+  void registerCallback(MessageKey key, UIProgressCallback callback) {
+    _log.finest('Registering callback for $key');
+    _callbacks[key] = callback;
   }
 
-  void unregisterCallback(int id) {
-    _log.finest('Unregistering callback for $id');
-    _callbacks.remove(id);
+  void unregisterCallback(MessageKey key) {
+    _log.finest('Unregistering callback for $key');
+    _callbacks.remove(key);
   }
 
   void unregisterAll() {
@@ -28,15 +29,15 @@ class UIProgressService {
     _callbacks.clear();
   }
 
-  void onProgress(int id, double? progress) {
-    if (_callbacks.containsKey(id)) {
+  void onProgress(MessageKey key, double? progress) {
+    if (_callbacks.containsKey(key)) {
       if (progress == 1.0) {
-        unregisterCallback(id);
+        unregisterCallback(key);
       } else {
-        _callbacks[id]!(progress);
+        _callbacks[key]!(progress);
       }
     } else {
-      _log.warning('Received progress callback for unregistered id $id');
+      _log.warning('Received progress callback for unregistered key $key');
     }
   }
 }

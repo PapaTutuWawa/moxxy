@@ -49,7 +49,8 @@ int getMessageMenuOptionCount(
   return [
     message.isReactable,
     message.canRetract(sentBySelf),
-    message.canEdit(sentBySelf) && lastMessage?.id == message.id,
+    // TODO(Unknown): Remove this and just allow us to correct any message
+    message.canEdit(sentBySelf) && lastMessage?.sid == message.sid && lastMessage?.sender == message.sender,
     message.errorMenuVisible,
     message.hasWarning,
     message.isCopyable,
@@ -95,7 +96,7 @@ class ConversationPageState extends State<ConversationPage>
   late final Animation<double> _scrollToBottomAnimation;
   late final StreamSubscription<bool> _scrolledToBottomStateSubscription;
 
-  final Map<int, GlobalKey> _messageKeys = {};
+  final Map<MessageKey, GlobalKey> _messageKeys = {};
 
   @override
   void initState() {
@@ -268,11 +269,11 @@ class ConversationPageState extends State<ConversationPage>
 
     // Give each bubble its own animation and animation controller
     GlobalKey key;
-    if (!_messageKeys.containsKey(item.id)) {
+    if (!_messageKeys.containsKey(item.messageKey)) {
       key = GlobalKey();
-      _messageKeys[item.id] = key;
+      _messageKeys[item.messageKey] = key;
     } else {
-      key = _messageKeys[item.id]!;
+      key = _messageKeys[item.messageKey]!;
     }
 
     final bubble = RawChatBubble(

@@ -4,6 +4,7 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -38,20 +39,17 @@ List<ReactionGroup> ensureReactionGroupOrder(
 /// Displays the reactions to a message and allows modifying the reactions.
 /// When created, fetches the reactions from the ReactionService.
 class ReactionList extends StatelessWidget {
-  const ReactionList(this.messageId, this.conversationJid, {super.key});
+  const ReactionList(this.messageKey, {super.key});
 
   /// The database identifier of the message to fetch reactions of.
-  final int messageId;
-
-  /// The conversation the message is part of.
-  final String conversationJid;
+  final MessageKey messageKey;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<BackgroundEvent?>(
       future: MoxplatformPlugin.handler.getDataSender().sendData(
             GetReactionsForMessageCommand(
-              messageId: messageId,
+              key: messageKey,
             ),
           ) as Future<BackgroundEvent?>,
       builder: (context, snapshot) {
@@ -106,9 +104,8 @@ class ReactionList extends StatelessWidget {
                             .getDataSender()
                             .sendData(
                               AddReactionToMessageCommand(
-                                messageId: messageId,
+                                key: messageKey,
                                 emoji: emoji,
-                                conversationJid: conversationJid,
                               ),
                               awaitable: false,
                             );
@@ -119,9 +116,8 @@ class ReactionList extends StatelessWidget {
                   ? (emoji) async {
                       await MoxplatformPlugin.handler.getDataSender().sendData(
                             RemoveReactionFromMessageCommand(
-                              messageId: messageId,
+                              key: messageKey,
                               emoji: emoji,
-                              conversationJid: conversationJid,
                             ),
                             awaitable: false,
                           );

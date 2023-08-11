@@ -9,6 +9,54 @@ import 'package:moxxyv2/shared/warning_types.dart';
 part 'message.freezed.dart';
 part 'message.g.dart';
 
+/// A composite key to replace the old incrementing integer id attribute.
+/// Somewhat mimicks the message table's primary key.
+@immutable
+class MessageKey {
+  const MessageKey(
+    this.sender,
+    this.conversationJid,
+    this.sid,
+    this.timestamp,
+  );
+
+  factory MessageKey.fromJson(Map<String, Object> json) => MessageKey(
+    json['conversationJid']! as String,
+    json['sender']! as String,
+    json['sid']! as String,
+    json['timestamp']! as int,
+  );
+
+  final String conversationJid;
+  final String sender;
+  final String sid;
+  final int timestamp;
+
+  Map<String, Object> toJson() => {
+    'conversationJid': conversationJid,
+    'sender': sender,
+    'sid': sid,
+    'timestamp': timestamp,
+  };
+
+  @override
+  bool operator==(Object other) {
+    return other is MessageKey &&
+      other.conversationJid == conversationJid &&
+      other.sender == sender &&
+      other.sid == sid &&
+      other.timestamp == timestamp;
+  }
+
+  @override
+  int get hashCode => sender.hashCode ^ sid.hashCode ^ timestamp.hashCode;
+
+  @override
+  String toString() {
+    return 'MessageKey($sender, $sid, $timestamp)';
+  }
+}
+
 enum PseudoMessageType {
   /// Indicates that a new device was created in the chat.
   newDevice(1),
@@ -292,4 +340,11 @@ class Message with _$Message {
 
   /// The JID of the sender in moxxmpp's format.
   JID get senderJid => JID.fromString(sender);
+
+  /// A "unique" key for a message.
+  MessageKey get messageKey => MessageKey(
+    sender,
+    sid,
+    timestamp,
+  );
 }

@@ -199,10 +199,8 @@ class SelectedMessageContextMenu extends StatelessWidget {
                               .getDataSender()
                               .sendData(
                                 AddReactionToMessageCommand(
-                                  messageId: message.id,
+                                  key: message.messageKey,
                                   emoji: emoji,
-                                  conversationJid:
-                                      conversationController.conversationJid,
                                 ),
                                 awaitable: false,
                               );
@@ -238,7 +236,6 @@ class SelectedMessageContextMenu extends StatelessWidget {
                         conversationController.beginMessageEditing(
                           message.body,
                           message.quotes,
-                          message.id,
                           message.sid,
                         );
                         selectionController.dismiss();
