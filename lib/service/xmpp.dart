@@ -1480,14 +1480,13 @@ class XmppService {
         );
         await fts.downloadFile(
           FileDownloadJob(
+            message.messageKey,
             embeddedFile,
-            message.sid,
             accountJid,
             message.fileMetadata!.id,
             // If we did not retrieve the file, then we were not able to find it using
             // hashes.
             !fileMetadata!.retrieved,
-            conversationJid,
             mimeGuess,
           ),
         );
@@ -1675,14 +1674,13 @@ class XmppService {
         _log.finest('Advertised file MIME: ${_getMimeGuess(event)}');
         await GetIt.I.get<HttpFileTransferService>().downloadFile(
               FileDownloadJob(
+                message.messageKey,
                 embeddedFile,
-                message.sid,
                 accountJid,
                 oldFileMetadata!.id,
                 // If [fileMetadata] is null, then we were not able to find the file metadata
                 // using hashes and thus have to create hash pointers.
                 fileMetadata == null,
-                conversationJid,
                 _getMimeGuess(event),
                 shouldShowNotification: false,
               ),

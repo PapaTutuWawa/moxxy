@@ -55,21 +55,20 @@ class FileUploadJob {
 @immutable
 class FileDownloadJob {
   const FileDownloadJob(
+    this.messageKey,
     this.location,
-    this.mSid,
     this.accountJid,
     this.metadataId,
     this.createMetadataHashes,
-    this.conversationJid,
     this.mimeGuess, {
     this.shouldShowNotification = true,
   });
 
+  /// The message key.
+  final MessageKey messageKey;
+
   /// The location where the file can be found.
   final MediaFileLocation location;
-
-  /// The id of the message associated with the download.
-  final String mSid;
 
   /// The associated account
   final String accountJid;
@@ -81,9 +80,6 @@ class FileDownloadJob {
   /// object.
   final bool createMetadataHashes;
 
-  /// The JID of the conversation this message was received in.
-  final String conversationJid;
-
   /// A guess to the files's MIME type.
   final String? mimeGuess;
 
@@ -94,10 +90,9 @@ class FileDownloadJob {
   bool operator ==(Object other) {
     return other is FileDownloadJob &&
         location == other.location &&
-        mSid == other.mSid &&
+        messageKey == other.messageKey &&
         accountJid == other.accountJid &&
         metadataId == other.metadataId &&
-        conversationJid == other.conversationJid &&
         mimeGuess == other.mimeGuess &&
         shouldShowNotification == other.shouldShowNotification;
   }
@@ -105,9 +100,8 @@ class FileDownloadJob {
   @override
   int get hashCode =>
       location.hashCode ^
-      mSid.hashCode ^
+      messageKey.hashCode ^
       metadataId.hashCode ^
-      conversationJid.hashCode ^
       mimeGuess.hashCode ^
       shouldShowNotification.hashCode;
 }

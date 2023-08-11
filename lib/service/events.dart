@@ -684,6 +684,7 @@ Future<void> performRequestDownload(
 
   await srv.downloadFile(
     FileDownloadJob(
+      message.messageKey,
       MediaFileLocation(
         fileMetadata.sourceUrls!,
         fileMetadata.filename,
@@ -698,11 +699,9 @@ Future<void> performRequestDownload(
         fileMetadata.ciphertextHashes,
         null,
       ),
-      message.sid,
       accountJid,
       message.fileMetadata!.id,
       message.fileMetadata!.plaintextHashes?.isNotEmpty ?? false,
-      message.conversationJid,
       mimeGuess,
     ),
   );
@@ -1073,8 +1072,8 @@ Future<void> performAddMessageReaction(
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final rs = GetIt.I.get<ReactionsService>();
   final msg = await rs.addNewReaction(
-    command.messageSid,
-    command.conversationJid,
+    command.key.sid,
+    command.key.conversationJid,
     accountJid,
     accountJid,
     command.emoji,
@@ -1083,19 +1082,19 @@ Future<void> performAddMessageReaction(
     return;
   }
 
-  if (command.conversationJid != '') {
+  if (command.key.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
-      JID.fromString(command.conversationJid),
+      JID.fromString(command.key.conversationJid),
       TypedMap<StanzaHandlerExtension>.fromList([
         MessageReactionsData(
           msg.originId ?? msg.sid,
           await rs.getReactionsForMessageByJid(
-            command.messageSid,
-            command.conversationJid,
+            command.key.sid,
+            command.key.conversationJid,
             accountJid,
             accountJid,
           ),
@@ -1116,8 +1115,8 @@ Future<void> performRemoveMessageReaction(
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final rs = GetIt.I.get<ReactionsService>();
   final msg = await rs.removeReaction(
-    command.messageSid,
-    command.conversationJid,
+    command.key.sid,
+    command.key.conversationJid,
     accountJid,
     accountJid,
     command.emoji,
@@ -1126,19 +1125,19 @@ Future<void> performRemoveMessageReaction(
     return;
   }
 
-  if (command.conversationJid != '') {
+  if (command.key.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
-      JID.fromString(command.conversationJid),
+      JID.fromString(command.key.conversationJid),
       TypedMap<StanzaHandlerExtension>.fromList([
         MessageReactionsData(
           msg.originId ?? msg.sid,
           await rs.getReactionsForMessageByJid(
-            command.messageSid,
-            command.conversationJid,
+            command.key.sid,
+            command.key.conversationJid,
             accountJid,
             accountJid,
           ),
@@ -1363,8 +1362,8 @@ Future<void> performGetReactions(
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final reactionsRaw =
       await GetIt.I.get<ReactionsService>().getReactionsForMessage(
-            command.messageSid,
-            command.conversationJid,
+            command.key.sid,
+            command.key.conversationJid,
             accountJid,
           );
   final reactionsMap = <String, List<String>>{};

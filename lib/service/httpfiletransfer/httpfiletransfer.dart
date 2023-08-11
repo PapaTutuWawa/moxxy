@@ -220,6 +220,7 @@ class HttpFileTransferService {
     }
     final slot = slotResult.get<HttpFileUploadSlot>();
 
+    final messageKey = job.messageMap.values.first.messageKey;
     final uploadStatusCode = await client.uploadFile(
       Uri.parse(slot.putUrl),
       slot.headers,
@@ -231,8 +232,7 @@ class HttpFileTransferService {
           final progress = current.toDouble() / total.toDouble();
           sendEvent(
             ProgressEvent(
-              sid: job.messageMap.values.first.sid,
-              conversationJid: job.messageMap.values.first.conversationJid,
+              key: messageKey,
               progress: progress == 1 ? 0.99 : progress,
             ),
           );
@@ -410,8 +410,8 @@ class HttpFileTransferService {
 
     // Notify UI of download failure
     final msg = await ms.updateMessage(
-      job.mSid,
-      job.conversationJid,
+      job.messageKey.sid,
+      job.messageKey.conversationJid,
       job.accountJid,
       errorType: error,
       isDownloading: false,
@@ -453,8 +453,7 @@ class HttpFileTransferService {
           final progress = current.toDouble() / total.toDouble();
           sendEvent(
             ProgressEvent(
-              sid: job.mSid,
-              conversationJid: job.conversationJid,
+              key: job.messageKey,
               progress: progress == 1 ? 0.99 : progress,
             ),
           );
@@ -480,8 +479,7 @@ class HttpFileTransferService {
       // The file was downloaded and is now being decrypted
       sendEvent(
         ProgressEvent(
-          sid: job.mSid,
-          conversationJid: job.conversationJid,
+          key: job.messageKey,
         ),
       );
 
@@ -600,10 +598,10 @@ class HttpFileTransferService {
     }
 
     final cs = GetIt.I.get<ConversationService>();
-    final conversation = (await cs.getConversationByJid(job.conversationJid, job.accountJid))!;
+    final conversation = (await cs.getConversationByJid(job.messageKey.conversationJid, job.accountJid))!;
     final msg = await GetIt.I.get<MessageService>().updateMessage(
-          job.mSid,
-          job.conversationJid,
+          job.messageKey.sid,
+          job.messageKey.conversationJid,
           job.accountJid,
           fileMetadata: metadata,
           isFileUploadNotification: false,
@@ -618,7 +616,7 @@ class HttpFileTransferService {
     sendEvent(MessageUpdatedEvent(message: msg));
 
     final updatedConversation = conversation.copyWith(
-      lastMessage: conversation.lastMessage?.sid == job.mSid
+      lastMessage: conversation.lastMessage?.sid == job.messageKey.sid
           ? msg
           : conversation.lastMessage,
     );
