@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'
-         xmlns='http://usefulinc.com/ns/doap#'
-         xmlns:xmpp='https://linkmauve.fr/ns/xmpp-doap#'
+         xmlns="http://usefulinc.com/ns/doap#"
          xmlns:foaf="http://xmlns.com/foaf/0.1/"
-         xmlns:schema='https://schema.org'>
+         xmlns:xmpp="https://linkmauve.fr/ns/xmpp-doap#"
+         xmlns:schema="https://schema.org/">
   <Project xml:lang='en'>
     <!-- Moxxy information -->
     <name>Moxxy</name>
@@ -156,8 +156,7 @@
     <implements>
       <xmpp:SupportedXep>
       	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0333.html" />
-      	<xmpp:status>partial</xmpp:status>
-      	<xmpp:note xml:lang="en">Read-only support</xmpp:note>
+      	<xmpp:status>complete</xmpp:status>
       	<xmpp:version>0.4</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
@@ -165,7 +164,6 @@
       <xmpp:SupportedXep>
       	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0334.html" />
       	<xmpp:status>complete</xmpp:status>
-      	<xmpp:note xml:lang="en">Write-only support</xmpp:note>
       	<xmpp:version>0.3.0</xmpp:version>
       </xmpp:SupportedXep>
     </implements>
@@ -186,9 +184,8 @@
     <implements>
       <xmpp:SupportedXep>
       	<xmpp:xep rdf:resource="https://xmpp.org/extensions/xep-0363.html" />
-      	<xmpp:status>partial</xmpp:status>
+      	<xmpp:status>complete</xmpp:status>
       	<xmpp:version>1.1.0</xmpp:version>
-      	<xmpp:note xml:lang="en">Only handles the success case; not accessible via the App</xmpp:note>
       </xmpp:SupportedXep>
     </implements>
     <implements>

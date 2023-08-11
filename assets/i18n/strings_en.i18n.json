@@ -220,7 +220,12 @@
 		"newconversation": {
 			"title": "New chat",
 			"startChat": "Start new chat",
-			"createGroupchat": "New groupchat"
+			"createGroupchat": "New groupchat",
+			"joinGroupChat":  "Join groupchat",
+			"nullNickname": "Nickname cannot be null!",
+			"nick": "Nickname",
+			"enterNickname": "Enter Nickname",
+			"nicknameSubtitle": "You need to enter a unique nickname in order to join a MUC."
 		},
 		"crop": {
 			"setProfilePicture": "Set as profile picture"

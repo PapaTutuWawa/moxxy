@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 
@@ -42,22 +43,24 @@ class ConversationMessageConverter
 
 enum ConversationType {
   chat('chat'),
-  note('note');
+  note('note'),
+  groupchat('groupchat');
 
   const ConversationType(this.value);
-
-  /// The identifier of the enum value.
   final String value;
 
-  static ConversationType? fromInt(String value) {
+  static ConversationType fromString(String value) {
     switch (value) {
-      case 'chat':
-        return ConversationType.chat;
+      case 'groupchat':
+        return ConversationType.groupchat;
       case 'note':
         return ConversationType.note;
+      case 'chat':
+        return ConversationType.chat;
+      default:
+        // Should ideally never happen
+        throw Exception();
     }
-
-    return null;
   }
 }
 
@@ -67,12 +70,33 @@ class ConversationTypeConverter
 
   @override
   ConversationType fromJson(String json) {
-    return ConversationType.fromInt(json)!;
+    return ConversationType.fromString(json);
   }
 
   @override
   String toJson(ConversationType object) {
     return object.value;
+  }
+}
+
+class GroupchatDetailsConverter
+    extends JsonConverter<GroupchatDetails, Map<String, dynamic>> {
+  const GroupchatDetailsConverter();
+
+  @override
+  GroupchatDetails fromJson(Map<String, dynamic> json) {
+    return GroupchatDetails(
+      json['jid'] as String,
+      json['nick'] as String,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson(GroupchatDetails object) {
+    return {
+      'jid': object.jid,
+      'nick': object.nick,
+    };
   }
 }
 
@@ -93,6 +117,9 @@ class Conversation with _$Conversation {
 
     // The JID of the entity we're having a chat with...
     String jid,
+
+    // The nick with which the MUC is joined...
+    @GroupchatDetailsConverter() GroupchatDetails? groupchatDetails,
 
     // The number of unread messages.
     int unreadCounter,
@@ -138,6 +165,7 @@ class Conversation with _$Conversation {
     Map<String, dynamic> json,
     bool showAddToRoster,
     Message? lastMessage,
+    GroupchatDetails? groupchatDetails,
   ) {
     return Conversation.fromJson({
       ...json,
@@ -149,6 +177,7 @@ class Conversation with _$Conversation {
           const ConversationChatStateConverter().toJson(ChatState.gone),
     }).copyWith(
       lastMessage: lastMessage,
+      groupchatDetails: groupchatDetails,
     );
   }
 
@@ -157,7 +186,8 @@ class Conversation with _$Conversation {
       ..remove('id')
       ..remove('chatState')
       ..remove('showAddToRoster')
-      ..remove('lastMessage');
+      ..remove('lastMessage')
+      ..remove('groupchatDetails');
 
     return {
       ...map,

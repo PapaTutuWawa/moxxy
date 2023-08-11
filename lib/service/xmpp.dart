@@ -17,6 +17,7 @@ import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/files.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -38,6 +39,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:omemo_dart/omemo_dart.dart';
@@ -264,7 +266,7 @@ class XmppService {
         );
       }
 
-      if (conversation?.type == ConversationType.chat) {
+      if (conversation?.type != ConversationType.note) {
         final moxxmppSticker = sticker?.toMoxxmpp();
         final manager = conn.getManagerById<MessageManager>(messageManager)!;
 
@@ -298,6 +300,7 @@ class XmppService {
                 ),
               ),
           ]),
+          type: conversation!.type.value,
         );
       }
 
@@ -612,6 +615,7 @@ class XmppService {
     }
 
     final rs = GetIt.I.get<RosterService>();
+    final gs = GetIt.I.get<GroupchatService>();
     for (final recipient in recipients) {
       conversationsMap[recipient] = (await cs.createOrUpdateConversation(
         recipient,
@@ -619,6 +623,9 @@ class XmppService {
           // Create
           final rosterItem = await rs.getRosterItemByJid(recipient);
           final contactId = await css.getContactIdForJid(recipient);
+          final groupchatDetails = await gs.getGroupchatDetailsByJid(
+            recipient,
+          );
           final newConversation = await cs.addConversationFromData(
             // TODO(Unknown): Should we use the JID parser?
             rosterItem?.title ?? recipient.split('@').first,
@@ -634,6 +641,11 @@ class XmppService {
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
+            groupchatDetails ??
+                GroupchatDetails(
+                  recipient,
+                  '',
+                ),
           );
 
           // Update the cache
@@ -1440,11 +1452,15 @@ class XmppService {
     // Whether to send the notification
     var sendNotification = true;
 
+    final gs = GetIt.I.get<GroupchatService>();
     final conversation = await cs.createOrUpdateConversation(
       conversationJid,
       create: () async {
         // Create
         final contactId = await css.getContactIdForJid(conversationJid);
+        final groupchatDetails = await gs.getGroupchatDetailsByJid(
+          JID.fromString(conversationJid).toBare().toString(),
+        );
         final newConversation = await cs.addConversationFromData(
           rosterItem?.title ?? conversationJid.split('@')[0],
           message,
@@ -1459,6 +1475,11 @@ class XmppService {
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),
+          groupchatDetails ??
+              GroupchatDetails(
+                conversationJid,
+                '',
+              ),
         );
 
         // Notify the UI
