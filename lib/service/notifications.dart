@@ -204,12 +204,16 @@ class NotificationsService {
       'File metadata has path but no mime type',
     );
 
+    /// Use the resource (nick) when the chat is a groupchat
+    final senderJid = m.senderJid;
+    final senderTitle = c.isGroupchat ? senderJid.resource : await c.titleWithOptionalContactService;
+
     // Add to the database
     final newNotification = modeln.Notification(
       id,
       c.jid,
-      await c.titleWithOptionalContactService,
-      m.senderJid.toString(),
+      senderTitle,
+      senderJid.toString(),
       (avatarPath?.isEmpty ?? false) ? null : avatarPath,
       body,
       m.fileMetadata?.mimeType,
@@ -231,7 +235,7 @@ class NotificationsService {
 
   /// When a notification is already visible, then build a new notification based on [c] and [m],
   /// update the database state and tell the OS to show the notification again.
-  /// TODO(Unknown): What about systems that cannot do this (Linux, OS X, Windows)?
+  // TODO(Unknown): What about systems that cannot do this (Linux, OS X, Windows)?
   Future<void> updateNotification(
     modelc.Conversation c,
     modelm.Message m,
@@ -245,10 +249,11 @@ class NotificationsService {
 
     final notifications = await _getNotificationsForJid(c.jid);
     final id = notifications.first.id;
+    // TODO(Unknown): Handle groupchat member avatars
     final notification = await _createNotification(
       c,
       m,
-      c.avatarPathWithOptionalContact,
+      c.isGroupchat ? null : c.avatarPathWithOptionalContact,
       id,
       shouldOverride: true,
     );
@@ -272,8 +277,7 @@ class NotificationsService {
             return n.toNotificationMessage();
           }),
         ],
-        // TODO
-        isGroupchat: false,
+        isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id.toString(),
@@ -312,16 +316,16 @@ class NotificationsService {
         jid: c.jid,
         messages: [
           ...notifications.map((n) => n.toNotificationMessage()),
+          // TODO(Unknown): Handle groupchat member avatars
           (await _createNotification(
             c,
             m,
-            await c.avatarPathWithOptionalContactService,
+            c.isGroupchat ? null : await c.avatarPathWithOptionalContactService,
             id,
           ))
               .toNotificationMessage(),
         ],
-        // TODO
-        isGroupchat: false,
+        isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
           _messageIdKey: m.id.toString(),

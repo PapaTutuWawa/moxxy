@@ -260,6 +260,9 @@ class Conversation with _$Conversation {
 
   /// True, if the conversation is a self-chat. False, if not.
   bool get isSelfChat => type == ConversationType.note;
+
+  /// True, if the conversation is a groupchat. False, if not.
+  bool get isGroupchat => type == ConversationType.groupchat;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.
