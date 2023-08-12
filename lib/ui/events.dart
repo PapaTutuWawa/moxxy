@@ -140,7 +140,7 @@ Future<void> onRosterPush(RosterDiffEvent event, {dynamic extra}) async {
 }
 
 Future<void> onProgress(ProgressEvent event, {dynamic extra}) async {
-  GetIt.I.get<UIProgressService>().onProgress(event.key, event.progress);
+  GetIt.I.get<UIProgressService>().onProgress(event.id, event.progress);
 }
 
 Future<void> onSelfAvatarChanged(

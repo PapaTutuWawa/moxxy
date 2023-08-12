@@ -144,8 +144,7 @@ class HttpFileTransferService {
     for (final recipient in job.recipients) {
       final m = job.messageMap[recipient]!;
       final msg = await ms.updateMessage(
-        m.sid,
-        m.conversationJid,
+        m.id,
         job.accountJid,
         errorType: error,
         isUploading: false,
@@ -155,7 +154,7 @@ class HttpFileTransferService {
       // Update the conversation list
       final conversation =
           await cs.getConversationByJid(recipient, job.accountJid);
-      if (conversation?.lastMessage?.sid == msg.sid) {
+      if (conversation?.lastMessage?.id == msg.id) {
         final newConversation = conversation!.copyWith(
           lastMessage: msg,
         );
@@ -217,7 +216,6 @@ class HttpFileTransferService {
     }
     final slot = slotResult.get<HttpFileUploadSlot>();
 
-    final messageKey = job.messageMap.values.first.messageKey;
     final uploadStatusCode = await client.uploadFile(
       Uri.parse(slot.putUrl),
       slot.headers,
@@ -229,7 +227,7 @@ class HttpFileTransferService {
           final progress = current.toDouble() / total.toDouble();
           sendEvent(
             ProgressEvent(
-              key: messageKey,
+              id: job.messageMap[job.recipients.first]!.id,
               progress: progress == 1 ? 0.99 : progress,
             ),
           );
@@ -328,8 +326,7 @@ class HttpFileTransferService {
         // Notify UI of upload completion
         final m = job.messageMap[recipient]!;
         var msg = await ms.updateMessage(
-          m.sid,
-          m.conversationJid,
+          m.id,
           job.accountJid,
           errorType: null,
           isUploading: false,
@@ -338,10 +335,9 @@ class HttpFileTransferService {
         // TODO(Unknown): Maybe batch those two together?
         final oldSid = msg.sid;
         msg = await ms.updateMessage(
-          msg.sid,
-          msg.conversationJid,
+          msg.id,
           job.accountJid,
-          newSid: uuid.v4(),
+          sid: uuid.v4(),
           originId: uuid.v4(),
         );
         sendEvent(MessageUpdatedEvent(message: msg));
@@ -407,8 +403,7 @@ class HttpFileTransferService {
 
     // Notify UI of download failure
     final msg = await ms.updateMessage(
-      job.messageKey.sid,
-      job.messageKey.conversationJid,
+      job.messageId,
       job.accountJid,
       errorType: error,
       isDownloading: false,
@@ -450,7 +445,7 @@ class HttpFileTransferService {
           final progress = current.toDouble() / total.toDouble();
           sendEvent(
             ProgressEvent(
-              key: job.messageKey,
+              id: job.messageId,
               progress: progress == 1 ? 0.99 : progress,
             ),
           );
@@ -476,7 +471,7 @@ class HttpFileTransferService {
       // The file was downloaded and is now being decrypted
       sendEvent(
         ProgressEvent(
-          key: job.messageKey,
+          id: job.messageId,
         ),
       );
 
@@ -590,7 +585,7 @@ class HttpFileTransferService {
 
     final cs = GetIt.I.get<ConversationService>();
     final conversation = (await cs.getConversationByJid(
-      job.messageKey.conversationJid,
+      job.conversationJid,
       job.accountJid,
     ))!;
 
@@ -603,8 +598,7 @@ class HttpFileTransferService {
     }
 
     final msg = await GetIt.I.get<MessageService>().updateMessage(
-          job.messageKey.sid,
-          job.messageKey.conversationJid,
+          job.messageId,
           job.accountJid,
           fileMetadata: metadata,
           isFileUploadNotification: false,
@@ -615,7 +609,7 @@ class HttpFileTransferService {
     sendEvent(MessageUpdatedEvent(message: msg));
 
     final updatedConversation = conversation.copyWith(
-      lastMessage: conversation.lastMessage?.sid == job.messageKey.sid
+      lastMessage: conversation.lastMessage?.id == job.messageId
           ? msg
           : conversation.lastMessage,
     );

@@ -17,10 +17,14 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/warning_types.dart';
+import 'package:uuid/uuid.dart';
 
 class MessageService {
   /// Logger
   final Logger _log = Logger('MessageService');
+
+  /// UUID instance for message ids.
+  final _uuid = const Uuid();
 
   Future<Message> _parseMessage(
     Map<String, Object?> rawMessage,
@@ -46,28 +50,33 @@ class MessageService {
       fm,
       queryReactionPreview
           ? await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(
-                rawMessage['sid']! as String,
-                rawMessage['conversationJid']! as String,
+                rawMessage['id']! as String,
                 accountJid,
               )
           : [],
     );
   }
 
-  /// Queries the database for a message with a stanza id of [sid] inside
-  /// the conversation [conversationJid] in the context of the account
+  /// Queries the database for a message with a stanza id of [id] inside
+  /// the conversation [conversationJid], if specified, in the context of the account
   /// [accountJid].
-  Future<Message?> getMessageBySid(
-    String sid,
-    String conversationJid,
+  Future<Message?> getMessageById(
+    String id,
     String accountJid, {
+    String? conversationJid,
     bool queryReactionPreview = true,
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final messagesRaw = await db.query(
       messagesTable,
-      where: 'sid = ? AND conversationJid = ? AND accountJid = ?',
-      whereArgs: [sid, conversationJid, accountJid],
+      where: conversationJid != null
+          ? 'id = ? AND accountJid = ? AND conversationJid = ?'
+          : 'id = ? AND accountJid = ?',
+      whereArgs: [
+        id,
+        accountJid,
+        if (conversationJid != null) conversationJid,
+      ],
       limit: 1,
     );
 
@@ -77,22 +86,53 @@ class MessageService {
   }
 
   /// Queries the database for a message with a stanza id of [originId] inside
-  /// the conversation [conversationJid] in the context of the account
+  /// the conversation [conversationJid], if specified, in the context of the account
   /// [accountJid].
   Future<Message?> getMessageByOriginId(
     String originId,
-    String conversationJid,
     String accountJid, {
+    String? conversationJid,
     bool queryReactionPreview = true,
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final messagesRaw = await db.query(
       messagesTable,
-      where: 'conversationJid = ? AND accountJid = ? AND originId = ?',
+      where: conversationJid != null
+          ? 'accountJid = ? AND originId = ? AND conversationJid = ?'
+          : 'accountJid = ? AND originId = ?',
       whereArgs: [
-        conversationJid,
         accountJid,
         originId,
+        if (conversationJid != null) conversationJid,
+      ],
+      limit: 1,
+    );
+
+    if (messagesRaw.isEmpty) return null;
+
+    // TODO(PapaTutuWawa): Load the quoted message
+    return _parseMessage(messagesRaw.first, accountJid, queryReactionPreview);
+  }
+
+  /// Query the database for the message with a stanza id of [sid] in the context of [accountJid].
+  /// If [conversationJid] is specified, then the message must also be within the conversation with
+  /// [conversationJid].
+  Future<Message?> getMessageByStanzaId(
+    String sid,
+    String accountJid, {
+    String? conversationJid,
+    bool queryReactionPreview = true,
+  }) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final messagesRaw = await db.query(
+      messagesTable,
+      where: conversationJid != null
+          ? 'accountJid = ? AND sid = ? AND conversationJid = ?'
+          : 'accountJid = ? AND sid = ?',
+      whereArgs: [
+        accountJid,
+        sid,
+        if (conversationJid != null) conversationJid,
       ],
       limit: 1,
     );
@@ -135,7 +175,7 @@ SELECT
   quote.displayed AS quote_displayed,
   quote.acked AS quote_acked,
   quote.originId AS quote_originId,
-  quote.quote_sid AS quote_quote_sid,
+  quote.quote_id AS quote_quote_id,
   quote.file_metadata_id AS quote_file_metadata_id,
   quote.isDownloading AS quote_isDownloading,
   quote.isUploading AS quote_isUploading,
@@ -162,7 +202,7 @@ SELECT
   fm.size as fm_size
 FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $messagePaginationSize) AS msg
   LEFT JOIN $fileMetadataTable fm ON msg.file_metadata_id = fm.id
-  LEFT JOIN $messagesTable quote ON msg.quote_sid = quote.sid;
+  LEFT JOIN $messagesTable quote ON msg.quote_id = quote.id;
       ''',
       [
         jid,
@@ -178,7 +218,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
       }
 
       Message? quotes;
-      if (m['quote_sid'] != null) {
+      if (m['quote_id'] != null) {
         final rawQuote = getPrefixedSubMap(m, 'quote_');
 
         FileMetadata? quoteFm;
@@ -209,8 +249,7 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
           quotes,
           fm,
           await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(
-                m['sid']! as String,
-                jid,
+                m['id']! as String,
                 accountJid,
               ),
         ),
@@ -296,8 +335,7 @@ FROM
             getPrefixedSubMap(m, 'fm_'),
           ),
           await GetIt.I.get<ReactionsService>().getPreviewReactionsForMessage(
-                m['sid']! as String,
-                m['conversationJid']! as String,
+                m['id']! as String,
                 accountJid,
               ),
         ),
@@ -333,6 +371,7 @@ FROM
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     var message = Message(
+      _uuid.v4(),
       accountJid,
       sender,
       body,
@@ -358,7 +397,7 @@ FROM
 
     if (quoteId != null) {
       final quotes =
-          await getMessageBySid(quoteId, conversationJid, accountJid);
+          await getMessageById(quoteId, accountJid);
       if (quotes == null) {
         _log.warning('Failed to add quote for message with id $quoteId');
       } else {
@@ -372,10 +411,9 @@ FROM
 
   /// Wrapper around [DatabaseService]'s updateMessage that updates the cache
   Future<Message> updateMessage(
-    String sid,
-    String conversationJid,
+    String id,
     String accountJid, {
-    String? newSid,
+    String? sid,
     Object? body = notSpecified,
     bool? received,
     bool? displayed,
@@ -432,22 +470,21 @@ FROM
     if (isEdited != null) {
       m['isEdited'] = boolToInt(isEdited);
     }
-    if (newSid != null) {
-      m['sid'] = newSid;
+    if (sid != null) {
+      m['sid'] = sid;
     }
 
     final updatedMessage = await db.updateAndReturn(
       messagesTable,
       m,
-      where: 'sid = ? AND conversationJid = ? AND accountJid = ?',
-      whereArgs: [sid, conversationJid, accountJid],
+      where: 'id = ? AND accountJid = ?',
+      whereArgs: [id, accountJid],
     );
 
     Message? quotes;
-    if (updatedMessage['quote_sid'] != null) {
-      quotes = await getMessageBySid(
-        updatedMessage['quote_sid']! as String,
-        updatedMessage['conversationJid']! as String,
+    if (updatedMessage['quote_id'] != null) {
+      quotes = await getMessageById(
+        updatedMessage['quote_id']! as String,
         accountJid,
         queryReactionPreview: false,
       );
@@ -471,10 +508,9 @@ FROM
       updatedMessage,
       quotes,
       metadata,
-      // TODO: How should this work with reactions?
       await GetIt.I
           .get<ReactionsService>()
-          .getPreviewReactionsForMessage(sid, conversationJid, accountJid),
+          .getPreviewReactionsForMessage(id, accountJid),
     );
 
     return msg;
@@ -500,7 +536,6 @@ FROM
   ) async {
     final msg = await getMessageByOriginId(
       originId,
-      conversationJid,
       accountJid,
       queryReactionPreview: false,
     );
@@ -524,8 +559,7 @@ FROM
 
     final isMedia = msg.isMedia;
     final retractedMessage = await updateMessage(
-      msg.sid,
-      msg.conversationJid,
+      msg.id,
       accountJid,
       warningType: null,
       errorType: null,
@@ -539,7 +573,7 @@ FROM
     final conversation =
         await cs.getConversationByJid(conversationJid, accountJid);
     if (conversation != null) {
-      if (conversation.lastMessage?.sid == msg.sid) {
+      if (conversation.lastMessage?.id == msg.id) {
         final newConversation = conversation.copyWith(
           lastMessage: retractedMessage,
         );
@@ -565,19 +599,17 @@ FROM
     }
   }
 
-  /// Marks the message with the stanza id [sid] as displayed and sends an
+  /// Marks the message with the message id [id] as displayed and sends an
   /// [MessageUpdatedEvent] to the UI. if [sendChatMarker] is true, then
   /// a Chat Marker with <displayed /> is sent to the message's
   /// conversationJid attribute.
   Future<Message> markMessageAsRead(
-    String sid,
-    String converationJid,
+    String id,
     String accountJid,
     bool sendChatMarker,
   ) async {
     final newMessage = await updateMessage(
-      sid,
-      converationJid,
+      id,
       accountJid,
       displayed: true,
     );

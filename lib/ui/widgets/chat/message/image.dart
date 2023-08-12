@@ -30,7 +30,7 @@ class ImageChatWidget extends StatelessWidget {
       Image.file(File(message.fileMetadata!.path!)),
       MessageBubbleBottom(message, sent),
       radius,
-      extra: ProgressWidget(message.messageKey),
+      extra: ProgressWidget(message.id),
     );
   }
 
@@ -50,7 +50,7 @@ class ImageChatWidget extends StatelessWidget {
         ),
         MessageBubbleBottom(message, sent),
         radius,
-        extra: ProgressWidget(message.messageKey),
+        extra: ProgressWidget(message.id),
       );
     } else {
       return FileChatBaseWidget(
@@ -60,7 +60,7 @@ class ImageChatWidget extends StatelessWidget {
         maxWidth,
         sent,
         mimeType: message.fileMetadata!.mimeType,
-        downloadButton: ProgressWidget(message.messageKey),
+        downloadButton: ProgressWidget(message.id),
       );
     }
   }

@@ -4,7 +4,6 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/helpers.dart';
@@ -39,17 +38,17 @@ List<ReactionGroup> ensureReactionGroupOrder(
 /// Displays the reactions to a message and allows modifying the reactions.
 /// When created, fetches the reactions from the ReactionService.
 class ReactionList extends StatelessWidget {
-  const ReactionList(this.messageKey, {super.key});
+  const ReactionList(this.messageId, {super.key});
 
   /// The database identifier of the message to fetch reactions of.
-  final MessageKey messageKey;
+  final String messageId;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<BackgroundEvent?>(
       future: MoxplatformPlugin.handler.getDataSender().sendData(
             GetReactionsForMessageCommand(
-              key: messageKey,
+              id: messageId,
             ),
           ) as Future<BackgroundEvent?>,
       builder: (context, snapshot) {
@@ -104,7 +103,7 @@ class ReactionList extends StatelessWidget {
                             .getDataSender()
                             .sendData(
                               AddReactionToMessageCommand(
-                                key: messageKey,
+                                id: messageId,
                                 emoji: emoji,
                               ),
                               awaitable: false,
@@ -116,7 +115,7 @@ class ReactionList extends StatelessWidget {
                   ? (emoji) async {
                       await MoxplatformPlugin.handler.getDataSender().sendData(
                             RemoveReactionFromMessageCommand(
-                              key: messageKey,
+                              id: messageId,
                               emoji: emoji,
                             ),
                             awaitable: false,

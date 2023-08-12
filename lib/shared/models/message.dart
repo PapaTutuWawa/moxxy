@@ -9,57 +9,6 @@ import 'package:moxxyv2/shared/warning_types.dart';
 part 'message.freezed.dart';
 part 'message.g.dart';
 
-/// A composite key to replace the old incrementing integer id attribute.
-/// Somewhat mimicks the message table's primary key.
-@immutable
-class MessageKey {
-  const MessageKey(
-    this.sender,
-    this.conversationJid,
-    this.sid,
-    this.timestamp,
-  );
-
-  factory MessageKey.fromJson(Map<String, dynamic> json) {
-    final map = json.cast<String, Object>();
-    return MessageKey(
-      map['sender']! as String,
-      map['conversationJid']! as String,
-      map['sid']! as String,
-      map['timestamp']! as int,
-    );
-  }
-
-  final String conversationJid;
-  final String sender;
-  final String sid;
-  final int timestamp;
-
-  Map<String, Object> toJson() => {
-        'conversationJid': conversationJid,
-        'sender': sender,
-        'sid': sid,
-        'timestamp': timestamp,
-      };
-
-  @override
-  bool operator ==(Object other) {
-    return other is MessageKey &&
-        other.conversationJid == conversationJid &&
-        other.sender == sender &&
-        other.sid == sid &&
-        other.timestamp == timestamp;
-  }
-
-  @override
-  int get hashCode => sender.hashCode ^ sid.hashCode ^ timestamp.hashCode;
-
-  @override
-  String toString() {
-    return 'MessageKey($sender, $sid, $timestamp)';
-  }
-}
-
 enum PseudoMessageType {
   /// Indicates that a new device was created in the chat.
   newDevice(1),
@@ -102,6 +51,9 @@ class PseudoMessageTypeConverter extends JsonConverter<PseudoMessageType, int> {
 @freezed
 class Message with _$Message {
   factory Message(
+    // The message id (Moxxy-generated UUID).
+    String id,
+
     /// The JID of the account that sent or received the message.
     String accountJid,
 
@@ -231,7 +183,7 @@ class Message with _$Message {
       'encrypted': boolToInt(encrypted),
       'file_metadata_id': fileMetadata?.id,
       // NOTE: Message.quote_id is a foreign-key
-      'quote_sid': quotes?.sid,
+      'quote_id': quotes?.id,
       'isDownloading': boolToInt(isDownloading),
       'isUploading': boolToInt(isUploading),
       'isRetracted': boolToInt(isRetracted),
@@ -343,12 +295,4 @@ class Message with _$Message {
 
   /// The JID of the sender in moxxmpp's format.
   JID get senderJid => JID.fromString(sender);
-
-  /// A "unique" key for a message.
-  MessageKey get messageKey => MessageKey(
-        sender,
-        conversationJid,
-        sid,
-        timestamp,
-      );
 }

@@ -133,6 +133,7 @@ class NewConversationPage extends StatelessWidget {
                       Message(
                         '',
                         '',
+                        '',
                         item.jid,
                         0,
                         '',

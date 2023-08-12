@@ -198,7 +198,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                               .getDataSender()
                               .sendData(
                                 AddReactionToMessageCommand(
-                                  key: message.messageKey,
+                                  id: message.id,
                                   emoji: emoji,
                                 ),
                                 awaitable: false,

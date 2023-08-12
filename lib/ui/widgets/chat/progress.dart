@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/service/progress.dart';
 
@@ -9,8 +8,8 @@ import 'package:moxxyv2/ui/service/progress.dart';
 //       we, for example, use blurhash, then we compute the image from the blurhash on every
 //       update.
 class ProgressWidget extends StatefulWidget {
-  const ProgressWidget(this.messageKey, {super.key});
-  final MessageKey messageKey;
+  const ProgressWidget(this.messageId, {super.key});
+  final String messageId;
 
   @override
   ProgressWidgetState createState() => ProgressWidgetState();
@@ -31,7 +30,7 @@ class ProgressWidgetState extends State<ProgressWidget> {
     // Register against the DownloadService
     GetIt.I
         .get<UIProgressService>()
-        .registerCallback(widget.messageKey, _onProgressUpdate);
+        .registerCallback(widget.messageId, _onProgressUpdate);
 
     super.initState();
   }
@@ -39,7 +38,7 @@ class ProgressWidgetState extends State<ProgressWidget> {
   @override
   void dispose() {
     // Unregister
-    GetIt.I.get<UIProgressService>().unregisterCallback(widget.messageKey);
+    GetIt.I.get<UIProgressService>().unregisterCallback(widget.messageId);
 
     super.dispose();
   }

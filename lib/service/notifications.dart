@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -27,7 +26,7 @@ const _warningChannelKey = 'warning_channel';
 
 /// Message payload keys.
 const _conversationJidKey = 'conversationJid';
-const _messageKeyKey = 'key';
+const _messageIdKey = 'message_id';
 const _conversationTitleKey = 'title';
 const _conversationAvatarKey = 'avatarPath';
 
@@ -50,13 +49,9 @@ class NotificationsService {
       );
     } else if (event.type == NotificationEventType.markAsRead) {
       final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-      final messageKey = modelm.MessageKey.fromJson(
-        jsonDecode(event.extra![_messageKeyKey]!) as Map<String, Object>,
-      );
       // Mark the message as read
       await GetIt.I.get<MessageService>().markMessageAsRead(
-            messageKey.sid,
-            messageKey.conversationJid,
+            event.extra![_messageIdKey]!,
             accountJid,
             // [XmppService.sendReadMarker] will check whether the *SHOULD* send
             // the marker, i.e. if the privacy settings allow it.
@@ -301,7 +296,7 @@ class NotificationsService {
         isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
-          _messageKeyKey: jsonEncode(m.messageKey),
+          _messageIdKey: m.id,
           _conversationTitleKey: await c.titleWithOptionalContactService,
           _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },
@@ -351,7 +346,7 @@ class NotificationsService {
         isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
-          _messageKeyKey: jsonEncode(m.messageKey),
+          _messageIdKey: m.id,
           _conversationTitleKey: await c.titleWithOptionalContactService,
           _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },

@@ -84,9 +84,8 @@ class ConversationService {
 
       Message? lastMessage;
       if (c['lastMessageId'] != null) {
-        lastMessage = await GetIt.I.get<MessageService>().getMessageBySid(
+        lastMessage = await GetIt.I.get<MessageService>().getMessageById(
               c['lastMessageId']! as String,
-              jid,
               accountJid,
               queryReactionPreview: false,
             );
@@ -173,7 +172,7 @@ class ConversationService {
     final c = <String, dynamic>{};
 
     if (lastMessage != null) {
-      c['lastMessageId'] = lastMessage.sid;
+      c['lastMessageId'] = lastMessage.id;
     }
     if (lastChangeTimestamp != null) {
       c['lastChangeTimestamp'] = lastChangeTimestamp;

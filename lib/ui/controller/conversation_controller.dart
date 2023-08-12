@@ -287,7 +287,7 @@ class BidirectionalConversationController
     if (newMessage.timestamp < cache.first.timestamp) return;
 
     replaceItem(
-      (msg) => msg.sid == newMessage.sid && msg.sender == newMessage.sender,
+      (msg) => msg.id == newMessage.id,
       newMessage,
     );
   }
@@ -352,9 +352,7 @@ class BidirectionalConversationController
     if (!hasNewerData) {
       if (wasEditing) {
         foundMessage = replaceItem(
-          (message) =>
-              message.sid == result.message.sid &&
-              message.sender == result.message.sender,
+          (message) => message.id == result.message.id,
           result.message,
         );
       } else {

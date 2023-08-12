@@ -669,8 +669,7 @@ Future<void> performRequestDownload(
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
   final message = await ms.updateMessage(
-    command.message.sid,
-    command.message.conversationJid,
+    command.message.id,
     accountJid,
     isDownloading: true,
   );
@@ -687,7 +686,9 @@ Future<void> performRequestDownload(
 
   await srv.downloadFile(
     FileDownloadJob(
-      message.messageKey,
+      message.id,
+      message.conversationJid,
+      accountJid,
       MediaFileLocation(
         fileMetadata.sourceUrls!,
         fileMetadata.filename,
@@ -702,7 +703,6 @@ Future<void> performRequestDownload(
         fileMetadata.ciphertextHashes,
         null,
       ),
-      accountJid,
       message.fileMetadata!.id,
       message.fileMetadata!.plaintextHashes?.isNotEmpty ?? false,
       mimeGuess,
@@ -1056,8 +1056,7 @@ Future<void> performMarkConversationAsRead(
 
     if (conversation.lastMessage != null) {
       await GetIt.I.get<MessageService>().markMessageAsRead(
-            conversation.lastMessage!.sid,
-            conversation.lastMessage!.conversationJid,
+            conversation.lastMessage!.id,
             accountJid,
             conversation.type != ConversationType.note,
           );
@@ -1077,8 +1076,7 @@ Future<void> performMarkMessageAsRead(
 }) async {
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   await GetIt.I.get<MessageService>().markMessageAsRead(
-        command.sid,
-        command.conversationJid,
+        command.id,
         accountJid,
         command.sendMarker,
       );
@@ -1091,8 +1089,7 @@ Future<void> performAddMessageReaction(
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final rs = GetIt.I.get<ReactionsService>();
   final msg = await rs.addNewReaction(
-    command.key.sid,
-    command.key.conversationJid,
+    command.id,
     accountJid,
     accountJid,
     command.emoji,
@@ -1108,19 +1105,18 @@ Future<void> performAddMessageReaction(
     ),
   );
 
-  if (command.key.conversationJid != '') {
+  if (msg.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
-      JID.fromString(command.key.conversationJid),
+      JID.fromString(msg.conversationJid),
       TypedMap<StanzaHandlerExtension>.fromList([
         MessageReactionsData(
           msg.originId ?? msg.sid,
           await rs.getReactionsForMessageByJid(
-            command.key.sid,
-            command.key.conversationJid,
+            command.id,
             accountJid,
             accountJid,
           ),
@@ -1140,8 +1136,7 @@ Future<void> performRemoveMessageReaction(
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final rs = GetIt.I.get<ReactionsService>();
   final msg = await rs.removeReaction(
-    command.key.sid,
-    command.key.conversationJid,
+    command.id,
     accountJid,
     accountJid,
     command.emoji,
@@ -1158,19 +1153,18 @@ Future<void> performRemoveMessageReaction(
   );
 
 
-  if (command.key.conversationJid != '') {
+  if (msg.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
-      JID.fromString(command.key.conversationJid),
+      JID.fromString(msg.conversationJid),
       TypedMap<StanzaHandlerExtension>.fromList([
         MessageReactionsData(
           msg.originId ?? msg.sid,
           await rs.getReactionsForMessageByJid(
-            command.key.sid,
-            command.key.conversationJid,
+            command.id,
             accountJid,
             accountJid,
           ),
@@ -1395,8 +1389,7 @@ Future<void> performGetReactions(
   final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final reactionsRaw =
       await GetIt.I.get<ReactionsService>().getReactionsForMessage(
-            command.key.sid,
-            command.key.conversationJid,
+            command.id,
             accountJid,
           );
   final reactionsMap = <String, List<String>>{};

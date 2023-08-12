@@ -144,14 +144,14 @@ class XmppService {
   String? getCurrentlyOpenedChatJid() => _currentlyOpenedChatJid;
 
   /// Sends a message correction to [recipient] regarding the message with stanza id
-  /// [oldId]. The old message's body gets corrected to [newBody]. [sid] is the message's
-  /// stanza id. [chatState] can be optionally specified to also include a chat state
+  /// [oldId]. The old message's body gets corrected to [newBody]. [id] is the message's
+  /// id. [chatState] can be optionally specified to also include a chat state
   /// in the message.
   ///
   /// This function handles updating the message and optionally the corresponding
   /// conversation.
   Future<void> sendMessageCorrection(
-    String sid,
+    String id,
     String conversationJid,
     String accountJid,
     String newBody,
@@ -166,8 +166,7 @@ class XmppService {
 
     // Update the database
     final msg = await ms.updateMessage(
-      sid,
-      conversationJid,
+      id,
       accountJid,
       isEdited: true,
       body: newBody,
@@ -178,7 +177,7 @@ class XmppService {
       recipient,
       accountJid,
       update: (c) async {
-        if (c.lastMessage?.sid == sid) {
+        if (c.lastMessage?.id == id) {
           return cs.updateConversation(
             c.jid,
             accountJid,
@@ -944,9 +943,8 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final sender = event.from.toBare().toString();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final dbMsg = await ms.getMessageBySid(
+    final dbMsg = await ms.getMessageByOriginId(
       event.id,
-      sender,
       accountJid,
       queryReactionPreview: false,
     );
@@ -958,8 +956,7 @@ class XmppService {
     }
 
     final msg = await ms.updateMessage(
-      dbMsg.sid,
-      sender,
+      dbMsg.id,
       accountJid,
       received: true,
     );
@@ -967,7 +964,7 @@ class XmppService {
 
     // Update the conversation
     final conv = await cs.getConversationByJid(sender, accountJid);
-    if (conv != null && conv.lastMessage?.sid == msg.sid) {
+    if (conv != null && conv.lastMessage?.id == msg.id) {
       final newConv = conv.copyWith(lastMessage: msg);
       cs.setConversation(newConv);
       _log.finest('Updating conversation');
@@ -983,15 +980,14 @@ class XmppService {
     final sender = event.from.toBare().toString();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     // TODO(Unknown): With groupchats, we should use the groupchat assigned stanza-id
-    final dbMsg = await ms.getMessageBySid(event.id, sender, accountJid);
+    final dbMsg = await ms.getMessageByOriginId(event.id, accountJid);
     if (dbMsg == null) {
       _log.warning('Did not find the message in the database!');
       return;
     }
 
     final msg = await ms.updateMessage(
-      dbMsg.sid,
-      sender,
+      dbMsg.id,
       accountJid,
       received: dbMsg.received ||
           event.type == ChatMarker.received ||
@@ -1005,7 +1001,7 @@ class XmppService {
 
     // Update the conversation
     final conv = await cs.getConversationByJid(sender, accountJid);
-    if (conv != null && conv.lastMessage?.sid == msg.sid) {
+    if (conv != null && conv.lastMessage?.id == msg.id) {
       final newConv = conv.copyWith(lastMessage: msg);
       cs.setConversation(newConv);
       _log.finest('Updating conversation');
@@ -1156,9 +1152,8 @@ class XmppService {
     }
 
     final ms = GetIt.I.get<MessageService>();
-    final msg = await ms.getMessageBySid(
+    final msg = await ms.getMessageByStanzaId(
       event.id!,
-      event.from.toBare().toString(),
       accountJid,
     );
 
@@ -1177,8 +1172,7 @@ class XmppService {
     }
 
     final newMsg = await ms.updateMessage(
-      msg.sid,
-      msg.conversationJid,
+      msg.id,
       accountJid,
       errorType: error,
     );
@@ -1201,8 +1195,7 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
 
     final correctionId = event.extensions.get<LastMessageCorrectionData>()!.id;
-    final msg = await ms.getMessageBySid(
-      conversationJid,
+    final msg = await ms.getMessageByOriginId(
       correctionId,
       accountJid,
     );
@@ -1231,8 +1224,7 @@ class XmppService {
 
     // TODO(Unknown): Should we null-check here?
     final newMsg = await ms.updateMessage(
-      msg.sid,
-      msg.conversationJid,
+      msg.id,
       accountJid,
       body: event.extensions.get<MessageBodyData>()!.body,
       isEdited: true,
@@ -1240,7 +1232,7 @@ class XmppService {
     sendEvent(MessageUpdatedEvent(message: newMsg));
 
     final conv = await cs.getConversationByJid(msg.conversationJid, accountJid);
-    if (conv != null && conv.lastMessage?.sid == msg.sid) {
+    if (conv != null && conv.lastMessage?.id == msg.id) {
       final newConv = conv.copyWith(
         lastMessage: newMsg,
       );
@@ -1257,9 +1249,8 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     // TODO(Unknown): Once we support groupchats, we need to instead query by the stanza-id
     final reactions = event.extensions.get<MessageReactionsData>()!;
-    final msg = await ms.getMessageBySid(
+    final msg = await ms.getMessageByOriginId(
       reactions.messageId,
-      conversationJid,
       accountJid,
       queryReactionPreview: false,
     );
@@ -1494,16 +1485,16 @@ class XmppService {
           (metadata.size != null &&
               metadata.size! < prefs.maximumAutoDownloadSize * 1000000)) {
         message = await ms.updateMessage(
-          message.sid,
-          message.conversationJid,
+          message.id,
           accountJid,
           isDownloading: true,
         );
         await fts.downloadFile(
           FileDownloadJob(
-            message.messageKey,
-            embeddedFile,
+            message.id,
+            message.conversationJid,
             accountJid,
+            embeddedFile,
             message.fileMetadata!.id,
             // If we did not retrieve the file, then we were not able to find it using
             // hashes.
@@ -1620,8 +1611,7 @@ class XmppService {
     // Mark the file as downlading when it includes a File Upload Notification
     if (fun != null) {
       message = await ms.updateMessage(
-        message.sid,
-        message.conversationJid,
+        message.id,
         accountJid,
         isDownloading: true,
       );
@@ -1641,7 +1631,7 @@ class XmppService {
     final replacementId =
         event.extensions.get<FileUploadNotificationReplacementData>()!.id;
     var message =
-        await ms.getMessageBySid(replacementId, conversationJid, accountJid);
+        await ms.getMessageByOriginId(replacementId, accountJid);
     if (message == null) {
       _log.warning(
         'Received a FileUploadNotification replacement for unknown message',
@@ -1681,13 +1671,12 @@ class XmppService {
 
       final oldFileMetadata = message.fileMetadata;
       message = await ms.updateMessage(
-        message.sid,
-        message.conversationJid,
+        message.id,
         accountJid,
         fileMetadata: fileMetadata ?? notSpecified,
         isFileUploadNotification: false,
         isDownloading: shouldDownload,
-        newSid: event.id,
+        sid: event.id,
         originId: event.extensions.get<StableIdData>()?.originId,
       );
 
@@ -1705,9 +1694,10 @@ class XmppService {
         _log.finest('Advertised file MIME: ${_getMimeGuess(event)}');
         await GetIt.I.get<HttpFileTransferService>().downloadFile(
               FileDownloadJob(
-                message.messageKey,
-                embeddedFile,
+                message.id,
+                message.conversationJid,
                 accountJid,
+                embeddedFile,
                 oldFileMetadata!.id,
                 // If [fileMetadata] is null, then we were not able to find the file metadata
                 // using hashes and thus have to create hash pointers.
@@ -1740,12 +1730,11 @@ class XmppService {
     final ms = GetIt.I.get<MessageService>();
     final cs = GetIt.I.get<ConversationService>();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final msg = await ms.getMessageBySid(jid, event.stanza.id!, accountJid);
+    final msg = await ms.getMessageByStanzaId(event.stanza.id!, accountJid);
     if (msg != null) {
       // Ack the message
       final newMsg = await ms.updateMessage(
-        msg.sid,
-        msg.conversationJid,
+        msg.id,
         accountJid,
         acked: true,
       );
@@ -1753,7 +1742,7 @@ class XmppService {
 
       // Ack the conversation
       final conv = await cs.getConversationByJid(jid, accountJid);
-      if (conv != null && conv.lastMessage?.sid == newMsg.sid) {
+      if (conv != null && conv.lastMessage?.id == newMsg.id) {
         final newConv = conv.copyWith(lastMessage: msg);
         cs.setConversation(newConv);
         sendEvent(ConversationUpdatedEvent(conversation: newConv));
@@ -1798,12 +1787,9 @@ class XmppService {
     if (event.data.stanza.tag != 'message') return;
 
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final conversationJid =
-        JID.fromString(event.data.stanza.to!).toBare().toString();
     final ms = GetIt.I.get<MessageService>();
-    final message = await ms.getMessageBySid(
+    final message = await ms.getMessageByStanzaId(
       event.data.stanza.id!,
-      conversationJid,
       accountJid,
     );
 
@@ -1816,8 +1802,7 @@ class XmppService {
 
     _log.finest('Cancel reason: ${event.data.cancelReason}');
     final newMessage = await ms.updateMessage(
-      message.sid,
-      conversationJid,
+      message.id,
       accountJid,
       errorType: MessageErrorType.fromException(event.data.cancelReason),
     );

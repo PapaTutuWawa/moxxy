@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:uuid/uuid.dart';
 
 extension MaybeGet<K, V> on Map<K, V> {
   V? maybeGet(K? key) {
@@ -65,6 +66,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   await db.execute(
     '''
     CREATE TABLE ${messagesTable}_new (
+      id                       TEXT PRIMARY KEY,
       accountJid               TEXT NOT NULL,
       sender                   TEXT NOT NULL,
       body                     TEXT,
@@ -79,7 +81,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       displayed                INTEGER,
       acked                    INTEGER,
       originId                 TEXT,
-      quote_sid                TEXT,
+      quote_id                 TEXT,
       file_metadata_id         TEXT,
       isDownloading            INTEGER NOT NULL,
       isUploading              INTEGER NOT NULL,
@@ -89,30 +91,24 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       stickerPackId            TEXT,
       pseudoMessageType        INTEGER,
       pseudoMessageData        TEXT,
-      PRIMARY KEY (accountJid, sender, sid, timestamp, conversationJid),
       CONSTRAINT fk_quote
-        FOREIGN KEY (accountJid, quote_sid)
-        REFERENCES $messagesTable (accountJid, sid)
+        FOREIGN KEY (accountJid, quote_id)
+        REFERENCES $messagesTable (accountJid, id)
       CONSTRAINT fk_file_metadata
         FOREIGN KEY (file_metadata_id)
         REFERENCES $fileMetadataTable (id)
     )''',
   );
   // Build up the message map
-  /// Message's old id attribute -> Message's sid attribute.
+  /// Message's old id attribute -> Message's new UUID attribute.
+  const uuid = Uuid();
   final messageMap = <int, String>{};
-  final conversationMap = <int, String>{};
-  final timestampMap = <int, int>{};
-  final senderMap = <int, String>{};
+
 
   if (migrateRows) {
     final messages = await db.query(messagesTable);
     for (final message in messages) {
-      messageMap[message['id']! as int] = message['sid']! as String;
-      conversationMap[message['id']! as int] =
-          message['conversationJid']! as String;
-      timestampMap[message['id']! as int] = message['timestamp']! as int;
-      senderMap[message['id']! as int] = message['sender']! as String;
+      messageMap[message['id']! as int] = uuid.v4();
     }
     // Then migrate messages
     for (final message in messages) {
@@ -121,7 +117,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
           ..remove('id')
           ..remove('quote_id'),
         'accountJid': accountJid,
-        'quote_sid': messageMap.maybeGet(message['quote_id'] as int?)
+        'quote_id': messageMap.maybeGet(message['quote_id'] as int?),
+        'id': messageMap[message['id']! as int]!,
       });
     }
   }
@@ -156,7 +153,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       PRIMARY KEY (jid, accountJid),
       CONSTRAINT fk_last_message
         FOREIGN KEY (accountJid, lastMessageId)
-        REFERENCES $messagesTable (accountJid, sid),
+        REFERENCES $messagesTable (accountJid, id),
       CONSTRAINT fk_contact_id
         FOREIGN KEY (contactId)
         REFERENCES $contactsTable (id)
@@ -188,17 +185,14 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   await db.execute(
     '''
     CREATE TABLE ${reactionsTable}_new (
-      accountJid        TEXT NOT NULL,
-      message_timestamp INTEGER NOT NULL,
-      message_sender    TEXT NOT NULL,
-      senderJid         TEXT NOT NULL,
-      emoji             TEXT NOT NULL,
-      message_sid       TEXT NOT NULL,
-      conversationJid   TEXT NOT NULL,
-      PRIMARY KEY (accountJid, senderJid, emoji, message_sid, conversationJid, message_timestamp, message_sender),
+      accountJid TEXT NOT NULL,
+      message_id TEXT NOT NULL,
+      senderJid  TEXT NOT NULL,
+      emoji      TEXT NOT NULL,
+      PRIMARY KEY (accountJid, senderJid, emoji, message_id),
       CONSTRAINT fk_message
-        FOREIGN KEY (accountJid, message_sid, conversationJid, message_timestamp, message_sender)
-        REFERENCES $messagesTable (accountJid, sid, conversationJid, timestamp, sender)
+        FOREIGN KEY (accountJid, message_id)
+        REFERENCES $messagesTable (accountJid, id)
         ON DELETE CASCADE
     )''',
   );
@@ -207,12 +201,10 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       await db.insert(
         '${reactionsTable}_new',
         {
-          ...Map.from(reaction)..remove('message_id'),
-          'message_sid': messageMap.maybeGet(reaction['message_id']! as int),
-          'conversationJid': conversationMap[reaction['message_id']! as int],
+          ...Map.from(reaction)
+            ..remove('message_id'),
+          'message_id': messageMap.maybeGet(reaction['message_id']! as int),
           'accountJid': accountJid,
-          'message_timestamp': timestampMap[reaction['message_id']! as int],
-          'message_sender': senderMap[reaction['message_id']! as int],
         },
       );
     }

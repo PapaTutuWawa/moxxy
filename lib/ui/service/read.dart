@@ -13,15 +13,15 @@ class UIReadMarkerService {
   final Logger _log = Logger('UIReadMarkerService');
 
   /// The cache of messages we already processed.
-  final Map<MessageKey, bool> _messages = {};
+  final Map<String, bool> _messages = {};
 
   /// Checks if we should send a read marker for [message]. If we should, tells
   /// the backend to actually send it.
   void handleMarker(Message message) {
-    if (_messages.containsKey(message.messageKey)) return;
+    if (_messages.containsKey(message.id)) return;
 
     // Make sure we don't reach here anymore.
-    _messages[message.messageKey] = true;
+    _messages[message.id] = true;
 
     // Only send this for messages we have not yet marked as read.
     if (message.displayed) return;
@@ -29,12 +29,10 @@ class UIReadMarkerService {
     // Check if we should send markers.
     if (!GetIt.I.get<PreferencesBloc>().state.sendChatMarkers) return;
 
-    final id = message.originId ?? message.sid;
-    _log.finest('Sending chat marker for ${message.conversationJid}:$id');
+    _log.finest('Sending chat marker for ${message.id}');
     MoxplatformPlugin.handler.getDataSender().sendData(
           MarkMessageAsReadCommand(
-            sid: message.sid,
-            conversationJid: message.conversationJid,
+            id: message.id,
             sendMarker: true,
           ),
           awaitable: false,
