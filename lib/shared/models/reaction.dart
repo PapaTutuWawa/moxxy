@@ -16,6 +16,14 @@ class Reaction with _$Reaction {
     // The account JID of the attached message.
     String accountJid,
 
+    // The timestamp of the referenced message. Required for database reasons.
+    // ignore: invalid_annotation_target
+    @JsonKey(name: 'message_timestamp') int timestamp,
+
+    // The sender of the referenced message. Required for database reasons.
+    // ignore: invalid_annotation_target 
+    @JsonKey(name: 'message_sender') String messageSender,
+
     // The sender of the reaction.
     String senderJid,
 

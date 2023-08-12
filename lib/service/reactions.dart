@@ -93,7 +93,7 @@ class ReactionsService {
     String emoji,
   ) async {
     final ms = GetIt.I.get<MessageService>();
-    final msg = await ms.getMessageBySid(sid, conversationJid, accountJid);
+    var msg = await ms.getMessageBySid(sid, conversationJid, accountJid);
     if (msg == null) {
       _log.warning(
         'Failed to get message ($sid, $conversationJid, $accountJid)',
@@ -101,41 +101,28 @@ class ReactionsService {
       return null;
     }
 
-    if (!msg.reactionsPreview.contains(emoji) &&
-        msg.reactionsPreview.length < 6) {
-      final newPreview = [
-        ...msg.reactionsPreview,
-        emoji,
-      ];
-
-      try {
-        await GetIt.I.get<DatabaseService>().database.insert(
-              reactionsTable,
-              Reaction(
-                sid,
-                conversationJid,
-                accountJid,
-                senderJid,
-                emoji,
-              ).toJson(),
-              conflictAlgorithm: ConflictAlgorithm.fail,
-            );
-
-        final newMsg = msg.copyWith(
-          reactionsPreview: newPreview,
+    _log.finest('Message reaction preview: ${msg.reactionsPreview}');
+    await GetIt.I.get<DatabaseService>().database.insert(
+          reactionsTable,
+          Reaction(
+            sid,
+            conversationJid,
+            accountJid,
+            msg.timestamp,
+            msg.sender,
+            senderJid,
+            emoji,
+          ).toJson(),
+          conflictAlgorithm: ConflictAlgorithm.fail,
         );
 
-        sendEvent(
-          MessageUpdatedEvent(
-            message: newMsg,
-          ),
-        );
-
-        return newMsg;
-      } catch (ex) {
-        // The reaction already exists
-        return msg;
-      }
+    if (msg.reactionsPreview.length < 6) {
+      msg = msg.copyWith(
+        reactionsPreview: [
+          ...msg.reactionsPreview,
+          emoji,
+        ],
+      );
     }
 
     return msg;
@@ -177,15 +164,9 @@ class ReactionsService {
     }
 
     final newPreview = List<String>.from(msg.reactionsPreview)..remove(emoji);
-    final newMsg = msg.copyWith(
+    return msg.copyWith(
       reactionsPreview: newPreview,
     );
-    sendEvent(
-      MessageUpdatedEvent(
-        message: newMsg,
-      ),
-    );
-    return newMsg;
   }
 
   Future<void> processNewReactions(
@@ -221,6 +202,8 @@ class ReactionsService {
           msg.sid,
           msg.conversationJid,
           accountJid,
+          msg.timestamp,
+          msg.sender,
           senderJid,
           emoji,
         ).toJson(),

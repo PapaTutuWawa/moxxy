@@ -23,8 +23,8 @@ class MessageKey {
   factory MessageKey.fromJson(Map<String, dynamic> json) {
     final map = json.cast<String, Object>();
     return MessageKey(
-      map['conversationJid']! as String,
       map['sender']! as String,
+      map['conversationJid']! as String,
       map['sid']! as String,
       map['timestamp']! as int,
     );

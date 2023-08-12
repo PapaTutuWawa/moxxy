@@ -1101,6 +1101,13 @@ Future<void> performAddMessageReaction(
     return;
   }
 
+  // Notify the UI
+  sendEvent(
+    MessageUpdatedEvent(
+      message: msg,
+    ),
+  );
+
   if (command.key.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I
@@ -1118,7 +1125,6 @@ Future<void> performAddMessageReaction(
             accountJid,
           ),
         ),
-        const MarkableData(false),
         MessageProcessingHintData([
           if (!msg.containsNoStore) MessageProcessingHint.store,
         ]),
@@ -1143,6 +1149,14 @@ Future<void> performRemoveMessageReaction(
   if (msg == null) {
     return;
   }
+
+  // Notify the UI
+  sendEvent(
+    MessageUpdatedEvent(
+      message: msg,
+    ),
+  );
+
 
   if (command.key.conversationJid != '') {
     // Send the reaction
