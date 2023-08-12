@@ -153,7 +153,8 @@ class HttpFileTransferService {
       sendEvent(MessageUpdatedEvent(message: msg));
 
       // Update the conversation list
-      final conversation = await cs.getConversationByJid(recipient, job.accountJid);
+      final conversation =
+          await cs.getConversationByJid(recipient, job.accountJid);
       if (conversation?.lastMessage?.sid == msg.sid) {
         final newConversation = conversation!.copyWith(
           lastMessage: msg,
@@ -588,7 +589,10 @@ class HttpFileTransferService {
     }
 
     final cs = GetIt.I.get<ConversationService>();
-    final conversation = (await cs.getConversationByJid(job.messageKey.conversationJid, job.accountJid))!;
+    final conversation = (await cs.getConversationByJid(
+      job.messageKey.conversationJid,
+      job.accountJid,
+    ))!;
 
     // Figure out if we should show a warning
     MessageWarningType? warning;
@@ -621,7 +625,11 @@ class HttpFileTransferService {
     if (notification.shouldShowNotification(msg.conversationJid) &&
         job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      await notification.updateNotification(updatedConversation, msg);
+      await notification.updateNotification(
+        updatedConversation,
+        msg,
+        job.accountJid,
+      );
     }
 
     sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));

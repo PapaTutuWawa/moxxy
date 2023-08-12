@@ -99,7 +99,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   final conversationMap = <int, String>{};
   for (final message in messages) {
     messageMap[message['id']! as int] = message['sid']! as String;
-    conversationMap[message['id']! as int] = message['conversationJid']! as String;
+    conversationMap[message['id']! as int] =
+        message['conversationJid']! as String;
   }
   // Then migrate messages
   for (final message in messages) {
@@ -253,6 +254,37 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   await db.execute('DROP TABLE $blocklistTable');
   await db
       .execute('ALTER TABLE ${blocklistTable}_new RENAME TO $blocklistTable');
+
+  // Migrate the notifications list
+  await db.execute(
+    '''
+    CREATE TABLE ${notificationsTable}_new (
+      id              INTEGER NOT NULL,
+      conversationJid TEXT NOT NULL,
+      accountJid      TEXT NOT NULL,
+      sender          TEXT,
+      senderJid       TEXT,
+      avatarPath      TEXT,
+      body            TEXT NOT NULL,
+      mime            TEXT,
+      path            TEXT,
+      timestamp       INTEGER NOT NULL,
+      PRIMARY KEY (id, conversationJid, senderJid, timestamp, accountJid)
+    )''',
+  );
+  for (final notification in await db.query(notificationsTable)) {
+    await db.insert(
+      '${notificationsTable}_new',
+      {
+        ...notification,
+        'accountJid': accountJid,
+      },
+    );
+  }
+  await db.execute('DROP TABLE $notificationsTable');
+  await db.execute(
+    'ALTER TABLE ${notificationsTable}_new RENAME TO $notificationsTable',
+  );
 
   // Migrate OMEMO device list
   await db.execute(

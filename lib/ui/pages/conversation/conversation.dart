@@ -53,7 +53,9 @@ int getMessageMenuOptionCount(
     message.isReactable,
     message.canRetract(sentBySelf),
     // TODO(Unknown): Remove this and just allow us to correct any message
-    message.canEdit(sentBySelf) && lastMessage?.sid == message.sid && lastMessage?.sender == message.sender,
+    message.canEdit(sentBySelf) &&
+        lastMessage?.sid == message.sid &&
+        lastMessage?.sender == message.sender,
     message.errorMenuVisible,
     message.hasWarning,
     message.isCopyable,

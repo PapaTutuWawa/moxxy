@@ -116,7 +116,8 @@ class DatabaseService {
       await getDatabasesPath(),
       'moxxy.db',
     );
-    final dbPassword = await GetIt.I.get<XmppStateService>().getOrCreateDatabaseKey();
+    final dbPassword =
+        await GetIt.I.get<XmppStateService>().getOrCreateDatabaseKey();
 
     // Just some sanity checks
     final version = migrations.last.version;

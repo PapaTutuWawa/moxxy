@@ -34,7 +34,6 @@ class RosterItem with _$RosterItem {
 
     // A list of groups the roster item is in.
     List<String> groups, {
-
     // The id of the contact in the device's phonebook, if it exists
     String? contactId,
 

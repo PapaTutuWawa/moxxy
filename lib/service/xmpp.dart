@@ -1611,6 +1611,7 @@ class XmppService {
       await ns.showNotification(
         conversation,
         message,
+        accountJid,
         isInRoster ? conversation.title : conversationJid,
         body: conversationBody,
       );

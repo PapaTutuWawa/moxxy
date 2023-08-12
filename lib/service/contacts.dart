@@ -61,8 +61,8 @@ class ContactsService {
     FlutterContacts.removeListener(_onContactsDatabaseUpdate);
 
     await GetIt.I.get<RosterService>().removePseudoRosterItems(
-      await GetIt.I.get<XmppStateService>().getAccountJid(),
-    );
+          await GetIt.I.get<XmppStateService>().getAccountJid(),
+        );
   }
 
   Future<void> _onContactsDatabaseUpdate() async {

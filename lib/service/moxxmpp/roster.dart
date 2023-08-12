@@ -10,7 +10,11 @@ import 'package:moxxyv2/shared/models/roster.dart';
 
 /// Update the "showAddToRoster" state of the conversation with jid [jid] to
 /// [showAddToRoster], if the conversation exists.
-Future<void> updateConversation(String jid, String accountJid, bool showAddToRoster) async {
+Future<void> updateConversation(
+  String jid,
+  String accountJid,
+  bool showAddToRoster,
+) async {
   final cs = GetIt.I.get<ConversationService>();
   final newConversation = await cs.createOrUpdateConversation(
     jid,
@@ -95,7 +99,11 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
       rosterAdded.add(newRosterItem);
 
       // Update the cached conversation item
-      await updateConversation(item.jid, accountJid, newRosterItem.showAddToRosterButton);
+      await updateConversation(
+        item.jid,
+        accountJid,
+        newRosterItem.showAddToRosterButton,
+      );
     }
 
     // Update modified items
@@ -118,7 +126,11 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
       rosterModified.add(newRosterItem);
 
       // Update the cached conversation item
-      await updateConversation(item.jid, accountJid, newRosterItem.showAddToRosterButton);
+      await updateConversation(
+        item.jid,
+        accountJid,
+        newRosterItem.showAddToRosterButton,
+      );
     }
 
     // Tell the UI

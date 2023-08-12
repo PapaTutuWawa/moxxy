@@ -318,9 +318,10 @@ Future<void> performSetOpenConversation(
   // Null just means that the chat has been closed
   // Empty string JID for notes to self
   if (command.jid != null && command.jid != '') {
-    await GetIt.I
-        .get<NotificationsService>()
-        .dismissNotificationsByJid(command.jid!);
+    await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
+          command.jid!,
+          await GetIt.I.get<XmppStateService>().getAccountJid(),
+        );
   }
 }
 
@@ -1061,6 +1062,7 @@ Future<void> performMarkConversationAsRead(
   // Dismiss notifications for that chat
   await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
         command.conversationJid,
+        await GetIt.I.get<XmppStateService>().getAccountJid(),
       );
 }
 

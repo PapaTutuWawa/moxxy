@@ -29,7 +29,9 @@ class ProgressWidgetState extends State<ProgressWidget> {
   @override
   void initState() {
     // Register against the DownloadService
-    GetIt.I.get<UIProgressService>().registerCallback(widget.messageKey, _onProgressUpdate);
+    GetIt.I
+        .get<UIProgressService>()
+        .registerCallback(widget.messageKey, _onProgressUpdate);
 
     super.initState();
   }

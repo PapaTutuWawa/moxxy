@@ -21,11 +21,11 @@ class MessageKey {
   );
 
   factory MessageKey.fromJson(Map<String, Object> json) => MessageKey(
-    json['conversationJid']! as String,
-    json['sender']! as String,
-    json['sid']! as String,
-    json['timestamp']! as int,
-  );
+        json['conversationJid']! as String,
+        json['sender']! as String,
+        json['sid']! as String,
+        json['timestamp']! as int,
+      );
 
   final String conversationJid;
   final String sender;
@@ -33,19 +33,19 @@ class MessageKey {
   final int timestamp;
 
   Map<String, Object> toJson() => {
-    'conversationJid': conversationJid,
-    'sender': sender,
-    'sid': sid,
-    'timestamp': timestamp,
-  };
+        'conversationJid': conversationJid,
+        'sender': sender,
+        'sid': sid,
+        'timestamp': timestamp,
+      };
 
   @override
-  bool operator==(Object other) {
+  bool operator ==(Object other) {
     return other is MessageKey &&
-      other.conversationJid == conversationJid &&
-      other.sender == sender &&
-      other.sid == sid &&
-      other.timestamp == timestamp;
+        other.conversationJid == conversationJid &&
+        other.sender == sender &&
+        other.sid == sid &&
+        other.timestamp == timestamp;
   }
 
   @override
@@ -125,7 +125,6 @@ class Message with _$Message {
 
     /// True if the message contains a <no-store> Message Processing Hint. False if not
     bool containsNoStore, {
-
     /// A message's associated error, if applicable (e.g. crypto error, file upload failure, ...).
     @MessageErrorTypeConverter() MessageErrorType? errorType,
 
@@ -344,9 +343,9 @@ class Message with _$Message {
 
   /// A "unique" key for a message.
   MessageKey get messageKey => MessageKey(
-    sender,
-    conversationJid,
-    sid,
-    timestamp,
-  );
+        sender,
+        conversationJid,
+        sid,
+        timestamp,
+      );
 }

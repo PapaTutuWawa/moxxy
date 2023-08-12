@@ -88,7 +88,8 @@ class AvatarService {
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final originalConversation = await cs.getConversationByJid(jid.toString(), accountJid);
+    final originalConversation =
+        await cs.getConversationByJid(jid.toString(), accountJid);
     final originalRoster = await rs.getRosterItemByJid(
       jid.toString(),
       accountJid,

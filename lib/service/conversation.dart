@@ -78,8 +78,9 @@ class ConversationService {
     final tmp = List<Conversation>.empty(growable: true);
     for (final c in conversationsRaw) {
       final jid = c['jid']! as String;
-      final rosterItem =
-          await GetIt.I.get<RosterService>().getRosterItemByJid(jid, accountJid);
+      final rosterItem = await GetIt.I
+          .get<RosterService>()
+          .getRosterItemByJid(jid, accountJid);
 
       Message? lastMessage;
       if (c['lastMessageId'] != null) {
@@ -122,15 +123,22 @@ class ConversationService {
   }
 
   /// Returns the conversation with jid [jid] or null if not found.
-  Future<Conversation?> _getConversationByJid(String jid, String accountJid) async {
+  Future<Conversation?> _getConversationByJid(
+    String jid,
+    String accountJid,
+  ) async {
     await _loadConversationsIfNeeded(accountJid);
     return _conversationCache![jid];
   }
 
   /// Wrapper around [ConversationService._getConversationByJid] that aquires
   /// the lock for the cache.
-  Future<Conversation?> getConversationByJid(String jid, String accountJid) async {
-    return _lock.synchronized(() async => _getConversationByJid(jid, accountJid));
+  Future<Conversation?> getConversationByJid(
+    String jid,
+    String accountJid,
+  ) async {
+    return _lock
+        .synchronized(() async => _getConversationByJid(jid, accountJid));
   }
 
   /// For modifying the cache without writing it to disk. Useful, for example, when
