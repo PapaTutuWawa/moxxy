@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -13,7 +14,7 @@ import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
-import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -23,6 +24,7 @@ import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
+import 'package:moxxyv2/service/permissions.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -39,6 +41,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/shared/models/reaction_group.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
@@ -106,6 +109,7 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetPagedSharedMediaCommand>(performGetPagedSharedMedia),
       EventTypeMatcher<GetReactionsForMessageCommand>(performGetReactions),
       EventTypeMatcher<RequestAvatarForJidCommand>(performRequestAvatarForJid),
+      EventTypeMatcher<JoinGroupchatCommand>(performJoinGroupchat),
       EventTypeMatcher<GetStorageUsageCommand>(performGetStorageUsage),
       EventTypeMatcher<DeleteOldMediaFilesCommand>(performOldMediaFileDeletion),
       EventTypeMatcher<GetPagedStickerPackCommand>(performGetPagedStickerPacks),
@@ -167,28 +171,19 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
 
   await GetIt.I.get<RosterService>().loadRosterFromDatabase(accountJid);
 
-  // Check some permissions
-  // TODO(Unknown): Do we still need this permission?
-  // final storagePerm = await Permission.storage.status;
-  // final permissions = List<int>.empty(growable: true);
-  // if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
-  //   permissions.add(Permission.storage.value);
-
-  //   await xss.modifyXmppState(
-  //     (state) => state.copyWith(
-  //       askedStoragePermission: true,
-  //     ),
-  //   );
-  // }
-
   return PreStartDoneEvent(
     state: 'logged_in',
     jid: accountJid,
     displayName: state.displayName ?? accountJid.split('@').first,
     avatarUrl: state.avatarUrl,
     avatarHash: state.avatarHash,
-    permissionsToRequest: [],
     preferences: preferences,
+    requestNotificationPermission: await GetIt.I
+        .get<PermissionsService>()
+        .shouldRequestNotificationPermission(),
+    excludeFromBatteryOptimisation: await GetIt.I
+        .get<PermissionsService>()
+        .shouldRequestBatteryOptimisationExcemption(),
     conversations:
         (await GetIt.I.get<ConversationService>().loadConversations(accountJid))
             .where((c) => c.open)
@@ -212,6 +207,7 @@ Future<void> performPreStart(
   } else {
     LocaleSettings.setLocaleRaw(preferences.languageLocaleCode);
   }
+  await GetIt.I.get<NotificationsService>().configureNotificationI18n();
   GetIt.I.get<XmppService>().setNotificationText(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
@@ -230,7 +226,12 @@ Future<void> performPreStart(
     sendEvent(
       PreStartDoneEvent(
         state: 'not_logged_in',
-        permissionsToRequest: List<int>.empty(),
+        requestNotificationPermission: await GetIt.I
+            .get<PermissionsService>()
+            .shouldRequestNotificationPermission(),
+        excludeFromBatteryOptimisation: await GetIt.I
+            .get<PermissionsService>()
+            .shouldRequestBatteryOptimisationExcemption(),
         preferences: preferences,
       ),
       id: id,
@@ -258,7 +259,7 @@ Future<void> performAddConversation(
         accountJid,
         command.title,
         null,
-        stringToConversationType(command.conversationType),
+        ConversationType.fromString(command.conversationType),
         command.avatarUrl,
         command.jid,
         0,
@@ -269,6 +270,7 @@ Future<void> performAddConversation(
         contactId,
         await css.getProfilePicturePathForJid(command.jid),
         await css.getContactDisplayName(contactId),
+        null,
       );
 
       sendEvent(
@@ -472,6 +474,7 @@ Future<void> performSetPreferences(
   GetIt.I.get<XmppService>().setNotificationText(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
+  await GetIt.I.get<NotificationsService>().configureNotificationI18n();
 }
 
 /// Attempts to achieve a "both" subscription with [jid].
@@ -585,7 +588,7 @@ Future<void> performAddContact(
     if (isGroupchat) {
       // The JID points to a groupchat. Handle that on the UI side
       sendEvent(
-        JidIsGroupchatEvent(),
+        JidIsGroupchatEvent(jid: jid),
         id: id,
       );
     } else {
@@ -613,6 +616,7 @@ Future<void> performAddContact(
             contactId,
             await css.getProfilePicturePathForJid(jid),
             await css.getContactDisplayName(contactId),
+            null,
           );
 
           sendEvent(
@@ -714,6 +718,11 @@ Future<void> performSetAvatar(SetAvatarCommand command, {dynamic extra}) async {
           avatarHash: command.hash,
         ),
       );
+
+  // Update our notification avatar
+  await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
+
+  // Publish our avatar
   await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
 
@@ -795,7 +804,11 @@ Future<void> performSendChatState(
   if (command.jid != '') {
     await conn
         .getManagerById<ChatStateManager>(chatStateManager)!
-        .sendChatState(ChatState.fromName(command.state), command.jid);
+        .sendChatState(
+          ChatState.fromName(command.state),
+          command.jid,
+          messageType: command.type,
+        );
   }
 }
 
@@ -1511,5 +1524,85 @@ Future<void> performDebugCommand(
       ''',
     );
     Logger.root.finest(results);
+  }
+}
+
+Future<void> performJoinGroupchat(
+  JoinGroupchatCommand command, {
+  dynamic extra,
+}) async {
+  final id = extra as String;
+  final jid = command.jid;
+  final nick = command.nick;
+  final cs = GetIt.I.get<ConversationService>();
+  final conversation = await cs.getConversationByJid(jid);
+  if (conversation != null) {
+    await cs.createOrUpdateConversation(
+      jid,
+      update: (c) async {
+        final newConversation = await cs.updateConversation(
+          jid,
+          open: true,
+          lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
+        );
+
+        sendEvent(
+          JoinGroupchatResult(
+            conversation: newConversation,
+          ),
+          id: id,
+        );
+
+        return newConversation;
+      },
+    );
+  } else {
+    // We did not have a conversation with that JID.
+    final joinRoomResult = await GetIt.I
+        .get<GroupchatService>()
+        .joinRoom(JID.fromString(jid), nick);
+    if (joinRoomResult.isType<GroupchatErrorType>()) {
+      sendEvent(
+        ErrorEvent(errorId: joinRoomResult.get<GroupchatErrorType>().value),
+        id: id,
+      );
+    }
+
+    await cs.createOrUpdateConversation(
+      jid,
+      create: () async {
+        // Create
+        final css = GetIt.I.get<ContactsService>();
+        final contactId = await css.getContactIdForJid(jid);
+        final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
+        final newConversation = await cs.addConversationFromData(
+          jid.split('@')[0],
+          null,
+          ConversationType.groupchat,
+          '',
+          jid,
+          0,
+          DateTime.now().millisecondsSinceEpoch,
+          true,
+          prefs.defaultMuteState,
+          prefs.enableOmemoByDefault,
+          contactId,
+          await css.getProfilePicturePathForJid(jid),
+          await css.getContactDisplayName(contactId),
+          GroupchatDetails(
+            jid,
+            nick,
+          ),
+        );
+        sendEvent(
+          JoinGroupchatResult(
+            conversation: newConversation,
+          ),
+          id: id,
+        );
+
+        return newConversation;
+      },
+    );
   }
 }

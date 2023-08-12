@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/conversation.dart';
+import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/service/service.dart';
@@ -238,6 +239,9 @@ class AvatarService {
         avatarHash: avatarData.hash,
       ),
     );
+
+    // Update our notification avatar
+    await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
 
     sendEvent(SelfAvatarChangedEvent(path: avatarPath, hash: avatarData.hash));
   }

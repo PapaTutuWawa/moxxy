@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -95,7 +96,11 @@ class NewConversationPage extends StatelessWidget {
                       return;
                     }
 
-                    showNotImplementedDialog('groupchat', context);
+                    if (kDebugMode) {
+                      Navigator.pushNamed(context, addContactRoute);
+                    } else {
+                      showNotImplementedDialog('groupchat', context);
+                    }
                   },
                 );
               default:
@@ -139,6 +144,7 @@ class NewConversationPage extends StatelessWidget {
                       item.avatarPath,
                       item.avatarHash,
                       item.jid,
+                      null,
                       0,
                       ConversationType.chat,
                       0,

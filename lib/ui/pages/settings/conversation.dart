@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/preferences.dart';
 import 'package:moxxyv2/ui/bloc/cropbackground_bloc.dart';
@@ -13,7 +14,6 @@ import 'package:moxxyv2/ui/widgets/settings/row.dart';
 import 'package:moxxyv2/ui/widgets/settings/title.dart';
 import 'package:moxxyv2/ui/widgets/topbar.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ConversationSettingsPage extends StatelessWidget {
@@ -35,8 +35,8 @@ class ConversationSettingsPage extends StatelessWidget {
 
     if (result == null) return null;
 
-    final appDir = await getApplicationDocumentsDirectory();
-    final backgroundPath = path.join(appDir.path, result.files.single.name);
+    final appDir = await MoxplatformPlugin.platform.getPersistentDataPath();
+    final backgroundPath = path.join(appDir, result.files.single.name);
     await File(result.files.single.path!).copy(backgroundPath);
 
     return backgroundPath;

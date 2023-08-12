@@ -96,15 +96,16 @@ class ConversationProfileHeader extends StatelessWidget {
                 ),
                 child: ProfileOptions(
                   options: [
-                    ProfileOption(
-                      icon: Icons.security_outlined,
-                      title: t.pages.profile.general.omemo,
-                      onTap: () {
-                        context.read<DevicesBloc>().add(
-                              DevicesRequestedEvent(conversation.jid),
-                            );
-                      },
-                    ),
+                    if (conversation.type == ConversationType.chat)
+                      ProfileOption(
+                        icon: Icons.security_outlined,
+                        title: t.pages.profile.general.omemo,
+                        onTap: () {
+                          context.read<DevicesBloc>().add(
+                                DevicesRequestedEvent(conversation.jid),
+                              );
+                        },
+                      ),
                     ProfileOption(
                       icon: conversation.muted
                           ? Icons.notifications_off

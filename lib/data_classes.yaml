@@ -22,7 +22,8 @@ files:
           - JsonImplementation
         attributes:
           state: String
-          permissionsToRequest: List<int>
+          requestNotificationPermission: bool
+          excludeFromBatteryOptimisation: bool
           preferences:
             type: PreferencesState
             deserialise: true
@@ -292,6 +293,8 @@ files:
         extends: BackgroundEvent
         implements:
           - JsonImplementation
+        attributes:
+          jid: String  
       # Returned when an error occured
       - name: ErrorEvent
         extends: BackgroundEvent
@@ -299,6 +302,15 @@ files:
           - JsonImplementation
         attributes:
           errorId: int
+      # Triggered by the service in response to an [JoinGroupchatCommand].
+      - name: JoinGroupchatResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          conversation:
+            type: Conversation
+            deserialise: true          
       # Returned after a [GetStorageUsageCommand]
       - name: GetStorageUsageEvent
         extends: BackgroundEvent
@@ -470,6 +482,7 @@ files:
         attributes:
           state: String
           jid: String
+          type: String
       - name: GetFeaturesCommand
         extends: BackgroundCommand
         implements:
@@ -682,6 +695,13 @@ files:
           - JsonImplementation
         attributes:
           id: int
+      - name: JoinGroupchatCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jid: String 
+          nick: String    
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

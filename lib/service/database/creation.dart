@@ -70,6 +70,26 @@ Future<void> createDatabase(Database db, int version) async {
     'CREATE INDEX idx_reactions_message_id ON $reactionsTable (message_id, senderJid)',
   );
 
+  // Notifications
+  await db.execute(
+    '''
+    CREATE TABLE $notificationsTable (
+      id              INTEGER NOT NULL,
+      conversationJid TEXT NOT NULL,
+      sender          TEXT,
+      senderJid       TEXT,
+      avatarPath      TEXT,
+      body            TEXT NOT NULL,
+      mime            TEXT,
+      path            TEXT,
+      timestamp       INTEGER NOT NULL,
+      PRIMARY KEY (id, conversationJid, senderJid, timestamp)
+    )''',
+  );
+  await db.execute(
+    'CREATE INDEX idx_notifications ON $notificationsTable (conversationJid)',
+  );
+
   // File metadata
   await db.execute(
     '''
@@ -265,6 +285,16 @@ Future<void> createDatabase(Database db, int version) async {
       value TEXT NOT NULL
     )''',
   );
+
+  // Groupchat
+  await db.execute(
+    '''
+    CREATE TABLE $groupchatTable (
+      jid TEXT PRIMARY KEY,
+      nick TEXT NOT NULL
+    )''',
+  );
+
   await db.insert(
     preferenceTable,
     Preference(

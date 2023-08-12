@@ -6,7 +6,6 @@ import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/commands.dart';
 import 'package:moxxyv2/shared/models/message.dart';
-import 'package:moxxyv2/shared/warning_types.dart';
 import 'package:moxxyv2/ui/controller/conversation_controller.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 import 'package:moxxyv2/ui/widgets/chat/chatbubble.dart';
@@ -261,9 +260,7 @@ class SelectedMessageContextMenu extends StatelessWidget {
                       onPressed: () {
                         showInfoDialog(
                           t.pages.conversation.warning,
-                          warningToTranslatableString(
-                            message.warningType!,
-                          ),
+                          message.warningType!.translatableString,
                           context,
                         );
                         selectionController.dismiss();

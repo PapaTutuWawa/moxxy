@@ -2,6 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 
@@ -41,22 +43,24 @@ class ConversationMessageConverter
 
 enum ConversationType {
   chat('chat'),
-  note('note');
+  note('note'),
+  groupchat('groupchat');
 
   const ConversationType(this.value);
-
-  /// The identifier of the enum value.
   final String value;
 
-  static ConversationType? fromInt(String value) {
+  static ConversationType fromString(String value) {
     switch (value) {
-      case 'chat':
-        return ConversationType.chat;
+      case 'groupchat':
+        return ConversationType.groupchat;
       case 'note':
         return ConversationType.note;
+      case 'chat':
+        return ConversationType.chat;
+      default:
+        // Should ideally never happen
+        throw Exception();
     }
-
-    return null;
   }
 }
 
@@ -66,12 +70,33 @@ class ConversationTypeConverter
 
   @override
   ConversationType fromJson(String json) {
-    return ConversationType.fromInt(json)!;
+    return ConversationType.fromString(json);
   }
 
   @override
   String toJson(ConversationType object) {
     return object.value;
+  }
+}
+
+class GroupchatDetailsConverter
+    extends JsonConverter<GroupchatDetails, Map<String, dynamic>> {
+  const GroupchatDetailsConverter();
+
+  @override
+  GroupchatDetails fromJson(Map<String, dynamic> json) {
+    return GroupchatDetails(
+      json['jid'] as String,
+      json['nick'] as String,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson(GroupchatDetails object) {
+    return {
+      'jid': object.jid,
+      'nick': object.nick,
+    };
   }
 }
 
@@ -95,6 +120,9 @@ class Conversation with _$Conversation {
 
     // The JID of the entity we're having a chat with...
     String jid,
+
+    // The nick with which the MUC is joined...
+    @GroupchatDetailsConverter() GroupchatDetails? groupchatDetails,
 
     // The number of unread messages.
     int unreadCounter,
@@ -140,6 +168,7 @@ class Conversation with _$Conversation {
     Map<String, dynamic> json,
     bool showAddToRoster,
     Message? lastMessage,
+    GroupchatDetails? groupchatDetails,
   ) {
     return Conversation.fromJson({
       ...json,
@@ -151,6 +180,7 @@ class Conversation with _$Conversation {
           const ConversationChatStateConverter().toJson(ChatState.gone),
     }).copyWith(
       lastMessage: lastMessage,
+      groupchatDetails: groupchatDetails,
     );
   }
 
@@ -159,7 +189,8 @@ class Conversation with _$Conversation {
       ..remove('id')
       ..remove('chatState')
       ..remove('showAddToRoster')
-      ..remove('lastMessage');
+      ..remove('lastMessage')
+      ..remove('groupchatDetails');
 
     return {
       ...map,
@@ -191,6 +222,15 @@ class Conversation with _$Conversation {
         GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
       );
 
+  /// This getter is a short-hand for [getAvatarPathWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesService].
+  /// NOTE: This method only works in the background isolate.
+  Future<String?> get avatarPathWithOptionalContactService async =>
+      getAvatarPathWithOptionalContact(
+        (await GetIt.I.get<PreferencesService>().getPreferences())
+            .enableContactIntegration,
+      );
+
   /// The title of the chat. This returns, if [contactIntegration] is true, first the contact's display
   /// name, then the XMPP chat title. If [contactIntegration] is false, just returns the XMPP chat
   /// title.
@@ -209,11 +249,23 @@ class Conversation with _$Conversation {
         GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
       );
 
+  /// This getter is a short-hand for [getTitleWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesService].
+  /// NOTE: This method only works in the background isolate.
+  Future<String> get titleWithOptionalContactService async =>
+      getTitleWithOptionalContact(
+        (await GetIt.I.get<PreferencesService>().getPreferences())
+            .enableContactIntegration,
+      );
+
   /// The amount of items that are shown in the context menu.
   int get numberContextMenuOptions => 1 + (unreadCounter != 0 ? 1 : 0);
 
   /// True, if the conversation is a self-chat. False, if not.
   bool get isSelfChat => type == ConversationType.note;
+
+  /// True, if the conversation is a groupchat. False, if not.
+  bool get isGroupchat => type == ConversationType.groupchat;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.

@@ -7,7 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:mime/mime.dart';
 import 'package:moxlib/moxlib.dart';
-import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
@@ -17,6 +17,7 @@ import 'package:moxxyv2/service/connectivity_watcher.dart';
 import 'package:moxxyv2/service/contacts.dart';
 import 'package:moxxyv2/service/conversation.dart';
 import 'package:moxxyv2/service/files.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/helpers.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
@@ -38,6 +39,7 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:omemo_dart/omemo_dart.dart';
@@ -277,7 +279,7 @@ class XmppService {
         );
       }
 
-      if (conversation?.type == ConversationType.chat) {
+      if (conversation?.type != ConversationType.note) {
         final moxxmppSticker = sticker?.toMoxxmpp();
         final manager = conn.getManagerById<MessageManager>(messageManager)!;
 
@@ -311,6 +313,7 @@ class XmppService {
                 ),
               ),
           ]),
+          type: conversation!.type.value,
         );
       }
 
@@ -539,7 +542,7 @@ class XmppService {
     // Path -> Recipient -> Message
     final messages = <String, Map<String, Message>>{};
     // Path -> Thumbnails
-    final thumbnails = <String, List<Thumbnail>>{};
+    final thumbnails = <String, List<JingleContentThumbnail>>{};
     // Path -> Dimensions
     final dimensions = <String, Size>{};
     // Recipient -> Should encrypt
@@ -631,6 +634,7 @@ class XmppService {
     }
 
     final rs = GetIt.I.get<RosterService>();
+    final gs = GetIt.I.get<GroupchatService>();
     for (final recipient in recipients) {
       conversationsMap[recipient] = (await cs.createOrUpdateConversation(
         recipient,
@@ -639,6 +643,9 @@ class XmppService {
           // Create
           final rosterItem = await rs.getRosterItemByJid(recipient, accountJid);
           final contactId = await css.getContactIdForJid(recipient);
+          final groupchatDetails = await gs.getGroupchatDetailsByJid(
+            recipient,
+          );
           final newConversation = await cs.addConversationFromData(
             accountJid,
             // TODO(Unknown): Should we use the JID parser?
@@ -655,6 +662,11 @@ class XmppService {
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
+            groupchatDetails ??
+                GroupchatDetails(
+                  recipient,
+                  '',
+                ),
           );
 
           // Update the cache
@@ -700,7 +712,16 @@ class XmppService {
           if (!thumbnails.containsKey(path)) {
             final thumbnail = await generateBlurhashThumbnail(path);
             if (thumbnail != null) {
-              thumbnails[path] = [BlurhashThumbnail(thumbnail)];
+              thumbnails[path] = [
+                JingleContentThumbnail(
+                  // Just like Cheogram does it
+                  // https://git.singpolyma.net/cheogram/commit/7adfc96853fec0648145c9d52a4a91b7bac1189f
+                  Uri.parse('data:image/blurhash,$thumbnail'),
+                  null,
+                  null,
+                  null,
+                ),
+              ];
             } else {
               _log.warning('Failed to generate thumbnail for $path');
             }
@@ -1029,8 +1050,8 @@ class XmppService {
         ]) ??
         [];
     for (final i in thumbnails) {
-      if (i is BlurhashThumbnail) {
-        return i.hash;
+      if (i.uri.scheme == 'data' && i.uri.path.startsWith('image/blurhash')) {
+        return i.uri.path.split(',').last;
       }
     }
 
@@ -1514,12 +1535,16 @@ class XmppService {
     // Whether to send the notification
     var sendNotification = true;
 
+    final gs = GetIt.I.get<GroupchatService>();
     final conversation = await cs.createOrUpdateConversation(
       conversationJid,
       accountJid,
       create: () async {
         // Create
         final contactId = await css.getContactIdForJid(conversationJid);
+        final groupchatDetails = await gs.getGroupchatDetailsByJid(
+          JID.fromString(conversationJid).toBare().toString(),
+        );
         final newConversation = await cs.addConversationFromData(
           accountJid,
           rosterItem?.title ?? conversationJid.split('@')[0],
@@ -1535,6 +1560,11 @@ class XmppService {
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),
+          groupchatDetails ??
+              GroupchatDetails(
+                conversationJid,
+                '',
+              ),
         );
 
         // Notify the UI

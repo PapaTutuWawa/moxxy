@@ -52,6 +52,7 @@ class ConversationTopbar extends StatelessWidget
         prev.conversation?.avatarPath != next.conversation?.avatarPath ||
         prev.conversation?.chatState != next.conversation?.chatState ||
         prev.conversation?.jid != next.conversation?.jid ||
+        prev.conversation?.type != next.conversation?.type ||
         prev.conversation?.encrypted != next.conversation?.encrypted;
   }
 
@@ -162,7 +163,7 @@ class ConversationTopbar extends StatelessWidget
                 ),
               ),
             ),
-            if (state.conversation?.type != ConversationType.note)
+            if (state.conversation?.type == ConversationType.chat)
               PopupMenuButton<EncryptionOption>(
                 onSelected: (result) {
                   if (result == EncryptionOption.omemo &&
@@ -230,7 +231,7 @@ class ConversationTopbar extends StatelessWidget
                   t.pages.conversation.closeChat,
                   Icons.close,
                 ),
-                if (state.conversation?.type != ConversationType.note)
+                if (state.conversation?.type == ConversationType.chat)
                   popupItemWithIcon<ConversationOption>(
                     ConversationOption.block,
                     t.pages.conversation.blockUser,

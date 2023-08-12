@@ -66,6 +66,7 @@ class BidirectionalConversationController
     extends BidirectionalController<Message> {
   BidirectionalConversationController(
     this.conversationJid,
+    this.conversationType,
     this.focusNode, {
     String? initialText,
   })  : assert(
@@ -110,6 +111,9 @@ class BidirectionalConversationController
   /// The JID of the current chat
   final String conversationJid;
 
+  /// The type of the current conversation
+  final String conversationType;
+
   /// Data about a message we're editing
   MessageEditingState? _messageEditingState;
 
@@ -149,6 +153,7 @@ class BidirectionalConversationController
           SendChatStateCommand(
             state: state.toString().split('.').last,
             jid: conversationJid,
+            type: conversationType,
           ),
           awaitable: false,
         );

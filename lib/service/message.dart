@@ -16,6 +16,7 @@ import 'package:moxxyv2/shared/error_types.dart';
 import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/message.dart';
+import 'package:moxxyv2/shared/warning_types.dart';
 
 class MessageService {
   /// Logger
@@ -321,7 +322,7 @@ FROM
     String? quoteId,
     FileMetadata? fileMetadata,
     MessageErrorType? errorType,
-    int? warningType,
+    MessageWarningType? warningType,
     bool isDownloading = false,
     bool isUploading = false,
     String? stickerPackId,
