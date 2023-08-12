@@ -24,6 +24,7 @@ import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
+import 'package:moxxyv2/service/permissions.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -167,28 +168,19 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
 
   await GetIt.I.get<RosterService>().loadRosterFromDatabase();
 
-  // Check some permissions
-  // TODO(Unknown): Do we still need this permission?
-  // final storagePerm = await Permission.storage.status;
-  // final permissions = List<int>.empty(growable: true);
-  // if (storagePerm.isDenied /*&& !state.askedStoragePermission*/) {
-  //   permissions.add(Permission.storage.value);
-
-  //   await xss.modifyXmppState(
-  //     (state) => state.copyWith(
-  //       askedStoragePermission: true,
-  //     ),
-  //   );
-  // }
-
   return PreStartDoneEvent(
     state: 'logged_in',
     jid: state.jid,
     displayName: state.displayName ?? state.jid!.split('@').first,
     avatarUrl: state.avatarUrl,
     avatarHash: state.avatarHash,
-    permissionsToRequest: [],
     preferences: preferences,
+    requestNotificationPermission: await GetIt.I
+        .get<PermissionsService>()
+        .shouldRequestNotificationPermission(),
+    excludeFromBatteryOptimisation: await GetIt.I
+        .get<PermissionsService>()
+        .shouldRequestBatteryOptimisationExcemption(),
     conversations:
         (await GetIt.I.get<ConversationService>().loadConversations())
             .where((c) => c.open)
@@ -211,6 +203,7 @@ Future<void> performPreStart(
   } else {
     LocaleSettings.setLocaleRaw(preferences.languageLocaleCode);
   }
+  await GetIt.I.get<NotificationsService>().configureNotificationI18n();
   GetIt.I.get<XmppService>().setNotificationText(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
@@ -225,7 +218,12 @@ Future<void> performPreStart(
     sendEvent(
       PreStartDoneEvent(
         state: 'not_logged_in',
-        permissionsToRequest: List<int>.empty(),
+        requestNotificationPermission: await GetIt.I
+            .get<PermissionsService>()
+            .shouldRequestNotificationPermission(),
+        excludeFromBatteryOptimisation: await GetIt.I
+            .get<PermissionsService>()
+            .shouldRequestBatteryOptimisationExcemption(),
         preferences: preferences,
       ),
       id: id,
@@ -460,6 +458,7 @@ Future<void> performSetPreferences(
   GetIt.I.get<XmppService>().setNotificationText(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
+  await GetIt.I.get<NotificationsService>().configureNotificationI18n();
 }
 
 /// Attempts to achieve a "both" subscription with [jid].
@@ -692,6 +691,11 @@ Future<void> performSetAvatar(SetAvatarCommand command, {dynamic extra}) async {
           avatarHash: command.hash,
         ),
       );
+
+  // Update our notification avatar
+  await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
+
+  // Publish our avatar
   await GetIt.I.get<AvatarService>().publishAvatar(command.path, command.hash);
 }
 

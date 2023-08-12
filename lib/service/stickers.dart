@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:archive/archive.dart';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart' as moxxmpp;
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
@@ -18,7 +19,6 @@ import 'package:moxxyv2/service/service.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:moxxyv2/shared/constants.dart';
 import 'package:moxxyv2/shared/events.dart';
-import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:moxxyv2/shared/models/sticker.dart';
 import 'package:moxxyv2/shared/models/sticker_pack.dart';
@@ -408,9 +408,10 @@ JOIN
       return null;
     }
 
-    final stickerDirPath = await getStickerPackPath(
-      pack.hashAlgorithm.toName(),
-      pack.hashValue,
+    final stickerDirPath = p.join(
+      await MoxplatformPlugin.platform.getPersistentDataPath(),
+      'stickers',
+      '${pack.hashAlgorithm.toName()}_${pack.hashValue}',
     );
     final stickerDir = Directory(stickerDirPath);
     if (!stickerDir.existsSync()) await stickerDir.create(recursive: true);

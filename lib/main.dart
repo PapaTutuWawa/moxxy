@@ -23,6 +23,7 @@ import 'package:moxxyv2/ui/bloc/newconversation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/own_devices_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/bloc/profile_bloc.dart';
+import 'package:moxxyv2/ui/bloc/request_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/bloc/server_info_bloc.dart';
 import 'package:moxxyv2/ui/bloc/share_selection_bloc.dart';
@@ -119,6 +120,7 @@ void setupBlocs(GlobalKey<NavigatorState> navKey) {
   GetIt.I.registerSingleton<OwnDevicesBloc>(OwnDevicesBloc());
   GetIt.I.registerSingleton<StickersBloc>(StickersBloc());
   GetIt.I.registerSingleton<StickerPackBloc>(StickerPackBloc());
+  GetIt.I.registerSingleton<RequestBloc>(RequestBloc());
   GetIt.I.registerSingleton<JoinGroupchatBloc>(JoinGroupchatBloc());
 }
 
@@ -191,6 +193,9 @@ void main() async {
         ),
         BlocProvider<StickerPackBloc>(
           create: (_) => GetIt.I.get<StickerPackBloc>(),
+        ),
+        BlocProvider<RequestBloc>(
+          create: (_) => GetIt.I.get<RequestBloc>(),
         ),
         BlocProvider<JoinGroupchatBloc>(
           create: (_) => GetIt.I.get<JoinGroupchatBloc>(),

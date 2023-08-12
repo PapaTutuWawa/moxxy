@@ -22,7 +22,8 @@ files:
           - JsonImplementation
         attributes:
           state: String
-          permissionsToRequest: List<int>
+          requestNotificationPermission: bool
+          excludeFromBatteryOptimisation: bool
           preferences:
             type: PreferencesState
             deserialise: true

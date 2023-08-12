@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
@@ -218,6 +219,15 @@ class Conversation with _$Conversation {
         GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
       );
 
+  /// This getter is a short-hand for [getAvatarPathWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesService].
+  /// NOTE: This method only works in the background isolate.
+  Future<String?> get avatarPathWithOptionalContactService async =>
+      getAvatarPathWithOptionalContact(
+        (await GetIt.I.get<PreferencesService>().getPreferences())
+            .enableContactIntegration,
+      );
+
   /// The title of the chat. This returns, if [contactIntegration] is true, first the contact's display
   /// name, then the XMPP chat title. If [contactIntegration] is false, just returns the XMPP chat
   /// title.
@@ -236,11 +246,23 @@ class Conversation with _$Conversation {
         GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
       );
 
+  /// This getter is a short-hand for [getTitleWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesService].
+  /// NOTE: This method only works in the background isolate.
+  Future<String> get titleWithOptionalContactService async =>
+      getTitleWithOptionalContact(
+        (await GetIt.I.get<PreferencesService>().getPreferences())
+            .enableContactIntegration,
+      );
+
   /// The amount of items that are shown in the context menu.
   int get numberContextMenuOptions => 1 + (unreadCounter != 0 ? 1 : 0);
 
   /// True, if the conversation is a self-chat. False, if not.
   bool get isSelfChat => type == ConversationType.note;
+
+  /// True, if the conversation is a groupchat. False, if not.
+  bool get isGroupchat => type == ConversationType.groupchat;
 }
 
 /// Sorts conversations in descending order by their last change timestamp.

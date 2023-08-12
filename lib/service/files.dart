@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/constants.dart';
@@ -11,7 +12,6 @@ import 'package:moxxyv2/service/httpfiletransfer/location.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common/sql.dart';
 
 /// A class for returning whether a file metadata element was just created or retrieved.
@@ -52,7 +52,7 @@ Future<String> computeCachedPathForFile(
   Map<HashFunction, String>? hashes,
 ) async {
   final basePath = path.join(
-    (await getApplicationDocumentsDirectory()).path,
+    await MoxplatformPlugin.platform.getPersistentDataPath(),
     'media',
   );
   final baseDir = Directory(basePath);
