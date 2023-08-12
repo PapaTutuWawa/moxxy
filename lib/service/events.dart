@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -1534,14 +1533,17 @@ Future<void> performJoinGroupchat(
   final id = extra as String;
   final jid = command.jid;
   final nick = command.nick;
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(jid);
+  final conversation = await cs.getConversationByJid(jid, accountJid);
   if (conversation != null) {
     await cs.createOrUpdateConversation(
       jid,
+      accountJid,
       update: (c) async {
         final newConversation = await cs.updateConversation(
           jid,
+          accountJid,
           open: true,
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
         );
@@ -1570,12 +1572,14 @@ Future<void> performJoinGroupchat(
 
     await cs.createOrUpdateConversation(
       jid,
+      accountJid,
       create: () async {
         // Create
         final css = GetIt.I.get<ContactsService>();
         final contactId = await css.getContactIdForJid(jid);
         final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
         final newConversation = await cs.addConversationFromData(
+          accountJid,
           jid.split('@')[0],
           null,
           ConversationType.groupchat,

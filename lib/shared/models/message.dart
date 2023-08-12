@@ -345,6 +345,7 @@ class Message with _$Message {
   /// A "unique" key for a message.
   MessageKey get messageKey => MessageKey(
     sender,
+    conversationJid,
     sid,
     timestamp,
   );
