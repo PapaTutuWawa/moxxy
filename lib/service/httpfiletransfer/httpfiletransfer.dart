@@ -578,15 +578,20 @@ class HttpFileTransferService {
 
     final cs = GetIt.I.get<ConversationService>();
     final conversation = (await cs.getConversationByJid(job.conversationJid))!;
+
+    // Figure out if we should show a warning
+    MessageWarningType? warning;
+    if (!integrityCheckPassed) {
+      warning = MessageWarningType.fileIntegrityCheckFailed;
+    } else if (conversation.encrypted && !decryptionKeysAvailable) {
+      warning = MessageWarningType.chatEncryptedButFilePlaintext;
+    }
+
     final msg = await GetIt.I.get<MessageService>().updateMessage(
           job.mId,
           fileMetadata: metadata,
           isFileUploadNotification: false,
-          warningType:
-              integrityCheckPassed ? null : warningFileIntegrityCheckFailed,
-          errorType: conversation.encrypted && !decryptionKeysAvailable
-              ? MessageErrorType.chatEncryptedButPlaintextFile
-              : null,
+          warningType: warning,
           isDownloading: false,
         );
 
