@@ -27,6 +27,7 @@ class GroupchatService {
   /// if the room requires a password for entry.
   Future<Result<GroupchatDetails, GroupchatErrorType>> joinRoom(
     JID muc,
+    String accountJid,
     String nick,
   ) async {
     final conn = GetIt.I.get<XmppConnection>();
@@ -51,6 +52,7 @@ class GroupchatService {
         return Result(
           GroupchatDetails(
             muc.toBare().toString(),
+            accountJid,
             nick,
           ),
         );
@@ -70,9 +72,10 @@ class GroupchatService {
   /// representing the added group chat details.
   Future<GroupchatDetails> addGroupchatDetailsFromData(
     String jid,
+    String accountJid,
     String nick,
   ) async {
-    final groupchatDetails = GroupchatDetails(jid, nick);
+    final groupchatDetails = GroupchatDetails(jid, accountJid, nick);
     await GetIt.I.get<DatabaseService>().database.insert(
           groupchatTable,
           groupchatDetails.toJson(),
@@ -85,12 +88,15 @@ class GroupchatService {
   ///
   /// Returns a [Future] that resolves to a [GroupchatDetails] object if found,
   /// or `null` if no matching details are found.
-  Future<GroupchatDetails?> getGroupchatDetailsByJid(String jid) async {
+  Future<GroupchatDetails?> getGroupchatDetailsByJid(
+    String jid,
+    String accountJid,
+  ) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final groupchatDetailsRaw = await db.query(
       groupchatTable,
-      where: 'jid = ?',
-      whereArgs: [jid],
+      where: 'jid = ? AND accountJid = ?',
+      whereArgs: [jid, accountJid],
     );
     if (groupchatDetailsRaw.isEmpty) return null;
     return GroupchatDetails.fromDatabaseJson(groupchatDetailsRaw[0]);

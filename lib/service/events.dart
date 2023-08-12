@@ -1574,7 +1574,7 @@ Future<void> performJoinGroupchat(
     // We did not have a conversation with that JID.
     final joinRoomResult = await GetIt.I
         .get<GroupchatService>()
-        .joinRoom(JID.fromString(jid), nick);
+        .joinRoom(JID.fromString(jid), accountJid, nick);
     if (joinRoomResult.isType<GroupchatErrorType>()) {
       sendEvent(
         ErrorEvent(errorId: joinRoomResult.get<GroupchatErrorType>().value),
@@ -1607,6 +1607,7 @@ Future<void> performJoinGroupchat(
           await css.getContactDisplayName(contactId),
           GroupchatDetails(
             jid,
+            accountJid,
             nick,
           ),
         );

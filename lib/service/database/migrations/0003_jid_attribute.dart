@@ -180,6 +180,35 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     'CREATE INDEX idx_conversation_id ON $conversationsTable (accountJid, jid)',
   );
 
+  // Migrate groupchat details
+  await db.execute(
+    '''
+    CREATE TABLE ${groupchatTable}_new (
+      jid        TEXT NOT NULL,
+      accountJid TEXT NOT NULL,
+      nick       TEXT NOT NULL,
+      PRIMARY KEY (jid, accountJid),
+      CONSTRAINT fk_groupchat
+        FOREIGN KEY (jid, accountJid)
+        REFERENCES $conversationsTable (jid, accountJid)
+        ON DELETE CASCADE
+    )''',
+  );
+  if (migrateRows) {
+    for (final g in await db.query(groupchatTable)) {
+      await db.insert(
+        '${groupchatTable}_new',
+        {
+          ...g,
+          'accountJid': accountJid,
+        },
+      );
+    }
+  }
+  await db.execute('DROP TABLE $groupchatTable');
+  await db
+      .execute('ALTER TABLE ${groupchatTable}_new RENAME TO $groupchatTable');
+
   // Migrate reactions
   await db.execute(
     '''

@@ -86,8 +86,9 @@ class GroupchatDetailsConverter
   @override
   GroupchatDetails fromJson(Map<String, dynamic> json) {
     return GroupchatDetails(
-      json['jid'] as String,
-      json['nick'] as String,
+      json['jid']! as String,
+      json['accountJid']! as String,
+      json['nick']! as String,
     );
   }
 
@@ -95,6 +96,7 @@ class GroupchatDetailsConverter
   Map<String, dynamic> toJson(GroupchatDetails object) {
     return {
       'jid': object.jid,
+      'accountJid': object.accountJid,
       'nick': object.nick,
     };
   }

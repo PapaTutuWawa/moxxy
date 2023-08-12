@@ -39,7 +39,6 @@ import 'package:moxxyv2/shared/events.dart';
 import 'package:moxxyv2/shared/helpers.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
 import 'package:moxxyv2/shared/models/file_metadata.dart';
-import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:omemo_dart/omemo_dart.dart';
@@ -644,6 +643,7 @@ class XmppService {
           final contactId = await css.getContactIdForJid(recipient);
           final groupchatDetails = await gs.getGroupchatDetailsByJid(
             recipient,
+            accountJid,
           );
           final newConversation = await cs.addConversationFromData(
             accountJid,
@@ -661,11 +661,7 @@ class XmppService {
             contactId,
             await css.getProfilePicturePathForJid(recipient),
             await css.getContactDisplayName(contactId),
-            groupchatDetails ??
-                GroupchatDetails(
-                  recipient,
-                  '',
-                ),
+            groupchatDetails,
           );
 
           // Update the cache
@@ -1535,6 +1531,7 @@ class XmppService {
         final contactId = await css.getContactIdForJid(conversationJid);
         final groupchatDetails = await gs.getGroupchatDetailsByJid(
           JID.fromString(conversationJid).toBare().toString(),
+          accountJid,
         );
         final newConversation = await cs.addConversationFromData(
           accountJid,
@@ -1551,11 +1548,7 @@ class XmppService {
           contactId,
           await css.getProfilePicturePathForJid(conversationJid),
           await css.getContactDisplayName(contactId),
-          groupchatDetails ??
-              GroupchatDetails(
-                conversationJid,
-                '',
-              ),
+          groupchatDetails,
         );
 
         // Notify the UI
