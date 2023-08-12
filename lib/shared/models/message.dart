@@ -168,7 +168,6 @@ class Message with _$Message {
 
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
-      ..remove('id')
       ..remove('quotes')
       ..remove('reactionsPreview')
       ..remove('fileMetadata')

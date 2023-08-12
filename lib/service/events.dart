@@ -806,7 +806,7 @@ Future<void> performSendChatState(
         .sendChatState(
           ChatState.fromName(command.state),
           command.jid,
-          messageType: command.type,
+          messageType: command.conversationType,
         );
   }
 }

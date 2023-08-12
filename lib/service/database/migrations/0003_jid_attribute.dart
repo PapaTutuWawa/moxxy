@@ -66,7 +66,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   await db.execute(
     '''
     CREATE TABLE ${messagesTable}_new (
-      id                       TEXT PRIMARY KEY,
+      id                       TEXT NOT NULL PRIMARY KEY,
       accountJid               TEXT NOT NULL,
       sender                   TEXT NOT NULL,
       body                     TEXT,

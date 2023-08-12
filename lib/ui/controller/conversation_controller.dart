@@ -153,7 +153,7 @@ class BidirectionalConversationController
           SendChatStateCommand(
             state: state.toString().split('.').last,
             jid: conversationJid,
-            type: conversationType,
+            conversationType: conversationType,
           ),
           awaitable: false,
         );

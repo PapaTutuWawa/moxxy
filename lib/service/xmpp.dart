@@ -980,7 +980,7 @@ class XmppService {
     final sender = event.from.toBare().toString();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     // TODO(Unknown): With groupchats, we should use the groupchat assigned stanza-id
-    final dbMsg = await ms.getMessageByOriginId(event.id, accountJid);
+    final dbMsg = await ms.getMessageByStanzaId(event.id, accountJid);
     if (dbMsg == null) {
       _log.warning('Did not find the message in the database!');
       return;

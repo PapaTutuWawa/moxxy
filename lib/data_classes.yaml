@@ -480,7 +480,7 @@ files:
         attributes:
           state: String
           jid: String
-          type: String
+          conversationType: String
       - name: GetFeaturesCommand
         extends: BackgroundCommand
         implements:
