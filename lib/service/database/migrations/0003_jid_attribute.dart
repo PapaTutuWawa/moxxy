@@ -24,13 +24,17 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     whereArgs: ['jid'],
     limit: 1,
   );
-  if (rawJid.isEmpty) {
-    // TODO: Remove all messages?
-  }
-  final accountJid = rawJid.first['value']! as String;
+
+  // [migrateRows] indicates whether we can move the data to the new JID-annotated format.
+  // It's false if we don't have a "logged in" JID. If we have one, it's true and we can
+  // move data.
+  final migrateRows = rawJid.isNotEmpty;
+  final accountJid = migrateRows ? rawJid.first['value']! as String : null;
 
   // Store the account JID in the secure storage.
-  await GetIt.I.get<XmppStateService>().setAccountJid(accountJid);
+  if (migrateRows) {
+    await GetIt.I.get<XmppStateService>().setAccountJid(accountJid!);
+  }
 
   // Migrate the XMPP state
   await db.execute(
@@ -42,14 +46,16 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       PRIMARY KEY (key, accountJid)
     )''',
   );
-  for (final statePair in await db.query(xmppStateTable)) {
-    await db.insert(
-      '${xmppStateTable}_new',
-      {
-        ...statePair,
-        'accountJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final statePair in await db.query(xmppStateTable)) {
+      await db.insert(
+        '${xmppStateTable}_new',
+        {
+          ...statePair,
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $xmppStateTable');
   await db
@@ -92,25 +98,28 @@ Future<void> upgradeFromV45ToV46(Database db) async {
         REFERENCES $fileMetadataTable (id)
     )''',
   );
-  final messages = await db.query(messagesTable);
   // Build up the message map
   /// Message's old id attribute -> Message's sid attribute.
   final messageMap = <int, String>{};
   final conversationMap = <int, String>{};
-  for (final message in messages) {
-    messageMap[message['id']! as int] = message['sid']! as String;
-    conversationMap[message['id']! as int] =
-        message['conversationJid']! as String;
-  }
-  // Then migrate messages
-  for (final message in messages) {
-    await db.insert('${messagesTable}_new', {
-      ...Map.from(message)
-        ..remove('id')
-        ..remove('quote_id'),
-      'accountJid': accountJid,
-      'quote_sid': messageMap.maybeGet(message['quote_id'] as int?)
-    });
+
+  if (migrateRows) {
+    final messages = await db.query(messagesTable);
+    for (final message in messages) {
+      messageMap[message['id']! as int] = message['sid']! as String;
+      conversationMap[message['id']! as int] =
+          message['conversationJid']! as String;
+    }
+    // Then migrate messages
+    for (final message in messages) {
+      await db.insert('${messagesTable}_new', {
+        ...Map.from(message)
+          ..remove('id')
+          ..remove('quote_id'),
+        'accountJid': accountJid,
+        'quote_sid': messageMap.maybeGet(message['quote_id'] as int?)
+      });
+    }
   }
   await db.execute('DROP TABLE $messagesTable');
   await db.execute('ALTER TABLE ${messagesTable}_new RENAME TO $messagesTable');
@@ -150,16 +159,18 @@ Future<void> upgradeFromV45ToV46(Database db) async {
         ON DELETE SET NULL
     )''',
   );
-  for (final conversation in await db.query(conversationsTable)) {
-    await db.insert(
-      '${conversationsTable}_new',
-      {
-        ...Map.from(conversation)..remove('lastMessageId'),
-        'lastMessageId':
-            messageMap.maybeGet(conversation['lastMessageId'] as int?),
-        'accountJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final conversation in await db.query(conversationsTable)) {
+      await db.insert(
+        '${conversationsTable}_new',
+        {
+          ...Map.from(conversation)..remove('lastMessageId'),
+          'lastMessageId':
+              messageMap.maybeGet(conversation['lastMessageId'] as int?),
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $conversationsTable');
   await db.execute(
@@ -185,16 +196,18 @@ Future<void> upgradeFromV45ToV46(Database db) async {
         ON DELETE CASCADE
     )''',
   );
-  for (final reaction in await db.query(reactionsTable)) {
-    await db.insert(
-      '${reactionsTable}_new',
-      {
-        ...Map.from(reaction)..remove('message_id'),
-        'message_sid': messageMap.maybeGet(reaction['message_id']! as int),
-        'conversationJid': conversationMap[reaction['message_id']! as int],
-        'accountJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final reaction in await db.query(reactionsTable)) {
+      await db.insert(
+        '${reactionsTable}_new',
+        {
+          ...Map.from(reaction)..remove('message_id'),
+          'message_sid': messageMap.maybeGet(reaction['message_id']! as int),
+          'conversationJid': conversationMap[reaction['message_id']! as int],
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
 
   // Migrate the roster
@@ -218,14 +231,16 @@ Future<void> upgradeFromV45ToV46(Database db) async {
         ON DELETE SET NULL
     )''',
   );
-  for (final rosterItem in await db.query(rosterTable)) {
-    await db.insert(
-      '${rosterTable}_new',
-      {
-        ...Map.from(rosterItem)..remove('id'),
-        'accountJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final rosterItem in await db.query(rosterTable)) {
+      await db.insert(
+        '${rosterTable}_new',
+        {
+          ...Map.from(rosterItem)..remove('id'),
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $rosterTable');
   await db.execute('ALTER TABLE ${rosterTable}_new RENAME TO $rosterTable');
@@ -240,14 +255,16 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     );
     ''',
   );
-  for (final blocklistItem in await db.query(blocklistTable)) {
-    await db.insert(
-      '${blocklistTable}_new',
-      {
-        ...blocklistItem,
-        'accountJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final blocklistItem in await db.query(blocklistTable)) {
+      await db.insert(
+        '${blocklistTable}_new',
+        {
+          ...blocklistItem,
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $blocklistTable');
   await db
@@ -270,14 +287,16 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       PRIMARY KEY (id, conversationJid, senderJid, timestamp, accountJid)
     )''',
   );
-  for (final notification in await db.query(notificationsTable)) {
-    await db.insert(
-      '${notificationsTable}_new',
-      {
-        ...notification,
-        'accountJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final notification in await db.query(notificationsTable)) {
+      await db.insert(
+        '${notificationsTable}_new',
+        {
+          ...notification,
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $notificationsTable');
   await db.execute(
@@ -294,14 +313,16 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       PRIMARY KEY (accountJid, jid)
     )''',
   );
-  for (final deviceListEntry in await db.query(omemoDeviceListTable)) {
-    await db.insert(
-      '${omemoDeviceListTable}_new',
-      {
-        ...deviceListEntry,
-        'accountJid': accountJid,
-      },
-    );
+  {
+    for (final deviceListEntry in await db.query(omemoDeviceListTable)) {
+      await db.insert(
+        '${omemoDeviceListTable}_new',
+        {
+          ...deviceListEntry,
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $omemoDeviceListTable');
   await db.execute(
@@ -320,14 +341,16 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       PRIMARY KEY (accountJid, jid, device)
     )''',
   );
-  for (final trustItem in await db.query(omemoTrustTable)) {
-    await db.insert(
-      '${omemoTrustTable}_new',
-      {
-        ...trustItem,
-        'accoutJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final trustItem in await db.query(omemoTrustTable)) {
+      await db.insert(
+        '${omemoTrustTable}_new',
+        {
+          ...trustItem,
+          'accoutJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $omemoTrustTable');
   await db
@@ -357,14 +380,16 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       PRIMARY KEY (accountJid, jid, device)
     )''',
   );
-  for (final ratchet in await db.query(omemoRatchetsTable)) {
-    await db.insert(
-      '${omemoRatchetsTable}_new',
-      {
-        ...ratchet,
-        'accountJid': accountJid,
-      },
-    );
+  if (migrateRows) {
+    for (final ratchet in await db.query(omemoRatchetsTable)) {
+      await db.insert(
+        '${omemoRatchetsTable}_new',
+        {
+          ...ratchet,
+          'accountJid': accountJid,
+        },
+      );
+    }
   }
   await db.execute('DROP TABLE $omemoRatchetsTable');
   await db.execute(
