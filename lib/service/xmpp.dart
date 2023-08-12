@@ -525,7 +525,7 @@ class XmppService {
     // Path -> Recipient -> Message
     final messages = <String, Map<String, Message>>{};
     // Path -> Thumbnails
-    final thumbnails = <String, List<Thumbnail>>{};
+    final thumbnails = <String, List<JingleContentThumbnail>>{};
     // Path -> Dimensions
     final dimensions = <String, Size>{};
     // Recipient -> Should encrypt
@@ -690,7 +690,16 @@ class XmppService {
           if (!thumbnails.containsKey(path)) {
             final thumbnail = await generateBlurhashThumbnail(path);
             if (thumbnail != null) {
-              thumbnails[path] = [BlurhashThumbnail(thumbnail)];
+              thumbnails[path] = [
+                JingleContentThumbnail(
+                  // Just like Cheogram does it
+                  // https://git.singpolyma.net/cheogram/commit/7adfc96853fec0648145c9d52a4a91b7bac1189f
+                  Uri.parse('data:image/blurhash,$thumbnail'),
+                  null,
+                  null,
+                  null,
+                ),
+              ];
             } else {
               _log.warning('Failed to generate thumbnail for $path');
             }
@@ -998,8 +1007,8 @@ class XmppService {
         ]) ??
         [];
     for (final i in thumbnails) {
-      if (i is BlurhashThumbnail) {
-        return i.hash;
+      if (i.uri.scheme == 'data' && i.uri.path.startsWith('image/blurhash')) {
+        return i.uri.path.split(',').last;
       }
     }
 
