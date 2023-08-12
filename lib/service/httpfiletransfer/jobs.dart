@@ -74,7 +74,6 @@ class FileDownloadJob {
   /// The associated account.
   final String accountJid;
 
-
   /// The location where the file can be found.
   final MediaFileLocation location;
 

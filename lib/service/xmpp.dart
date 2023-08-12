@@ -1630,8 +1630,7 @@ class XmppService {
 
     final replacementId =
         event.extensions.get<FileUploadNotificationReplacementData>()!.id;
-    var message =
-        await ms.getMessageByOriginId(replacementId, accountJid);
+    var message = await ms.getMessageByOriginId(replacementId, accountJid);
     if (message == null) {
       _log.warning(
         'Received a FileUploadNotification replacement for unknown message',

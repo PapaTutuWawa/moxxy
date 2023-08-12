@@ -104,7 +104,6 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   const uuid = Uuid();
   final messageMap = <int, String>{};
 
-
   if (migrateRows) {
     final messages = await db.query(messagesTable);
     for (final message in messages) {
@@ -201,8 +200,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       await db.insert(
         '${reactionsTable}_new',
         {
-          ...Map.from(reaction)
-            ..remove('message_id'),
+          ...Map.from(reaction)..remove('message_id'),
           'message_id': messageMap.maybeGet(reaction['message_id']! as int),
           'accountJid': accountJid,
         },
@@ -210,7 +208,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     }
   }
   await db.execute('DROP TABLE $reactionsTable');
-  await db.execute('ALTER TABLE ${reactionsTable}_new RENAME TO $reactionsTable');
+  await db
+      .execute('ALTER TABLE ${reactionsTable}_new RENAME TO $reactionsTable');
 
   // Migrate the roster
   await db.execute(

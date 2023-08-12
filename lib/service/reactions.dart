@@ -59,8 +59,7 @@ class ReactionsService {
   ) async {
     final reactions = await GetIt.I.get<DatabaseService>().database.query(
       reactionsTable,
-      where:
-          'message_id = ? AND accountJid = ? AND senderJid = ?',
+      where: 'message_id = ? AND accountJid = ? AND senderJid = ?',
       whereArgs: [id, accountJid, jid],
     );
 
@@ -146,8 +145,7 @@ class ReactionsService {
         (await GetIt.I.get<XmppStateService>().getXmppState()).jid,
       ],
     );
-    final count =
-        await _countReactions(id, accountJid, emoji);
+    final count = await _countReactions(id, accountJid, emoji);
 
     if (count > 0) {
       return msg;
@@ -166,8 +164,7 @@ class ReactionsService {
     List<String> emojis,
   ) async {
     // Get all reactions know for this message
-    final allReactions =
-        await getReactionsForMessage(msg.id, accountJid);
+    final allReactions = await getReactionsForMessage(msg.id, accountJid);
     final userEmojis =
         allReactions.where((r) => r.senderJid == senderJid).map((r) => r.emoji);
     final removedReactions = userEmojis.where((e) => !emojis.contains(e));

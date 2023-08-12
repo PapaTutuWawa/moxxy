@@ -1152,7 +1152,6 @@ Future<void> performRemoveMessageReaction(
     ),
   );
 
-
   if (msg.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I

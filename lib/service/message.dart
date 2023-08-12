@@ -396,8 +396,7 @@ FROM
     );
 
     if (quoteId != null) {
-      final quotes =
-          await getMessageById(quoteId, accountJid);
+      final quotes = await getMessageById(quoteId, accountJid);
       if (quotes == null) {
         _log.warning('Failed to add quote for message with id $quoteId');
       } else {
