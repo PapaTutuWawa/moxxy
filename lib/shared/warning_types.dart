@@ -44,7 +44,7 @@ enum MessageWarningType {
       case fileIntegrityCheckFailed:
         return t.warnings.message.integrityCheckFailed;
       case chatEncryptedButFilePlaintext:
-        // TODO: Move this to warnings
+        // TODO(Unknown): Move this to warnings
         return t.errors.message.fileNotEncrypted;
       case noWarning:
         return '';

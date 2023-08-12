@@ -167,7 +167,8 @@ class Message with _$Message {
       errorType != null && errorType != MessageErrorType.noError;
 
   /// Returns true if the message is a warning. If not, then returns false.
-  bool get hasWarning => warningType != null && warningType != MessageWarningType.noWarning;
+  bool get hasWarning =>
+      warningType != null && warningType != MessageWarningType.noWarning;
 
   /// Returns a representative emoji for a message. Its primary purpose is
   /// to provide a universal fallback for quoted media messages.

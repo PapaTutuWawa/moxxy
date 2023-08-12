@@ -206,7 +206,9 @@ class NotificationsService {
 
     /// Use the resource (nick) when the chat is a groupchat
     final senderJid = m.senderJid;
-    final senderTitle = c.isGroupchat ? senderJid.resource : await c.titleWithOptionalContactService;
+    final senderTitle = c.isGroupchat
+        ? senderJid.resource
+        : await c.titleWithOptionalContactService;
 
     // Add to the database
     final newNotification = modeln.Notification(
