@@ -424,15 +424,6 @@ Future<String> getContactProfilePicturePath(String id) async {
   return p.join(avatarDir, id);
 }
 
-Future<String> getStickerPackPath(String hashFunction, String hashValue) async {
-  final appDir = await getApplicationDocumentsDirectory();
-  return p.join(
-    appDir.path,
-    'stickers',
-    '${hashFunction}_$hashValue',
-  );
-}
-
 /// Prepend [item] to [list], but ensure that the resulting list's size is
 /// smaller than or equal to [maxSize].
 List<T> clampedListPrepend<T>(List<T> list, T item, int maxSize) {

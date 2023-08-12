@@ -23,6 +23,7 @@ class RequestedConversationEvent extends ConversationEvent {
     this.avatarUrl, {
     this.removeUntilConversations = false,
     this.initialText,
+    this.type = 'chat',
   });
 
   /// These are placeholders in case we have to wait a bit longer
@@ -33,6 +34,9 @@ class RequestedConversationEvent extends ConversationEvent {
 
   /// Initial value to put in the input field.
   final String? initialText;
+
+  /// Type of the conversation
+  final String type;
 }
 
 /// Triggered by the UI when a user should be blocked

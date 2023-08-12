@@ -6,7 +6,6 @@ import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:moxlib/moxlib.dart';
 import 'package:moxplatform/moxplatform.dart';
-import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/service/avatars.dart';
@@ -19,6 +18,7 @@ import 'package:moxxyv2/service/cryptography/cryptography.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/events.dart';
 import 'package:moxxyv2/service/files.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/httpfiletransfer/httpfiletransfer.dart';
 import 'package:moxxyv2/service/language.dart';
 import 'package:moxxyv2/service/message.dart';
@@ -28,6 +28,7 @@ import 'package:moxxyv2/service/moxxmpp/socket.dart';
 import 'package:moxxyv2/service/moxxmpp/stream.dart';
 import 'package:moxxyv2/service/notifications.dart';
 import 'package:moxxyv2/service/omemo/omemo.dart';
+import 'package:moxxyv2/service/permissions.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/reactions.dart';
 import 'package:moxxyv2/service/roster.dart';
@@ -177,8 +178,10 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
   GetIt.I.registerSingleton<FilesService>(FilesService());
   GetIt.I.registerSingleton<ReactionsService>(ReactionsService());
+  GetIt.I.registerSingleton<GroupchatService>(GroupchatService());
   GetIt.I.registerSingleton<StorageService>(StorageService());
   GetIt.I.registerSingleton<ShareService>(ShareService());
+  GetIt.I.registerSingleton<PermissionsService>(PermissionsService());
   final xmpp = XmppService();
   GetIt.I.registerSingleton<XmppService>(xmpp);
 
@@ -257,13 +260,23 @@ Future<void> entrypoint() async {
     MessageReactionsManager(),
     StickersManager(),
     MessageProcessingHintManager(),
+    MUCManager(),
+    OccupantIdManager(),
   ]);
-
   GetIt.I.registerSingleton<XmppConnection>(connection);
-
   GetIt.I.get<Logger>().finest('Done with xmpp');
 
-  final settings = await xmpp.getConnectionSettings();
+  // Ensure our data directory exists
+  final dir = Directory(
+    await MoxplatformPlugin.platform.getPersistentDataPath(),
+  );
+  if (!dir.existsSync()) {
+    GetIt.I
+        .get<Logger>()
+        .finest('Data dir ${dir.path} does not exist. Creating...');
+    await dir.create(recursive: true);
+    GetIt.I.get<Logger>().finest('Done');
+  }
 
   // Ensure we can access translations here
   // TODO(Unknown): This does *NOT* allow us to get the system's locale as we have no
@@ -271,6 +284,7 @@ Future<void> entrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   LocaleSettings.useDeviceLocale();
 
+  final settings = await xmpp.getConnectionSettings();
   GetIt.I.get<Logger>().finest('Got settings');
   if (settings != null) {
     unawaited(
@@ -278,6 +292,9 @@ Future<void> entrypoint() async {
           .get<OmemoService>()
           .initializeIfNeeded(settings.jid.toBare().toString()),
     );
+
+    // Potentially set the notification avatar
+    await GetIt.I.get<NotificationsService>().maybeSetAvatarFromState();
 
     // The title of the notification will be changed as soon as the connection state
     // of [XmppConnection] changes.

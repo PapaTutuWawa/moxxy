@@ -346,7 +346,7 @@ class ConversationsListRowState extends State<ConversationsListRow> {
     final sentBySelf = widget.conversation.lastMessage?.sender ==
         GetIt.I.get<UIDataService>().ownJid!;
 
-    final showBadge = widget.conversation.unreadCounter > 0 && !sentBySelf;
+    final showBadge = widget.conversation.unreadCounter > 0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
