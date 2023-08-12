@@ -1168,7 +1168,6 @@ Future<void> performRemoveMessageReaction(
             accountJid,
           ),
         ),
-        const MarkableData(false),
         MessageProcessingHintData([
           if (!msg.containsNoStore) MessageProcessingHint.store,
         ]),

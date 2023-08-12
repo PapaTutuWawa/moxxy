@@ -92,8 +92,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       pseudoMessageType        INTEGER,
       pseudoMessageData        TEXT,
       CONSTRAINT fk_quote
-        FOREIGN KEY (accountJid, quote_id)
-        REFERENCES $messagesTable (accountJid, id)
+        FOREIGN KEY (quote_id)
+        REFERENCES $messagesTable (id)
       CONSTRAINT fk_file_metadata
         FOREIGN KEY (file_metadata_id)
         REFERENCES $fileMetadataTable (id)
@@ -151,8 +151,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       contactDisplayName  TEXT,
       PRIMARY KEY (jid, accountJid),
       CONSTRAINT fk_last_message
-        FOREIGN KEY (accountJid, lastMessageId)
-        REFERENCES $messagesTable (accountJid, id),
+        FOREIGN KEY (lastMessageId)
+        REFERENCES $messagesTable (id),
       CONSTRAINT fk_contact_id
         FOREIGN KEY (contactId)
         REFERENCES $contactsTable (id)
@@ -190,8 +190,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       emoji      TEXT NOT NULL,
       PRIMARY KEY (accountJid, senderJid, emoji, message_id),
       CONSTRAINT fk_message
-        FOREIGN KEY (accountJid, message_id)
-        REFERENCES $messagesTable (accountJid, id)
+        FOREIGN KEY (message_id)
+        REFERENCES $messagesTable (id)
         ON DELETE CASCADE
     )''',
   );

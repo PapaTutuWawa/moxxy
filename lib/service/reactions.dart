@@ -104,10 +104,11 @@ class ReactionsService {
             senderJid,
             emoji,
           ).toJson(),
-          conflictAlgorithm: ConflictAlgorithm.fail,
+          conflictAlgorithm: ConflictAlgorithm.replace,
         );
 
-    if (msg.reactionsPreview.length < 6) {
+    if (msg.reactionsPreview.length < 6 &&
+        !msg.reactionsPreview.contains(emoji)) {
       msg = msg.copyWith(
         reactionsPreview: [
           ...msg.reactionsPreview,
