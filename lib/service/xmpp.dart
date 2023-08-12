@@ -939,7 +939,7 @@ class XmppService {
     final cs = GetIt.I.get<ConversationService>();
     final sender = event.from.toBare().toString();
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
-    final dbMsg = await ms.getMessageByOriginId(
+    final dbMsg = await ms.getMessageByStanzaId(
       event.id,
       accountJid,
       queryReactionPreview: false,
