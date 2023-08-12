@@ -27,6 +27,12 @@
         },
         "titles": {
             "error": "Ошибка"
+        },
+        "errors": {
+            "messageError": {
+                "body": "Не удалось доставить сообщение для ${conversationTitle}",
+                "title": "Сообщение не доставлено"
+            }
         }
     },
     "dateTime": {
@@ -72,13 +78,13 @@
             "notEncryptedForDevice": "Сообщение зашифровано, но не для этого устройства",
             "invalidHmac": "Не удалось расшифровать сообщение",
             "noDecryptionKey": "Нет ключа для расшифровки",
-            "verificationWrongFingerprint": "Неправильный OMEMO:2 отпечаток",
+            "verificationWrongFingerprint": "Неправильный отпечаток OMEMO:2",
             "couldNotPublish": "Не удалось опубликовать ключи шифрования на сервере. Это означает, что сквозное шифрование может не работать.",
             "messageInvalidAfixElement": "Ошибка в зашифрованном сообщении",
             "verificationInvalidOmemoUrl": "неверный отпечаток OMEMO:2",
             "verificationWrongJid": "Неправильный XMPP-адрес",
             "verificationWrongDevice": "Неправильное OMEMO:2 устройство",
-            "verificationNotInList": "Неправильное OMEMO:2 устройство"
+            "verificationNotInList": "Неправильное устройство OMEMO:2"
         },
         "connection": {
             "connectionTimeout": "Нет соединения с сервером",
@@ -158,7 +164,7 @@
             "addReaction": "Реакция",
             "showError": "Показать ошибки",
             "showWarning": "Показать предупреждения",
-            "sendFiles": "Отправить файл",
+            "sendFiles": "Отправить файлы",
             "takePhotos": "Сделать фотографии",
             "retractBody": "Вы уверены, что хотите отозвать сообщение? Помните, что это всего лишь просьба, которую клиент не обязан выполнять.",
             "forward": "Переслать",
@@ -318,12 +324,12 @@
                 "sendChatMarkersSubtext": "Это сообщит вашему собеседнику о получении или прочтении сообщения",
                 "sendChatStates": "Отправлять состояние чата",
                 "sendChatStatesSubtext": "Собеседник будет видеть, когда вы набираете сообщение или просматриваете чат",
-                "cannotEnableRedirect": "Не работает перенаправление $serviceName",
+                "cannotEnableRedirect": "Невозможно включить перенаправления $serviceName",
                 "cannotEnableRedirectSubtext": "Сначала нужно добавить прокси сервер. Для этого нажмите слева от переключателя",
                 "urlInvalid": "Недопустимый URL",
                 "redirectDialogTitle": "$serviceName Перенаправление",
                 "stickersPrivacy": "Публиковать список стикеров",
-                "stickersPrivacySubtext": "Когда включено, все могут видет установленные у вас стикеры",
+                "stickersPrivacySubtext": "Если включено, ваши установленные наборы стикеров будут видны всем.",
                 "profilePictureVisibilitSubtext": "Когда включено, все видят Ваш аватар; когда выключено - только контакты"
             },
             "stickers": {
@@ -332,10 +338,11 @@
                 "stickerSection": "Стикеры",
                 "displayStickers": "Показывать стикеры",
                 "autoDownload": "Загружать стикеры автоматически",
-                "autoDownloadBody": "Стикеры будут автоматически загружаться, если их отправитель у вас в контактах",
+                "autoDownloadBody": "Стикеры будут загружаться автоматически, если их отправитель у вас в контактах.",
                 "stickerPacksSection": "Стикерпаки",
                 "importStickerPack": "Импортировать стикерпаки",
-                "importFailure": "Ошибка при импорте стикерпаков"
+                "importFailure": "Ошибка при импорте стикерпаков",
+                "stickerPackSize": "(${size})"
             },
             "settings": {
                 "title": "Настройки",
@@ -358,6 +365,38 @@
             "licenses": {
                 "title": "Открытые лицензии",
                 "licensedUnder": "Лицензировано под ${license}"
+            },
+            "storage": {
+                "removeOldMedia": {
+                    "description": "Удалит старые медиафайлы с устройства",
+                    "title": "Удалить старые медиафайлы"
+                },
+                "title": "Хранилище",
+                "sizePlaceholder": "Вычисление...",
+                "storageManagement": "Управление хранилищем",
+                "removeOldMediaDialog": {
+                    "options": {
+                        "all": "Все медиафайлы",
+                        "oneWeek": "Старее 1 недели",
+                        "oneMonth": "Старее 1 месяца"
+                    },
+                    "delete": "Удалить",
+                    "title": "Удалить медиафайлы",
+                    "confirmation": {
+                        "body": "Вы точно хотите удалить старые медиафайлы?"
+                    }
+                },
+                "viewMediaFiles": "Просмотреть медиафайлы",
+                "mediaFiles": "Медиафайлы",
+                "types": {
+                    "media": "Медиа",
+                    "stickers": "Стикеры"
+                },
+                "storageUsed": "Использование хранилища: ${size}",
+                "manageStickers": "Управлять наборами стикеров"
+            },
+            "stickerPacks": {
+                "title": "Наборы стикеров"
             }
         },
         "sharedMedia": {
