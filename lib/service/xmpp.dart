@@ -1186,7 +1186,7 @@ class XmppService {
     // Show an error notification
     await GetIt.I
         .get<NotificationsService>()
-        .showMessageErrorNotification(msg.conversationJid, error);
+        .showMessageErrorNotification(msg.conversationJid, accountJid, error);
 
     // Update the UI
     sendEvent(MessageUpdatedEvent(message: newMsg));

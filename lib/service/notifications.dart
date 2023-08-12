@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
@@ -26,7 +27,7 @@ const _warningChannelKey = 'warning_channel';
 
 /// Message payload keys.
 const _conversationJidKey = 'conversationJid';
-const _messageIdKey = 'mid';
+const _messageKeyKey = 'key';
 const _conversationTitleKey = 'title';
 const _conversationAvatarKey = 'avatarPath';
 
@@ -48,9 +49,15 @@ class NotificationsService {
         ),
       );
     } else if (event.type == NotificationEventType.markAsRead) {
+      final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+      final messageKey = modelm.MessageKey.fromJson(
+        jsonDecode(event.extra![_messageKeyKey]!) as Map<String, Object>,
+      );
       // Mark the message as read
       await GetIt.I.get<MessageService>().markMessageAsRead(
-            int.parse(event.extra![_messageIdKey]!),
+            messageKey.sid,
+            messageKey.conversationJid,
+            accountJid,
             // [XmppService.sendReadMarker] will check whether the *SHOULD* send
             // the marker, i.e. if the privacy settings allow it.
             true,
@@ -60,9 +67,11 @@ class NotificationsService {
       final cs = GetIt.I.get<ConversationService>();
       await cs.createOrUpdateConversation(
         conversationJid,
+        accountJid,
         update: (conversation) async {
           final newConversation = await cs.updateConversation(
             conversationJid,
+            accountJid,
             unreadCounter: 0,
           );
 
@@ -85,6 +94,7 @@ class NotificationsService {
         event.payload != null,
         'Reply payload must be not null',
       );
+      final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
       final notification = modeln.Notification(
         event.id,
         conversationJid,
@@ -103,6 +113,7 @@ class NotificationsService {
 
       // Send the actual reply
       await GetIt.I.get<XmppService>().sendMessage(
+        accountJid: accountJid,
         body: event.payload!,
         recipients: [conversationJid],
       );
@@ -282,7 +293,7 @@ class NotificationsService {
         isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
-          _messageIdKey: m.id.toString(),
+          _messageKeyKey: jsonEncode(m.messageKey),
           _conversationTitleKey: await c.titleWithOptionalContactService,
           _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },
@@ -330,7 +341,7 @@ class NotificationsService {
         isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
-          _messageIdKey: m.id.toString(),
+          _messageKeyKey: jsonEncode(m.messageKey),
           _conversationTitleKey: await c.titleWithOptionalContactService,
           _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },
@@ -363,6 +374,7 @@ class NotificationsService {
   /// message in the chat with [jid].
   Future<void> showMessageErrorNotification(
     String jid,
+    String accountJid,
     MessageErrorType type,
   ) async {
     if (!(await _canDoNotifications())) {
@@ -382,7 +394,7 @@ class NotificationsService {
     }
 
     final conversation =
-        await GetIt.I.get<ConversationService>().getConversationByJid(jid);
+        await GetIt.I.get<ConversationService>().getConversationByJid(jid, accountJid);
     await MoxplatformPlugin.notifications.showNotification(
       RegularNotification(
         title: t.notifications.errors.messageError.title,
