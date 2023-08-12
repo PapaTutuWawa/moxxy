@@ -83,14 +83,14 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       stickerPackId            TEXT,
       pseudoMessageType        INTEGER,
       pseudoMessageData        TEXT,
-      PRIMARY KEY (accountJid, senderJid, sid),
+      PRIMARY KEY (accountJid, sender, sid, timestamp),
       CONSTRAINT fk_quote
-        FOREIGN KEY (accountJid, quote_id)
+        FOREIGN KEY (accountJid, quote_sid)
         REFERENCES $messagesTable (accountJid, sid)
       CONSTRAINT fk_file_metadata
         FOREIGN KEY (file_metadata_id)
         REFERENCES $fileMetadataTable (id)
-    ''',
+    )''',
   );
   final messages = await db.query(messagesTable);
   // Build up the message map
@@ -105,16 +105,15 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   // Then migrate messages
   for (final message in messages) {
     await db.insert('${messagesTable}_new', {
-      ...message
+      ...Map.from(message)
         ..remove('id')
         ..remove('quote_id'),
       'accountJid': accountJid,
-      'quote_sid': messageMap.maybeGet(message['quote_id']! as int)
+      'quote_sid': messageMap.maybeGet(message['quote_id'] as int?)
     });
   }
   await db.execute('DROP TABLE $messagesTable');
   await db.execute('ALTER TABLE ${messagesTable}_new RENAME TO $messagesTable');
-  await db.execute('DROP INDEX idx_messages_id');
   await db.execute(
     'CREATE INDEX idx_messages_sid ON $messagesTable (accountJid, sid)',
   );
@@ -155,7 +154,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     await db.insert(
       '${conversationsTable}_new',
       {
-        ...conversation..remove('lastMessageId'),
+        ...Map.from(conversation)..remove('lastMessageId'),
         'lastMessageId':
             messageMap.maybeGet(conversation['lastMessageId'] as int?),
         'accountJid': accountJid,
@@ -166,7 +165,6 @@ Future<void> upgradeFromV45ToV46(Database db) async {
   await db.execute(
     'ALTER TABLE ${conversationsTable}_new RENAME TO $conversationsTable',
   );
-  await db.execute('DROP INDEX idx_conversation_id');
   await db.execute(
     'CREATE INDEX idx_conversation_id ON $conversationsTable (accountJid, jid)',
   );
@@ -191,7 +189,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     await db.insert(
       '${reactionsTable}_new',
       {
-        ...reaction..remove('message_id'),
+        ...Map.from(reaction)..remove('message_id'),
         'message_sid': messageMap.maybeGet(reaction['message_id']! as int),
         'conversationJid': conversationMap[reaction['message_id']! as int],
         'accountJid': accountJid,
@@ -224,7 +222,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     await db.insert(
       '${rosterTable}_new',
       {
-        ...rosterItem..remove('id'),
+        ...Map.from(rosterItem)..remove('id'),
         'accountJid': accountJid,
       },
     );
@@ -315,7 +313,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
     '''
     CREATE TABLE ${omemoTrustTable}_new (
       jid        TEXT NOT NULL,
-      accountJid TEXT NOT NULL
+      accountJid TEXT NOT NULL,
       device     INTEGER NOT NULL,
       trust      INTEGER NOT NULL,
       enabled    INTEGER NOT NULL,

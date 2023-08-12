@@ -440,7 +440,8 @@ class NotificationsService {
 
     // Dismiss the notification
     for (final idRaw in ids) {
-      await MoxplatformPlugin.notifications.dismissNotification(idRaw['id']! as int);
+      await MoxplatformPlugin.notifications
+          .dismissNotification(idRaw['id']! as int);
     }
 
     // Remove database entries

@@ -121,6 +121,7 @@ class XmppStateService {
       json[row['key']! as String] = row['value'] as String?;
     }
 
+    _log.finest(json);
     _state = XmppState.fromDatabaseTuples(json);
     return _state!;
   }
@@ -129,11 +130,16 @@ class XmppStateService {
   Future<void> modifyXmppState(XmppState Function(XmppState) func) async {
     _state = func(_state!);
 
+    final accountJid = await getAccountJid();
     final batch = GetIt.I.get<DatabaseService>().database.batch();
     for (final tuple in _state!.toDatabaseTuples().entries) {
       batch.insert(
         xmppStateTable,
-        <String, String?>{'key': tuple.key, 'value': tuple.value},
+        <String, String?>{
+          'key': tuple.key,
+          'value': tuple.value,
+          'accountJid': accountJid
+        },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }

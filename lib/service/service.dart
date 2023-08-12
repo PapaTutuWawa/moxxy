@@ -155,6 +155,7 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<LanguageService>(LanguageService());
 
   // Initialize the database
+  GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
   await GetIt.I.get<DatabaseService>().initialize();
 
@@ -175,7 +176,6 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<CryptographyService>(CryptographyService());
   GetIt.I.registerSingleton<ContactsService>(ContactsService());
   GetIt.I.registerSingleton<StickersService>(StickersService());
-  GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
   GetIt.I.registerSingleton<FilesService>(FilesService());
   GetIt.I.registerSingleton<ReactionsService>(ReactionsService());
   GetIt.I.registerSingleton<GroupchatService>(GroupchatService());
