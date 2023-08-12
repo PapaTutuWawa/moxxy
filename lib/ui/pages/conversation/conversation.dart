@@ -34,11 +34,14 @@ class ConversationPageArguments {
   const ConversationPageArguments(
     this.conversationJid,
     this.initialText,
+    this.type,
   );
 
   final String conversationJid;
 
   final String? initialText;
+
+  final String type;
 }
 
 int getMessageMenuOptionCount(
@@ -61,6 +64,7 @@ int getMessageMenuOptionCount(
 class ConversationPage extends StatefulWidget {
   const ConversationPage({
     required this.conversationJid,
+    required this.conversationType,
     this.initialText,
     super.key,
   });
@@ -70,6 +74,9 @@ class ConversationPage extends StatefulWidget {
 
   /// The optional initial text to put in the input field.
   final String? initialText;
+
+  /// The type of the conversation.
+  final String conversationType;
 
   @override
   ConversationPageState createState() => ConversationPageState();
@@ -104,6 +111,7 @@ class ConversationPageState extends State<ConversationPage>
     // Setup message paging
     _conversationController = BidirectionalConversationController(
       widget.conversationJid,
+      widget.conversationType,
       _textfieldFocusNode,
       initialText: widget.initialText,
     );
@@ -481,7 +489,7 @@ class ConversationPageState extends State<ConversationPage>
               final showAddToRoster =
                   state.conversation?.showAddToRoster ?? false;
               if (!showAddToRoster ||
-                  state.conversation?.type == ConversationType.note) {
+                  state.conversation?.type != ConversationType.chat) {
                 return const SizedBox();
               }
 

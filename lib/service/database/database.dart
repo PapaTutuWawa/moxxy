@@ -43,8 +43,10 @@ import 'package:moxxyv2/service/database/migrations/0002_shared_media.dart';
 import 'package:moxxyv2/service/database/migrations/0002_sticker_metadata.dart';
 import 'package:moxxyv2/service/database/migrations/0003_avatar_hashes.dart';
 import 'package:moxxyv2/service/database/migrations/0003_file_transfer_error_to_warning.dart';
+import 'package:moxxyv2/service/database/migrations/0003_groupchat_table.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo_pseudo_messages.dart';
+import 'package:moxxyv2/service/database/migrations/0003_notifications.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0003_sticker_pack_timestamp.dart';
 import 'package:path/path.dart' as path;
@@ -155,7 +157,8 @@ const List<DatabaseMigration<Database>> migrations = [
   DatabaseMigration(40, upgradeFromV39ToV40),
   DatabaseMigration(41, upgradeFromV40ToV41),
   DatabaseMigration(42, upgradeFromV41ToV42),
-  // TODO: After #300 and #312
+  DatabaseMigration(43, upgradeFromV42ToV43),
+  DatabaseMigration(44, upgradeFromV43ToV44),
   DatabaseMigration(45, upgradeFromV44ToV45),
 ];
 

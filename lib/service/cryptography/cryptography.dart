@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:logging/logging.dart';
 import 'package:moxplatform/moxplatform.dart';
-import 'package:moxplatform_platform_interface/moxplatform_platform_interface.dart';
 import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/cryptography/types.dart';
 

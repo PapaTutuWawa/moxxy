@@ -3,11 +3,13 @@ import 'package:moxxmpp/moxxmpp.dart';
 import 'package:moxxyv2/service/database/constants.dart';
 import 'package:moxxyv2/service/database/database.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/groupchat.dart';
 import 'package:moxxyv2/service/message.dart';
 import 'package:moxxyv2/service/not_specified.dart';
 import 'package:moxxyv2/service/preferences.dart';
 import 'package:moxxyv2/service/roster.dart';
 import 'package:moxxyv2/shared/models/conversation.dart';
+import 'package:moxxyv2/shared/models/groupchat.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -64,6 +66,7 @@ class ConversationService {
   /// Loads all conversations from the database and adds them to the state and cache.
   Future<List<Conversation>> loadConversations() async {
     final db = GetIt.I.get<DatabaseService>().database;
+    final gs = GetIt.I.get<GroupchatService>();
     final conversationsRaw = await db.query(
       conversationsTable,
       orderBy: 'lastChangeTimestamp DESC',
@@ -84,11 +87,18 @@ class ConversationService {
             );
       }
 
+      GroupchatDetails? groupchatDetails;
+      if (c['type'] == ConversationType.groupchat.value) {
+        groupchatDetails =
+            await gs.getGroupchatDetailsByJid(c['jid']! as String);
+      }
+
       tmp.add(
         Conversation.fromDatabaseJson(
           c,
           rosterItem?.showAddToRosterButton ?? true,
           lastMessage,
+          groupchatDetails,
         ),
       );
     }
@@ -143,6 +153,7 @@ class ConversationService {
     Object? contactId = notSpecified,
     Object? contactAvatarPath = notSpecified,
     Object? contactDisplayName = notSpecified,
+    GroupchatDetails? groupchatDetails,
   }) async {
     final conversation = (await _getConversationByJid(jid))!;
 
@@ -196,6 +207,7 @@ class ConversationService {
       result,
       rosterItem?.showAddToRosterButton ?? true,
       lastMessage,
+      groupchatDetails,
     );
 
     // Copy over the old lastMessage if a new one was not set
@@ -227,15 +239,18 @@ class ConversationService {
     String? contactId,
     String? contactAvatarPath,
     String? contactDisplayName,
+    GroupchatDetails? groupchatDetails,
   ) async {
     final rosterItem =
         await GetIt.I.get<RosterService>().getRosterItemByJid(jid);
+    final gs = GetIt.I.get<GroupchatService>();
     final newConversation = Conversation(
       title,
       lastMessage,
       avatarPath,
       null,
       jid,
+      groupchatDetails,
       unreadCounter,
       type,
       lastChangeTimestamp,
@@ -255,6 +270,13 @@ class ConversationService {
 
     if (_conversationCache != null) {
       _conversationCache![newConversation.jid] = newConversation;
+    }
+
+    if (type == ConversationType.groupchat && groupchatDetails != null) {
+      await gs.addGroupchatDetailsFromData(
+        jid,
+        groupchatDetails.nick,
+      );
     }
 
     return newConversation;
