@@ -3,7 +3,9 @@
     "global": {
         "yes": "はい",
         "no": "いいえ",
-        "dialogCancel": "キャンセル"
+        "dialogCancel": "キャンセル",
+        "title": "Moxxy",
+        "dialogAccept": "OK"
     },
     "dateTime": {
         "thursdayAbbrev": "木",
@@ -37,32 +39,66 @@
         "video": "ビデオ",
         "file": "ファイル",
         "sticker": "スタンプ",
-        "retracted": "メッセージ取り消された"
+        "retracted": "メッセージ取り消された",
+        "retractedFallback": "前のメッセージを取り消しましたが、このクライエントはサポートしていません"
     },
     "errors": {
         "connection": {
             "connectionTimeout": "サーバー接続中にタイムアウトが発生しました",
-            "saslInvalidCredentials": "ユーザー名またはパスワードが無効"
+            "saslInvalidCredentials": "ユーザー名またはパスワードが無効",
+            "saslAccountDisabled": "あなたのアカウントは停止されています",
+            "unrecoverable": "回復不能のエラーで接続が途絶えました"
         },
         "login": {
             "noConnection": "接続できませんでした",
-            "startTlsFailed": "接続できませんでした"
+            "startTlsFailed": "接続できませんでした",
+            "unspecified": "特定できないエラー",
+            "saslFailed": "無効なログイン証明書です"
         },
         "message": {
             "fileUploadFailed": "アップロードに失敗しました",
             "fileDownloadFailed": "ダウンロードに失敗しました",
-            "serviceUnavailable": "配信に失敗しました"
+            "serviceUnavailable": "配信に失敗しました",
+            "unspecified": "不明なエラー",
+            "failedToDecryptFile": "そのファイルは復号化できません",
+            "fileNotEncrypted": "チャットは暗号化されますが、ファイルは暗号化されません"
         },
         "omemo": {
-            "notEncryptedForDevice": "このデバイス向けにメッセージは暗号化されませんでした"
+            "notEncryptedForDevice": "このデバイス向けにメッセージは暗号化されませんでした",
+            "couldNotPublish": "サーバに対して暗号化IDを発行できませんでした、端末間暗号通信はできません",
+            "invalidHmac": "メッセージを復号できませんでした",
+            "noDecryptionKey": "復号キーがありません",
+            "messageInvalidAfixElement": "無効な暗号化メッセージです",
+            "verificationInvalidOmemoUrl": "無効な OMEMO:2 フィンガープリントです",
+            "verificationWrongJid": "正しくない XMPP アドレスです",
+            "verificationWrongDevice": "正しくない OMEMO:2 機器です",
+            "verificationNotInList": "正しくない OMEMO:2 機器です",
+            "verificationWrongFingerprint": "正しくない OMEMO:2 フィンガープリントです"
         },
         "conversation": {
-            "messageErrorDialogTitle": "エラー"
+            "messageErrorDialogTitle": "エラー",
+            "audioRecordingError": "音声録音の処理に失敗しました",
+            "openFileNoAppError": "このファイルを開くアプリケーションを発見できませんでした",
+            "openFileGenericError": "ファイルを開くのに失敗しました"
+        },
+        "filePicker": {
+            "permissionDenied": "書き込み用メディアへの権限がありません"
+        },
+        "general": {
+            "noInternet": "インターネットに接続されていません"
+        },
+        "newChat": {
+            "remoteServerError": "リモートサーバーへの接続に失敗しました",
+            "groupchatUnsupported": "グループチャットへの参加は現在サポートされていません",
+            "unknown": "不明なエラー"
         }
     },
     "warnings": {
         "conversation": {
             "holdForLonger": "長押しすると音声記録できます"
+        },
+        "message": {
+            "integrityCheckFailed": "ファイルの整合性を確認できませんでした"
         }
     },
     "pages": {
@@ -75,16 +111,42 @@
             "title": "ログイン",
             "xmppAddress": "XMPPアドレス",
             "password": "パスワード",
-            "advancedOptions": "詳細設定"
+            "advancedOptions": "詳細設定",
+            "createAccount": "サーバーにアカウントを作成する"
+        },
+        "conversations": {
+            "speeddialJoinGroupchat": "グループチャットに参加",
+            "speeddialAddNoteToSelf": "自分用メモ",
+            "speeddialNewChat": "新しいチャット",
+            "overlaySettings": "設定"
         }
     },
     "notifications": {
         "permanent": {
-            "connecting": "接続中…"
+            "connecting": "接続中…",
+            "error": "エラー",
+            "idle": "待機中",
+            "ready": "メッセージを受信する準備ができました",
+            "disconnect": "切断済み"
         },
         "message": {
             "reply": "返信",
             "markAsRead": "既読"
+        },
+        "channels": {
+            "warningChannelName": "警告",
+            "messagesChannelName": "メッセージ",
+            "messagesChannelDescription": "受信メッセージのためのお知らせチャンネル",
+            "warningChannelDescription": "Moxxy に関する警告"
+        },
+        "titles": {
+            "error": "エラー"
+        },
+        "errors": {
+            "messageError": {
+                "title": "メッセージの送信に失敗しました",
+                "body": "${conversationTitle} に送信したメッセージは届きませんでした"
+            }
         }
     }
 }

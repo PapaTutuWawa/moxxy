@@ -1,0 +1,423 @@
+{
+    "dateTime": {
+        "justNow": "Neste momento",
+        "nMinutesAgo": "fai ${min}min",
+        "mondayAbbrev": "Lun",
+        "tuesdayAbbrev": "Mar",
+        "wednessdayAbbrev": "Mér",
+        "thursdayAbbrev": "Xov",
+        "fridayAbbrev": "Ven",
+        "saturdayAbbrev": "Sáb",
+        "sundayAbbrev": "Dom",
+        "january": "Xaneiro",
+        "february": "Febreiro",
+        "march": "Marzo",
+        "april": "Abril",
+        "may": "Maio",
+        "june": "Xuño",
+        "july": "Xullo",
+        "august": "Agosto",
+        "september": "Setembro",
+        "october": "Outubro",
+        "november": "Novembro",
+        "december": "Decembro",
+        "today": "Hoxe",
+        "yesterday": "Onte"
+    },
+    "messages": {
+        "image": "Imaxe",
+        "video": "Vídeo",
+        "audio": "Audio",
+        "file": "Ficheiro",
+        "sticker": "Adhesivo",
+        "retracted": "A mensaxe foi editada",
+        "you": "Ti",
+        "retractedFallback": "Unha mensaxe anterior foi editada pero o teu cliente non soporta esa función"
+    },
+    "errors": {
+        "general": {
+            "noInternet": "Sen conexión a Internet."
+        },
+        "filePicker": {
+            "permissionDenied": "Non se concedeu permiso de acceso á almacenaxe."
+        },
+        "omemo": {
+            "couldNotPublish": "Non se puido publicar a identidade criptográfica no servidor. Debido a isto a cifraxe de extremo-a-extremo podería non funcionar.",
+            "invalidHmac": "Non se descifrou a mensaxe",
+            "noDecryptionKey": "Non se dispón de chave de descifrado",
+            "messageInvalidAfixElement": "Mensaxe cifrada non válida",
+            "verificationInvalidOmemoUrl": "Impresión dixital OMEMO:2 non válida",
+            "verificationWrongJid": "Enderezo XMPP incorrecto",
+            "verificationWrongDevice": "Dispositivo OMEMO:2 incorrecto",
+            "verificationNotInList": "Dispositivo OMEMO:2 incorrecto",
+            "verificationWrongFingerprint": "Impresión dixital OMEMO:2 incorrecta",
+            "notEncryptedForDevice": "Non se cifrou a mensaxe para este dispositivo"
+        },
+        "connection": {
+            "connectionTimeout": "Non hai conexión co servidor",
+            "saslAccountDisabled": "A conta está desactivada",
+            "saslInvalidCredentials": "As credenciais da conta non son válidas",
+            "unrecoverable": "Perdeuse a conexión debido a un erro irremediable"
+        },
+        "login": {
+            "saslFailed": "Credenciais de acceso incorrectas",
+            "startTlsFailed": "Non se puido establecer unha conexión segura",
+            "noConnection": "Fallou o establecemento da conexión",
+            "unspecified": "Erro inconcreto"
+        },
+        "message": {
+            "unspecified": "Erro descoñecido",
+            "fileUploadFailed": "Fallou a subida do ficheiro",
+            "contactDoesntSupportOmemo": "O contacto non ten soporte para a cifraxe usando OMEMO:2",
+            "fileDownloadFailed": "Fallou a descarga do ficheiro",
+            "serviceUnavailable": "Non se puido entregar a mensaxe ao contacto",
+            "remoteServerTimeout": "A mensaxe non se puido entregar ao servidor do contacto",
+            "remoteServerNotFound": "A mensaxe non se puido entregar ao servidor do contacto e non sabemos onde está",
+            "failedToEncrypt": "Non se puido cifrar a mensaxe",
+            "failedToEncryptFile": "Non se puido cifrar o ficheiro",
+            "failedToDecryptFile": "Non se puido descifrar o ficheiro",
+            "fileNotEncrypted": "A conversa está cifrada pero o ficheiro non está cifrado"
+        },
+        "conversation": {
+            "audioRecordingError": "Fallou a finalización da gravación de audio",
+            "openFileNoAppError": "Non se atopa unha app para abrir o ficheiro",
+            "openFileGenericError": "Non se puido abrir o ficheiro",
+            "messageErrorDialogTitle": "Erro"
+        },
+        "newChat": {
+            "remoteServerError": "Non se puido contactar co servidor remoto.",
+            "groupchatUnsupported": "Por agora non hai soporte para unirse a conversas en grupo.",
+            "unknown": "Erro descoñecido."
+        }
+    },
+    "warnings": {
+        "message": {
+            "integrityCheckFailed": "Non se puido verificar a integridade do ficheiro"
+        },
+        "conversation": {
+            "holdForLonger": "Mantén premido o botón para gravar a mensaxe de voz"
+        }
+    },
+    "pages": {
+        "intro": {
+            "noAccount": "Non tes unha conta XMPP? Sen problema, crear unha é doado.",
+            "loginButton": "Acceder",
+            "registerButton": "Crear conta"
+        },
+        "login": {
+            "title": "Acceder",
+            "xmppAddress": "Enderezo-XMPP",
+            "password": "Contrasinal",
+            "advancedOptions": "Opcións avanzadas",
+            "createAccount": "Crear conta no servidor"
+        },
+        "conversations": {
+            "speeddialNewChat": "Nova conversa",
+            "speeddialJoinGroupchat": "Entrar na conversa en grupo",
+            "speeddialAddNoteToSelf": "Notas propias",
+            "overlaySettings": "Axustes",
+            "noOpenChats": "Non tes conversas abertas",
+            "startChat": "Inicia unha conversa",
+            "closeChat": "Pecha a conversa",
+            "markAsRead": "Marcar como lido",
+            "closeChatBody": "Tes a certeza de querer pechar a conversa con ${conversationTitle}?"
+        },
+        "conversation": {
+            "unencrypted": "Sen cifrar",
+            "encrypted": "Cifrada",
+            "closeChat": "Pechar conversa",
+            "closeChatConfirmTitle": "Pechar conversa",
+            "closeChatConfirmSubtext": "Tes a certeza de querer pechar esta conversa?",
+            "blockShort": "Bloquear",
+            "blockUser": "Bloquear conta",
+            "online": "En liña",
+            "retract": "Editar mensaxe",
+            "retractBody": "Tes a certeza de querer editar a mensaxe? Ten en conta que esta só é unha solicitude e que o cliente non ten porque facerlle caso.",
+            "forward": "Reenviar",
+            "edit": "Editar",
+            "quote": "Citar",
+            "showWarning": "Mostrar aviso",
+            "warning": "Aviso",
+            "addToContacts": "Engadir aos contactos",
+            "addToContactsTitle": "Engadir a ${jid} aos contactos",
+            "addToContactsBody": "Tes a certeza de querer engadir a ${jid} aos teus contactos?",
+            "stickerPickerNoStickersLine1": "Non tes paquetes de adhesivos instalados.",
+            "stickerPickerNoStickersLine2": "Pódelos instalar a través dos axustes dos adhesivos.",
+            "stickerSettings": "Axustes dos adhesivos",
+            "newDeviceMessage": {
+                "one": "Engadiuse un novo dispositivo",
+                "other": "Engadíronse varios dispositivos novos"
+            },
+            "replacedDeviceMessage": {
+                "one": "Un dos dispositivos cambiou",
+                "other": "Engadíronse varios dispositivos"
+            },
+            "messageHint": "Enviar unha mensaxe...",
+            "sendImages": "Enviar imaxes",
+            "sendFiles": "Enviar ficheiros",
+            "takePhotos": "Facer fotos",
+            "copy": "Copiar contido",
+            "messageCopied": "Copiouse o contido da mensaxe no portapapeis",
+            "addReaction": "Engadir reacción",
+            "showError": "Mostar erro"
+        },
+        "startchat": {
+            "title": "Nova Conversa",
+            "xmppAddress": "Enderezo XMPP",
+            "subtitle": "Podes iniciar unha nova conversa escribindo un enderezo XMPP ou escaneando o seu código QR.",
+            "buttonAddToContact": "Iniciar nova conversa"
+        },
+        "newconversation": {
+            "title": "Nova conversa",
+            "startChat": "Iniciar nova conversa",
+            "createGroupchat": "Nova conversa en grupo",
+            "nullNickname": "O alcume non pode estar baleiro!",
+            "nick": "Alcume",
+            "nicknameSubtitle": "Tes que escribir un alcume único para poder unirte á MUC.",
+            "joinGroupChat": "Unirse a conversa en grupo",
+            "enterNickname": "Escribe un alcume"
+        },
+        "crop": {
+            "setProfilePicture": "Establecer imaxe de perfil"
+        },
+        "shareselection": {
+            "shareWith": "Compartir con...",
+            "confirmTitle": "Enviar ficheiro",
+            "confirmBody": "Unha ou varias conversas non están cifradas. Isto significa que o ficheiro podería ser visto no servidor. Desexas continuar?"
+        },
+        "profile": {
+            "general": {
+                "omemo": "Seguridade",
+                "profile": "Perfil",
+                "media": "Multimedia"
+            },
+            "conversation": {
+                "notifications": "Notificacións",
+                "notificationsMuted": "Acalada",
+                "notificationsEnabled": "Activada",
+                "sharedMedia": "Multimedia"
+            },
+            "owndevices": {
+                "title": "Dispositivos propios",
+                "thisDevice": "Este dispositivo",
+                "otherDevices": "Outros dispositivos",
+                "deleteDeviceConfirmTitle": "Eliminar dispositivo",
+                "deleteDeviceConfirmBody": "Isto significa que os contactos non poderán cifrar as mensaxes para ese dispositivo. Continuar?",
+                "recreateOwnSessions": "Reconstruír sesións",
+                "recreateOwnSessionsConfirmTitle": "Recrear as sesións propias?",
+                "recreateOwnSessionsConfirmBody": "Isto volverá a crear as sesións criptográficas dos teus dispositivos. Fai isto só se os teus dispositivos mostran erros ao descrifrar.",
+                "recreateOwnDevice": "Recrear dispositivo",
+                "recreateOwnDeviceConfirmTitle": "Recrear o dispositivo propio?",
+                "recreateOwnDeviceConfirmBody": "Isto recreará a identidade criptográfica deste dispositivo? Podería levarlle un anaco. Se os contactos verificaron este dispositivo, terán que facelo outra vez. Continuar?"
+            },
+            "devices": {
+                "title": "Seguridade",
+                "recreateSessions": "Reconstruír sesións",
+                "recreateSessionsConfirmTitle": "Reconstruír sesións?",
+                "recreateSessionsConfirmBody": "Isto volverá a crear as sesións criptográficas dos teus dispositivos. Usa isto só se os teus dispositivos mostran erros ao descifrar.",
+                "noSessions": "Non hai sesións criptográficas en uso para a cifraxe de extremo-a-extremo."
+            }
+        },
+        "sharedMedia": {
+            "empty": {
+                "general": "Non hai dispoñibles ficheiros multimedia",
+                "chat": "Non hai multimedia compartido nesta conversa"
+            }
+        },
+        "settings": {
+            "about": {
+                "debugMenuAlreadyShown": "Xa es desenvolvedora!",
+                "title": "Acerca de",
+                "licensed": "Baixo licenza GPL3",
+                "version": "Versión ${version}",
+                "viewSourceCode": "Ver código fonte",
+                "nMoreToGo": "${n} máis para rematar...",
+                "debugMenuShown": "Agora xa es desenvolvedora!"
+            },
+            "settings": {
+                "title": "Axustes",
+                "conversationsSection": "Conversas",
+                "accountSection": "Conta",
+                "signOut": "Pechar sesión",
+                "signOutConfirmTitle": "Pechar Sesión",
+                "signOutConfirmBody": "Vas pechar a sesión. Continuar?",
+                "miscellaneousSection": "Varios",
+                "debuggingSection": "Depuración",
+                "general": "Xeral"
+            },
+            "appearance": {
+                "title": "Aparencia",
+                "languageSection": "Idioma",
+                "language": "Idioma da app",
+                "languageSubtext": "Idioma actual: $selectedLanguage",
+                "systemLanguage": "Idioma por defecto"
+            },
+            "licenses": {
+                "title": "Licenzas Open-Source",
+                "licensedUnder": "Baixo licenza $license"
+            },
+            "conversation": {
+                "title": "Conversa",
+                "appearance": "Aparencia",
+                "selectBackgroundImage": "Elexir imaxe de fondo",
+                "selectBackgroundImageDescription": "Esta será a imaxe de fondo en todas as túas conversas",
+                "removeBackgroundImage": "Retirar imaxe de fondo",
+                "removeBackgroundImageConfirmTitle": "Retirar imaxe de fondo",
+                "removeBackgroundImageConfirmBody": "Tes a certeza de querer eliminar a imaxe de fondo da conversa?",
+                "newChatsSection": "Novas Conversas",
+                "newChatsMuteByDefault": "Por defecto acalar as novas conversas",
+                "newChatsE2EE": "Por defecto activar a cifraxe de extremo-a-extremo. AVISO: Experimental",
+                "behaviourSection": "Comportamento",
+                "contactsIntegration": "Integración dos contactos",
+                "contactsIntegrationBody": "Ao activala, os datos da libreta de enderezos usaranse para proporcionar título ás conversas e imaxes de perfil. Non se transmite información ao servidor."
+            },
+            "debugging": {
+                "title": "Opción de depuración",
+                "generalSection": "Xeral",
+                "generalEnableDebugging": "Activar depuración",
+                "generalEncryptionPassword": "Contrasinal de cifraxe",
+                "generalLoggingIp": "IP de rexistro",
+                "generalLoggingIpSubtext": "O IP ao que se deben enviar os rexistros",
+                "generalLoggingPort": "Porto de rexistro",
+                "generalLoggingPortSubtext": "O IP ao que se deben enviar os rexistros",
+                "generalEncryptionPasswordSubtext": "Os rexistros poderían conter información sensible así que mellor elixe un contrasinal forte"
+            },
+            "network": {
+                "title": "Rede",
+                "automaticDownloadsSection": "Descargas automáticas",
+                "automaticDownloadsText": "Moxxy descargará automáticamente os ficheiros en...",
+                "automaticDownloadsMaximumSize": "Tamaño máximo de descarga",
+                "automaticDownloadsMaximumSizeSubtext": "O tamaño máximo dos ficheiros a descargar de xeito automático",
+                "automaticDownloadAlways": "Sempre",
+                "wifi": "Wifi",
+                "mobileData": "Datos móbiles"
+            },
+            "privacy": {
+                "profilePictureVisibility": "Facer pública a foto de perfil",
+                "profilePictureVisibilitSubtext": "Se o activas, calquera poderá ver a túa foto de perfil. Se o desactivas, só as persoas da túa lista de contactos poderán ver a foto de perfil.",
+                "conversationsSection": "Conversa",
+                "sendChatMarkers": "Enviar marcadores de conversa",
+                "title": "Privacidade",
+                "generalSection": "Xeral",
+                "sendChatMarkersSubtext": "Vai indicar aos teus correspondentes se recibiches ou liches a mensaxe",
+                "showContactRequests": "Mostrar solicitudes de contacto",
+                "showContactRequestsSubtext": "Mostrarache as persoas que te engadiron á súa lista de contactos pero que aínda non che enviaron mensaxes",
+                "sendChatStates": "Enviar estados da conversa",
+                "sendChatStatesSubtext": "Vai indicar aos teus correspondentes se estás escribindo ou lendo na conversa",
+                "redirectsSection": "Reenvíos",
+                "redirectsTitle": "Redirixir $serviceName",
+                "cannotEnableRedirect": "Non se pode activar a redirección $serviceName",
+                "cannotEnableRedirectSubtext": "Primeiro tes que establecer o servizo proxy ao que queres redirixir. Para facelo toca no campo a carón do botón.",
+                "urlEmpty": "O URL non pode estar baleiro",
+                "urlInvalid": "URL non válido",
+                "redirectDialogTitle": "Redirixir $serviceName",
+                "stickersPrivacy": "Manter como pública a lista de adhesivos",
+                "stickersPrivacySubtext": "Se o activas, calquera poderá ver a túa lista de paquetes de adhesivos instalados.",
+                "redirectText": "Redireccionará as ligazóns a $serviceName nas que premas cara o servizo proxy, ex. $exampleProxy",
+                "currentlySelected": "Seleccionado actualmente: $proxy"
+            },
+            "stickers": {
+                "title": "Adhesivos",
+                "stickerSection": "Adhesivo",
+                "displayStickers": "Mostar adhesivos na conversa",
+                "autoDownload": "Descargar automaticamente adhesivos",
+                "autoDownloadBody": "Se o activas, descargarás automaticamente os adhesivos cando o remitente estea na túa lista de contactos.",
+                "stickerPacksSection": "Paquetes de adhesivos",
+                "importStickerPack": "Importar paquete de adhesivos",
+                "importSuccess": "Paquete de adhesivos importado correctamente",
+                "importFailure": "Fallou a importación do paquete de adhesivos",
+                "stickerPackSize": "(${size})"
+            },
+            "stickerPacks": {
+                "title": "Paquetes de Adhesivos"
+            },
+            "storage": {
+                "title": "Almacenaxe",
+                "storageUsed": "Almacenaxe utilizada: ${size}",
+                "sizePlaceholder": "Calculando...",
+                "storageManagement": "Xestión da almacenaxe",
+                "removeOldMedia": {
+                    "title": "Eliminar multimedia antigo",
+                    "description": "Elimina ficheiros multimedia antigos do dispositivo"
+                },
+                "removeOldMediaDialog": {
+                    "title": "Eliminar ficheiros multimedia",
+                    "options": {
+                        "all": "Todos os ficheiros multimedia",
+                        "oneWeek": "Anteriores a 1 semana",
+                        "oneMonth": "Anteriores a 1 mes"
+                    },
+                    "delete": "Eliminar",
+                    "confirmation": {
+                        "body": "Tes a certeza de querer eliminar os ficheiros multimedia antigos?"
+                    }
+                },
+                "viewMediaFiles": "Ver ficheiros multimedia",
+                "mediaFiles": "Ficheiros multimedia",
+                "types": {
+                    "media": "Multimedia",
+                    "stickers": "Adhesivos"
+                },
+                "manageStickers": "Xestión dos paquetes de adhesivos"
+            }
+        },
+        "blocklist": {
+            "title": "Lista de bloqueo",
+            "noUsersBlocked": "Non tes contas bloqueadas",
+            "unblockAll": "Desbloquear todo",
+            "unblockAllConfirmTitle": "Tes certeza?",
+            "unblockAllConfirmBody": "Tes a certeza de querer desbloquear todas as contas?",
+            "unblockJidConfirmTitle": "Desbloquear a ${jid}?",
+            "unblockJidConfirmBody": "Tes a certeza de querer desbloquear a ${jid}? Volverás a recibir mensaxes desde esta conta."
+        },
+        "cropbackground": {
+            "blur": "Desenfocar o fondo",
+            "setAsBackground": "Establecer como imaxe de fondo"
+        },
+        "stickerPack": {
+            "removeConfirmTitle": "Eliminar paquete de adhesivos",
+            "removeConfirmBody": "Tes a certeza de querer eliminar este paquete de adhesivos?",
+            "installConfirmTitle": "Instalar paquete de adhesivos",
+            "installConfirmBody": "Tes a certeza de querer instalar este paquete de adhesivos?",
+            "restricted": "Este paquete de adhesivos ten restricións. Significa que poden ser vistos pero non enviados.",
+            "fetchingFailure": "Non se atopa o paquete de adhesivos"
+        }
+    },
+    "global": {
+        "title": "Moxxy",
+        "dialogAccept": "Oká",
+        "dialogCancel": "Cancelar",
+        "yes": "Si",
+        "no": "Non",
+        "moxxySubtitle": "Un experimento para crear un cliente XMPP moderno, bonito e doado de usar."
+    },
+    "notifications": {
+        "permanent": {
+            "idle": "Detido",
+            "ready": "Preparado para recibir mensaxes",
+            "connecting": "Conectando...",
+            "disconnect": "Desconectado",
+            "error": "Erro"
+        },
+        "message": {
+            "reply": "Responder",
+            "markAsRead": "Marcar como lido"
+        },
+        "channels": {
+            "messagesChannelName": "Mensaxes",
+            "warningChannelName": "Avisos",
+            "warningChannelDescription": "Avisos en relación a Moxxy",
+            "messagesChannelDescription": "A canle de notificación para as mensaxes recibidas"
+        },
+        "titles": {
+            "error": "Erro"
+        },
+        "errors": {
+            "messageError": {
+                "title": "Fallou a entrega da mensaxe",
+                "body": "Fallou a entrega da mensaxe a ${conversationTitle}"
+            }
+        }
+    },
+    "language": "Galego"
+}

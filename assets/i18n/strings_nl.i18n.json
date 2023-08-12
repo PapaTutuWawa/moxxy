@@ -28,6 +28,12 @@
         },
         "titles": {
             "error": "Foutmelding"
+        },
+        "errors": {
+            "messageError": {
+                "title": "Bericht afleveren mislukt",
+                "body": "Her bericht aan ‘${conversationTitle}’ kan niet worden afgeleverd"
+            }
         }
     },
     "dateTime": {
@@ -195,7 +201,12 @@
         "newconversation": {
             "title": "Nieuw gesprek",
             "startChat": "Gesprek starten",
-            "createGroupchat": "Nieuw groepsgesprek"
+            "createGroupchat": "Nieuw groepsgesprek",
+            "nick": "Bĳnaam",
+            "enterNickname": "Voer een bĳnaam in",
+            "nicknameSubtitle": "Voer een unieke bĳnaam in om deel te kunnen nemen aan een MUC.",
+            "joinGroupChat": "Deelnemen aan groepsgesprek",
+            "nullNickname": "Voer een bĳnaam in!"
         },
         "crop": {
             "setProfilePicture": "Instellen als profielfoto"
