@@ -47,7 +47,6 @@ import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-//import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
   final handler = EventHandler()
@@ -848,6 +847,12 @@ Future<void> performSignOut(SignOutCommand command, {dynamic extra}) async {
   await xss.modifyXmppState(
     (state) => XmppState(),
   );
+
+  // Clear notifications
+  final accountJid = await xss.getAccountJid();
+  await GetIt.I.get<NotificationsService>().dismissAllNotifications(accountJid);
+
+  // Reset the current account JID.
   await xss.resetAccountJid();
 
   sendEvent(

@@ -427,6 +427,30 @@ class NotificationsService {
     }
   }
 
+  /// Dismisses all notifications for the context of [accountJid].
+  Future<void> dismissAllNotifications(String accountJid) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final ids = await db.query(
+      notificationsTable,
+      where: 'accountJid = ?',
+      whereArgs: [accountJid],
+      columns: ['id'],
+      distinct: true,
+    );
+
+    // Dismiss the notification
+    for (final idRaw in ids) {
+      await MoxplatformPlugin.notifications.dismissNotification(idRaw['id']! as int);
+    }
+
+    // Remove database entries
+    await db.delete(
+      notificationsTable,
+      where: 'accountJid = ?',
+      whereArgs: [accountJid],
+    );
+  }
+
   /// Requests the avatar path from [XmppStateService] and configures the notification plugin
   /// accordingly, if the avatar path is not null. If it is null, this method does nothing.
   Future<void> maybeSetAvatarFromState() async {
