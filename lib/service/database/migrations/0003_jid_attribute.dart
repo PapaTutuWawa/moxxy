@@ -209,6 +209,8 @@ Future<void> upgradeFromV45ToV46(Database db) async {
       );
     }
   }
+  await db.execute('DROP TABLE $reactionsTable');
+  await db.execute('ALTER TABLE ${reactionsTable}_new RENAME TO $reactionsTable');
 
   // Migrate the roster
   await db.execute(

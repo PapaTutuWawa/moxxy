@@ -20,12 +20,15 @@ class MessageKey {
     this.timestamp,
   );
 
-  factory MessageKey.fromJson(Map<String, Object> json) => MessageKey(
-        json['conversationJid']! as String,
-        json['sender']! as String,
-        json['sid']! as String,
-        json['timestamp']! as int,
-      );
+  factory MessageKey.fromJson(Map<String, dynamic> json) {
+    final map = json.cast<String, Object>();
+    return MessageKey(
+      map['conversationJid']! as String,
+      map['sender']! as String,
+      map['sid']! as String,
+      map['timestamp']! as int,
+    );
+  }
 
   final String conversationJid;
   final String sender;

@@ -115,8 +115,12 @@ class XmppStateService {
     if (_state != null) return _state!;
 
     final json = <String, String?>{};
-    final rowsRaw =
-        await GetIt.I.get<DatabaseService>().database.query(xmppStateTable);
+    final rowsRaw = await GetIt.I.get<DatabaseService>().database.query(
+      xmppStateTable,
+      where: 'accountJid = ?',
+      whereArgs: [await getAccountJid()],
+      columns: ['key', 'value'],
+    );
     for (final row in rowsRaw) {
       json[row['key']! as String] = row['value'] as String?;
     }
