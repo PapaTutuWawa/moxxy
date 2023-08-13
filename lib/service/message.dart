@@ -272,8 +272,8 @@ FROM (SELECT * FROM $messagesTable WHERE $query ORDER BY timestamp DESC LIMIT $m
     final db = GetIt.I.get<DatabaseService>().database;
     final comparator = olderThan ? '<' : '>';
     final queryPrefix = jid != null
-        ? 'conversationJid = ? accountJid = ? AND'
-        : 'accountJid = ?';
+        ? 'conversationJid = ? AND accountJid = ? AND'
+        : 'accountJid = ? AND';
     final query = oldestTimestamp != null
         ? 'file_metadata_id IS NOT NULL AND timestamp $comparator ?'
         : 'file_metadata_id IS NOT NULL';
