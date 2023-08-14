@@ -1,436 +1,435 @@
 {
-	"language": "English",
-	"global": {
-		"title": "Moxxy",
-		"moxxySubtitle": "An experiment into building a modern, easy and beautiful XMPP client.",
-		"dialogAccept": "Okay",
-		"dialogCancel": "Cancel",
-		"yes": "Yes",
-		"no": "No"
-	},
-	"notifications": {
-		"permanent": {
-			"idle": "Idle",
-			"ready": "Ready to receive messages",
-			"connecting": "Connecting...",
-			"disconnect": "Disconnected",
-			"error": "Error"
-		},
-		"message": {
-			"reply": "Reply",
-			"markAsRead": "Mark as read"
-		},
-		"channels": {
-			"messagesChannelName": "Messages",
-			"messagesChannelDescription": "The notification channel for received messages",
-			"warningChannelName": "Warnings",
-			"warningChannelDescription": "Warnings related to Moxxy"
-		},
-		"titles": {
-			"error": "Error"
-		},
-    "errors": {
-      "messageError": {
-        "title": "Message delivery failure",
-        "body": "Failed to deliver message to ${conversationTitle}"
-      }
-    }
-	},
-  "permissions": {
-    "requests": {
-      "notification": {
-        "reason": "In order to notify of incoming messages, Moxxy needs permission to show notifications."
-      },
-      "batterySaving": {
-        "reason": "In order to receive messages in the background, Moxxy should be excempt from Android's battery saving."
-      }
+    "language": "English",
+    "global": {
+        "title": "Moxxy",
+        "moxxySubtitle": "An experiment into building a modern, easy and beautiful XMPP client.",
+        "dialogAccept": "Okay",
+        "dialogCancel": "Cancel",
+        "yes": "Yes",
+        "no": "No"
     },
-    "allow": "Allow",
-    "skip": "Skip"
-  },
-	"dateTime": {
-		"justNow": "Just now",
-		"nMinutesAgo": "${min}min ago",
-		"mondayAbbrev": "Mon",
-		"tuesdayAbbrev": "Tue",
-		"wednessdayAbbrev": "Wed",
-		"thursdayAbbrev": "Thu",
-		"fridayAbbrev": "Fri",
-		"saturdayAbbrev": "Sat",
-		"sundayAbbrev": "Sun",
-		"january": "January",
-		"february": "February",
-		"march": "March",
-		"april": "April",
-		"may": "May",
-		"june": "June",
-		"july": "July",
-		"august": "August",
-		"september": "September",
-		"october": "October",
-		"november": "November",
-		"december": "December",
-		"today": "Today",
-		"yesterday": "Yesterday"
-	},
-	"messages": {
-		"image": "Image",
-		"video": "Video",
-		"audio": "Audio",
-		"file": "File",
-		"sticker": "Sticker",
-		"retracted": "The message has been retracted",
-		"retractedFallback": "A previous message has been retracted but your client does not support it",
-		"you": "You"
-	},
-	"errors": {
-		"general": {
-			"noInternet": "Not connected to the Internet."
-		},
-		"filePicker": {
-			"permissionDenied": "The storage permission has been denied."
-		},
-		"omemo": {
-			"couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work.",
-			"notEncryptedForDevice": "This message was not encrypted for this device",
-			"invalidHmac": "Could not decrypt message",
-			"noDecryptionKey": "No decryption key available",
-			"messageInvalidAfixElement": "Invalid encrypted message",
-			
-			"verificationInvalidOmemoUrl": "Invalid OMEMO:2 fingerprint",
-			"verificationWrongJid": "Wrong XMPP-address",
-			"verificationWrongDevice": "Wrong OMEMO:2 device",
-			"verificationNotInList": "Wrong OMEMO:2 device",
-			"verificationWrongFingerprint": "Wrong OMEMO:2 fingerprint"
-		},
-		"connection": {
-			"connectionTimeout": "Could not connect to server",
-			"saslAccountDisabled": "Your account is disabled",
-			"saslInvalidCredentials": "Your account credentials are invalid",
-			"unrecoverable": "Connection lost due to unrecoverable error"
-		},
-		"login": {
-			"saslFailed": "Invalid login credentials",
-			"startTlsFailed": "Failed to establish a secure connection",
-			"noConnection": "Failed to establish a connection",
-			"unspecified": "Unspecified error"
-		},
-		"message": {
-			"unspecified": "Unknown error",
-			"fileUploadFailed": "The file upload failed",
-			"contactDoesntSupportOmemo": "The contact does not support encryption using OMEMO:2",
-			"fileDownloadFailed": "The file download failed",
-			"serviceUnavailable": "The message could not be delivered to the contact",
-			"remoteServerTimeout": "The message could not be delivered to the contact's server",
-			"remoteServerNotFound": "The message could not be delivered to the contact's server as it cannot be found",
-			"failedToEncrypt": "The message could not be encrypted",
-			"failedToEncryptFile": "The file could not be encrypted",
-			"failedToDecryptFile": "The file could not be decrypted",
-			"fileNotEncrypted": "The chat is encrypted but the file is not encrypted"
-		},
-		"conversation": {
-			"audioRecordingError": "Failed to finalize audio recording",
-			"openFileNoAppError": "No app found to open this file",
-			"openFileGenericError": "Failed to open file",
-			"messageErrorDialogTitle": "Error"
-		},
-		"newChat": {
-			"remoteServerError": "Failed to contact the remote server.",
-			"groupchatUnsupported": "Joining a groupchat is currently not supported.",
-			"unknown": "Unknown error."
-		}
-	},
-	"warnings": {
-		"message": {
-			"integrityCheckFailed": "Could not verify file integrity"
-		},
-		"conversation": {
-			"holdForLonger": "Hold button longer to record a voice message"
-		}
-	},
-	"pages": {
-		"intro": {
-			"noAccount": "Have no XMPP account? No worries, creating one is really easy.",
-			"loginButton": "Login",
-			"registerButton": "Register"
-		},
-		"login": {
-			"title": "Login",
-			"xmppAddress": "XMPP-Address",
-			"password": "Password",
-			"advancedOptions": "Advanced options",
-			"createAccount": "Create account on server"
-		},
-		"conversations": {
-			"speeddialNewChat": "New chat",
-			"speeddialJoinGroupchat": "Join groupchat",
-			"speeddialAddNoteToSelf": "Note to self",
-			"overlaySettings": "Settings",
-			"noOpenChats": "You have no open chats",
-			"startChat": "Start a chat",
-			"closeChat": "Close chat",
-			"closeChatBody": "Are you sure you want to close the chat with ${conversationTitle}?",
-			"markAsRead": "Mark as read"
-		},
-		"conversation": {
-			"unencrypted": "Unencrypted",
-			"encrypted": "Encrypted",
-			"closeChat": "Close chat",
-			"closeChatConfirmTitle": "Close chat",
-			"closeChatConfirmSubtext": "Are you sure you want to close this chat?",
-			"blockShort": "Block",
-			"blockUser": "Block user",
-			"online": "Online",
-			"retract": "Retract message",
-			"retractBody": "Are you sure you want to retract the message? Keep in mind that this is only a request that the client does not have to honour.",
-			"forward": "Forward",
-			"edit": "Edit",
-			"quote": "Quote",
-			"copy": "Copy content",
-			"messageCopied": "Message content copied to clipboard",
-			"addReaction": "Add reaction",
-			"showError": "Show error",
-			"showWarning": "Show warning",
-			"warning": "Warning",
-			"addToContacts": "Add to contacts",
-			"addToContactsTitle": "Add ${jid} to contacts",
-			"addToContactsBody": "Are you sure you want to add ${jid} to your contacts?",
-			"stickerPickerNoStickersLine1": "You have no sticker packs installed.",
-			"stickerPickerNoStickersLine2": "They can be installed in the sticker settings.",
-			"stickerSettings": "Sticker settings",
-			"newDeviceMessage": {
-				"one": "A new device has been added",
-				"other": "Multiple new devices have been added"
-			},
-			"replacedDeviceMessage": {
-				"one": "A device has been changed",
-				"other": "Multiple devices have been added"
-			},
-			"messageHint": "Send a message...",
-			"sendImages": "Send images",
-			"sendFiles": "Send files",
-			"takePhotos": "Take photos"
-		},
-		"startchat": {
-			"title": "New Chat",
-			"xmppAddress": "XMPP address",
-			"subtitle": "You can start a new chat by either entering a XMPP address or by scanning their QR code.",
-			"buttonAddToContact": "Start new chat"
-		},
-		"newconversation": {
-			"title": "New chat",
-			"startChat": "Start new chat",
-			"createGroupchat": "New groupchat",
-			"joinGroupChat":  "Join groupchat",
-			"nullNickname": "Nickname cannot be null!",
-			"nick": "Nickname",
-			"enterNickname": "Enter Nickname",
-			"nicknameSubtitle": "You need to enter a unique nickname in order to join a MUC."
-		},
-		"crop": {
-			"setProfilePicture": "Set as profile picture"
-		},
-		"shareselection": {
-			"shareWith": "Share with...",
-			"confirmTitle": "Send file",
-			"confirmBody": "One or more chats are unencrypted. This means that the file will be leaked to the server. Do you still want to continue?"
-		},
-		"profile": {
-			"general": {
-				"omemo": "Security",
-				"profile": "Profile",
-				"media": "Media"
-			},
-			"conversation": {
-				"notifications": "Notifications",
-				"notificationsMuted": "Muted",
-				"notificationsEnabled": "Enabled",
-				"sharedMedia": "Media"
-			},
-			"owndevices": {
-				"title": "Own Devices",
-				"thisDevice": "This device",
-				"otherDevices": "Other devices",
-				"deleteDeviceConfirmTitle": "Delete device",
-				"deleteDeviceConfirmBody": "This means that contacts will not be able to encrypt for that device. Continue?",
-				"recreateOwnSessions": "Rebuild sessions",
-				"recreateOwnSessionsConfirmTitle": "Recreate own sessions?",
-				"recreateOwnSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",
-				"recreateOwnDevice": "Recreate device",
-				"recreateOwnDeviceConfirmTitle": "Recreate own device?",
-				"recreateOwnDeviceConfirmBody": "This will recreate this device's cryptographic identity. It will take some time. If contacts verified your device, they will have to do it again. Continue?"
-			},
-			"devices": {
-				"title": "Security",
-				"recreateSessions": "Rebuild sessions",
-				"recreateSessionsConfirmTitle": "Rebuild sessions?",
-				"recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",
-				"noSessions": "There are no cryptographic sessions that are used for end-to-end encryption."
-			}
-		},
-		"blocklist": {
-			"title": "Blocklist",
-			"noUsersBlocked": "You have no users blocked",
-			"unblockAll": "Unblock all",
-			"unblockAllConfirmTitle": "Are you sure?",
-			"unblockAllConfirmBody": "Are you sure you want to unblock all users?",
-			"unblockJidConfirmTitle": "Unblock ${jid}?",
-			"unblockJidConfirmBody": "Are you sure you want to unblock ${jid}? You will receive messages from this user again."
-		},
-		"cropbackground": {
-			"blur": "Blur background",
-			"setAsBackground": "Set as background image"
-		},
-		"stickerPack": {
-			"removeConfirmTitle": "Remove sticker pack",
-			"removeConfirmBody": "Are you sure you want to remove this sticker pack?",
-			"installConfirmTitle": "Install sticker pack",
-			"installConfirmBody": "Are you sure you want to install this sticker pack?",
-			"restricted": "This sticker pack is restricted. That means that the stickers will be displayed but cannot be sent.",
-			"fetchingFailure": "Could not find the sticker pack"
-		},
-		"sharedMedia": {
-			"empty": {
-				"chat": "No shared media for this chat",
-				"general": "No media files available"
-			}
-		},
-		"settings": {
-			"settings": {
-				"title": "Settings",
-				"conversationsSection": "Conversations",
-				"accountSection": "Account",
-				"signOut": "Sign out",
-				"signOutConfirmTitle": "Sign Out",
-				"signOutConfirmBody": "You are about to sign out. Proceed?",
-				"miscellaneousSection": "Miscellaneous",
-				"debuggingSection": "Debugging",
-				"general": "General"
-			},
-			"about": {
-				"title": "About",
-				"licensed": "Licensed under GPL3",
-				"version": "Version ${version}",
-				"viewSourceCode": "View source code",
-				"nMoreToGo": "${n} more to go...",
-				"debugMenuShown": "You are now a developer!",
-				"debugMenuAlreadyShown": "You are already a developer!"
-			},
-			"appearance": {
-				"title": "Appearance",
-				"languageSection": "Language",
-				"language": "App language",
-				"languageSubtext": "Currently selected: $selectedLanguage",
-				"systemLanguage": "Default language"
-			},
-			"licenses": {
-				"title": "Open-Source Licenses",
-				"licensedUnder": "Licensed under $license"
-			},
-			"conversation": {
-				"title": "Chat",
-				"appearance": "Appearance",
-				"selectBackgroundImage": "Select background image",
-				"selectBackgroundImageDescription": "This image will be the background of all your chats",
-				"removeBackgroundImage": "Remove background image",
-				"removeBackgroundImageConfirmTitle": "Remove background image",
-				"removeBackgroundImageConfirmBody": "Are you sure you want to remove your conversation background image?",
-				"newChatsSection": "New Conversations",
-				"newChatsMuteByDefault": "Mute new chats by default",
-				"newChatsE2EE": "Enable end-to-end encryption by default. WARNING: Experimental",
-				"behaviourSection": "Behaviour",
-				"contactsIntegration": "Contacts integration",
-				"contactsIntegrationBody": "When enabled, data from the phonebook will be used to provide chat titles and profile pictures. No data will be sent to the server."
-			},
-			"debugging": {
-				"title": "Debugging options",
-				"generalSection": "General",
-				"generalEnableDebugging": "Enable debugging",
-				"generalEncryptionPassword": "Encryption password",
-				"generalEncryptionPasswordSubtext": "The logs may contain sensitive information so pick a strong passphrase",
-				"generalLoggingIp": "Logging IP",
-				"generalLoggingIpSubtext": "The IP the logs should be sent to",
-				"generalLoggingPort": "Logging Port",
-				"generalLoggingPortSubtext": "The IP the logs should be sent to"
-			},
-			"network": {
-				"title": "Network",
-				"automaticDownloadsSection": "Automatic Downloads",
-				"automaticDownloadsText": "Moxxy will automatically download files on...",
-				"automaticDownloadsMaximumSize": "Maximum Download Size",
-				"automaticDownloadsMaximumSizeSubtext": "The maximum file size for a file to be automatically downloaded",
-				"automaticDownloadAlways": "Always",
-				"wifi": "Wifi",
-				"mobileData": "Mobile data"
-			},
-			"privacy": {
-				"title": "Privacy",
-				"generalSection": "General",
-				"showContactRequests": "Show contact requests",
-				"showContactRequestsSubtext": "This will show people who added you to their contact list but sent no message yet",
-				"profilePictureVisibility": "Make profile picture public",
-				"profilePictureVisibilitSubtext": "If enabled, everyone can see your profile picture. If disabled, only users on your contact list can see your profile picture.",
-				"conversationsSection": "Conversation",
-				"sendChatMarkers": "Send chat markers",
-				"sendChatMarkersSubtext": "This will tell your conversation partner if you received or read a message",
-				"sendChatStates": "Send chat states",
-				"sendChatStatesSubtext": "This will show your conversation partner if you are typing or looking at the chat",
-				"redirectsSection": "Redirects",
-				"redirectText": "This will redirect $serviceName links that you tap to a proxy service, e.g. $exampleProxy",
-				"currentlySelected": "Currently selected: $proxy",
-				"redirectsTitle": "$serviceName Redirect",
-				"cannotEnableRedirect": "Cannot enable $serviceName redirects",
-				"cannotEnableRedirectSubtext": "You must first set a proxy service to redirect to. To do so, tap the field next to the switch.",
-				"urlEmpty": "URL cannot be empty",
-				"urlInvalid": "Invalid URL",
-				"redirectDialogTitle": "$serviceName Redirect",
-				"stickersPrivacy": "Keep sticker list public",
-				"stickersPrivacySubtext": "If enabled, everyone will be able to see your list of installed sticker packs."
-			},
-			"stickers": {
-				"title": "Stickers",
-				"stickerSection": "Sticker",
-				"displayStickers": "Display stickers in chat",
-				"autoDownload": "Automatically download stickers",
-				"autoDownloadBody": "If enabled, stickers are automatically downloaded when the sender is in your contact list.",
-				"stickerPacksSection": "Sticker packs",
-				"importStickerPack": "Import sticker pack",
-				"importSuccess": "Sticker pack successfully imported",
-				"importFailure": "Failed to import sticker pack",
-				"stickerPackSize": "(${size})"
-			},
-			"stickerPacks": {
-				"title": "Sticker Packs"
-			},
-			"storage": {
-				"title": "Storage",
-				"storageUsed": "Storage used: ${size}",
-				"sizePlaceholder": "Computing...",
-				"storageManagement": "Storage Management",
-				"removeOldMedia" : {
-					"title": "Remove old media",
-					"description": "Removes old media files from the device"
-				},
-				"removeOldMediaDialog": {
-					"title": "Delete media files",
-					"options": {
-						"all": "All media files",
-						"oneWeek": "Older than 1 week",
-						"oneMonth": "Older than 1 month"
-					},
-					"delete": "Delete",
-					"confirmation": {
-						"body": "Are you sure you want to delete old media files?"
-					}
-				},
-				"viewMediaFiles": "View media files",
-				"mediaFiles": "Media Files",
-				"types": {
-					"media": "Media",
-					"stickers": "Stickers"
-				},
-				"manageStickers": "Manage sticker packs"
-			}
-		}
-	}
+    "notifications": {
+        "permanent": {
+            "idle": "Idle",
+            "ready": "Ready to receive messages",
+            "connecting": "Connecting…",
+            "disconnect": "Disconnected",
+            "error": "Error"
+        },
+        "message": {
+            "reply": "Reply",
+            "markAsRead": "Mark as read"
+        },
+        "channels": {
+            "messagesChannelName": "Messages",
+            "messagesChannelDescription": "The notification channel for received messages",
+            "warningChannelName": "Warnings",
+            "warningChannelDescription": "Warnings related to Moxxy"
+        },
+        "titles": {
+            "error": "Error"
+        },
+        "errors": {
+            "messageError": {
+                "title": "Message delivery failure",
+                "body": "Failed to deliver message to ${conversationTitle}"
+            }
+        }
+    },
+    "permissions": {
+        "requests": {
+            "notification": {
+                "reason": "In order to notify of incoming messages, Moxxy needs permission to show notifications."
+            },
+            "batterySaving": {
+                "reason": "In order to receive messages in the background, Moxxy should be excempt from Android's battery saving."
+            }
+        },
+        "allow": "Allow",
+        "skip": "Skip"
+    },
+    "dateTime": {
+        "justNow": "Just now",
+        "nMinutesAgo": "${min}min ago",
+        "mondayAbbrev": "Mon",
+        "tuesdayAbbrev": "Tue",
+        "wednessdayAbbrev": "Wed",
+        "thursdayAbbrev": "Thu",
+        "fridayAbbrev": "Fri",
+        "saturdayAbbrev": "Sat",
+        "sundayAbbrev": "Sun",
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December",
+        "today": "Today",
+        "yesterday": "Yesterday"
+    },
+    "messages": {
+        "image": "Image",
+        "video": "Video",
+        "audio": "Audio",
+        "file": "File",
+        "sticker": "Sticker",
+        "retracted": "The message has been retracted",
+        "retractedFallback": "A previous message has been retracted but your client does not support it",
+        "you": "You"
+    },
+    "errors": {
+        "general": {
+            "noInternet": "Not connected to the Internet."
+        },
+        "filePicker": {
+            "permissionDenied": "The storage permission has been denied."
+        },
+        "omemo": {
+            "couldNotPublish": "Could not publish the cryptographic identity to the server. This means that end-to-end encryption may not work.",
+            "notEncryptedForDevice": "This message was not encrypted for this device",
+            "invalidHmac": "Could not decrypt message",
+            "noDecryptionKey": "No decryption key available",
+            "messageInvalidAfixElement": "Invalid encrypted message",
+            "verificationInvalidOmemoUrl": "Invalid OMEMO:2 fingerprint",
+            "verificationWrongJid": "Wrong XMPP-address",
+            "verificationWrongDevice": "Wrong OMEMO:2 device",
+            "verificationNotInList": "Wrong OMEMO:2 device",
+            "verificationWrongFingerprint": "Wrong OMEMO:2 fingerprint"
+        },
+        "connection": {
+            "connectionTimeout": "Could not connect to server",
+            "saslAccountDisabled": "Your account is disabled",
+            "saslInvalidCredentials": "Your account credentials are invalid",
+            "unrecoverable": "Connection lost due to unrecoverable error"
+        },
+        "login": {
+            "saslFailed": "Invalid login credentials",
+            "startTlsFailed": "Failed to establish a secure connection",
+            "noConnection": "Failed to establish a connection",
+            "unspecified": "Unspecified error"
+        },
+        "message": {
+            "unspecified": "Unknown error",
+            "fileUploadFailed": "The file upload failed",
+            "contactDoesntSupportOmemo": "The contact does not support encryption using OMEMO:2",
+            "fileDownloadFailed": "The file download failed",
+            "serviceUnavailable": "The message could not be delivered to the contact",
+            "remoteServerTimeout": "The message could not be delivered to the contact's server",
+            "remoteServerNotFound": "The message could not be delivered to the contact's server as it cannot be found",
+            "failedToEncrypt": "The message could not be encrypted",
+            "failedToEncryptFile": "The file could not be encrypted",
+            "failedToDecryptFile": "The file could not be decrypted",
+            "fileNotEncrypted": "The chat is encrypted but the file is not encrypted"
+        },
+        "conversation": {
+            "audioRecordingError": "Failed to finalize audio recording",
+            "openFileNoAppError": "No app found to open this file",
+            "openFileGenericError": "Failed to open file",
+            "messageErrorDialogTitle": "Error"
+        },
+        "newChat": {
+            "remoteServerError": "Failed to contact the remote server.",
+            "groupchatUnsupported": "Joining a groupchat is currently not supported.",
+            "unknown": "Unknown error."
+        }
+    },
+    "warnings": {
+        "message": {
+            "integrityCheckFailed": "Could not verify file integrity"
+        },
+        "conversation": {
+            "holdForLonger": "Hold button longer to record a voice message"
+        }
+    },
+    "pages": {
+        "intro": {
+            "noAccount": "Have no XMPP account? No worries, creating one is really easy.",
+            "loginButton": "Login",
+            "registerButton": "Register"
+        },
+        "login": {
+            "title": "Login",
+            "xmppAddress": "XMPP-Address",
+            "password": "Password",
+            "advancedOptions": "Advanced options",
+            "createAccount": "Create account on server"
+        },
+        "conversations": {
+            "speeddialNewChat": "New chat",
+            "speeddialJoinGroupchat": "Join groupchat",
+            "speeddialAddNoteToSelf": "Note to self",
+            "overlaySettings": "Settings",
+            "noOpenChats": "You have no open chats",
+            "startChat": "Start a chat",
+            "closeChat": "Close chat",
+            "closeChatBody": "Are you sure you want to close the chat with ${conversationTitle}?",
+            "markAsRead": "Mark as read"
+        },
+        "conversation": {
+            "unencrypted": "Unencrypted",
+            "encrypted": "Encrypted",
+            "closeChat": "Close chat",
+            "closeChatConfirmTitle": "Close chat",
+            "closeChatConfirmSubtext": "Are you sure you want to close this chat?",
+            "blockShort": "Block",
+            "blockUser": "Block user",
+            "online": "Online",
+            "retract": "Retract message",
+            "retractBody": "Are you sure you want to retract the message? Keep in mind that this is only a request that the client does not have to honour.",
+            "forward": "Forward",
+            "edit": "Edit",
+            "quote": "Quote",
+            "copy": "Copy content",
+            "messageCopied": "Message content copied to clipboard",
+            "addReaction": "Add reaction",
+            "showError": "Show error",
+            "showWarning": "Show warning",
+            "warning": "Warning",
+            "addToContacts": "Add to contacts",
+            "addToContactsTitle": "Add ${jid} to contacts",
+            "addToContactsBody": "Are you sure you want to add ${jid} to your contacts?",
+            "stickerPickerNoStickersLine1": "You have no sticker packs installed.",
+            "stickerPickerNoStickersLine2": "They can be installed in the sticker settings.",
+            "stickerSettings": "Sticker settings",
+            "newDeviceMessage": {
+                "one": "A new device has been added",
+                "other": "Multiple new devices have been added"
+            },
+            "replacedDeviceMessage": {
+                "one": "A device has been changed",
+                "other": "Multiple devices have been added"
+            },
+            "messageHint": "Send a message…",
+            "sendImages": "Send images",
+            "sendFiles": "Send files",
+            "takePhotos": "Take photos"
+        },
+        "startchat": {
+            "title": "New Chat",
+            "xmppAddress": "XMPP address",
+            "subtitle": "You can start a new chat by either entering a XMPP address or by scanning their QR code.",
+            "buttonAddToContact": "Start new chat"
+        },
+        "newconversation": {
+            "title": "New chat",
+            "startChat": "Start new chat",
+            "createGroupchat": "New groupchat",
+            "joinGroupChat": "Join groupchat",
+            "nullNickname": "Nickname cannot be null!",
+            "nick": "Nickname",
+            "enterNickname": "Enter Nickname",
+            "nicknameSubtitle": "You need to enter a unique nickname in order to join a MUC."
+        },
+        "crop": {
+            "setProfilePicture": "Set as profile picture"
+        },
+        "shareselection": {
+            "shareWith": "Share with…",
+            "confirmTitle": "Send file",
+            "confirmBody": "One or more chats are unencrypted. This means that the file will be leaked to the server. Do you still want to continue?"
+        },
+        "profile": {
+            "general": {
+                "omemo": "Security",
+                "profile": "Profile",
+                "media": "Media"
+            },
+            "conversation": {
+                "notifications": "Notifications",
+                "notificationsMuted": "Muted",
+                "notificationsEnabled": "Enabled",
+                "sharedMedia": "Media"
+            },
+            "owndevices": {
+                "title": "Own Devices",
+                "thisDevice": "This device",
+                "otherDevices": "Other devices",
+                "deleteDeviceConfirmTitle": "Delete device",
+                "deleteDeviceConfirmBody": "This means that contacts will not be able to encrypt for that device. Continue?",
+                "recreateOwnSessions": "Rebuild sessions",
+                "recreateOwnSessionsConfirmTitle": "Recreate own sessions?",
+                "recreateOwnSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",
+                "recreateOwnDevice": "Recreate device",
+                "recreateOwnDeviceConfirmTitle": "Recreate own device?",
+                "recreateOwnDeviceConfirmBody": "This will recreate this device's cryptographic identity. It will take some time. If contacts verified your device, they will have to do it again. Continue?"
+            },
+            "devices": {
+                "title": "Security",
+                "recreateSessions": "Rebuild sessions",
+                "recreateSessionsConfirmTitle": "Rebuild sessions?",
+                "recreateSessionsConfirmBody": "This will recreate the cryptographic sessions with your own devices. Use only if your own devices throw decryption errors.",
+                "noSessions": "There are no cryptographic sessions that are used for end-to-end encryption."
+            }
+        },
+        "blocklist": {
+            "title": "Blocklist",
+            "noUsersBlocked": "You have no users blocked",
+            "unblockAll": "Unblock all",
+            "unblockAllConfirmTitle": "Are you sure?",
+            "unblockAllConfirmBody": "Are you sure you want to unblock all users?",
+            "unblockJidConfirmTitle": "Unblock ${jid}?",
+            "unblockJidConfirmBody": "Are you sure you want to unblock ${jid}? You will receive messages from this user again."
+        },
+        "cropbackground": {
+            "blur": "Blur background",
+            "setAsBackground": "Set as background image"
+        },
+        "stickerPack": {
+            "removeConfirmTitle": "Remove sticker pack",
+            "removeConfirmBody": "Are you sure you want to remove this sticker pack?",
+            "installConfirmTitle": "Install sticker pack",
+            "installConfirmBody": "Are you sure you want to install this sticker pack?",
+            "restricted": "This sticker pack is restricted. That means that the stickers will be displayed but cannot be sent.",
+            "fetchingFailure": "Could not find the sticker pack"
+        },
+        "sharedMedia": {
+            "empty": {
+                "chat": "No shared media for this chat",
+                "general": "No media files available"
+            }
+        },
+        "settings": {
+            "settings": {
+                "title": "Settings",
+                "conversationsSection": "Conversations",
+                "accountSection": "Account",
+                "signOut": "Sign out",
+                "signOutConfirmTitle": "Sign Out",
+                "signOutConfirmBody": "You are about to sign out. Proceed?",
+                "miscellaneousSection": "Miscellaneous",
+                "debuggingSection": "Debugging",
+                "general": "General"
+            },
+            "about": {
+                "title": "About",
+                "licensed": "Licensed under GPL3",
+                "version": "Version ${version}",
+                "viewSourceCode": "View source code",
+                "nMoreToGo": "${n} more to go…",
+                "debugMenuShown": "You are now a developer!",
+                "debugMenuAlreadyShown": "You are already a developer!"
+            },
+            "appearance": {
+                "title": "Appearance",
+                "languageSection": "Language",
+                "language": "App language",
+                "languageSubtext": "Currently selected: $selectedLanguage",
+                "systemLanguage": "Default language"
+            },
+            "licenses": {
+                "title": "Open-Source Licenses",
+                "licensedUnder": "Licensed under $license"
+            },
+            "conversation": {
+                "title": "Chat",
+                "appearance": "Appearance",
+                "selectBackgroundImage": "Select background image",
+                "selectBackgroundImageDescription": "This image will be the background of all your chats",
+                "removeBackgroundImage": "Remove background image",
+                "removeBackgroundImageConfirmTitle": "Remove background image",
+                "removeBackgroundImageConfirmBody": "Are you sure you want to remove your conversation background image?",
+                "newChatsSection": "New Conversations",
+                "newChatsMuteByDefault": "Mute new chats by default",
+                "newChatsE2EE": "Enable end-to-end encryption by default. WARNING: Experimental",
+                "behaviourSection": "Behaviour",
+                "contactsIntegration": "Contacts integration",
+                "contactsIntegrationBody": "When enabled, data from the phonebook will be used to provide chat titles and profile pictures. No data will be sent to the server."
+            },
+            "debugging": {
+                "title": "Debugging options",
+                "generalSection": "General",
+                "generalEnableDebugging": "Enable debugging",
+                "generalEncryptionPassword": "Encryption password",
+                "generalEncryptionPasswordSubtext": "The logs may contain sensitive information so pick a strong passphrase",
+                "generalLoggingIp": "Logging IP",
+                "generalLoggingIpSubtext": "The IP the logs should be sent to",
+                "generalLoggingPort": "Logging Port",
+                "generalLoggingPortSubtext": "The IP the logs should be sent to"
+            },
+            "network": {
+                "title": "Network",
+                "automaticDownloadsSection": "Automatic Downloads",
+                "automaticDownloadsText": "Moxxy will automatically download files on…",
+                "automaticDownloadsMaximumSize": "Maximum Download Size",
+                "automaticDownloadsMaximumSizeSubtext": "The maximum file size for a file to be automatically downloaded",
+                "automaticDownloadAlways": "Always",
+                "wifi": "Wifi",
+                "mobileData": "Mobile data"
+            },
+            "privacy": {
+                "title": "Privacy",
+                "generalSection": "General",
+                "showContactRequests": "Show contact requests",
+                "showContactRequestsSubtext": "This will show people who added you to their contact list but sent no message yet",
+                "profilePictureVisibility": "Make profile picture public",
+                "profilePictureVisibilitSubtext": "If enabled, everyone can see your profile picture. If disabled, only users on your contact list can see your profile picture.",
+                "conversationsSection": "Conversation",
+                "sendChatMarkers": "Send chat markers",
+                "sendChatMarkersSubtext": "This will tell your conversation partner if you received or read a message",
+                "sendChatStates": "Send chat states",
+                "sendChatStatesSubtext": "This will show your conversation partner if you are typing or looking at the chat",
+                "redirectsSection": "Redirects",
+                "redirectText": "This will redirect $serviceName links that you tap to a proxy service, e.g. $exampleProxy",
+                "currentlySelected": "Currently selected: $proxy",
+                "redirectsTitle": "$serviceName Redirect",
+                "cannotEnableRedirect": "Cannot enable $serviceName redirects",
+                "cannotEnableRedirectSubtext": "You must first set a proxy service to redirect to. To do so, tap the field next to the switch.",
+                "urlEmpty": "URL cannot be empty",
+                "urlInvalid": "Invalid URL",
+                "redirectDialogTitle": "$serviceName Redirect",
+                "stickersPrivacy": "Keep sticker list public",
+                "stickersPrivacySubtext": "If enabled, everyone will be able to see your list of installed sticker packs."
+            },
+            "stickers": {
+                "title": "Stickers",
+                "stickerSection": "Sticker",
+                "displayStickers": "Display stickers in chat",
+                "autoDownload": "Automatically download stickers",
+                "autoDownloadBody": "If enabled, stickers are automatically downloaded when the sender is in your contact list.",
+                "stickerPacksSection": "Sticker packs",
+                "importStickerPack": "Import sticker pack",
+                "importSuccess": "Sticker pack successfully imported",
+                "importFailure": "Failed to import sticker pack",
+                "stickerPackSize": "(${size})"
+            },
+            "stickerPacks": {
+                "title": "Sticker Packs"
+            },
+            "storage": {
+                "title": "Storage",
+                "storageUsed": "Storage used: ${size}",
+                "sizePlaceholder": "Computing…",
+                "storageManagement": "Storage Management",
+                "removeOldMedia": {
+                    "title": "Remove old media",
+                    "description": "Removes old media files from the device"
+                },
+                "removeOldMediaDialog": {
+                    "title": "Delete media files",
+                    "options": {
+                        "all": "All media files",
+                        "oneWeek": "Older than 1 week",
+                        "oneMonth": "Older than 1 month"
+                    },
+                    "delete": "Delete",
+                    "confirmation": {
+                        "body": "Are you sure you want to delete old media files?"
+                    }
+                },
+                "viewMediaFiles": "View media files",
+                "mediaFiles": "Media Files",
+                "types": {
+                    "media": "Media",
+                    "stickers": "Stickers"
+                },
+                "manageStickers": "Manage sticker packs"
+            }
+        }
+    }
 }

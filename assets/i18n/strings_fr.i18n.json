@@ -1,0 +1,126 @@
+{
+    "language": "Français",
+    "global": {
+        "yes": "Oui",
+        "no": "Non",
+        "title": "Moxxy",
+        "dialogAccept": "OK",
+        "dialogCancel": "Annuler",
+        "moxxySubtitle": "Une expérience de construire un facile, moderne et belle client XMPP."
+    },
+    "notifications": {
+        "permanent": {
+            "ready": "Prêt pour recevoir des messages",
+            "disconnect": "Déconnecté",
+            "error": "Erreur",
+            "connecting": "Connexion…",
+            "idle": "Inactif"
+        },
+        "message": {
+            "markAsRead": "Marquer comme lu",
+            "reply": "Répondre"
+        },
+        "channels": {
+            "messagesChannelName": "Messages",
+            "warningChannelName": "Alertes",
+            "warningChannelDescription": "Alertes liées à Moxxy",
+            "messagesChannelDescription": "La voie des notifications pour des messages reçu"
+        },
+        "errors": {
+            "messageError": {
+                "body": "N'est pas parvenu à livrée la message au $[conversationTitle]",
+                "title": "Échec au livraison du message"
+            }
+        },
+        "titles": {
+            "error": "Erreur"
+        }
+    },
+    "messages": {
+        "file": "Fichier",
+        "image": "Image",
+        "video": "Vidéo",
+        "audio": "Audio",
+        "sticker": "Autocollant",
+        "retracted": "La message a été retirée",
+        "you": "Toi"
+    },
+    "permissions": {
+        "allow": "Autoriser",
+        "skip": "Sauter",
+        "requests": {
+            "notification": {
+                "reason": "Pour notifier des nouvelles messages, Moxxy à besoin de permission pour afficher les notifications."
+            },
+            "batterySaving": {
+                "reason": "Pour recevoir des messages dans l'arrière-plan, Moxxy devrait être exempté de la fonction d'économie de la batterie d'Android."
+            }
+        }
+    },
+    "dateTime": {
+        "justNow": "A l'instant",
+        "nMinutesAgo": "Il y a ${min}min",
+        "mondayAbbrev": "Lun",
+        "tuesdayAbbrev": "Mar",
+        "wednessdayAbbrev": "Mer",
+        "thursdayAbbrev": "Jeu",
+        "fridayAbbrev": "Ven",
+        "saturdayAbbrev": "Sam",
+        "sundayAbbrev": "Dim",
+        "january": "Janvier",
+        "february": "Février",
+        "march": "Mars",
+        "april": "Avril",
+        "may": "Mai",
+        "june": "Juin",
+        "july": "Juillet",
+        "august": "Août",
+        "september": "Septembre",
+        "october": "Octobre",
+        "november": "Novembre",
+        "december": "Décembre",
+        "today": "Aujourd’hui",
+        "yesterday": "Hier"
+    },
+    "errors": {
+        "general": {
+            "noInternet": "N'est pas connecté au l'Internet."
+        },
+        "omemo": {
+            "notEncryptedForDevice": "Cet message n'était pas chiffré pour cette appareil",
+            "invalidHmac": "Ne pouvait pas déchiffrer la message",
+            "noDecryptionKey": "Aucune clé de déchiffrer disponible",
+            "messageInvalidAfixElement": "Message chiffré invalide",
+            "verificationWrongJid": "Mauvais adresse XMPP",
+            "verificationWrongDevice": "Mauvais appareil OMEMO:2",
+            "verificationNotInList": "Mauvais appareil OMEMO:2",
+            "verificationWrongFingerprint": "Empreinte OMEMO:2 invalide",
+            "verificationInvalidOmemoUrl": "Empreinte OMEMO:2 invalide",
+            "couldNotPublish": "Ne pouvait pas publier l'identité cryptographique au la serveur. Cela signifie que chiffrement de bout en bout risque de ne pas fonctionner."
+        },
+        "filePicker": {
+            "permissionDenied": "L'autorisation de permission de storage a été déclinée."
+        }
+    },
+    "pages": {
+        "settings": {
+            "stickers": {
+                "title": "Autocollants",
+                "stickerSection": "Autocollant",
+                "stickerPacksSection": "Paquets d'autocollants",
+                "stickerPackSize": "(${size})"
+            },
+            "stickerPacks": {
+                "title": "Paquets d'autocollants"
+            },
+            "storage": {
+                "types": {
+                    "stickers": "Autocollants"
+                }
+            }
+        },
+        "conversation": {
+            "stickerSettings": "Paramètres des autocollants"
+        }
+    }
+}
