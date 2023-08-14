@@ -1242,10 +1242,16 @@ class XmppService {
     String conversationJid,
     String accountJid,
   ) async {
+    if (event.type == 'groupchat') {
+      _log.warning(
+          'Received a message reaction of type groupchat. Ignoring...');
+      return;
+    }
+
     final ms = GetIt.I.get<MessageService>();
     // TODO(Unknown): Once we support groupchats, we need to instead query by the stanza-id
     final reactions = event.extensions.get<MessageReactionsData>()!;
-    final msg = await ms.getMessageByOriginId(
+    final msg = await ms.getMessageByStanzaId(
       reactions.messageId,
       accountJid,
       queryReactionPreview: false,
