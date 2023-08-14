@@ -119,6 +119,22 @@
             "speeddialAddNoteToSelf": "自分用メモ",
             "speeddialNewChat": "新しいチャット",
             "overlaySettings": "設定"
+        },
+        "conversation": {
+            "blockShort": "ブロック",
+            "blockUser": "ユーザをブロック",
+            "retract": "メッセージを取り消す",
+            "retractBody": "本当にメッセージを取り消しますか? これはただのリクエストであり面目や体裁に関わるものではありません",
+            "forward": "送る",
+            "edit": "編集する",
+            "online": "オンライン",
+            "quote": "引用する",
+            "copy": "内容をコピー",
+            "addReaction": "リアクションを追加する",
+            "showError": "エラーを表示",
+            "showWarning": "警告を表示",
+            "warning": "警告",
+            "messageCopied": "メッセージはクリップボードにコピーされました"
         }
     },
     "notifications": {
@@ -148,5 +164,9 @@
                 "body": "${conversationTitle} に送信したメッセージは届きませんでした"
             }
         }
+    },
+    "permissions": {
+        "skip": "スキップ",
+        "allow": "許可する"
     }
 }
