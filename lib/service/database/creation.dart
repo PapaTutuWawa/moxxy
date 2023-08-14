@@ -8,13 +8,14 @@ Future<void> configureDatabase(Database db) async {
 }
 
 Future<void> createDatabase(Database db, int version) async {
-  // TODO: Adjust to migrations
   // XMPP state
   await db.execute(
     '''
     CREATE TABLE $xmppStateTable (
-      key   TEXT PRIMARY KEY,
-      value TEXT
+      key        TEXT NOT NULL,
+      accountJid TEXT NOT NULL,
+      value TEXT,
+      PRIMARY KEY (key, accountJid)
     )''',
   );
 
@@ -22,32 +23,37 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $messagesTable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      sender TEXT NOT NULL,
-      body TEXT,
-      timestamp INTEGER NOT NULL,
-      sid TEXT NOT NULL,
-      conversationJid TEXT NOT NULL,
+      id                       TEXT NOT NULL PRIMARY KEY,
+      accountJid               TEXT NOT NULL,
+      sender                   TEXT NOT NULL,
+      body                     TEXT,
+      timestamp                INTEGER NOT NULL,
+      sid                      TEXT NOT NULL,
+      conversationJid          TEXT NOT NULL,
       isFileUploadNotification INTEGER NOT NULL,
-      encrypted INTEGER NOT NULL,
-      errorType INTEGER,
-      warningType INTEGER,
-      received INTEGER,
-      displayed INTEGER,
-      acked INTEGER,
-      originId TEXT,
-      quote_id INTEGER,
-      file_metadata_id TEXT,
-      isDownloading INTEGER NOT NULL,
-      isUploading INTEGER NOT NULL,
-      isRetracted INTEGER,
-      isEdited INTEGER NOT NULL,
-      containsNoStore INTEGER NOT NULL,
-      stickerPackId   TEXT,
-      pseudoMessageType INTEGER,
-      pseudoMessageData TEXT,
-      CONSTRAINT fk_quote FOREIGN KEY (quote_id) REFERENCES $messagesTable (id)
-      CONSTRAINT fk_file_metadata FOREIGN KEY (file_metadata_id) REFERENCES $fileMetadataTable (id)
+      encrypted                INTEGER NOT NULL,
+      errorType                INTEGER,
+      warningType              INTEGER,
+      received                 INTEGER,
+      displayed                INTEGER,
+      acked                    INTEGER,
+      originId                 TEXT,
+      quote_id                 TEXT,
+      file_metadata_id         TEXT,
+      isDownloading            INTEGER NOT NULL,
+      isUploading              INTEGER NOT NULL,
+      isRetracted              INTEGER,
+      isEdited                 INTEGER NOT NULL,
+      containsNoStore          INTEGER NOT NULL,
+      stickerPackId            TEXT,
+      pseudoMessageType        INTEGER,
+      pseudoMessageData        TEXT,
+      CONSTRAINT fk_quote
+        FOREIGN KEY (quote_id)
+        REFERENCES $messagesTable (id)
+      CONSTRAINT fk_file_metadata
+        FOREIGN KEY (file_metadata_id)
+        REFERENCES $fileMetadataTable (id)
     )''',
   );
   await db.execute(
@@ -58,16 +64,19 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $reactionsTable (
+      accountJid TEXT NOT NULL,
+      message_id TEXT NOT NULL,
       senderJid  TEXT NOT NULL,
       emoji      TEXT NOT NULL,
-      message_id INTEGER NOT NULL,
-      CONSTRAINT pk_sender PRIMARY KEY (senderJid, emoji, message_id),
-      CONSTRAINT fk_message FOREIGN KEY (message_id) REFERENCES $messagesTable (id)
+      PRIMARY KEY (accountJid, senderJid, emoji, message_id),
+      CONSTRAINT fk_message
+        FOREIGN KEY (message_id)
+        REFERENCES $messagesTable (id)
         ON DELETE CASCADE
     )''',
   );
   await db.execute(
-    'CREATE INDEX idx_reactions_message_id ON $reactionsTable (message_id, senderJid)',
+    'CREATE INDEX idx_reactions_message_id ON $reactionsTable (message_id, accountJid, senderJid)',
   );
 
   // Notifications
@@ -76,6 +85,7 @@ Future<void> createDatabase(Database db, int version) async {
     CREATE TABLE $notificationsTable (
       id              INTEGER NOT NULL,
       conversationJid TEXT NOT NULL,
+      accountJid      TEXT NOT NULL,
       sender          TEXT,
       senderJid       TEXT,
       avatarPath      TEXT,
@@ -83,11 +93,11 @@ Future<void> createDatabase(Database db, int version) async {
       mime            TEXT,
       path            TEXT,
       timestamp       INTEGER NOT NULL,
-      PRIMARY KEY (id, conversationJid, senderJid, timestamp)
+      PRIMARY KEY (id, conversationJid, senderJid, timestamp, accountJid)
     )''',
   );
   await db.execute(
-    'CREATE INDEX idx_notifications ON $notificationsTable (conversationJid)',
+    'CREATE INDEX idx_notifications ON $notificationsTable (conversationJid, accountJid)',
   );
 
   // File metadata
@@ -130,7 +140,8 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $conversationsTable (
-      jid                 TEXT NOT NULL PRIMARY KEY,
+      jid                 TEXT NOT NULL,
+      accountJid          TEXT NOT NULL,
       title               TEXT NOT NULL,
       avatarPath          TEXT NOT NULL,
       avatarHash          TEXT,
@@ -140,17 +151,22 @@ Future<void> createDatabase(Database db, int version) async {
       open                INTEGER NOT NULL,
       muted               INTEGER NOT NULL,
       encrypted           INTEGER NOT NULL,
-      lastMessageId       INTEGER,
+      lastMessageId       TEXT,
       contactId           TEXT,
       contactAvatarPath   TEXT,
       contactDisplayName  TEXT,
-      CONSTRAINT fk_last_message FOREIGN KEY (lastMessageId) REFERENCES $messagesTable (id),
-      CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
+      PRIMARY KEY (jid, accountJid),
+      CONSTRAINT fk_last_message
+        FOREIGN KEY (lastMessageId)
+        REFERENCES $messagesTable (id),
+      CONSTRAINT fk_contact_id
+        FOREIGN KEY (contactId)
+        REFERENCES $contactsTable (id)
         ON DELETE SET NULL
     )''',
   );
   await db.execute(
-    'CREATE INDEX idx_conversation_id ON $conversationsTable (jid)',
+    'CREATE INDEX idx_conversation_id ON $conversationsTable (jid, accountJid)',
   );
 
   // Contacts
@@ -166,18 +182,20 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $rosterTable (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      jid TEXT NOT NULL,
-      title TEXT NOT NULL,
-      avatarPath TEXT NOT NULL,
-      avatarHash TEXT NOT NULL,
-      subscription TEXT NOT NULL,
-      ask TEXT NOT NULL,
-      contactId TEXT,
-      contactAvatarPath TEXT,
+      jid                TEXT NOT NULL,
+      accountJid         TEXT NOT NULL,
+      title              TEXT NOT NULL,
+      avatarPath         TEXT NOT NULL,
+      avatarHash         TEXT NOT NULL,
+      subscription       TEXT NOT NULL,
+      ask                TEXT NOT NULL,
+      contactId          TEXT,
+      contactAvatarPath  TEXT,
       contactDisplayName TEXT,
-      pseudoRosterItem INTEGER NOT NULL,
-      CONSTRAINT fk_contact_id FOREIGN KEY (contactId) REFERENCES $contactsTable (id)
+      pseudoRosterItem   INTEGER NOT NULL,
+      CONSTRAINT fk_contact_id
+        FOREIGN KEY (contactId)
+        REFERENCES $contactsTable (id)
         ON DELETE SET NULL
     )''',
   );
@@ -213,7 +231,9 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $blocklistTable (
-      jid TEXT PRIMARY KEY
+      jid        TEXT NOT NULL,
+      accountJid TEXT NOT NULL,
+      PRIMARY KEY (accountJid, jid)
     );
     ''',
   );
@@ -239,40 +259,44 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $omemoDeviceListTable (
-      jid     TEXT NOT NULL PRIMARY KEY,
-      devices TEXT NOT NULL
+      jid        TEXT NOT NULL,
+      accountJid TEXT NOT NULL,
+      devices    TEXT NOT NULL,
+      PRIMARY KEY (accountJid, jid)
     )''',
   );
   await db.execute(
     '''
     CREATE TABLE $omemoRatchetsTable (
-      jid TEXT NOT NULL,
-      device INTEGER NOT NULL,
-      dhsPub  TEXT NOT NULL,
-      dhs     TEXT NOT NULL,
-      dhrPub  TEXT,
-      rk      TEXT NOT NULL,
-      cks     TEXT,
-      ckr     TEXT,
-      ns      INTEGER NOT NULL,
-      nr      INTEGER NOT NULL,
-      pn      INTEGER NOT NULL,
-      ik      TEXT NOT NULL,
-      ad      TEXT NOT NULL,
-      skipped TEXT NOT NULL,
-      kex     TEXT NOT NULL,
-      acked   INTEGER NOT NULL,
-      PRIMARY KEY (jid, device)
+      jid        TEXT NOT NULL,
+      accountJid TEXT NOT NULL,
+      device     INTEGER NOT NULL,
+      dhsPub     TEXT NOT NULL,
+      dhs        TEXT NOT NULL,
+      dhrPub     TEXT,
+      rk         TEXT NOT NULL,
+      cks        TEXT,
+      ckr        TEXT,
+      ns         INTEGER NOT NULL,
+      nr         INTEGER NOT NULL,
+      pn         INTEGER NOT NULL,
+      ik         TEXT NOT NULL,
+      ad         TEXT NOT NULL,
+      skipped    TEXT NOT NULL,
+      kex        TEXT NOT NULL,
+      acked      INTEGER NOT NULL,
+      PRIMARY KEY (accountJid, jid, device)
     )''',
   );
   await db.execute(
     '''
     CREATE TABLE $omemoTrustTable (
-      jid     TEXT NOT NULL,
-      device  INTEGER NOT NULL,
-      trust   INTEGER NOT NULL,
-      enabled INTEGER NOT NULL,
-      PRIMARY KEY (jid, device)
+      jid        TEXT NOT NULL,
+      accountJid TEXT NOT NULL,
+      device     INTEGER NOT NULL,
+      trust      INTEGER NOT NULL,
+      enabled    INTEGER NOT NULL,
+      PRIMARY KEY (accountJid, jid, device)
     )''',
   );
 
@@ -290,8 +314,14 @@ Future<void> createDatabase(Database db, int version) async {
   await db.execute(
     '''
     CREATE TABLE $groupchatTable (
-      jid TEXT PRIMARY KEY,
-      nick TEXT NOT NULL
+      jid        TEXT NOT NULL,
+      accountJid TEXT NOT NULL,
+      nick       TEXT NOT NULL,
+      PRIMARY KEY (jid, accountJid),
+      CONSTRAINT fk_groupchat
+        FOREIGN KEY (jid, accountJid)
+        REFERENCES $conversationsTable (jid, accountJid)
+        ON DELETE CASCADE
     )''',
   );
 
