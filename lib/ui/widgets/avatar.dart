@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/shared/events.dart';
+import 'package:moxxyv2/ui/bloc/conversations_bloc.dart';
 import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 import 'package:moxxyv2/ui/service/avatars.dart';
 
@@ -18,6 +20,26 @@ class CachingXMPPAvatar extends StatefulWidget {
     this.onTap,
     super.key,
   });
+
+  static Widget self({
+    required double radius,
+    VoidCallback? onTap,
+  }) {
+    return BlocBuilder<ConversationsBloc, ConversationsState>(
+      buildWhen: (prev, next) => prev.avatarPath != next.avatarPath,
+      builder: (context, state) {
+        return CachingXMPPAvatar(
+          radius: radius,
+          path: state.avatarPath,
+          altIcon: Icons.person,
+          hasContactId: false,
+          jid: state.jid,
+          ownAvatar: true,
+          onTap: onTap,
+        );
+      },
+    );
+  }
 
   /// The JID of the entity.
   final String jid;

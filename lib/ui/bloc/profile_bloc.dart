@@ -49,7 +49,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
               arguments: ProfileArguments(
                 event.isSelfProfile,
                 event.jid ?? event.conversation!.jid,
-                event.conversation!.type,
+                event.conversation?.type ?? ConversationType.chat,
               ),
             ),
           ),

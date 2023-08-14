@@ -282,13 +282,8 @@ class ConversationsPageState extends State<ConversationsPage>
                             // NOTE: We do not care about the avatar hash because
                             //       we just read it from the XMPP state in the
                             //       avatar service.
-                            child: CachingXMPPAvatar(
+                            child: CachingXMPPAvatar.self(
                               radius: 20,
-                              path: state.avatarPath,
-                              altIcon: Icons.person,
-                              hasContactId: false,
-                              jid: state.jid,
-                              ownAvatar: true,
                             ),
                           ),
                         ),

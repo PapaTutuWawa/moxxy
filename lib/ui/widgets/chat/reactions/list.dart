@@ -77,11 +77,8 @@ class ReactionList extends StatelessWidget {
                 ownReaction ? null : bloc.getConversationByJid(reaction.jid);
             return ReactionsRow(
               avatar: ownReaction
-                  ? const CachingXMPPAvatar(
+                  ? CachingXMPPAvatar.self(
                       radius: 35,
-                      jid: '',
-                      hasContactId: false,
-                      ownAvatar: true,
                     )
                   : CachingXMPPAvatar(
                       radius: 35,
