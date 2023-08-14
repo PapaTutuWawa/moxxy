@@ -8,6 +8,30 @@ const TextStyle _labelStyle = TextStyle(
   fontSize: 18,
 );
 
+class _ListItem extends StatelessWidget {
+  const _ListItem(this.feature, this.supported);
+
+  /// Whether the feature is supported.
+  final bool supported;
+
+  /// The name of the feature.
+  final String feature;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        supported ? Icons.check : Icons.close,
+        color: supported ? Colors.green : Colors.red,
+      ),
+      title: Text(
+        feature,
+        style: _labelStyle,
+      ),
+    );
+  }
+}
+
 class ServerInfoPage extends StatelessWidget {
   const ServerInfoPage({super.key});
 
@@ -36,57 +60,14 @@ class ServerInfoPage extends StatelessWidget {
 
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SingleChildScrollView(
-              child: Table(
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                children: [
-                  TableRow(
-                    children: [
-                      const Text('Stream Management', style: _labelStyle),
-                      Checkbox(
-                        value: state.streamManagementSupported,
-                        onChanged: (_) {},
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      const Text('HTTP File Upload', style: _labelStyle),
-                      Checkbox(
-                        value: state.httpFileUploadSupported,
-                        onChanged: (_) {},
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      const Text('User Blocking', style: _labelStyle),
-                      Checkbox(
-                        value: state.userBlockingSupported,
-                        onChanged: (_) {},
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      const Text('Client State Indication', style: _labelStyle),
-                      Checkbox(
-                        value: state.csiSupported,
-                        onChanged: (_) {},
-                      ),
-                    ],
-                  ),
-                  TableRow(
-                    children: [
-                      const Text('Message Carbons', style: _labelStyle),
-                      Checkbox(
-                        value: state.carbonsSupported,
-                        onChanged: (_) {},
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            child: ListView(
+              children: [
+                _ListItem('Stream Management', state.streamManagementSupported),
+                _ListItem('HTTP File Upload', state.httpFileUploadSupported),
+                _ListItem('User Blocking', state.userBlockingSupported),
+                _ListItem('Client State Indication', state.csiSupported),
+                _ListItem('Message Carbons', state.carbonsSupported),
+              ],
             ),
           );
         },
