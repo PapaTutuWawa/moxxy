@@ -117,7 +117,7 @@ Future<void> upgradeFromV45ToV46(Database db) async {
           ..remove('quote_id'),
         'accountJid': accountJid,
         'quote_id': messageMap.maybeGet(message['quote_id'] as int?),
-        'id': messageMap[message['id']! as int]!,
+        'id': messageMap[message['id']! as int],
       });
     }
   }
