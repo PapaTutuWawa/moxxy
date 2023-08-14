@@ -142,15 +142,18 @@ class HttpFileTransferService {
 
     // Notify UI of upload failure
     for (final recipient in job.recipients) {
+      final m = job.messageMap[recipient]!;
       final msg = await ms.updateMessage(
-        job.messageMap[recipient]!.id,
+        m.id,
+        job.accountJid,
         errorType: error,
         isUploading: false,
       );
       sendEvent(MessageUpdatedEvent(message: msg));
 
       // Update the conversation list
-      final conversation = await cs.getConversationByJid(recipient);
+      final conversation =
+          await cs.getConversationByJid(recipient, job.accountJid);
       if (conversation?.lastMessage?.id == msg.id) {
         final newConversation = conversation!.copyWith(
           lastMessage: msg,
@@ -224,7 +227,7 @@ class HttpFileTransferService {
           final progress = current.toDouble() / total.toDouble();
           sendEvent(
             ProgressEvent(
-              id: job.messageMap.values.first.id,
+              id: job.messageMap[job.recipients.first]!.id,
               progress: progress == 1 ? 0.99 : progress,
             ),
           );
@@ -321,8 +324,10 @@ class HttpFileTransferService {
       const uuid = Uuid();
       for (final recipient in job.recipients) {
         // Notify UI of upload completion
+        final m = job.messageMap[recipient]!;
         var msg = await ms.updateMessage(
-          job.messageMap[recipient]!.id,
+          m.id,
+          job.accountJid,
           errorType: null,
           isUploading: false,
           fileMetadata: metadata,
@@ -331,6 +336,7 @@ class HttpFileTransferService {
         final oldSid = msg.sid;
         msg = await ms.updateMessage(
           msg.id,
+          job.accountJid,
           sid: uuid.v4(),
           originId: uuid.v4(),
         );
@@ -397,7 +403,8 @@ class HttpFileTransferService {
 
     // Notify UI of download failure
     final msg = await ms.updateMessage(
-      job.mId,
+      job.messageId,
+      job.accountJid,
       errorType: error,
       isDownloading: false,
     );
@@ -438,7 +445,7 @@ class HttpFileTransferService {
           final progress = current.toDouble() / total.toDouble();
           sendEvent(
             ProgressEvent(
-              id: job.mId,
+              id: job.messageId,
               progress: progress == 1 ? 0.99 : progress,
             ),
           );
@@ -464,7 +471,7 @@ class HttpFileTransferService {
       // The file was downloaded and is now being decrypted
       sendEvent(
         ProgressEvent(
-          id: job.mId,
+          id: job.messageId,
         ),
       );
 
@@ -577,7 +584,10 @@ class HttpFileTransferService {
     }
 
     final cs = GetIt.I.get<ConversationService>();
-    final conversation = (await cs.getConversationByJid(job.conversationJid))!;
+    final conversation = (await cs.getConversationByJid(
+      job.conversationJid,
+      job.accountJid,
+    ))!;
 
     // Figure out if we should show a warning
     MessageWarningType? warning;
@@ -588,7 +598,8 @@ class HttpFileTransferService {
     }
 
     final msg = await GetIt.I.get<MessageService>().updateMessage(
-          job.mId,
+          job.messageId,
+          job.accountJid,
           fileMetadata: metadata,
           isFileUploadNotification: false,
           warningType: warning,
@@ -598,7 +609,7 @@ class HttpFileTransferService {
     sendEvent(MessageUpdatedEvent(message: msg));
 
     final updatedConversation = conversation.copyWith(
-      lastMessage: conversation.lastMessage?.id == job.mId
+      lastMessage: conversation.lastMessage?.id == job.messageId
           ? msg
           : conversation.lastMessage,
     );
@@ -608,7 +619,11 @@ class HttpFileTransferService {
     if (notification.shouldShowNotification(msg.conversationJid) &&
         job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      await notification.updateNotification(updatedConversation, msg);
+      await notification.updateNotification(
+        updatedConversation,
+        msg,
+        job.accountJid,
+      );
     }
 
     sendEvent(ConversationUpdatedEvent(conversation: updatedConversation));

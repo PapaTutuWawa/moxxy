@@ -10,10 +10,15 @@ import 'package:moxxyv2/shared/models/roster.dart';
 
 /// Update the "showAddToRoster" state of the conversation with jid [jid] to
 /// [showAddToRoster], if the conversation exists.
-Future<void> updateConversation(String jid, bool showAddToRoster) async {
+Future<void> updateConversation(
+  String jid,
+  String accountJid,
+  bool showAddToRoster,
+) async {
   final cs = GetIt.I.get<ConversationService>();
   final newConversation = await cs.createOrUpdateConversation(
     jid,
+    accountJid,
     update: (conversation) async {
       final c = conversation.copyWith(
         showAddToRoster: showAddToRoster,
@@ -30,10 +35,11 @@ Future<void> updateConversation(String jid, bool showAddToRoster) async {
 class MoxxyRosterStateManager extends BaseRosterStateManager {
   @override
   Future<RosterCacheLoadResult> loadRosterCache() async {
+    final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     final rs = GetIt.I.get<RosterService>();
     return RosterCacheLoadResult(
       (await GetIt.I.get<XmppStateService>().getXmppState()).lastRosterVersion,
-      (await rs.getRoster())
+      (await rs.getRoster(accountJid))
           .map(
             (item) => XmppRosterItem(
               jid: item.jid,
@@ -55,6 +61,7 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
     List<XmppRosterItem> added,
   ) async {
     final rs = GetIt.I.get<RosterService>();
+    final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     final xss = GetIt.I.get<XmppStateService>();
     await xss.modifyXmppState(
       (state) => state.copyWith(
@@ -64,18 +71,19 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
 
     // Remove stale items
     for (final jid in removed) {
-      await rs.removeRosterItemByJid(jid);
-      await updateConversation(jid, true);
+      await rs.removeRosterItem(jid, accountJid);
+      await updateConversation(jid, accountJid, true);
     }
 
     // Create new roster items
     final rosterAdded = List<RosterItem>.empty(growable: true);
     for (final item in added) {
-      final exists = await rs.getRosterItemByJid(item.jid) != null;
+      final exists = await rs.getRosterItemByJid(item.jid, accountJid) != null;
       // Skip adding items twice
       if (exists) continue;
 
       final newRosterItem = await rs.addRosterItemFromData(
+        accountJid,
         '',
         '',
         item.jid,
@@ -91,20 +99,25 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
       rosterAdded.add(newRosterItem);
 
       // Update the cached conversation item
-      await updateConversation(item.jid, newRosterItem.showAddToRosterButton);
+      await updateConversation(
+        item.jid,
+        accountJid,
+        newRosterItem.showAddToRosterButton,
+      );
     }
 
     // Update modified items
     final rosterModified = List<RosterItem>.empty(growable: true);
     for (final item in modified) {
-      final ritem = await rs.getRosterItemByJid(item.jid);
+      final ritem = await rs.getRosterItemByJid(item.jid, accountJid);
       if (ritem == null) {
         //_log.warning('Could not find roster item with JID $jid during update');
         continue;
       }
 
       final newRosterItem = await rs.updateRosterItem(
-        ritem.id,
+        ritem.jid,
+        accountJid,
         title: item.name,
         subscription: item.subscription,
         ask: item.ask,
@@ -113,7 +126,11 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
       rosterModified.add(newRosterItem);
 
       // Update the cached conversation item
-      await updateConversation(item.jid, newRosterItem.showAddToRosterButton);
+      await updateConversation(
+        item.jid,
+        accountJid,
+        newRosterItem.showAddToRosterButton,
+      );
     }
 
     // Tell the UI

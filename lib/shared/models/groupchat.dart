@@ -6,7 +6,13 @@ part 'groupchat.g.dart';
 @freezed
 class GroupchatDetails with _$GroupchatDetails {
   factory GroupchatDetails(
+    /// The JID of the groupchat.
     String jid,
+
+    /// The associated account JID.
+    String accountJid,
+
+    /// The nick to join as.
     String nick,
   ) = _GroupchatDetails;
 

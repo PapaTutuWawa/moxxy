@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:math';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
 import 'package:logging/logging.dart';
 import 'package:meta/meta.dart';
 import 'package:moxxyv2/service/database/creation.dart';
@@ -44,75 +43,17 @@ import 'package:moxxyv2/service/database/migrations/0002_sticker_metadata.dart';
 import 'package:moxxyv2/service/database/migrations/0003_avatar_hashes.dart';
 import 'package:moxxyv2/service/database/migrations/0003_file_transfer_error_to_warning.dart';
 import 'package:moxxyv2/service/database/migrations/0003_groupchat_table.dart';
+import 'package:moxxyv2/service/database/migrations/0003_jid_attribute.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo_pseudo_messages.dart';
 import 'package:moxxyv2/service/database/migrations/0003_notifications.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0003_sticker_pack_timestamp.dart';
+import 'package:moxxyv2/service/xmpp_state.dart';
 import 'package:path/path.dart' as path;
-import 'package:random_string/random_string.dart';
 // ignore: implementation_imports
 import 'package:sqflite_common/src/sql_builder.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
-
-const databasePasswordKey = 'database_encryption_password';
-
-extension DatabaseHelpers on Database {
-  /// Count the number of rows in [table] where [where] with the arguments [whereArgs]
-  /// matches.
-  Future<int> count(
-    String table,
-    String where,
-    List<Object?> whereArgs,
-  ) async {
-    return Sqflite.firstIntValue(
-      await rawQuery(
-        'SELECT COUNT(*) FROM $table WHERE $where',
-        whereArgs,
-      ),
-    )!;
-  }
-
-  /// Like update but returns the affected row.
-  Future<Map<String, Object?>> updateAndReturn(
-    String table,
-    Map<String, Object?> values, {
-    required String where,
-    required List<Object?> whereArgs,
-  }) async {
-    final q = SqlBuilder.update(
-      table,
-      values,
-      where: where,
-      whereArgs: whereArgs,
-    );
-
-    final result = await rawQuery(
-      '${q.sql} RETURNING *',
-      q.arguments,
-    );
-    assert(result.length == 1, 'Only one row must be returned');
-    return result.first;
-  }
-
-  /// Like insert but returns the affected row.
-  Future<Map<String, Object?>> insertAndReturn(
-    String table,
-    Map<String, Object?> values,
-  ) async {
-    final q = SqlBuilder.insert(
-      table,
-      values,
-    );
-
-    final result = await rawQuery(
-      '${q.sql} RETURNING *',
-      q.arguments,
-    );
-    assert(result.length == 1, 'Only one row must be returned');
-    return result.first;
-  }
-}
 
 @internal
 const List<DatabaseMigration<Database>> migrations = [
@@ -160,15 +101,10 @@ const List<DatabaseMigration<Database>> migrations = [
   DatabaseMigration(43, upgradeFromV42ToV43),
   DatabaseMigration(44, upgradeFromV43ToV44),
   DatabaseMigration(45, upgradeFromV44ToV45),
+  DatabaseMigration(46, upgradeFromV45ToV46),
 ];
 
 class DatabaseService {
-  /// Secure storage for accesing the database encryption key.
-  final FlutterSecureStorage _storage = const FlutterSecureStorage(
-    // TODO(Unknown): Set other options
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
-
   /// Logger.
   final Logger _log = Logger('DatabaseService');
 
@@ -180,20 +116,8 @@ class DatabaseService {
       await getDatabasesPath(),
       'moxxy.db',
     );
-
-    String key;
-    if (await _storage.containsKey(key: databasePasswordKey)) {
-      _log.finest('Database encryption key found');
-      key = (await _storage.read(key: databasePasswordKey))!;
-    } else {
-      _log.finest('Database encryption not key found. Generating it...');
-      key = randomAlphaNumeric(
-        40,
-        provider: CoreRandomProvider.from(Random.secure()),
-      );
-      await _storage.write(key: databasePasswordKey, value: key);
-      _log.finest('Key generation done...');
-    }
+    final dbPassword =
+        await GetIt.I.get<XmppStateService>().getOrCreateDatabaseKey();
 
     // Just some sanity checks
     final version = migrations.last.version;
@@ -210,7 +134,7 @@ class DatabaseService {
 
     database = await openDatabase(
       dbPath,
-      password: key,
+      password: dbPassword,
       version: version,
       onCreate: createDatabase,
       onConfigure: (db) async {
@@ -229,5 +153,62 @@ class DatabaseService {
     );
 
     _log.finest('Database setup done');
+  }
+}
+
+extension DatabaseHelpers on Database {
+  /// Count the number of rows in [table] where [where] with the arguments [whereArgs]
+  /// matches.
+  Future<int> count(
+    String table,
+    String where,
+    List<Object?> whereArgs,
+  ) async {
+    return Sqflite.firstIntValue(
+      await rawQuery(
+        'SELECT COUNT(*) FROM $table WHERE $where',
+        whereArgs,
+      ),
+    )!;
+  }
+
+  /// Like insert but returns the affected row.
+  Future<Map<String, Object?>> insertAndReturn(
+    String table,
+    Map<String, Object?> values,
+  ) async {
+    final q = SqlBuilder.insert(
+      table,
+      values,
+    );
+
+    final result = await rawQuery(
+      '${q.sql} RETURNING *',
+      q.arguments,
+    );
+    assert(result.length == 1, 'Only one row must be returned');
+    return result.first;
+  }
+
+  /// Like update but returns the affected row.
+  Future<Map<String, Object?>> updateAndReturn(
+    String table,
+    Map<String, Object?> values, {
+    required String where,
+    required List<Object?> whereArgs,
+  }) async {
+    final q = SqlBuilder.update(
+      table,
+      values,
+      where: where,
+      whereArgs: whereArgs,
+    );
+
+    final result = await rawQuery(
+      '${q.sql} RETURNING *',
+      q.arguments,
+    );
+    assert(result.length == 1, 'Only one row must be returned');
+    return result.first;
   }
 }

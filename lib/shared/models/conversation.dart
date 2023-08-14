@@ -86,8 +86,9 @@ class GroupchatDetailsConverter
   @override
   GroupchatDetails fromJson(Map<String, dynamic> json) {
     return GroupchatDetails(
-      json['jid'] as String,
-      json['nick'] as String,
+      json['jid']! as String,
+      json['accountJid']! as String,
+      json['nick']! as String,
     );
   }
 
@@ -95,6 +96,7 @@ class GroupchatDetailsConverter
   Map<String, dynamic> toJson(GroupchatDetails object) {
     return {
       'jid': object.jid,
+      'accountJid': object.accountJid,
       'nick': object.nick,
     };
   }
@@ -103,6 +105,9 @@ class GroupchatDetailsConverter
 @freezed
 class Conversation with _$Conversation {
   factory Conversation(
+    /// The account that has the conversation.
+    String accountJid,
+
     /// The title of the chat.
     String title,
 

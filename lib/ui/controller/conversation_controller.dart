@@ -21,7 +21,6 @@ import 'package:record/record.dart';
 
 class MessageEditingState {
   const MessageEditingState(
-    this.id,
     this.sid,
     this.originalBody,
     this.quoted,
@@ -29,9 +28,6 @@ class MessageEditingState {
 
   /// The message's original body
   final String originalBody;
-
-  /// The message's database id
-  final int id;
 
   /// The message's stanza id.
   final String sid;
@@ -157,7 +153,7 @@ class BidirectionalConversationController
           SendChatStateCommand(
             state: state.toString().split('.').last,
             jid: conversationJid,
-            type: conversationType,
+            conversationType: conversationType,
           ),
           awaitable: false,
         );
@@ -290,7 +286,10 @@ class BidirectionalConversationController
     // we know about.
     if (newMessage.timestamp < cache.first.timestamp) return;
 
-    replaceItem((msg) => msg.id == newMessage.id, newMessage);
+    replaceItem(
+      (msg) => msg.id == newMessage.id,
+      newMessage,
+    );
   }
 
   /// Retract the message with originId [originId].
@@ -336,7 +335,6 @@ class BidirectionalConversationController
             body: text,
             quotedMessage: _quotedMessage,
             chatState: ChatState.active.toName(),
-            editId: _messageEditingState?.id,
             editSid: _messageEditingState?.sid,
             currentConversationJid: conversationJid,
           ),
@@ -425,13 +423,11 @@ class BidirectionalConversationController
   void beginMessageEditing(
     String originalBody,
     Message? quotes,
-    int id,
     String sid,
   ) {
-    _log.fine('Beginning editing for id: $id, sid: $sid');
+    _log.fine('Beginning editing for $sid');
 
     _messageEditingState = MessageEditingState(
-      id,
       sid,
       originalBody,
       quotes,

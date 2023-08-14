@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -48,7 +47,6 @@ import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
-//import 'package:permission_handler/permission_handler.dart';
 
 void setupBackgroundEventHandler() {
   final handler = EventHandler()
@@ -139,6 +137,7 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
   // ignore: avoid_dynamic_calls
   final xc = GetIt.I.get<XmppConnection>();
   if (result.isType<bool>() && result.get<bool>()) {
+    await GetIt.I.get<XmppStateService>().setAccountJid(command.jid);
     final preferences =
         await GetIt.I.get<PreferencesService>().getPreferences();
     final settings = xc.connectionSettings;
@@ -150,6 +149,7 @@ Future<void> performLogin(LoginCommand command, {dynamic extra}) async {
       id: id,
     );
   } else {
+    await GetIt.I.get<XmppStateService>().resetAccountJid();
     await xc.reconnectionPolicy.setShouldReconnect(false);
     sendEvent(
       LoginFailureEvent(
@@ -164,14 +164,15 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
   PreferencesState preferences,
 ) async {
   final xss = GetIt.I.get<XmppStateService>();
+  final accountJid = await xss.getAccountJid();
   final state = await xss.getXmppState();
 
-  await GetIt.I.get<RosterService>().loadRosterFromDatabase();
+  await GetIt.I.get<RosterService>().loadRosterFromDatabase(accountJid);
 
   return PreStartDoneEvent(
     state: 'logged_in',
-    jid: state.jid,
-    displayName: state.displayName ?? state.jid!.split('@').first,
+    jid: accountJid,
+    displayName: state.displayName ?? accountJid.split('@').first,
     avatarUrl: state.avatarUrl,
     avatarHash: state.avatarHash,
     preferences: preferences,
@@ -182,10 +183,11 @@ Future<PreStartDoneEvent> _buildPreStartDoneEvent(
         .get<PermissionsService>()
         .shouldRequestBatteryOptimisationExcemption(),
     conversations:
-        (await GetIt.I.get<ConversationService>().loadConversations())
+        (await GetIt.I.get<ConversationService>().loadConversations(accountJid))
             .where((c) => c.open)
             .toList(),
-    roster: await GetIt.I.get<RosterService>().loadRosterFromDatabase(),
+    roster:
+        await GetIt.I.get<RosterService>().loadRosterFromDatabase(accountJid),
   );
 }
 
@@ -208,8 +210,12 @@ Future<void> performPreStart(
         await GetIt.I.get<XmppConnection>().getConnectionState(),
       );
 
-  final settings = await GetIt.I.get<XmppService>().getConnectionSettings();
-  if (settings != null) {
+  // Check if we have an account JID and, if we do, if we have login data.
+  final accountJid = await GetIt.I.get<XmppStateService>().getRawAccountJid();
+  final isLoggedIn = accountJid != null
+      ? await GetIt.I.get<XmppService>().getConnectionSettings() != null
+      : false;
+  if (isLoggedIn) {
     sendEvent(
       await _buildPreStartDoneEvent(preferences),
       id: id,
@@ -239,13 +245,16 @@ Future<void> performAddConversation(
 
   final cs = GetIt.I.get<ConversationService>();
   final css = GetIt.I.get<ContactsService>();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final preferences = await GetIt.I.get<PreferencesService>().getPreferences();
   await cs.createOrUpdateConversation(
     command.jid,
+    accountJid,
     create: () async {
       // Create
       final contactId = await css.getContactIdForJid(command.jid);
       final newConversation = await cs.addConversationFromData(
+        accountJid,
         command.title,
         null,
         ConversationType.fromString(command.conversationType),
@@ -276,6 +285,7 @@ Future<void> performAddConversation(
         // Re-open the conversation
         final newConversation = await cs.updateConversation(
           c.jid,
+          accountJid,
           open: true,
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
         );
@@ -307,9 +317,10 @@ Future<void> performSetOpenConversation(
   // Null just means that the chat has been closed
   // Empty string JID for notes to self
   if (command.jid != null && command.jid != '') {
-    await GetIt.I
-        .get<NotificationsService>()
-        .dismissNotificationsByJid(command.jid!);
+    await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
+          command.jid!,
+          await GetIt.I.get<XmppStateService>().getAccountJid(),
+        );
   }
 }
 
@@ -317,15 +328,18 @@ Future<void> performSendMessage(
   SendMessageCommand command, {
   dynamic extra,
 }) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final xs = GetIt.I.get<XmppService>();
-  if (command.editSid != null && command.editId != null) {
+  if (command.editSid != null) {
     assert(
       command.recipients.length == 1,
       'Edits must not be sent to multiple recipients',
     );
 
     await xs.sendMessageCorrection(
-      command.editId!,
+      command.editSid!,
+      command.recipients.first,
+      accountJid,
       command.body,
       command.editSid!,
       command.recipients.first,
@@ -337,6 +351,7 @@ Future<void> performSendMessage(
   }
 
   await xs.sendMessage(
+    accountJid: accountJid,
     body: command.body,
     recipients: command.recipients,
     chatState: command.chatState.isNotEmpty
@@ -462,9 +477,12 @@ Future<void> performSetPreferences(
 }
 
 /// Attempts to achieve a "both" subscription with [jid].
-Future<void> _maybeAchieveBothSubscription(String jid) async {
+Future<void> _maybeAchieveBothSubscription(
+  String jid,
+  String accountJid,
+) async {
   final roster = GetIt.I.get<RosterService>();
-  final item = await roster.getRosterItemByJid(jid);
+  final item = await roster.getRosterItemByJid(jid, accountJid);
   if (item != null) {
     GetIt.I.get<Logger>().finest(
           'Roster item for $jid has subscription "${item.subscription}" with ask "${item.ask}"',
@@ -494,7 +512,7 @@ Future<void> _maybeAchieveBothSubscription(String jid) async {
         break;
     }
   } else {
-    await roster.addToRosterWrapper('', '', jid, jid.split('@')[0]);
+    await roster.addToRosterWrapper(accountJid, '', '', jid, jid.split('@')[0]);
   }
 }
 
@@ -503,19 +521,21 @@ Future<void> performAddContact(
   dynamic extra,
 }) async {
   final id = extra as String;
-
   final jid = command.jid;
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final roster = GetIt.I.get<RosterService>();
-  final inRoster = await roster.isInRoster(jid);
+  final inRoster = await roster.isInRoster(jid, accountJid);
   final cs = GetIt.I.get<ConversationService>();
 
-  final conversation = await cs.getConversationByJid(jid);
+  final conversation = await cs.getConversationByJid(jid, accountJid);
   if (conversation != null) {
     await cs.createOrUpdateConversation(
       jid,
+      accountJid,
       update: (c) async {
         final newConversation = await cs.updateConversation(
           jid,
+          accountJid,
           open: true,
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
         );
@@ -533,7 +553,7 @@ Future<void> performAddContact(
     );
 
     // Add to roster, if needed
-    await _maybeAchieveBothSubscription(jid);
+    await _maybeAchieveBothSubscription(jid, accountJid);
   } else {
     // We did not have a conversation with that JID.
     final info = await GetIt.I
@@ -573,6 +593,7 @@ Future<void> performAddContact(
     } else {
       await cs.createOrUpdateConversation(
         jid,
+        accountJid,
         create: () async {
           // Create
           final css = GetIt.I.get<ContactsService>();
@@ -580,6 +601,7 @@ Future<void> performAddContact(
           final prefs =
               await GetIt.I.get<PreferencesService>().getPreferences();
           final newConversation = await cs.addConversationFromData(
+            accountJid,
             jid.split('@')[0],
             null,
             ConversationType.chat,
@@ -609,7 +631,7 @@ Future<void> performAddContact(
       );
 
       // Add to roster, if required
-      await _maybeAchieveBothSubscription(jid);
+      await _maybeAchieveBothSubscription(jid, accountJid);
     }
   }
 }
@@ -620,12 +642,13 @@ Future<void> performRemoveContact(
 }) async {
   final rs = GetIt.I.get<RosterService>();
   final cs = GetIt.I.get<ConversationService>();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
   // Remove from roster
-  await rs.removeFromRosterWrapper(command.jid);
+  await rs.removeFromRosterWrapper(command.jid, accountJid);
 
   // Update the conversation
-  final conversation = await cs.getConversationByJid(command.jid);
+  final conversation = await cs.getConversationByJid(command.jid, accountJid);
   if (conversation != null) {
     sendEvent(
       ConversationUpdatedEvent(
@@ -643,9 +666,11 @@ Future<void> performRequestDownload(
 }) async {
   final ms = GetIt.I.get<MessageService>();
   final srv = GetIt.I.get<HttpFileTransferService>();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
   final message = await ms.updateMessage(
     command.message.id,
+    accountJid,
     isDownloading: true,
   );
   sendEvent(MessageUpdatedEvent(message: message));
@@ -661,6 +686,9 @@ Future<void> performRequestDownload(
 
   await srv.downloadFile(
     FileDownloadJob(
+      message.id,
+      message.conversationJid,
+      accountJid,
       MediaFileLocation(
         fileMetadata.sourceUrls!,
         fileMetadata.filename,
@@ -675,10 +703,8 @@ Future<void> performRequestDownload(
         fileMetadata.ciphertextHashes,
         null,
       ),
-      message.id,
       message.fileMetadata!.id,
       message.fileMetadata!.plaintextHashes?.isNotEmpty ?? false,
-      message.conversationJid,
       mimeGuess,
     ),
   );
@@ -704,7 +730,8 @@ Future<void> performSetShareOnlineStatus(
   dynamic extra,
 }) async {
   final rs = GetIt.I.get<RosterService>();
-  final item = await rs.getRosterItemByJid(command.jid);
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+  final item = await rs.getRosterItemByJid(command.jid, accountJid);
 
   // TODO(Unknown): Maybe log
   if (item == null) return;
@@ -739,12 +766,15 @@ Future<void> performCloseConversation(
   dynamic extra,
 }) async {
   final cs = GetIt.I.get<ConversationService>();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
   await cs.createOrUpdateConversation(
     command.jid,
+    accountJid,
     update: (c) async {
       return cs.updateConversation(
         command.jid,
+        accountJid,
         open: false,
       );
     },
@@ -776,7 +806,7 @@ Future<void> performSendChatState(
         .sendChatState(
           ChatState.fromName(command.state),
           command.jid,
-          messageType: command.type,
+          messageType: command.conversationType,
         );
   }
 }
@@ -818,6 +848,13 @@ Future<void> performSignOut(SignOutCommand command, {dynamic extra}) async {
     (state) => XmppState(),
   );
 
+  // Clear notifications
+  final accountJid = await xss.getAccountJid();
+  await GetIt.I.get<NotificationsService>().dismissAllNotifications(accountJid);
+
+  // Reset the current account JID.
+  await xss.resetAccountJid();
+
   sendEvent(
     SignedOutEvent(),
     id: id,
@@ -825,7 +862,11 @@ Future<void> performSignOut(SignOutCommand command, {dynamic extra}) async {
 }
 
 Future<void> performSendFiles(SendFilesCommand command, {dynamic extra}) async {
-  await GetIt.I.get<XmppService>().sendFiles(command.paths, command.recipients);
+  await GetIt.I.get<XmppService>().sendFiles(
+        await GetIt.I.get<XmppStateService>().getAccountJid(),
+        command.paths,
+        command.recipients,
+      );
 }
 
 Future<void> performSetMuteState(
@@ -833,12 +874,15 @@ Future<void> performSetMuteState(
   dynamic extra,
 }) async {
   final cs = GetIt.I.get<ConversationService>();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
   final conversation = await cs.createOrUpdateConversation(
     command.jid,
+    accountJid,
     update: (c) async {
       return cs.updateConversation(
         command.jid,
+        accountJid,
         muted: command.muted,
       );
     },
@@ -887,6 +931,8 @@ Future<void> performRecreateSessions(
   RecreateSessionsCommand command, {
   dynamic extra,
 }) async {
+  // NOTE: As [removeAllRatchets] delegates the deletion to the OmemoManager, this call
+  //       is implicitly dependent on the account JID.
   // Remove all ratchets
   await GetIt.I.get<OmemoService>().removeAllRatchets(command.jid);
 
@@ -904,12 +950,15 @@ Future<void> performSetOmemoEnabled(
   dynamic extra,
 }) async {
   final cs = GetIt.I.get<ConversationService>();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
   await cs.createOrUpdateConversation(
     command.jid,
+    accountJid,
     update: (c) async {
       return cs.updateConversation(
         command.jid,
+        accountJid,
         encrypted: command.enabled,
       );
     },
@@ -965,6 +1014,7 @@ Future<void> performMessageRetraction(
 }) async {
   await GetIt.I.get<MessageService>().retractMessage(
         command.conversationJid,
+        await GetIt.I.get<XmppStateService>().getAccountJid(),
         command.originId,
         '',
         true,
@@ -987,13 +1037,16 @@ Future<void> performMarkConversationAsRead(
   dynamic extra,
 }) async {
   final cs = GetIt.I.get<ConversationService>();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
 
   // Update the database
   final conversation = await cs.createOrUpdateConversation(
     command.conversationJid,
+    accountJid,
     update: (c) async {
       return cs.updateConversation(
         command.conversationJid,
+        accountJid,
         unreadCounter: 0,
       );
     },
@@ -1004,6 +1057,7 @@ Future<void> performMarkConversationAsRead(
     if (conversation.lastMessage != null) {
       await GetIt.I.get<MessageService>().markMessageAsRead(
             conversation.lastMessage!.id,
+            accountJid,
             conversation.type != ConversationType.note,
           );
     }
@@ -1012,6 +1066,7 @@ Future<void> performMarkConversationAsRead(
   // Dismiss notifications for that chat
   await GetIt.I.get<NotificationsService>().dismissNotificationsByJid(
         command.conversationJid,
+        await GetIt.I.get<XmppStateService>().getAccountJid(),
       );
 }
 
@@ -1019,8 +1074,10 @@ Future<void> performMarkMessageAsRead(
   MarkMessageAsReadCommand command, {
   dynamic extra,
 }) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   await GetIt.I.get<MessageService>().markMessageAsRead(
         command.id,
+        accountJid,
         command.sendMarker,
       );
 }
@@ -1029,34 +1086,41 @@ Future<void> performAddMessageReaction(
   AddReactionToMessageCommand command, {
   dynamic extra,
 }) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final rs = GetIt.I.get<ReactionsService>();
   final msg = await rs.addNewReaction(
-    command.messageId,
-    command.conversationJid,
+    command.id,
+    accountJid,
+    accountJid,
     command.emoji,
   );
   if (msg == null) {
     return;
   }
 
-  if (command.conversationJid != '') {
-    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
+  // Notify the UI
+  sendEvent(
+    MessageUpdatedEvent(
+      message: msg,
+    ),
+  );
 
+  if (msg.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
-      JID.fromString(command.conversationJid),
+      JID.fromString(msg.conversationJid),
       TypedMap<StanzaHandlerExtension>.fromList([
         MessageReactionsData(
           msg.originId ?? msg.sid,
           await rs.getReactionsForMessageByJid(
-            command.messageId,
-            jid,
+            command.id,
+            accountJid,
+            accountJid,
           ),
         ),
-        const MarkableData(false),
         MessageProcessingHintData([
           if (!msg.containsNoStore) MessageProcessingHint.store,
         ]),
@@ -1069,34 +1133,41 @@ Future<void> performRemoveMessageReaction(
   RemoveReactionFromMessageCommand command, {
   dynamic extra,
 }) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final rs = GetIt.I.get<ReactionsService>();
   final msg = await rs.removeReaction(
-    command.messageId,
-    command.conversationJid,
+    command.id,
+    accountJid,
+    accountJid,
     command.emoji,
   );
   if (msg == null) {
     return;
   }
 
-  if (command.conversationJid != '') {
-    final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
+  // Notify the UI
+  sendEvent(
+    MessageUpdatedEvent(
+      message: msg,
+    ),
+  );
 
+  if (msg.conversationJid != '') {
     // Send the reaction
     final manager = GetIt.I
         .get<XmppConnection>()
         .getManagerById<MessageManager>(messageManager)!;
     await manager.sendMessage(
-      JID.fromString(command.conversationJid),
+      JID.fromString(msg.conversationJid),
       TypedMap<StanzaHandlerExtension>.fromList([
         MessageReactionsData(
           msg.originId ?? msg.sid,
           await rs.getReactionsForMessageByJid(
-            command.messageId,
-            jid,
+            command.id,
+            accountJid,
+            accountJid,
           ),
         ),
-        const MarkableData(false),
         MessageProcessingHintData([
           if (!msg.containsNoStore) MessageProcessingHint.store,
         ]),
@@ -1142,6 +1213,7 @@ Future<void> performSendSticker(
   dynamic extra,
 }) async {
   await GetIt.I.get<XmppService>().sendMessage(
+        accountJid: await GetIt.I.get<XmppStateService>().getAccountJid(),
         body: command.sticker.desc,
         recipients: [command.recipient],
         sticker: command.sticker,
@@ -1255,8 +1327,8 @@ Future<void> performGetBlocklist(
   dynamic extra,
 }) async {
   final id = extra as String;
-
-  final result = await GetIt.I.get<BlocklistService>().getBlocklist();
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+  final result = await GetIt.I.get<BlocklistService>().getBlocklist(accountJid);
   sendEvent(
     GetBlocklistResultEvent(
       entries: result,
@@ -1270,9 +1342,10 @@ Future<void> performGetPagedMessages(
   dynamic extra,
 }) async {
   final id = extra as String;
-
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final result = await GetIt.I.get<MessageService>().getPaginatedMessagesForJid(
         command.conversationJid,
+        accountJid,
         command.olderThan,
         command.timestamp,
       );
@@ -1290,10 +1363,10 @@ Future<void> performGetPagedSharedMedia(
   dynamic extra,
 }) async {
   final id = extra as String;
-
   final result =
       await GetIt.I.get<MessageService>().getPaginatedSharedMediaMessagesForJid(
             command.conversationJid,
+            await GetIt.I.get<XmppStateService>().getAccountJid(),
             command.olderThan,
             command.timestamp,
           );
@@ -1311,10 +1384,11 @@ Future<void> performGetReactions(
   dynamic extra,
 }) async {
   final id = extra as String;
-
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final reactionsRaw =
       await GetIt.I.get<ReactionsService>().getReactionsForMessage(
-            command.messageId,
+            command.id,
+            accountJid,
           );
   final reactionsMap = <String, List<String>>{};
   for (final reaction in reactionsRaw) {
@@ -1376,15 +1450,17 @@ Future<void> performOldMediaFileDeletion(
   DeleteOldMediaFilesCommand command, {
   dynamic extra,
 }) async {
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   await GetIt.I.get<StorageService>().deleteOldMediaFiles(command.timeOffset);
 
   sendEvent(
     DeleteOldMediaFilesDoneEvent(
       newUsage: await GetIt.I.get<StorageService>().computeUsedMediaStorage(),
-      conversations:
-          (await GetIt.I.get<ConversationService>().loadConversations())
-              .where((c) => c.open)
-              .toList(),
+      conversations: (await GetIt.I
+              .get<ConversationService>()
+              .loadConversations(accountJid))
+          .where((c) => c.open)
+          .toList(),
     ),
     id: extra as String,
   );
@@ -1469,14 +1545,17 @@ Future<void> performJoinGroupchat(
   final id = extra as String;
   final jid = command.jid;
   final nick = command.nick;
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
   final cs = GetIt.I.get<ConversationService>();
-  final conversation = await cs.getConversationByJid(jid);
+  final conversation = await cs.getConversationByJid(jid, accountJid);
   if (conversation != null) {
     await cs.createOrUpdateConversation(
       jid,
+      accountJid,
       update: (c) async {
         final newConversation = await cs.updateConversation(
           jid,
+          accountJid,
           open: true,
           lastChangeTimestamp: DateTime.now().millisecondsSinceEpoch,
         );
@@ -1495,7 +1574,7 @@ Future<void> performJoinGroupchat(
     // We did not have a conversation with that JID.
     final joinRoomResult = await GetIt.I
         .get<GroupchatService>()
-        .joinRoom(JID.fromString(jid), nick);
+        .joinRoom(JID.fromString(jid), accountJid, nick);
     if (joinRoomResult.isType<GroupchatErrorType>()) {
       sendEvent(
         ErrorEvent(errorId: joinRoomResult.get<GroupchatErrorType>().value),
@@ -1505,12 +1584,14 @@ Future<void> performJoinGroupchat(
 
     await cs.createOrUpdateConversation(
       jid,
+      accountJid,
       create: () async {
         // Create
         final css = GetIt.I.get<ContactsService>();
         final contactId = await css.getContactIdForJid(jid);
         final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
         final newConversation = await cs.addConversationFromData(
+          accountJid,
           jid.split('@')[0],
           null,
           ConversationType.groupchat,
@@ -1526,6 +1607,7 @@ Future<void> performJoinGroupchat(
           await css.getContactDisplayName(contactId),
           GroupchatDetails(
             jid,
+            accountJid,
             nick,
           ),
         );

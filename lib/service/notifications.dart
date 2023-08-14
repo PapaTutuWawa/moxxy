@@ -26,7 +26,7 @@ const _warningChannelKey = 'warning_channel';
 
 /// Message payload keys.
 const _conversationJidKey = 'conversationJid';
-const _messageIdKey = 'mid';
+const _messageIdKey = 'message_id';
 const _conversationTitleKey = 'title';
 const _conversationAvatarKey = 'avatarPath';
 
@@ -48,9 +48,11 @@ class NotificationsService {
         ),
       );
     } else if (event.type == NotificationEventType.markAsRead) {
+      final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
       // Mark the message as read
       await GetIt.I.get<MessageService>().markMessageAsRead(
-            int.parse(event.extra![_messageIdKey]!),
+            event.extra![_messageIdKey]!,
+            accountJid,
             // [XmppService.sendReadMarker] will check whether the *SHOULD* send
             // the marker, i.e. if the privacy settings allow it.
             true,
@@ -60,9 +62,11 @@ class NotificationsService {
       final cs = GetIt.I.get<ConversationService>();
       await cs.createOrUpdateConversation(
         conversationJid,
+        accountJid,
         update: (conversation) async {
           final newConversation = await cs.updateConversation(
             conversationJid,
+            accountJid,
             unreadCounter: 0,
           );
 
@@ -78,16 +82,18 @@ class NotificationsService {
       );
 
       // Clear notifications
-      await dismissNotificationsByJid(conversationJid);
+      await dismissNotificationsByJid(conversationJid, accountJid);
     } else if (event.type == NotificationEventType.reply) {
       // Save this as a notification so that we can display it later
       assert(
         event.payload != null,
         'Reply payload must be not null',
       );
+      final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
       final notification = modeln.Notification(
         event.id,
         conversationJid,
+        accountJid,
         null,
         null,
         null,
@@ -103,6 +109,7 @@ class NotificationsService {
 
       // Send the actual reply
       await GetIt.I.get<XmppService>().sendMessage(
+        accountJid: accountJid,
         body: event.payload!,
         recipients: [conversationJid],
       );
@@ -151,23 +158,26 @@ class NotificationsService {
   }
 
   /// Queries the notifications for the conversation [jid] from the database.
-  Future<List<modeln.Notification>> _getNotificationsForJid(String jid) async {
+  Future<List<modeln.Notification>> _getNotificationsForJid(
+    String jid,
+    String accountJid,
+  ) async {
     final rawNotifications =
         await GetIt.I.get<DatabaseService>().database.query(
       notificationsTable,
-      where: 'conversationJid = ?',
-      whereArgs: [jid],
+      where: 'conversationJid = ? AND accountJid = ?',
+      whereArgs: [jid, accountJid],
     );
     return rawNotifications.map(modeln.Notification.fromJson).toList();
   }
 
-  Future<int?> _clearNotificationsForJid(String jid) async {
+  Future<int?> _clearNotificationsForJid(String jid, String accountJid) async {
     final db = GetIt.I.get<DatabaseService>().database;
 
     final result = await db.query(
       notificationsTable,
-      where: 'conversationJid = ?',
-      whereArgs: [jid],
+      where: 'conversationJid = ? AND accountJid = ?',
+      whereArgs: [jid, accountJid],
       limit: 1,
     );
 
@@ -175,8 +185,8 @@ class NotificationsService {
     final id = result.isNotEmpty ? result.first['id']! as int : null;
     await db.delete(
       notificationsTable,
-      where: 'conversationJid = ?',
-      whereArgs: [jid],
+      where: 'conversationJid = ? AND accountJid = ?',
+      whereArgs: [jid, accountJid],
     );
 
     return id;
@@ -185,6 +195,7 @@ class NotificationsService {
   Future<modeln.Notification> _createNotification(
     modelc.Conversation c,
     modelm.Message m,
+    String accountJid,
     String? avatarPath,
     int id, {
     bool shouldOverride = false,
@@ -214,6 +225,7 @@ class NotificationsService {
     final newNotification = modeln.Notification(
       id,
       c.jid,
+      accountJid,
       senderTitle,
       senderJid.toString(),
       (avatarPath?.isEmpty ?? false) ? null : avatarPath,
@@ -241,6 +253,7 @@ class NotificationsService {
   Future<void> updateNotification(
     modelc.Conversation c,
     modelm.Message m,
+    String accountJid,
   ) async {
     if (!(await _canDoNotifications())) {
       _log.warning(
@@ -249,12 +262,13 @@ class NotificationsService {
       return;
     }
 
-    final notifications = await _getNotificationsForJid(c.jid);
+    final notifications = await _getNotificationsForJid(c.jid, accountJid);
     final id = notifications.first.id;
     // TODO(Unknown): Handle groupchat member avatars
     final notification = await _createNotification(
       c,
       m,
+      accountJid,
       c.isGroupchat ? null : c.avatarPathWithOptionalContact,
       id,
       shouldOverride: true,
@@ -282,7 +296,7 @@ class NotificationsService {
         isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
-          _messageIdKey: m.id.toString(),
+          _messageIdKey: m.id,
           _conversationTitleKey: await c.titleWithOptionalContactService,
           _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },
@@ -296,6 +310,7 @@ class NotificationsService {
   Future<void> showNotification(
     modelc.Conversation c,
     modelm.Message m,
+    String accountJid,
     String title, {
     String? body,
   }) async {
@@ -306,7 +321,7 @@ class NotificationsService {
       return;
     }
 
-    final notifications = await _getNotificationsForJid(c.jid);
+    final notifications = await _getNotificationsForJid(c.jid, accountJid);
     final id = notifications.isNotEmpty
         ? notifications.first.id
         : Random().nextInt(_maxNotificationId);
@@ -322,6 +337,7 @@ class NotificationsService {
           (await _createNotification(
             c,
             m,
+            accountJid,
             c.isGroupchat ? null : await c.avatarPathWithOptionalContactService,
             id,
           ))
@@ -330,7 +346,7 @@ class NotificationsService {
         isGroupchat: c.isGroupchat,
         extra: {
           _conversationJidKey: c.jid,
-          _messageIdKey: m.id.toString(),
+          _messageIdKey: m.id,
           _conversationTitleKey: await c.titleWithOptionalContactService,
           _conversationAvatarKey: await c.avatarPathWithOptionalContactService,
         },
@@ -363,6 +379,7 @@ class NotificationsService {
   /// message in the chat with [jid].
   Future<void> showMessageErrorNotification(
     String jid,
+    String accountJid,
     MessageErrorType type,
   ) async {
     if (!(await _canDoNotifications())) {
@@ -381,8 +398,9 @@ class NotificationsService {
       return;
     }
 
-    final conversation =
-        await GetIt.I.get<ConversationService>().getConversationByJid(jid);
+    final conversation = await GetIt.I
+        .get<ConversationService>()
+        .getConversationByJid(jid, accountJid);
     await MoxplatformPlugin.notifications.showNotification(
       RegularNotification(
         title: t.notifications.errors.messageError.title,
@@ -397,11 +415,36 @@ class NotificationsService {
 
   /// Since all notifications are grouped by the conversation's JID, this function
   /// clears all notifications for [jid].
-  Future<void> dismissNotificationsByJid(String jid) async {
-    final id = await _clearNotificationsForJid(jid);
+  Future<void> dismissNotificationsByJid(String jid, String accountJid) async {
+    final id = await _clearNotificationsForJid(jid, accountJid);
     if (id != null) {
       await MoxplatformPlugin.notifications.dismissNotification(id);
     }
+  }
+
+  /// Dismisses all notifications for the context of [accountJid].
+  Future<void> dismissAllNotifications(String accountJid) async {
+    final db = GetIt.I.get<DatabaseService>().database;
+    final ids = await db.query(
+      notificationsTable,
+      where: 'accountJid = ?',
+      whereArgs: [accountJid],
+      columns: ['id'],
+      distinct: true,
+    );
+
+    // Dismiss the notification
+    for (final idRaw in ids) {
+      await MoxplatformPlugin.notifications
+          .dismissNotification(idRaw['id']! as int);
+    }
+
+    // Remove database entries
+    await db.delete(
+      notificationsTable,
+      where: 'accountJid = ?',
+      whereArgs: [accountJid],
+    );
   }
 
   /// Requests the avatar path from [XmppStateService] and configures the notification plugin

@@ -13,7 +13,7 @@ class UIReadMarkerService {
   final Logger _log = Logger('UIReadMarkerService');
 
   /// The cache of messages we already processed.
-  final Map<void, bool> _messages = {};
+  final Map<String, bool> _messages = {};
 
   /// Checks if we should send a read marker for [message]. If we should, tells
   /// the backend to actually send it.
@@ -29,8 +29,7 @@ class UIReadMarkerService {
     // Check if we should send markers.
     if (!GetIt.I.get<PreferencesBloc>().state.sendChatMarkers) return;
 
-    final id = message.originId ?? message.sid;
-    _log.finest('Sending chat marker for ${message.conversationJid}:$id');
+    _log.finest('Sending chat marker for ${message.id}');
     MoxplatformPlugin.handler.getDataSender().sendData(
           MarkMessageAsReadCommand(
             id: message.id,

@@ -23,11 +23,14 @@ class ReactionsService {
 
   /// Query the database for 6 distinct emoji reactions associated with the message id
   /// [id].
-  Future<List<String>> getPreviewReactionsForMessage(int id) async {
+  Future<List<String>> getPreviewReactionsForMessage(
+    String id,
+    String accountJid,
+  ) async {
     final reactions = await GetIt.I.get<DatabaseService>().database.query(
           reactionsTable,
-          where: 'message_id = ?',
-          whereArgs: [id],
+          where: 'message_id = ? AND accountJid = ?',
+          whereArgs: [id, accountJid],
           columns: ['emoji'],
           distinct: true,
           limit: 6,
@@ -36,133 +39,133 @@ class ReactionsService {
     return reactions.map((r) => r['emoji']! as String).toList();
   }
 
-  Future<List<Reaction>> getReactionsForMessage(int id) async {
+  Future<List<Reaction>> getReactionsForMessage(
+    String id,
+    String accountJid,
+  ) async {
     final reactions = await GetIt.I.get<DatabaseService>().database.query(
       reactionsTable,
-      where: 'message_id = ?',
-      whereArgs: [id],
+      where: 'message_id = ? AND accountJid = ?',
+      whereArgs: [id, accountJid],
     );
 
     return reactions.map(Reaction.fromJson).toList();
   }
 
-  Future<List<String>> getReactionsForMessageByJid(int id, String jid) async {
+  Future<List<String>> getReactionsForMessageByJid(
+    String id,
+    String accountJid,
+    String jid,
+  ) async {
     final reactions = await GetIt.I.get<DatabaseService>().database.query(
       reactionsTable,
-      where: 'message_id = ? AND senderJid = ?',
-      whereArgs: [id, jid],
+      where: 'message_id = ? AND accountJid = ? AND senderJid = ?',
+      whereArgs: [id, accountJid, jid],
     );
 
     return reactions.map((r) => r['emoji']! as String).toList();
   }
 
-  Future<int> _countReactions(int messageId, String emoji) async {
+  Future<int> _countReactions(
+    String id,
+    String accountJid,
+    String emoji,
+  ) async {
     return GetIt.I.get<DatabaseService>().database.count(
       reactionsTable,
-      'message_id = ? AND emoji = ?',
-      [messageId, emoji],
+      'message_id = ? AND accountJid = ? AND emoji = ?',
+      [id, accountJid, emoji],
     );
   }
 
-  /// Adds a new reaction [emoji], if possible, to [messageId] and returns the
+  /// Adds a new reaction [emoji], if possible, to the message with id [id] and returns the
   /// new message reaction preview.
   Future<Message?> addNewReaction(
-    int messageId,
-    String conversationJid,
+    String id,
+    String accountJid,
+    String senderJid,
     String emoji,
   ) async {
     final ms = GetIt.I.get<MessageService>();
-    final msg = await ms.getMessageById(messageId, conversationJid);
+    var msg = await ms.getMessageById(id, accountJid);
     if (msg == null) {
-      _log.warning('Failed to get message $messageId');
+      _log.warning(
+        'Failed to get message ($id, $accountJid)',
+      );
       return null;
     }
 
-    if (!msg.reactionsPreview.contains(emoji) &&
-        msg.reactionsPreview.length < 6) {
-      final newPreview = [
-        ...msg.reactionsPreview,
-        emoji,
-      ];
-
-      try {
-        final jid = (await GetIt.I.get<XmppStateService>().getXmppState()).jid!;
-        await GetIt.I.get<DatabaseService>().database.insert(
-              reactionsTable,
-              Reaction(
-                messageId,
-                jid,
-                emoji,
-              ).toJson(),
-              conflictAlgorithm: ConflictAlgorithm.fail,
-            );
-
-        final newMsg = msg.copyWith(
-          reactionsPreview: newPreview,
+    _log.finest('Message reaction preview: ${msg.reactionsPreview}');
+    await GetIt.I.get<DatabaseService>().database.insert(
+          reactionsTable,
+          Reaction(
+            id,
+            accountJid,
+            senderJid,
+            emoji,
+          ).toJson(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
         );
 
-        sendEvent(
-          MessageUpdatedEvent(
-            message: newMsg,
-          ),
-        );
-
-        return newMsg;
-      } catch (ex) {
-        // The reaction already exists
-        return msg;
-      }
+    if (msg.reactionsPreview.length < 6 &&
+        !msg.reactionsPreview.contains(emoji)) {
+      msg = msg.copyWith(
+        reactionsPreview: [
+          ...msg.reactionsPreview,
+          emoji,
+        ],
+      );
     }
 
     return msg;
   }
 
   Future<Message?> removeReaction(
-    int messageId,
-    String conversationJid,
+    String id,
+    String accountJid,
+    String senderJid,
     String emoji,
   ) async {
     final ms = GetIt.I.get<MessageService>();
-    final msg = await ms.getMessageById(messageId, conversationJid);
+    final msg = await ms.getMessageById(id, accountJid);
     if (msg == null) {
-      _log.warning('Failed to get message $messageId');
+      _log.warning(
+        'Failed to get message ($id, $accountJid)',
+      );
       return null;
     }
 
     await GetIt.I.get<DatabaseService>().database.delete(
       reactionsTable,
-      where: 'message_id = ? AND emoji = ? AND senderJid = ?',
+      where:
+          'message_id = ? AND accountJid = ? AND emoji = ? AND senderJid = ?',
       whereArgs: [
-        messageId,
+        id,
+        accountJid,
         emoji,
         (await GetIt.I.get<XmppStateService>().getXmppState()).jid,
       ],
     );
-    final count = await _countReactions(messageId, emoji);
+    final count = await _countReactions(id, accountJid, emoji);
 
     if (count > 0) {
       return msg;
     }
 
     final newPreview = List<String>.from(msg.reactionsPreview)..remove(emoji);
-    final newMsg = msg.copyWith(
+    return msg.copyWith(
       reactionsPreview: newPreview,
     );
-    sendEvent(
-      MessageUpdatedEvent(
-        message: newMsg,
-      ),
-    );
-    return newMsg;
   }
 
   Future<void> processNewReactions(
     Message msg,
+    String accountJid,
     String senderJid,
     List<String> emojis,
   ) async {
     // Get all reactions know for this message
-    final allReactions = await getReactionsForMessage(msg.id);
+    final allReactions = await getReactionsForMessage(msg.id, accountJid);
     final userEmojis =
         allReactions.where((r) => r.senderJid == senderJid).map((r) => r.emoji);
     final removedReactions = userEmojis.where((e) => !emojis.contains(e));
@@ -173,8 +176,9 @@ class ReactionsService {
     for (final emoji in removedReactions) {
       final rows = await db.delete(
         reactionsTable,
-        where: 'message_id = ? AND senderJid = ? AND emoji = ?',
-        whereArgs: [msg.id, senderJid, emoji],
+        where:
+            'message_id = ? AND accountJid = ? AND senderJid = ? AND emoji = ?',
+        whereArgs: [msg.id, accountJid, senderJid, emoji],
       );
       assert(rows == 1, 'Only one row should be removed');
     }
@@ -184,6 +188,7 @@ class ReactionsService {
         reactionsTable,
         Reaction(
           msg.id,
+          accountJid,
           senderJid,
           emoji,
         ).toJson(),
@@ -191,7 +196,10 @@ class ReactionsService {
     }
 
     final newMessage = msg.copyWith(
-      reactionsPreview: await getPreviewReactionsForMessage(msg.id),
+      reactionsPreview: await getPreviewReactionsForMessage(
+        msg.id,
+        accountJid,
+      ),
     );
     sendEvent(MessageUpdatedEvent(message: newMessage));
   }

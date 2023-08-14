@@ -38,20 +38,17 @@ List<ReactionGroup> ensureReactionGroupOrder(
 /// Displays the reactions to a message and allows modifying the reactions.
 /// When created, fetches the reactions from the ReactionService.
 class ReactionList extends StatelessWidget {
-  const ReactionList(this.messageId, this.conversationJid, {super.key});
+  const ReactionList(this.messageId, {super.key});
 
   /// The database identifier of the message to fetch reactions of.
-  final int messageId;
-
-  /// The conversation the message is part of.
-  final String conversationJid;
+  final String messageId;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<BackgroundEvent?>(
       future: MoxplatformPlugin.handler.getDataSender().sendData(
             GetReactionsForMessageCommand(
-              messageId: messageId,
+              id: messageId,
             ),
           ) as Future<BackgroundEvent?>,
       builder: (context, snapshot) {
@@ -106,9 +103,8 @@ class ReactionList extends StatelessWidget {
                             .getDataSender()
                             .sendData(
                               AddReactionToMessageCommand(
-                                messageId: messageId,
+                                id: messageId,
                                 emoji: emoji,
-                                conversationJid: conversationJid,
                               ),
                               awaitable: false,
                             );
@@ -119,9 +115,8 @@ class ReactionList extends StatelessWidget {
                   ? (emoji) async {
                       await MoxplatformPlugin.handler.getDataSender().sendData(
                             RemoveReactionFromMessageCommand(
-                              messageId: messageId,
+                              id: messageId,
                               emoji: emoji,
-                              conversationJid: conversationJid,
                             ),
                             awaitable: false,
                           );

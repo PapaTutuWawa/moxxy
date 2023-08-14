@@ -7,23 +7,34 @@ part 'notification.g.dart';
 @freezed
 class Notification with _$Notification {
   factory Notification(
-    // The notification id
+    // The notification id.
     int id,
-    // The JID of the conversation the notification belongs to
+
+    // The JID of the conversation the notification belongs to.
     String conversationJid,
-    // The sender title
+
+    /// The JID of the account that the conversation belongs to.
+    String accountJid,
+
+    // The sender title.
     String? sender,
-    // The JID of the sender
+
+    // The JID of the sender.
     String? senderJid,
-    // The path to use as the avatar
+
+    // The path to use as the avatar.
     String? avatarPath,
-    // The body text
+
+    // The body text.
     String body,
-    // The optional mime type of the media attachment
+
+    // The optional mime type of the media attachment.
     String? mime,
-    // The optional mime type of the path attachment
+
+    // The optional mime type of the path attachment.
     String? path,
-    // The timestamp of the notification
+
+    // The timestamp of the notification.
     int timestamp,
   ) = _Notification;
 

@@ -122,7 +122,7 @@ class NewConversationBloc
 
       // Handle modified items
       final modified = event.modified.firstWhereOrNull(
-        (RosterItem i) => i.id == item.id,
+        (RosterItem i) => i.jid == item.jid,
       );
       if (modified != null) {
         roster.add(modified);

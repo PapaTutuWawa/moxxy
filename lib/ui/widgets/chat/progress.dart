@@ -8,18 +8,15 @@ import 'package:moxxyv2/ui/service/progress.dart';
 //       we, for example, use blurhash, then we compute the image from the blurhash on every
 //       update.
 class ProgressWidget extends StatefulWidget {
-  const ProgressWidget({required this.id, super.key});
-  final int id;
+  const ProgressWidget(this.messageId, {super.key});
+  final String messageId;
 
   @override
-  // ignore: no_logic_in_create_state
-  ProgressWidgetState createState() => ProgressWidgetState(id: id);
+  ProgressWidgetState createState() => ProgressWidgetState();
 }
 
+// TODO(Unknown): Rework using streams
 class ProgressWidgetState extends State<ProgressWidget> {
-  ProgressWidgetState({required this.id});
-  final int id;
-
   double? _progress;
 
   void _onProgressUpdate(double? progress) {
@@ -31,7 +28,9 @@ class ProgressWidgetState extends State<ProgressWidget> {
   @override
   void initState() {
     // Register against the DownloadService
-    GetIt.I.get<UIProgressService>().registerCallback(id, _onProgressUpdate);
+    GetIt.I
+        .get<UIProgressService>()
+        .registerCallback(widget.messageId, _onProgressUpdate);
 
     super.initState();
   }
@@ -39,7 +38,7 @@ class ProgressWidgetState extends State<ProgressWidget> {
   @override
   void dispose() {
     // Unregister
-    GetIt.I.get<UIProgressService>().unregisterCallback(id);
+    GetIt.I.get<UIProgressService>().unregisterCallback(widget.messageId);
 
     super.dispose();
   }

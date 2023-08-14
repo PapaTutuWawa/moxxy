@@ -42,14 +42,14 @@ class _AudioWidget extends StatelessWidget {
   final double? duration;
   final double? position;
   final Widget? icon;
-  final int messageId;
+  final String messageId;
 
   Widget _getLeftWidget() {
     if (isDownloading) {
       return SizedBox(
         width: 48,
         height: 48,
-        child: ProgressWidget(id: messageId),
+        child: ProgressWidget(messageId),
       );
     }
 

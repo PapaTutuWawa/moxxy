@@ -87,8 +87,13 @@ class AvatarService {
   ) async {
     final cs = GetIt.I.get<ConversationService>();
     final rs = GetIt.I.get<RosterService>();
-    final originalConversation = await cs.getConversationByJid(jid.toString());
-    final originalRoster = await rs.getRosterItemByJid(jid.toString());
+    final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+    final originalConversation =
+        await cs.getConversationByJid(jid.toString(), accountJid);
+    final originalRoster = await rs.getRosterItemByJid(
+      jid.toString(),
+      accountJid,
+    );
 
     if (originalConversation == null && originalRoster == null) return;
 
@@ -102,9 +107,11 @@ class AvatarService {
     if (originalConversation != null) {
       final conversation = await cs.createOrUpdateConversation(
         jid.toString(),
+        accountJid,
         update: (c) async {
           return cs.updateConversation(
             jid.toString(),
+            accountJid,
             avatarPath: avatarPath,
             avatarHash: hash,
           );
@@ -119,7 +126,8 @@ class AvatarService {
 
     if (originalRoster != null) {
       final roster = await rs.updateRosterItem(
-        originalRoster.id,
+        originalRoster.jid,
+        accountJid,
         avatarPath: avatarPath,
         avatarHash: hash,
       );

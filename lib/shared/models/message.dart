@@ -51,22 +51,51 @@ class PseudoMessageTypeConverter extends JsonConverter<PseudoMessageType, int> {
 @freezed
 class Message with _$Message {
   factory Message(
+    // The message id (Moxxy-generated UUID).
+    String id,
+
+    /// The JID of the account that sent or received the message.
+    String accountJid,
+
+    /// The full JID of the sender
     String sender,
+
+    /// The content of the <body /> tag
     String body,
+
+    /// The timestamp the message was received
     int timestamp,
+
+    /// The "id" attribute of the message stanza.
     String sid,
-    // The database-internal identifier of the message
-    int id,
+
+    /// The JID of the conversation this message was received/sent in.
     String conversationJid,
+
+    /// Flag indicating whether the message is a file upload notification.
     bool isFileUploadNotification,
+
+    /// Flag indicating whether the message was sent/received encrypted.
     bool encrypted,
-    // True if the message contains a <no-store> Message Processing Hint. False if not
+
+    /// True if the message contains a <no-store> Message Processing Hint. False if not
     bool containsNoStore, {
+    /// A message's associated error, if applicable (e.g. crypto error, file upload failure, ...).
     @MessageErrorTypeConverter() MessageErrorType? errorType,
+
+    /// A message's associated warning, if applicable.
     @MessageWarningTypeConverter() MessageWarningType? warningType,
+
+    /// If a file is attached, this is a reference to the file metadata.
     FileMetadata? fileMetadata,
+
+    /// Flag indicating whether the message's file is currently being downloaded.
     @Default(false) bool isDownloading,
+
+    /// Flag indicating whether the message's file is currently being uploaded.
     @Default(false) bool isUploading,
+
+    /// Flag indicating whether the message was marked as received.
     @Default(false) bool received,
 
     /// If the message was sent by us, this means that the recipient has displayed the message.
@@ -82,11 +111,25 @@ class Message with _$Message {
 
     /// Indicates whether the message has been edited.
     @Default(false) bool isEdited,
+
+    /// An optional origin id attached to the message
     String? originId,
+
+    /// The message this message quotes using XEP-0461
     Message? quotes,
+
+    /// A short summary of reactions, if available
     @Default([]) List<String> reactionsPreview,
+
+    /// The ID of the sticker pack the sticker belongs to, if the message
+    /// contains a sticker.
     String? stickerPackId,
+
+    /// If the message is not a real message, then this field indicates
+    /// the type of "pseudo message" we should display.
     @PseudoMessageTypeConverter() PseudoMessageType? pseudoMessageType,
+
+    /// The associated data for "pseudo messages".
     Map<String, dynamic>? pseudoMessageData,
   }) = _Message;
 
@@ -125,7 +168,6 @@ class Message with _$Message {
 
   Map<String, dynamic> toDatabaseJson() {
     final map = toJson()
-      ..remove('id')
       ..remove('quotes')
       ..remove('reactionsPreview')
       ..remove('fileMetadata')
