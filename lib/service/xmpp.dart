@@ -1244,7 +1244,8 @@ class XmppService {
   ) async {
     if (event.type == 'groupchat') {
       _log.warning(
-          'Received a message reaction of type groupchat. Ignoring...');
+        'Received a message reaction of type groupchat. Ignoring...',
+      );
       return;
     }
 
