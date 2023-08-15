@@ -134,6 +134,7 @@ class SendFilesPage extends StatelessWidget {
       // Render the image
       return Image.file(
         File(path),
+        fit: BoxFit.contain,
       );
     } /*else if (mime.startsWith('video/')) {
       // Render the video thumbnail
@@ -163,7 +164,6 @@ class SendFilesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     const barPadding = 8.0;
 
     // TODO(Unknown): Fix the typography
@@ -175,15 +175,10 @@ class SendFilesPage extends StatelessWidget {
               Positioned(
                 top: 0,
                 left: 0,
-                child: SizedBox(
-                  width: size.width,
-                  height: size.height,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _renderBackground(context, state.files[state.index]),
-                    ],
-                  ),
+                right: 0,
+                bottom: 0,
+                child: Center(
+                  child: _renderBackground(context, state.files[state.index]),
                 ),
               ),
               // TODO(Unknown): Add a TextField for entering a message
