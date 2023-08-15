@@ -149,7 +149,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   ) async {
     GetIt.I.get<SendFilesBloc>().add(
           SendFilesPageRequestedEvent(
-            [state.conversation!.jid],
+            [
+              SendFilesRecipient(
+                state.conversation!.jid,
+                state.conversation!.titleWithOptionalContact,
+                // TODO(Unknown): Fix
+                state.conversation!.avatarPath.isEmpty ? null : state.conversation!.avatarPath,
+                state.conversation!.avatarHash,
+                state.conversation!.contactId != null,
+              ),
+            ],
             SendFilesType.image,
           ),
         );
@@ -161,7 +170,16 @@ class ConversationBloc extends Bloc<ConversationEvent, ConversationState> {
   ) async {
     GetIt.I.get<SendFilesBloc>().add(
           SendFilesPageRequestedEvent(
-            [state.conversation!.jid],
+            [
+              SendFilesRecipient(
+                state.conversation!.jid,
+                state.conversation!.titleWithOptionalContact,
+                // TODO(Unknown): Fix
+                state.conversation!.avatarPath.isEmpty ? null : state.conversation!.avatarPath,
+                state.conversation!.avatarHash,
+                state.conversation!.contactId != null,
+              ),
+            ],
             SendFilesType.generic,
           ),
         );

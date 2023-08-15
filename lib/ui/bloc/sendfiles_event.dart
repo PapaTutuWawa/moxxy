@@ -14,7 +14,7 @@ class SendFilesPageRequestedEvent extends SendFilesEvent {
     this.paths,
     this.popEntireStack = false,
   });
-  final List<String> recipients;
+  final List<SendFilesRecipient> recipients;
   final SendFilesType type;
   final List<String>? paths;
   final bool popEntireStack;

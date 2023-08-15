@@ -215,7 +215,17 @@ class ShareSelectionBloc
     } else {
       GetIt.I.get<SendFilesBloc>().add(
             SendFilesPageRequestedEvent(
-              state.selection.map((i) => state.items[i].jid).toList(),
+              state.selection.map((i) {
+                final item = state.items[i];
+                return SendFilesRecipient(
+                  item.jid,
+                  item.title,
+                  // TODO(Unknown): Fix
+                  item.avatarPath.isEmpty ? null : item.avatarPath,
+                  item.avatarHash,
+                  item.contactId != null,
+                );
+              }).toList(),
               // TODO(PapaTutuWawa): Fix
               SendFilesType.image,
               paths: state.paths,

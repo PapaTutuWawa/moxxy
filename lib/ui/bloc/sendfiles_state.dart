@@ -1,5 +1,25 @@
 part of 'sendfiles_bloc.dart';
 
+class SendFilesRecipient {
+  const SendFilesRecipient(
+    this.jid,
+    this.title,
+    this.avatar,
+    this.avatarHash,
+    this.hasContactId,
+  );
+
+  final String jid;
+
+  final String title;
+
+  final String? avatar;
+
+  final String? avatarHash;
+
+  final bool hasContactId;
+}
+
 @freezed
 class SendFilesState with _$SendFilesState {
   factory SendFilesState({
@@ -8,6 +28,6 @@ class SendFilesState with _$SendFilesState {
     // The currently selected path
     @Default(0) int index,
     // The chat that is currently active
-    @Default(<String>[]) List<String> recipients,
+    @Default(<SendFilesRecipient>[]) List<SendFilesRecipient> recipients,
   }) = _SendFilesState;
 }

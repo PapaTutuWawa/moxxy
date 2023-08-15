@@ -6,6 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
+import 'package:moxxyv2/ui/widgets/avatar.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -252,16 +253,44 @@ class SendFilesPage extends StatelessWidget {
               Positioned(
                 top: 8,
                 left: 8,
-                child: CancelButton(
-                  onPressed: () {
-                    // If we do a direct share and the user presses the "x" button, then it
-                    // happens that just popping the stack results in just a gray screen.
-                    // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
-                    // entire app".
-                    context
-                        .read<NavigationBloc>()
-                        .add(PoppedRouteWithOptionalSystemNavigatorEvent());
-                  },
+                child: Row(
+                  children: [
+                    CancelButton(
+                      onPressed: () {
+                        // If we do a direct share and the user presses the "x" button, then it
+                        // happens that just popping the stack results in just a gray screen.
+                        // By using `SystemNavigator.pop`, we can tell the Flutter to "pop the
+                        // entire app".
+                        context
+                            .read<NavigationBloc>()
+                            .add(PoppedRouteWithOptionalSystemNavigatorEvent());
+                      },
+                    ),
+
+                    if (state.recipients.length == 1)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: CachingXMPPAvatar(
+                          jid: state.recipients.first.jid,
+                          radius: 20,
+                          hasContactId: state.recipients.first.hasContactId,
+                          path: state.recipients.first.avatar,
+                          hash: state.recipients.first.avatarHash,
+                        ),
+                      ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Text(
+                        state.recipients.map((r) => r.title).join(', '),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                        style: const TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

@@ -55,7 +55,16 @@ class UISharingService {
         );
         GetIt.I.get<SendFilesBloc>().add(
               SendFilesPageRequestedEvent(
-                [conversationJid!],
+                [
+                  // TODO: Fix
+                  SendFilesRecipient(
+                    conversationJid!,
+                    conversationJid!,
+                    null,
+                    null,
+                    false,
+                  ),
+                ],
                 isMedia ? SendFilesType.image : SendFilesType.generic,
                 paths:
                     attachments.map((attachment) => attachment!.path).toList(),

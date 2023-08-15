@@ -101,7 +101,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
     await MoxplatformPlugin.handler.getDataSender().sendData(
           SendFilesCommand(
             paths: state.files,
-            recipients: state.recipients,
+            recipients: state.recipients.map((r) => r.jid).toList(),
           ),
           awaitable: false,
         );
