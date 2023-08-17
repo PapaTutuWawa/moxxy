@@ -12,11 +12,13 @@ class SendFilesPageRequestedEvent extends SendFilesEvent {
     this.recipients,
     this.type, {
     this.paths,
+    this.hasRecipientData = true,
     this.popEntireStack = false,
   });
-  final List<String> recipients;
+  final List<SendFilesRecipient> recipients;
   final SendFilesType type;
   final List<String>? paths;
+  final bool hasRecipientData;
   final bool popEntireStack;
 }
 

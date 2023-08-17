@@ -28,7 +28,7 @@
         },
         "errors": {
             "messageError": {
-                "body": "N'est pas parvenu à livrée la message au $[conversationTitle]",
+                "body": "N'est pas parvenu à livrée la message au ${conversationTitle}",
                 "title": "Échec au livraison du message"
             }
         },

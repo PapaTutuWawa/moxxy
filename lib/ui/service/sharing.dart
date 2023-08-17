@@ -55,10 +55,20 @@ class UISharingService {
         );
         GetIt.I.get<SendFilesBloc>().add(
               SendFilesPageRequestedEvent(
-                [conversationJid!],
+                [
+                  // NOTE: We put in some stub values (except for the JID) as the UI will fetch it.
+                  SendFilesRecipient(
+                    conversationJid!,
+                    conversationJid,
+                    null,
+                    null,
+                    false,
+                  ),
+                ],
                 isMedia ? SendFilesType.image : SendFilesType.generic,
                 paths:
                     attachments.map((attachment) => attachment!.path).toList(),
+                hasRecipientData: false,
                 popEntireStack: true,
               ),
             );
