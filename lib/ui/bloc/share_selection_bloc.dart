@@ -50,6 +50,16 @@ class ShareListItem {
   final String? contactId;
   final String? contactAvatarPath;
   final String? contactDisplayName;
+
+  /// Either returns the contact's title (if available), then the item title if the contact
+  /// integration is enabled. If not, just returns the item title.
+  String get titleWithOptionalContact {
+    if (GetIt.I.get<PreferencesBloc>().state.enableContactIntegration) {
+      return contactDisplayName ?? title;
+    }
+
+    return title;
+  }
 }
 
 class ShareSelectionBloc

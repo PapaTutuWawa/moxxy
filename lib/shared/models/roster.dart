@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
 import 'package:moxxyv2/service/preferences.dart';
+import 'package:moxxyv2/ui/bloc/preferences_bloc.dart';
 
 part 'roster.freezed.dart';
 part 'roster.g.dart';
@@ -103,6 +104,13 @@ class RosterItem with _$RosterItem {
 
     return title;
   }
+
+  /// This getter is a short-hand for [getTitleWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesBloc].
+  /// NOTE: This method only works in the UI.
+  String get titleWithOptionalContact => getTitleWithOptionalContact(
+        GetIt.I.get<PreferencesBloc>().state.enableContactIntegration,
+      );
 
   /// This getter is a short-hand for [getTitleWithOptionalContact] with the
   /// contact integration enablement status extracted from the [PreferencesService].

@@ -74,7 +74,7 @@ class ShareSelectionPage extends StatelessWidget {
               return ConversationsListRow(
                 Conversation(
                   '',
-                  item.title,
+                  item.titleWithOptionalContact,
                   null,
                   item.avatarPath,
                   item.avatarHash,
