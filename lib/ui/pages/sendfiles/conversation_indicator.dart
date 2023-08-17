@@ -14,30 +14,42 @@ class ConversationIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showAvatar = recipients.length == 1;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (showAvatar)
-          CachingXMPPAvatar(
-            jid: recipients.first.jid,
-            radius: 20,
-            hasContactId: recipients.first.hasContactId,
-            path: recipients.first.avatar,
-            hash: recipients.first.avatarHash,
-          ),
-        Padding(
-          padding:
-              showAvatar ? const EdgeInsets.only(left: 8) : EdgeInsets.zero,
-          child: Text(
-            recipients.map((r) => r.title).join(', '),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 18,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (showAvatar)
+              CachingXMPPAvatar(
+                jid: recipients.first.jid,
+                radius: 20,
+                hasContactId: recipients.first.hasContactId,
+                path: recipients.first.avatar,
+                hash: recipients.first.avatarHash,
+              ),
+            Padding(
+              padding: EdgeInsets.only(
+                left: showAvatar ? 8 : 10,
+                top: showAvatar ? 0 : 10,
+                bottom: showAvatar ? 0 : 10,
+              ),
+              child: Text(
+                recipients.map((r) => r.title).join(', '),
+                maxLines: recipients.length == 1 ? 1 : 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 18,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
