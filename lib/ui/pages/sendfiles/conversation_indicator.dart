@@ -31,6 +31,7 @@ class ConversationIndicator extends StatelessWidget {
                 hasContactId: recipients.first.hasContactId,
                 path: recipients.first.avatar,
                 hash: recipients.first.avatarHash,
+                altIcon: recipients.first.jid == '' ? Icons.notes : null,
               ),
             Padding(
               padding: EdgeInsets.only(
