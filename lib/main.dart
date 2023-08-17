@@ -47,7 +47,7 @@ import 'package:moxxyv2/ui/pages/newconversation.dart';
 import 'package:moxxyv2/ui/pages/profile/devices.dart';
 import 'package:moxxyv2/ui/pages/profile/own_devices.dart';
 import 'package:moxxyv2/ui/pages/profile/profile.dart';
-import 'package:moxxyv2/ui/pages/sendfiles.dart';
+import 'package:moxxyv2/ui/pages/sendfiles/sendfiles.dart';
 import 'package:moxxyv2/ui/pages/server_info.dart';
 import 'package:moxxyv2/ui/pages/settings/about.dart';
 import 'package:moxxyv2/ui/pages/settings/appearance/appearance.dart';
