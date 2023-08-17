@@ -47,6 +47,7 @@ import 'package:moxxyv2/shared/models/sticker.dart' as sticker;
 import 'package:moxxyv2/shared/models/sticker_pack.dart' as sticker_pack;
 import 'package:moxxyv2/shared/models/xmpp_state.dart';
 import 'package:moxxyv2/shared/synchronized_queue.dart';
+import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 
 void setupBackgroundEventHandler() {
   final handler = EventHandler()
@@ -113,6 +114,9 @@ void setupBackgroundEventHandler() {
       EventTypeMatcher<GetPagedStickerPackCommand>(performGetPagedStickerPacks),
       EventTypeMatcher<GetStickerPackByIdCommand>(performGetStickerPackById),
       EventTypeMatcher<DebugCommand>(performDebugCommand),
+      EventTypeMatcher<FetchRecipientInformationCommand>(
+        performFetchRecipientInformation,
+      ),
     ]);
 
   GetIt.I.registerSingleton<EventHandler>(handler);
@@ -1622,4 +1626,51 @@ Future<void> performJoinGroupchat(
       },
     );
   }
+}
+
+Future<void> performFetchRecipientInformation(
+  FetchRecipientInformationCommand command, {
+  dynamic extra,
+}) async {
+  final items = List<SendFilesRecipient>.empty(growable: true);
+  final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
+  final rs = GetIt.I.get<RosterService>();
+  final cs = GetIt.I.get<ConversationService>();
+  for (final jid in command.jids) {
+    // First try to find a roster item
+    final rosterItem = await rs.getRosterItemByJid(jid, accountJid);
+    if (rosterItem != null) {
+      items.add(
+        SendFilesRecipient(
+          rosterItem.jid,
+          // TODO: Check if we can use the contact title
+          rosterItem.title,
+          rosterItem.avatarPath.isEmpty ? null : rosterItem.avatarPath,
+          rosterItem.avatarHash.isEmpty ? null : rosterItem.avatarHash,
+          rosterItem.contactId != null,
+        ),
+      );
+      continue;
+    }
+
+    // Next, try to find a conversation
+    final conversation = await cs.getConversationByJid(jid, accountJid);
+    if (conversation != null) {
+      items.add(
+        SendFilesRecipient(
+          conversation.jid,
+          await conversation.titleWithOptionalContactService,
+          conversation.avatarPath.isEmpty ? null : conversation.avatarPath,
+          conversation.avatarHash,
+          conversation.contactId != null,
+        ),
+      );
+      continue;
+    }
+  }
+
+  sendEvent(
+    FetchRecipientInformationResult(items: items),
+    id: extra as String,
+  );
 }

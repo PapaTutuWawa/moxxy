@@ -6,7 +6,7 @@ import 'package:mime/mime.dart';
 import 'package:moxxyv2/ui/bloc/navigation_bloc.dart';
 import 'package:moxxyv2/ui/bloc/sendfiles_bloc.dart';
 import 'package:moxxyv2/ui/constants.dart';
-import 'package:moxxyv2/ui/widgets/avatar.dart';
+import 'package:moxxyv2/ui/pages/sendfiles/conversation_indicator.dart';
 import 'package:moxxyv2/ui/widgets/cancel_button.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/base.dart';
 import 'package:moxxyv2/ui/widgets/chat/shared/image.dart';
@@ -266,30 +266,12 @@ class SendFilesPage extends StatelessWidget {
                             .add(PoppedRouteWithOptionalSystemNavigatorEvent());
                       },
                     ),
-
-                    if (state.recipients.length == 1)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: CachingXMPPAvatar(
-                          jid: state.recipients.first.jid,
-                          radius: 20,
-                          hasContactId: state.recipients.first.hasContactId,
-                          path: state.recipients.first.avatar,
-                          hash: state.recipients.first.avatarHash,
-                        ),
+                    if (state.hasRecipientData)
+                      ConversationIndicator(state.recipients)
+                    else
+                      FetchingConversationIndicator(
+                        state.recipients.map((r) => r.jid).toList(),
                       ),
-
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Text(
-                        state.recipients.map((r) => r.title).join(', '),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                        style: const TextStyle(
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),

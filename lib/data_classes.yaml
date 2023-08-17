@@ -347,6 +347,14 @@ files:
           stickerPack:
             type: StickerPack?
             deserialise: true
+      - name: FetchRecipientInformationResult
+        extends: BackgroundEvent
+        implements:
+          - JsonImplementation
+        attributes:
+          items:
+            type: List<SendFilesRecipient>
+            deserialise: true
     generate_builder: true
     builder_name: "Event"
     builder_baseclass: "BackgroundEvent"
@@ -691,8 +699,14 @@ files:
         implements:
           - JsonImplementation
         attributes:
-          jid: String 
-          nick: String    
+          jid: String
+          nick: String
+      - name: FetchRecipientInformationCommand
+        extends: BackgroundCommand
+        implements:
+          - JsonImplementation
+        attributes:
+          jids: List<String>
     generate_builder: true
     # get${builder_Name}FromJson
     builder_name: "Command"

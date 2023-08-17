@@ -10,6 +10,7 @@ import 'package:moxxyv2/ui/constants.dart';
 import 'package:moxxyv2/ui/helpers.dart';
 
 part 'sendfiles_bloc.freezed.dart';
+part 'sendfiles_bloc.g.dart';
 part 'sendfiles_event.dart';
 part 'sendfiles_state.dart';
 
@@ -53,6 +54,7 @@ class SendFilesBloc extends Bloc<SendFilesEvent, SendFilesState> {
         files: files,
         index: 0,
         recipients: event.recipients,
+        hasRecipientData: event.hasRecipientData,
       ),
     );
 
