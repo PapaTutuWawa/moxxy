@@ -43,7 +43,8 @@
         "audio": "Audio",
         "sticker": "Autocollant",
         "retracted": "La message a été retirée",
-        "you": "Toi"
+        "you": "Toi",
+        "retractedFallback": "Un précédent message a été retiré, mais votre client ne le prend pas en charge"
     },
     "permissions": {
         "allow": "Autoriser",
@@ -100,6 +101,42 @@
         },
         "filePicker": {
             "permissionDenied": "L'autorisation de permission de storage a été déclinée."
+        },
+        "login": {
+            "saslFailed": "Identifiants non-valides",
+            "startTlsFailed": "Impossible d'établir une connexion sécurisée",
+            "unspecified": "Erreur non-connue",
+            "noConnection": "Impossible d'établir une connexion"
+        },
+        "message": {
+            "unspecified": "Erreur inconnue",
+            "fileUploadFailed": "Le téléversement du fichier a échoué",
+            "contactDoesntSupportOmemo": "Le chiffrement OMEMO:2 n'est pas pris en charge par l'autre personne",
+            "serviceUnavailable": "Le message n'a pas pu être délivré",
+            "failedToEncrypt": "Le message n'a pas pu être chiffré",
+            "failedToEncryptFile": "Le fichier n'a pas pu être chiffré",
+            "failedToDecryptFile": "Le fichier n'a pas pu être déchiffré",
+            "fileNotEncrypted": "La conversation est chiffrée, mais pas le fichier",
+            "fileDownloadFailed": "Le téléchargement du fichier a échoué",
+            "remoteServerTimeout": "Le message n'a pas pu être délivré au serveur de destination",
+            "remoteServerNotFound": "Serveur introuvable ; Le message n'a pas pu être délivré"
+        },
+        "connection": {
+            "connectionTimeout": "Impossible de joindre le serveur",
+            "saslAccountDisabled": "Votre compte est désactivé",
+            "saslInvalidCredentials": "Vos identifiants ne sont pas valides",
+            "unrecoverable": "Connexion perdue due à une erreur"
+        },
+        "conversation": {
+            "audioRecordingError": "Erreur d'enregistrement audio",
+            "openFileNoAppError": "Pas d'application pour ce type de fichier",
+            "messageErrorDialogTitle": "Erreur",
+            "openFileGenericError": "Impossible d'ouvrir le fichier"
+        },
+        "newChat": {
+            "remoteServerError": "Impossible de contacter le serveur distant.",
+            "groupchatUnsupported": "Les conversations de groupes ne sont pas encore prises en charge.",
+            "unknown": "Erreur inconnue."
         }
     },
     "pages": {
@@ -108,19 +145,291 @@
                 "title": "Autocollants",
                 "stickerSection": "Autocollant",
                 "stickerPacksSection": "Paquets d'autocollants",
-                "stickerPackSize": "(${size})"
+                "stickerPackSize": "(${size})",
+                "displayStickers": "Afficher les autocollants dans les conversations",
+                "autoDownload": "Téléchargement automatique des autocollants",
+                "importStickerPack": "Importer série d'autocollants",
+                "importSuccess": "Série d'autocollants importée avec succès",
+                "importFailure": "Erreur lors de l'import de la série d'autocollants",
+                "autoDownloadBody": "Si activée, les autocollants seront téléchargés automatiquement avec les personnes de votre liste de contact."
             },
             "stickerPacks": {
                 "title": "Paquets d'autocollants"
             },
             "storage": {
                 "types": {
-                    "stickers": "Autocollants"
-                }
+                    "stickers": "Autocollants",
+                    "media": "Médias"
+                },
+                "title": "Stockage",
+                "storageUsed": "Espace utilisé : ${size}",
+                "storageManagement": "Gestion de stockage",
+                "removeOldMedia": {
+                    "title": "Supprimer les anciens médias",
+                    "description": "Supprimer les anciens fichiers médias de votre appareil"
+                },
+                "removeOldMediaDialog": {
+                    "title": "Supprimer les fichiers médias",
+                    "options": {
+                        "oneWeek": "Plus anciens qu'une semaine",
+                        "oneMonth": "Plus anciens qu'un mois",
+                        "all": "Tous les fichiers médias"
+                    },
+                    "delete": "Supprimer",
+                    "confirmation": {
+                        "body": "Confirmer la suppresion des anciens fichiers médias ?"
+                    }
+                },
+                "viewMediaFiles": "Voir les fichiers médias",
+                "mediaFiles": "Fichiers médias",
+                "manageStickers": "Gestion des autocollants",
+                "sizePlaceholder": "Calcul…"
+            },
+            "settings": {
+                "title": "Paramètres",
+                "conversationsSection": "Conversations",
+                "accountSection": "Compte",
+                "signOut": "Déconnexion",
+                "signOutConfirmBody": "Confirmer la déconnexion ?",
+                "miscellaneousSection": "Autres",
+                "debuggingSection": "Développement",
+                "general": "Général",
+                "signOutConfirmTitle": "Déconnexion"
+            },
+            "about": {
+                "title": "À propos",
+                "licensed": "Sous licence GPLv3",
+                "version": "Version ${version}",
+                "viewSourceCode": "Voir le code source",
+                "debugMenuShown": "Mode développement disponible !",
+                "debugMenuAlreadyShown": "Le mode développement est déjà disponible !",
+                "nMoreToGo": "Plus que ${n}…"
+            },
+            "appearance": {
+                "title": "Apparence",
+                "languageSection": "Langue",
+                "language": "Langue de l'application",
+                "systemLanguage": "Langue par défaut",
+                "languageSubtext": "Langue actuelle : $selectedLanguage"
+            },
+            "licenses": {
+                "title": "Licences Open-Source",
+                "licensedUnder": "Sous licence $license"
+            },
+            "conversation": {
+                "title": "Conversation",
+                "appearance": "Apparence",
+                "selectBackgroundImage": "Sélectionner l'image d'arrière-plan",
+                "removeBackgroundImage": "Supprimer l'image d'arrière-plan",
+                "removeBackgroundImageConfirmTitle": "Suppression de l'image d'arrière-plan",
+                "removeBackgroundImageConfirmBody": "Confirmer la suppression de l'image d'arrière-plan de conversation ?",
+                "newChatsSection": "Nouvelles conversations",
+                "newChatsMuteByDefault": "Mettre les nouvelles conversation en sourdine par défaut",
+                "behaviourSection": "Comportement",
+                "contactsIntegration": "Intégration de contacts",
+                "selectBackgroundImageDescription": "Cette image sera en arrière-plan de toutes vos conversations",
+                "newChatsE2EE": "Activer le chiffrement de bout en bout par défaut. ATTENTION : Expérimental",
+                "contactsIntegrationBody": "Lorsque activé, les données de votre appareil fourniront les titres de conversation, et images de profils. Aucune donnée n'est envoyée au serveur."
+            },
+            "debugging": {
+                "title": "Option de développement",
+                "generalSection": "Général",
+                "generalEnableDebugging": "Activer le mode développement",
+                "generalEncryptionPassword": "Mot de passe de chiffrement",
+                "generalEncryptionPasswordSubtext": "Les journaux contiennent des informations sensibles, choisissez un mot de passe fort",
+                "generalLoggingIp": "IP de journaux",
+                "generalLoggingIpSubtext": "L'IP à laquelle envoyer les journaux",
+                "generalLoggingPort": "Port de journaux",
+                "generalLoggingPortSubtext": "L'IP où envoyer les journaux"
+            },
+            "network": {
+                "title": "Réseau",
+                "automaticDownloadsSection": "Téléchargements automatiques",
+                "automaticDownloadsText": "Moxxy téléchargera automatiquement les fichiers sur…",
+                "automaticDownloadsMaximumSize": "Taille maximale de téléchargement",
+                "automaticDownloadAlways": "Toujours",
+                "wifi": "WiFi",
+                "mobileData": "Données mobiles",
+                "automaticDownloadsMaximumSizeSubtext": "La taille maximale des fichiers à télécharger automatiquement"
+            },
+            "privacy": {
+                "title": "Vie privée",
+                "generalSection": "Général",
+                "showContactRequests": "Afficher les requêtes de contact",
+                "showContactRequestsSubtext": "Cela affiche les personnes qui vous ont ajouté à leurs listes de contacts mais ne vous ont pas encore envoyé de message",
+                "profilePictureVisibility": "Rendre publique l'image de profil",
+                "profilePictureVisibilitSubtext": "Lorsque activée, tout le monde peut voir votre image de profil. Désactivée, seulement vos contacts peuvent la voir.",
+                "conversationsSection": "Conversation",
+                "sendChatMarkers": "Envoyer des marqueurs de conversation",
+                "sendChatStates": "Envoyer l'état de conversation",
+                "sendChatStatesSubtext": "Informe votre destinataire si vous être en train d'écrire, ou lire la conversation",
+                "sendChatMarkersSubtext": "Informe votre destinataire lorsqu'un message est reçu, ou lu",
+                "redirectsSection": "Redirections",
+                "redirectText": "Redirige les liens $serviceName vers un service de proxy, comme $exampleProxy",
+                "currentlySelected": "Service sélectionné : $proxy",
+                "redirectsTitle": "$serviceName Redirection",
+                "cannotEnableRedirect": "Impossible d'activer les redirections $serviceName",
+                "urlEmpty": "URL vide",
+                "urlInvalid": "URL non-valide",
+                "redirectDialogTitle": "$serviceName Redirect",
+                "stickersPrivacy": "Rendre publique la liste d'autoocollants",
+                "stickersPrivacySubtext": "Si activée, tout le monde pourra voir vos autocollants installés.",
+                "cannotEnableRedirectSubtext": "Service de redirection manquant, appuyer sur le champ à côté de l'interrupteur"
             }
         },
         "conversation": {
-            "stickerSettings": "Paramètres des autocollants"
+            "stickerSettings": "Paramètres des autocollants",
+            "unencrypted": "Non-chiffré",
+            "encrypted": "Chiffré",
+            "closeChat": "Fermer la conversation",
+            "closeChatConfirmTitle": "Fermeture de conversation",
+            "blockShort": "Bloquer",
+            "blockUser": "Bloquer cette personne",
+            "online": "En ligne",
+            "retract": "Supprimer le message",
+            "forward": "Transférer",
+            "edit": "Modifier",
+            "quote": "Citer",
+            "copy": "Copier le contenu",
+            "messageCopied": "Message copié vers le presse-papier",
+            "addReaction": "Ajouter une réaction",
+            "showError": "Afficher l'erreur",
+            "showWarning": "Afficher l'avertissement",
+            "warning": "Avertissement",
+            "addToContacts": "Ajouter aux contacts",
+            "addToContactsBody": "Confirmer l'ajout de ${jid} aux contacts ?",
+            "stickerPickerNoStickersLine1": "Pas d'autocollants installés.",
+            "newDeviceMessage": {
+                "one": "Un nouvel appareil a été ajouté",
+                "other": "De nouveaux appareils ont été ajoutés"
+            },
+            "replacedDeviceMessage": {
+                "one": "Un appareil a été modifié",
+                "other": "Plusieurs appareils ont été ajoutés"
+            },
+            "sendImages": "Envoyer des images",
+            "sendFiles": "Envoyer des fichiers",
+            "takePhotos": "Prendre des photos",
+            "messageHint": "Envoyer un message…",
+            "closeChatConfirmSubtext": "Confirmer la fermeture de cette conversation ?",
+            "retractBody": "Confirmer la demande de suppression du message ? Cela n'est qu'une demande que le client n'a pas a honorer.",
+            "addToContactsTitle": "Ajouter ${jid} aux contacts",
+            "stickerPickerNoStickersLine2": "Des autocollants sont disponibles à l'installation dans les paramètres."
+        },
+        "intro": {
+            "noAccount": "Pas de compte XMPP ? Aucun soucis, en créer un est très simple.",
+            "loginButton": "Connexion",
+            "registerButton": "Inscription"
+        },
+        "login": {
+            "title": "Connexion",
+            "xmppAddress": "Adresse XMPP",
+            "password": "Mot de passe",
+            "advancedOptions": "Paramètres avancés",
+            "createAccount": "Créer un compte sur le serveur"
+        },
+        "conversations": {
+            "speeddialNewChat": "Nouvelle conversation",
+            "speeddialJoinGroupchat": "Rejoindre une conversation de groupe",
+            "speeddialAddNoteToSelf": "Note personnelle",
+            "overlaySettings": "Paramètres",
+            "noOpenChats": "Aucune conversation d'ouverte",
+            "startChat": "Démarrer une conversation",
+            "closeChatBody": "Souhaitez-vous fermer la conversation avec ${conversationTitle} ?",
+            "markAsRead": "Marquer comme lue",
+            "closeChat": "Fermer une conversation"
+        },
+        "startchat": {
+            "title": "Nouvelle conversation",
+            "xmppAddress": "Adresse XMPP",
+            "buttonAddToContact": "Démarrer une nouvelle conversation",
+            "subtitle": "Vous pouvez démarrer une conversation à l'aide d'une adresse XMPP ou en scannant un code QR."
+        },
+        "newconversation": {
+            "title": "Nouvelle conversation",
+            "startChat": "Démarrer une nouvelle conversation",
+            "createGroupchat": "Nouvelle conversation de groupe",
+            "joinGroupChat": "Rejoindre une conversation de groupe",
+            "nullNickname": "Le pseudonyme ne peut pas être vide !",
+            "nick": "Pseudonyme",
+            "enterNickname": "Entrer un pseudonyme",
+            "nicknameSubtitle": "Un pseudonyme unique est requis pour rejoindre une CUM."
+        },
+        "crop": {
+            "setProfilePicture": "Utiliser comme image de profil"
+        },
+        "shareselection": {
+            "shareWith": "Partager avec…",
+            "confirmTitle": "Envoyer le fichier",
+            "confirmBody": "Une ou plusieurs conversations ne sont pas chiffrées. Le fichier sera accessible au serveur. Confirmer ?"
+        },
+        "profile": {
+            "general": {
+                "omemo": "Sécurité",
+                "profile": "Profil",
+                "media": "Média"
+            },
+            "conversation": {
+                "notifications": "Notifications",
+                "notificationsMuted": "En sourdine",
+                "notificationsEnabled": "Activées",
+                "sharedMedia": "Média"
+            },
+            "owndevices": {
+                "title": "Appareils disponibles",
+                "otherDevices": "Autres appareils",
+                "thisDevice": "Cet appareil",
+                "deleteDeviceConfirmTitle": "Supprimer appareil",
+                "recreateOwnSessions": "Recréer sessions",
+                "recreateOwnSessionsConfirmTitle": "Recréer ses propres sessions ?",
+                "recreateOwnDevice": "Recréer appareil",
+                "recreateOwnDeviceConfirmTitle": "Récréer cet appareil ?",
+                "deleteDeviceConfirmBody": "Vos contact ne pourront pas chiffrer pour cet appareil, continuer ?",
+                "recreateOwnSessionsConfirmBody": "Cela recréera les sessions cryptographiques de vos appareils. À n'utiliser qu'en cas d'erreur de déchiffrement.",
+                "recreateOwnDeviceConfirmBody": "Cela récréera l'identité cryptographique de cet appareil. Cette opération peut prendre du temps. Les contact ayant vérifié cet appareils auront à le faire de nouveau, continuer ?"
+            },
+            "devices": {
+                "title": "Sécurité",
+                "recreateSessions": "Recréer sessions",
+                "recreateSessionsConfirmTitle": "Recréer les sessions ?",
+                "noSessions": "Il n'y a pas de sessions cryptographiques utilisées pour du chiffrement de bout en bout.",
+                "recreateSessionsConfirmBody": "Cela recréera les sessions cryptographiques de vos appareils. À n'utiliser qu'en cas d'erreur de déchiffrement sur ceux-ci."
+            }
+        },
+        "blocklist": {
+            "title": "Liste de blocage",
+            "noUsersBlocked": "Aucune personne bloquée",
+            "unblockAll": "Tout débloquer",
+            "unblockAllConfirmTitle": "Confirmer ?",
+            "unblockAllConfirmBody": "Confirmer le débloquage de toutes les personnes ?",
+            "unblockJidConfirmTitle": "Débloquer ${jid} ?",
+            "unblockJidConfirmBody": "Confirmer le débloquage de ${jid} ? Vous recevrez de nouveau les messages de sa part."
+        },
+        "cropbackground": {
+            "blur": "Flouter l'arrière-plan",
+            "setAsBackground": "Utiliser comme arrière-plan"
+        },
+        "stickerPack": {
+            "removeConfirmTitle": "Supprimer autocollant",
+            "removeConfirmBody": "Confirmer la suppression de cette série d'autocollants ?",
+            "installConfirmTitle": "Installer autocollant",
+            "restricted": "Cette série est limitée. Les autocollants s'afficheront mais ne pourront être envoyés.",
+            "fetchingFailure": "Autocollants introuvables",
+            "installConfirmBody": "Confirmer l'installation de cette série d'autocollants ?"
+        },
+        "sharedMedia": {
+            "empty": {
+                "chat": "Pas de média partagé dans cette conversation",
+                "general": "Pas de fichier média disponible"
+            }
+        }
+    },
+    "warnings": {
+        "conversation": {
+            "holdForLonger": "Maintenez le bouton pressé pour enregistrer un message vocal"
+        },
+        "message": {
+            "integrityCheckFailed": "Impossible de vérifier l'intégrité du fichier"
         }
     }
 }
