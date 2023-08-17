@@ -1643,8 +1643,7 @@ Future<void> performFetchRecipientInformation(
       items.add(
         SendFilesRecipient(
           rosterItem.jid,
-          // TODO: Check if we can use the contact title
-          rosterItem.title,
+          await rosterItem.titleWithOptionalContactService,
           rosterItem.avatarPath.isEmpty ? null : rosterItem.avatarPath,
           rosterItem.avatarHash.isEmpty ? null : rosterItem.avatarHash,
           rosterItem.contactId != null,

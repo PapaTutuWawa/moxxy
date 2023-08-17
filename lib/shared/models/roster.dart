@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:moxxyv2/service/database/helpers.dart';
+import 'package:moxxyv2/service/preferences.dart';
 
 part 'roster.freezed.dart';
 part 'roster.g.dart';
@@ -90,4 +92,24 @@ class RosterItem with _$RosterItem {
 
     return true;
   }
+
+  /// The title of the roster item. This returns, if [contactIntegration] is true, first the contact's display
+  /// name, then the XMPP roster title. If [contactIntegration] is false, just returns the XMPP roster
+  /// title.
+  String getTitleWithOptionalContact(bool contactIntegration) {
+    if (contactIntegration) {
+      return contactDisplayName ?? title;
+    }
+
+    return title;
+  }
+
+  /// This getter is a short-hand for [getTitleWithOptionalContact] with the
+  /// contact integration enablement status extracted from the [PreferencesService].
+  /// NOTE: This method only works in the background isolate.
+  Future<String> get titleWithOptionalContactService async =>
+      getTitleWithOptionalContact(
+        (await GetIt.I.get<PreferencesService>().getPreferences())
+            .enableContactIntegration,
+      );
 }
