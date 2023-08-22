@@ -78,7 +78,7 @@ dependencies:
   native_imaging: 0.1.0
   omemo_dart:
     hosted: https://git.polynom.me/api/packages/PapaTutuWawa/pub
-    version: 0.5.0
+    version: 0.5.1
   page_transition: 2.0.9
   path: 1.8.2
   path_provider: 2.0.11
@@ -139,13 +139,8 @@ dependency_overrides:
   moxxmpp:
     git:
       url: https://codeberg.org/moxxy/moxxmpp.git
-      rev: 38dba0e6b7799f0ebfd33ed5c343d1b46d8cd78b
+      rev: 864cc0e7474d98f691d87b7a0806f428bf98b790
       path: packages/moxxmpp
-
-  omemo_dart:
-    git:
-      url: https://github.com/PapaTutuWawa/omemo_dart.git
-      rev: 49c7e114e6cf80dcde55fbbd218bba3182045862
  
 extra_licenses:
   - name: undraw.co

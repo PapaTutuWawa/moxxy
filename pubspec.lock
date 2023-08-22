@@ -918,7 +918,7 @@ packages:
     description:
       path: "packages/moxxmpp"
       ref: HEAD
-      resolved-ref: "38dba0e6b7799f0ebfd33ed5c343d1b46d8cd78b"
+      resolved-ref: "864cc0e7474d98f691d87b7a0806f428bf98b790"
       url: "https://codeberg.org/moxxy/moxxmpp.git"
     source: git
     version: "0.4.0"
@@ -973,11 +973,10 @@ packages:
   omemo_dart:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "49c7e114e6cf80dcde55fbbd218bba3182045862"
-      url: "https://github.com/PapaTutuWawa/omemo_dart.git"
-    source: git
+      name: omemo_dart
+      sha256: "61f4695f105bc72663bd804350fc9cdb14c81e95fc190137a8344280e70fbc00"
+      url: "https://git.polynom.me/api/packages/PapaTutuWawa/pub/"
+    source: hosted
     version: "0.5.1"
   package_config:
     dependency: transitive
