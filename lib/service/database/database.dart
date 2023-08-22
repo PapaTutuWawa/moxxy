@@ -47,6 +47,7 @@ import 'package:moxxyv2/service/database/migrations/0003_jid_attribute.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo.dart';
 import 'package:moxxyv2/service/database/migrations/0003_new_omemo_pseudo_messages.dart';
 import 'package:moxxyv2/service/database/migrations/0003_notifications.dart';
+import 'package:moxxyv2/service/database/migrations/0003_occupant_id.dart';
 import 'package:moxxyv2/service/database/migrations/0003_remove_subscriptions.dart';
 import 'package:moxxyv2/service/database/migrations/0003_sticker_pack_timestamp.dart';
 import 'package:moxxyv2/service/xmpp_state.dart';
@@ -102,6 +103,7 @@ const List<DatabaseMigration<Database>> migrations = [
   DatabaseMigration(44, upgradeFromV43ToV44),
   DatabaseMigration(45, upgradeFromV44ToV45),
   DatabaseMigration(46, upgradeFromV45ToV46),
+  DatabaseMigration(47, upgradeFromV46ToV47),
 ];
 
 class DatabaseService {

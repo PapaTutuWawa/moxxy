@@ -1469,6 +1469,7 @@ class XmppService {
       originId: event.extensions.get<StableIdData>()?.originId,
       errorType: MessageErrorType.fromException(event.encryptionError),
       stickerPackId: event.extensions.get<StickersData>()?.stickerPackId,
+      occupantId: event.extensions.get<OccupantIdData>()?.id,
     );
 
     // Attempt to auto-download the embedded file, if

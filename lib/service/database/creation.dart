@@ -46,6 +46,7 @@ Future<void> createDatabase(Database db, int version) async {
       isEdited                 INTEGER NOT NULL,
       containsNoStore          INTEGER NOT NULL,
       stickerPackId            TEXT,
+      occupantId               TEXT,
       pseudoMessageType        INTEGER,
       pseudoMessageData        TEXT,
       CONSTRAINT fk_quote

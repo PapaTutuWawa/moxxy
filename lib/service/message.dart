@@ -364,6 +364,7 @@ FROM
     bool isDownloading = false,
     bool isUploading = false,
     String? stickerPackId,
+    String? occupantId,
     PseudoMessageType? pseudoMessageType,
     Map<String, dynamic>? pseudoMessageData,
     bool received = false,
@@ -391,6 +392,7 @@ FROM
       isUploading: isUploading,
       isDownloading: isDownloading,
       stickerPackId: stickerPackId,
+      occupantId: occupantId,
       pseudoMessageType: pseudoMessageType,
       pseudoMessageData: pseudoMessageData,
     );
@@ -426,6 +428,7 @@ FROM
     Object? originId = notSpecified,
     bool? isRetracted,
     bool? isEdited,
+    String? occupantId,
   }) async {
     final db = GetIt.I.get<DatabaseService>().database;
     final m = <String, dynamic>{};
@@ -471,6 +474,9 @@ FROM
     }
     if (sid != null) {
       m['sid'] = sid;
+    }
+    if (occupantId != null) {
+      m['occupantId'] = occupantId;
     }
 
     final updatedMessage = await db.updateAndReturn(

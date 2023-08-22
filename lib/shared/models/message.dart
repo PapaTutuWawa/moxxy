@@ -125,6 +125,9 @@ class Message with _$Message {
     /// contains a sticker.
     String? stickerPackId,
 
+    /// The occupant-id of the sender, when the message was received in a groupchat.
+    String? occupantId,
+
     /// If the message is not a real message, then this field indicates
     /// the type of "pseudo message" we should display.
     @PseudoMessageTypeConverter() PseudoMessageType? pseudoMessageType,
