@@ -155,7 +155,8 @@ JOIN
     );
 
     // Retract from PubSub
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final xss = GetIt.I.get<XmppStateService>();
+    final state = await xss.state;
     final result = await GetIt.I
         .get<moxxmpp.XmppConnection>()
         .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!
@@ -168,7 +169,8 @@ JOIN
 
   Future<void> _publishStickerPack(moxxmpp.StickerPack pack) async {
     final prefs = await GetIt.I.get<PreferencesService>().getPreferences();
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final xss = GetIt.I.get<XmppStateService>();
+    final state = await xss.state;
     final result = await GetIt.I
         .get<moxxmpp.XmppConnection>()
         .getManagerById<moxxmpp.StickersManager>(moxxmpp.stickersManager)!

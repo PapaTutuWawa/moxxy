@@ -37,9 +37,10 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
   Future<RosterCacheLoadResult> loadRosterCache() async {
     final accountJid = await GetIt.I.get<XmppStateService>().getAccountJid();
     final rs = GetIt.I.get<RosterService>();
+    final state = await GetIt.I.get<XmppStateService>().state;
     return RosterCacheLoadResult(
-      (await GetIt.I.get<XmppStateService>().getXmppState()).lastRosterVersion,
-      (await rs.getRoster(accountJid))
+      state.lastRosterVersion,
+      (await rs.getRoster(accountJid!))
           .map(
             (item) => XmppRosterItem(
               jid: item.jid,
@@ -71,14 +72,14 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
 
     // Remove stale items
     for (final jid in removed) {
-      await rs.removeRosterItem(jid, accountJid);
+      await rs.removeRosterItem(jid, accountJid!);
       await updateConversation(jid, accountJid, true);
     }
 
     // Create new roster items
     final rosterAdded = List<RosterItem>.empty(growable: true);
     for (final item in added) {
-      final exists = await rs.getRosterItemByJid(item.jid, accountJid) != null;
+      final exists = await rs.getRosterItemByJid(item.jid, accountJid!) != null;
       // Skip adding items twice
       if (exists) continue;
 
@@ -109,7 +110,7 @@ class MoxxyRosterStateManager extends BaseRosterStateManager {
     // Update modified items
     final rosterModified = List<RosterItem>.empty(growable: true);
     for (final item in modified) {
-      final ritem = await rs.getRosterItemByJid(item.jid, accountJid);
+      final ritem = await rs.getRosterItemByJid(item.jid, accountJid!);
       if (ritem == null) {
         //_log.warning('Could not find roster item with JID $jid during update');
         continue;

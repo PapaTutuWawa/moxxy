@@ -155,7 +155,9 @@ Future<void> entrypoint() async {
   GetIt.I.registerSingleton<LanguageService>(LanguageService());
 
   // Initialize the database
-  GetIt.I.registerSingleton<XmppStateService>(XmppStateService());
+  final xss = XmppStateService();
+  await xss.initializeXmppState();
+  GetIt.I.registerSingleton<XmppStateService>(xss);
   GetIt.I.registerSingleton<DatabaseService>(DatabaseService());
   await GetIt.I.get<DatabaseService>().initialize();
 
@@ -233,7 +235,7 @@ Future<void> entrypoint() async {
       (toJid, _) async =>
           GetIt.I.get<ConversationService>().shouldEncryptForConversation(
                 toJid,
-                await GetIt.I.get<XmppStateService>().getAccountJid(),
+                (await GetIt.I.get<XmppStateService>().getAccountJid())!,
               ),
     ),
     PingManager(const Duration(minutes: 3)),

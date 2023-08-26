@@ -545,21 +545,33 @@ class HttpFileTransferService {
         mediaWidth = imageSize?.width.toInt();
         mediaHeight = imageSize?.height.toInt();
       } else if (mime.startsWith('video/')) {
-        /*
-        // Generate thumbnail
-        final thumbnailPath = await getVideoThumbnailPath(
-          downloadedPath,
-          job.conversationJid,
-        );
+        if (canGenerateVideoThumbnail(mime)) {
+          try {
+            // Generate thumbnail
+            final thumbnailPath = await getVideoThumbnailPath(
+              downloadedPath,
+            );
 
-        // Find out the dimensions
-        final imageSize = await getImageSizeFromPath(thumbnailPath);
-        if (imageSize == null) {
-          _log.warning('Failed to get image size for $downloadedPath ($thumbnailPath)');
+            if (thumbnailPath != null) {
+              // Find out the dimensions
+              final imageSize = await getImageSizeFromPath(thumbnailPath);
+              if (imageSize == null) {
+                _log.warning(
+                  'Failed to get image size for $downloadedPath ($thumbnailPath)',
+                );
+              }
+
+              mediaWidth = imageSize?.width.toInt();
+              mediaHeight = imageSize?.height.toInt();
+            }
+          } catch (ex) {
+            _log.warning('Failed to generate thumbnail for $downloadedPath');
+          }
+        } else {
+          _log.info(
+            'Not generating thumbnail for $downloadedPath because canGenerateVideoThumbnail returned false',
+          );
         }
-        
-        mediaWidth = imageSize?.width.toInt();
-        mediaHeight = imageSize?.height.toInt();*/
       }
     }
 
@@ -619,7 +631,7 @@ class HttpFileTransferService {
     if (notification.shouldShowNotification(msg.conversationJid) &&
         job.shouldShowNotification) {
       _log.finest('Creating notification with bigPicture $downloadedPath');
-      await notification.updateNotification(
+      await notification.updateOrShowNotification(
         updatedConversation,
         msg,
         job.accountJid,

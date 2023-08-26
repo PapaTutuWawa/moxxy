@@ -30,7 +30,8 @@ class MoxxyStreamManagementManager extends StreamManagementManager {
 
   @override
   Future<void> loadState() async {
-    final state = await GetIt.I.get<XmppStateService>().getXmppState();
+    final xss = GetIt.I.get<XmppStateService>();
+    final state = await xss.state;
     if (state.smState != null) {
       await setState(state.smState!);
     }

@@ -3,6 +3,9 @@ import 'dart:core';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:get_it/get_it.dart';
+import 'package:logging/logging.dart';
+import 'package:moxplatform/moxplatform.dart';
 import 'package:moxxyv2/i18n/strings.g.dart';
 import 'package:moxxyv2/shared/models/message.dart';
 import 'package:path/path.dart' as p;
@@ -366,29 +369,29 @@ Future<Size?> getImageSizeFromData(Uint8List bytes) async {
   }
 }
 
-/// Generate a thumbnail file (JPEG) for the video at [path]. [conversationJid] refers
-/// to the JID of the conversation the file comes from.
+/// Returns true if we can generate a video thumbnail of mime type [mime]. If not, returns
+/// false.
+bool canGenerateVideoThumbnail(String mime) {
+  return ![
+    // Ignore mime types that may be wacky
+    'video/webm',
+  ].contains(mime);
+}
+
+/// Generate a thumbnail file (JPEG) for the video at [path].
 /// If the thumbnail already exists, then just its path is returned. If not, then
 /// it gets generated first.
 Future<String?> getVideoThumbnailPath(
   String path,
-  String conversationJid,
-  String mime,
 ) async {
-  //print('getVideoThumbnailPath: Mime type: $mime');
-
-  // Ignore mime types that may be wacky
-  if (mime == 'video/webm') return null;
-
-  final tempDir = await getTemporaryDirectory();
+  final tempDir = await MoxplatformPlugin.platform.getCacheDataPath();
   final thumbnailFilenameNoExtension = p.withoutExtension(
     p.basename(path),
   );
   final thumbnailFilename = '$thumbnailFilenameNoExtension.jpg';
   final thumbnailDirectory = p.join(
-    tempDir.path,
+    tempDir,
     'thumbnails',
-    conversationJid,
   );
   final thumbnailPath = p.join(thumbnailDirectory, thumbnailFilename);
 
@@ -397,18 +400,25 @@ Future<String?> getVideoThumbnailPath(
   final file = File(thumbnailPath);
   if (file.existsSync()) return thumbnailPath;
 
-  final r = await VideoThumbnail.thumbnailFile(
-    video: path,
-    thumbnailPath: thumbnailDirectory,
-    imageFormat: ImageFormat.JPEG,
-    quality: 75,
-  );
-  assert(
-    r == thumbnailPath,
-    'The generated video thumbnail has a different path than we expected: $r vs. $thumbnailPath',
-  );
+  try {
+    final generatedThumbnailPath = await VideoThumbnail.thumbnailFile(
+      video: path,
+      thumbnailPath: thumbnailPath,
+      imageFormat: ImageFormat.JPEG,
+      quality: 75,
+    );
 
-  return thumbnailPath;
+    assert(
+      generatedThumbnailPath == thumbnailPath,
+      'The generated video thumbnail has a different path than we expected: $generatedThumbnailPath vs. $thumbnailPath',
+    );
+    return thumbnailPath;
+  } catch (ex) {
+    GetIt.I
+        .get<Logger>()
+        .warning('Failed to generate thumbnail for $path: $ex');
+    return null;
+  }
 }
 
 Future<String> getContactProfilePicturePath(String id) async {

@@ -52,7 +52,7 @@ class NotificationsService {
       // Mark the message as read
       await GetIt.I.get<MessageService>().markMessageAsRead(
             event.extra![_messageIdKey]!,
-            accountJid,
+            accountJid!,
             // [XmppService.sendReadMarker] will check whether the *SHOULD* send
             // the marker, i.e. if the privacy settings allow it.
             true,
@@ -93,7 +93,7 @@ class NotificationsService {
       final notification = modeln.Notification(
         event.id,
         conversationJid,
-        accountJid,
+        accountJid!,
         null,
         null,
         null,
@@ -250,7 +250,7 @@ class NotificationsService {
   /// When a notification is already visible, then build a new notification based on [c] and [m],
   /// update the database state and tell the OS to show the notification again.
   // TODO(Unknown): What about systems that cannot do this (Linux, OS X, Windows)?
-  Future<void> updateNotification(
+  Future<void> updateOrShowNotification(
     modelc.Conversation c,
     modelm.Message m,
     String accountJid,
@@ -263,13 +263,15 @@ class NotificationsService {
     }
 
     final notifications = await _getNotificationsForJid(c.jid, accountJid);
-    final id = notifications.first.id;
+    final id = notifications.isNotEmpty
+        ? notifications.first.id
+        : Random().nextInt(_maxNotificationId);
     // TODO(Unknown): Handle groupchat member avatars
     final notification = await _createNotification(
       c,
       m,
       accountJid,
-      c.isGroupchat ? null : c.avatarPathWithOptionalContact,
+      c.isGroupchat ? null : await c.avatarPathWithOptionalContactService,
       id,
       shouldOverride: true,
     );
@@ -450,8 +452,8 @@ class NotificationsService {
   /// Requests the avatar path from [XmppStateService] and configures the notification plugin
   /// accordingly, if the avatar path is not null. If it is null, this method does nothing.
   Future<void> maybeSetAvatarFromState() async {
-    final avatarPath =
-        (await GetIt.I.get<XmppStateService>().getXmppState()).avatarUrl;
+    final xss = GetIt.I.get<XmppStateService>();
+    final avatarPath = (await xss.state).avatarUrl;
     if (avatarPath.isNotEmpty) {
       await MoxplatformPlugin.notifications
           .setNotificationSelfAvatar(avatarPath);

@@ -72,7 +72,7 @@ class BlocklistService {
     final removedItems = List<String>.empty(growable: true);
     for (final item in blocklist) {
       if (!_blocklist!.contains(item)) {
-        await _addBlocklistEntry(item, accountJid);
+        await _addBlocklistEntry(item, accountJid!);
         _blocklist!.add(item);
         newItems.add(item);
       }
@@ -81,7 +81,7 @@ class BlocklistService {
     // Diff the cache with the received blocklist
     for (final item in _blocklist!) {
       if (!blocklist.contains(item)) {
-        await _removeBlocklistEntry(item, accountJid);
+        await _removeBlocklistEntry(item, accountJid!);
         _blocklist!.remove(item);
         removedItems.add(item);
       }
@@ -146,7 +146,7 @@ class BlocklistService {
             _blocklist!.add(item);
             newBlocks.add(item);
 
-            await _addBlocklistEntry(item, accountJid);
+            await _addBlocklistEntry(item, accountJid!);
           }
           break;
         case BlockPushType.unblock:
@@ -154,7 +154,7 @@ class BlocklistService {
             _blocklist!.removeWhere((i) => i == item);
             removedBlocks.add(item);
 
-            await _removeBlocklistEntry(item, accountJid);
+            await _removeBlocklistEntry(item, accountJid!);
           }
           break;
       }
@@ -178,7 +178,7 @@ class BlocklistService {
     _blocklist!.add(jid);
     await _addBlocklistEntry(
       jid,
-      await GetIt.I.get<XmppStateService>().getAccountJid(),
+      (await GetIt.I.get<XmppStateService>().getAccountJid())!,
     );
     return GetIt.I
         .get<XmppConnection>()
@@ -196,7 +196,7 @@ class BlocklistService {
     _blocklist!.remove(jid);
     await _removeBlocklistEntry(
       jid,
-      await GetIt.I.get<XmppStateService>().getAccountJid(),
+      (await GetIt.I.get<XmppStateService>().getAccountJid())!,
     );
     return GetIt.I
         .get<XmppConnection>()

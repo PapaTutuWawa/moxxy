@@ -9,7 +9,7 @@ class PermissionsService {
   /// `askedNotificationPermission` to true.
   Future<bool> shouldRequestNotificationPermission() async {
     final xss = GetIt.I.get<XmppStateService>();
-    final retValue = !(await xss.getXmppState()).askedNotificationPermission;
+    final retValue = !(await xss.state).askedNotificationPermission;
     if (retValue) {
       await xss.modifyXmppState(
         (state) => state.copyWith(askedNotificationPermission: true),
@@ -29,8 +29,7 @@ class PermissionsService {
     }
 
     final xss = GetIt.I.get<XmppStateService>();
-    final retValue =
-        !(await xss.getXmppState()).askedBatteryOptimizationExcemption;
+    final retValue = !(await xss.state).askedBatteryOptimizationExcemption;
     if (retValue) {
       await xss.modifyXmppState(
         (state) => state.copyWith(askedBatteryOptimizationExcemption: true),
